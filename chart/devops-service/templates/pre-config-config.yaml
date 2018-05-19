@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-init-config
+  labels:
+{{ include "service.labels.standard" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "2"
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 120
+  template:
+    metadata:
+      name: {{ .Release.Name }}-init-config
+    spec:
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - cp -rf /var/choerodon/* /tools
+        image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.0
+        imagePullPolicy: Always
+        name: tools
+        volumeMounts:
+        - mountPath: /tools
+          name: tools-jar
+      containers:
+      - name: {{ .Release.Name }}-init-config
+        image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
+        command:
+        - /bin/sh
+        - -c
+        - '
+          java -Dspring.datasource.url="jdbc:mysql://{{ .Values.preJob.preConfig.mysql.host }}:{{ .Values.preJob.preConfig.mysql.port }}/{{ .Values.preJob.preConfig.mysql.database }}?useUnicode=true&characterEncoding=utf-8&useSSL=false" -Dspring.datasource.username={{ .Values.preJob.preConfig.mysql.username }} -Dspring.datasource.password={{ .Values.preJob.preConfig.mysql.password }} -Dservice.name={{ .Chart.Name }} -Dservice.version={{ .Chart.Version }} -Dconfig.file={{ .Values.preJob.preConfig.configFile }} -Dconfig.jar=/app.jar -jar /var/choerodon/choerodon-tool-config.jar;
+          '
+        volumeMounts:
+        - mountPath: /var/choerodon
+          name: tools-jar
+      restartPolicy: Never
+      volumes:
+      - emptyDir: {}
+        name: tools-jar

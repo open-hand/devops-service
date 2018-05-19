@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsIngressPathMapper">
+
+    <select id="selectByEnvIdAndServiceName" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressPathDO">
+        SELECT
+        dda.*
+        FROM
+        devops_ingress dd,
+        devops_ingress_path dda
+        WHERE
+        dd.id = dda.ingress_id
+        AND dd.env_id = #{envId}
+        AND dda.service_name = #{serviceName}
+    </select>
+
+    <select id="checkDomainAndPath" resultType="java.lang.Boolean">
+        SELECT
+        count(1) > 0 exist
+        FROM
+        devops_ingress dd
+        INNER JOIN devops_ingress_path dda ON dd.id = dda.ingress_id
+        WHERE
+        dd.domain = #{domain}
+        AND dda.path = #{path}
+    </select>
+
+    <select id="selectByEnvIdAndServiceId" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressPathDO">
+        SELECT
+        dda.*
+        FROM
+        devops_ingress dd,
+        devops_ingress_path dda
+        WHERE
+        dd.id = dda.ingress_id
+        AND dd.env_id = #{envId}
+        AND dda.service_id = #{serviceId}
+    </select>
+</mapper>

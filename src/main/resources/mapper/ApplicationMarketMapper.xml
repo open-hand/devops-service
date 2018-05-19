@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationMarketMapper">
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.code != null and searchParam.code.size > 0'>
+                AND
+                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
+                    dam.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    dam.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dam.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dam.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
+    <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+        select dam.id,
+        dam.app_id,
+        da.`name`,
+        da.`code`,
+        dam.contributor,
+        dam.description,
+        dam.img_url,
+        dam.publish_level
+        from devops_application da,devops_app_market dam
+        where da.id=dam.app_id
+        and da.project_id=#{projectId}
+        <include refid="sqlparam"/>
+    </select>
+
+    <select id="listMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+        select dam.id,
+        dam.project_id,
+        dam.app_id,
+        dam.name,
+        dam.code,
+        dam.publish_level,
+        dam.img_url,
+        dam.description,
+        dam.contributor
+        from devops_app_market dam where dam.publish_level='public'
+        or (dam.publish_level='organization' and dam.organization_id=#{organizationId})
+        <include refid="sqlparam"/>
+    </select>
+
+</mapper>

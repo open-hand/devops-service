@@ -1,0 +1,78 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    username: choerodon
+    password: choerodon
+  cloud:
+      stream:
+        kafka:
+          binder:
+            brokers: 127.0.0.1:9092
+            zkNodes: 127.0.0.1:2181
+        default-binder: kafka
+  sleuth:
+      integration:
+        enabled: false
+      scheduled:
+        enabled: false
+      sampler:
+        percentage: 1.0
+  redis:
+    host: localhost
+services:
+  harbor:
+    baseUrl: "harbor.example.com"
+    username: "123456"
+    password: "123456"
+  gitlab:
+    url: "gitlab.example.com"
+    password: 123456
+    projectLimit: 100
+  helm:
+    url: "helm.example.com"
+choerodon:
+  event:
+    consumer:
+      enabled: true # 是否开启，不设置默认开启
+      queue-type: kafka # 消息队列类型
+      enable-duplicate-remove: true # 是否开启去重
+      failed-strategy: nothin # 失败策略。支持nothing(什么都不做), send_back_event_store(回传到event store)两种
+      retry:
+        enabled: true # 是否开启重试功能
+      kafka:
+        bootstrap-servers: localhost:9092 # kafka地址
+  websocket:
+    max-redis-msg-listener-concurrency: 500
+    security: false
+agent:
+  version: "0.5.0.RELEASE"
+  serviceUrl: "agent.example.com"
+eureka:
+  instance:
+    preferIpAddress: true
+    leaseRenewalIntervalInSeconds: 1
+    leaseExpirationDurationInSeconds: 3
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8000/eureka/
+    registryFetchIntervalSeconds: 1
+security:
+  basic:
+      enabled: false
+  ignored: /ci,/v2/api-docs,/agent/**,/ws/**
+mybatis:
+  mapperLocations: classpath*:/mapper/*.xml
+  configuration:
+    mapUnderscoreToCamelCase: true
+feign:
+  hystrix:
+    shareSecurityContext: true
+    command:
+      default:
+        execution:
+          isolation:
+            thread:
+              timeoutInMilliseconds: 30000
+ribbon:
+  ConnectTimeout: 50000
+  ReadTimeout: 50000

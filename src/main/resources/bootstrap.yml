@@ -1,0 +1,16 @@
+server:
+  port: 8060
+spring:
+  application:
+    name: devops-service
+  cloud:
+    config:
+      failFast: true
+      retry:
+        maxAttempts: 6
+        multiplier: 1.5
+        maxInterval: 2000
+      uri: localhost:8010
+      enabled: false
+management:
+  port: 8061

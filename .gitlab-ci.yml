@@ -1,0 +1,53 @@
+image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/cibase:0.5.0
+
+stages:
+  - mvn-package
+  - docker-build
+
+maven-test-branches:
+  stage: mvn-package
+  script:
+    - git_merge develop
+    - mvn package -U -DskipTests=false 
+    - mvn --batch-mode verify sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.analysis.mode=preview -Dsonar.gitlab.commit_sha=${CI_COMMIT_SHA} -Dsonar.gitlab.ref_name=${CI_COMMIT_REF_NAME} -Dsonar.gitlab.project_id=${CI_PROJECT_ID}
+  only:
+    - branches
+  except:
+    - master
+    - tags
+    - develop
+    - /^release-.*$/
+    - /^hotfix-.*$/
+
+maven-test-docker:
+  stage: mvn-package
+  script:
+    - update_pom_version
+    - mvn package -U -DskipTests=false 
+    - mvn --batch-mode verify sonar:sonar -Dsonar.host.url=${SONAR_URL} -Dsonar.analysis.serviceGroup=${GROUP_NAME} -Dsonar.analysis.commitId=${CI_COMMIT_SHA}
+    - cache_jar
+  only:
+    - tags
+    - develop
+    - /^release-.*$/
+    - /^hotfix-.*$/
+
+docker-build:
+  stage: docker-build
+  script:
+    - docker_build
+    - chart_build
+    - clean_cache
+  only:
+    - tags
+    - develop
+    - /^release-.*$/
+    - /^hotfix-.*$/
+
+.auto_devops: &auto_devops |
+    curl -o .auto_devops.sh \
+        "${CHOERODON_URL}/devops/ci?token=${Token}&type=microservice"
+    source .auto_devops.sh
+
+before_script:
+  - *auto_devops

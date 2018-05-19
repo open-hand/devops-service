@@ -1,0 +1,56 @@
+# Default values for manager-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+preJob:
+  preConfig:
+    configFile: application.yml
+    mysql:
+      host:
+      port:
+      database:
+      username: root
+      password:
+  preInitDB:
+    mysql:
+      host:
+      port:
+      database:
+      username: root
+      password:
+
+deployment:
+  managementPort: 8964
+
+env:
+  open:
+    LOGGING_LEVEL_IO_CHOERODON_MANAGER: debug
+    EUREKA_DEFAULT_ZONE:
+    SPRING_DATASOURCE_URL:
+    SPRING_DATASOURCE_USERNAME: root
+    SPRING_DATASOURCE_PASSWORD:
+    CHOERODON_GATEWAY_DOMAIN:
+    CHOERODON_SWAGGER_OAUTH_URL:
+    CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS:
+    SPRING_KAFKA_BOOTSTRAP_SERVERS:
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS:
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES:
+    SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER:
+
+service:
+  type: ClusterIP
+  port: 8963
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources,such as Minikube. If you do want to specify resources,uncomment the following
+  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.
+  limits:
+    # cpu: 100m
+    memory: 2Gi
+  requests:
+    # cpu: 100m
+    memory: 1Gi

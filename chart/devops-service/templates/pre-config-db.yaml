@@ -1,0 +1,43 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-init-db
+  labels:
+{{ include "service.labels.standard" . | indent 4 }}
+  annotations:
+    "helm.sh/hook": pre-install,pre-upgrade
+    "helm.sh/hook-weight": "1"
+spec:
+  backoffLimit: 1
+  activeDeadlineSeconds: 120
+  template:
+    metadata:
+      name: {{ .Release.Name }}-init-db
+    spec:
+      initContainers:
+      - command:
+        - sh
+        - -c
+        - cp -rf /var/choerodon/* /tools
+        image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.0
+        imagePullPolicy: Always
+        name: tools
+        volumeMounts:
+        - mountPath: /tools
+          name: tools-jar
+      containers:
+      - name: {{ .Release.Name }}-init-db
+        image: "{{ .Values.image.repository }}:{{ .Chart.Version }}"
+        command:
+        - /bin/sh
+        - -c
+        - '
+          java -Dspring.datasource.url="jdbc:mysql://{{ .Values.preJob.preInitDB.mysql.host }}:{{ .Values.preJob.preInitDB.mysql.port }}/{{ .Values.preJob.preInitDB.mysql.database }}?useUnicode=true&characterEncoding=utf-8&useSSL=false" -Dspring.datasource.username={{ .Values.preJob.preInitDB.mysql.username }} -Dspring.datasource.password={{ .Values.preJob.preInitDB.mysql.password }} -Ddata.init=true -Ddata.jar=/app.jar -jar /var/choerodon/choerodon-tool-liquibase.jar;
+          '
+        volumeMounts:
+        - mountPath: /var/choerodon
+          name: tools-jar
+      restartPolicy: Never
+      volumes:
+      - emptyDir: {}
+        name: tools-jar

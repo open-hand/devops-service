@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvPodContainerMapper">
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.containerName != null and searchParam.containerName.size > 0'>
+                AND
+                <foreach collection="searchParam.containerName" item="containerName" open="(" separator=" OR "
+                         close=")">
+                    depc.container_name LIKE CONCAT(CONCAT('%', #{containerName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND depc.container_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+        </if>
+    </sql>
+
+    <select id="listContainer" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO">
+        SELECT
+        depc.id,
+        depc.pod_id podId,
+        depc.container_name containerName
+        FROM
+        devops_env_pod_container depc
+        JOIN devops_env_pod dep ON dep.id = depc.pod_id
+        WHERE
+        pod_id = #{podId}
+        <include refid="sqlparam"/>
+    </select>
+</mapper>

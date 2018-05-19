@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvResourceMapper">
+    <select id="listJobByInstanceId" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+        SELECT
+        *
+        FROM devops_env_resource dir where dir.app_instance_id = #{instanceId} and dir.kind = "Job"
+        ORDER BY dir.weight ASC
+    </select>
+
+
+    <select id="queryByInstanceIdAndKindAndName"
+            resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+        SELECT
+        *
+        FROM devops_env_resource dir where 1=1
+        <if test="instanceId != null">
+            AND dir.app_instance_id = #{instanceId}
+        </if>
+        <if test="kind != null">
+            AND dir.kind = #{kind}
+        </if>
+        <if test="name != null">
+            AND dir.name = #{name}
+        </if>
+    </select>
+
+</mapper>

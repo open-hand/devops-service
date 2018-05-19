@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper">
+
+    <select id="queryByObject" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+        SELECT
+        d.*
+        FROM
+        devops_env_command d
+        WHERE
+        d.object = #{objectType} and d.object_id = #{objectId}
+        ORDER BY d.id DESC LIMIT 1
+    </select>
+</mapper>

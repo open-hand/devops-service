@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationVersionMapper">
+    <select id="listApplicationVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT
+        dav.id,
+        dav.version,
+        dav.commit,
+        da.code appCode,
+        da.name appName,
+        da.is_active appStatus,
+        da.id appId,
+        dav.creation_date
+        FROM devops_application da
+        RIGHT JOIN devops_app_version dav ON da.id = dav.app_id
+        WHERE da.project_id = #{projectId}
+        <if test='appId != null'>
+            AND da.id= #{appId}
+        </if>
+        <if test='searchParam != null'>
+            <if test='searchParam.appCode != null and searchParam.appCode.size > 0'>
+                AND
+                <foreach collection="searchParam.appCode" item="appCode" open="(" separator=" OR " close=")">
+                    da.code LIKE CONCAT(CONCAT('%', #{appCode, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
+                AND
+                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
+                    da.name LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.version != null and searchParam.version.size > 0'>
+                AND
+                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
+    </select>
+
+    <select id="listAppLatestVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO">
+        SELECT
+        dap.version,
+        dap.id versionId,
+        lv.app_id
+        FROM
+        devops_app_version dap
+        JOIN (
+        SELECT
+        MAX( dappv.id ) id,
+        dappv.app_id
+        FROM
+        devops_app_version dappv
+        GROUP BY
+        dappv.app_id
+        ) lv ON lv.id = dap.id
+        JOIN devops_application da ON lv.app_id = da.id
+        <if test="projectId != null">
+            WHERE
+            da.project_id = #{projectId};
+        </if>
+    </select>
+
+    <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT
+        dav.id,
+        dav.version
+        FROM
+        devops_application da,
+        devops_app_instance dai,
+        devops_env de,
+        devops_app_version dav
+        WHERE
+        da.id = dai.app_id
+        AND de.id = dai.env_id
+        AND dai.`status` = 'running'
+        AND dai.app_version_id = dav.id
+        AND da.project_id = #{projectId}
+        AND de.id = #{envId}
+        AND da.id = #{appId}
+        GROUP BY
+        dav.version
+    </select>
+
+    <select id="queryValue" resultType="java.lang.String">
+        SELECT
+        davv.value
+        FROM
+        devops_app_version dav,
+        devops_app_version_value davv
+        WHERE
+        dav.value_id = davv.id
+        AND dav.id = #{versionId}
+    </select>
+
+    <select id="selectByAppId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT
+        dav.id,
+        dav.version
+        FROM
+        devops_app_version dav
+        WHERE
+        1 = 1
+        AND dav.app_id = #{appId}
+        ORDER BY
+        dav.id DESC
+    </select>
+
+    <select id="getAllPublishedVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        select
+        dav.id,
+        dav.version,
+        dav.creation_date
+        from devops_app_version dav
+        where dav.app_id=#{applicationId}
+        and dav.is_publish=1
+    </select>
+
+</mapper>

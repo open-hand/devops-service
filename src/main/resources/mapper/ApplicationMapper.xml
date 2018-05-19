@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationMapper">
+    <select id="list" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+        da.id,
+        da.project_id,
+        da.name,
+        da.code,
+        da.is_active,
+        da.is_synchro,
+        da.gitlab_project_id,
+        da.app_template_id,
+        da.uuid
+        FROM devops_application da
+        where da.project_id = #{projectId}
+        <include refid="sqlparam"/>
+    </select>
+
+    <select id="listByEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+        da.id,
+        da.`code`,
+        da.`name`
+        FROM
+        devops_application da,
+        devops_app_instance dai,
+        devops_env de
+        WHERE
+        da.id = dai.app_id
+        AND de.id = dai.env_id
+        <choose>
+            <when test="status == 'running'">
+                AND dai.`status` = 'running'
+            </when>
+            <when test="status == 'nodeleted'">
+                AND dai.`status` != 'deleted'
+            </when>
+        </choose>
+        AND da.project_id = #{projectId}
+        AND de.id = #{envId}
+        GROUP BY
+        da.`code`
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.code != null and searchParam.code.size > 0'>
+                AND
+                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
+                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.active != null and searchParam.active.size > 0'>
+                AND
+                <foreach collection="searchParam.active" item="active" open="(" separator=" OR " close=")">
+                    <if test='active!=-1'>
+                        da.is_active = #{active,jdbcType=TINYINT}
+                        <if test='active==1'>
+                            and da.is_synchro = 1
+                        </if>
+                    </if>
+                    <if test='active==-1'>
+                        da.is_synchro = 0
+                    </if>
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
+    <select id="listByActiveAndPubAndVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+        da.`id`,
+        da.`code`,
+        da.`name`
+        FROM
+        devops_application da
+        WHERE
+        da.project_id = #{projectId}
+        AND da.is_active = #{active}
+        AND ((select count(1) from devops_app_market dam where da.id=dam.app_id)=0)
+        AND ((select count(1) from devops_app_version dav where da.id=dav.app_id)>0)
+    </select>
+
+    <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+        da.id,
+        da.project_id,
+        da.name,
+        da.code,
+        da.is_active,
+        da.is_synchro,
+        da.gitlab_project_id,
+        da.app_template_id,
+        da.uuid,
+        da.token,
+        da.object_version_number
+        FROM
+        devops_application da
+        WHERE
+        da.token = #{token}
+    </select>
+</mapper>

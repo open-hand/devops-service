@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvPodMapper">
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
+                AND
+                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
+                    da.`name` LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    dp.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.appVersion != null and searchParam.appVersion.size > 0'>
+                AND
+                <foreach collection="searchParam.appVersion" item="appVersion" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{appVersion, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.ip != null and searchParam.ip.size > 0'>
+                AND
+                <foreach collection="searchParam.ip" item="ip" open="(" separator=" OR " close=")">
+                    dp.ip LIKE CONCAT(CONCAT('%', #{ip, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.ready != null and searchParam.ready.size > 0'>
+                AND dp.is_ready IN
+                <foreach collection="searchParam.ready" item="ready" open="(" separator="," close=")">
+                    #{ready}
+                </foreach>
+            </if>
+            <if test='searchParam.instanceCode != null and searchParam.instanceCode.size > 0'>
+                AND
+                <foreach collection="searchParam.instanceCode" item="instanceCode" open="(" separator=" OR " close=")">
+                    dai.`code` LIKE CONCAT(CONCAT('%', #{instanceCode, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
+                AND
+                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
+                    de.`code` LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+                AND
+                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
+                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (da.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dp.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dp.ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dp.is_ready LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dai.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
+    </sql>
+
+    <select id="listAppPod" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvPodDO">
+        SELECT
+        dp.id,
+        dp.ip,
+        dp.`name`,
+        dp.namespace namespace,
+        dp.is_ready,
+        dp.`status`,
+        dp.creation_date,
+        da.`name` appName,
+        dav.version appVersion,
+        dai.`code` instanceCode,
+        de.`code` envCode,
+        de.`name` envName,
+        dp.object_version_number
+        FROM
+        devops_env_pod dp,
+        devops_app_instance dai,
+        devops_app_version dav,
+        devops_application da,
+        devops_env de
+        WHERE
+        dp.app_instance_id = dai.id
+        AND dai.app_version_id = dav.id
+        AND dav.app_id = da.id
+        AND de.id = dai.env_id
+        AND da.project_id = #{projectId}
+        <include refid="sqlparam"/>
+    </select>
+</mapper>

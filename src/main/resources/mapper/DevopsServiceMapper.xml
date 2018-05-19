@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsServiceMapper">
+    <select id="selectCountByOptions" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        devops_service ds,
+        devops_application da
+        WHERE
+        ds.app_id = da.id
+        AND ds.`name` = #{name}
+        AND da.project_id = #{projectId}
+        AND ds.env_id = #{envId}
+        AND ds.`status` != 'deleted'
+    </select>
+
+    <select id="selectCountByName" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        (
+        SELECT DISTINCT
+        ds.id
+        FROM
+        (
+        SELECT
+        ds.*
+        FROM
+        devops_service ds,
+        devops_application da
+        WHERE
+        ds.app_id = da.id
+        AND da.project_id = #{projectId}
+        AND ds.`status` != 'deleted'
+        ) ds
+        INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
+        INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        INNER JOIN devops_application da ON da.id = dai.app_id
+        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
+        INNER JOIN devops_env de ON ds.env_id = de.id
+        <include refid="sqlparam"/>
+        ) t
+    </select>
+
+    <select id="listDevopsService" resultType="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
+        SELECT
+        ds.id,
+        ds.`name`
+        FROM
+        devops_service ds
+        WHERE ds.`status` != 'deleted'
+        <if test="envId != null">
+            AND ds.env_id = #{envId}
+        </if>
+    </select>
+
+    <select id="listDevopsServiceByPage" resultMap="devopsServiceResult">
+        SELECT
+        ds.id,
+        ds.`name`,
+        ds.external_ip,
+        ds.port,
+        ds.`status`,
+        da.id AS app_id,
+        da.`name` AS app_name,
+        de.id AS env_id,
+        de.`name` AS env_name,
+        de.namespace AS namespace,
+        dav.id AS app_version_id,
+        dav.version AS version,
+        dsai.app_instance_id AS app_instance_id,
+        dsai.`code` AS code,
+        dai.`status` AS intance_status
+        FROM
+        (
+        SELECT
+        ds.*
+        FROM
+        devops_service ds,
+        devops_application da
+        WHERE
+        ds.app_id = da.id
+        AND da.project_id = #{projectId}
+        AND ds.`status` != 'deleted'
+        <if test="start != null and  size != null">
+            LIMIT #{start}, #{size}
+        </if>
+        ) ds
+        INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
+        INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        INNER JOIN devops_application da ON da.id = dai.app_id
+        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
+        INNER JOIN devops_env de ON ds.env_id = de.id
+        <include refid="sqlparam"/>
+    </select>
+
+    <select id="selectById" resultMap="devopsServiceResult">
+        SELECT
+        ds.id,
+        ds.`name`,
+        ds.external_ip,
+        ds. port,
+        ds.`status`,
+        da.id AS app_id,
+        da.`name` AS app_name,
+        de.id AS env_id,
+        de.`name` AS env_name,
+        dav.id AS app_version_id,
+        dav.version AS version,
+        dsai.app_instance_id AS app_instance_id,
+        dsai.`code` AS code,
+        dai.`status` AS intance_status
+        FROM
+        devops_service ds
+        INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
+        INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        INNER JOIN devops_application da ON da.id = dai.app_id
+        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
+        INNER JOIN devops_env de ON ds.env_id = de.id
+        WHERE
+        ds.id = #{id}
+        AND ds.`status` != 'deleted'
+    </select>
+
+    <select id="selectDeployedEnv" resultType="java.lang.Long">
+        SELECT DISTINCT
+        env_id
+        FROM
+        devops_service
+        WHERE
+        `status` = "running";
+    </select>
+
+    <resultMap id="devopsServiceResult" type="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="externalIp" column="external_ip"/>
+        <result property="port" column="port"/>
+        <result property="targetPort" column="target_port"/>
+        <result property="status" column="status"/>
+        <result property="appId" column="app_id"/>
+        <result property="appName" column="app_name"/>
+        <result property="envId" column="env_id"/>
+        <result property="envName" column="env_name"/>
+        <result property="namespace" column="namespace"/>
+        <collection property="appVersion" ofType="io.choerodon.devops.infra.dataobject.ServiceVersionDO">
+            <result column="app_version_id" property="id" jdbcType="VARCHAR"/>
+            <result column="version" property="version" jdbcType="VARCHAR"/>
+            <collection property="appInstance" ofType="io.choerodon.devops.infra.dataobject.ServiceInstanceDO">
+                <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
+                <result column="code" property="code" jdbcType="VARCHAR"/>
+                <result column="intance_status" property="intanceStatus" jdbcType="VARCHAR"/>
+            </collection>
+        </collection>
+    </resultMap>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    ds.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
+                AND
+                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
+                    da.`name` LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+                AND
+                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
+                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
+                AND
+                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
+                    de.code LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.externalIp != null and searchParam.externalIp.size > 0'>
+                AND
+                <foreach collection="searchParam.externalIp" item="externalIp" open="(" separator=" OR " close=")">
+                    ds.external_ip LIKE CONCAT(CONCAT('%', #{externalIp, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.targetPort != null and searchParam.targetPort.size > 0'>
+                AND
+                <foreach collection="searchParam.targetPort" item="targetPort" open="(" separator=" OR " close=")">
+                    ds.target_port LIKE CONCAT(CONCAT('%', #{targetPort, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.version != null and searchParam.version.size > 0'>
+                AND
+                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.code != null and searchParam.code.size > 0'>
+                AND
+                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
+                    dsai.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (ds.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR ds.target_port LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dsai.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
+    </sql>
+</mapper>

@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.ApplicationInstanceMapper">
+    <select id="listApplicationInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+        SELECT
+        dai.id id,
+        dai.`code` code,
+        da.id appId,
+        da.`name` appName,
+        dav.version appVersion,
+        dav.id appVersionId,
+        de.id envId,
+        dai.status status,
+        de.`code` envCode,
+        de.`name` envName,
+        (
+        SELECT
+        count(1)
+        FROM
+        devops_env_pod dp
+        WHERE
+        dp.app_instance_id = dai.id
+        ) podCount,
+        (
+        SELECT
+        count(1)
+        FROM
+        devops_env_pod dp
+        WHERE
+        dp.app_instance_id = dai.id
+        AND dp.`status` = 'Running'
+        AND dp.is_ready = TRUE
+        ) podRunningCount,
+        dai.object_version_number,
+        cmd.`status` commandStatus,
+        cmd.command_type commandType,
+        cmd.error error
+        FROM
+        devops_app_instance dai
+        JOIN devops_app_version dav ON dai.app_version_id = dav.id
+        JOIN devops_env de ON dai.env_id = de.id
+        JOIN devops_application da ON da.id = dav.app_id
+        JOIN devops_env_command cmd ON cmd.object_id = dai.id
+        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY  decmd.object,decmd.object_id ) mcmd ON mcmd.id =
+        cmd.id
+        WHERE da.project_id = #{projectId}
+        AND dai.`status` != 'deleted'
+        <include refid="sqlparam"/>
+        ORDER BY dai.id DESC
+    </select>
+
+    <select id="listApplicationInstanceCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+        SELECT
+        dai.id id,
+        dai.`code` CODE
+        FROM
+        devops_app_instance dai,
+        devops_application da
+        WHERE
+        dai.app_id = da.id
+        AND dai.`status` = 'running'
+        AND da.project_id = #{projectId}
+        <if test="envId != null">
+            AND dai.env_id = #{envId}
+        </if>
+        <if test="versionId != null">
+            AND dai.app_version_id = #{versionId}
+        </if>
+        <if test="appId != null">
+            AND dai.app_id = #{appId}
+        </if>
+        ORDER BY
+        dai.id DESC
+    </select>
+
+
+
+    <select id="checkOptions" resultType="java.lang.Integer">
+        SELECT
+        COUNT(1)
+        FROM
+        devops_app_instance dai
+        WHERE
+        1 = 1
+        AND dai.app_id = #{appId}
+        AND dai.env_id = #{envId}
+        AND dai.status = 'running'
+        <if test="appVersionId != null">
+            AND dai.app_version_id = #{appVersionId}
+        </if>
+        <if test="appInstanceId != null">
+            AND dai.id = #{appInstanceId}
+        </if>
+    </select>
+
+    <select id="queryValueByEnvIdAndAppId" resultType="java.lang.String">
+        SELECT
+        dv.
+        VALUE
+
+        FROM
+        (
+        SELECT
+        dai.id instance_id,
+        de.id command_id,
+        de.value_id value_id
+        FROM
+        devops_env_command de,
+        devops_app_instance dai
+        WHERE
+        de.object_id = dai.id
+        AND dai.app_id = #{appId}
+        AND dai.env_id = #{envId}
+        ORDER BY
+        de.creation_date DESC
+        LIMIT 1
+        ) r,
+        devops_env_command_value dv
+        WHERE
+        r.value_id = dv.id
+    </select>
+
+    <sql id="sqlparam">
+        <if test="envId != null">
+            AND de.id = #{envId}
+        </if>
+        <if test="versionId != null">
+            AND dav.id = #{versionId}
+        </if>
+        <if test="appId != null">
+            AND da.id = #{appId}
+        </if>
+        <if test='searchParam != null'>
+            <if test='searchParam.code != null and searchParam.code.size > 0'>
+                AND
+                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
+                    dai.`code` LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    da.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.version != null and searchParam.version.size > 0'>
+                AND
+                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.status != null and searchParam.status.size > 0'>
+                AND
+                <foreach collection="searchParam.status" item="status" open="(" separator=" OR " close=")">
+                    dai.status LIKE CONCAT(CONCAT('%', #{status, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
+                AND
+                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
+                    de.`code` LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+                AND
+                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
+                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.podCount != null and searchParam.podCount.size > 0'>
+                AND
+                <foreach collection="searchParam.podCount" item="podCount" open="(" separator=" OR " close=")">
+                    (
+                    SELECT
+                    count(1)
+                    FROM
+                    devops_env_pod dp
+                    WHERE
+                    dp.app_instance_id = dai.id
+                    ) = #{podCount, jdbcType=BIGINT}
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dai.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dai.status LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
+    </sql>
+
+
+    <select id="listApplicationInstances" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstancesDO">
+        SELECT
+        da.id appId,
+        da.`code` appCode,
+        da.`name` appName,
+        dav.id versionId,
+        dai.id instanceId,
+        dai.status instanceStatus,
+        dai.`code` instanceCode,
+        dav.version version,
+        dav.creation_date versionCreationDate,
+        de.id envId
+        FROM
+        devops_application da
+        JOIN devops_app_version dav ON dav.app_id = da.id
+        JOIN devops_app_instance dai ON dai.app_version_id = dav.id
+        JOIN devops_env de ON de.id = dai.env_id
+        WHERE
+        da.project_id = #{projectId}
+        <if test="appId != null">
+            AND da.id = #{appId}
+        </if>
+        AND dai.status != 'deleted'
+        ORDER BY
+        da.last_update_date DESC,
+        de.sequence ASC,
+        dav.creation_date DESC,
+        dai.last_update_date DESC;
+    </select>
+
+
+</mapper>
