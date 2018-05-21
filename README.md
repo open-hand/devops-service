@@ -38,3 +38,9 @@ Integrated several open source tools to automate the process of `planning`, `cod
 - config-server：Configure server
 - kafka
 - mysql: devops_service database
+
+## Reporting Issues
+If you find any shortcomings or bugs, please describe them in the Issue.
+
+## How to Contribute
+Pull requests are welcome! [Follow](https://github.com/choerodon/choerodon/blob/master/CONTRIBUTING.md) to know for more information on how to contribute.
