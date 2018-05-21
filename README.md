@@ -18,6 +18,8 @@ Integrated several open source tools to automate the process of `planning`, `cod
 - [Iam Service](https://github.com/choerodon/iam-service)
 - [Harbor](https://vmware.github.io/harbor/cn/)
 - [kubenetes](https://kubernetes.io/)
+- [Mysql](https://www.mysql.com)
+- [KAFKA](https://kafka.apache.org)
 
 ## Installation and Getting Started
 1. init database
