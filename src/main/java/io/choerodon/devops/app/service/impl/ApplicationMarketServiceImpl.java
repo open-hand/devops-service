@@ -53,13 +53,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     @Override
     public void release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO,MultipartFile file) {
-        List<ApplicationVersionRepDTO> appVersions = applicationReleasingDTO.getAppVersions();
-        if (appVersions != null && !appVersions.isEmpty()) {
-            List<Long> ids = new ArrayList<>();
-            for (ApplicationVersionRepDTO appVersion : appVersions) {
-                ids.add(appVersion.getId());
+        if(applicationReleasingDTO!=null){
+            List<ApplicationVersionRepDTO> appVersions = applicationReleasingDTO.getAppVersions();
+            if (appVersions != null && !appVersions.isEmpty()) {
+                List<Long> ids = new ArrayList<>();
+                for (ApplicationVersionRepDTO appVersion : appVersions) {
+                    ids.add(appVersion.getId());
+                }
+                applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
             }
-            applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
         }
 
         String imgUrl = "www.default.com";
@@ -73,8 +75,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationMarketE.initApplicationEById(applicationReleasingDTO.getAppId());
         applicationMarketE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
         applicationMarketE.setImgUrl(imgUrl);
+        applicationMarketE.setActive(true);
         applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
         applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
+        applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
         applicationMarketRepository.create(applicationMarketE);
     }
 

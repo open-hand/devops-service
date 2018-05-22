@@ -27,6 +27,7 @@ public class DevopsAppMarketDO extends AuditDomain {
     private String category;
     private String imgUrl;
     private String publishLevel;
+    private Boolean isActive;
 
     @Transient
     private String name;
@@ -115,6 +116,14 @@ public class DevopsAppMarketDO extends AuditDomain {
 
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
     }
 
     public List<ApplicationVersionDO> getApplicationVersionDOList() {
