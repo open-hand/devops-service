@@ -8,6 +8,7 @@ public class ApplicationInstanceDTO {
     private Long id;
     private Long appId;
     private Long envId;
+    private String publishLevel;
     private Long appVersionId;
     private String code;
     private String appName;
@@ -144,6 +145,14 @@ public class ApplicationInstanceDTO {
 
     public String getError() {
         return error;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 
     public void setError(String error) {

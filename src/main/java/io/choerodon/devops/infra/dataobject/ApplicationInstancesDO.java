@@ -10,6 +10,7 @@ import java.util.Date;
  */
 public class ApplicationInstancesDO {
     private Long appId;
+    private String publishLevel;
     private String appCode;
     private String appName;
     private Long versionId;
@@ -102,5 +103,13 @@ public class ApplicationInstancesDO {
 
     public void setInstanceStatus(String instanceStatus) {
         this.instanceStatus = instanceStatus;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }

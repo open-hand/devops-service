@@ -84,22 +84,25 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             if (appInstancesListMap.get(t.getAppId()) == null) {
                 instancesDTO = new ApplicationInstancesDTO(
                         t.getAppId(),
+                        t.getPublishLevel(),
                         t.getAppName(),
                         t.getAppCode(),
                         latestVersionList.get(t.getAppId()).getVersionId(),
                         latestVersionList.get(t.getAppId()).getVersion());
-                addAppInstance(instancesDTO, t);
+                if (t.getInstanceId() != null) {
+                    addAppInstance(instancesDTO, t);
+                }
                 appInstancesListMap.put(t.getAppId(), appInstancesList.size());
                 appInstancesList.add(instancesDTO);
             } else {
                 instancesDTO = appInstancesList.get(appInstancesListMap.get(t.getAppId()));
-                if (instancesDTO.getApplicationLatestVersionId().equals(t.getVersionId())) {
+                if (instancesDTO.getLatestVersionId().equals(t.getVersionId())) {
                     instancesDTO.appendInstances(new EnvInstancesDTO(
                             t.getInstanceId(), t.getInstanceCode(), t.getInstanceStatus()));
                 }
                 addInstanceIfNotExist(instancesDTO, t);
             }
-            if (t.getVersion().equalsIgnoreCase(instancesDTO.getApplicationLatestVersion())) {
+            if (t.getVersion().equalsIgnoreCase(instancesDTO.getLatestVersion()) && t.getInstanceId() != null) {
                 instancesDTO.addLatestVersionRunning();
             }
         });
@@ -116,7 +119,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         EnvInstanceDTO envInstanceDTO = new EnvInstanceDTO(instancesDO.getEnvId());
         envInstanceDTO.addEnvVersionDTOS(envVersionDTO);
         instancesDTO.appendEnvInstanceDTOS(envInstanceDTO);
-        if (instancesDTO.getApplicationLatestVersionId().equals(instancesDO.getVersionId())) {
+        if (instancesDTO.getLatestVersionId().equals(instancesDO.getVersionId())) {
             instancesDTO.appendInstances(new EnvInstancesDTO(
                     instancesDO.getInstanceId(), instancesDO.getInstanceCode(), instancesDO.getInstanceStatus()));
         }
@@ -125,7 +128,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private void addInstanceIfNotExist(ApplicationInstancesDTO instancesDTO,
                                        ApplicationInstancesDO instancesDO) {
         EnvInstanceDTO envInstanceDTO = instancesDTO.queryLastEnvInstanceDTO();
-        if (instancesDTO.getApplicationLatestVersionId().equals(instancesDO.getVersionId())) {
+        if (instancesDTO.getLatestVersionId().equals(instancesDO.getVersionId())) {
             instancesDTO.appendInstances(new EnvInstancesDTO(
                     instancesDO.getInstanceId(), instancesDO.getInstanceCode(), instancesDO.getInstanceStatus()));
         }

@@ -6,6 +6,7 @@
         SELECT
         dai.id id,
         dai.`code` code,
+        dam.publish_level publishLevel,
         da.id appId,
         da.`name` appName,
         dav.version appVersion,
@@ -44,6 +45,8 @@
         JOIN devops_env_command cmd ON cmd.object_id = dai.id
         JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY  decmd.object,decmd.object_id ) mcmd ON mcmd.id =
         cmd.id
+        LEFT JOIN devops_app_market dam ON dam.publish_level = 'public'
+        OR ( dam.app_id = da.id AND dam.publish_level = 'organization' )
         WHERE da.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
@@ -196,6 +199,7 @@
     <select id="listApplicationInstances" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstancesDO">
         SELECT
         da.id appId,
+        dam.publish_level publishLevel,
         da.`code` appCode,
         da.`name` appName,
         dav.id versionId,
@@ -208,14 +212,16 @@
         FROM
         devops_application da
         JOIN devops_app_version dav ON dav.app_id = da.id
-        JOIN devops_app_instance dai ON dai.app_version_id = dav.id
-        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_app_instance dai ON dai.app_version_id = dav.id
+        AND dai.status != 'deleted'
+        LEFT JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_app_market dam ON dam.publish_level = 'public'
+        OR ( dam.app_id = da.id AND dam.publish_level = 'organization' )
         WHERE
         da.project_id = #{projectId}
         <if test="appId != null">
             AND da.id = #{appId}
         </if>
-        AND dai.status != 'deleted'
         ORDER BY
         da.last_update_date DESC,
         de.sequence ASC,
