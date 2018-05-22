@@ -24,6 +24,7 @@ public class DevopsAppMarketDO extends AuditDomain {
     private Long appId;
     private String contributor;
     private String description;
+    private String category;
     private String imgUrl;
     private String publishLevel;
 
@@ -106,6 +107,14 @@ public class DevopsAppMarketDO extends AuditDomain {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public List<ApplicationVersionDO> getApplicationVersionDOList() {

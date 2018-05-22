@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -14,7 +16,7 @@ public interface ApplicationMarketService {
      *
      * @param applicationReleaseDTO 发布应用的信息
      */
-    void release(Long projectId, ApplicationReleasingDTO applicationReleaseDTO);
+    void release(Long projectId, ApplicationReleasingDTO applicationReleaseDTO,MultipartFile multipartFile);
 
     /**
      * 项目下查询所有发布在应用市场的应用
