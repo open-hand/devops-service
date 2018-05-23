@@ -185,7 +185,7 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-socket-helper</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>0.5.2.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
