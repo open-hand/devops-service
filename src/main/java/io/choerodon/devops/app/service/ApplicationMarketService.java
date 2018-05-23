@@ -13,10 +13,12 @@ public interface ApplicationMarketService {
 
     /**
      * 项目下发布应用
+     *@Param projectId
      *
      * @param applicationReleaseDTO 发布应用的信息
+     * @return integer
      */
-    void release(Long projectId, ApplicationReleasingDTO applicationReleaseDTO,MultipartFile multipartFile);
+    Long release(Long projectId, ApplicationReleasingDTO applicationReleaseDTO);
 
     /**
      * 项目下查询所有发布在应用市场的应用
@@ -38,4 +40,12 @@ public interface ApplicationMarketService {
      * @return list of ApplicationReleasingDTO
      */
     Page<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
+
+    /**
+     * 应用市场上传图片
+     * @param projectId
+     * @param appMarketId
+     * @param multipartFile
+     */
+    void uploadPic(Long projectId,Long appMarketId, MultipartFile multipartFile);
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -41,6 +42,7 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public Page<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
+        //TODO 排序
         Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
@@ -58,6 +60,7 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
+        //TODO 排序
         Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
@@ -71,5 +74,32 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
                     pageRequest, () -> applicationMarketMapper.listMarketApplication(projectIds, null, null));
         }
         return ConvertPageHelper.convertPage(applicationMarketQueryDOPage, ApplicationMarketE.class);
+    }
+
+
+    @Override
+    public int updateImgUrl(ApplicationMarketE applicationMarketE) {
+        DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationMarketE, DevopsAppMarketDO.class);
+        DevopsAppMarketDO appDo = applicationMarketMapper.selectByPrimaryKey(devopsAppMarketDO.getId());
+        if (appDo != null) {
+            Long objV = appDo.getObjectVersionNumber();
+            devopsAppMarketDO.setObjectVersionNumber(objV);
+        }
+        return applicationMarketMapper.updateByPrimaryKeySelective(devopsAppMarketDO);
+    }
+
+    @Override
+    public Boolean checkCanPub(Long appId) {
+
+        int selectCount = applicationMarketMapper.selectCountByAppId(appId);
+        if (selectCount > 0) {
+            throw new CommonException("error.app.market.check");
+        }
+        return true;
+    }
+
+    @Override
+    public Long getMarketIdByAppId(Long appId) {
+        return applicationMarketMapper.getMarketIdByAppId(appId);
     }
 }

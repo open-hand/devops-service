@@ -164,6 +164,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     public Boolean checkAppAndVersion(Long appId,List<Long> appVersionIds) {
         if(appId==null || appVersionIds.isEmpty()){
             throw new CommonException("error.app.version.check");
+
         }
 
         for(Long appVersionId:appVersionIds){

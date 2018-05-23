@@ -50,7 +50,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public void release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO, MultipartFile file) {
+    public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
 
         List<Long> ids = new ArrayList<>();
         if (applicationReleasingDTO != null) {
@@ -61,26 +61,20 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 }
             }
         }
+        applicationMarketRepository.checkCanPub(applicationReleasingDTO.getAppId());
         //校验应用和版本
         applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
         applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
 
-        String imgUrl = "www.default.com";
-        if (file != null) {
-            Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
-            String bakcetName = "devops-service";
-            imgUrl = fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
-        }
-
         ApplicationMarketE applicationMarketE = ApplicationMarketFactory.create();
         applicationMarketE.initApplicationEById(applicationReleasingDTO.getAppId());
         applicationMarketE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
-        applicationMarketE.setImgUrl(imgUrl);
         applicationMarketE.setActive(true);
         applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
         applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
         applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
         applicationMarketRepository.create(applicationMarketE);
+        return applicationMarketRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
     }
 
     @Override
@@ -107,6 +101,22 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             return getReleasingDTOs(applicationMarketEPage);
         }
         return null;
+    }
+
+    @Override
+    public void uploadPic(Long projectId, Long appMarketId, MultipartFile file) {
+        String imgUrl = "";
+        if (file != null) {
+            Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
+            String bakcetName = "devops-service";
+            imgUrl = fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
+        }
+        if(imgUrl!=null && !imgUrl.trim().equals("")){
+            ApplicationMarketE applicationMarketE = ApplicationMarketFactory.create();
+            applicationMarketE.setImgUrl(imgUrl);
+            applicationMarketE.setId(appMarketId);
+            applicationMarketRepository.updateImgUrl(applicationMarketE);
+        }
     }
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Page<ApplicationMarketE> applicationMarketEPage) {
