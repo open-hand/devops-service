@@ -80,20 +80,23 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Map<Long, Integer> appInstancesListMap = new HashMap<>();
         List<ApplicationInstancesDTO> appInstancesList = new ArrayList<>();
         instancesDOS.forEach(t -> {
-            ApplicationInstancesDTO instancesDTO;
+            ApplicationInstancesDTO instancesDTO = new ApplicationInstancesDTO();
             if (appInstancesListMap.get(t.getAppId()) == null) {
-                instancesDTO = new ApplicationInstancesDTO(
-                        t.getAppId(),
-                        t.getPublishLevel(),
-                        t.getAppName(),
-                        t.getAppCode(),
-                        latestVersionList.get(t.getAppId()).getVersionId(),
-                        latestVersionList.get(t.getAppId()).getVersion());
-                if (t.getInstanceId() != null) {
-                    addAppInstance(instancesDTO, t);
+                if (t.getInstanceId() != null
+                        || t.getVersionId().equals(latestVersionList.get(t.getAppId()).getVersionId())) {
+                    instancesDTO = new ApplicationInstancesDTO(
+                            t.getAppId(),
+                            t.getPublishLevel(),
+                            t.getAppName(),
+                            t.getAppCode(),
+                            latestVersionList.get(t.getAppId()).getVersionId(),
+                            latestVersionList.get(t.getAppId()).getVersion());
+                    if (t.getInstanceId() != null) {
+                        addAppInstance(instancesDTO, t);
+                    }
+                    appInstancesListMap.put(t.getAppId(), appInstancesList.size());
+                    appInstancesList.add(instancesDTO);
                 }
-                appInstancesListMap.put(t.getAppId(), appInstancesList.size());
-                appInstancesList.add(instancesDTO);
             } else {
                 instancesDTO = appInstancesList.get(appInstancesListMap.get(t.getAppId()));
                 if (instancesDTO.getLatestVersionId().equals(t.getVersionId())) {
@@ -102,7 +105,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 }
                 addInstanceIfNotExist(instancesDTO, t);
             }
-            if (t.getVersion().equalsIgnoreCase(instancesDTO.getLatestVersion()) && t.getInstanceId() != null) {
+            if (t.getInstanceId() != null
+                    && t.getVersion().equalsIgnoreCase(instancesDTO.getLatestVersion())) {
                 instancesDTO.addLatestVersionRunning();
             }
         });
