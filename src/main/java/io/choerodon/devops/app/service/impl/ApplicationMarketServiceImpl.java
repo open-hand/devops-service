@@ -53,6 +53,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     @Override
     public void release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO,MultipartFile file) {
+
         if(applicationReleasingDTO!=null){
             List<ApplicationVersionRepDTO> appVersions = applicationReleasingDTO.getAppVersions();
             if (appVersions != null && !appVersions.isEmpty()) {
@@ -96,8 +97,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             Long organizationId = projectE.getOrganization().getId();
             List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
             List<Long> projectIds = new ArrayList<>();
-            for (ProjectE project : projectEList) {
-                projectIds.add(project.getId());
+            if(projectEList!=null){
+                for (ProjectE project : projectEList) {
+                    projectIds.add(project.getId());
+                }
             }
             Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketApps(
                     projectIds, pageRequest, searchParam);
