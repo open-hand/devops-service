@@ -123,10 +123,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listByActive(Long projectId) {
-        ApplicationDO applicationDO = new ApplicationDO();
-        applicationDO.setProjectId(projectId);
-        applicationDO.setActive(true);
-        return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
+        return ConvertHelper.convertList(applicationMapper.listActive(projectId), ApplicationE.class);
     }
 
     @Override

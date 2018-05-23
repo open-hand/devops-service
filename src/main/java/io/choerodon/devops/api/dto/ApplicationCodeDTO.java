@@ -8,6 +8,7 @@ public class ApplicationCodeDTO {
     private Long id;
     private String name;
     private String code;
+    private String publishLevel;
 
     public Long getId() {
         return id;
@@ -31,5 +32,13 @@ public class ApplicationCodeDTO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }

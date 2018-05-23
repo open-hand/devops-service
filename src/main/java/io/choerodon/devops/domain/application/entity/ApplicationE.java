@@ -23,6 +23,7 @@ public class ApplicationE {
     private String groupName;
     private String uuid;
     private String token;
+    private String publishLevel;
 
     public ApplicationE() {
     }
@@ -160,5 +161,13 @@ public class ApplicationE {
 
     public void initSynchro(boolean synchro) {
         this.isSynchro = synchro;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }

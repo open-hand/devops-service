@@ -98,14 +98,6 @@ public class ApplicationController {
     /**
      * 项目下启用停用应用信息
      *
-     * @param projectId 项目id
-     * @param active    启用停用
-     * @return ApplicationRepDTO
-     */
-
-    /**
-     * 项目下启用停用应用信息
-     *
      * @param projectId     项目id
      * @param applicationId 应用id
      * @param active        启用停用
