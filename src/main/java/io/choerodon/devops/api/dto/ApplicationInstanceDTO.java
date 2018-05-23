@@ -9,6 +9,8 @@ public class ApplicationInstanceDTO {
     private Long appId;
     private Long envId;
     private String publishLevel;
+    private String contributor;
+    private String description;
     private Long appVersionId;
     private String code;
     private String appName;
@@ -157,5 +159,21 @@ public class ApplicationInstanceDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

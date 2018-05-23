@@ -13,6 +13,8 @@ public class ApplicationInstanceE {
     private Long id;
     private String code;
     private String publishLevel;
+    private String contributor;
+    private String description;
     private ApplicationE applicationE;
     private ApplicationVersionE applicationVersionE;
     private DevopsEnvironmentE devopsEnvironmentE;
@@ -158,5 +160,21 @@ public class ApplicationInstanceE {
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
