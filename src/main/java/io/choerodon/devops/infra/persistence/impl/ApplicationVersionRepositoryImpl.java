@@ -160,4 +160,19 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         return ConvertHelper.convertList(applicationVersionDOList, ApplicationVersionE.class);
     }
 
+    @Override
+    public Boolean checkAppAndVersion(Long appId,List<Long> appVersionIds) {
+        if(appId==null || appVersionIds.isEmpty()){
+            throw new CommonException("error.app.version.check");
+        }
+
+        for(Long appVersionId:appVersionIds){
+            int selectCount = applicationVersionMapper.selectCountByOptions(appId, appVersionId);
+            if (selectCount == 0) {
+                throw new CommonException("error.app.version.check");
+            }
+        }
+        return true;
+    }
+
 }

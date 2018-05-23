@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,13 +31,12 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
+    private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
+    private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private ApplicationVersionRepository applicationVersionRepository;
     private ApplicationMarketRepository applicationMarketRepository;
     private IamRepository iamRepository;
     private FileFeignClient fileFeignClient;
-
-    private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
-    private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
 
     /**
      * 构造函数
@@ -52,21 +50,23 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public void release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO,MultipartFile file) {
+    public void release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO, MultipartFile file) {
 
-        if(applicationReleasingDTO!=null){
+        List<Long> ids = new ArrayList<>();
+        if (applicationReleasingDTO != null) {
             List<ApplicationVersionRepDTO> appVersions = applicationReleasingDTO.getAppVersions();
             if (appVersions != null && !appVersions.isEmpty()) {
-                List<Long> ids = new ArrayList<>();
                 for (ApplicationVersionRepDTO appVersion : appVersions) {
                     ids.add(appVersion.getId());
                 }
-                applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
             }
         }
+        //校验应用和版本
+        applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
+        applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
 
         String imgUrl = "www.default.com";
-        if(file!=null){
+        if (file != null) {
             Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
             String bakcetName = "devops-service";
             imgUrl = fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
@@ -97,7 +97,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             Long organizationId = projectE.getOrganization().getId();
             List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
             List<Long> projectIds = new ArrayList<>();
-            if(projectEList!=null){
+            if (projectEList != null) {
                 for (ProjectE project : projectEList) {
                     projectIds.add(project.getId());
                 }

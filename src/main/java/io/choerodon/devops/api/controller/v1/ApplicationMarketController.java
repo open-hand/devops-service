@@ -46,10 +46,10 @@ public class ApplicationMarketController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable Long projectId,
             @ApiParam(value = "上传的图片", required = false)
-            @RequestPart(name = "file",required = false) MultipartFile multipartFile,
+            @RequestPart(name = "file", required = false) MultipartFile multipartFile,
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody(required = true) ApplicationReleasingDTO applicationReleaseDTO) {
-        applicationMarketService.release(projectId, applicationReleaseDTO,multipartFile);
+        applicationMarketService.release(projectId, applicationReleaseDTO, multipartFile);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

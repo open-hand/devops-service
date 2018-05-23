@@ -220,7 +220,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(),
                 DEVELOP, AccessLevel.DEVELOPER.toString(), AccessLevel.DEVELOPER.toString(),
                 gitlabProjectEventDTO.getUserName());
-        gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(),gitlabProjectEventDTO.getUserName());
+        gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserName());
         try {
             String token = GenerateUUID.generateUUID();
             gitlabRepository.addVariable(gitlabProjectEventDTO.getGitlabProjectId(), "Token",

@@ -37,4 +37,6 @@ public interface ApplicationVersionRepository {
 
     List<ApplicationVersionE> listAllPublishedVersion(Long applicationId);
 
+    Boolean checkAppAndVersion(Long appId,List<Long> appVersionIds);
+
 }
