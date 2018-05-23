@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dataobject;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -28,6 +29,9 @@ public class ApplicationDO {
     private String uuid;
     private String token;
     private Long objectVersionNumber;
+
+    @Transient
+    private String publishLevel;
 
     public Long getId() {
         return id;
@@ -115,5 +119,13 @@ public class ApplicationDO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }

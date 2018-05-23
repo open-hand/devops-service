@@ -19,17 +19,19 @@
     </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
-        SELECT
+        SELECT DISTINCT
         da.id,
         da.`code`,
-        da.`name`
+        da.`name` ,
+        dam.publish_level
         FROM
-        devops_application da,
-        devops_app_instance dai,
-        devops_env de
+        devops_application da
+        JOIN devops_app_instance dai ON dai.app_id = da.id
+        JOIN devops_env de ON de.id = dai.env_id
+        left join devops_app_market dam on dam.app_id = da.id
         WHERE
-        da.id = dai.app_id
-        AND de.id = dai.env_id
+        da.project_id = #{projectId}
+        AND de.id = #{envId}
         <choose>
             <when test="status == 'running'">
                 AND dai.`status` = 'running'
@@ -38,10 +40,18 @@
                 AND dai.`status` != 'deleted'
             </when>
         </choose>
+    </select>
+
+    <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+        dam.publish_level publishLevel,
+        da.*
+        FROM
+        devops_application da
+        LEFT JOIN devops_app_market dam ON dam.app_id = da.id
+        WHERE
+        da.is_active
         AND da.project_id = #{projectId}
-        AND de.id = #{envId}
-        GROUP BY
-        da.`code`
     </select>
 
     <sql id="sqlparam">

@@ -23,4 +23,6 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     List<ApplicationDO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId, @Param("active") Boolean active);
 
     ApplicationDO queryByToken(@Param("token") String token);
+
+    List<ApplicationDO> listActive(@Param("projectId") Long projectId);
 }

@@ -13,6 +13,7 @@ public class ApplicationRepDTO {
     private String repoUrl;
     private Boolean isSynchro;
     private Boolean isActive;
+    private String publishLevel;
 
     public Long getId() {
         return id;
@@ -76,5 +77,13 @@ public class ApplicationRepDTO {
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }
