@@ -7,6 +7,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
@@ -44,9 +45,11 @@ public class ApplicationMarketController {
     public ResponseEntity<Boolean> create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable Long projectId,
+            @ApiParam(value = "上传的图片", required = false)
+            @RequestPart(name = "file", required = false) MultipartFile multipartFile,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody ApplicationReleasingDTO applicationReleaseDTO) {
-        applicationMarketService.release(projectId, applicationReleaseDTO);
+            @RequestBody(required = true) ApplicationReleasingDTO applicationReleaseDTO) {
+        applicationMarketService.release(projectId, applicationReleaseDTO, multipartFile);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

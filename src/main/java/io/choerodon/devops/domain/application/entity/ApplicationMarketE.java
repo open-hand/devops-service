@@ -13,6 +13,8 @@ public class ApplicationMarketE {
     private String code;
     private String publishLevel;
     private String imgUrl;
+    private String category;
+    private Boolean isActive;
     private String contributor;
     private String description;
 
@@ -70,6 +72,22 @@ public class ApplicationMarketE {
 
     public void setImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
     }
 
     public String getContributor() {

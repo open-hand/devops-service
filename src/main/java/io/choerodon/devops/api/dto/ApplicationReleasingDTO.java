@@ -14,6 +14,7 @@ public class ApplicationReleasingDTO {
     private String publishLevel;
     private List<ApplicationVersionRepDTO> appVersions;
     private String imgUrl;
+    private String category;
     private String description;
     private String contributor;
 
@@ -71,6 +72,14 @@ public class ApplicationReleasingDTO {
 
     public void setImgUrl(String imgUrl) {
         this.imgUrl = imgUrl;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public String getDescription() {

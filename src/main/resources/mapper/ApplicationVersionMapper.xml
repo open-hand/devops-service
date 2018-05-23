@@ -123,4 +123,17 @@
         and dav.is_publish=1
     </select>
 
+    <select id="selectCountByOptions" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        devops_application da,
+        devops_app_version dav
+        WHERE
+        da.id = dav.app_id
+        AND da.id = #{applicationId}
+        AND da.is_active=1
+        AND dav.id = #{appVersionId}
+    </select>
+
 </mapper>

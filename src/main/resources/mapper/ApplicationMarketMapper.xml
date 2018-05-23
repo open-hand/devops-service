@@ -32,26 +32,31 @@
         da.`code`,
         dam.contributor,
         dam.description,
+        dam.category,
         dam.img_url,
         dam.publish_level
         from devops_application da,devops_app_market dam
         where da.id=dam.app_id
         and da.project_id=#{projectId}
+        and dam.is_active=1
         <include refid="sqlparam"/>
     </select>
 
     <select id="listMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
         select dam.id,
-        dam.project_id,
         dam.app_id,
-        dam.name,
-        dam.code,
+        da.name,
+        da.code,
         dam.publish_level,
         dam.img_url,
         dam.description,
         dam.contributor
-        from devops_app_market dam where dam.publish_level='public'
-        or (dam.publish_level='organization' and dam.organization_id=#{organizationId})
+        from devops_app_market dam,devops_application da
+        where da.id=dam.app_id and (dam.publish_level='public'
+        or (dam.publish_level='organization' and da.project_id in
+        <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+           #{projectId}
+        </foreach>))
         <include refid="sqlparam"/>
     </select>
 

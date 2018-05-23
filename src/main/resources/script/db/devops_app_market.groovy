@@ -27,6 +27,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
 
         addUniqueConstraint(tableName: 'devops_app_market',
                 constraintName: 'uk_app_id', columnNames: 'app_id')
-
     }
+
+    changeSet(author: 'ernst', id: '2018-05-22-add-column') {
+        addColumn(tableName: 'devops_app_market') {
+            column(name: 'category', type: 'VARCHAR(30)', remarks: '类别')
+            column(name: 'is_active', type: 'TINYINT UNSIGNED', remarks: '是否有效')
+        }
+    }
+
 }
