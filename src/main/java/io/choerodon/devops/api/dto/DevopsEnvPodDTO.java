@@ -13,6 +13,7 @@ public class DevopsEnvPodDTO {
     private String appName;
     private String namespace;
     private String appVersion;
+    private String publishLevel;
     private String instanceCode;
     private String envCode;
     private String envName;
@@ -120,5 +121,13 @@ public class DevopsEnvPodDTO {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }

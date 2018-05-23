@@ -15,6 +15,7 @@ public class DevopsEnvPodE {
     private String status;
     private String appName;
     private String appVersion;
+    private String publishLevel;
     private Date creationDate;
     private String resourceVersion;
     private String namespace;
@@ -153,5 +154,13 @@ public class DevopsEnvPodE {
 
     public void setEnvName(String envName) {
         this.envName = envName;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }

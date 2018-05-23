@@ -7,6 +7,8 @@
         dai.id id,
         dai.`code` code,
         dam.publish_level publishLevel,
+        dam.contributor,
+        dam.description,
         da.id appId,
         da.`name` appName,
         dav.version appVersion,
