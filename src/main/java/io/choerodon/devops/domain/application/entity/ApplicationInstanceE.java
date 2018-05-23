@@ -12,6 +12,7 @@ public class ApplicationInstanceE {
 
     private Long id;
     private String code;
+    private String publishLevel;
     private ApplicationE applicationE;
     private ApplicationVersionE applicationVersionE;
     private DevopsEnvironmentE devopsEnvironmentE;
@@ -149,5 +150,13 @@ public class ApplicationInstanceE {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 }

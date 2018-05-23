@@ -12,12 +12,13 @@ import java.util.List;
 public class ApplicationInstancesDTO {
     private Long applicationId;
     private String applicationName;
+    private String publishLevel;
     private String applicationCode;
-    private Long applicationLatestVersionId;
-    private String applicationLatestVersion;
+    private Long latestVersionId;
+    private String latestVersion;
     private Integer latestVersionRunning;
     private List<EnvInstancesDTO> instances;
-    private List<EnvInstanceDTO> envInstanceDTOS;
+    private List<EnvInstanceDTO> envInstances;
 
     public ApplicationInstancesDTO() {
     }
@@ -26,17 +27,19 @@ public class ApplicationInstancesDTO {
      * 构造函数
      */
     public ApplicationInstancesDTO(Long applicationId,
+                                   String publishLevel,
                                    String applicationName,
                                    String applicationCode,
-                                   Long applicationLatestVersionId,
-                                   String applicationLatestVersion) {
+                                   Long latestVersionId,
+                                   String latestVersion) {
         this.applicationId = applicationId;
-        this.applicationLatestVersionId = applicationLatestVersionId;
+        this.publishLevel = publishLevel;
+        this.latestVersionId = latestVersionId;
         this.applicationName = applicationName;
         this.applicationCode = applicationCode;
-        this.applicationLatestVersion = applicationLatestVersion;
+        this.latestVersion = latestVersion;
         this.latestVersionRunning = 0;
-        this.envInstanceDTOS = new ArrayList<>();
+        this.envInstances = new ArrayList<>();
         this.instances = new ArrayList<>();
     }
 
@@ -64,28 +67,28 @@ public class ApplicationInstancesDTO {
         this.applicationCode = applicationCode;
     }
 
-    public String getApplicationLatestVersion() {
-        return applicationLatestVersion;
+    public String getLatestVersion() {
+        return latestVersion;
     }
 
-    public void setApplicationLatestVersion(String applicationLatestVersion) {
-        this.applicationLatestVersion = applicationLatestVersion;
+    public void setLatestVersion(String latestVersion) {
+        this.latestVersion = latestVersion;
     }
 
-    public List<EnvInstanceDTO> getEnvInstanceDTOS() {
-        return envInstanceDTOS;
+    public List<EnvInstanceDTO> getEnvInstances() {
+        return envInstances;
     }
 
-    public void setEnvInstanceDTOS(List<EnvInstanceDTO> envInstanceDTOS) {
-        this.envInstanceDTOS = envInstanceDTOS;
+    public void setEnvInstances(List<EnvInstanceDTO> envInstances) {
+        this.envInstances = envInstances;
     }
 
     public EnvInstanceDTO queryLastEnvInstanceDTO() {
-        return envInstanceDTOS.get(envInstanceDTOS.size() - 1);
+        return envInstances.get(envInstances.size() - 1);
     }
 
     public void appendEnvInstanceDTOS(EnvInstanceDTO envInstanceDTO) {
-        this.envInstanceDTOS.add(envInstanceDTO);
+        this.envInstances.add(envInstanceDTO);
     }
 
     public Integer getLatestVersionRunning() {
@@ -100,12 +103,12 @@ public class ApplicationInstancesDTO {
         this.latestVersionRunning += 1;
     }
 
-    public Long getApplicationLatestVersionId() {
-        return applicationLatestVersionId;
+    public Long getLatestVersionId() {
+        return latestVersionId;
     }
 
-    public void setApplicationLatestVersionId(Long applicationLatestVersionId) {
-        this.applicationLatestVersionId = applicationLatestVersionId;
+    public void setLatestVersionId(Long latestVersionId) {
+        this.latestVersionId = latestVersionId;
     }
 
     public List<EnvInstancesDTO> getInstances() {
@@ -120,4 +123,11 @@ public class ApplicationInstancesDTO {
         this.instances.add(instancesDTO);
     }
 
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
 }

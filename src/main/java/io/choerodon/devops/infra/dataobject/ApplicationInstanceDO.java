@@ -29,6 +29,8 @@ public class ApplicationInstanceDO extends AuditDomain {
     @Transient
     private String appName;
     @Transient
+    private String publishLevel;
+    @Transient
     private String appVersion;
     @Transient
     private String envCode;
@@ -159,6 +161,14 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public String getError() {
         return error;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
     }
 
     public void setError(String error) {

@@ -11,14 +11,14 @@ import java.util.List;
  */
 public class EnvInstanceDTO {
     private Long envId;
-    private List<EnvVersionDTO> envVersionDTOS;
+    private List<EnvVersionDTO> envVersions;
 
     public EnvInstanceDTO() {
     }
 
     public EnvInstanceDTO(Long envId) {
         this.envId = envId;
-        this.envVersionDTOS = new ArrayList<>();
+        this.envVersions = new ArrayList<>();
     }
 
     public Long getEnvId() {
@@ -29,19 +29,19 @@ public class EnvInstanceDTO {
         this.envId = envId;
     }
 
-    public List<EnvVersionDTO> getEnvVersionDTOS() {
-        return envVersionDTOS;
+    public List<EnvVersionDTO> getEnvVersions() {
+        return envVersions;
     }
 
-    public void setEnvVersionDTOS(List<EnvVersionDTO> envVersionDTOS) {
-        this.envVersionDTOS = envVersionDTOS;
+    public void setEnvVersions(List<EnvVersionDTO> envVersions) {
+        this.envVersions = envVersions;
     }
 
     public EnvVersionDTO queryLastEnvVersionDTO() {
-        return envVersionDTOS.get(envVersionDTOS.size() - 1);
+        return envVersions.get(envVersions.size() - 1);
     }
 
     public void addEnvVersionDTOS(EnvVersionDTO envVersionDTO) {
-        this.envVersionDTOS.add(envVersionDTO);
+        this.envVersions.add(envVersionDTO);
     }
 }
