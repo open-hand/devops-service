@@ -20,6 +20,9 @@ public class DevopsServiceV {
     private String namespace;
     private Long appId;
     private String appName;
+    private String commandStatus;
+    private String commandType;
+    private String error;
     private List<ServiceVersionDO> appVersion;
 
     public Long getId() {
@@ -116,5 +119,29 @@ public class DevopsServiceV {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

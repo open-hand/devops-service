@@ -72,7 +72,10 @@
         dav.version AS version,
         dsai.app_instance_id AS app_instance_id,
         dsai.`code` AS code,
-        dai.`status` AS intance_status
+        dai.`status` AS intance_status,
+        cmd.`status` commandStatus,
+        cmd.command_type commandType,
+        cmd.error error
         FROM
         (
         SELECT
@@ -93,6 +96,8 @@
         INNER JOIN devops_application da ON da.id = dai.app_id
         INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
         INNER JOIN devops_env de ON ds.env_id = de.id
+        JOIN devops_env_command cmd ON cmd.object_id = ds.id
+        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "service" GROUP BY decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
         <include refid="sqlparam"/>
     </select>
 
@@ -145,6 +150,9 @@
         <result property="envId" column="env_id"/>
         <result property="envName" column="env_name"/>
         <result property="namespace" column="namespace"/>
+        <result property="commandStatus" column="commandStatus"/>
+        <result property="commandType" column="commandType"/>
+        <result property="error" column="error"/>
         <collection property="appVersion" ofType="io.choerodon.devops.infra.dataobject.ServiceVersionDO">
             <result column="app_version_id" property="id" jdbcType="VARCHAR"/>
             <result column="version" property="version" jdbcType="VARCHAR"/>

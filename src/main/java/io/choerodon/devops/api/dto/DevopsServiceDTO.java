@@ -19,6 +19,9 @@ public class DevopsServiceDTO {
     private Boolean envStatus;
     private Long appId;
     private String appName;
+    private String commandStatus;
+    private String commandType;
+    private String error;
     private List<ServiceVersionDO> appVersion;
 
     public Long getId() {
@@ -107,5 +110,29 @@ public class DevopsServiceDTO {
 
     public void setEnvStatus(Boolean envStatus) {
         this.envStatus = envStatus;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }
