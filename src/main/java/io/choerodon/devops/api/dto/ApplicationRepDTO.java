@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import javax.persistence.Transient;
+
 /**
  * Created by younger on 2018/3/30.
  */
@@ -14,6 +16,8 @@ public class ApplicationRepDTO {
     private Boolean isSynchro;
     private Boolean isActive;
     private String publishLevel;
+    private String contributor;
+    private String description;
 
     public Long getId() {
         return id;
@@ -85,5 +89,21 @@ public class ApplicationRepDTO {
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

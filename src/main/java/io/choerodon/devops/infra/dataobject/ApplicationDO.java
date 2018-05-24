@@ -32,6 +32,10 @@ public class ApplicationDO {
 
     @Transient
     private String publishLevel;
+    @Transient
+    private String contributor;
+    @Transient
+    private String description;
 
     public Long getId() {
         return id;
@@ -127,5 +131,21 @@ public class ApplicationDO {
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
