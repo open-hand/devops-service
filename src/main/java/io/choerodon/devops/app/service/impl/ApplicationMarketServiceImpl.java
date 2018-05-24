@@ -10,7 +10,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
@@ -31,8 +30,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
-    private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
-    private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private ApplicationVersionRepository applicationVersionRepository;
     private ApplicationMarketRepository applicationMarketRepository;
     private IamRepository iamRepository;
@@ -60,6 +57,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ids.add(appVersion.getId());
                 }
             }
+        } else {
+            throw new CommonException("error.app.check");
         }
         applicationMarketRepository.checkCanPub(applicationReleasingDTO.getAppId());
         //校验应用和版本
@@ -111,7 +110,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             String bakcetName = "devops-service";
             imgUrl = fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
         }
-        if(imgUrl!=null && !imgUrl.trim().equals("")){
+        if (imgUrl != null && !imgUrl.trim().equals("")) {
             ApplicationMarketE applicationMarketE = ApplicationMarketFactory.create();
             applicationMarketE.setImgUrl(imgUrl);
             applicationMarketE.setId(appMarketId);
@@ -134,16 +133,4 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         }
         return applicationReleasingDTOPage;
     }
-
-    private void checkLoginUser(Long id) {
-        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        if (customUserDetails == null) {
-            throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
-        }
-        if (!id.equals(customUserDetails.getUserId())) {
-            throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
-        }
-    }
-
-
 }

@@ -50,7 +50,7 @@ public class ApplicationMarketController {
         return Optional.ofNullable(
                 applicationMarketService.release(projectId, applicationReleaseDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.market.application.get"));
+                .orElseThrow(() -> new CommonException("error.market.release"));
     }
 
     /**
