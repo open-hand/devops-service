@@ -209,10 +209,11 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
         if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
             throw new CommonException("error.tags.get");
         }
-        List<TagDO> tagList = tagResponseEntity.getBody();
-        tagList.forEach(t -> t.getCommit().setUrl(
+        List<TagDO> tagList = tags.getBody();
+        tagList.parallelStream().forEach(t -> t.getCommit().setUrl(
                 String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())));
-        int totalPageSizes = tagList.size() / size + (tagList.size() % size == 0 ? 0 : 1);
-        return new TagsDO(tags.getBody(), totalPageSizes, tagList.size());
+        List<TagDO> tagTotalList = tagResponseEntity.getBody();
+        int totalPageSizes = tagTotalList.size() / size + (tagTotalList.size() % size == 0 ? 0 : 1);
+        return new TagsDO(tagList, totalPageSizes, tagTotalList.size());
     }
 }
