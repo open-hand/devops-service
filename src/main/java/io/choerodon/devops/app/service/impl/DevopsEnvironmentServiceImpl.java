@@ -115,12 +115,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
+        Integer flag = 0;
         Set<String> namespaces = envListener.connectedEnv();
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).parallelStream()
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                 .collect(Collectors.toList());
-        Integer flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
+        if (agentVersion != null) {
+            flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
+        }
         for (String str : namespaces) {
             for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
                 if (str.equals(devopsEnvironmentE.getCode())) {
@@ -193,6 +196,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepDTO> sort(Long[] environmentIds) {
+        Integer flag = 0;
         List<Long> ids = new ArrayList<>();
         Collections.addAll(ids, environmentIds);
         List<DevopsEnvironmentE> devopsEnvironmentES = ids.stream()
@@ -204,7 +208,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnviromentRepository.update(devopsEnvironmentE);
             sequence = sequence + 1;
         }
-        Integer flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
+        if (agentVersion != null) {
+            flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
+        }
         Set<String> namespaces = envListener.connectedEnv();
         for (String str : namespaces) {
             for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
