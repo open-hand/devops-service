@@ -29,4 +29,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
             column(name: "project_id")
         }
     }
+
+    changeSet(author: 'younger', id: '2018-05-21-drop-column')
+            {
+                dropColumn(columnName:"namespace",tableName:"devops_env") }
 }

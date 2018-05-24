@@ -21,7 +21,6 @@ public class DevopsEnvironmentDO {
     private String name;
     private String code;
     private String token;
-    private String namespace;
     private Long sequence;
     private String description;
     private Boolean isConnected;
@@ -66,14 +65,6 @@ public class DevopsEnvironmentDO {
 
     public void setToken(String token) {
         this.token = token;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
     }
 
     public String getDescription() {

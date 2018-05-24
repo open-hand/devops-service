@@ -14,13 +14,11 @@ import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.websocket.session.EnvListener;
@@ -31,12 +29,17 @@ import io.choerodon.websocket.session.EnvListener;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
+    private static String agentVersion;
+
     @Value("${agent.version}")
-    private String agentVersion;
+    private String agentExpectVersion;
 
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
 
+    @Value("${agent.repoUrl}")
+    private String agentRepoUrl;
+    ;
     private IamRepository iamRepository;
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     private EnvListener envListener;
@@ -58,28 +61,55 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         this.applicationInstanceRepository = applicationInstanceRepository;
     }
 
+    public static int compareVersion(String v1, String v2) {
+        String[] valueSplit1 = v1.split("[.]");
+        String[] valueSplit2 = v2.split("[.]");
+        int minLength = valueSplit1.length;
+        if (minLength > valueSplit2.length) {
+            minLength = valueSplit2.length;
+        }
+        for (int i = 0; i < minLength; i++) {
+            int value1 = Integer.parseInt(valueSplit1[i]);
+            int value2 = Integer.parseInt(valueSplit2[i]);
+            if (value1 > value2) {
+                return 1;
+            } else if (value1 < value2) {
+                return -1;
+            }
+        }
+        return valueSplit1.length - valueSplit2.length;
+    }
+
+    public static String getAgentVersion() {
+        return agentVersion;
+    }
+
+    public static void setAgentVersion(String agentVersion) {
+        DevopsEnvironmentServiceImpl.agentVersion = agentVersion;
+    }
+
     @Override
     public String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
+        devopsEnvironmentE.initProjectE(projectId);
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
         devopsEnviromentRepository.checkName(devopsEnvironmentE);
         devopsEnvironmentE.initActive(true);
         devopsEnvironmentE.initConnect(false);
         devopsEnvironmentE.initToken(GenerateUUID.generateUUID());
         devopsEnvironmentE.initProjectE(projectId);
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        devopsEnvironmentE.initNamespace(organization.getCode(), projectE.getCode());
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
         devopsEnvironmentE.initSequence(devopsEnvironmentES);
-        devopsEnviromentRepository.create(devopsEnvironmentE);
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         Map<String, String> params = new HashMap<>();
-        params.put("{NAMESPACE}", devopsEnvironmentE.getNamespace());
-        params.put("{VERSION}", agentVersion);
+        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
+        params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsEnvironmentE.getToken());
+        params.put("{REPOURL}", agentRepoUrl);
+        params.put("{ENVID}", devopsEnviromentRepository.create(devopsEnvironmentE)
+                .getId().toString());
         return FileUtil.replaceReturnString(inputStream, params);
     }
 
@@ -90,10 +120,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .queryByprojectAndActive(projectId, active).parallelStream()
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                 .collect(Collectors.toList());
+        Integer flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
         for (String str : namespaces) {
             for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-                if (str.equals(devopsEnvironmentE.getNamespace())) {
+                if (str.equals(devopsEnvironmentE.getCode())) {
                     devopsEnvironmentE.initConnect(true);
+                }
+                if (flag == 1) {
+                    devopsEnvironmentE.setUpdate(true);
+                    devopsEnvironmentE.initConnect(false);
+                    devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");
                 }
             }
         }
@@ -168,12 +204,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnviromentRepository.update(devopsEnvironmentE);
             sequence = sequence + 1;
         }
-
+        Integer flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
         Set<String> namespaces = envListener.connectedEnv();
         for (String str : namespaces) {
             for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-                if (str.equals(devopsEnvironmentE.getNamespace())) {
+                if (str.equals(devopsEnvironmentE.getCode())) {
                     devopsEnvironmentE.initConnect(true);
+                }
+                if (flag == 1) {
+                    devopsEnvironmentE.setUpdate(true);
+                    devopsEnvironmentE.initConnect(false);
+                    devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");
                 }
             }
         }
@@ -181,14 +222,24 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public String queryShell(Long environmentId) {
+    public String queryShell(Long environmentId, Boolean update) {
+        if (update == null) {
+            update = false;
+        }
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
+        InputStream inputStream = null;
         Map<String, String> params = new HashMap<>();
-        params.put("{NAMESPACE}", devopsEnvironmentE.getNamespace());
-        params.put("{VERSION}", agentVersion);
+        if (update) {
+            inputStream = this.getClass().getResourceAsStream("/shell/environment-upgrade.sh");
+        } else {
+            inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
+        }
+        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
+        params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsEnvironmentE.getToken());
+        params.put("{REPOURL}", agentRepoUrl);
+        params.put("{ENVID}", devopsEnvironmentE.getId().toString());
         return FileUtil.replaceReturnString(inputStream, params);
     }
 

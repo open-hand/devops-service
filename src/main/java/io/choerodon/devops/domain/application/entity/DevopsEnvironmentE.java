@@ -18,12 +18,12 @@ public class DevopsEnvironmentE {
     private String name;
     private String code;
     private String token;
-    private String namespace;
     private Long sequence;
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
-
+    private Boolean isUpdate;
+    private String updateMessage;
     /**
      * 重写构造方法
      */
@@ -31,7 +31,6 @@ public class DevopsEnvironmentE {
 
         this.id = id;
         this.name = name;
-        this.namespace = namespace;
         this.description = description;
         this.isConnected = isConnect;
         this.isActive = isActive;
@@ -87,13 +86,6 @@ public class DevopsEnvironmentE {
         this.token = token;
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
 
     public String getDescription() {
         return description;
@@ -141,6 +133,22 @@ public class DevopsEnvironmentE {
 
     }
 
+    public Boolean getUpdate() {
+        return isUpdate;
+    }
+
+    public void setUpdate(Boolean update) {
+        isUpdate = update;
+    }
+
+    public String getUpdateMessage() {
+        return updateMessage;
+    }
+
+    public void setUpdateMessage(String updateMessage) {
+        this.updateMessage = updateMessage;
+    }
+
     public Long getSequence() {
         return sequence;
     }
@@ -151,10 +159,6 @@ public class DevopsEnvironmentE {
 
     public void initToken(String token) {
         this.token = token;
-    }
-
-    public void initNamespace(String orgCode, String projectCode) {
-        this.namespace = orgCode + "-" + projectCode + "-" + this.code;
     }
 
     /**

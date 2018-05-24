@@ -74,9 +74,10 @@ public interface DevopsEnvironmentService {
      * 项目下查询单个环境的可执行shell
      *
      * @param environmentId 环境id
+     * @param environmentId  是否更新
      * @return String
      */
-    String queryShell(Long environmentId);
+    String queryShell(Long environmentId,Boolean update);
 
     /**
      * 创建环境校验名称是否存在
