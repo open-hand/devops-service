@@ -45,6 +45,8 @@
     <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         SELECT
         dam.publish_level publishLevel,
+        dam.contributor,
+        dam.description,
         da.*
         FROM
         devops_application da

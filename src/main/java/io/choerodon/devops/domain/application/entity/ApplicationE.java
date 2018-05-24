@@ -24,6 +24,8 @@ public class ApplicationE {
     private String uuid;
     private String token;
     private String publishLevel;
+    private String contributor;
+    private String description;
 
     public ApplicationE() {
     }
@@ -169,5 +171,21 @@ public class ApplicationE {
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
