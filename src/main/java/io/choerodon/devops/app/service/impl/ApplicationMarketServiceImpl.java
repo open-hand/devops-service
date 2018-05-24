@@ -10,7 +10,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
@@ -31,8 +30,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
-    private static final String USER_NOT_LOGIN_EXCEPTION = "error.user.not.login";
-    private static final String USER_ID_NOT_EQUAL_EXCEPTION = "error.user.id.not.equals";
     private ApplicationVersionRepository applicationVersionRepository;
     private ApplicationMarketRepository applicationMarketRepository;
     private IamRepository iamRepository;
@@ -50,7 +47,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public void release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO, MultipartFile file) {
+    public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
 
         List<Long> ids = new ArrayList<>();
         if (applicationReleasingDTO != null) {
@@ -60,27 +57,23 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ids.add(appVersion.getId());
                 }
             }
+        } else {
+            throw new CommonException("error.app.check");
         }
+        applicationMarketRepository.checkCanPub(applicationReleasingDTO.getAppId());
         //校验应用和版本
         applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
         applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
 
-        String imgUrl = "www.default.com";
-        if (file != null) {
-            Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
-            String bakcetName = "devops-service";
-            imgUrl = fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
-        }
-
         ApplicationMarketE applicationMarketE = ApplicationMarketFactory.create();
         applicationMarketE.initApplicationEById(applicationReleasingDTO.getAppId());
         applicationMarketE.setPublishLevel(applicationReleasingDTO.getPublishLevel());
-        applicationMarketE.setImgUrl(imgUrl);
         applicationMarketE.setActive(true);
         applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
         applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
         applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
         applicationMarketRepository.create(applicationMarketE);
+        return applicationMarketRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
     }
 
     @Override
@@ -109,6 +102,22 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         return null;
     }
 
+    @Override
+    public void uploadPic(Long projectId, Long appMarketId, MultipartFile file) {
+        String imgUrl = "";
+        if (file != null) {
+            Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
+            String bakcetName = "devops-service";
+            imgUrl = fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
+        }
+        if (imgUrl != null && !imgUrl.trim().equals("")) {
+            ApplicationMarketE applicationMarketE = ApplicationMarketFactory.create();
+            applicationMarketE.setImgUrl(imgUrl);
+            applicationMarketE.setId(appMarketId);
+            applicationMarketRepository.updateImgUrl(applicationMarketE);
+        }
+    }
+
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Page<ApplicationMarketE> applicationMarketEPage) {
         Page<ApplicationReleasingDTO> applicationReleasingDTOPage = ConvertPageHelper.convertPage(
                 applicationMarketEPage,
@@ -124,16 +133,4 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         }
         return applicationReleasingDTOPage;
     }
-
-    private void checkLoginUser(Long id) {
-        CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
-        if (customUserDetails == null) {
-            throw new CommonException(USER_NOT_LOGIN_EXCEPTION);
-        }
-        if (!id.equals(customUserDetails.getUserId())) {
-            throw new CommonException(USER_ID_NOT_EQUAL_EXCEPTION);
-        }
-    }
-
-
 }

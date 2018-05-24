@@ -25,6 +25,14 @@
         </if>
     </sql>
 
+    <sql id="nameOrCateParamSql">
+        <if test='param != null and param != ""'>
+            AND (dam.category LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
     <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
         select dam.id,
         dam.app_id,
@@ -50,6 +58,7 @@
         dam.publish_level,
         dam.img_url,
         dam.description,
+        dam.category,
         dam.contributor
         from devops_app_market dam,devops_application da
         where da.id=dam.app_id and (dam.publish_level='public'
@@ -57,7 +66,26 @@
         <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
            #{projectId}
         </foreach>))
-        <include refid="sqlparam"/>
+        <include refid="nameOrCateParamSql"/>
+    </select>
+
+    <select id="selectCountByAppId" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        devops_app_market dam
+        WHERE
+        dam.app_id = #{appId}
+        AND dam.is_active=1
+    </select>
+
+    <select id="getMarketIdByAppId" resultType="java.lang.Long">
+        SELECT
+        dam.id
+        FROM
+        devops_app_market dam
+        WHERE
+        dam.app_id = #{appId}
     </select>
 
 </mapper>

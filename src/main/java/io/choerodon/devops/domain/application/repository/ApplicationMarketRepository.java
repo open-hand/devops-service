@@ -15,4 +15,10 @@ public interface ApplicationMarketRepository {
     Page<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam);
 
     Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
+
+    int updateImgUrl(ApplicationMarketE applicationMarketE);
+
+    Boolean checkCanPub(Long appId);
+
+    Long getMarketIdByAppId(Long appId);
 }
