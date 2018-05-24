@@ -18,6 +18,7 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
+import io.choerodon.websocket.tool.KeyParseTool;
 
 /**
  * Created by younger on 2018/4/18.
@@ -38,13 +39,12 @@ public class DeployServiceImpl implements DeployService {
     public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, String type) {
         Msg msg = new Msg();
         Payload payload = new Payload(
-                devopsEnvironmentE.getNamespace(),
+                devopsEnvironmentE.getCode(),
                 helmUrl + applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, applicationInstanceE.getCode());
-        msg.setKey("env:" + devopsEnvironmentE.getNamespace() + ".release:" + applicationInstanceE.getCode());
-        msg.setBrokerFrom("test");
+        msg.setKey("env:" + devopsEnvironmentE.getCode() + ".release:" + applicationInstanceE.getCode());
         if (type.equals("update")) {
             msg.setType(HelmType.HelmReleasePreUpgrade.toValue());
         } else {
@@ -57,4 +57,5 @@ public class DeployServiceImpl implements DeployService {
         }
         commandSender.sendMsg(msg);
     }
+
 }

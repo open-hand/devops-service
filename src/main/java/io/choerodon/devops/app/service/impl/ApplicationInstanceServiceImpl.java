@@ -371,7 +371,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     private String getNameSpace(Long envId) {
-        return devopsEnvironmentRepository.queryById(envId).getNamespace();
+        return devopsEnvironmentRepository.queryById(envId).getCode();
     }
 
     private String updateInstanceStatus(Long instanceId, String status) {

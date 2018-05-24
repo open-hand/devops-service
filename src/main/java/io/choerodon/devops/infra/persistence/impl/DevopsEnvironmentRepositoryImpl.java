@@ -89,16 +89,6 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         return ConvertHelper.convertList(devopsEnvironmentDOS, DevopsEnvironmentE.class);
     }
 
-    @Override
-    public DevopsEnvironmentE queryByNamespace(String namespace) {
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
-        devopsEnvironmentDO.setNamespace(namespace);
-        List<DevopsEnvironmentDO> devopsEnvironmentDOs = devopsEnvironmentMapper.select(devopsEnvironmentDO);
-        if (devopsEnvironmentDOs.isEmpty()) {
-            throw new CommonException("error.env.query");
-        }
-        return ConvertHelper.convert(devopsEnvironmentDOs.get(0), DevopsEnvironmentE.class);
-    }
 
     @Override
     public List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active) {

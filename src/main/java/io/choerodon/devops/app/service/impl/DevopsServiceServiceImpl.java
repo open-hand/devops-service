@@ -114,7 +114,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         ApplicationE applicationE = getApplicationE(devopsServiceReqDTO.getAppId());
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
-        devopsServiceE.setNamespace(devopsEnvironmentE.getNamespace());
+        devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         devopsServiceE.setTargetPort(devopsServiceReqDTO.getPort());
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
@@ -172,7 +172,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                         .queryById(devopsIngressDO.getEnvId());
                 V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
-                        devopsIngressDO.getName(), devopsEnvironmentE.getNamespace());
+                        devopsIngressDO.getName(), devopsEnvironmentE.getCode());
                 List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
                         .selectByIngressId(devopsIngressDO.getId());
                 for (DevopsIngressPathE ddTemp : devopsIngressPathEListTemp) {
@@ -181,7 +181,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
                 idevopsIngressService.createIngress(json.serialize(v1beta1Ingress),
                         devopsIngressDO.getName(),
-                        devopsEnvironmentE.getNamespace());
+                        devopsEnvironmentE.getCode());
             }
         } else {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -235,7 +235,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                             .queryById(devopsIngressDO.getEnvId());
                     V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
-                            devopsIngressDO.getName(), devopsEnvironmentE.getNamespace());
+                            devopsIngressDO.getName(), devopsEnvironmentE.getCode());
                     List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
                             .selectByIngressId(devopsIngressDO.getId());
                     for (DevopsIngressPathE ddTemp : devopsIngressPathEListTemp) {
@@ -244,7 +244,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     }
                     idevopsIngressService.createIngress(json.serialize(v1beta1Ingress),
                             devopsIngressDO.getName(),
-                            devopsEnvironmentE.getNamespace());
+                            devopsEnvironmentE.getCode());
                 }
             }
         }

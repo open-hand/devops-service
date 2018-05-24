@@ -48,9 +48,9 @@ env:
     SERVICES_HARBOR_PASSWORD:
     AGENT_VERSION: 0.5.0.RELEASE
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
+    AGENT_REPOURL: helm.example.com
     SECURITY_BASIC_ENABLE: false
     SECURITY_IGNORED: /ci,/v2/api-docs,/agent/**,/ws/**
-
 metrics:
   path: /prometheus
   label: java-spring
@@ -59,7 +59,9 @@ logs:
   parser: java-spring
 
 persistence:
-  enabled: false
+  enabled: true
+  existingClaim:
+  subPath:
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
   ## If defined, PVC must be created manually before volume will be bound

@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.websocket.Msg;
+
 /**
  * Created by Zenger on 2018/4/17.
  */
@@ -9,9 +11,9 @@ public interface DeployMsgHandlerService {
 
     void handlerPreInstall(String msg);
 
-    void resourceUpdate(String key, String msg);
+    void resourceUpdate(String key, Long envId, String msg);
 
-    void resourceDelete(String msg);
+    void resourceDelete(Long envId,String msg);
 
     void helmReleaseHookLogs(String key, String msg);
 
@@ -22,8 +24,6 @@ public interface DeployMsgHandlerService {
     void helmReleasePreUpgrade(String msg);
 
     void handlerReleaseUpgrade(String msg);
-
-    void helmRelease(String msg);
 
     void helmReleaseDeleteFail(String key, String msg);
 
@@ -38,4 +38,6 @@ public interface DeployMsgHandlerService {
     void helmReleaeStopFail(String key, String msg);
 
     void netWorkUpdate(String key, String msg);
+
+    void helmReleaseGetContent(String key, Long envId, String msg);
 }

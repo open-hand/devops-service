@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.ServiceMsgHandlerService;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
@@ -93,16 +94,13 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case NetworkIngressDelete:
                 break;
             case ResourceUpdate:
-                deployMsgHandlerService.resourceUpdate(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.resourceUpdate(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             case ResourceDelete:
-                deployMsgHandlerService.resourceDelete(msg.getKey());
+                deployMsgHandlerService.resourceDelete(TypeUtil.objToLong(msg.getEnvId()), msg.getKey());
                 break;
             case HelmReleaseHookLogs:
                 deployMsgHandlerService.helmReleaseHookLogs(msg.getKey(), msg.getPayload());
-                break;
-            case HelmReleases:
-                deployMsgHandlerService.helmRelease(msg.getPayload());
                 break;
             case NetworkServiceUpdate:
                 deployMsgHandlerService.netWorkUpdate(msg.getKey(), msg.getPayload());
@@ -125,9 +123,13 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case HelmReleaseUpgradeFailed:
                 deployMsgHandlerService.helmReleaseUpgradeFail(msg.getKey(), msg.getPayload());
                 break;
+            case HelmReleaseGetContent:
+                deployMsgHandlerService.helmReleaseGetContent(msg.getKey(),TypeUtil.objToLong(msg.getEnvId()),msg.getPayload());
+                break;
             default:
                 break;
         }
+
     }
 
     @Override

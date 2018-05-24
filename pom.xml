@@ -183,7 +183,7 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>io-choerodon</groupId>
+            <groupId>choerodon-framework</groupId>
             <artifactId>choerodon-websocket-helper</artifactId>
             <version>0.5.3.RELEASE</version>
         </dependency>

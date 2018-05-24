@@ -10,7 +10,8 @@ public class ReleasePayload {
     private String chartName;
     private String chartVersion;
     private String config;
-
+    private String hooks;
+    private String resources;
 
     public String getName() {
         return name;
@@ -66,5 +67,21 @@ public class ReleasePayload {
 
     public void setConfig(String config) {
         this.config = config;
+    }
+
+    public String getHooks() {
+        return hooks;
+    }
+
+    public void setHooks(String hooks) {
+        this.hooks = hooks;
+    }
+
+    public String getResources() {
+        return resources;
+    }
+
+    public void setResources(String resources) {
+        this.resources = resources;
     }
 }
