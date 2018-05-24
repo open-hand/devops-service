@@ -19,7 +19,6 @@ import io.choerodon.devops.domain.application.entity.DevopsServiceE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
@@ -119,8 +118,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("envName", "de.name");
-            map.put("path", "dda.path");
-            pageRequest.resetOrder("dd", map);
+            map.put("path", "dip.path");
+            pageRequest.resetOrder("di", map);
         }
 
         Page<DevopsIngressDO> devopsIngressDOS =
@@ -130,7 +129,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         devopsIngressDOS.getContent().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),
-                            t.getEnvId(), t.getUsable(), t.getEnvName());
+                            t.getEnvId(), t.getUsable(), t.getEnvName(),
+                            t.getCommandStatus(), t.getCommandType(), t.getError());
 
             for (String ns : namespaces) {
                 if (ns.equals(t.getNamespace())) {
