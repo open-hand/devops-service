@@ -107,6 +107,7 @@ public class ApplicationMarketController {
      * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
+    @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "查询发布级别为全局或者在本组织下的所有应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_all")
