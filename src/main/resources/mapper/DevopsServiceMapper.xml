@@ -67,7 +67,7 @@
         da.`name` AS app_name,
         de.id AS env_id,
         de.`name` AS env_name,
-        de.namespace AS namespace,
+        de.`code` AS namespace,
         dav.id AS app_version_id,
         dav.version AS version,
         dsai.app_instance_id AS app_instance_id,

@@ -31,7 +31,7 @@
         di.`domain` domain,
         di.is_usable isUsable,
         de.`name` envName,
-        de.namespace namespace,
+        de.`code` namespace,
         cmd.`status` commandStatus,
         cmd.command_type commandType,
         cmd.error error
