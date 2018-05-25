@@ -209,10 +209,12 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     private ApplicationTemplateRepDTO setUrl(ApplicationTemplateRepDTO applicationTemplateRepDTO) {
-        String gitRepositoryURL = gitlabUrl.endsWith("/")
-                ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
         if (applicationTemplateRepDTO != null) {
-            String repoUrl = gitRepositoryURL + applicationTemplateRepDTO.getRepoUrl();
+            String repoURL = applicationTemplateRepDTO.getRepoUrl();
+            String gitRepositoryURL = repoURL.startsWith("/")
+                    ? repoURL.substring(1, repoURL.length()) : repoURL;
+            String urlSlash = !gitlabUrl.endsWith("/") && !repoURL.startsWith("/") ? "/" : "";
+            String repoUrl = gitlabUrl + urlSlash + gitRepositoryURL;
             applicationTemplateRepDTO.setRepoUrl(repoUrl);
         }
         return applicationTemplateRepDTO;

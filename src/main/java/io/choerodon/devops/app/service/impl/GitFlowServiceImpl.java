@@ -65,8 +65,9 @@ public class GitFlowServiceImpl implements GitFlowService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String path = String.format("%s/%s-%s/%s",
-                gitlabUrl, organization.getCode(), projectE.getCode(), applicationE.getCode());
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        String path = String.format("%s%s%s-%s/%s",
+                gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
         return gitFlowRepository.getTags(applicationId, path, page, size);
     }
 
@@ -83,8 +84,9 @@ public class GitFlowServiceImpl implements GitFlowService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String path = String.format("%s/%s-%s/%s",
-                gitlabUrl, organization.getCode(), projectE.getCode(), applicationE.getCode());
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        String path = String.format("%s%s%s-%s/%s",
+                gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
         Integer gitLabId = gitFlowRepository.getGitLabId(applicationId);
         List<BranchDO> branches =
                 gitFlowRepository.listBranches(gitLabId, path);

@@ -136,10 +136,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                 applicationRepository.listByOptions(projectId, pageRequest, params);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String gitRepositoryURL = gitlabUrl.endsWith("/")
-                ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         for (ApplicationE applicationE : applicationES) {
-            applicationE.initGitlabProjectEByUrl(gitRepositoryURL + "/"
+            applicationE.initGitlabProjectEByUrl(gitlabUrl + urlSlash
                     + organization.getCode() + "-" + projectE.getCode() + "/"
                     + applicationE.getCode() + ".git");
         }
