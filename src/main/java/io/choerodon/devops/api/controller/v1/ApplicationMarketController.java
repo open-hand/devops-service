@@ -96,7 +96,7 @@ public class ApplicationMarketController {
         return Optional.ofNullable(
                 applicationMarketService.listMarketAppsByProjectId(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.market.application.get"));
+                .orElseThrow(() -> new CommonException("error.market.applications.get"));
     }
 
     /**
@@ -119,6 +119,27 @@ public class ApplicationMarketController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(applicationMarketService.listMarketApps(projectId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.applications.get"));
+    }
+
+    /**
+     * 查询单个应用市场的应用
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     * @return list of ApplicationReleasingDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "查询单个应用市场的应用")
+    @CustomPageRequest
+    @GetMapping("/{appMarketId}")
+    public ResponseEntity<ApplicationReleasingDTO> listAllApp(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable Long appMarketId) {
+        return Optional.ofNullable(applicationMarketService.getMarketApp(projectId, appMarketId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }

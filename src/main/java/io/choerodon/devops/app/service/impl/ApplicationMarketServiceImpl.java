@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +16,7 @@ import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
@@ -21,6 +24,7 @@ import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.feign.FileFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -30,6 +34,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
+
     private ApplicationVersionRepository applicationVersionRepository;
     private ApplicationMarketRepository applicationMarketRepository;
     private IamRepository iamRepository;
@@ -38,8 +45,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     /**
      * 构造函数
      */
-    public ApplicationMarketServiceImpl(ApplicationVersionRepository applicationVersionRepository, ApplicationMarketRepository applicationMarketRepository,
-                                        IamRepository iamRepository, FileFeignClient fileFeignClient) {
+    @Autowired
+    public ApplicationMarketServiceImpl(ApplicationVersionRepository applicationVersionRepository,
+                                        ApplicationMarketRepository applicationMarketRepository,
+                                        IamRepository iamRepository,
+                                        FileFeignClient fileFeignClient) {
         this.applicationVersionRepository = applicationVersionRepository;
         this.applicationMarketRepository = applicationMarketRepository;
         this.iamRepository = iamRepository;
@@ -100,6 +110,27 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             return getReleasingDTOs(applicationMarketEPage);
         }
         return null;
+    }
+
+    @Override
+    public ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId) {
+        ApplicationMarketE applicationMarketE = applicationMarketRepository.getMarket(projectId, appMarketId);
+        ApplicationE applicationE = applicationMarketE.getApplicationE();
+        Long applicationId = applicationE.getId();
+        List<ApplicationVersionE> applicationVersionEList = applicationVersionRepository
+                .listAllPublishedVersion(applicationId);
+        List<ApplicationVersionRepDTO> applicationVersionDTOList = ConvertHelper
+                .convertList(applicationVersionEList, ApplicationVersionRepDTO.class);
+        ApplicationReleasingDTO applicationReleasingDTO =
+                ConvertHelper.convert(applicationMarketE, ApplicationReleasingDTO.class);
+        applicationReleasingDTO.setAppVersions(applicationVersionDTOList);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        applicationReleasingDTO.setAppURL(gitlabUrl + urlSlash
+                + organization.getCode() + "-" + projectE.getCode() + "/"
+                + applicationE.getCode() + "/raw/master/README.md");
+        return applicationReleasingDTO;
     }
 
     @Override

@@ -16,6 +16,8 @@ public interface ApplicationMarketRepository {
 
     Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
 
+    ApplicationMarketE getMarket(Long projectId, Long appMarketId);
+
     int updateImgUrl(ApplicationMarketE applicationMarketE);
 
     Boolean checkCanPub(Long appId);

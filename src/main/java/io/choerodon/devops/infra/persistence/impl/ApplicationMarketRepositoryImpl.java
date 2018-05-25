@@ -76,6 +76,11 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         return ConvertPageHelper.convertPage(applicationMarketQueryDOPage, ApplicationMarketE.class);
     }
 
+    @Override
+    public ApplicationMarketE getMarket(Long projectId, Long appMarketId) {
+        return ConvertHelper.convert(applicationMarketMapper.getMarketApplication(appMarketId), ApplicationMarketE.class);
+    }
+
 
     @Override
     public int updateImgUrl(ApplicationMarketE applicationMarketE) {
