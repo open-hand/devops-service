@@ -17,6 +17,7 @@ public class ApplicationReleasingDTO {
     private String category;
     private String description;
     private String contributor;
+    private String appURL;
 
     public Long getId() {
         return id;
@@ -96,5 +97,13 @@ public class ApplicationReleasingDTO {
 
     public void setContributor(String contributor) {
         this.contributor = contributor;
+    }
+
+    public String getAppURL() {
+        return appURL;
+    }
+
+    public void setAppURL(String appURL) {
+        this.appURL = appURL;
     }
 }

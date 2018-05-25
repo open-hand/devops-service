@@ -20,6 +20,8 @@ public interface ApplicationMarketMapper extends BaseMapper<DevopsAppMarketDO> {
                                                   @Param("searchParam") Map<String, Object> searchParam,
                                                   @Param("param") String param);
 
+    DevopsAppMarketDO getMarketApplication(@Param("appMarketId") Long appMarketId);
+
     int selectCountByAppId(@Param("appId") Long appId);
 
     Long getMarketIdByAppId(@Param("appId") Long appId);

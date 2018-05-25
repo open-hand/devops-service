@@ -69,6 +69,23 @@
         <include refid="nameOrCateParamSql"/>
     </select>
 
+    <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+        SELECT
+            dam.id,
+            dam.app_id,
+            da.`name` `name`,
+            da.`code` `code`,
+            dam.publish_level,
+            dam.img_url,
+            dam.description,
+            dam.category,
+            dam.contributor
+        FROM
+            devops_app_market dam
+            JOIN devops_application da ON da.id = dam.app_id
+        WHERE dam.id =  #{appMarketId}
+    </select>
+
     <select id="selectCountByAppId" resultType="java.lang.Integer">
         SELECT
         count(1)
