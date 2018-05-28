@@ -41,7 +41,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
         if (helmType == null) {
             return;
         }
-        if(logger.isDebugEnabled()) {
+        if (logger.isDebugEnabled()) {
             logger.debug(msg.toString());
         }
         switch (helmType) {
@@ -124,7 +124,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.helmReleaseUpgradeFail(msg.getKey(), msg.getPayload());
                 break;
             case HelmReleaseGetContent:
-                deployMsgHandlerService.helmReleaseGetContent(msg.getKey(),TypeUtil.objToLong(msg.getEnvId()),msg.getPayload());
+                deployMsgHandlerService.helmReleaseGetContent(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             default:
                 break;

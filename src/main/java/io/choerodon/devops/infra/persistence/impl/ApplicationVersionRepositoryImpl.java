@@ -161,13 +161,13 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public Boolean checkAppAndVersion(Long appId,List<Long> appVersionIds) {
-        if(appId==null || appVersionIds.isEmpty()){
+    public Boolean checkAppAndVersion(Long appId, List<Long> appVersionIds) {
+        if (appId == null || appVersionIds.isEmpty()) {
             throw new CommonException("error.app.version.check");
 
         }
 
-        for(Long appVersionId:appVersionIds){
+        for (Long appVersionId : appVersionIds) {
             int selectCount = applicationVersionMapper.selectCountByOptions(appId, appVersionId);
             if (selectCount == 0) {
                 throw new CommonException("error.app.version.check");

@@ -33,7 +33,7 @@ public interface DevopsServiceService {
     /**
      * 删除网络
      *
-     * @param id        网络ID
+     * @param id 网络ID
      * @return
      */
     void deleteDevopsService(Long id);
@@ -59,7 +59,7 @@ public interface DevopsServiceService {
     /**
      * 分页查询网络列表
      *
-     * @param envId     参数
+     * @param envId 参数
      * @return List of DevopsServiceDTO
      */
     List<DevopsServiceDTO> listDevopsService(Long envId);
@@ -67,7 +67,7 @@ public interface DevopsServiceService {
     /**
      * 查询单个网络
      *
-     * @param id        网络id
+     * @param id 网络id
      * @return DevopsServiceDTO
      */
     DevopsServiceDTO query(Long id);

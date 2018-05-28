@@ -55,11 +55,11 @@ public class CiController {
     /**
      * 获取应用版本信息
      *
-     * @param token token
-     * @param image  类型
+     * @param token   token
+     * @param image   类型
      * @param version 版本
-     * @param  commit commit
-     * @param  file tgz包
+     * @param commit  commit
+     * @param file    tgz包
      * @return File
      */
     @Permission(level = ResourceLevel.PROJECT, permissionPublic = true)

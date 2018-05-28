@@ -167,6 +167,10 @@ public class ApplicationInstanceDO extends AuditDomain {
         return error;
     }
 
+    public void setError(String error) {
+        this.error = error;
+    }
+
     public String getPublishLevel() {
         return publishLevel;
     }
@@ -189,9 +193,5 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public void setError(String error) {
-        this.error = error;
     }
 }

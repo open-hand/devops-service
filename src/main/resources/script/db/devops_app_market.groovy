@@ -1,4 +1,3 @@
-
 package script.db
 
 databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {

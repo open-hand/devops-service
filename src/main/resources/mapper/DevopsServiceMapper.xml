@@ -97,7 +97,8 @@
         INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
         INNER JOIN devops_env de ON ds.env_id = de.id
         JOIN devops_env_command cmd ON cmd.object_id = ds.id
-        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "service" GROUP BY decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
+        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "service" GROUP BY
+        decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
         <include refid="sqlparam"/>
     </select>
 

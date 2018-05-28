@@ -18,7 +18,6 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
-import io.choerodon.websocket.tool.KeyParseTool;
 
 /**
  * Created by younger on 2018/4/18.

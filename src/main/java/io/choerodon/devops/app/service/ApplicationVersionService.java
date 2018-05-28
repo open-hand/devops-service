@@ -26,11 +26,11 @@ public interface ApplicationVersionService {
     /**
      * 创建应用版本信息
      *
-     * @param token token
-     * @param image  类型
+     * @param token   token
+     * @param image   类型
      * @param version 版本
-     * @param  commit commit
-     * @param  file tgz包
+     * @param commit  commit
+     * @param file    tgz包
      * @return File
      */
     void create(String image, String token, String version, String commit, MultipartFile file);
@@ -38,7 +38,7 @@ public interface ApplicationVersionService {
     /**
      * 应用下查询应用所有版本
      *
-     * @param appId     应用Id
+     * @param appId 应用Id
      * @return List
      */
     List<ApplicationVersionRepDTO> listByAppId(Long appId);

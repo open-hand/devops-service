@@ -24,8 +24,8 @@ public interface ApplicationInstanceService {
     /**
      * 查询应用部署
      *
-     * @param projectId   项目id
-     * @param appId 应用id
+     * @param projectId 项目id
+     * @param appId     应用id
      * @return page of ApplicationInstancesDTO
      */
     List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId);
@@ -33,8 +33,8 @@ public interface ApplicationInstanceService {
     /**
      * 查询value列表
      *
-     * @param appId 应用id
-     * @param envId 环境id
+     * @param appId     应用id
+     * @param envId     环境id
      * @param versionId 版本id
      * @return List
      */

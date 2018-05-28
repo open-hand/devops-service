@@ -88,7 +88,7 @@ public interface ApplicationTemplateService {
     /**
      * 判断模板是否存在
      *
-     * @param uuid           模板uuid
+     * @param uuid 模板uuid
      * @return
      */
     Boolean applicationTemplateExist(String uuid);

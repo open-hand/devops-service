@@ -118,7 +118,6 @@ public class K8sUtil {
 
     /**
      * loadBalancerStatus获取
-     *
      */
     public static String loadBalancerStatusStringer(V1LoadBalancerStatus v1LoadBalancerStatus) {
         String result = "";

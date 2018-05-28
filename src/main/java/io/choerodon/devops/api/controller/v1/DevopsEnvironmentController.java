@@ -92,7 +92,7 @@ public class DevopsEnvironmentController {
      *
      * @param projectId     项目id
      * @param environmentId 环境id
-     * @param environmentId  是否更新
+     * @param environmentId 是否更新
      * @return String
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -105,7 +105,7 @@ public class DevopsEnvironmentController {
             @PathVariable Long environmentId,
             @ApiParam(value = "是否更新")
             @RequestParam(required = false) Boolean update) {
-        return Optional.ofNullable(devopsEnvironmentService.queryShell(environmentId,update))
+        return Optional.ofNullable(devopsEnvironmentService.queryShell(environmentId, update))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.shell.get"));
     }

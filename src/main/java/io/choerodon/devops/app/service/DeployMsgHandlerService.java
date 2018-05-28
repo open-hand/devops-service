@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import io.choerodon.websocket.Msg;
-
 /**
  * Created by Zenger on 2018/4/17.
  */
@@ -13,7 +11,7 @@ public interface DeployMsgHandlerService {
 
     void resourceUpdate(String key, Long envId, String msg);
 
-    void resourceDelete(Long envId,String msg);
+    void resourceDelete(Long envId, String msg);
 
     void helmReleaseHookLogs(String key, String msg);
 

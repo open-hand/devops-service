@@ -45,7 +45,8 @@
         JOIN devops_env de ON dai.env_id = de.id
         JOIN devops_application da ON da.id = dav.app_id
         JOIN devops_env_command cmd ON cmd.object_id = dai.id
-        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY  decmd.object,decmd.object_id ) mcmd ON mcmd.id =
+        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY
+        decmd.object,decmd.object_id ) mcmd ON mcmd.id =
         cmd.id
         LEFT JOIN devops_app_market dam ON dam.publish_level = 'public'
         OR ( dam.app_id = da.id AND dam.publish_level = 'organization' )
@@ -78,7 +79,6 @@
         ORDER BY
         dai.id DESC
     </select>
-
 
 
     <select id="checkOptions" resultType="java.lang.Integer">

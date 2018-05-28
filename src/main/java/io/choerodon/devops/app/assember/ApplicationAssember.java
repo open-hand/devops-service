@@ -29,10 +29,10 @@ public class ApplicationAssember implements ConvertorI<ApplicationE, Object, App
     public ApplicationDTO entityToDto(ApplicationE applicationE) {
         ApplicationDTO applicationDTO = new ApplicationDTO();
         BeanUtils.copyProperties(applicationE, applicationDTO);
-        if(applicationE.getProjectE()!=null){
+        if (applicationE.getProjectE() != null) {
             applicationDTO.setProjectId(applicationE.getProjectE().getId());
         }
-        if(applicationE.getApplicationTemplateE()!=null){
+        if (applicationE.getApplicationTemplateE() != null) {
             applicationDTO.setApplictionTemplateId(applicationE.getApplicationTemplateE().getId());
         }
         return applicationDTO;
