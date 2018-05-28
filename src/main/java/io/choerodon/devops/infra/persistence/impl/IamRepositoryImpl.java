@@ -73,7 +73,7 @@ public class IamRepositoryImpl implements IamRepository {
     public List<ProjectE> listIamProjectByOrgId(Long organizationId) {
         List<ProjectE> returnList = new ArrayList<>();
         int page = 0;
-        int size = 20;
+        int size = 200;
         ResponseEntity<Page<ProjectDO>> pageResponseEntity =
                 iamServiceClient.queryProjectByOrgId(organizationId, page, size);
         if (pageResponseEntity != null) {
