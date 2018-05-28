@@ -71,14 +71,14 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
             devopsServiceQueryDOList = PageHelper.doSort(
                     pageRequest.getSort(), () -> devopsServiceMapper.listDevopsServiceByPage(
-                    projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size));
+                            projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size));
         } else {
             count = devopsServiceMapper
                     .selectCountByName(projectId, null, null);
             devopsServiceQueryDOList = PageHelper.doSort(pageRequest.getSort(), () ->
                     devopsServiceMapper.listDevopsServiceByPage(
-                    projectId, null, null, start, size));
+                            projectId, null, null, start, size));
         }
 
         return ConvertPageHelper.convertPage(

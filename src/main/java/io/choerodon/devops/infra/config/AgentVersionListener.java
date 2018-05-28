@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.config;
 
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.choerodon.devops.app.service.impl.DevopsEnvironmentServiceImpl;
@@ -20,7 +19,6 @@ public class AgentVersionListener implements SessionListener {
     public void onConnected(Session session) {
         devopsEnvironmentService.setAgentVersion(session.getWebSocketSession().getAttributes().get("version").toString());
     }
-
 
 
     @Override

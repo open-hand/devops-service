@@ -40,7 +40,8 @@
         JOIN devops_ingress_path dip ON dip.ingress_id = di.id
         JOIN devops_env de on de.id = di.env_id
         JOIN devops_env_command cmd ON cmd.object_id = di.id
-        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "service" GROUP BY decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
+        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "service" GROUP BY
+        decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
         LEFT JOIN devops_service ds on ds.id = dip.service_id
         WHERE di.project_id = #{projectId}
         <if test='searchParam != null'>

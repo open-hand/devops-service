@@ -18,7 +18,6 @@ public class DevopsEnvPodContainerLogDTO {
 
     /**
      * 覆写构造方法
-     *
      */
     public DevopsEnvPodContainerLogDTO(String podName, String containerName) {
 

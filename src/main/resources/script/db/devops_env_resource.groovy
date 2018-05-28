@@ -9,7 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
             column(name: 'app_instance_id', type: 'BIGINT UNSIGNED', remarks: '部署实例 ID')
             column(name: 'message_id', type: 'BIGINT UNSIGNED', remarks: '资源信息id')
             column(name: 'kind', type: 'VARCHAR(32)', remarks: '资源类型')
-            column(name: 'name', type: 'VARCHAR(64)',  remarks: '资源名')
+            column(name: 'name', type: 'VARCHAR(64)', remarks: '资源名')
             column(name: 'weight ', type: 'BIGINT UNSIGNED', remarks: 'hook执行顺序')
             column(name: 'reversion ', type: 'BIGINT UNSIGNED', remarks: '判断对象是否更新')
 

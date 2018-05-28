@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.dto;
 
-import javax.persistence.Transient;
-
 /**
  * Created by younger on 2018/3/30.
  */

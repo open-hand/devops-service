@@ -6,13 +6,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
@@ -39,7 +37,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private ApplicationVersionRepository applicationVersionRepository;
     private ApplicationMarketRepository applicationMarketRepository;
     private IamRepository iamRepository;
-    private FileFeignClient fileFeignClient;
 
     /**
      * 构造函数
@@ -47,12 +44,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     @Autowired
     public ApplicationMarketServiceImpl(ApplicationVersionRepository applicationVersionRepository,
                                         ApplicationMarketRepository applicationMarketRepository,
-                                        IamRepository iamRepository,
-                                        FileFeignClient fileFeignClient) {
+                                        IamRepository iamRepository) {
         this.applicationVersionRepository = applicationVersionRepository;
         this.applicationMarketRepository = applicationMarketRepository;
         this.iamRepository = iamRepository;
-        this.fileFeignClient = fileFeignClient;
     }
 
     @Override

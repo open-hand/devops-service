@@ -149,16 +149,16 @@ public class ApplicationInstanceDTO {
         return error;
     }
 
+    public void setError(String error) {
+        this.error = error;
+    }
+
     public String getPublishLevel() {
         return publishLevel;
     }
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
-    }
-
-    public void setError(String error) {
-        this.error = error;
     }
 
     public String getContributor() {

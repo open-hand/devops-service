@@ -107,8 +107,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
 
     @Override
-    public void updateProject(Integer projectId,String userName) {
-         gitlabServiceClient.updateProject(projectId,userName);
+    public void updateProject(Integer projectId, String userName) {
+        gitlabServiceClient.updateProject(projectId, userName);
     }
 
 }

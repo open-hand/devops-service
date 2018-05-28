@@ -26,5 +26,5 @@ public interface GitlabRepository {
 
     void deleteProject(Integer projectId);
 
-    void updateProject(Integer projectId,String userName);
+    void updateProject(Integer projectId, String userName);
 }

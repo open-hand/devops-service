@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;

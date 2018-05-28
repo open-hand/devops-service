@@ -28,9 +28,9 @@ import io.choerodon.core.exception.CommonException;
 public class FileUtil {
 
 
+    public final static int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
     private static final Yaml yaml = new Yaml();
-    public  final static int BUFFER_SIZE = 2048;
 
     private FileUtil() {
     }
@@ -185,16 +185,16 @@ public class FileUtil {
         try {
             jsonNodeTree = new ObjectMapper().readTree(jsonValue);
         } catch (IOException e) {
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug(e.getMessage());
             }
         }
         try {
             json = new YAMLMapper().writeValueAsString(jsonNodeTree);
         } catch (JsonProcessingException e) {
-           if(logger.isDebugEnabled()) {
-               logger.debug(e.getMessage());
-           }
+            if (logger.isDebugEnabled()) {
+                logger.debug(e.getMessage());
+            }
         }
         return json;
     }
@@ -215,16 +215,14 @@ public class FileUtil {
 
     /**
      * 解压tgz包
-     *
      */
-    public static void unTarGZ(String file, String destDir){
+    public static void unTarGZ(String file, String destDir) {
         File tarFile = new File(file);
         unTarGZ(tarFile, destDir);
     }
 
     /**
      * 解压tgz包
-     *
      */
     public static void unTarGZ(File tarFile, String destDir) {
         if (StringUtils.isBlank(destDir)) {
@@ -234,7 +232,7 @@ public class FileUtil {
         try {
             unTar(new GzipCompressorInputStream(new FileInputStream(tarFile)), destDir);
         } catch (IOException e) {
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug(e.getMessage());
             }
         }
@@ -265,7 +263,7 @@ public class FileUtil {
                 }
             }
         } catch (Exception e) {
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug(e.getMessage());
             }
         } finally {
@@ -275,7 +273,6 @@ public class FileUtil {
 
     /**
      * 创建目录
-     *
      */
     public static void createDirectory(String outputDir, String subDir) {
         File file = new File(outputDir);
@@ -289,7 +286,6 @@ public class FileUtil {
 
     /**
      * 从文件夹中查找指定文件
-     *
      */
     public static File queryFileFromFiles(File file, String fileName) {
         File[] files = file.listFiles();
@@ -305,13 +301,12 @@ public class FileUtil {
 
     /**
      * 删除文件
-     *
      */
     public static void deleteFile(File file) {
         try {
             FileUtils.deleteDirectory(file);
         } catch (IOException e) {
-            if(logger.isDebugEnabled()) {
+            if (logger.isDebugEnabled()) {
                 logger.debug(e.getMessage());
             }
         }
@@ -319,7 +314,6 @@ public class FileUtil {
 
     /**
      * 合并２个json字符串
-     *
      */
     public static String mergeJsonString(String jsonString, String newJsonString) {
         JSONObject jsonOne = JSONObject.parseObject(jsonString);

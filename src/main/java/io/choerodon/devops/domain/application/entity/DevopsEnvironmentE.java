@@ -24,6 +24,7 @@ public class DevopsEnvironmentE {
     private Boolean isActive;
     private Boolean isUpdate;
     private String updateMessage;
+
     /**
      * 重写构造方法
      */
@@ -163,7 +164,6 @@ public class DevopsEnvironmentE {
 
     /**
      * 初始化序列
-     *
      */
     public void initSequence(List<DevopsEnvironmentE> devopsEnvironmentES) {
         this.sequence = 1L;

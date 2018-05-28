@@ -38,5 +38,5 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
 
     List<ApplicationVersionDO> getAllPublishedVersion(@Param("applicationId") Long applicationId);
 
-    int selectCountByOptions(@Param("applicationId") Long applicationId,@Param("appVersionId") Long appVersionId);
+    int selectCountByOptions(@Param("applicationId") Long applicationId, @Param("appVersionId") Long appVersionId);
 }
