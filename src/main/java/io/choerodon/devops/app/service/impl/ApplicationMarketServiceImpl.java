@@ -20,6 +20,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
@@ -37,6 +38,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private ApplicationVersionRepository applicationVersionRepository;
     private ApplicationMarketRepository applicationMarketRepository;
     private IamRepository iamRepository;
+    private ApplicationRepository applicationRepository;
 
     /**
      * 构造函数
@@ -44,10 +46,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     @Autowired
     public ApplicationMarketServiceImpl(ApplicationVersionRepository applicationVersionRepository,
                                         ApplicationMarketRepository applicationMarketRepository,
-                                        IamRepository iamRepository) {
+                                        IamRepository iamRepository,
+                                        ApplicationRepository applicationRepository) {
         this.applicationVersionRepository = applicationVersionRepository;
         this.applicationMarketRepository = applicationMarketRepository;
         this.iamRepository = iamRepository;
+        this.applicationRepository = applicationRepository;
     }
 
     @Override
@@ -121,6 +125,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationReleasingDTO.setAppVersions(applicationVersionDTOList);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        applicationE = applicationRepository.query(applicationId);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationReleasingDTO.setAppURL(gitlabUrl + urlSlash
                 + organization.getCode() + "-" + projectE.getCode() + "/"
