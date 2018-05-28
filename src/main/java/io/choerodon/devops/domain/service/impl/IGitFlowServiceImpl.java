@@ -52,8 +52,8 @@ public class IGitFlowServiceImpl implements IGitFlowService {
         this.gitFlowRepository = gitFlowRepository;
     }
 
-    private String mergeRequestMessage(String sourceBranch, String targetBranch, String username) {
-        return "Merge '" + sourceBranch + "' into '" + targetBranch + "' by '" + username + "'.";
+    private String mergeRequestMessage(String sourceBranch, String targetBranch) {
+        return "Merge '" + sourceBranch + "' into '" + targetBranch +  "'.";
     }
 
     /**
@@ -202,7 +202,7 @@ public class IGitFlowServiceImpl implements IGitFlowService {
             String targetBranch,
             String username
     ) {
-        String message = mergeRequestMessage(branchName, targetBranch, username);
+        String message = mergeRequestMessage(branchName, targetBranch);
         MergeRequestDO mergeRequest = gitFlowRepository
                 .acceptMergeRequest(projectId, mergeRequestId, message, username);
         if (!MERGED.equals(mergeRequest.getState())) {

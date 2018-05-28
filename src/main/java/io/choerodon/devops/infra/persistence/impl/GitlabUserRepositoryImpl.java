@@ -61,4 +61,13 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     public void disEnabledGitlabUser(String userName) {
         gitlabServiceClient.disEnabledUserByUsername(userName);
     }
+
+    @Override
+    public GitlabUserE getGitlabUserByUserId(Integer userId) {
+        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.queryUserByUserId(userId);
+        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+            return null;
+        }
+        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
+    }
 }

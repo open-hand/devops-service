@@ -12,12 +12,15 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 
@@ -33,16 +36,18 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private DevopsProjectRepository devopsProjectRepository;
     private GitlabUserRepository gitlabUserRepository;
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
-
+    private UserAttrRepository userAttrRepository;
     /**
      * 构造函数
      */
     public GitlabGroupMemberServiceImpl(DevopsProjectRepository devopsProjectRepository,
                                         GitlabUserRepository gitlabUserRepository,
-                                        GitlabGroupMemberRepository gitlabGroupMemberRepository) {
+                                        GitlabGroupMemberRepository gitlabGroupMemberRepository,
+                                        UserAttrRepository userAttrRepository) {
         this.devopsProjectRepository = devopsProjectRepository;
         this.gitlabUserRepository = gitlabUserRepository;
         this.gitlabGroupMemberRepository = gitlabGroupMemberRepository;
+        this.userAttrRepository = userAttrRepository;
     }
 
     @Override
@@ -53,29 +58,30 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 accessLevelList.add(0);
                 List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
                 if (userMemberRoleList == null || userMemberRoleList.size() == 0) {
-                    LOGGER.error("user member role is empty,{}");
+                    LOGGER.info("user member role is empty");
+                    return;
                 }
                 AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
 
                 operation(gitlabGroupMemberDTO.getResourceId(), level,
-                        gitlabGroupMemberDTO.getUsername());
+                        gitlabGroupMemberDTO.getUserId());
             }
         }
     }
 
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        for (GitlabGroupMemberDTO gg : gitlabGroupMemberDTOList) {
-            if (PROJECT.equals(gg.getResourceType())) {
-                GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(gg.getUsername());
+        for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
+            if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
+                GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(gitlabGroupMemberDTO.getUsername());
                 if (gitlabUserE == null) {
-                    LOGGER.error("error.gitlab.username.select: " + gg.getUsername());
+                    LOGGER.error("error.gitlab.username.select: " + gitlabGroupMemberDTO.getUsername());
                     return;
                 }
 
-                GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(gg.getResourceId());
+                GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
                 if (gitlabGroupE.getId() == null) {
-                    LOGGER.error("error.gitlab.groupId.select: " + gg.getResourceId());
+                    LOGGER.error("error.gitlab.groupId.select: " + gitlabGroupMemberDTO.getResourceId());
                     return;
                 }
 
@@ -127,14 +133,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      *
      * @param projectId projectId
      * @param level     level
-     * @param userName  userName
+     * @param userId  userId
      */
-    public void operation(Long projectId, AccessLevel level, String userName) {
-        GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(userName);
-        if (gitlabUserE == null) {
-            LOGGER.error("error.gitlab.username.select: " + userName);
-            return;
-        }
+    public void operation(Long projectId, AccessLevel level, Long userId) {
+        UserAttrE userAttrE = userAttrRepository.queryById(userId);
 
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         if (gitlabGroupE.getId() == null) {
@@ -144,7 +146,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
         GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 gitlabGroupE.getId(),
-                gitlabUserE.getId());
+                (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
 
         // 增删改用户
         switch (level) {
@@ -152,7 +154,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 if (grouoMemberE != null) {
                     ResponseEntity removeMember = gitlabGroupMemberRepository.deleteMember(
                             gitlabGroupE.getId(),
-                            gitlabUserE.getId());
+                            (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                     if (removeMember.getStatusCode() != HttpStatus.NO_CONTENT) {
                         LOGGER.error("error.gitlab.member.remove");
                     }
@@ -162,7 +164,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             case MASTER:
             case OWNER:
                 RequestMemberDO requestMember = new RequestMemberDO();
-                requestMember.setUserId(gitlabUserE.getId());
+                requestMember.setUserId((TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 requestMember.setAccessLevel(level.toValue());
                 requestMember.setExpiresAt("");
                 if (grouoMemberE == null) {

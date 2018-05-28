@@ -12,19 +12,19 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
  */
 public interface GitlabProjectRepository {
 
-    List<GitlabPipelineE> listPipeline(Integer projectId);
+    List<GitlabPipelineE> listPipeline(Integer projectId, Integer userId);
 
-    List<GitlabPipelineE> listPipelines(Integer projectId, Integer page, Integer size);
+    List<GitlabPipelineE> listPipelines(Integer projectId, Integer page, Integer size, Integer userId);
 
-    GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, String userName);
+    GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, Integer userId);
 
-    GitlabCommitE getCommit(Integer projectId, String sha, String userName);
+    GitlabCommitE getCommit(Integer projectId, String sha, Integer userId);
 
-    List<GitlabJobE> listJobs(Integer projectId, Integer pipelineId, String userName);
+    List<GitlabJobE> listJobs(Integer projectId, Integer pipelineId, Integer userId);
 
-    Boolean retry(Integer projectId, Integer pipelineId, String userName);
+    Boolean retry(Integer projectId, Integer pipelineId, Integer userId);
 
-    Boolean cancel(Integer projectId, Integer pipelineId, String userName);
+    Boolean cancel(Integer projectId, Integer pipelineId, Integer userId);
 
-    List<BranchE> listBranches(Integer projectId);
+    List<BranchE> listBranches(Integer projectId, Integer userId);
 }

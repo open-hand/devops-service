@@ -8,13 +8,14 @@ import io.choerodon.devops.domain.application.event.GitlabUserEvent;
  */
 public interface GitlabUserRepository {
 
-    GitlabUserE getGitlabUserByUsername(String userName);
 
     GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent);
 
     GitlabUserE updateGitLabUser(String username, Integer projectsLimit, GitlabUserEvent gitlabUserEvent);
 
-    void isEnabledGitlabUser(String userName);
+    void isEnabledGitlabUser(Integer userId);
 
-    void disEnabledGitlabUser(String userName);
+    void disEnabledGitlabUser(Integer userId);
+
+    GitlabUserE getGitlabUserByUserId(Integer userId);
 }

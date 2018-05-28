@@ -35,25 +35,17 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void createGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
-        GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(gitlabUserReqDTO.getUsername());
-        GitlabUserE createOrUpdateGitlabUserE = null;
-        if (gitlabUserE == null) {
-            createOrUpdateGitlabUserE = gitlabUserRepository.createGitLabUser(
-                    gitlabConfigurationProperties.getPassword(),
-                    gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
 
-            if (createOrUpdateGitlabUserE != null) {
-                UserAttrE userAttrE = new UserAttrE();
-                userAttrE.setId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
-                userAttrE.setGitlabUserId(createOrUpdateGitlabUserE.getId().longValue());
-                userAttrRepository.insert(userAttrE);
-            }
+        GitlabUserE createOrUpdateGitlabUserE = gitlabUserRepository.createGitLabUser(
+                gitlabConfigurationProperties.getPassword(),
+                gitlabConfigurationProperties.getProjectLimit(),
+                ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
 
-        } else {
-            gitlabUserRepository.updateGitLabUser(gitlabUserReqDTO.getUsername(),
-                    gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+        if (createOrUpdateGitlabUserE != null) {
+            UserAttrE userAttrE = new UserAttrE();
+            userAttrE.setId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+            userAttrE.setGitlabUserId(createOrUpdateGitlabUserE.getId().longValue());
+            userAttrRepository.insert(userAttrE);
         }
     }
 
