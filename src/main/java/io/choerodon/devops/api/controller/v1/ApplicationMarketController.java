@@ -134,7 +134,7 @@ public class ApplicationMarketController {
     @ApiOperation(value = "查询单个应用市场的应用")
     @CustomPageRequest
     @GetMapping("/{appMarketId}")
-    public ResponseEntity<ApplicationReleasingDTO> listAllApp(
+    public ResponseEntity<ApplicationReleasingDTO> queryApp(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable Long projectId,
             @ApiParam(value = "发布ID", required = true)
