@@ -81,18 +81,6 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         return ConvertHelper.convert(applicationMarketMapper.getMarketApplication(appMarketId), ApplicationMarketE.class);
     }
 
-
-    @Override
-    public int updateImgUrl(ApplicationMarketE applicationMarketE) {
-        DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationMarketE, DevopsAppMarketDO.class);
-        DevopsAppMarketDO appDo = applicationMarketMapper.selectByPrimaryKey(devopsAppMarketDO.getId());
-        if (appDo != null) {
-            Long objV = appDo.getObjectVersionNumber();
-            devopsAppMarketDO.setObjectVersionNumber(objV);
-        }
-        return applicationMarketMapper.updateByPrimaryKeySelective(devopsAppMarketDO);
-    }
-
     @Override
     public Boolean checkCanPub(Long appId) {
 
@@ -106,5 +94,30 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     @Override
     public Long getMarketIdByAppId(Long appId) {
         return applicationMarketMapper.getMarketIdByAppId(appId);
+    }
+
+    @Override
+    public void checkProject(Long projectId, Long appMarketId) {
+        if (applicationMarketMapper.checkProject(projectId, appMarketId) != 1) {
+            throw new CommonException("error.appMarket.project.unmatch");
+        }
+    }
+
+    @Override
+    public void checkDeployed(Long projectId, Long appMarketId, Long versionId) {
+        if (applicationMarketMapper.checkDeployed(projectId, appMarketId, versionId) > 0) {
+            throw new CommonException("error.appMarket.instance.deployed");
+        }
+    }
+
+    @Override
+    public void unpublishApplication(Long appMarketId) {
+        applicationMarketMapper.unpublishApplicationVersions(appMarketId, null);
+        applicationMarketMapper.deleteByPrimaryKey(appMarketId);
+    }
+
+    @Override
+    public void unpublishVersion(Long appMarketId, Long versionId) {
+        applicationMarketMapper.unpublishApplicationVersions(appMarketId, versionId);
     }
 }
