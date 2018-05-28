@@ -49,13 +49,4 @@ public interface ApplicationMarketService {
      * @return ApplicationReleasingDTO
      */
     ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId);
-
-    /**
-     * 应用市场上传图片
-     *
-     * @param projectId     项目id
-     * @param appMarketId   应用市场ID
-     * @param multipartFile 图片文件
-     */
-    void uploadPic(Long projectId, Long appMarketId, MultipartFile multipartFile);
 }

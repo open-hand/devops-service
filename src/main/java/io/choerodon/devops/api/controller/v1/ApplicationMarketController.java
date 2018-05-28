@@ -54,27 +54,6 @@ public class ApplicationMarketController {
     }
 
     /**
-     * 应用发布上传图片
-     *
-     * @param projectId   项目id
-     * @param appMarketId 应用市场ID
-     * @return
-     */
-    @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "应用发布上传图片")
-    @PostMapping(value = "/upload/{appMarketId}")
-    public ResponseEntity<Boolean> upload(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
-            @ApiParam(value = "应用市场ID", required = true)
-            @PathVariable Long appMarketId,
-            @ApiParam(value = "上传的图片", required = true)
-            @RequestPart(name = "file", required = true) MultipartFile multipartFile) {
-        applicationMarketService.uploadPic(projectId, appMarketId, multipartFile);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
      * 项目下查询所有发布在应用市场的应用
      *
      * @param projectId   项目id

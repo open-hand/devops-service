@@ -19,14 +19,6 @@ spring:
         percentage: 1.0
   redis:
     host: localhost
-  http:
-    encoding:
-      charset: UTF-8
-      force: true
-      enabled: true
-    multipart:
-      max-file-size: 30MB
-      max-request-size: 30MB
 services:
   harbor:
     baseUrl: "harbor.example.com"

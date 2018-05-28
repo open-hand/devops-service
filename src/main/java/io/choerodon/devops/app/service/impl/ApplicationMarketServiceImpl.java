@@ -25,7 +25,6 @@ import io.choerodon.devops.domain.application.repository.ApplicationMarketReposi
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.feign.FileFeignClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -82,6 +81,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
         applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
         applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
+        applicationMarketE.setImgUrl(applicationReleasingDTO.getImgUrl());
         applicationMarketRepository.create(applicationMarketE);
         return applicationMarketRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
     }
@@ -131,22 +131,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 + organization.getCode() + "-" + projectE.getCode() + "/"
                 + applicationE.getCode() + "/raw/master/README.md");
         return applicationReleasingDTO;
-    }
-
-    @Override
-    public void uploadPic(Long projectId, Long appMarketId, MultipartFile file) {
-        String imgUrl = "";
-        if (file != null) {
-            Long organizationId = DetailsHelper.getUserDetails().getOrganizationId();
-            String bakcetName = "devops-service";
-            imgUrl = fileFeignClient.uploadFile(organizationId, bakcetName, file.getOriginalFilename(), file).getBody();
-        }
-        if (imgUrl != null && !imgUrl.trim().equals("")) {
-            ApplicationMarketE applicationMarketE = ApplicationMarketFactory.create();
-            applicationMarketE.setImgUrl(imgUrl);
-            applicationMarketE.setId(appMarketId);
-            applicationMarketRepository.updateImgUrl(applicationMarketE);
-        }
     }
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Page<ApplicationMarketE> applicationMarketEPage) {
