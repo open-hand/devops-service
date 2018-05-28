@@ -42,7 +42,7 @@ public class GitlabCommitController {
     @PostMapping(value = "/{gitlabProjectId}/commit_sha")
     public ResponseEntity<List<GitlabCommitDTO>> list(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Integer gitlabProjectId,
             @ApiParam(value = "关联pipeline的值", required = true)

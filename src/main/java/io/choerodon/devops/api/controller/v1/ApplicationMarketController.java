@@ -43,7 +43,7 @@ public class ApplicationMarketController {
     @PostMapping
     public ResponseEntity<Long> create(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody(required = true) ApplicationReleasingDTO applicationReleaseDTO) {
         return Optional.ofNullable(
@@ -63,7 +63,7 @@ public class ApplicationMarketController {
     @PostMapping("/{appMarketId}/unpublish")
     public ResponseEntity unpublish(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(required = true) Long appMarketId) {
         applicationMarketService.unpublish(projectId, appMarketId);
@@ -81,7 +81,7 @@ public class ApplicationMarketController {
     @PostMapping("/{appMarketId}/unpublish_version")
     public ResponseEntity unpublish(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(required = true) Long appMarketId,
             @ApiParam(value = "版本ID", required = true)
@@ -104,7 +104,7 @@ public class ApplicationMarketController {
     @PostMapping(value = "/list")
     public ResponseEntity<Page<ApplicationReleasingDTO>> pageListMarketAppsByProjectId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
@@ -129,7 +129,7 @@ public class ApplicationMarketController {
     @PostMapping(value = "/list_all")
     public ResponseEntity<Page<ApplicationReleasingDTO>> listAllApp(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
@@ -151,7 +151,7 @@ public class ApplicationMarketController {
     @GetMapping("/{appMarketId}")
     public ResponseEntity<ApplicationReleasingDTO> queryApp(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable Long appMarketId) {
         return Optional.ofNullable(applicationMarketService.getMarketApp(projectId, appMarketId))

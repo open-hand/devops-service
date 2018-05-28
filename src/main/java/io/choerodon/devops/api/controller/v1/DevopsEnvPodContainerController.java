@@ -45,7 +45,7 @@ public class DevopsEnvPodContainerController {
     @GetMapping(value = "/{containerId}/logs")
     public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLog(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
             @PathVariable Long podId,
             @ApiParam(value = "容器ID", required = true)
@@ -70,7 +70,7 @@ public class DevopsEnvPodContainerController {
     @PostMapping(value = "/list_by_options")
     public ResponseEntity<Page<DevopsEnvPodContainerDTO>> listByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "容器ID", required = true)
             @PathVariable Long podId,
             @ApiParam(value = "分页参数")
@@ -94,7 +94,7 @@ public class DevopsEnvPodContainerController {
     @GetMapping(value = "/logs")
     public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLogByPod(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
             @PathVariable Long podId) {
         return Optional.ofNullable(containerService.logByPodId(podId))

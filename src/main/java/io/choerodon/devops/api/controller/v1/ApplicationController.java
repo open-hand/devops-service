@@ -46,7 +46,7 @@ public class ApplicationController {
     @PostMapping
     public ResponseEntity<ApplicationRepDTO> create(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody ApplicationDTO applicationDTO) {
         return Optional.ofNullable(applicationService.create(projectId, applicationDTO))
@@ -66,7 +66,7 @@ public class ApplicationController {
     @GetMapping("/{applicationId}")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
         return Optional.ofNullable(applicationService.query(projectId, applicationId))
@@ -86,7 +86,7 @@ public class ApplicationController {
     @PutMapping
     public ResponseEntity<Boolean> update(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody ApplicationUpdateDTO applicationUpdateDTO) {
         return Optional.ofNullable(applicationService.update(projectId, applicationUpdateDTO))
@@ -108,7 +108,7 @@ public class ApplicationController {
     @PutMapping("/{applicationId}")
     public ResponseEntity<Boolean> queryByAppIdAndActive(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "启用停用", required = true)
@@ -132,7 +132,7 @@ public class ApplicationController {
     @PostMapping("/list_by_options")
     public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
@@ -163,7 +163,7 @@ public class ApplicationController {
     @GetMapping("/options")
     public ResponseEntity<List<ApplicationCodeDTO>> listByEnvIdAndStatus(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例运行状态", required = true)
@@ -183,7 +183,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
     public ResponseEntity<List<ApplicationRepDTO>> listByActive(@ApiParam(value = "项目 ID", required = true)
-                                                                @PathVariable Long projectId) {
+                                                                    @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listByActive(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));
@@ -201,7 +201,7 @@ public class ApplicationController {
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
         applicationService.checkName(projectId, name);
@@ -220,7 +220,7 @@ public class ApplicationController {
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String code) {
         applicationService.checkCode(projectId, code);
@@ -238,7 +238,7 @@ public class ApplicationController {
     @GetMapping("/template")
     public ResponseEntity<List<ApplicationTemplateRepDTO>> listTemplate(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId) {
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listTemplate(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.template.get"));
@@ -254,7 +254,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @GetMapping(value = "/listById")
     public ResponseEntity<List<ApplicationDTO>> listByActiveAndPubAndVersion(@ApiParam(value = "项目 ID", required = true)
-                                                                             @PathVariable Long projectId) {
+                                                                                 @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));

@@ -42,7 +42,7 @@ public class ProjectPipelineController {
     @GetMapping(value = "/applications/{appId}/pipelines")
     public ResponseEntity<ProjectPipelineResultTotalDTO> list(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
             @PathVariable Long appId,
             @ApiParam(value = "分页参数")
@@ -65,7 +65,7 @@ public class ProjectPipelineController {
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/retry")
     public ResponseEntity<Boolean> retry(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)
@@ -88,7 +88,7 @@ public class ProjectPipelineController {
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/cancel")
     public ResponseEntity<Boolean> cancel(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)

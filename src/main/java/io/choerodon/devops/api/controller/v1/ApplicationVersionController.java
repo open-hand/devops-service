@@ -47,7 +47,7 @@ public class ApplicationVersionController {
     @PostMapping(value = "/app_version/list_by_options")
     public ResponseEntity<Page<ApplicationVersionRepDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
@@ -70,7 +70,7 @@ public class ApplicationVersionController {
     @GetMapping("/apps/{appId}/version/list")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")
             @PathVariable Long appId) {
         return Optional.ofNullable(applicationVersionService.listByAppId(appId))
@@ -91,7 +91,7 @@ public class ApplicationVersionController {
     @GetMapping("/apps/{appId}/version")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppIdAndEnvId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)
             @PathVariable Long appId,
             @ApiParam(value = "环境 ID", required = true)
@@ -116,7 +116,7 @@ public class ApplicationVersionController {
     @PostMapping(value = "/apps/{appId}/version/list_by_options")
     public ResponseEntity<Page<ApplicationVersionRepDTO>> pageByApp(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
             @PathVariable Long appId,
             @ApiParam(value = "分页参数")

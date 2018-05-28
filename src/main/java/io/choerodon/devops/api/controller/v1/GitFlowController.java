@@ -44,7 +44,7 @@ public class GitFlowController {
     @GetMapping("/branches")
     public ResponseEntity<List<GitFlowE>> listByAppId(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
         return Optional.ofNullable(gitFlowService.getBranches(projectId, applicationId))
@@ -65,7 +65,7 @@ public class GitFlowController {
     @PostMapping("/update_merge_request_status")
     public ResponseEntity<String> finish(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -81,7 +81,7 @@ public class GitFlowController {
     @PostMapping("/start")
     public ResponseEntity start(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -95,7 +95,7 @@ public class GitFlowController {
     @PostMapping("/finish_feature")
     public ResponseEntity finishFeatureEvent(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -109,7 +109,7 @@ public class GitFlowController {
     @PostMapping("/finish")
     public ResponseEntity finishEvent(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -132,7 +132,7 @@ public class GitFlowController {
     @GetMapping("/tags")
     public ResponseEntity<TagsDO> queryTags(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -147,7 +147,7 @@ public class GitFlowController {
     @GetMapping("/tags/release")
     public ResponseEntity<String> queryReleaseNumber(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
         return new ResponseEntity<>(gitFlowService.getReleaseNumber(applicationId, null), HttpStatus.OK);
@@ -158,7 +158,7 @@ public class GitFlowController {
     @GetMapping("/tags/hotfix")
     public ResponseEntity<String> queryHotfixNumber(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
         return new ResponseEntity<>(gitFlowService.getHotfixNumber(applicationId, null), HttpStatus.OK);
