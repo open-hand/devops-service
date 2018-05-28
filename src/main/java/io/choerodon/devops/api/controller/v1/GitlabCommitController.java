@@ -19,7 +19,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/2.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/gitlab_projects")
+@RequestMapping(value = "/v1/projects/{project_id}/gitlab_projects")
 public class GitlabCommitController {
 
     private GitlabCommitService gitlabCommitService;

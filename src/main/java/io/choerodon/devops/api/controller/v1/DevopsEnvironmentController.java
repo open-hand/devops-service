@@ -21,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by younger on 2018/4/9.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/envs")
+@RequestMapping(value = "/v1/projects/{project_id}/envs")
 public class DevopsEnvironmentController {
 
     private DevopsEnvironmentService devopsEnvironmentService;

@@ -27,7 +27,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by younger on 2018/3/27.
  */
 @RestController
-@RequestMapping(value = "/v1/organization/{organizationId}/app_templates")
+@RequestMapping(value = "/v1/organizations/{organization_id}/app_templates")
 public class ApplicationTemplateController {
     private static String ERRORGET = "error.appTemplate.get";
 

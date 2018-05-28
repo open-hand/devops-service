@@ -22,7 +22,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by ernst on 2018/5/12.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/apps_market")
+@RequestMapping(value = "/v1/projects/{project_id}/apps_market")
 public class ApplicationMarketController {
 
     private ApplicationMarketService applicationMarketService;

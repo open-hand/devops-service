@@ -25,7 +25,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/3.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/app_instances")
+@RequestMapping(value = "/v1/projects/{project_id}/app_instances")
 public class ApplicationInstanceController {
 
     private ApplicationInstanceService applicationInstanceService;
