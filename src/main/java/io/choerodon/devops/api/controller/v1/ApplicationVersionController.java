@@ -23,7 +23,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/3.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}")
+@RequestMapping(value = "/v1/projects/{project_id}")
 public class ApplicationVersionController {
 
     private static final String VERSION_QUERY_ERROR = "error.application.version.query";

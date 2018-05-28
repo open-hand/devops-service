@@ -23,7 +23,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/apps/{applicationId}/git_flow")
+@RequestMapping(value = "/v1/projects/{project_id}/apps/{applicationId}/git_flow")
 public class GitFlowController {
 
     private GitFlowService gitFlowService;

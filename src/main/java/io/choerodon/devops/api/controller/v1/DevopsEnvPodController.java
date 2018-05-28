@@ -22,7 +22,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/17.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/app_pod")
+@RequestMapping(value = "/v1/projects/{project_id}/app_pod")
 public class DevopsEnvPodController {
 
     private DevopsEnvPodService devopsEnvPodService;

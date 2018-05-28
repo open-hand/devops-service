@@ -27,7 +27,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/app_pod/{podId}/containers")
+@RequestMapping(value = "/v1/projects/{project_id}/app_pod/{podId}/containers")
 public class DevopsEnvPodContainerController {
     @Autowired
     private DevopsEnvPodContainerService containerService;
