@@ -27,7 +27,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/ingress")
+@RequestMapping(value = "/v1/project/{project_id}/ingress")
 public class DevopsIngressController {
 
     private DevopsIngressService devopsIngressService;
