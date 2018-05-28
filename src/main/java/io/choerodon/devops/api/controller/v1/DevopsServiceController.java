@@ -47,7 +47,7 @@ public class DevopsServiceController {
     @GetMapping(value = "/check")
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "网络名", required = true)
@@ -68,7 +68,7 @@ public class DevopsServiceController {
     @ApiOperation(value = "部署网络")
     @PostMapping
     public ResponseEntity<Boolean> create(@ApiParam(value = "项目ID", required = true)
-                                          @PathVariable Long projectId,
+                                              @PathVariable(value = "project_id") Long projectId,
                                           @ApiParam(value = "部署网络参数", required = true)
                                           @RequestBody @Valid DevopsServiceReqDTO devopsServiceReqDTO) {
         return Optional.ofNullable(
@@ -89,7 +89,7 @@ public class DevopsServiceController {
     @ApiOperation(value = "更新网络")
     @PutMapping(value = "/{id}")
     public ResponseEntity<Boolean> update(@ApiParam(value = "项目ID", required = true)
-                                          @PathVariable Long projectId,
+                                              @PathVariable(value = "project_id") Long projectId,
                                           @ApiParam(value = "网络ID", required = true)
                                           @PathVariable Long id,
                                           @ApiParam(value = "部署网络参数", required = true)
@@ -111,7 +111,7 @@ public class DevopsServiceController {
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(@ApiParam(value = "项目ID", required = true)
-                                 @PathVariable Long projectId,
+                                     @PathVariable(value = "project_id") Long projectId,
                                  @ApiParam(value = "网络ID", required = true)
                                  @PathVariable Long id) {
         devopsServiceService.deleteDevopsService(id);
@@ -132,7 +132,7 @@ public class DevopsServiceController {
     @PostMapping(value = "/list_by_options")
     public ResponseEntity<Page<DevopsServiceDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
@@ -154,7 +154,7 @@ public class DevopsServiceController {
     @GetMapping
     public ResponseEntity<List<DevopsServiceDTO>> listByEnvId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId) {
         return Optional.ofNullable(devopsServiceService.listDevopsService(envId))
@@ -174,7 +174,7 @@ public class DevopsServiceController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<DevopsServiceDTO> query(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "网络ID", required = true)
             @PathVariable Long id) {
         return Optional.ofNullable(devopsServiceService.query(id))

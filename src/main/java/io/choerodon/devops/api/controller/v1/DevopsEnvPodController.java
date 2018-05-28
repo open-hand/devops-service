@@ -45,7 +45,7 @@ public class DevopsEnvPodController {
     @PostMapping(value = "/list_by_options")
     public ResponseEntity<Page<DevopsEnvPodDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")

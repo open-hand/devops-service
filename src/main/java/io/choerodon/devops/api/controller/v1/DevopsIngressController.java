@@ -49,7 +49,7 @@ public class DevopsIngressController {
     @PostMapping
     public ResponseEntity create(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressDTO devopsIngressDTO) {
         devopsIngressService.addIngress(devopsIngressDTO, projectId);
@@ -69,7 +69,7 @@ public class DevopsIngressController {
     @PutMapping(value = "/{id}")
     public ResponseEntity update(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id,
             @ApiParam(value = "域名信息", required = true)
@@ -92,7 +92,7 @@ public class DevopsIngressController {
     @PostMapping(value = "/list_by_options")
     public ResponseEntity<Page<DevopsIngressDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
@@ -115,7 +115,7 @@ public class DevopsIngressController {
     @GetMapping(value = "/{id}")
     public ResponseEntity<DevopsIngressDTO> queryDomainId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id) {
         return Optional.ofNullable(devopsIngressService.getIngress(projectId, id))
@@ -135,7 +135,7 @@ public class DevopsIngressController {
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id) {
         devopsIngressService.deleteIngress(id);
@@ -150,7 +150,7 @@ public class DevopsIngressController {
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名名称", required = true)
             @RequestParam String name,
             @ApiParam(value = "域名名称", required = true)
@@ -173,7 +173,7 @@ public class DevopsIngressController {
     @GetMapping(value = "/check_domain")
     public ResponseEntity<Boolean> checkDomain(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名", required = true)
             @RequestParam String domain,
             @ApiParam(value = "路径", required = true)

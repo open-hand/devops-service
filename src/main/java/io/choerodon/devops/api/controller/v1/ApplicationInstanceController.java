@@ -68,7 +68,7 @@ public class ApplicationInstanceController {
     @PostMapping(value = "/list_by_options")
     public ResponseEntity<Page<ApplicationInstanceDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
             @ApiParam(value = "分页参数") PageRequest pageRequest,
             @ApiParam(value = "环境ID")
@@ -97,7 +97,7 @@ public class ApplicationInstanceController {
     @GetMapping(value = "/all")
     public ResponseEntity<List<ApplicationInstancesDTO>> listByAppId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
             @RequestParam(required = false) Long appId) {
         return Optional.ofNullable(applicationInstanceService.listApplicationInstances(
@@ -118,7 +118,7 @@ public class ApplicationInstanceController {
     @GetMapping(value = "/{appInstanceId}/pods")
     public ResponseEntity<List<DevopsEnvPodDTO>> listByAppInstanceId(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
         return Optional.ofNullable(deployDetailService.getPods(appInstanceId))
@@ -139,7 +139,7 @@ public class ApplicationInstanceController {
     @GetMapping(value = "/{appInstanceId}/value")
     public ResponseEntity<String> queryValue(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
         return Optional.ofNullable(applicationInstanceService.queryValue(appInstanceId))
@@ -161,7 +161,7 @@ public class ApplicationInstanceController {
     @GetMapping("/value")
     public ResponseEntity<List<String>> queryValues(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
             @RequestParam Long appId,
             @ApiParam(value = "环境ID", required = true)
@@ -185,7 +185,7 @@ public class ApplicationInstanceController {
     @PostMapping
     public ResponseEntity<Boolean> deploy(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
             @RequestBody ApplicationDeployDTO applicationDeployDTO) {
         return Optional.ofNullable(applicationInstanceService.create(applicationDeployDTO))
@@ -205,7 +205,7 @@ public class ApplicationInstanceController {
     @GetMapping("/{appInstanceId}/version_features")
     public ResponseEntity<List<VersionFeaturesDTO>> queryVersionFeatures(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
         return Optional.ofNullable(applicationInstanceService.queryVersionFeatures(appInstanceId))
@@ -227,7 +227,7 @@ public class ApplicationInstanceController {
     @GetMapping("/options")
     public ResponseEntity<List<AppInstanceCodeDTO>> listByAppVersionId(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID")
             @RequestParam(required = false) Long envId,
             @ApiParam(value = "应用Id")
@@ -252,7 +252,7 @@ public class ApplicationInstanceController {
     @GetMapping("/{appInstanceId}/resources")
     public ResponseEntity<DevopsEnvResourceDTO> listResources(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long appInstanceId) {
         return Optional.ofNullable(devopsEnvResourceService.listResources(appInstanceId))
@@ -272,7 +272,7 @@ public class ApplicationInstanceController {
     @GetMapping("/{appInstanceId}/stages")
     public ResponseEntity<List<InstanceStageDTO>> listStages(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long appInstanceId) {
         return Optional.ofNullable(devopsEnvResourceService.listStages(appInstanceId))
@@ -296,7 +296,7 @@ public class ApplicationInstanceController {
     @PutMapping(value = "/{instanceId}/upgrade")
     public ResponseEntity upgrade(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId,
             @ApiParam(value = "仓库地址", required = true)
@@ -323,7 +323,7 @@ public class ApplicationInstanceController {
     @PutMapping(value = "/{instanceId}/stop")
     public ResponseEntity stop(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
         applicationInstanceService.instanceStop(instanceId);
@@ -342,7 +342,7 @@ public class ApplicationInstanceController {
     @PutMapping(value = "/{instanceId}/start")
     public ResponseEntity start(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
         applicationInstanceService.instanceStart(instanceId);
@@ -361,7 +361,7 @@ public class ApplicationInstanceController {
     @DeleteMapping(value = "/{instanceId}/delete")
     public ResponseEntity delete(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
         applicationInstanceService.instanceDelete(instanceId);
