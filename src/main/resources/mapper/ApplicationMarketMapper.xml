@@ -8,19 +8,40 @@
             <if test='searchParam.code != null and searchParam.code.size > 0'>
                 AND
                 <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
-                    dam.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
+                    da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
                 AND
                 <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    dam.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                    da.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.category != null and searchParam.category.size > 0'>
+                AND
+                <foreach collection="searchParam.category" item="category" open="(" separator=" OR " close=")">
+                    dam.category LIKE CONCAT(CONCAT('%', #{category, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.description != null and searchParam.description.size > 0'>
+                AND
+                <foreach collection="searchParam.description" item="description" open="(" separator=" OR " close=")">
+                    dam.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.contributor != null and searchParam.contributor.size > 0'>
+                AND
+                <foreach collection="searchParam.contributor" item="contributor" open="(" separator=" OR " close=")">
+                    dam.contributor LIKE CONCAT(CONCAT('%', #{contributor, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (dam.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dam.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dam.category LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dam.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dam.contributor LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
         </if>
     </sql>
