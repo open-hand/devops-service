@@ -18,9 +18,15 @@ public interface ApplicationMarketRepository {
 
     ApplicationMarketE getMarket(Long projectId, Long appMarketId);
 
-    int updateImgUrl(ApplicationMarketE applicationMarketE);
-
     Boolean checkCanPub(Long appId);
 
     Long getMarketIdByAppId(Long appId);
+
+    void checkProject(Long projectId, Long appMarketId);
+
+    void checkDeployed(Long projectId, Long appMarketId, Long versionId);
+
+    void unpublishApplication(Long appMarketId);
+
+    void unpublishVersion(Long appMarketId,Long versionId);
 }

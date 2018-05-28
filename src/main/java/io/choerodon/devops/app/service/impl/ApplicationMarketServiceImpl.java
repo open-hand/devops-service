@@ -133,6 +133,21 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         return applicationReleasingDTO;
     }
 
+    @Override
+    public void unpublish(Long projectId, Long appMarketId) {
+        applicationMarketRepository.checkProject(projectId,appMarketId);
+        applicationMarketRepository.checkDeployed(projectId,appMarketId,null);
+        applicationMarketRepository.unpublishApplication(appMarketId);
+    }
+
+    @Override
+    public void unpublish(Long projectId, Long appMarketId, Long versionId) {
+        applicationMarketRepository.checkProject(projectId,appMarketId);
+        applicationMarketRepository.checkDeployed(projectId,appMarketId,versionId);
+        applicationMarketRepository.unpublishVersion(appMarketId,versionId);
+
+    }
+
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Page<ApplicationMarketE> applicationMarketEPage) {
         Page<ApplicationReleasingDTO> applicationReleasingDTOPage = ConvertPageHelper.convertPage(
                 applicationMarketEPage,

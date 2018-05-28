@@ -53,6 +53,44 @@ public class ApplicationMarketController {
     }
 
     /**
+     * 应用取消发布
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "应用取消发布")
+    @PostMapping("/{appMarketId}/unpublish")
+    public ResponseEntity unpublish(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable(required = true) Long appMarketId) {
+        applicationMarketService.unpublish(projectId, appMarketId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 应用版本取消发布
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "应用版本取消发布")
+    @PostMapping("/{appMarketId}/unpublish_version")
+    public ResponseEntity unpublish(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable(required = true) Long appMarketId,
+            @ApiParam(value = "版本ID", required = true)
+            @RequestParam Long versionId) {
+        applicationMarketService.unpublish(projectId, appMarketId, versionId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
      * 项目下查询所有发布在应用市场的应用
      *
      * @param projectId   项目id
@@ -110,7 +148,6 @@ public class ApplicationMarketController {
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "查询单个应用市场的应用")
-    @CustomPageRequest
     @GetMapping("/{appMarketId}")
     public ResponseEntity<ApplicationReleasingDTO> queryApp(
             @ApiParam(value = "项目ID", required = true)

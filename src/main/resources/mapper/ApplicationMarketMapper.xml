@@ -163,4 +163,41 @@
         dam.app_id = #{appId}
     </select>
 
+    <select id="checkProject" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM
+            devops_app_market dam
+            JOIN devops_application da ON da.id = dam.app_id
+        WHERE
+            dam.id = #{appMarketId}
+            AND da.project_id = #{projectId}
+    </select>
+    <select id="checkDeployed" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM
+            devops_app_market dam
+            JOIN devops_app_instance dai ON dai.app_id = dam.app_id
+            JOIN devops_application da ON da.id = dam.app_id
+            JOIN devops_env de ON de.id = dai.env_id
+        WHERE
+            dam.id = #{appMarketId}
+            <if test='versionId != null'>
+                AND dai.app_version_id = #{versionId}
+            </if>
+            AND da.project_id != de.project_id
+            AND da.project_id = #{projectId}
+    </select>
+
+    <update id="unpublishApplicationVersions" parameterType = "io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+        UPDATE devops_app_version dav
+        SET dav.is_publish = NULL
+        WHERE
+            dav.app_id IN ( SELECT dam.app_id FROM devops_app_market dam WHERE dam.id = #{appMarketId} )
+            <if test='versionId != null'>
+                AND dav.id = #{versionId}
+            </if>
+    </update>
+
 </mapper>

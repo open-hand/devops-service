@@ -47,4 +47,8 @@ public interface ApplicationMarketService {
      * @return ApplicationReleasingDTO
      */
     ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId);
+
+    void unpublish(Long projectId, Long appMarketId);
+
+    void unpublish(Long projectId, Long appMarketId, Long versionId);
 }
