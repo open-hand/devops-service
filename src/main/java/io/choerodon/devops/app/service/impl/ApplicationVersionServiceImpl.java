@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -86,9 +87,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         try {
             FileUtil.unTarGZ(path, DESTPATH);
-            applicationVersionValueE.setValue(FileUtil.yamltoJson(
-                    FileUtil.queryFileFromFiles(
-                            new File(DESTPATH), "values.yaml").getAbsolutePath()));
+            applicationVersionValueE.setValue(FileUtil.replaceReturnString(new FileInputStream(new File (FileUtil.queryFileFromFiles(
+                    new File(DESTPATH), "values.yaml").getAbsolutePath())), null));
+
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());
         } catch (Exception e) {

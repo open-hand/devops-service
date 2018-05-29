@@ -26,6 +26,7 @@ public class GitlabCommitServiceImpl implements GitlabCommitService {
 
     public GitlabCommitServiceImpl(GitlabProjectRepository gitlabProjectRepository, UserAttrRepository userAttrRepository) {
         this.gitlabProjectRepository = gitlabProjectRepository;
+        this.userAttrRepository = userAttrRepository;
     }
 
     @Override

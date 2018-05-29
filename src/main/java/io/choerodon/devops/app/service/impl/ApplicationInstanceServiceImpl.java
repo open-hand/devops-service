@@ -21,6 +21,7 @@ import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandValueFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
@@ -165,15 +166,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public List<String> queryValues(Long appId, Long envId, Long versionId) {
-        List<String> results = new ArrayList<>();
+    public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
         String versionValue = applicationVersionRepository.queryValue(versionId);
         String deployValue = applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId);
         if (deployValue != null) {
-            results.add(FileUtil.mergeJsonString(versionValue, deployValue));
+             return FileUtil.replace(versionValue,deployValue);
         }
-        results.add(versionValue);
-        return results;
+        ReplaceResult replaceResult1 = new ReplaceResult();
+        replaceResult1.setYaml(versionValue);
+        return replaceResult1;
     }
 
 
@@ -225,7 +226,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationVersionE,
                 applicationInstanceE,
                 devopsEnvironmentE,
-                FileUtil.jsonToYaml(applicationDeployDTO.getValues()), applicationDeployDTO.getType());
+                applicationDeployDTO.getValues(), applicationDeployDTO.getType());
         return true;
     }
 

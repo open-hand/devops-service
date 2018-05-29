@@ -17,6 +17,7 @@ import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DeployDetailService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -154,12 +155,12 @@ public class ApplicationInstanceController {
      * @param appId        应用id
      * @param envId        环境id
      * @param appVersionId 版本id
-     * @return List
+     * @return ReplaceResult
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "查询value列表")
     @GetMapping("/value")
-    public ResponseEntity<List<String>> queryValues(
+    public ResponseEntity<ReplaceResult> queryValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
