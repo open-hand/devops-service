@@ -17,12 +17,12 @@ import io.choerodon.devops.api.dto.GitlabProjectEventDTO;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationTemplateFactory;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
@@ -49,17 +49,20 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     private EventProducerTemplate eventProducerTemplate;
     private ApplicationTemplateRepository applicationTemplateRepository;
     private GitUtil gitUtil;
-
+    private UserAttrRepository userAttrRepository;
+    private GitlabUserRepository gitlabUserRepository;
 
     /**
      * 构造方法
      */
-    public ApplicationTemplateServiceImpl(GitUtil gitUtil, IamRepository iamRepository, GitlabRepository gitlabRepository, EventProducerTemplate eventProducerTemplate, ApplicationTemplateRepository applicationTemplateRepository) {
+    public ApplicationTemplateServiceImpl(GitUtil gitUtil, IamRepository iamRepository, GitlabRepository gitlabRepository, EventProducerTemplate eventProducerTemplate, ApplicationTemplateRepository applicationTemplateRepository, UserAttrRepository userAttrRepository, GitlabUserRepository gitlabUserRepository) {
         this.gitUtil = gitUtil;
         this.iamRepository = iamRepository;
         this.gitlabRepository = gitlabRepository;
         this.eventProducerTemplate = eventProducerTemplate;
         this.applicationTemplateRepository = applicationTemplateRepository;
+        this.userAttrRepository = userAttrRepository;
+        this.gitlabUserRepository = gitlabUserRepository;
     }
 
     @Override
@@ -70,22 +73,22 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateRepository.checkCode(applicationTemplateE);
         applicationTemplateRepository.checkName(applicationTemplateE);
         Integer gitlabGroupId;
-
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         Organization organization = iamRepository.queryOrganizationById(organizationId);
         applicationTemplateE.initOrganization(organization.getId());
-        GitlabGroupE gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE);
+        GitlabGroupE gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (gitlabGroupE == null) {
             GitlabGroupE gitlabGroupENew = new GitlabGroupE();
             gitlabGroupENew.initName(organization.getCode() + "_" + TEMPLATE);
             gitlabGroupENew.initPath(organization.getCode() + "_" + TEMPLATE);
             gitlabGroupENew.initVisibility(Visibility.PUBLIC);
-            gitlabGroupId = gitlabRepository.createGroup(gitlabGroupENew).getId();
+            gitlabGroupId = gitlabRepository.createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getId();
         } else {
             gitlabGroupId = gitlabGroupE.getId();
         }
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setGroupId(gitlabGroupId);
-        gitlabProjectPayload.setUserName(GitUserNameUtil.getUsername());
+        gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         gitlabProjectPayload.setPath(applicationTemplateDTO.getCode());
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setType(TEMPLATE);
@@ -115,8 +118,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Override
     public void delete(Long appTemplateId) {
         ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(appTemplateId);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (applicationTemplateE.getGitlabProjectE() != null) {
-            gitlabRepository.deleteProject(applicationTemplateE.getGitlabProjectE().getId());
+            gitlabRepository.deleteProject(applicationTemplateE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
         applicationTemplateRepository.delete(appTemplateId);
     }
@@ -159,20 +163,21 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     .query(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepDTO.class);
             //拉取模板
             Git git = gitUtil.clone(applicationDir, gitlabUrl + templateRepDTO.getRepoUrl());
-            List<String> tokens = gitlabRepository.listTokenByUserName(gitlabProjectEventDTO.getGitlabProjectId(),
-                    applicationDir, gitlabProjectEventDTO.getUserName());
+            List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
+                    applicationDir, gitlabProjectEventDTO.getUserId());
             String accessToken = "";
             if (tokens.isEmpty()) {
                 accessToken = gitlabRepository.createToken(gitlabProjectEventDTO.getGitlabProjectId(),
-                        applicationDir, gitlabProjectEventDTO.getUserName());
+                        applicationDir, gitlabProjectEventDTO.getUserId());
             } else {
                 accessToken = tokens.get(tokens.size() - 1);
             }
+            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, gitlabUrl + applicationTemplateE.getRepoUrl(),
-                    gitlabProjectEventDTO.getUserName(), accessToken, TEMPLATE);
+                    gitlabUserE.getUsername(), accessToken, TEMPLATE);
         } else {
             gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
-                    gitlabProjectEventDTO.getUserName());
+                    gitlabProjectEventDTO.getUserId());
         }
     }
 

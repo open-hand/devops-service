@@ -150,7 +150,7 @@ public class GitFlowController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
-        return new ResponseEntity<>(gitFlowService.getReleaseNumber(applicationId, null), HttpStatus.OK);
+        return new ResponseEntity<>(gitFlowService.getReleaseNumber(applicationId), HttpStatus.OK);
     }
 
     @Permission(level = ResourceLevel.PROJECT)
@@ -161,6 +161,6 @@ public class GitFlowController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
-        return new ResponseEntity<>(gitFlowService.getHotfixNumber(applicationId, null), HttpStatus.OK);
+        return new ResponseEntity<>(gitFlowService.getHotfixNumber(applicationId), HttpStatus.OK);
     }
 }

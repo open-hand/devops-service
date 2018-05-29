@@ -24,15 +24,6 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     }
 
     @Override
-    public GitlabUserE getGitlabUserByUsername(String userName) {
-        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.queryUserByUsername(userName);
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            return null;
-        }
-        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
-    }
-
-    @Override
     public GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
         ResponseEntity<UserDO> responseEntity = gitlabServiceClient.createGitLabUser(
                 password, projectsLimit, gitlabUserEvent);
@@ -43,9 +34,9 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     }
 
     @Override
-    public GitlabUserE updateGitLabUser(String username, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
+    public GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
         ResponseEntity<UserDO> responseEntity = gitlabServiceClient.updateGitLabUser(
-                username, projectsLimit, gitlabUserEvent);
+                userId, projectsLimit, gitlabUserEvent);
         if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
             return null;
         }
@@ -53,13 +44,13 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     }
 
     @Override
-    public void isEnabledGitlabUser(String userName) {
-        gitlabServiceClient.enabledUserByUsername(userName);
+    public void isEnabledGitlabUser(Integer userId) {
+        gitlabServiceClient.enabledUserByUserId(userId);
     }
 
     @Override
-    public void disEnabledGitlabUser(String userName) {
-        gitlabServiceClient.disEnabledUserByUsername(userName);
+    public void disEnabledGitlabUser(Integer userId) {
+        gitlabServiceClient.disEnabledUserByUserId(userId);
     }
 
     @Override

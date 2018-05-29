@@ -10,9 +10,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.app.service.GitlabGroupService;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
 import io.choerodon.devops.domain.application.event.KanbanProjectPayload;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
@@ -34,6 +37,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     private DevopsProjectRepository devopsProjectRepository;
     private EventProducerTemplate eventProducerTemplate;
     private GitlabGroupMemberService gitlabGroupMemberService;
+    private UserAttrRepository userAttrRepository;
 
     /**
      * GitLab group 创建事件服务
@@ -45,11 +49,13 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     public GitlabGroupServiceImpl(GitlabServiceClient gitlabServiceClient,
                                   DevopsProjectRepository devopsProjectRepository,
                                   EventProducerTemplate eventProducerTemplate,
-                                  GitlabGroupMemberService gitlabGroupMemberService) {
+                                  GitlabGroupMemberService gitlabGroupMemberService,
+                                  UserAttrRepository userAttrRepository) {
         this.gitlabServiceClient = gitlabServiceClient;
         this.devopsProjectRepository = devopsProjectRepository;
         this.eventProducerTemplate = eventProducerTemplate;
         this.gitlabGroupMemberService = gitlabGroupMemberService;
+        this.userAttrRepository = userAttrRepository;
     }
 
     @Override
@@ -61,8 +67,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         group.setName(gitlabGroupPayload.getOrganizationName() + "-" + gitlabGroupPayload.getProjectName());
         // path: orgCode-projectCode
         group.setPath(gitlabGroupPayload.getOrganizationCode() + "-" + gitlabGroupPayload.getProjectCode());
+        UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
         ResponseEntity<GroupDO> responseEntity =
-                gitlabServiceClient.createGroup(group, gitlabGroupPayload.getUserName());
+                gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         group = responseEntity.getBody();
         if (group != null) {
             DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
@@ -71,7 +78,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             setProjectMemberEvent(gitlabGroupPayload);
 
             List<GitlabProjectDO> projectList =
-                    gitlabServiceClient.listProjects(group.getId(), gitlabGroupPayload.getUserName()).getBody();
+                    gitlabServiceClient.listProjects(group.getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody();
             if (!projectList.isEmpty()) {
                 KanbanProjectPayload kanbanProjectPayload = new KanbanProjectPayload();
                 kanbanProjectPayload.setGitlabGroupId(group.getId());

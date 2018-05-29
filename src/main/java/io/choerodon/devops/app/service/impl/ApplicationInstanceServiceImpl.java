@@ -236,8 +236,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE.getApplicationE().getId());
 
         Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-
-        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId);
+        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
         if (gitlabPipelineEList == null) {
             return Collections.emptyList();
         }
@@ -249,7 +248,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
             PipelineResultV pipelineResultV = new PipelineResultV();
             GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
-                    gitlabProjectId, gitlabPipeline.getId(), username);
+                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
             if (gitlabPipelineE != null) {
                 pipelineResultV.setId(gitlabPipelineE.getId().longValue());
                 pipelineResultV.setCreatedAt(gitlabPipelineE.getCreatedAt());

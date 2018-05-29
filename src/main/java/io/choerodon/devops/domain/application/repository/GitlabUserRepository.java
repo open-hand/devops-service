@@ -11,7 +11,7 @@ public interface GitlabUserRepository {
 
     GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent);
 
-    GitlabUserE updateGitLabUser(String username, Integer projectsLimit, GitlabUserEvent gitlabUserEvent);
+    GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserEvent gitlabUserEvent);
 
     void isEnabledGitlabUser(Integer userId);
 

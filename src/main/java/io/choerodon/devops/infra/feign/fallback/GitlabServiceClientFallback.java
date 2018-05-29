@@ -104,7 +104,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<BranchDO>> listBranches(Integer projectId , Integer userId) {
+    public ResponseEntity<List<BranchDO>> listBranches(Integer projectId, Integer userId) {
         return new ResponseEntity("error.select.branch", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -134,7 +134,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<GroupDO> queryGroupByName(String groupName , Integer userId) {
+    public ResponseEntity<GroupDO> queryGroupByName(String groupName, Integer userId) {
         return new ResponseEntity("error.group.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -204,12 +204,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity enabledUserByUsername(Integer userId) {
+    public ResponseEntity enabledUserByUserId(Integer userId) {
         return new ResponseEntity("error.user.unblockUser", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity disEnabledUserByUsername(Integer userId) {
+    public ResponseEntity disEnabledUserByUserId(Integer userId) {
         return new ResponseEntity("error.user.blockUser", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -9,7 +9,7 @@ package io.choerodon.devops.domain.application.event;
 public class GitFlowStartPayload {
     private Integer projectId;
     private String branchName;
-    private String username;
+    private Integer userId;
 
     public GitFlowStartPayload() {
     }
@@ -19,12 +19,12 @@ public class GitFlowStartPayload {
      *
      * @param projectId  GitLab 项目ID
      * @param branchName 分支名称
-     * @param username   用户名
+     * @param userId     用户Id
      */
-    public GitFlowStartPayload(Integer projectId, String branchName, String username) {
+    public GitFlowStartPayload(Integer projectId, String branchName, Integer userId) {
         this.projectId = projectId;
         this.branchName = branchName;
-        this.username = username;
+        this.userId = userId;
     }
 
     public Integer getProjectId() {
@@ -43,11 +43,11 @@ public class GitFlowStartPayload {
         this.branchName = branchName;
     }
 
-    public String getUsername() {
-        return username;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

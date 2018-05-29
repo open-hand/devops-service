@@ -37,6 +37,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private GitlabUserRepository gitlabUserRepository;
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     private UserAttrRepository userAttrRepository;
+
     /**
      * 构造函数
      */
@@ -73,7 +74,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
         for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
             if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
-                GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(gitlabGroupMemberDTO.getUsername());
+                GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
                 if (gitlabUserE == null) {
                     LOGGER.error("error.gitlab.username.select: " + gitlabGroupMemberDTO.getUsername());
                     return;
@@ -133,7 +134,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      *
      * @param projectId projectId
      * @param level     level
-     * @param userId  userId
+     * @param userId    userId
      */
     public void operation(Long projectId, AccessLevel level, Long userId) {
         UserAttrE userAttrE = userAttrRepository.queryById(userId);

@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.GitFlowRepository;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.dataobject.gitlab.*;

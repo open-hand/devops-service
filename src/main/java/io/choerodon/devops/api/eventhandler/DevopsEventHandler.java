@@ -14,6 +14,7 @@ import io.choerodon.devops.api.dto.GitlabUserDTO;
 import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.event.*;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.event.consumer.annotation.EventListener;
 
 /**
@@ -167,7 +168,7 @@ public class DevopsEventHandler {
         GitlabUserDTO gitlabUserDTO = payload.getData();
         loggerInfo(gitlabUserDTO);
 
-        gitlabUserService.isEnabledGitlabUser(gitlabUserDTO.getUsername());
+        gitlabUserService.isEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserDTO.getId()));
     }
 
     /**
@@ -178,7 +179,7 @@ public class DevopsEventHandler {
         GitlabUserDTO gitlabUserDTO = payload.getData();
         loggerInfo(gitlabUserDTO);
 
-        gitlabUserService.disEnabledGitlabUser(gitlabUserDTO.getUsername());
+        gitlabUserService.disEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserDTO.getId()));
     }
 
     /**

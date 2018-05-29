@@ -10,6 +10,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 
 /**
@@ -51,18 +52,19 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
-        gitlabUserRepository.updateGitLabUser(gitlabUserReqDTO.getUsername(),
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
+        gitlabUserRepository.updateGitLabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
                 gitlabConfigurationProperties.getProjectLimit(),
                 ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
     }
 
     @Override
-    public void isEnabledGitlabUser(String userName) {
-        gitlabUserRepository.isEnabledGitlabUser(userName);
+    public void isEnabledGitlabUser(Integer userId) {
+        gitlabUserRepository.isEnabledGitlabUser(userId);
     }
 
     @Override
-    public void disEnabledGitlabUser(String userName) {
-        gitlabUserRepository.disEnabledGitlabUser(userName);
+    public void disEnabledGitlabUser(Integer userId) {
+        gitlabUserRepository.disEnabledGitlabUser(userId);
     }
 }
