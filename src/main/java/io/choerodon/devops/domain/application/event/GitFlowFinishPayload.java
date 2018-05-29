@@ -13,7 +13,7 @@ public class GitFlowFinishPayload {
     private String branchName;
     private Integer devMergeStatus;
     private Integer masterMergeStatus;
-    private String username;
+    private Integer userId;
 
     public GitFlowFinishPayload() {
     }
@@ -26,20 +26,20 @@ public class GitFlowFinishPayload {
      * @param branchName        分支名称
      * @param devMergeStatus    对develop分支合并请求状态
      * @param masterMergeStatus 对master分支合并请求状态
-     * @param username          用户名
+     * @param userId            用户Id
      */
     public GitFlowFinishPayload(Long applicationId,
                                 Integer projectId,
                                 String branchName,
                                 Integer devMergeStatus,
                                 Integer masterMergeStatus,
-                                String username) {
+                                Integer userId) {
         this.applicationId = applicationId;
         this.projectId = projectId;
         this.branchName = branchName;
         this.devMergeStatus = devMergeStatus;
         this.masterMergeStatus = masterMergeStatus;
-        this.username = username;
+        this.userId = userId;
     }
 
     public Long getApplicationId() {
@@ -82,11 +82,11 @@ public class GitFlowFinishPayload {
         this.masterMergeStatus = masterMergeStatus;
     }
 
-    public String getUsername() {
-        return username;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 }

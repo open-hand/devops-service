@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.Transient;
 import java.util.List;
+import javax.persistence.Transient;
 
 /**
  * Created by Zenger on 2018/4/19.

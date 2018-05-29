@@ -27,6 +27,11 @@ public class GitlabGroupMemberDTO {
      */
     private List<String> roleLabels;
 
+    /**
+     * 被更改角色的用户的id
+     */
+    private Long userId;
+
     private String uuid;
 
     public String getUsername() {
@@ -67,5 +72,13 @@ public class GitlabGroupMemberDTO {
 
     public void setResourceType(String resourceType) {
         this.resourceType = resourceType;
+    }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 }

@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.Set;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.Set;
 
 /**
  * Created by Zenger on 2018/4/13.

@@ -1,9 +1,8 @@
 package io.choerodon.devops.infra.dataobject;
 
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Null;
+import javax.validation.constraints.NotNull;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 
@@ -13,11 +12,11 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 @ModifyAudit
 @Table(name = "devops_user")
 public class UserAttrDO {
+
     @Id
-    @GeneratedValue
     private Long id;
 
-    @Null
+    @NotNull
     private Long gitlabUserId;
 
     public Long getId() {

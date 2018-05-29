@@ -5,19 +5,19 @@ package io.choerodon.devops.domain.application.event;
  */
 public class GitlabProjectPayload {
 
-    private String userName;
+    private Integer userId;
     private String path;
     private Integer gitlabProjectId;
     private Integer groupId;
     private String type;
     private Long organizationId;
 
-    public String getUserName() {
-        return userName;
+    public Integer getUserId() {
+        return userId;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setUserId(Integer userId) {
+        this.userId = userId;
     }
 
     public String getPath() {

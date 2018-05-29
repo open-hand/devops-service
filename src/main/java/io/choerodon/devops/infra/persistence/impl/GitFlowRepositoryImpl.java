@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.GitFlowRepository;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -47,8 +46,8 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
         this.gitlabServiceClient = gitlabServiceClient;
     }
 
-    private String mergeRequestDescription(String sourceBranch, String targetBranch, String username) {
-        return "Created by @" + username + " right after creating branch `" + sourceBranch + "`.  \n"
+    private String mergeRequestDescription(String sourceBranch, String targetBranch) {
+        return "Created" + " right after creating branch `" + sourceBranch + "`.  \n"
                 + "Changes will be merged into the branch `" + targetBranch + "`.";
     }
 
@@ -63,14 +62,14 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public void createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String username) {
+    public void createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, Integer userId) {
         ResponseEntity<MergeRequestDO> requestResponseEntity = gitlabServiceClient.createMergeRequest(
                 projectId,
                 sourceBranch,
                 targetBranch,
                 sourceBranch,
-                mergeRequestDescription(sourceBranch, targetBranch, username),
-                username);
+                mergeRequestDescription(sourceBranch, targetBranch),
+                userId);
         MergeRequestDO mergeRequest = requestResponseEntity.getBody();
         Long mergeRequestId = mergeRequest.getIid().longValue();
         DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO(
@@ -82,15 +81,15 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
 
 
     @Override
-    public MergeRequestDO getMergeRequest(Integer projectId, Long mergeRequestId, String username) {
+    public MergeRequestDO getMergeRequest(Integer projectId, Long mergeRequestId, Integer userId) {
         return gitlabServiceClient
-                .getMergeRequest(projectId, mergeRequestId.intValue(), username)
+                .getMergeRequest(projectId, mergeRequestId.intValue(), userId)
                 .getBody();
     }
 
     @Override
-    public void deleteMergeRequest(Integer projectId, Integer mergeRequestId) {
-        gitlabServiceClient.deleteMergeRequest(projectId, mergeRequestId);
+    public void deleteMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId) {
+        gitlabServiceClient.deleteMergeRequest(projectId, mergeRequestId, userId);
     }
 
 
@@ -118,27 +117,27 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public void updateMergeRequest(Integer projectId, Long mergeRequestId, String username) {
-        gitlabServiceClient.updateMergeRequest(projectId, mergeRequestId.intValue(), username);
+    public void updateMergeRequest(Integer projectId, Long mergeRequestId, Integer userId) {
+        gitlabServiceClient.updateMergeRequest(projectId, mergeRequestId.intValue(), userId);
     }
 
     @Override
-    public Boolean checkMergeRequestCommit(Integer projectId, Long mergeRequestId) {
-        return gitlabServiceClient.listCommits(projectId, mergeRequestId.intValue()).getBody().isEmpty();
+    public Boolean checkMergeRequestCommit(Integer projectId, Long mergeRequestId, Integer userId) {
+        return gitlabServiceClient.listCommits(projectId, mergeRequestId.intValue(), userId).getBody().isEmpty();
     }
 
     @Override
-    public void createBranch(Integer projectId, String branchName, String baseBranch) {
+    public void createBranch(Integer projectId, String branchName, String baseBranch, Integer userId) {
         ResponseEntity<BranchDO> responseEntity =
-                gitlabServiceClient.createBranch(projectId, branchName, baseBranch);
+                gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
         if ("create branch message:Branch already exists".equals(responseEntity.getBody().getName())) {
             throw new CommonException("error.feature.exist");
         }
     }
 
     @Override
-    public List<BranchDO> listBranches(Integer projectId, String path) {
-        ResponseEntity<List<BranchDO>> responseEntity = gitlabServiceClient.listBranches(projectId);
+    public List<BranchDO> listBranches(Integer projectId, String path, Integer userId) {
+        ResponseEntity<List<BranchDO>> responseEntity = gitlabServiceClient.listBranches(projectId, userId);
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new CommonException("error.branch.get");
         }
@@ -149,12 +148,12 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public void deleteBranch(Integer projectId, String branchName, String username) {
-        gitlabServiceClient.deleteBranch(projectId, branchName, username);
+    public void deleteBranch(Integer projectId, String branchName, Integer userId) {
+        gitlabServiceClient.deleteBranch(projectId, branchName, userId);
     }
 
     @Override
-    public MergeRequestDO acceptMergeRequest(Integer projectId, Integer mergeRequestId, String message, String username) {
+    public MergeRequestDO acceptMergeRequest(Integer projectId, Integer mergeRequestId, String message, Integer userId) {
         ResponseEntity<MergeRequestDO> responseEntity = new ResponseEntity<>(HttpStatus.OK);
         try {
             responseEntity = gitlabServiceClient
@@ -164,7 +163,7 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
                             message,
                             false,
                             false,
-                            username);
+                            userId);
         } catch (Exception e) {
             logger.info(e.getMessage());
         }
@@ -179,12 +178,9 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public Optional<TagNodeDO> getMaxTagNode(Long applicationId, String username) {
+    public Optional<TagNodeDO> getMaxTagNode(Long applicationId, Integer userId) {
         Integer projectId = getGitLabId(applicationId);
-        if (username == null) {
-            username = GitUserNameUtil.getUsername();
-        }
-        ResponseEntity<List<TagDO>> tagsResponseEntity = gitlabServiceClient.getTags(projectId, username);
+        ResponseEntity<List<TagDO>> tagsResponseEntity = gitlabServiceClient.getTags(projectId, userId);
         if (tagsResponseEntity.getStatusCode() != HttpStatus.OK) {
             throw new CommonException("error.tags.get");
         }
@@ -196,16 +192,15 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public void createTag(Integer projectId, String tag, String username) {
-        gitlabServiceClient.createTag(projectId, tag, BRANCH_MASTER, username);
+    public void createTag(Integer projectId, String tag, Integer userId) {
+        gitlabServiceClient.createTag(projectId, tag, BRANCH_MASTER, userId);
     }
 
     @Override
-    public TagsDO getTags(Long serviceId, String path, Integer page, Integer size) {
+    public TagsDO getTags(Long serviceId, String path, Integer page, Integer size, Integer userId) {
         Integer projectId = getGitLabId(serviceId);
-        String username = GitUserNameUtil.getUsername();
-        ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, username);
-        ResponseEntity<List<TagDO>> tags = gitlabServiceClient.getPageTags(projectId, page + 1, size);
+        ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+        ResponseEntity<List<TagDO>> tags = gitlabServiceClient.getPageTags(projectId, page + 1, size, userId);
         if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
             throw new CommonException("error.tags.get");
         }

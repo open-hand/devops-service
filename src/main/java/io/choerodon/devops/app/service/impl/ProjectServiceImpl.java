@@ -26,11 +26,9 @@ public class ProjectServiceImpl implements ProjectService {
     private static final String DEVOPS_SERVICE = "devops-service";
     private static final String GROUP_EVENT = "GitlabGroup";
     private static final String HARBOR_EVENT = "Harbor";
-
-    @Value("${spring.application.name}")
-    private static String applicationName;
-
     private final EventProducerTemplate eventProducerTemplate;
+    @Value("${spring.application.name}")
+    private String applicationName;
     private DevopsProjectRepository devopsProjectRepository;
 
     @Autowired

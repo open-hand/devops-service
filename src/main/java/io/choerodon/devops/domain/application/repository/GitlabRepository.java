@@ -9,22 +9,23 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
  */
 public interface GitlabRepository {
 
-    void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, String userName);
+    void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId);
 
-    List<String> listTokenByUserName(Integer gitlabProjectId, String name, String userName);
+    List<String> listTokenByUserId(Integer gitlabProjectId, String name, Integer userId);
 
-    String createToken(Integer gitlabProjectId, String name, String userName);
+    String createToken(Integer gitlabProjectId, String name, Integer userId);
 
-    GitlabGroupE queryGroupByName(String groupName);
+    GitlabGroupE queryGroupByName(String groupName, Integer userId);
 
-    GitlabGroupE createGroup(GitlabGroupE gitlabGroupE);
+    GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId);
 
-    Boolean createFile(Integer projectId, String userName);
+    Boolean createFile(Integer projectId, Integer userId);
 
     void createProtectBranch(Integer projectId, String name, String mergeAccessLevel,
-                             String pushAccessLevel, String userName);
+                             String pushAccessLevel, Integer userId);
 
-    void deleteProject(Integer projectId);
+    void deleteProject(Integer projectId, Integer userId);
 
-    void updateProject(Integer projectId, String userName);
+    void updateProject(Integer projectId, Integer userId);
+
 }

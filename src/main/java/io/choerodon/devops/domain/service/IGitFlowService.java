@@ -9,22 +9,22 @@ package io.choerodon.devops.domain.service;
  */
 public interface IGitFlowService {
 
-    Integer getBranchState(Integer projectId, String branchName, String username);
+    Integer getBranchState(Integer projectId, String branchName, Integer userId);
 
     String getBranchStatus(String branchName, Integer status);
 
-    String getReleaseNumber(Long serviceId, String username);
+    String getReleaseNumber(Long serviceId);
 
-    String getHotfixNumber(Long serviceId, String username);
+    String getHotfixNumber(Long serviceId);
 
     void createBranch(Integer projectId, String branchName);
 
-    void finishBranch(Integer projectId, String branchName, Boolean isTargetDev, Integer mergeStatus, String username);
+    void finishBranch(Integer projectId, String branchName, Boolean isTargetDev, Integer mergeStatus, Integer userId);
 
-    void createTag(Long serviceId, Integer projectId, String branchName, String username);
+    void createTag(Long serviceId, Integer projectId, String branchName, Integer userId);
 
     void deleteBranchSafely(
-            Integer projectId, String branchName, Integer devMergeStatus, Integer masterMergeStatus, String username);
+            Integer projectId, String branchName, Integer devMergeStatus, Integer masterMergeStatus, Integer userId);
 
-    void createMergeRequest(Integer projectId, String branchName, String username);
+    void createMergeRequest(Integer projectId, String branchName, Integer userId);
 }
