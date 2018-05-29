@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import rx.Observable;
 
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -112,10 +113,10 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/page")
     ResponseEntity<List<PipelineDO>> listPipelines(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("page") Integer page, @RequestParam("size") Integer size, @RequestParam("userId") Integer userId);
+                                                               @RequestParam("page") Integer page, @RequestParam("size") Integer size, @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}")
-    ResponseEntity<PipelineDO> getPipeline(@PathVariable("projectId") Integer projectId,
+    Observable<PipelineDO> getPipeline(@PathVariable("projectId") Integer projectId,
                                            @PathVariable("pipelineId") Integer pipelineId,
                                            @RequestParam("userId") Integer userId);
 
