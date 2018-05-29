@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -28,5 +29,7 @@ public interface ApplicationMarketRepository {
 
     void unpublishApplication(Long appMarketId);
 
-    void unpublishVersion(Long appMarketId,Long versionId);
+    void unpublishVersion(Long appMarketId, Long versionId);
+
+    void update(DevopsAppMarketDO devopsAppMarketDO);
 }

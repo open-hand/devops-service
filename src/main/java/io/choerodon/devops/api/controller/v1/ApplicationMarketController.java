@@ -158,4 +158,25 @@ public class ApplicationMarketController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
+
+    /**
+     * 更新单个应用市场的应用
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     * @return list of ApplicationReleasingDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "更新单个应用市场的应用")
+    @PostMapping("/{app_market_id}")
+    public ResponseEntity<ApplicationReleasingDTO> update(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable("app_market_id") Long appMarketId,
+            @ApiParam(value = "发布应用的信息", required = true)
+            @RequestBody(required = true) ApplicationReleasingDTO applicationRelease) {
+        applicationMarketService.update(projectId, appMarketId, applicationRelease);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }
