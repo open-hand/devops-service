@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +25,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -31,6 +33,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
+    private static final String ORGANIZATION = "organization";
+    private static final String PUBLIC = "public";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -56,9 +60,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     @Override
     public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
-
         List<Long> ids = new ArrayList<>();
         if (applicationReleasingDTO != null) {
+            String publishLevel = applicationReleasingDTO.getPublishLevel();
+            if (!ORGANIZATION.equals(publishLevel) && !PUBLIC.equals(publishLevel)) {
+                throw new CommonException("error.publishLevel");
+            }
             List<ApplicationVersionRepDTO> appVersions = applicationReleasingDTO.getAppVersions();
             if (appVersions != null && !appVersions.isEmpty()) {
                 for (ApplicationVersionRepDTO appVersion : appVersions) {
@@ -135,17 +142,55 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     @Override
     public void unpublish(Long projectId, Long appMarketId) {
-        applicationMarketRepository.checkProject(projectId,appMarketId);
-        applicationMarketRepository.checkDeployed(projectId,appMarketId,null);
+        applicationMarketRepository.checkProject(projectId, appMarketId);
+        applicationMarketRepository.checkDeployed(projectId, appMarketId, null);
         applicationMarketRepository.unpublishApplication(appMarketId);
     }
 
     @Override
     public void unpublish(Long projectId, Long appMarketId, Long versionId) {
-        applicationMarketRepository.checkProject(projectId,appMarketId);
-        applicationMarketRepository.checkDeployed(projectId,appMarketId,versionId);
-        applicationMarketRepository.unpublishVersion(appMarketId,versionId);
+        applicationMarketRepository.checkProject(projectId, appMarketId);
+        applicationMarketRepository.checkDeployed(projectId, appMarketId, versionId);
+        applicationMarketRepository.unpublishVersion(appMarketId, versionId);
 
+    }
+
+    @Override
+    public void update(Long projectId, Long appMarketId, ApplicationReleasingDTO applicationRelease) {
+        if (applicationRelease != null) {
+            String publishLevel = applicationRelease.getPublishLevel();
+            if (!ORGANIZATION.equals(publishLevel) && !PUBLIC.equals(publishLevel)) {
+                throw new CommonException("error.publishLevel");
+            }
+        } else {
+            throw new CommonException("error.app.check");
+        }
+        if (!appMarketId.equals(applicationRelease.getId())) {
+            throw new CommonException("error.id.notMatch");
+        }
+        applicationMarketRepository.checkProject(projectId, appMarketId);
+        ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(projectId, appMarketId);
+        if (!applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
+            throw new CommonException("error.app.cannot.change");
+        }
+        if (ORGANIZATION.equals(applicationRelease.getPublishLevel())
+                && PUBLIC.equals(applicationReleasingDTO.getPublishLevel())) {
+            applicationMarketRepository.checkDeployed(projectId, appMarketId, null);
+
+        }
+        DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, DevopsAppMarketDO.class);
+        if (!ConvertHelper.convert(applicationReleasingDTO, DevopsAppMarketDO.class).equals(devopsAppMarketDO)) {
+            applicationMarketRepository.update(devopsAppMarketDO);
+        }
+        List<Long> ids = applicationRelease.getAppVersions().parallelStream()
+                .map(ApplicationVersionRepDTO::getId).collect(Collectors.toCollection(ArrayList::new));
+
+        if (!ids.equals(applicationReleasingDTO.getAppVersions().parallelStream()
+                .map(ApplicationVersionRepDTO::getId).collect(Collectors.toCollection(ArrayList::new)))) {
+            applicationVersionRepository.checkAppAndVersion(applicationRelease.getAppId(), ids);
+            applicationMarketRepository.unpublishVersion(appMarketId, null);
+            applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
+        }
     }
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Page<ApplicationMarketE> applicationMarketEPage) {

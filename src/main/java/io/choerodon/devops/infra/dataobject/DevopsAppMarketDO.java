@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.List;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.List;
+import java.util.Objects;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -132,5 +133,30 @@ public class DevopsAppMarketDO extends AuditDomain {
 
     public void setApplicationVersionDOList(List<ApplicationVersionDO> applicationVersionDOList) {
         this.applicationVersionDOList = applicationVersionDOList;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DevopsAppMarketDO that = (DevopsAppMarketDO) o;
+        return Objects.equals(id, that.id)
+                && Objects.equals(appId, that.appId)
+                && Objects.equals(contributor, that.contributor)
+                && Objects.equals(description, that.description)
+                && Objects.equals(category, that.category)
+                && Objects.equals(imgUrl, that.imgUrl)
+                && Objects.equals(publishLevel, that.publishLevel)
+                && Objects.equals(isActive, that.isActive);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id, appId, contributor, description, category, imgUrl, publishLevel, isActive);
     }
 }

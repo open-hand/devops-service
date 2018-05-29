@@ -78,7 +78,9 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public ApplicationMarketE getMarket(Long projectId, Long appMarketId) {
-        return ConvertHelper.convert(applicationMarketMapper.getMarketApplication(appMarketId), ApplicationMarketE.class);
+        return ConvertHelper.convert(
+                applicationMarketMapper.getMarketApplication(appMarketId),
+                ApplicationMarketE.class);
     }
 
     @Override
@@ -119,5 +121,12 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     @Override
     public void unpublishVersion(Long appMarketId, Long versionId) {
         applicationMarketMapper.unpublishApplicationVersions(appMarketId, versionId);
+    }
+
+    @Override
+    public void update(DevopsAppMarketDO devopsAppMarketDO) {
+        devopsAppMarketDO.setObjectVersionNumber(
+                applicationMarketMapper.selectByPrimaryKey(devopsAppMarketDO.getId()).getObjectVersionNumber());
+        applicationMarketMapper.updateByPrimaryKeySelective(devopsAppMarketDO);
     }
 }

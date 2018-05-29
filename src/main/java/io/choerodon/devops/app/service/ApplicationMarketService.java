@@ -51,4 +51,6 @@ public interface ApplicationMarketService {
     void unpublish(Long projectId, Long appMarketId);
 
     void unpublish(Long projectId, Long appMarketId, Long versionId);
+
+    void update(Long projectId, Long appMarketId, ApplicationReleasingDTO applicationRelease);
 }
