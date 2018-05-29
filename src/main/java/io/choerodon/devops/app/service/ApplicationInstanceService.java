@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -38,7 +39,7 @@ public interface ApplicationInstanceService {
      * @param versionId 版本id
      * @return List
      */
-    List<String> queryValues(Long appId, Long envId, Long versionId);
+    ReplaceResult queryValues(Long appId, Long envId, Long versionId);
 
     /**
      * 部署应用

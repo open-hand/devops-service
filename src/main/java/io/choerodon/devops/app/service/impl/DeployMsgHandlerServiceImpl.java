@@ -556,7 +556,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 applicationVersionE.setVersion(releasePayload.getChartVersion());
                 applicationVersionE
                         .setRepository("/" + organization.getCode() + "/" + projectE.getCode() + "/");
-                applicationVersionValueE.setValue(FileUtil.yamlStringtoJson(releasePayload.getConfig()));
+                applicationVersionValueE.setValue(releasePayload.getConfig());
                 applicationInstanceE.setCode(releasePayload.getName());
                 applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
                 applicationInstanceE.initApplicationEById(applicationE.getId());
@@ -574,7 +574,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 applicationInstanceE.initDevopsEnvironmentEById(devopsEnvironmentE.getId());
                 DevopsEnvCommandValueE devopsEnvCommandValueE = DevopsEnvCommandValueFactory
                         .createDevopsEnvCommandE();
-                devopsEnvCommandValueE.setValue(FileUtil.yamlStringtoJson(releasePayload.getConfig()));
+                devopsEnvCommandValueE.setValue(releasePayload.getConfig());
                 devopsEnvCommandE.setObject(ObjectType.INSTANCE.getObjectType());
                 devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
                 devopsEnvCommandE.setObjectId(applicationInstanceRepository.create(applicationInstanceE).getId());
@@ -585,9 +585,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 applicationInstanceE.setId(devopsEnvCommandE.getObjectId());
                 return applicationInstanceE;
             } catch (Exception e) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug(releasePayload.getChartName() + "Release Back Error:" + e.getMessage());
-                }
+                throw new CommonException(e.getMessage());
             }
         }
         return null;
