@@ -18,6 +18,7 @@ public class ApplicationReleasingDTO {
     private String description;
     private String contributor;
     private String appURL;
+    private String readme;
 
     public Long getId() {
         return id;
@@ -105,5 +106,13 @@ public class ApplicationReleasingDTO {
 
     public void setAppURL(String appURL) {
         this.appURL = appURL;
+    }
+
+    public String getReadme() {
+        return readme;
+    }
+
+    public void setReadme(String readme) {
+        this.readme = readme;
     }
 }

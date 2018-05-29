@@ -26,6 +26,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationVersionRepos
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -43,6 +44,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private ApplicationMarketRepository applicationMarketRepository;
     private IamRepository iamRepository;
     private ApplicationRepository applicationRepository;
+    private GitlabServiceClient gitlabServiceClient;
 
     /**
      * 构造函数
@@ -51,10 +53,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public ApplicationMarketServiceImpl(ApplicationVersionRepository applicationVersionRepository,
                                         ApplicationMarketRepository applicationMarketRepository,
                                         IamRepository iamRepository,
-                                        ApplicationRepository applicationRepository) {
+                                        ApplicationRepository applicationRepository,
+                                        GitlabServiceClient gitlabServiceClient) {
         this.applicationVersionRepository = applicationVersionRepository;
         this.applicationMarketRepository = applicationMarketRepository;
         this.iamRepository = iamRepository;
+        this.gitlabServiceClient = gitlabServiceClient;
         this.applicationRepository = applicationRepository;
     }
 
@@ -137,6 +141,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationReleasingDTO.setAppURL(gitlabUrl + urlSlash
                 + organization.getCode() + "-" + projectE.getCode() + "/"
                 + applicationE.getCode() + "/raw/master/README.md");
+        applicationReleasingDTO.setReadme(
+                gitlabServiceClient.getReadme(applicationE.getGitlabProjectE().getId()).getBody());
         return applicationReleasingDTO;
     }
 

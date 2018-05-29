@@ -75,12 +75,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<PipelineDO>> listPipelines(Integer projectId, Integer page, Integer size, Integer userId) {
-        return new ResponseEntity("error.pipeline.select", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity("error.pipelines.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
     public ResponseEntity<PipelineDO> getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
-        return new ResponseEntity("error.pipeline.select", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity("error.pipeline.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -141,6 +141,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<Boolean> createFile(Integer projectId, Integer userId) {
         return new ResponseEntity("error.file.create", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> getReadme(Integer projectId) {
+        return new ResponseEntity("error.readme.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
