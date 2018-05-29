@@ -79,7 +79,7 @@ public class ApplicationMarketController {
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "应用版本取消发布")
     @PostMapping("/{appMarketId}/unpublish_version")
-    public ResponseEntity unpublish(
+    public ResponseEntity unpublishVersion(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
