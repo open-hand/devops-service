@@ -138,11 +138,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         applicationE = applicationRepository.query(applicationId);
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        String readme = gitlabServiceClient.getReadme(applicationE.getGitlabProjectE().getId()).getBody();
+        Boolean hasReadme = !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme);
+        String path = hasReadme ? "/raw/master/README.md" : "";
         applicationReleasingDTO.setAppURL(gitlabUrl + urlSlash
                 + organization.getCode() + "-" + projectE.getCode() + "/"
-                + applicationE.getCode() + "/raw/master/README.md");
-        applicationReleasingDTO.setReadme(
-                gitlabServiceClient.getReadme(applicationE.getGitlabProjectE().getId()).getBody());
+                + applicationE.getCode() + path);
+        applicationReleasingDTO.setReadme(hasReadme ? readme : "# File README.md missing");
         return applicationReleasingDTO;
     }
 
