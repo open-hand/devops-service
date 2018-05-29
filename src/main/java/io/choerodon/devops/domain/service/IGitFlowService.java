@@ -13,9 +13,9 @@ public interface IGitFlowService {
 
     String getBranchStatus(String branchName, Integer status);
 
-    String getReleaseNumber(Long serviceId);
+    String getReleaseNumber(Long serviceId, Integer userId);
 
-    String getHotfixNumber(Long serviceId);
+    String getHotfixNumber(Long serviceId, Integer userId);
 
     void createBranch(Integer projectId, String branchName);
 
