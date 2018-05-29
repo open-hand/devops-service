@@ -86,6 +86,9 @@ public class GitFlowServiceImpl implements GitFlowService {
     public String updateMRStatus(Long applicationId, String branchName) {
         Integer projectId = gitFlowRepository.getGitLabId(applicationId);
         Integer outcome = igitflowservice.getBranchState(projectId, branchName, getGitlabUserId());
+        if (branchName.startsWith(HOTFIX_PREFIX) && outcome == 8) {
+            outcome = 10;
+        }
         return igitflowservice.getBranchStatus(branchName, outcome);
     }
 
@@ -108,12 +111,12 @@ public class GitFlowServiceImpl implements GitFlowService {
 
     @Override
     public String getReleaseNumber(Long applicationId) {
-        return igitflowservice.getReleaseNumber(applicationId);
+        return igitflowservice.getReleaseNumber(applicationId, getGitlabUserId());
     }
 
     @Override
     public String getHotfixNumber(Long applicationId) {
-        return igitflowservice.getHotfixNumber(applicationId);
+        return igitflowservice.getHotfixNumber(applicationId, getGitlabUserId());
     }
 
     @Override

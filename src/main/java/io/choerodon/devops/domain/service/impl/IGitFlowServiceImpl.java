@@ -99,13 +99,13 @@ public class IGitFlowServiceImpl implements IGitFlowService {
     }
 
     @Override
-    public String getReleaseNumber(Long serviceId) {
-        return getBranchNumber(serviceId, getGitlabUserId(), true);
+    public String getReleaseNumber(Long serviceId, Integer userId) {
+        return getBranchNumber(serviceId, userId, true);
     }
 
     @Override
-    public String getHotfixNumber(Long serviceId) {
-        return getBranchNumber(serviceId, getGitlabUserId(), false);
+    public String getHotfixNumber(Long serviceId, Integer userId) {
+        return getBranchNumber(serviceId, userId, false);
     }
 
     @Override
@@ -130,9 +130,9 @@ public class IGitFlowServiceImpl implements IGitFlowService {
         String tag = branchName.split("-")[1];
         if (!tag.matches("\\d+(\\.\\d+){2}")) {
             if (branchName.startsWith(RELEASE_PREFIX)) {
-                tag = getReleaseNumber(serviceId);
+                tag = getReleaseNumber(serviceId, userId);
             } else if (branchName.startsWith(HOTFIX_PREFIX)) {
-                tag = getHotfixNumber(serviceId);
+                tag = getHotfixNumber(serviceId , userId);
             } else {
                 throw new CommonException("create.tag.wrong.branch");
             }
