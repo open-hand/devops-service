@@ -168,7 +168,7 @@ public class ApplicationMarketController {
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "更新单个应用市场的应用")
-    @PostMapping("/{app_market_id}")
+    @PutMapping("/{app_market_id}")
     public ResponseEntity<ApplicationReleasingDTO> update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
