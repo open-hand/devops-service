@@ -136,8 +136,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationReleasingDTO.setAppVersions(applicationVersionDTOList);
         applicationE = applicationRepository.query(applicationId);
 
-        String latestVersionCommit;
-        if (versionId == null) {
+        String latestVersionCommit = null;
+        Long versionExist = applicationVersionDTOList.parallelStream()
+                .filter(t -> t.getId().equals(versionId)).count();
+        if (versionExist > 0) {
+            latestVersionCommit = applicationVersionRepository.query(versionId).getCommit();
+        } else {
             Optional<ApplicationVersionRepDTO> optional = applicationVersionDTOList.parallelStream()
                     .max((t, k) -> {
                         if (t.getId() > k.getId()) {
@@ -149,10 +153,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             latestVersionCommit = optional.isPresent()
                     ? applicationVersionRepository.query(optional.get().getId()).getCommit()
                     : null;
-        } else {
-            Long versionExist = applicationVersionDTOList.parallelStream()
-                    .filter(t -> t.getId().equals(versionId)).count();
-            latestVersionCommit = versionExist > 0 ? applicationVersionRepository.query(versionId).getCommit() : null;
         }
         String readme = getReadme(applicationE.getGitlabProjectE().getId(), latestVersionCommit);
         applicationReleasingDTO.setReadme(readme);
