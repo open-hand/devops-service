@@ -38,4 +38,6 @@ public interface DeployMsgHandlerService {
     void netWorkUpdate(String key, String msg);
 
     void helmReleaseGetContent(String key, Long envId, String msg);
+
+    void commandNotSend(Long commandId, String msg);
 }

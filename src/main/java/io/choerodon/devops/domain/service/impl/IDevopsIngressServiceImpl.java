@@ -24,7 +24,7 @@ public class IDevopsIngressServiceImpl implements IDevopsIngressService {
 
     @Override
     @Async
-    public void createIngress(String ingressYaml, String name, String namespace) {
+    public void createIngress(String ingressYaml, String name, String namespace, Long commandId) {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".Ingress:" + name);
         msg.setType(HelmType.NetworkIngress.toValue());
@@ -35,7 +35,7 @@ public class IDevopsIngressServiceImpl implements IDevopsIngressService {
 
     @Override
     @Async
-    public void deleteIngress(String name, String namespace) {
+    public void deleteIngress(String name, String namespace, Long commandId) {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".ingress:" + name);
         msg.setType(HelmType.NetworkIngressDelete.toValue());

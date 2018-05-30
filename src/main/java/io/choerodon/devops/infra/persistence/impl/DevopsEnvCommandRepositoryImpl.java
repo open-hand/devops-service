@@ -47,4 +47,10 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
         return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandE.class);
     }
 
+    @Override
+    public DevopsEnvCommandE query(Long id) {
+        DevopsEnvCommandDO devopsEnvCommandDO = devopsEnvCommandMapper.selectByPrimaryKey(id);
+        return ConvertHelper.convert(devopsEnvCommandDO,DevopsEnvCommandE.class);
+    }
+
 }

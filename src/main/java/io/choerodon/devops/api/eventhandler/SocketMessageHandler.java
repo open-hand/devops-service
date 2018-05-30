@@ -126,6 +126,9 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case HelmReleaseGetContent:
                 deployMsgHandlerService.helmReleaseGetContent(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
+            case CommandNotSend:
+                deployMsgHandlerService.commandNotSend(msg.getCommandId(),msg.getPayload());
+                break;
             default:
                 break;
         }

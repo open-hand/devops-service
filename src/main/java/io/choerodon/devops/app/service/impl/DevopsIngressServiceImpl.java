@@ -88,18 +88,18 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     devopsIngressDTO.getId(), t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
             ingress.getSpec().getRules().get(0).getHttp().addPathsItem(createPath(t.getPath(), t.getServiceId()));
         });
-
-        devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
-        idevopsIngressService.createIngress(json.serialize(ingress),
-                name,
-                devopsEnvironmentE.getCode());
-
         DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
         devopsEnvCommandE.setObject(ObjectType.INGRESS.getObjectType());
         devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
         devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+        idevopsIngressService.createIngress(json.serialize(ingress),
+                name,
+                devopsEnvironmentE.getCode(),
+                devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+
+
     }
 
     @Override
@@ -133,19 +133,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 ingress.getSpec().getRules().get(0).getHttp()
                         .addPathsItem(createPath(t.getPath(), t.getServiceId()));
             });
-            if (!ingressDTO.getName().equals(name)) {
-                idevopsIngressService.deleteIngress(ingressDTO.getName(), devopsEnvironmentE.getCode());
-            }
-
-            devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
-            idevopsIngressService.createIngress(json.serialize(ingress),
-                    name, devopsEnvironmentE.getCode());
-
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.INGRESS.getObjectType(), id);
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
             devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
             devopsEnvCommandRepository.update(devopsEnvCommandE);
+            if (!ingressDTO.getName().equals(name)) {
+                idevopsIngressService.deleteIngress(ingressDTO.getName(), devopsEnvironmentE.getCode(),devopsEnvCommandE.getId());
+            }
+            devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
+            idevopsIngressService.createIngress(json.serialize(ingress),
+                    name, devopsEnvironmentE.getCode(),devopsEnvCommandE.getId());
 
         }
     }
@@ -162,15 +160,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public void deleteIngress(Long ingressId) {
-        DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
-        idevopsIngressService.deleteIngress(ingressDO.getName(), devopsEnvironmentE.getCode());
-
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INGRESS.getObjectType(), ingressId);
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getCommandType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+        DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
+        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
+        idevopsIngressService.deleteIngress(ingressDO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId());
 
     }
 

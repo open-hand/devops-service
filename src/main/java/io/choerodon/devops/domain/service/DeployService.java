@@ -14,5 +14,6 @@ public interface DeployService {
                 ApplicationInstanceE applicationInstanceE,
                 DevopsEnvironmentE devopsEnvironmentE,
                 String values,
-                String type);
+                String type,
+                Long commandId);
 }

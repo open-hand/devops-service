@@ -27,7 +27,9 @@ import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.session.EnvListener;
+import io.choerodon.websocket.helper.EnvListener;
+import io.choerodon.websocket.helper.EnvSession;
+
 
 /**
  * Creator: Runge
@@ -125,15 +127,16 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         Page<DevopsIngressDO> devopsIngressDOS =
                 PageHelper.doPageAndSort(pageRequest,
                         () -> devopsIngressMapper.selectIngerss(projectId, searchParamMap, paramMap));
-        Set<String> namespaces = envListener.connectedEnv();
+        Map<String,EnvSession> envs = envListener.connectedEnv();
         devopsIngressDOS.getContent().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),
                             t.getEnvId(), t.getUsable(), t.getEnvName(),
                             t.getCommandStatus(), t.getCommandType(), t.getError());
 
-            for (String ns : namespaces) {
-                if (ns.equals(t.getNamespace())) {
+            for(Map.Entry<String,EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getRegisterKey().equals(t.getNamespace())) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }
