@@ -1,23 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
-import io.choerodon.devops.domain.application.event.KanbanProjectPayload;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
-import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.event.producer.execute.EventProducerTemplate;
@@ -75,35 +68,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
             devopsProjectDO.setGitlabGroupId(group.getId());
             devopsProjectRepository.updateProjectAttr(devopsProjectDO);
-            setProjectMemberEvent(gitlabGroupPayload);
-
-            List<GitlabProjectDO> projectList =
-                    gitlabServiceClient.listProjects(group.getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody();
-            if (!projectList.isEmpty()) {
-                KanbanProjectPayload kanbanProjectPayload = new KanbanProjectPayload();
-                kanbanProjectPayload.setGitlabGroupId(group.getId());
-                kanbanProjectPayload.setProjectId(gitlabGroupPayload.getProjectId());
-                kanbanProjectPayload.setGitlabProjectId(projectList.get(0).getId());
-                kanbanProjectPayload.setProjectName(gitlabGroupPayload.getProjectName());
-                Exception exception = eventProducerTemplate.execute("createProject", "devops-service", kanbanProjectPayload,
-                        (String uuid) -> {
-                        });
-                if (exception != null) {
-                    throw new CommonException(exception.getMessage());
-                }
-            }
         }
     }
 
 
-    private void setProjectMemberEvent(GitlabGroupPayload gitlabGroupPayload) {
-        GitlabGroupMemberDTO gitlabGroupMemberDTO = new GitlabGroupMemberDTO();
-        gitlabGroupMemberDTO.setResourceId(gitlabGroupPayload.getProjectId());
-        gitlabGroupMemberDTO.setResourceType("project");
-        gitlabGroupMemberDTO.setRoleLabels(gitlabGroupPayload.getRoleLabels());
-        gitlabGroupMemberDTO.setUsername(gitlabGroupPayload.getUserName());
-        List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList = new ArrayList<>();
-        gitlabGroupMemberDTOList.add(gitlabGroupMemberDTO);
-        gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberDTOList);
-    }
 }
