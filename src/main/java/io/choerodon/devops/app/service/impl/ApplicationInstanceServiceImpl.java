@@ -100,10 +100,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 }
             } else {
                 instancesDTO = appInstancesList.get(appInstancesListMap.get(t.getAppId()));
-                if (instancesDTO.getLatestVersionId().equals(t.getVersionId())) {
-                    instancesDTO.appendInstances(new EnvInstancesDTO(
-                            t.getInstanceId(), t.getInstanceCode(), t.getInstanceStatus()));
-                }
                 addInstanceIfNotExist(instancesDTO, t);
             }
             if (t.getInstanceId() != null
@@ -170,7 +166,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String versionValue = applicationVersionRepository.queryValue(versionId);
         String deployValue = applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId);
         if (deployValue != null) {
-             return FileUtil.replace(versionValue,deployValue);
+            return FileUtil.replace(versionValue, deployValue);
         }
         ReplaceResult replaceResult1 = new ReplaceResult();
         replaceResult1.setYaml(versionValue);
@@ -237,12 +233,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE.getApplicationE().getId());
 
         Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
+        List<GitlabPipelineE> gitlabPipelineEList =
+                gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
         if (gitlabPipelineEList == null) {
             return Collections.emptyList();
         }
-
-        String username = GitUserNameUtil.getUsername();
         List<PipelineResultV> pipelineResultVS = new ArrayList<>();
         String branch = "";
         long pipelineId = 0;

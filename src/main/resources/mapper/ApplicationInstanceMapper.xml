@@ -48,9 +48,8 @@
         JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY
         decmd.object,decmd.object_id ) mcmd ON mcmd.id =
         cmd.id
-        LEFT JOIN devops_app_market dam ON dam.publish_level = 'public'
-        OR ( dam.app_id = da.id AND dam.publish_level = 'organization' )
-        WHERE da.project_id = #{projectId}
+        LEFT JOIN devops_app_market dam ON dam.app_id = da.id
+        WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
         ORDER BY dai.id DESC
@@ -214,13 +213,12 @@
         FROM
         devops_application da
         JOIN devops_app_version dav ON dav.app_id = da.id
-        LEFT JOIN devops_app_instance dai ON dai.app_version_id = dav.id
+        JOIN devops_app_instance dai ON dai.app_version_id = dav.id
         AND dai.status != 'deleted'
-        LEFT JOIN devops_env de ON de.id = dai.env_id
-        LEFT JOIN devops_app_market dam ON dam.publish_level = 'public'
-        OR ( dam.app_id = da.id AND dam.publish_level = 'organization' )
+        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_app_market dam ON dam.app_id = da.id
         WHERE
-        da.project_id = #{projectId}
+        de.project_id = #{projectId}
         <if test="appId != null">
             AND da.id = #{appId}
         </if>
