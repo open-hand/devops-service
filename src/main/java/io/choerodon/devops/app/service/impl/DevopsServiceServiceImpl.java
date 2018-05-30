@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
 
+import javax.swing.text.html.parser.Entity;
+
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -32,7 +34,8 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.session.EnvListener;
+import io.choerodon.websocket.helper.EnvListener;
+import io.choerodon.websocket.helper.EnvSession;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -75,10 +78,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Page<DevopsServiceDTO> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam) {
         Page<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
                 projectId, pageRequest, searchParam);
-        Set<String> namespaces = envListener.connectedEnv();
-        for (String ns : namespaces) {
+        Map<String,EnvSession> envs = envListener.connectedEnv();
+        for(Map.Entry<String,EnvSession> entry : envs.entrySet()) {
+            EnvSession envSession = entry.getValue();
             for (DevopsServiceV ds : devopsServiceByPage) {
-                if (ns.equals(ds.getNamespace())) {
+                if (envSession.getRegisterKey().equals(ds.getNamespace())) {
                     ds.setEnvStatus(true);
                 }
             }
@@ -152,7 +156,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsEnvCommandRepository.update(devopsEnvCommandE);
 
             updateService(devopsServiceE, devopsServiceReqDTO, applicationE.getCode(), true);
-            idevopsServiceService.delete(oldServiceName, devopsServiceE.getNamespace());
+            idevopsServiceService.delete(oldServiceName, devopsServiceE.getNamespace(), devopsEnvCommandE.getId());
 
             //更新域名
             List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceId(
@@ -181,7 +185,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
                 idevopsIngressService.createIngress(json.serialize(v1beta1Ingress),
                         devopsIngressDO.getName(),
-                        devopsEnvironmentE.getCode());
+                        devopsEnvironmentE.getCode(), newdevopsEnvCommandE.getId());
             }
         } else {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -244,7 +248,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     }
                     idevopsIngressService.createIngress(json.serialize(v1beta1Ingress),
                             devopsIngressDO.getName(),
-                            devopsEnvironmentE.getCode());
+                            devopsEnvironmentE.getCode(), newdevopsEnvCommandE.getId());
                 }
             }
         }
@@ -256,15 +260,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void deleteDevopsService(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceRepository.update(devopsServiceE);
-        //删除service
-        idevopsServiceService.delete(devopsServiceE.getName(), devopsServiceE.getNamespace());
-
         DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.SERVICE.getObjectType(), id);
         newdevopsEnvCommandE.setCommandType(CommandType.DELETE.getCommandType());
         newdevopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
         devopsEnvCommandRepository.update(newdevopsEnvCommandE);
+        devopsServiceRepository.update(devopsServiceE);
+        //删除service
+        idevopsServiceService.delete(devopsServiceE.getName(), devopsServiceE.getNamespace(), newdevopsEnvCommandE.getId());
+
     }
 
     /**
@@ -384,8 +388,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         appDeploy.setLabel(json.serialize(annotations));
         appDeploy.setObjectVersionNumber(appDeploy.getObjectVersionNumber());
         appDeploy.setStatus(ServiceStatus.OPERATIING.getStatus());
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.SERVICE.getObjectType(), devopsServiceE.getId());
+        devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
         devopsServiceRepository.update(appDeploy);
-        idevopsServiceService.deploy(serviceYaml, devopsServiceReqDTO.getName(), appDeploy.getNamespace());
+        idevopsServiceService.deploy(serviceYaml, devopsServiceReqDTO.getName(), appDeploy.getNamespace(), devopsEnvCommandE.getId());
     }
 
     /**

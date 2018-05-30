@@ -733,6 +733,14 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
     }
 
+    @Override
+    public void commandNotSend(Long commandId, String msg) {
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+        devopsEnvCommandE.setError(msg);
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+    }
+
     private void saveOrUpdateResource(DevopsEnvResourceE devopsEnvResourceE,
                                       DevopsEnvResourceE newdevopsEnvResourceE,
                                       DevopsEnvResourceDetailE devopsEnvResourceDetailE,

@@ -216,13 +216,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandValueE.setValue(applicationDeployDTO.getValues());
         devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository
                 .create(devopsEnvCommandValueE).getId());
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
         deployService.deploy(
                 applicationE,
                 applicationVersionE,
                 applicationInstanceE,
                 devopsEnvironmentE,
-                applicationDeployDTO.getValues(), applicationDeployDTO.getType());
+                applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
+                devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         return true;
     }
 
@@ -294,7 +294,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         upgradeMap.put("ChartVersion", chartVersion);
         upgradeMap.put("Values", values);
         String payload = gson.toJson(upgradeMap);
-        sentInstance(payload, releaseName, HelmType.HelmReleasePreUpgrade.toValue(), namespace);
+        sentInstance(payload, releaseName, HelmType.HelmReleasePreUpgrade.toValue(), namespace, devopsEnvCommandE.getId());
     }
 
     @Override
@@ -313,7 +313,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Map<String, String> stopMap = new HashMap<>();
         stopMap.put(RELEASE_NAME, releaseName);
         String payload = gson.toJson(stopMap);
-        sentInstance(payload, releaseName, HelmType.HelmReleaseStop.toValue(), namespace);
+        sentInstance(payload, releaseName, HelmType.HelmReleaseStop.toValue(), namespace, devopsEnvCommandE.getId());
     }
 
     @Override
@@ -333,7 +333,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Map<String, String> stopMap = new HashMap<>();
         stopMap.put(RELEASE_NAME, releaseName);
         String payload = gson.toJson(stopMap);
-        sentInstance(payload, releaseName, HelmType.HelmReleaseStart.toValue(), namespace);
+        sentInstance(payload, releaseName, HelmType.HelmReleaseStart.toValue(), namespace, devopsEnvCommandE.getId());
     }
 
     @Override
@@ -349,7 +349,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Map<String, String> deleteMap = new HashMap<>();
         deleteMap.put(RELEASE_NAME, releaseName);
         String payload = gson.toJson(deleteMap);
-        sentInstance(payload, releaseName, HelmType.HelmReleaseDelete.toValue(), namespace);
+        sentInstance(payload, releaseName, HelmType.HelmReleaseDelete.toValue(), namespace, devopsEnvCommandE.getId());
     }
 
     @Override
@@ -361,7 +361,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         rollbackMap.put(RELEASE_NAME, releaseName);
         rollbackMap.put("Version", version);
         String payload = gson.toJson(rollbackMap);
-        sentInstance(payload, releaseName, HelmType.HelmReleaseRollback.toValue(), namespace);
+        sentInstance(payload, releaseName, HelmType.HelmReleaseRollback.toValue(), namespace, null);
     }
 
 
@@ -377,11 +377,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Async
-    void sentInstance(String payload, String name, String type, String namespace) {
+    void sentInstance(String payload, String name, String type, String namespace, Long commandId) {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".release:" + name);
         msg.setType(type);
         msg.setPayload(payload);
+        msg.setCommandId(commandId);
         commandSender.sendMsg(msg);
     }
 }

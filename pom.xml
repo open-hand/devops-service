@@ -183,9 +183,9 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>choerodon-framework</groupId>
+            <groupId>io.choerodon</groupId>
             <artifactId>choerodon-websocket-helper</artifactId>
-            <version>0.5.3.RELEASE</version>
+            <version>0.5.5.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>

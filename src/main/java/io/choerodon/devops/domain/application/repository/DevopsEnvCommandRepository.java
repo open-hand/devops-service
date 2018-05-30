@@ -9,4 +9,6 @@ public interface DevopsEnvCommandRepository {
     DevopsEnvCommandE queryByObject(String objectType, Long objectId);
 
     DevopsEnvCommandE update(DevopsEnvCommandE devopsEnvCommandE);
+
+    DevopsEnvCommandE query(Long id);
 }

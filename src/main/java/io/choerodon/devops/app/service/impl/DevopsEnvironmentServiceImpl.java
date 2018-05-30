@@ -21,15 +21,15 @@ import io.choerodon.devops.domain.application.repository.DevopsServiceRepository
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.websocket.session.EnvListener;
+import io.choerodon.websocket.helper.EnvListener;
+import io.choerodon.websocket.helper.EnvSession;
+
 
 /**
  * Created by younger on 2018/4/9.
  */
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
-
-    private static String agentVersion;
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -61,32 +61,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         this.applicationInstanceRepository = applicationInstanceRepository;
     }
 
-    public static int compareVersion(String v1, String v2) {
-        String[] valueSplit1 = v1.split("[.]");
-        String[] valueSplit2 = v2.split("[.]");
-        int minLength = valueSplit1.length;
-        if (minLength > valueSplit2.length) {
-            minLength = valueSplit2.length;
-        }
-        for (int i = 0; i < minLength; i++) {
-            int value1 = Integer.parseInt(valueSplit1[i]);
-            int value2 = Integer.parseInt(valueSplit2[i]);
-            if (value1 > value2) {
-                return 1;
-            } else if (value1 < value2) {
-                return -1;
-            }
-        }
-        return valueSplit1.length - valueSplit2.length;
-    }
-
-    public static String getAgentVersion() {
-        return agentVersion;
-    }
-
-    public static void setAgentVersion(String agentVersion) {
-        DevopsEnvironmentServiceImpl.agentVersion = agentVersion;
-    }
 
     @Override
     public String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
@@ -115,19 +89,18 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
-        Integer flag = 0;
-        Set<String> namespaces = envListener.connectedEnv();
+        Map<String, EnvSession> envs = envListener.connectedEnv();
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).parallelStream()
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                 .collect(Collectors.toList());
-        if (agentVersion != null) {
-            flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
-        }
-        for (String str : namespaces) {
-            for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-                devopsEnvironmentE.setUpdate(false);
-                if (str.equals(devopsEnvironmentE.getCode())) {
+        for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
+            Integer flag = 0;
+            devopsEnvironmentE.setUpdate(false);
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getRegisterKey().equals(devopsEnvironmentE.getCode())) {
+                    flag = agentExpectVersion.compareTo(envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
                 if (flag == 1) {
@@ -197,7 +170,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepDTO> sort(Long[] environmentIds) {
-        Integer flag = 0;
         List<Long> ids = new ArrayList<>();
         Collections.addAll(ids, environmentIds);
         List<DevopsEnvironmentE> devopsEnvironmentES = ids.stream()
@@ -209,14 +181,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnviromentRepository.update(devopsEnvironmentE);
             sequence = sequence + 1;
         }
-        if (agentVersion != null) {
-            flag = compareVersion(agentExpectVersion.substring(0, 5), this.agentVersion.substring(0, 5));
-        }
-        Set<String> namespaces = envListener.connectedEnv();
-        for (String str : namespaces) {
-            for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-                devopsEnvironmentE.setUpdate(false);
-                if (str.equals(devopsEnvironmentE.getCode())) {
+        Map<String, EnvSession> envs = envListener.connectedEnv();
+        for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
+            Integer flag = 0;
+            devopsEnvironmentE.setUpdate(false);
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getRegisterKey().equals(devopsEnvironmentE.getCode())) {
+                    flag = agentExpectVersion.compareTo(envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
                 if (flag == 1) {

@@ -5,7 +5,7 @@ package io.choerodon.devops.domain.service;
  */
 public interface IDevopsIngressService {
 
-    void createIngress(String ingressYaml, String name, String namespace);
+    void createIngress(String ingressYaml, String name, String namespace, Long commandId);
 
-    void deleteIngress(String name, String namespace);
+    void deleteIngress(String name, String namespace, Long commandId);
 }

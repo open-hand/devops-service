@@ -35,7 +35,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     @Async
-    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, String type) {
+    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, String type, Long commandId) {
         Msg msg = new Msg();
         Payload payload = new Payload(
                 devopsEnvironmentE.getCode(),
@@ -51,6 +51,7 @@ public class DeployServiceImpl implements DeployService {
         }
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
+            msg.setCommandId(commandId);
         } catch (IOException e) {
             throw new CommonException("error.payload.error");
         }

@@ -35,6 +35,7 @@ public enum HelmType {
     KubernetesGetLogs("kubernetes_get_logs"),
     HelmReleaseGetContent("helm_release_get_content"),
     HelmReleaseGetContentFailed("helm_release_get_content_failed"),
+    CommandNotSend("command_not_send"),
     NetworkServiceUpdate("network_service_update");
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
 
@@ -119,6 +120,8 @@ public enum HelmType {
                 return HelmType.HelmReleaseGetContent;
             case "helm_release_get_content_failed":
                 return HelmType.HelmReleaseGetContentFailed;
+            case "command_not_send":
+                return HelmType.CommandNotSend;
             default:
                 break;
         }
