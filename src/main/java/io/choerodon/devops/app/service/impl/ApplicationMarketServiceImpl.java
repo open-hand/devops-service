@@ -144,7 +144,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationReleasingDTO.setAppURL(gitlabUrl + urlSlash
                 + organization.getCode() + "-" + projectE.getCode() + "/"
                 + applicationE.getCode() + path);
-        applicationReleasingDTO.setReadme(hasReadme ? readme : "# File README.md missing");
+        applicationReleasingDTO.setReadme(hasReadme ? readme : "# 暂无");
         return applicationReleasingDTO;
     }
 
