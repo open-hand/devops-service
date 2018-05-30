@@ -25,7 +25,6 @@ import io.choerodon.devops.domain.application.repository.ApplicationMarketReposi
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -135,14 +134,18 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         ApplicationReleasingDTO applicationReleasingDTO =
                 ConvertHelper.convert(applicationMarketE, ApplicationReleasingDTO.class);
         applicationReleasingDTO.setAppVersions(applicationVersionDTOList);
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         applicationE = applicationRepository.query(applicationId);
 
         String latestVersionCommit;
         if (versionId == null) {
             Optional<ApplicationVersionRepDTO> optional = applicationVersionDTOList.parallelStream()
-                    .max((t, k) -> t.getId() > k.getId() ? 1 : t.getId().equals(k.getId()) ? 0 : -1);
+                    .max((t, k) -> {
+                        if (t.getId() > k.getId()) {
+                            return 1;
+                        } else {
+                            return t.getId().equals(k.getId()) ? 0 : -1;
+                        }
+                    });
             latestVersionCommit = optional.isPresent()
                     ? applicationVersionRepository.query(optional.get().getId()).getCommit()
                     : null;
@@ -151,17 +154,14 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     .filter(t -> t.getId().equals(versionId)).count();
             latestVersionCommit = versionExist > 0 ? applicationVersionRepository.query(versionId).getCommit() : null;
         }
-        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        String readme = gitlabServiceClient
-                .getReadme(applicationE.getGitlabProjectE().getId(), latestVersionCommit).getBody();
-        Boolean hasReadme = !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme);
-        String path = hasReadme ? "/raw/master/README.md" : "";
-        applicationReleasingDTO.setAppURL(gitlabUrl + urlSlash
-                + organization.getCode() + "-" + projectE.getCode() + "/"
-                + applicationE.getCode() + path);
-        applicationReleasingDTO.setReadme(hasReadme ? readme : "# 暂无");
-
+        String readme = getReadme(applicationE.getGitlabProjectE().getId(), latestVersionCommit);
+        applicationReleasingDTO.setReadme(readme);
         return applicationReleasingDTO;
+    }
+
+    private String getReadme(Integer gitlabProjectId, String commit) {
+        String readme = gitlabServiceClient.getReadme(gitlabProjectId, commit).getBody();
+        return !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme) ? readme : "# 暂无";
     }
 
     @Override
