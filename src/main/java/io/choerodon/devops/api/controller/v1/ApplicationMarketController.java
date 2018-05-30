@@ -153,8 +153,10 @@ public class ApplicationMarketController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
-            @PathVariable Long appMarketId) {
-        return Optional.ofNullable(applicationMarketService.getMarketApp(projectId, appMarketId))
+            @PathVariable Long appMarketId,
+            @ApiParam(value = "版本ID", required = false)
+            @RequestParam(required = false) Long versionId) {
+        return Optional.ofNullable(applicationMarketService.getMarketApp(projectId, appMarketId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }

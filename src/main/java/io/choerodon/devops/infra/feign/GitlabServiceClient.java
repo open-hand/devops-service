@@ -97,7 +97,8 @@ public interface GitlabServiceClient {
                                        @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/file/master/readme.md")
-    ResponseEntity<String> getReadme(@PathVariable("projectId") Integer projectId);
+    ResponseEntity<String> getReadme(@PathVariable("projectId") Integer projectId,
+                                     @RequestParam("commit") String commit);
 
     @PostMapping(value = "/v1/projects/{projectId}/protected_branches")
     ResponseEntity<Map<String, Object>> createProtectedBranches(@PathVariable("projectId") Integer projectId,
