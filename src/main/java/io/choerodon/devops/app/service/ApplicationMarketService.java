@@ -44,9 +44,10 @@ public interface ApplicationMarketService {
      *
      * @param projectId   项目id
      * @param appMarketId 应用市场ID
+     * @param versionId   应用版本ID
      * @return ApplicationReleasingDTO
      */
-    ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId);
+    ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId, Long versionId);
 
     void unpublish(Long projectId, Long appMarketId);
 

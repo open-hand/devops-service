@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -123,7 +124,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId) {
+    public ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId, Long versionId) {
         ApplicationMarketE applicationMarketE = applicationMarketRepository.getMarket(projectId, appMarketId);
         ApplicationE applicationE = applicationMarketE.getApplicationE();
         Long applicationId = applicationE.getId();
@@ -137,14 +138,29 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         applicationE = applicationRepository.query(applicationId);
+
+        String latestVersionCommit;
+        if (versionId == null) {
+            Optional<ApplicationVersionRepDTO> optional = applicationVersionDTOList.parallelStream()
+                    .max((t, k) -> t.getId() > k.getId() ? 1 : t.getId().equals(k.getId()) ? 0 : -1);
+            latestVersionCommit = optional.isPresent()
+                    ? applicationVersionRepository.query(optional.get().getId()).getCommit()
+                    : null;
+        } else {
+            Long versionExist = applicationVersionDTOList.parallelStream()
+                    .filter(t -> t.getId().equals(versionId)).count();
+            latestVersionCommit = versionExist > 0 ? applicationVersionRepository.query(versionId).getCommit() : null;
+        }
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        String readme = gitlabServiceClient.getReadme(applicationE.getGitlabProjectE().getId()).getBody();
+        String readme = gitlabServiceClient
+                .getReadme(applicationE.getGitlabProjectE().getId(), latestVersionCommit).getBody();
         Boolean hasReadme = !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme);
         String path = hasReadme ? "/raw/master/README.md" : "";
         applicationReleasingDTO.setAppURL(gitlabUrl + urlSlash
                 + organization.getCode() + "-" + projectE.getCode() + "/"
                 + applicationE.getCode() + path);
         applicationReleasingDTO.setReadme(hasReadme ? readme : "# 暂无");
+
         return applicationReleasingDTO;
     }
 
@@ -177,7 +193,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             throw new CommonException("error.id.notMatch");
         }
         applicationMarketRepository.checkProject(projectId, appMarketId);
-        ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(projectId, appMarketId);
+        ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(projectId, appMarketId, null);
         if (!applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
             throw new CommonException("error.app.cannot.change");
         }
