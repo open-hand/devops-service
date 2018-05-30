@@ -126,9 +126,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         for (String str : namespaces) {
             for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
+                devopsEnvironmentE.setUpdate(false);
                 if (str.equals(devopsEnvironmentE.getCode())) {
                     devopsEnvironmentE.initConnect(true);
-                    devopsEnvironmentE.setUpdate(false);
                 }
                 if (flag == 1) {
                     devopsEnvironmentE.setUpdate(true);
@@ -215,8 +215,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Set<String> namespaces = envListener.connectedEnv();
         for (String str : namespaces) {
             for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
+                devopsEnvironmentE.setUpdate(false);
                 if (str.equals(devopsEnvironmentE.getCode())) {
-                    devopsEnvironmentE.setUpdate(false);
                     devopsEnvironmentE.initConnect(true);
                 }
                 if (flag == 1) {
