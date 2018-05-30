@@ -144,19 +144,44 @@ public class ApplicationMarketController {
      *
      * @param projectId   项目id
      * @param appMarketId 发布ID
-     * @return list of ApplicationReleasingDTO
+     * @param versionId   版本ID
+     * @return ApplicationReleasingDTO
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "查询单个应用市场的应用")
-    @GetMapping("/{appMarketId}")
+    @GetMapping("/{app_market_id}")
     public ResponseEntity<ApplicationReleasingDTO> queryApp(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
-            @PathVariable Long appMarketId,
+            @PathVariable(value = "app_market_id") Long appMarketId,
             @ApiParam(value = "版本ID", required = false)
             @RequestParam(required = false) Long versionId) {
         return Optional.ofNullable(applicationMarketService.getMarketApp(projectId, appMarketId, versionId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.application.get"));
+    }
+
+    /**
+     * 查询单个应用市场的应用的单个版本README
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     * @param versionId   版本ID
+     * @return String of readme
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "查询单个应用市场的应用的单个版本README")
+    @GetMapping("/{app_market_id}/versions/{version_id}/readme")
+    public ResponseEntity<String> queryAppVersionReadme(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable(value = "app_market_id") Long appMarketId,
+            @ApiParam(value = "版本ID", required = true)
+            @PathVariable(value = "version_id") Long versionId) {
+        return Optional.ofNullable(
+                applicationMarketService.getMarketAppVersionReadme(projectId, appMarketId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
