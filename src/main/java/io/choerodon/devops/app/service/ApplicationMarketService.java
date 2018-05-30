@@ -49,6 +49,8 @@ public interface ApplicationMarketService {
      */
     ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId, Long versionId);
 
+    String getMarketAppVersionReadme(Long projectId, Long appMarketId, Long versionId);
+
     void unpublish(Long projectId, Long appMarketId);
 
     void unpublish(Long projectId, Long appMarketId, Long versionId);

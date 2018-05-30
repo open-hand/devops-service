@@ -136,7 +136,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationReleasingDTO.setAppVersions(applicationVersionDTOList);
         applicationE = applicationRepository.query(applicationId);
 
-        String latestVersionCommit = null;
+        String latestVersionCommit;
         Long versionExist = applicationVersionDTOList.parallelStream()
                 .filter(t -> t.getId().equals(versionId)).count();
         if (versionExist > 0) {
@@ -162,6 +162,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private String getReadme(Integer gitlabProjectId, String commit) {
         String readme = gitlabServiceClient.getReadme(gitlabProjectId, commit).getBody();
         return !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme) ? readme : "# 暂无";
+    }
+
+    @Override
+    public String getMarketAppVersionReadme(Long projectId, Long appMarketId, Long versionId) {
+        return getMarketApp(projectId, appMarketId, versionId).getReadme();
     }
 
     @Override
