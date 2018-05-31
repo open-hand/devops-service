@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -12,6 +13,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -140,11 +142,30 @@ public class ApplicationMarketController {
     }
 
     /**
+     * 查询项目下单个应用市场的应用详情
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     * @return ApplicationReleasingDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "查询项目下单个应用市场的应用详情")
+    @GetMapping("/{app_market_id}/detail")
+    public ResponseEntity<ApplicationReleasingDTO> queryAppInProject(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable(value = "app_market_id") Long appMarketId) {
+        return Optional.ofNullable(applicationMarketService.getMarketAppInProject(projectId,appMarketId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.application.get"));
+    }
+
+    /**
      * 查询单个应用市场的应用
      *
      * @param projectId   项目id
      * @param appMarketId 发布ID
-     * @param versionId   版本ID
      * @return ApplicationReleasingDTO
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -154,13 +175,34 @@ public class ApplicationMarketController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
-            @PathVariable(value = "app_market_id") Long appMarketId,
-            @ApiParam(value = "版本ID", required = false)
-            @RequestParam(required = false) Long versionId) {
-        return Optional.ofNullable(applicationMarketService.getMarketApp(projectId, appMarketId, versionId))
+            @PathVariable(value = "app_market_id") Long appMarketId) {
+        return Optional.ofNullable(applicationMarketService.getMarketApp(appMarketId, null))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
+
+
+    /**
+     * 查询单个应用市场的应用的版本
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     * @return List of AppMarketVersionDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "查询项目下单个应用市场的应用的版本")
+    @GetMapping("/{app_market_id}/versions")
+    public ResponseEntity<List<AppMarketVersionDTO>> queryAppVersionsInProject(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable(value = "app_market_id") Long appMarketId) {
+        return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
+    }
+
+
 
     /**
      * 查询单个应用市场的应用的单个版本README
@@ -181,9 +223,9 @@ public class ApplicationMarketController {
             @ApiParam(value = "版本ID", required = true)
             @PathVariable(value = "version_id") Long versionId) {
         return Optional.ofNullable(
-                applicationMarketService.getMarketAppVersionReadme(projectId, appMarketId, versionId))
+                applicationMarketService.getMarketAppVersionReadme(appMarketId, versionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.market.application.get"));
+                .orElseThrow(() -> new CommonException("error.market.application.readme.get"));
     }
 
     /**

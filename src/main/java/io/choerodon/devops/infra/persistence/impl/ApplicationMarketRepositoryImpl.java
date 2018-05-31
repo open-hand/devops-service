@@ -15,6 +15,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
+import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -77,9 +78,9 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public ApplicationMarketE getMarket(Long projectId, Long appMarketId) {
+    public ApplicationMarketE getMarket(Long projectId, Long appMarketId, List<Long> projectIds) {
         return ConvertHelper.convert(
-                applicationMarketMapper.getMarketApplication(appMarketId),
+                applicationMarketMapper.getMarketApplication(projectId, appMarketId, projectIds),
                 ApplicationMarketE.class);
     }
 
@@ -106,8 +107,8 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public void checkDeployed(Long projectId, Long appMarketId, Long versionId) {
-        if (applicationMarketMapper.checkDeployed(projectId, appMarketId, versionId) > 0) {
+    public void checkDeployed(Long projectId, Long appMarketId, Long versionId, List<Long> projectIds) {
+        if (applicationMarketMapper.checkDeployed(projectId, appMarketId, versionId, projectIds) > 0) {
             throw new CommonException("error.appMarket.instance.deployed");
         }
     }
@@ -128,5 +129,10 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         devopsAppMarketDO.setObjectVersionNumber(
                 applicationMarketMapper.selectByPrimaryKey(devopsAppMarketDO.getId()).getObjectVersionNumber());
         applicationMarketMapper.updateByPrimaryKeySelective(devopsAppMarketDO);
+    }
+
+    @Override
+    public List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId) {
+        return applicationMarketMapper.listAppVersions(projectId, appMarketId);
     }
 }

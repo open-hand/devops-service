@@ -13,12 +13,11 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
@@ -26,6 +25,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
+import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -64,18 +64,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     @Override
     public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
-        List<Long> ids = new ArrayList<>();
+        List<Long> ids;
         if (applicationReleasingDTO != null) {
             String publishLevel = applicationReleasingDTO.getPublishLevel();
             if (!ORGANIZATION.equals(publishLevel) && !PUBLIC.equals(publishLevel)) {
                 throw new CommonException("error.publishLevel");
             }
-            List<ApplicationVersionRepDTO> appVersions = applicationReleasingDTO.getAppVersions();
-            if (appVersions != null && !appVersions.isEmpty()) {
-                for (ApplicationVersionRepDTO appVersion : appVersions) {
-                    ids.add(appVersion.getId());
-                }
-            }
+            List<AppMarketVersionDTO> appVersions = applicationReleasingDTO.getAppVersions();
+            ids = appVersions.parallelStream().map(AppMarketVersionDTO::getId)
+                    .collect(Collectors.toCollection(ArrayList::new));
         } else {
             throw new CommonException("error.app.check");
         }
@@ -100,7 +97,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public Page<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
         Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketAppsByProjectId(
                 projectId, pageRequest, searchParam);
-        return getReleasingDTOs(applicationMarketEPage);
+        return getReleasingDTOs(projectId, applicationMarketEPage);
     }
 
     @Override
@@ -117,32 +114,53 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             }
             Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketApps(
                     projectIds, pageRequest, searchParam);
-            return getReleasingDTOs(applicationMarketEPage);
+            return getReleasingDTOs(projectId, applicationMarketEPage);
         }
         return null;
     }
 
     @Override
-    public ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId, Long versionId) {
-        ApplicationMarketE applicationMarketE = applicationMarketRepository.getMarket(projectId, appMarketId);
-        ApplicationE applicationE = applicationMarketE.getApplicationE();
-        Long applicationId = applicationE.getId();
-        List<ApplicationVersionE> applicationVersionEList = applicationVersionRepository
-                .listAllPublishedVersion(applicationId);
-        List<ApplicationVersionRepDTO> applicationVersionDTOList = ConvertHelper
-                .convertList(applicationVersionEList, ApplicationVersionRepDTO.class);
+    public ApplicationReleasingDTO getMarketAppInProject(Long projectId, Long appMarketId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Long organizationId = projectE.getOrganization().getId();
+        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
+        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
+                .collect(Collectors.toCollection(ArrayList::new));
+        ApplicationMarketE applicationMarketE =
+                applicationMarketRepository.getMarket(projectId, appMarketId, projectIds);
+        List<DevopsAppMarketVersionDO> versionDOList = applicationMarketRepository
+                .getVersions(projectId, appMarketId);
+        List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
+                .convertList(versionDOList, AppMarketVersionDTO.class);
         ApplicationReleasingDTO applicationReleasingDTO =
                 ConvertHelper.convert(applicationMarketE, ApplicationReleasingDTO.class);
-        applicationReleasingDTO.setAppVersions(applicationVersionDTOList);
+        applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
+
+        return applicationReleasingDTO;
+    }
+
+    @Override
+    public ApplicationReleasingDTO getMarketApp(Long appMarketId, Long versionId) {
+        ApplicationMarketE applicationMarketE =
+                applicationMarketRepository.getMarket(null, appMarketId, null);
+        ApplicationE applicationE = applicationMarketE.getApplicationE();
+        List<DevopsAppMarketVersionDO> versionDOList = applicationMarketRepository
+                .getVersions(null, appMarketId);
+        List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
+                .convertList(versionDOList, AppMarketVersionDTO.class);
+        ApplicationReleasingDTO applicationReleasingDTO =
+                ConvertHelper.convert(applicationMarketE, ApplicationReleasingDTO.class);
+        applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
+        Long applicationId = applicationE.getId();
         applicationE = applicationRepository.query(applicationId);
 
         String latestVersionCommit;
-        Long versionExist = applicationVersionDTOList.parallelStream()
+        Long versionExist = appMarketVersionDTOList.parallelStream()
                 .filter(t -> t.getId().equals(versionId)).count();
         if (versionExist > 0) {
             latestVersionCommit = applicationVersionRepository.query(versionId).getCommit();
         } else {
-            Optional<ApplicationVersionRepDTO> optional = applicationVersionDTOList.parallelStream()
+            Optional<AppMarketVersionDTO> optional = appMarketVersionDTOList.parallelStream()
                     .max((t, k) -> {
                         if (t.getId() > k.getId()) {
                             return 1;
@@ -165,21 +183,21 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public String getMarketAppVersionReadme(Long projectId, Long appMarketId, Long versionId) {
-        return getMarketApp(projectId, appMarketId, versionId).getReadme();
+    public String getMarketAppVersionReadme(Long appMarketId, Long versionId) {
+        return getMarketApp(appMarketId, versionId).getReadme();
     }
 
     @Override
     public void unpublish(Long projectId, Long appMarketId) {
         applicationMarketRepository.checkProject(projectId, appMarketId);
-        applicationMarketRepository.checkDeployed(projectId, appMarketId, null);
+        applicationMarketRepository.checkDeployed(projectId, appMarketId, null, null);
         applicationMarketRepository.unpublishApplication(appMarketId);
     }
 
     @Override
     public void unpublish(Long projectId, Long appMarketId, Long versionId) {
         applicationMarketRepository.checkProject(projectId, appMarketId);
-        applicationMarketRepository.checkDeployed(projectId, appMarketId, versionId);
+        applicationMarketRepository.checkDeployed(projectId, appMarketId, versionId, null);
         applicationMarketRepository.unpublishVersion(appMarketId, versionId);
 
     }
@@ -198,13 +216,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             throw new CommonException("error.id.notMatch");
         }
         applicationMarketRepository.checkProject(projectId, appMarketId);
-        ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(projectId, appMarketId, null);
+        ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
         if (!applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
             throw new CommonException("error.app.cannot.change");
         }
+        List<Long> releasedProjectIds = applicationReleasingDTO.getAppVersions().parallelStream()
+                .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
         if (ORGANIZATION.equals(applicationRelease.getPublishLevel())
                 && PUBLIC.equals(applicationReleasingDTO.getPublishLevel())) {
-            applicationMarketRepository.checkDeployed(projectId, appMarketId, null);
+            applicationMarketRepository.checkDeployed(projectId, appMarketId, null, releasedProjectIds);
 
         }
         DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, DevopsAppMarketDO.class);
@@ -212,28 +232,34 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             applicationMarketRepository.update(devopsAppMarketDO);
         }
         List<Long> ids = applicationRelease.getAppVersions().parallelStream()
-                .map(ApplicationVersionRepDTO::getId).collect(Collectors.toCollection(ArrayList::new));
+                .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
 
-        if (!ids.equals(applicationReleasingDTO.getAppVersions().parallelStream()
-                .map(ApplicationVersionRepDTO::getId).collect(Collectors.toCollection(ArrayList::new)))) {
+        if (!ids.equals(releasedProjectIds)) {
             applicationVersionRepository.checkAppAndVersion(applicationRelease.getAppId(), ids);
             applicationMarketRepository.unpublishVersion(appMarketId, null);
             applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
         }
     }
 
-    private Page<ApplicationReleasingDTO> getReleasingDTOs(Page<ApplicationMarketE> applicationMarketEPage) {
+    @Override
+    public List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId) {
+        return ConvertHelper.convertList(applicationMarketRepository.getVersions(projectId, appMarketId),
+                AppMarketVersionDTO.class);
+    }
+
+    private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
+                                                           Page<ApplicationMarketE> applicationMarketEPage) {
         Page<ApplicationReleasingDTO> applicationReleasingDTOPage = ConvertPageHelper.convertPage(
                 applicationMarketEPage,
                 ApplicationReleasingDTO.class);
         List<ApplicationReleasingDTO> applicationReleasingDTOList = applicationReleasingDTOPage.getContent();
         for (ApplicationReleasingDTO applicationReleasingDTO : applicationReleasingDTOList) {
-            Long applicationId = applicationReleasingDTO.getAppId();
-            List<ApplicationVersionE> applicationVersionEList = applicationVersionRepository
-                    .listAllPublishedVersion(applicationId);
-            List<ApplicationVersionRepDTO> applicationVersionDTOList = ConvertHelper
-                    .convertList(applicationVersionEList, ApplicationVersionRepDTO.class);
-            applicationReleasingDTO.setAppVersions(applicationVersionDTOList);
+            Long appMarketId = applicationReleasingDTO.getId();
+            List<DevopsAppMarketVersionDO> marketVersionDOS = applicationMarketRepository
+                    .getVersions(projectId, appMarketId);
+            List<AppMarketVersionDTO> marketVersionDTOList = ConvertHelper
+                    .convertList(marketVersionDOS, AppMarketVersionDTO.class);
+            applicationReleasingDTO.setAppVersions(marketVersionDTOList);
         }
         return applicationReleasingDTOPage;
     }

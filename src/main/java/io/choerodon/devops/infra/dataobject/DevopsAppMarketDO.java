@@ -38,6 +38,8 @@ public class DevopsAppMarketDO extends AuditDomain {
     private Long organizationId;
     @Transient
     private List<ApplicationVersionDO> applicationVersionDOList;
+    @Transient
+    private Boolean isDeployed;
 
     public Long getId() {
         return id;
@@ -133,6 +135,14 @@ public class DevopsAppMarketDO extends AuditDomain {
 
     public void setApplicationVersionDOList(List<ApplicationVersionDO> applicationVersionDOList) {
         this.applicationVersionDOList = applicationVersionDOList;
+    }
+
+    public Boolean getDeployed() {
+        return isDeployed;
+    }
+
+    public void setDeployed(Boolean deployed) {
+        isDeployed = deployed;
     }
 
     @Override

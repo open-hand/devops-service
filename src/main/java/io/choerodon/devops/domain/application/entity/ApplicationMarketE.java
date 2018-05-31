@@ -17,6 +17,7 @@ public class ApplicationMarketE {
     private Boolean isActive;
     private String contributor;
     private String description;
+    private Boolean isDeployed;
 
     public ApplicationMarketE() {
 
@@ -110,4 +111,11 @@ public class ApplicationMarketE {
         this.applicationE = new ApplicationE(id);
     }
 
+    public Boolean getDeployed() {
+        return isDeployed;
+    }
+
+    public void setDeployed(Boolean deployed) {
+        isDeployed = deployed;
+    }
 }
