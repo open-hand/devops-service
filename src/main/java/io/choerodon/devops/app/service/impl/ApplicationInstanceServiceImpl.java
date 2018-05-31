@@ -241,47 +241,49 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public List<VersionFeaturesDTO> queryVersionFeatures(Long appInstanceId) {
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
-        ApplicationE applicationE = applicationRepository.query(
-                applicationInstanceE.getApplicationE().getId());
-
-        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        List<GitlabPipelineE> gitlabPipelineEList =
-                gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
-        if (gitlabPipelineEList == null) {
-            return Collections.emptyList();
-        }
-        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
-        String branch = "";
-        long pipelineId = 0;
-        for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
-            PipelineResultV pipelineResultV = new PipelineResultV();
-            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
-                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
-            if (gitlabPipelineE != null) {
-                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
-                pipelineResultV.setCreatedAt(gitlabPipelineE.getCreatedAt());
-                pipelineResultV.setRef(gitlabPipelineE.getRef());
-
-                UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
-                if (userE != null) {
-                    pipelineResultV.setImageUrl(userE.getImageUrl());
-                }
-            }
-            pipelineResultVS.add(pipelineResultV);
-        }
-
-        List<PipelineResultV> pipelineResultVList = new ArrayList<>();
-        for (PipelineResultV pipelineResult : pipelineResultVS) {
-            if (branch.equals(pipelineResult.getRef())
-                    && pipelineId >= pipelineResult.getId()) {
-                pipelineResultVList.add(pipelineResult);
-            }
-        }
-
-        Collections.sort(pipelineResultVList);
-
-        return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
+//        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
+//        ApplicationE applicationE = applicationRepository.query(
+//                applicationInstanceE.getApplicationE().getId());
+//
+//        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
+//        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
+//        if (gitlabPipelineEList == null) {
+//            return Collections.emptyList();
+//        }
+//
+//        String username = GitUserNameUtil.getUsername();
+//        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
+//        String branch = "";
+//        long pipelineId = 0;
+//        for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
+//            PipelineResultV pipelineResultV = new PipelineResultV();
+//            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
+//                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
+//            if (gitlabPipelineE != null) {
+//                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
+//                pipelineResultV.setCreatedAt(gitlabPipelineE.getCreatedAt());
+//                pipelineResultV.setRef(gitlabPipelineE.getRef());
+//
+//                UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
+//                if (userE != null) {
+//                    pipelineResultV.setImageUrl(userE.getImageUrl());
+//                }
+//            }
+//            pipelineResultVS.add(pipelineResultV);
+//        }
+//
+//        List<PipelineResultV> pipelineResultVList = new ArrayList<>();
+//        for (PipelineResultV pipelineResult : pipelineResultVS) {
+//            if (branch.equals(pipelineResult.getRef())
+//                    && pipelineId >= pipelineResult.getId()) {
+//                pipelineResultVList.add(pipelineResult);
+//            }
+//        }
+//
+//        Collections.sort(pipelineResultVList);
+//
+//        return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
+        return null;
     }
 
     @Override

@@ -60,7 +60,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
                 if (userMemberRoleList == null || userMemberRoleList.size() == 0) {
                     LOGGER.info("user member role is empty");
-                    return;
                 }
                 AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
 

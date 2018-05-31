@@ -4,13 +4,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import rx.Observable;
+import rx.Observer;
+import rx.Single;
+import rx.functions.Func1;
+import rx.functions.FuncN;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -32,6 +36,7 @@ import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ProjectPipelineResultTotalV;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -67,73 +72,115 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     }
 
     @Override
-    public ProjectPipelineResultTotalDTO listPipelines(Long projectId, Long appId, PageRequest pageRequest) {
+    public Single<ProjectPipelineResultTotalDTO> listPipelines(Long projectId, Long appId, PageRequest pageRequest) {
         ApplicationE app = applicationRepository.query(appId);
         if (app == null) {
             throw new CommonException("error.application.query");
         }
-
+        Integer userId = getGitlabUserId();
+        String userName = GitUserNameUtil.getUsername();
         Integer gitlabProjectId = app.getGitlabProjectE().getId();
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
         List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, getGitlabUserId());
         List<GitlabPipelineE> gitlabPipelineEListByPage = gitlabProjectRepository.listPipelines(
                 gitlabProjectId, page + 1, size, getGitlabUserId());
-
         List<String> branchNames = gitlabProjectRepository.listBranches(
                 gitlabProjectId, getGitlabUserId()).stream().map(BranchE::getName).collect(Collectors.toList());
-
-        ExecutorService executorService = Executors.newFixedThreadPool(10);
-        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
-        ProjectPipelineResultTotalV projectPipelineResultTotalV = new ProjectPipelineResultTotalV();
+        List<Observable<PipelineDO>> observables = new ArrayList<>();
         if (gitlabPipelineEListByPage != null && !gitlabPipelineEListByPage.isEmpty()) {
             for (GitlabPipelineE gitlabPipeline : gitlabPipelineEListByPage) {
-                Future<PipelineResultV> future = executorService.submit(new TaskWithResult(
-                        gitlabProjectId, app, getGitlabUserId(), gitlabPipeline.getId(), projectId, GitUserNameUtil.getUsername()));
+                Observable<PipelineDO> pipeline = gitlabProjectRepository.getPipeline(
+                        gitlabProjectId, gitlabPipeline.getId(), userId);
+                observables.add(pipeline);
+            }
+           return Observable.combineLatest(observables, new FuncN<List<PipelineResultV>>() {
+                @Override
+                public List<PipelineResultV> call(Object... objects) {
+                    List<PipelineResultV> pipelineResultVS = new ArrayList<>();
+                    for (Object object : objects) {
+                        PipelineDO pipelineDO = (PipelineDO) object;
+                        PipelineResultV pipelineResultV = new PipelineResultV();
+                        pipelineResultV.setGitlabProjectId(gitlabProjectId.longValue());
+                        pipelineResultV.setAppCode(app.getCode());
+                        pipelineResultV.setAppName(app.getName());
+                        pipelineResultV.setAppStatus(app.getActive());
+                        pipelineResultV.setLatest(false);
+                        pipelineResultV.setId(pipelineDO.getId().longValue());
+                        pipelineResultV.setStatus(pipelineDO.getStatus().toString());
+                        pipelineResultV.setCreateUser(pipelineDO.getUser().getUsername());
+                        pipelineResultV.setRef(pipelineDO.getRef());
+                        pipelineResultV.setSha(pipelineDO.getSha());
+                        if (pipelineDO.getStarted_at() != null && pipelineDO.getFinished_at() != null) {
+                            pipelineResultV.setTime(getStageTime(pipelineDO.getStarted_at(),
+                                    pipelineDO.getFinished_at()));
+                        }
+                        pipelineResultV.setCreatedAt(pipelineDO.getCreatedAt());
 
-                try {
-                    PipelineResultV pipelineResultV = future.get();
-                    if (pipelineResultV != null) {
+                        List<GitlabJobE> jobs =
+                                gitlabProjectRepository.listJobs(gitlabProjectId, pipelineDO.getId(), userId);
+                        if (jobs != null) {
+                            List<GitlabJobE> realJobs = getRealJobs(jobs);
+                            pipelineResultV.setJobs(realJobs);
+                        }
+
+                        UserE userE = iamRepository.queryByLoginName(userName);
+                        if (userE != null) {
+                            pipelineResultV.setImageUrl(userE.getImageUrl());
+                        }
+
+                        ProjectE projectE = iamRepository.queryIamProject(projectId);
+                        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+                        pipelineResultV.setGitlabUrl(gitlabUrl + "/"
+                                + organization.getCode() + "-" + projectE.getCode() + "/"
+                                + app.getCode() + ".git");
                         pipelineResultVS.add(pipelineResultV);
+//                    }
                     }
-                } catch (ExecutionException | InterruptedException e) {
-                    logger.error(e.getMessage());
+                    return pipelineResultVS;
                 }
-            }
-            executorService.shutdown();
+            }).flatMap(new Func1<List<PipelineResultV>, Observable<ProjectPipelineResultTotalDTO>>() {
+                @Override
+                public Observable<ProjectPipelineResultTotalDTO> call(List<PipelineResultV> pipelineResultVS) {
+                    branchNames.stream().forEach(b -> {
+                        final long[] id = {0};
+                        gitlabPipelineEList.parallelStream().forEach(p -> {
+                            if (b.contains(p.getRef()) && p.getId() > id[0]) {
+                                id[0] = p.getId();
+                            }
+                        });
 
-            branchNames.stream().forEach(b -> {
-                final long[] id = {0};
-                gitlabPipelineEList.parallelStream().forEach(p -> {
-                    if (b.contains(p.getRef()) && p.getId() > id[0]) {
-                        id[0] = p.getId();
-                    }
-                });
+                        for (PipelineResultV p : pipelineResultVS) {
+                            if (p.getId() == id[0]) {
+                                p.setLatest(true);
+                            }
+                        }
+                    });
 
-                for (PipelineResultV p : pipelineResultVS) {
-                    if (p.getId() == id[0]) {
-                        p.setLatest(true);
+                    Collections.sort(pipelineResultVS);
+                    int allIndex = gitlabPipelineEList.size();
+                    int totalPages = 0;
+                    if (size != 0) {
+                        totalPages = allIndex % size == 0 ? allIndex / size : allIndex / size + 1;
                     }
+                    ProjectPipelineResultTotalV projectPipelineResultTotalV = new ProjectPipelineResultTotalV();
+
+                    projectPipelineResultTotalV.setTotalElements(allIndex);
+                    projectPipelineResultTotalV.setTotalPages(totalPages);
+                    projectPipelineResultTotalV.setNumberOfElements(gitlabPipelineEListByPage.size());
+                    projectPipelineResultTotalV.setNumber(page);
+                    projectPipelineResultTotalV.setSize(size);
+                    projectPipelineResultTotalV.setContent(pipelineResultVS);
+
+                    return Observable.just(ConvertHelper.convert(projectPipelineResultTotalV,
+                            ProjectPipelineResultTotalDTO.class));
                 }
-            });
+            }).toSingle();
 
-            Collections.sort(pipelineResultVS);
-            int allIndex = gitlabPipelineEList.size();
-            int totalPages = 0;
-            if (size != 0) {
-                totalPages = allIndex % size == 0 ? allIndex / size : allIndex / size + 1;
-            }
-
-            projectPipelineResultTotalV.setTotalElements(allIndex);
-            projectPipelineResultTotalV.setTotalPages(totalPages);
-            projectPipelineResultTotalV.setNumberOfElements(gitlabPipelineEListByPage.size());
-            projectPipelineResultTotalV.setNumber(page);
-            projectPipelineResultTotalV.setSize(size);
-            projectPipelineResultTotalV.setContent(pipelineResultVS);
+        }else {
+            return null;
         }
 
-        return ConvertHelper.convert(projectPipelineResultTotalV,
-                ProjectPipelineResultTotalDTO.class);
     }
 
     @Override
@@ -215,70 +262,5 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         return result;
     }
 
-    public class TaskWithResult implements Callable<PipelineResultV> {
 
-        private Integer gitlabProjectId;
-        private ApplicationE app;
-        private Integer userId;
-        private Integer gitlabPipeline;
-        private Long projectId;
-        private String realname;
-
-        /**
-         * 构造函数
-         */
-        public TaskWithResult(Integer gitlabProjectId, ApplicationE app, Integer userId,
-                              Integer gitlabPipeline, Long projectId, String realname) {
-            this.gitlabProjectId = gitlabProjectId;
-            this.app = app;
-            this.userId = userId;
-            this.gitlabPipeline = gitlabPipeline;
-            this.projectId = projectId;
-            this.realname = realname;
-        }
-
-        @Override
-        public PipelineResultV call() throws Exception {
-            PipelineResultV pipelineResultV = new PipelineResultV();
-            pipelineResultV.setGitlabProjectId(gitlabProjectId.longValue());
-            pipelineResultV.setAppCode(app.getCode());
-            pipelineResultV.setAppName(app.getName());
-            pipelineResultV.setAppStatus(app.getActive());
-            pipelineResultV.setLatest(false);
-
-            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
-                    gitlabProjectId, gitlabPipeline, userId);
-            if (gitlabPipelineE != null) {
-                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
-                pipelineResultV.setStatus(gitlabPipelineE.getStatus().toString());
-                pipelineResultV.setCreateUser(gitlabPipelineE.getUser().getUsername());
-                pipelineResultV.setRef(gitlabPipelineE.getRef());
-                pipelineResultV.setSha(gitlabPipelineE.getSha());
-                if (gitlabPipelineE.getStarted_at() != null && gitlabPipelineE.getFinished_at() != null) {
-                    pipelineResultV.setTime(getStageTime(gitlabPipelineE.getStarted_at(),
-                            gitlabPipelineE.getFinished_at()));
-                }
-                pipelineResultV.setCreatedAt(gitlabPipelineE.getCreatedAt());
-
-                List<GitlabJobE> jobs =
-                        gitlabProjectRepository.listJobs(gitlabProjectId, gitlabPipelineE.getId(), userId);
-                if (jobs != null) {
-                    List<GitlabJobE> realJobs = getRealJobs(jobs);
-                    pipelineResultV.setJobs(realJobs);
-                }
-
-                UserE userE = iamRepository.queryByLoginName(realname);
-                if (userE != null) {
-                    pipelineResultV.setImageUrl(userE.getImageUrl());
-                }
-
-                ProjectE projectE = iamRepository.queryIamProject(projectId);
-                Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-                pipelineResultV.setGitlabUrl(gitlabUrl + "/"
-                        + organization.getCode() + "-" + projectE.getCode() + "/"
-                        + app.getCode() + ".git");
-            }
-            return pipelineResultV;
-        }
-    }
 }
