@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -39,21 +42,25 @@ public interface ApplicationMarketService {
      */
     Page<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);
 
+    ApplicationReleasingDTO getMarketAppInProject(Long projectId, Long appMarketId);
+
     /**
      * 查询单个应用市场的应用
      *
-     * @param projectId   项目id
      * @param appMarketId 应用市场ID
      * @param versionId   应用版本ID
      * @return ApplicationReleasingDTO
      */
-    ApplicationReleasingDTO getMarketApp(Long projectId, Long appMarketId, Long versionId);
+    ApplicationReleasingDTO getMarketApp(Long appMarketId, Long versionId);
 
-    String getMarketAppVersionReadme(Long projectId, Long appMarketId, Long versionId);
+
+    String getMarketAppVersionReadme(Long appMarketId, Long versionId);
 
     void unpublish(Long projectId, Long appMarketId);
 
     void unpublish(Long projectId, Long appMarketId, Long versionId);
 
     void update(Long projectId, Long appMarketId, ApplicationReleasingDTO applicationRelease);
+
+    List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId);
 }

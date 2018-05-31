@@ -90,7 +90,8 @@
     </sql>
 
     <select id="listMarketApplicationInProject" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
-        select dam.id,
+        SELECT
+        dam.id,
         dam.app_id,
         da.`name`,
         da.`code`,
@@ -98,11 +99,23 @@
         dam.description,
         dam.category,
         dam.img_url,
-        dam.publish_level
-        from devops_application da,devops_app_market dam
-        where da.id=dam.app_id
-        and da.project_id=#{projectId}
-        and dam.is_active=1
+        dam.publish_level,
+        EXISTS (
+        SELECT
+        1
+        FROM
+        devops_app_instance dai
+        JOIN devops_env de ON dai.env_id = de.id
+        WHERE
+        dai.app_id = dam.app_id
+        AND de.project_id != da.project_id
+        ) is_deployed
+        FROM
+        devops_application da
+        JOIN devops_app_market dam ON da.id = dam.app_id
+        AND dam.is_active = 1
+        WHERE
+        da.project_id = #{projectId}
         <include refid="sqlparam"/>
     </select>
 
@@ -129,19 +142,40 @@
 
     <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
         SELECT
-        dam.id,
-        dam.app_id,
-        da.`name` `name`,
-        da.`code` `code`,
-        dam.publish_level,
-        dam.img_url,
-        dam.description,
-        dam.category,
-        dam.contributor
+            dam.id,
+            dam.app_id,
+            da.`name`,
+            da.`code`,
+            dam.contributor,
+            dam.description,
+            dam.category,
+            dam.img_url,
+            dam.publish_level,
+            EXISTS (
+        SELECT
+            1
         FROM
-        devops_app_market dam
-        JOIN devops_application da ON da.id = dam.app_id
-        WHERE dam.id = #{appMarketId}
+            devops_app_instance dai
+            JOIN devops_env de ON  dai.env_id =de.id
+        WHERE
+            dai.app_id = dam.app_id
+            AND de.project_id != da.project_id
+            <if test='projectIds != null'>
+                AND (de.project_id NOT IN
+                <foreach collection="projectIds" item="project" open="(" separator="," close=")">
+                    #{project}
+                </foreach>)
+            </if>
+            ) is_deployed
+        FROM
+            devops_application da
+            JOIN devops_app_market dam ON da.id = dam.app_id
+            AND dam.is_active = 1
+        WHERE
+            dam.id =  #{appMarketId}
+            <if test='projectId != null'>
+                AND da.project_id = #{projectId}
+            </if>
     </select>
 
     <select id="selectCountByAppId" resultType="java.lang.Integer">
@@ -186,6 +220,12 @@
             <if test='versionId != null'>
                 AND dai.app_version_id = #{versionId}
             </if>
+            <if test='projectIds != null'>
+                AND da.project_id NOT IN
+                <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+                    #{projectId}
+                </foreach>
+            </if>
             AND da.project_id != de.project_id
             AND da.project_id = #{projectId}
     </select>
@@ -200,4 +240,29 @@
             </if>
     </update>
 
+    <select id="listAppVersions" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO">
+        SELECT
+            dav.id,
+            dav.version,
+	        dav.creation_date,
+            EXISTS (
+        SELECT
+            1
+        FROM
+            devops_app_instance dai
+            JOIN devops_env de ON dai.env_id = de.id
+        WHERE
+            dai.app_version_id = dav.id
+            AND de.project_id != da.project_id
+            ) is_deployed
+        FROM
+            devops_app_version dav
+            JOIN devops_app_market dam ON dam.app_id = dav.app_id
+            JOIN devops_application da ON da.id = dam.app_id
+        WHERE
+            dam.id =  #{appMarketId}
+            <if test='projectId != null'>
+                AND da.project_id = #{projectId}
+            </if>
+    </select>
 </mapper>
