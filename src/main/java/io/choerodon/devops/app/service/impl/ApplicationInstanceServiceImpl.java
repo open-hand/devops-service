@@ -4,6 +4,7 @@ import java.util.*;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +45,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String RELEASE_NAME = "ReleaseName";
     private static final String ENV_DISCONNECTED = "error.env.disconnect";
     private static Gson gson = new Gson();
+
+    @Value("${agent.version}")
+    private String agentExpectVersion;
 
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
@@ -415,7 +419,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            envIds.add(envSession.getEnvId());
+            if(agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                envIds.add(envSession.getEnvId());
+            }
         }
         return envIds.contains(envId);
     }

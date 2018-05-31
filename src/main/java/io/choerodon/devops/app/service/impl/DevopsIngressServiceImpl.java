@@ -8,6 +8,7 @@ import java.util.Map;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
@@ -44,6 +45,9 @@ import io.choerodon.websocket.helper.EnvSession;
 public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String PATH_ERROR = "error.path.empty";
     private static final String ENV_DISCONNECTED = "error.env.disconnect";
+
+    @Value("${agent.version}")
+    private String agentExpectVersion;
 
     private static JSON json = new JSON();
     private IDevopsIngressService idevopsIngressService;
@@ -256,7 +260,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            envIds.add(envSession.getEnvId());
+            if(agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                envIds.add(envSession.getEnvId());
+            }
         }
         return envIds.contains(envId);
     }
