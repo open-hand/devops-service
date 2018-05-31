@@ -739,6 +739,17 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+        if(devopsEnvCommandE.getObject().equals(ObjectType.INSTANCE.getObjectType())) {
+            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsEnvCommandE.getObjectId());
+            applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
+            applicationInstanceRepository.update(applicationInstanceE);
+        } else if (devopsEnvCommandE.getObject().equals(ObjectType.SERVICE.getObjectType())) {
+            DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsEnvCommandE.getObjectId());
+            devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
+            devopsServiceRepository.update(devopsServiceE);
+        }else {
+            //todo INGRESS状态更新
+        }
     }
 
     private void saveOrUpdateResource(DevopsEnvResourceE devopsEnvResourceE,
