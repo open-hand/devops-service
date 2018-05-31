@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.Observer;
+import rx.Single;
+import rx.functions.Func1;
 import rx.functions.FuncN;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -70,7 +72,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     }
 
     @Override
-    public ProjectPipelineResultTotalDTO listPipelines(Long projectId, Long appId, PageRequest pageRequest) {
+    public Single<ProjectPipelineResultTotalDTO> listPipelines(Long projectId, Long appId, PageRequest pageRequest) {
         ApplicationE app = applicationRepository.query(appId);
         if (app == null) {
             throw new CommonException("error.application.query");
@@ -83,18 +85,16 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, getGitlabUserId());
         List<GitlabPipelineE> gitlabPipelineEListByPage = gitlabProjectRepository.listPipelines(
                 gitlabProjectId, page + 1, size, getGitlabUserId());
-
         List<String> branchNames = gitlabProjectRepository.listBranches(
                 gitlabProjectId, getGitlabUserId()).stream().map(BranchE::getName).collect(Collectors.toList());
         List<Observable<PipelineDO>> observables = new ArrayList<>();
-        ProjectPipelineResultTotalV projectPipelineResultTotalV = new ProjectPipelineResultTotalV();
         if (gitlabPipelineEListByPage != null && !gitlabPipelineEListByPage.isEmpty()) {
             for (GitlabPipelineE gitlabPipeline : gitlabPipelineEListByPage) {
                 Observable<PipelineDO> pipeline = gitlabProjectRepository.getPipeline(
                         gitlabProjectId, gitlabPipeline.getId(), userId);
                 observables.add(pipeline);
             }
-            Observable.combineLatest(observables, new FuncN<List<PipelineResultV>>() {
+           return Observable.combineLatest(observables, new FuncN<List<PipelineResultV>>() {
                 @Override
                 public List<PipelineResultV> call(Object... objects) {
                     List<PipelineResultV> pipelineResultVS = new ArrayList<>();
@@ -139,19 +139,9 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                     }
                     return pipelineResultVS;
                 }
-            }).subscribe(new Observer<List<PipelineResultV>>() {
+            }).flatMap(new Func1<List<PipelineResultV>, Observable<ProjectPipelineResultTotalDTO>>() {
                 @Override
-                public void onCompleted() {
-
-                }
-
-                @Override
-                public void onError(Throwable throwable) {
-                    throw new CommonException(throwable.getMessage());
-                }
-
-                @Override
-                public void onNext(List<PipelineResultV> pipelineResultVS) {
+                public Observable<ProjectPipelineResultTotalDTO> call(List<PipelineResultV> pipelineResultVS) {
                     branchNames.stream().forEach(b -> {
                         final long[] id = {0};
                         gitlabPipelineEList.parallelStream().forEach(p -> {
@@ -173,6 +163,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                     if (size != 0) {
                         totalPages = allIndex % size == 0 ? allIndex / size : allIndex / size + 1;
                     }
+                    ProjectPipelineResultTotalV projectPipelineResultTotalV = new ProjectPipelineResultTotalV();
 
                     projectPipelineResultTotalV.setTotalElements(allIndex);
                     projectPipelineResultTotalV.setTotalPages(totalPages);
@@ -180,17 +171,16 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                     projectPipelineResultTotalV.setNumber(page);
                     projectPipelineResultTotalV.setSize(size);
                     projectPipelineResultTotalV.setContent(pipelineResultVS);
-                }
-            });
 
+                    return Observable.just(ConvertHelper.convert(projectPipelineResultTotalV,
+                            ProjectPipelineResultTotalDTO.class));
+                }
+            }).toSingle();
+
+        }else {
+            return null;
         }
-        try {
-            Thread.currentThread().sleep(20000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        return ConvertHelper.convert(projectPipelineResultTotalV,
-                ProjectPipelineResultTotalDTO.class);
+
     }
 
     @Override
