@@ -168,7 +168,7 @@ public class K8sUtil {
         Integer max = 3;
         Boolean more = false;
         for (V1beta1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
-            if (results.size() != max) {
+            if (results.size() == max) {
                 more = true;
             }
             if (!more && v1beta1IngressRule.getHost().length() != 0) {

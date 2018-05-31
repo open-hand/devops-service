@@ -8,6 +8,7 @@ import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     protected static final JSON json = new JSON();
     private static final String ENV_DISCONNECTED = "error.env.disconnect";
+
+    @Value("${agent.version}")
+    private String agentExpectVersion;
+
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
     @Autowired
@@ -472,7 +477,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            envIds.add(envSession.getEnvId());
+            if(agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                envIds.add(envSession.getEnvId());
+            }
         }
         return envIds.contains(envId);
     }
