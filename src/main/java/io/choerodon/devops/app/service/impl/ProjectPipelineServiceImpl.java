@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import rx.Observable;
 import rx.Observer;
+import rx.functions.FuncN;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -94,11 +94,12 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                         gitlabProjectId, gitlabPipeline.getId(), userId);
                 observables.add(pipeline);
             }
-            Observable.combineLatest(observables, (Object... args) -> {
-                List<PipelineResultV> pipelineResultVS = new ArrayList<>();
-                for (Object object : args) {
-                    PipelineDO pipelineDO = (PipelineDO) object;
-                    if (pipelineDO != null) {
+            Observable.combineLatest(observables, new FuncN<List<PipelineResultV>>() {
+                @Override
+                public List<PipelineResultV> call(Object... objects) {
+                    List<PipelineResultV> pipelineResultVS = new ArrayList<>();
+                    for (Object object : objects) {
+                        PipelineDO pipelineDO = (PipelineDO) object;
                         PipelineResultV pipelineResultV = new PipelineResultV();
                         pipelineResultV.setGitlabProjectId(gitlabProjectId.longValue());
                         pipelineResultV.setAppCode(app.getCode());
@@ -134,9 +135,10 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                                 + organization.getCode() + "-" + projectE.getCode() + "/"
                                 + app.getCode() + ".git");
                         pipelineResultVS.add(pipelineResultV);
+//                    }
                     }
+                    return pipelineResultVS;
                 }
-                return pipelineResultVS;
             }).subscribe(new Observer<List<PipelineResultV>>() {
                 @Override
                 public void onCompleted() {
@@ -145,7 +147,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
 
                 @Override
                 public void onError(Throwable throwable) {
-
+                    throw new CommonException(throwable.getMessage());
                 }
 
                 @Override
@@ -180,6 +182,12 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                     projectPipelineResultTotalV.setContent(pipelineResultVS);
                 }
             });
+
+        }
+        try {
+            Thread.currentThread().sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
         return ConvertHelper.convert(projectPipelineResultTotalV,
                 ProjectPipelineResultTotalDTO.class);
