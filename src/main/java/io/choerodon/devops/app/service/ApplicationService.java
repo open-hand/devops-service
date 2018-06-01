@@ -86,6 +86,14 @@ public interface ApplicationService {
     List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status);
 
     /**
+     * 根据环境id获取已部署正在运行实例的应用
+     *
+     * @param projectId 项目id
+     * @return list of ApplicationRepDTO
+     */
+    Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest);
+
+    /**
      * 项目下查询所有已经启用的应用
      *
      * @param projectId 项目id

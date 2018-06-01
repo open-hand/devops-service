@@ -30,6 +30,8 @@ public interface ApplicationRepository {
 
     List<ApplicationE> listByEnvId(Long projectId, Long envId, String status);
 
+    Page<ApplicationE> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest);
+
     List<ApplicationE> listByActive(Long projectId);
 
     List<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive);
