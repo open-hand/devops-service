@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -197,49 +200,25 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void handlerReleaseInstall(String msg) {
-        Object object = null;
-        try {
-            object = objectMapper.readValue(msg, Object.class);
-            LinkedHashMap linkedHashMap = (java.util.LinkedHashMap) ((LinkedHashMap) object).get("release");
-            String releaseName = linkedHashMap.get("name").toString();
-            List<Object> objects = (ArrayList) linkedHashMap.get("resources");
-            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName);
-            applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
-            applicationInstanceRepository.update(applicationInstanceE);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getObjectType(), applicationInstanceE.getId());
-            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
-            for (Object obj : objects) {
-                Object newObj = objectMapper.readValue(((LinkedHashMap) obj).get("object").toString(), Object.class);
-                DevopsEnvResourceE newdevopsEnvResourceE =
-                        devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                applicationInstanceE.getId(),
-                                ((LinkedHashMap) obj).get("kind").toString(),
-                                ((LinkedHashMap) obj).get("name").toString());
-                DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
-                devopsEnvResourceDetailE.setMessage(((LinkedHashMap) obj).get("object").toString());
-                DevopsEnvResourceE devopsEnvResourceE =
-                        DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
-                devopsEnvResourceE.setKind(((LinkedHashMap) obj).get("kind").toString());
-                devopsEnvResourceE.setName(((LinkedHashMap) obj).get("name").toString());
-                devopsEnvResourceE.setReversion(
-                        TypeUtil.objToLong(((LinkedHashMap) ((LinkedHashMap) newObj)
-                                .get(METADATA)).get("resourceVersion").toString()));
-                saveOrUpdateResource(
-                        devopsEnvResourceE,
-                        newdevopsEnvResourceE,
-                        devopsEnvResourceDetailE,
-                        applicationInstanceE);
-            }
-        } catch (Exception e) {
-            throw new CommonException("error.deploy.error");
-        }
+        ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
+        List<Resource> resources = JSONArray.parseArray(releasePayload.getResources(), Resource.class);
+        String releaseName = releasePayload.getName();
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName);
+        applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
+        applicationInstanceRepository.update(applicationInstanceE);
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), applicationInstanceE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        installResource(resources, applicationInstanceE);
     }
 
 
     @Override
     public void handlerPreInstall(String msg) {
+        if (msg.equals("null")) {
+            return;
+        }
         List<Job> jobs = JSONArray.parseArray(msg, Job.class);
         try {
             for (Job job : jobs) {
@@ -739,7 +718,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
-        if(devopsEnvCommandE.getObject().equals(ObjectType.INSTANCE.getObjectType())) {
+        if (devopsEnvCommandE.getObject().equals(ObjectType.INSTANCE.getObjectType())) {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsEnvCommandE.getObjectId());
             applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
             applicationInstanceRepository.update(applicationInstanceE);
@@ -747,7 +726,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsEnvCommandE.getObjectId());
             devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
             devopsServiceRepository.update(devopsServiceE);
-        }else {
+        } else {
             //todo INGRESS状态更新
         }
     }

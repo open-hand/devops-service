@@ -67,6 +67,7 @@ mybatis:
     mapUnderscoreToCamelCase: true
 feign:
   hystrix:
+    enabled: true
     shareSecurityContext: true
     command:
       default:
