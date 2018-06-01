@@ -99,12 +99,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         devopsIngressDTO.getId(), t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
                 ingress.getSpec().getRules().get(0).getHttp().addPathsItem(createPath(t.getPath(), t.getServiceId()));
             });
+            devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
             DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
             devopsEnvCommandE.setObject(ObjectType.INGRESS.getObjectType());
             devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
             devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-            devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
             idevopsIngressService.createIngress(json.serialize(ingress),
                     name,
                     devopsEnvironmentE.getCode(),
@@ -112,7 +112,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }
-
     }
 
     @Override
@@ -260,7 +259,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            if(agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+            if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
                 envIds.add(envSession.getEnvId());
             }
         }
