@@ -26,6 +26,7 @@ public class ApplicationInstanceE {
     private String commandStatus;
     private String commandType;
     private String error;
+    private Boolean isConnect;
 
     public ApplicationInstanceE() {
     }
@@ -176,5 +177,13 @@ public class ApplicationInstanceE {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getConnect() {
+        return isConnect;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnect = connect;
     }
 }

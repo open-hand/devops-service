@@ -23,6 +23,7 @@ public class ApplicationInstanceDTO {
     private String commandStatus;
     private String commandType;
     private String error;
+    private Boolean isConnect;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -175,5 +176,13 @@ public class ApplicationInstanceDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getConnect() {
+        return isConnect;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnect = connect;
     }
 }
