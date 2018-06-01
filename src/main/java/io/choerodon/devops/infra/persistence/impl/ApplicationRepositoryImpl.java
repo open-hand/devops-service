@@ -122,6 +122,15 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
+    public Page<ApplicationE> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(
+                PageHelper.doPageAndSort(
+                        pageRequest, () -> applicationMapper.listByEnvId(projectId, envId, "nodeleted")),
+                ApplicationE.class
+        );
+    }
+
+    @Override
     public List<ApplicationE> listByActive(Long projectId) {
         return ConvertHelper.convertList(applicationMapper.listActive(projectId), ApplicationE.class);
     }

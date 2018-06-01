@@ -147,8 +147,23 @@ public class ApplicationController {
      * 根据环境id获取已部署正在运行实例的应用
      *
      * @param projectId 项目id
-     * @return list of ApplicationRepDTO
+     * @return page of ApplicationRepDTO
      */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
+    @CustomPageRequest
+    @GetMapping("/pages")
+    public ResponseEntity<Page<ApplicationCodeDTO>> pageByEnvIdAndStatus(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境 ID", required = true)
+            @RequestParam Long envId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest) {
+        return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, pageRequest))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appName.query"));
+    }
 
     /**
      * 根据环境id获取已部署正在运行实例的应用

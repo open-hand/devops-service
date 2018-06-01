@@ -275,6 +275,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(applicationRepository.pageByEnvId(projectId,envId,pageRequest),
+                ApplicationCodeDTO.class);
+    }
+
+    @Override
     public List<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId) {
         return ConvertHelper.convertList(applicationRepository
                         .listByActiveAndPubAndVersion(projectId, true),
