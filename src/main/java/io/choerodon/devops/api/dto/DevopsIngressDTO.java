@@ -22,7 +22,7 @@ public class DevopsIngressDTO {
     private String commandStatus;
     private String commandType;
     private String error;
-    private List<DevopsIngressPathDTO> devopsIngressPathDTOList;
+    private List<DevopsIngressPathDTO> pathList;
 
     public DevopsIngressDTO() {
     }
@@ -36,7 +36,7 @@ public class DevopsIngressDTO {
         this.id = id;
         this.name = name;
         this.domain = domain;
-        this.devopsIngressPathDTOList = new ArrayList<>();
+        this.pathList = new ArrayList<>();
         this.isUsable = isUsable;
         this.envName = envName;
     }
@@ -51,7 +51,7 @@ public class DevopsIngressDTO {
         this.id = id;
         this.name = name;
         this.domain = domain;
-        this.devopsIngressPathDTOList = new ArrayList<>();
+        this.pathList = new ArrayList<>();
         this.isUsable = isUsable;
         this.envName = envName;
         this.commandStatus = commandStatus;
@@ -83,21 +83,21 @@ public class DevopsIngressDTO {
         this.envStatus = envStatus;
     }
 
-    public List<DevopsIngressPathDTO> getDevopsIngressPathDTOList() {
-        return devopsIngressPathDTOList;
+    public List<DevopsIngressPathDTO> getPathList() {
+        return pathList;
     }
 
-    public void setDevopsIngressPathDTOList(List<DevopsIngressPathDTO> devopsIngressPathDTOList) {
-        this.devopsIngressPathDTOList = devopsIngressPathDTOList;
+    public void setPathList(List<DevopsIngressPathDTO> pathList) {
+        this.pathList = pathList;
     }
 
     public DevopsIngressPathDTO queryLastDevopsIngressPathDTO() {
-        Integer size = devopsIngressPathDTOList.size();
-        return size == 0 ? null : devopsIngressPathDTOList.get(size - 1);
+        Integer size = pathList.size();
+        return size == 0 ? null : pathList.get(size - 1);
     }
 
     public void addDevopsIngressPathDTO(DevopsIngressPathDTO devopsIngressPathDTO) {
-        this.devopsIngressPathDTOList.add(devopsIngressPathDTO);
+        this.pathList.add(devopsIngressPathDTO);
     }
 
     public Long getEnvId() {
@@ -168,11 +168,11 @@ public class DevopsIngressDTO {
         return Objects.equals(domain, that.domain)
                 && Objects.equals(name, that.name)
                 && Objects.equals(envId, that.envId)
-                && Objects.equals(devopsIngressPathDTOList, that.devopsIngressPathDTOList);
+                && Objects.equals(pathList, that.pathList);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(domain, name, envId, devopsIngressPathDTOList);
+        return Objects.hash(domain, name, envId, pathList);
     }
 }
