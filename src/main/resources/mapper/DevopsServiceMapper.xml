@@ -50,7 +50,7 @@
         ds.`name`
         FROM
         devops_service ds
-        WHERE ds.`status` != 'deleted'
+        WHERE ds.`status` != 'running'
         <if test="envId != null">
             AND ds.env_id = #{envId}
         </if>
