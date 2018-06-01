@@ -103,7 +103,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     flag = agentExpectVersion.compareTo(envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
-                if (flag == 1) {
+                if (flag > 0) {
                     devopsEnvironmentE.setUpdate(true);
                     devopsEnvironmentE.initConnect(false);
                     devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");
@@ -191,7 +191,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     flag = agentExpectVersion.compareTo(envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
-                if (flag == 1) {
+                if (flag > 0) {
                     devopsEnvironmentE.setUpdate(true);
                     devopsEnvironmentE.initConnect(false);
                     devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");

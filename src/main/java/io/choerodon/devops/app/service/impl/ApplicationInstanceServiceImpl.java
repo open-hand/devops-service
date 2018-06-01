@@ -1,6 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,18 +18,14 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandValueFactory;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
@@ -75,8 +74,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                 Long envId, Long versionId, Long appId, String params) {
+        Map<String, EnvSession> envs = envListener.connectedEnv();
         Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
                 projectId, pageRequest, envId, versionId, appId, params);
+        for (ApplicationInstanceE applicationInstanceE : applicationInstanceEPage) {
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getRegisterKey().equals(applicationInstanceE.getDevopsEnvironmentE().getCode())) {
+                    if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                        applicationInstanceE.setConnect(true);
+                    }
+                }
+            }
+        }
         return ConvertPageHelper.convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
     }
 
@@ -421,7 +431,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            if(agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+            if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
                 envIds.add(envSession.getEnvId());
             }
         }
