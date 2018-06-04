@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import rx.Observable;
-import rx.Observer;
 import rx.Single;
 import rx.functions.Func1;
 import rx.functions.FuncN;
@@ -82,7 +81,8 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         Integer gitlabProjectId = app.getGitlabProjectE().getId();
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
-        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, getGitlabUserId());
+        List<GitlabPipelineE> gitlabPipelineEList =
+                gitlabProjectRepository.listPipeline(gitlabProjectId, getGitlabUserId());
         List<GitlabPipelineE> gitlabPipelineEListByPage = gitlabProjectRepository.listPipelines(
                 gitlabProjectId, page + 1, size, getGitlabUserId());
         List<String> branchNames = gitlabProjectRepository.listBranches(
@@ -94,7 +94,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                         gitlabProjectId, gitlabPipeline.getId(), userId);
                 observables.add(pipeline);
             }
-           return Observable.combineLatest(observables, new FuncN<List<PipelineResultV>>() {
+            return Observable.combineLatest(observables, new FuncN<List<PipelineResultV>>() {
                 @Override
                 public List<PipelineResultV> call(Object... objects) {
                     List<PipelineResultV> pipelineResultVS = new ArrayList<>();
@@ -130,12 +130,12 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                         }
 
                         ProjectE projectE = iamRepository.queryIamProject(projectId);
-                        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+                        Organization organization =
+                                iamRepository.queryOrganizationById(projectE.getOrganization().getId());
                         pipelineResultV.setGitlabUrl(gitlabUrl + "/"
                                 + organization.getCode() + "-" + projectE.getCode() + "/"
                                 + app.getCode() + ".git");
                         pipelineResultVS.add(pipelineResultV);
-//                    }
                     }
                     return pipelineResultVS;
                 }
@@ -177,7 +177,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                 }
             }).toSingle();
 
-        }else {
+        } else {
             return null;
         }
 
