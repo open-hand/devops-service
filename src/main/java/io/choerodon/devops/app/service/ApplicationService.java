@@ -133,5 +133,5 @@ public interface ApplicationService {
      * @param projectId 项目id
      * @return list of ApplicationRepDTO
      */
-    List<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId);
+    Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest);
 }

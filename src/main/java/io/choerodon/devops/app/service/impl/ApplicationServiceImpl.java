@@ -276,14 +276,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(applicationRepository.pageByEnvId(projectId,envId,pageRequest),
+        return ConvertPageHelper.convertPage(applicationRepository.pageByEnvId(projectId, envId, pageRequest),
                 ApplicationCodeDTO.class);
     }
 
     @Override
-    public List<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId) {
-        return ConvertHelper.convertList(applicationRepository
-                        .listByActiveAndPubAndVersion(projectId, true),
+    public Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(applicationRepository
+                        .listByActiveAndPubAndVersion(projectId, true, pageRequest),
                 ApplicationDTO.class);
     }
 

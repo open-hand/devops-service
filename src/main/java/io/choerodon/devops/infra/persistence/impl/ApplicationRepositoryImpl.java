@@ -136,9 +136,9 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public List<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive) {
-        return ConvertHelper.convertList(applicationMapper
-                .listByActiveAndPubAndVersion(projectId, isActive), ApplicationE.class);
+    public Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> applicationMapper
+                .listByActiveAndPubAndVersion(projectId, isActive)), ApplicationE.class);
     }
 
     @Override
