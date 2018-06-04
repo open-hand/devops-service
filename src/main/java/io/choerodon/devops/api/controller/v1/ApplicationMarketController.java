@@ -156,7 +156,7 @@ public class ApplicationMarketController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(value = "app_market_id") Long appMarketId) {
-        return Optional.ofNullable(applicationMarketService.getMarketAppInProject(projectId,appMarketId))
+        return Optional.ofNullable(applicationMarketService.getMarketAppInProject(projectId, appMarketId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.get"));
     }
@@ -202,6 +202,29 @@ public class ApplicationMarketController {
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }
 
+
+    /**
+     * 查询单个应用市场的应用的版本
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     * @return Page of AppMarketVersionDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "分页查询项目下单个应用市场的应用的版本")
+    @CustomPageRequest
+    @GetMapping("/{app_market_id}/version_list")
+    public ResponseEntity<Page<AppMarketVersionDTO>> queryAppVersionsInProjectByPage(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable(value = "app_market_id") Long appMarketId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest) {
+        return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId, pageRequest))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
+    }
 
 
     /**

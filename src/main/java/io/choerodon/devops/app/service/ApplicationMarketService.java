@@ -63,4 +63,6 @@ public interface ApplicationMarketService {
     void update(Long projectId, Long appMarketId, ApplicationReleasingDTO applicationRelease);
 
     List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId);
+
+    Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, PageRequest pageRequest);
 }

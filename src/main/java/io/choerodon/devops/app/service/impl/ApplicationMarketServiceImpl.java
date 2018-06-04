@@ -247,6 +247,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 AppMarketVersionDTO.class);
     }
 
+    @Override
+    public Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(
+                applicationMarketRepository.getVersions(projectId, appMarketId, pageRequest),
+                AppMarketVersionDTO.class);
+    }
+
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
                                                            Page<ApplicationMarketE> applicationMarketEPage) {
         Page<ApplicationReleasingDTO> applicationReleasingDTOPage = ConvertPageHelper.convertPage(
