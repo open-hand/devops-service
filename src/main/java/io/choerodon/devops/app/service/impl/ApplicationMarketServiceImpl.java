@@ -1,10 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,12 +24,15 @@ import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -36,6 +45,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
+    private static final String DESTPATH = "devops";
+
+
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -153,13 +166,16 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
         Long applicationId = applicationE.getId();
         applicationE = applicationRepository.query(applicationId);
+        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        Long organizationId = projectE.getOrganization().getId();
+        Organization organization = iamRepository.queryOrganizationById(organizationId);
 
+        String readme = "";
         String latestVersionCommit;
-        Long versionExist = appMarketVersionDTOList.parallelStream()
-                .filter(t -> t.getId().equals(versionId)).count();
-        if (versionExist > 0) {
-            latestVersionCommit = applicationVersionRepository.query(versionId).getCommit();
-        } else {
+        Boolean versionExist = appMarketVersionDTOList.parallelStream().anyMatch(t -> t.getId().equals(versionId));
+        ApplicationVersionE versionE;
+        Long latestVersionId = versionId;
+        if (!versionExist) {
             Optional<AppMarketVersionDTO> optional = appMarketVersionDTOList.parallelStream()
                     .max((t, k) -> {
                         if (t.getId() > k.getId()) {
@@ -168,18 +184,65 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                             return t.getId().equals(k.getId()) ? 0 : -1;
                         }
                     });
-            latestVersionCommit = optional.isPresent()
-                    ? applicationVersionRepository.query(optional.get().getId()).getCommit()
-                    : null;
+            latestVersionId = optional.isPresent()
+                    ? optional.get().getId()
+                    : versionId;
         }
-        String readme = getReadme(applicationE.getGitlabProjectE().getId(), latestVersionCommit);
+
+        versionE = applicationVersionRepository.query(latestVersionId);
+        latestVersionCommit = versionE.getCommit();
+        String fileSeparator = System.getProperty("file.separator");
+        String classPath = String.format("Charts%s%s%s%s%s%s%s%s%s",
+                fileSeparator,
+                organization.getCode(),
+                fileSeparator,
+                projectE.getCode(),
+                fileSeparator,
+                applicationE.getCode(),
+                "-",
+                versionE.getVersion(),
+                ".tgz");
+        FileUtil.unTarGZ(classPath, DESTPATH);
+        File readmeFile = null;
+        try {
+            readmeFile = FileUtil.queryFileFromFiles(new File(DESTPATH), "README.md");
+        } catch (Exception e) {
+            logger.info("file not found");
+            readme = "# 暂无";
+        }
+        if (readme.isEmpty()) {
+            readme = readmeFile == null
+                    ? getReadme(applicationE.getGitlabProjectE().getId(), latestVersionCommit)
+                    : getFileContent(readmeFile);
+        }
         applicationReleasingDTO.setReadme(readme);
+        FileUtil.deleteFile(new File(DESTPATH));
         return applicationReleasingDTO;
     }
 
+    private String getFileContent(File file) {
+        StringBuilder content = new StringBuilder();
+        try {
+            try (FileReader fileReader = new FileReader(file)) {
+                try (BufferedReader reader = new BufferedReader(fileReader)) {
+                    String lineTxt;
+                    while ((lineTxt = reader.readLine()) != null) {
+                        content.append(lineTxt).append("\n");
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.file.read");
+        }
+        return content.toString();
+    }
+
+
     private String getReadme(Integer gitlabProjectId, String commit) {
         String readme = gitlabServiceClient.getReadme(gitlabProjectId, commit).getBody();
-        return !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme) ? readme : "# 暂无";
+        return !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme)
+                && !"error.readme.get".equals(readme)
+                ? readme : "# 暂无";
     }
 
     @Override
