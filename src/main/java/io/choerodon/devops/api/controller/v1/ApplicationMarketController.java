@@ -213,14 +213,16 @@ public class ApplicationMarketController {
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "分页查询项目下单个应用市场的应用的版本")
     @CustomPageRequest
-    @GetMapping("/{app_market_id}/version_list")
+    @PostMapping("/{app_market_id}/versions")
     public ResponseEntity<Page<AppMarketVersionDTO>> queryAppVersionsInProjectByPage(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(value = "app_market_id") Long appMarketId,
             @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest) {
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
