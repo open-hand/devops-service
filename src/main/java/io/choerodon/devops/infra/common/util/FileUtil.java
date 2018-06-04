@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.common.util;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -326,6 +327,17 @@ public class FileUtil {
             }
         }
     }
+
+    public static int getFileTotalLine(String  file) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(file.getBytes(Charset.forName("utf8"))), Charset.forName("utf8")));
+        Integer totalLine = 0;
+        String line;
+        while ( (line = br.readLine()) != null ) {
+            totalLine = totalLine + 1;
+        }
+        return totalLine;
+    }
+
 
     /**
      * 合并２个json字符串

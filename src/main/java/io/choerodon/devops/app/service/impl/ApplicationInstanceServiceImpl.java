@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -182,14 +183,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
+        ReplaceResult replaceResult = new ReplaceResult();
         String versionValue = applicationVersionRepository.queryValue(versionId);
         String deployValue = applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId);
         if (deployValue != null) {
-            return FileUtil.replace(versionValue, deployValue);
+            versionValue = FileUtil.replace(versionValue, deployValue).getYaml();
         }
-        ReplaceResult replaceResult1 = new ReplaceResult();
-        replaceResult1.setYaml(versionValue);
-        return replaceResult1;
+        replaceResult.setYaml(versionValue);
+        try {
+            replaceResult.setTotalLine(FileUtil.getFileTotalLine(versionValue));
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
+        }
+        return replaceResult;
     }
 
 
