@@ -2,13 +2,10 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
-import rx.Observable;
-
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
 
 /**
  * Created by Zenger on 2018/4/9.
@@ -19,7 +16,7 @@ public interface GitlabProjectRepository {
 
     List<GitlabPipelineE> listPipelines(Integer projectId, Integer page, Integer size, Integer userId);
 
-    Observable<PipelineDO>  getPipeline(Integer projectId, Integer pipelineId, Integer userId);
+    GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, Integer userId);
 
     GitlabCommitE getCommit(Integer projectId, String sha, Integer userId);
 

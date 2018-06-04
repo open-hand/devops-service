@@ -1,7 +1,5 @@
 package io.choerodon.devops.app.service;
 
-import rx.Single;
-
 import io.choerodon.devops.api.dto.ProjectPipelineResultTotalDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -17,7 +15,7 @@ public interface ProjectPipelineService {
      * @param pageRequest 分页参数
      * @return ProjectPipelineResultTotalDTO
      */
-    Single<ProjectPipelineResultTotalDTO> listPipelines(Long projectId, Long appId, PageRequest pageRequest);
+    ProjectPipelineResultTotalDTO listPipelines(Long projectId, Long appId, PageRequest pageRequest);
 
     /**
      * Retry jobs in a pipeline
