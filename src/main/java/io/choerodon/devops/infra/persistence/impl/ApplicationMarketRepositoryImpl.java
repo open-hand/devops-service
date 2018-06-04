@@ -135,4 +135,10 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     public List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId) {
         return applicationMarketMapper.listAppVersions(projectId, appMarketId);
     }
+
+    @Override
+    public Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, PageRequest pageRequest) {
+        return PageHelper.doPageAndSort(pageRequest,
+                () -> applicationMarketMapper.listAppVersions(projectId, appMarketId));
+    }
 }
