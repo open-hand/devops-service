@@ -132,13 +132,13 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId) {
-        return applicationMarketMapper.listAppVersions(projectId, appMarketId);
+    public List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish) {
+        return applicationMarketMapper.listAppVersions(projectId, appMarketId, isPublish);
     }
 
     @Override
-    public Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, PageRequest pageRequest) {
+    public Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish, PageRequest pageRequest) {
         return PageHelper.doPageAndSort(pageRequest,
-                () -> applicationMarketMapper.listAppVersions(projectId, appMarketId));
+                () -> applicationMarketMapper.listAppVersions(projectId, appMarketId, isPublish));
     }
 }

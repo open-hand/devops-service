@@ -123,17 +123,15 @@
         and dav.is_publish=1
     </select>
 
-    <select id="selectCountByOptions" resultType="java.lang.Integer">
+    <select id="selectVersionsByAppId" resultType="java.lang.Long">
         SELECT
-        count(1)
+            dav.id
         FROM
-        devops_application da,
-        devops_app_version dav
+            devops_app_version dav
+            JOIN devops_application da ON da.is_active = TRUE
+            AND da.id = dav.app_id
         WHERE
-        da.id = dav.app_id
-        AND da.id = #{applicationId}
-        AND da.is_active=1
-        AND dav.id = #{appVersionId}
+            dav.app_id = #{applicationId}
     </select>
 
 </mapper>

@@ -166,13 +166,11 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             throw new CommonException("error.app.version.check");
 
         }
-
-        for (Long appVersionId : appVersionIds) {
-            int selectCount = applicationVersionMapper.selectCountByOptions(appId, appVersionId);
-            if (selectCount == 0) {
-                throw new CommonException("error.app.version.check");
-            }
+        List<Long> versionList = applicationVersionMapper.selectVersionsByAppId(appId);
+        if (appVersionIds.parallelStream().anyMatch(t -> !versionList.contains(t))) {
+            throw new CommonException("error.app.version.check");
         }
+
         return true;
     }
 

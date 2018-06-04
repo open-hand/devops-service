@@ -245,6 +245,7 @@
             dav.id,
             dav.version,
 	        dav.creation_date,
+            dav.is_publish,
             EXISTS (
         SELECT
             1
@@ -263,6 +264,14 @@
             dam.id =  #{appMarketId}
             <if test='projectId != null'>
                 AND da.project_id = #{projectId}
+            </if>
+            <if test="isPublish != null">
+                <if test="isPublish == true">
+                    AND dav.is_publish = TRUE
+                </if>
+                <if test="isPublish != true">
+                    AND ( is_publish != TRUE OR is_publish IS NULL )
+                </if>
             </if>
     </select>
 </mapper>
