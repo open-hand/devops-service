@@ -85,57 +85,11 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                 gitlabProjectId, getGitlabUserId()).stream().map(BranchE::getName).collect(Collectors.toList());
         List<PipelineResultV> pipelineResultVS = new ArrayList<>();
         if (gitlabPipelineEListByPage != null && !gitlabPipelineEListByPage.isEmpty()) {
-            gitlabPipelineEListByPage.parallelStream().forEach(gitlabPipeline -> {
-                GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(gitlabProjectId, gitlabPipeline.getId(), userId);
-                PipelineResultV pipelineResultV = new PipelineResultV();
-                pipelineResultV.setGitlabProjectId(gitlabProjectId.longValue());
-                pipelineResultV.setAppCode(app.getCode());
-                pipelineResultV.setAppName(app.getName());
-                pipelineResultV.setAppStatus(app.getActive());
-                pipelineResultV.setLatest(false);
-                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
-                pipelineResultV.setStatus(gitlabPipelineE.getStatus().toString());
-                pipelineResultV.setCreateUser(gitlabPipelineE.getUser().getUsername());
-                pipelineResultV.setRef(gitlabPipelineE.getRef());
-                pipelineResultV.setSha(gitlabPipelineE.getSha());
-                if (gitlabPipelineE.getStarted_at() != null && gitlabPipelineE.getFinished_at() != null) {
-                    pipelineResultV.setTime(getStageTime(gitlabPipelineE.getStarted_at(),
-                            gitlabPipelineE.getFinished_at()));
-                }
-                pipelineResultV.setCreatedAt(formatter.format(gitlabPipelineE.getCreatedAt()));
-
-                List<GitlabJobE> jobs =
-                        gitlabProjectRepository.listJobs(gitlabProjectId, gitlabPipelineE.getId(), userId);
-                if (jobs != null) {
-                    List<GitlabJobE> realJobs = getRealJobs(jobs);
-                    pipelineResultV.setJobs(realJobs);
-                }
-
-                UserE userE = iamRepository.queryByLoginName(userName);
-                if (userE != null) {
-                    pipelineResultV.setImageUrl(userE.getImageUrl());
-                }
-
-                ProjectE projectE = iamRepository.queryIamProject(projectId);
-                Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-                pipelineResultV.setGitlabUrl(gitlabUrl + "/"
-                        + organization.getCode() + "-" + projectE.getCode() + "/"
-                        + app.getCode() + ".git");
-                pipelineResultVS.add(pipelineResultV);
-            });
+            listPipelineResultV(gitlabPipelineEListByPage, pipelineResultVS, app, gitlabProjectId, userId, projectId, userName);
             branchNames.stream().forEach(b -> {
                 final long[] id = {0};
-                gitlabPipelineEList.parallelStream().forEach(p -> {
-                    if (b.contains(p.getRef()) && p.getId() > id[0]) {
-                        id[0] = p.getId();
-                    }
-                });
-
-                for (PipelineResultV p : pipelineResultVS) {
-                    if (p.getId() == id[0]) {
-                        p.setLatest(true);
-                    }
-                }
+                gitlabPipelineEList.parallelStream().filter(p -> b.contains(p.getRef()) && p.getId() > id[0]).forEach(r -> id[0] = r.getId());
+                pipelineResultVS.parallelStream().filter(p -> p.getId() == id[0]).forEach(r -> r.setLatest(true));
             });
             Collections.sort(pipelineResultVS);
             int allIndex = gitlabPipelineEList.size();
@@ -165,6 +119,52 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         return gitlabProjectRepository.cancel(gitlabProjectId.intValue(),
                 pipelineId.intValue(), getGitlabUserId());
     }
+
+
+    public void listPipelineResultV(List<GitlabPipelineE> gitlabPipelineEListByPage, List<PipelineResultV> pipelineResultVS, ApplicationE applicationE, Integer gitlabProjectId, Integer userId, Long projectId, String userName) {
+
+        gitlabPipelineEListByPage.parallelStream().forEach(gitlabPipeline -> {
+            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(gitlabProjectId, gitlabPipeline.getId(), userId);
+            PipelineResultV pipelineResultV = new PipelineResultV();
+            pipelineResultV.setGitlabProjectId(gitlabProjectId.longValue());
+            pipelineResultV.setAppCode(applicationE.getCode());
+            pipelineResultV.setAppName(applicationE.getName());
+            pipelineResultV.setAppStatus(applicationE.getActive());
+            pipelineResultV.setLatest(false);
+            pipelineResultV.setId(gitlabPipelineE.getId().longValue());
+            pipelineResultV.setStatus(gitlabPipelineE.getStatus().toString());
+            pipelineResultV.setCreateUser(gitlabPipelineE.getUser().getUsername());
+            pipelineResultV.setRef(gitlabPipelineE.getRef());
+            pipelineResultV.setSha(gitlabPipelineE.getSha());
+            if (gitlabPipelineE.getStarted_at() != null && gitlabPipelineE.getFinished_at() != null) {
+                pipelineResultV.setTime(getStageTime(gitlabPipelineE.getStarted_at(),
+                        gitlabPipelineE.getFinished_at()));
+            }
+            pipelineResultV.setCreatedAt(formatter.format(gitlabPipelineE.getCreatedAt()));
+
+            List<GitlabJobE> jobs =
+                    gitlabProjectRepository.listJobs(gitlabProjectId, gitlabPipelineE.getId(), userId);
+            if (jobs != null) {
+                List<GitlabJobE> realJobs = getRealJobs(jobs);
+                pipelineResultV.setJobs(realJobs);
+            }
+
+            UserE userE = iamRepository.queryByLoginName(userName);
+            if (userE != null) {
+                pipelineResultV.setImageUrl(userE.getImageUrl());
+            }
+
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            pipelineResultV.setGitlabUrl(gitlabUrl + "/"
+                    + organization.getCode() + "-" + projectE.getCode() + "/"
+                    + applicationE.getCode() + ".git");
+            pipelineResultVS.add(pipelineResultV);
+        });
+
+
+    }
+
 
     /**
      * 获取CI执行时间间隔
@@ -230,6 +230,5 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         }
         return result;
     }
-
 
 }
