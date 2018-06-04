@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import rx.Observable;
 
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -80,8 +79,8 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public Observable<PipelineDO> getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
-        return null;
+    public ResponseEntity<PipelineDO> getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        return new ResponseEntity("error.pipelines.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override

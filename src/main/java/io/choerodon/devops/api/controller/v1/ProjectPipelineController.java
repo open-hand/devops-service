@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -9,15 +8,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import rx.Single;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ProjectPipelineResultTotalDTO;
 import io.choerodon.devops.app.service.ProjectPipelineService;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -29,9 +25,10 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}")
 public class ProjectPipelineController {
 
-    private ProjectPipelineService projectPipelineService;
     @Autowired
     GitlabProjectRepository gitlabRepository;
+    private ProjectPipelineService projectPipelineService;
+
     public ProjectPipelineController(ProjectPipelineService projectPipelineService) {
         this.projectPipelineService = projectPipelineService;
     }
@@ -47,14 +44,16 @@ public class ProjectPipelineController {
     @ApiOperation(value = "查询应用下的Pipeline信息")
     @CustomPageRequest
     @GetMapping(value = "/applications/{appId}/pipelines")
-    public Single<ProjectPipelineResultTotalDTO> list(
+    public ResponseEntity<ProjectPipelineResultTotalDTO> list(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
             @PathVariable Long appId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return projectPipelineService.listPipelines(projectId, appId, pageRequest);
+        return Optional.ofNullable(projectPipelineService.listPipelines(projectId, appId, pageRequest))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.query"));
     }
 
     /**
