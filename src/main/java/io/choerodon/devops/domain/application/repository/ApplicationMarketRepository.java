@@ -34,7 +34,7 @@ public interface ApplicationMarketRepository {
 
     void update(DevopsAppMarketDO devopsAppMarketDO);
 
-    List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId);
+    List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish);
 
-    Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, PageRequest pageRequest);
+    Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish, PageRequest pageRequest);
 }

@@ -196,8 +196,10 @@ public class ApplicationMarketController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
-            @PathVariable(value = "app_market_id") Long appMarketId) {
-        return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId))
+            @PathVariable(value = "app_market_id") Long appMarketId,
+            @ApiParam(value = "是否发布", required = false)
+            @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
+        return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId, isPublish))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }
@@ -219,11 +221,14 @@ public class ApplicationMarketController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
             @PathVariable(value = "app_market_id") Long appMarketId,
+            @ApiParam(value = "是否发布", required = false)
+            @RequestParam(value = "is_publish", required = false) Boolean isPublish,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId, pageRequest))
+        return Optional.ofNullable(
+                applicationMarketService.getAppVersions(projectId, appMarketId, isPublish, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }
@@ -258,12 +263,11 @@ public class ApplicationMarketController {
      *
      * @param projectId   项目id
      * @param appMarketId 发布ID
-     * @return list of ApplicationReleasingDTO
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "更新单个应用市场的应用")
     @PutMapping("/{app_market_id}")
-    public ResponseEntity<ApplicationReleasingDTO> update(
+    public ResponseEntity update(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "发布ID", required = true)
@@ -271,6 +275,26 @@ public class ApplicationMarketController {
             @ApiParam(value = "发布应用的信息", required = true)
             @RequestBody(required = true) ApplicationReleasingDTO applicationRelease) {
         applicationMarketService.update(projectId, appMarketId, applicationRelease);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 更新单个应用市场的应用版本
+     *
+     * @param projectId   项目id
+     * @param appMarketId 发布ID
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "更新单个应用市场的应用")
+    @PutMapping("/{app_market_id}/versions")
+    public ResponseEntity updateVersions(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "发布ID", required = true)
+            @PathVariable("app_market_id") Long appMarketId,
+            @ApiParam(value = "发布应用的信息", required = true)
+            @RequestBody(required = true) List<AppMarketVersionDTO> versionList) {
+        applicationMarketService.update(projectId, appMarketId, versionList);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

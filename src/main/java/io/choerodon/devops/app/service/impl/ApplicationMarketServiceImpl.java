@@ -142,7 +142,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         ApplicationMarketE applicationMarketE =
                 applicationMarketRepository.getMarket(projectId, appMarketId, projectIds);
         List<DevopsAppMarketVersionDO> versionDOList = applicationMarketRepository
-                .getVersions(projectId, appMarketId);
+                .getVersions(projectId, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
                 .convertList(versionDOList, AppMarketVersionDTO.class);
         ApplicationReleasingDTO applicationReleasingDTO =
@@ -158,7 +158,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 applicationMarketRepository.getMarket(null, appMarketId, null);
         ApplicationE applicationE = applicationMarketE.getApplicationE();
         List<DevopsAppMarketVersionDO> versionDOList = applicationMarketRepository
-                .getVersions(null, appMarketId);
+                .getVersions(null, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
                 .convertList(versionDOList, AppMarketVersionDTO.class);
         ApplicationReleasingDTO applicationReleasingDTO =
@@ -283,37 +283,54 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         if (!applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
             throw new CommonException("error.app.cannot.change");
         }
-        List<Long> releasedProjectIds = applicationReleasingDTO.getAppVersions().parallelStream()
-                .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        if (projectE == null || projectE.getOrganization() == null) {
+            throw new CommonException("error.project.query");
+        }
+        Long organizationId = projectE.getOrganization().getId();
+        List<Long> orgProjectList = iamRepository.listIamProjectByOrgId(organizationId).parallelStream()
+                .map(ProjectE::getId).collect(Collectors.toCollection(ArrayList::new));
         if (ORGANIZATION.equals(applicationRelease.getPublishLevel())
                 && PUBLIC.equals(applicationReleasingDTO.getPublishLevel())) {
-            applicationMarketRepository.checkDeployed(projectId, appMarketId, null, releasedProjectIds);
+            applicationMarketRepository.checkDeployed(projectId, appMarketId, null, orgProjectList);
 
         }
         DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, DevopsAppMarketDO.class);
         if (!ConvertHelper.convert(applicationReleasingDTO, DevopsAppMarketDO.class).equals(devopsAppMarketDO)) {
             applicationMarketRepository.update(devopsAppMarketDO);
         }
-        List<Long> ids = applicationRelease.getAppVersions().parallelStream()
+    }
+
+    @Override
+    public void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList) {
+        applicationMarketRepository.checkProject(projectId, appMarketId);
+
+        ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
+        List<Long> publishedVersionList = applicationReleasingDTO.getAppVersions().parallelStream()
                 .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
 
-        if (!ids.equals(releasedProjectIds)) {
-            applicationVersionRepository.checkAppAndVersion(applicationRelease.getAppId(), ids);
+        List<Long> ids = versionDTOList.parallelStream()
+                .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
+
+        if (!ids.equals(publishedVersionList)) {
+            applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
             applicationMarketRepository.unpublishVersion(appMarketId, null);
             applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
+        } else {
+            throw new CommonException("error.versions.not.change");
         }
     }
 
     @Override
-    public List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId) {
-        return ConvertHelper.convertList(applicationMarketRepository.getVersions(projectId, appMarketId),
+    public List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish) {
+        return ConvertHelper.convertList(applicationMarketRepository.getVersions(projectId, appMarketId, isPublish),
                 AppMarketVersionDTO.class);
     }
 
     @Override
-    public Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, PageRequest pageRequest) {
+    public Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish, PageRequest pageRequest) {
         return ConvertPageHelper.convertPage(
-                applicationMarketRepository.getVersions(projectId, appMarketId, pageRequest),
+                applicationMarketRepository.getVersions(projectId, appMarketId, isPublish, pageRequest),
                 AppMarketVersionDTO.class);
     }
 
@@ -326,7 +343,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         for (ApplicationReleasingDTO applicationReleasingDTO : applicationReleasingDTOList) {
             Long appMarketId = applicationReleasingDTO.getId();
             List<DevopsAppMarketVersionDO> marketVersionDOS = applicationMarketRepository
-                    .getVersions(projectId, appMarketId);
+                    .getVersions(projectId, appMarketId, true);
             List<AppMarketVersionDTO> marketVersionDTOList = ConvertHelper
                     .convertList(marketVersionDOS, AppMarketVersionDTO.class);
             applicationReleasingDTO.setAppVersions(marketVersionDTOList);
