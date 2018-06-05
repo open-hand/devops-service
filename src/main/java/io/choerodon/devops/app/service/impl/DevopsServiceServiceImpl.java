@@ -123,7 +123,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             DevopsServiceE devopsServiceE = new DevopsServiceE();
             BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
             devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
-            devopsServiceE.setTargetPort(devopsServiceReqDTO.getPort());
+            devopsServiceE.setTargetPort(devopsServiceReqDTO.getTargetPort());
             devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
             DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();

@@ -22,13 +22,14 @@
         di. NAME
     </select>
 
-    <select id="selectIngerss" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressDO">
+    <select id="selectIngress" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressDO">
         SELECT DISTINCT
         di.id id,
         di.project_id projectId,
         di.env_id envId,
         di.`name` name,
         di.`domain` domain,
+        di.status,
         di.is_usable isUsable,
         de.`name` envName,
         de.`code` namespace,

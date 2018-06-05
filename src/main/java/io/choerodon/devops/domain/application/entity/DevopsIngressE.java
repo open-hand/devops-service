@@ -9,6 +9,7 @@ public class DevopsIngressE {
     private String domain;
     private Boolean isUsable;
     private Long objectVersionNumber;
+    private String status;
 
     public DevopsIngressE() {
     }
@@ -71,5 +72,13 @@ public class DevopsIngressE {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
