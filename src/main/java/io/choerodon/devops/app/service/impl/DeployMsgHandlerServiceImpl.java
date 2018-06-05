@@ -497,7 +497,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         String ingressName = ingress.getMetadata().getName();
         devopsIngressRepository.setUsable(ingressName);
         Long ingressId = devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
-        DevopsEnvCommandE commandE = 
+        DevopsEnvCommandE commandE =
                 devopsEnvCommandRepository.queryByObject(ObjectType.INGRESS.getObjectType(), ingressId);
         commandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
         devopsEnvCommandRepository.update(commandE);

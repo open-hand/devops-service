@@ -287,13 +287,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         if (projectE == null || projectE.getOrganization() == null) {
             throw new CommonException("error.project.query");
         }
-        Long organizationId = projectE.getOrganization().getId();
-        List<Long> orgProjectList = iamRepository.listIamProjectByOrgId(organizationId).parallelStream()
-                .map(ProjectE::getId).collect(Collectors.toCollection(ArrayList::new));
-        if (ORGANIZATION.equals(applicationRelease.getPublishLevel())
-                && PUBLIC.equals(applicationReleasingDTO.getPublishLevel())) {
-            applicationMarketRepository.checkDeployed(projectId, appMarketId, null, orgProjectList);
-
+        if (!applicationRelease.getPublishLevel().equals(applicationReleasingDTO.getPublishLevel())) {
+            throw new CommonException("error.publishLevel.cannot.change");
         }
         DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, DevopsAppMarketDO.class);
         if (!ConvertHelper.convert(applicationReleasingDTO, DevopsAppMarketDO.class).equals(devopsAppMarketDO)) {
