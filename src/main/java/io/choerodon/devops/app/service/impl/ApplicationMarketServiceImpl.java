@@ -301,19 +301,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationMarketRepository.checkProject(projectId, appMarketId);
 
         ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
-        List<Long> publishedVersionList = applicationReleasingDTO.getAppVersions().parallelStream()
-                .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
 
         List<Long> ids = versionDTOList.parallelStream()
                 .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
 
-        if (!ids.equals(publishedVersionList)) {
-            applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
-            applicationMarketRepository.unpublishVersion(appMarketId, null);
-            applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
-        } else {
-            throw new CommonException("error.versions.not.change");
-        }
+        applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
+        applicationVersionRepository.updatePublishLevelByIds(ids, 1L);
     }
 
     @Override
