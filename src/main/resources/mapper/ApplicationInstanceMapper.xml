@@ -116,6 +116,7 @@
         de.object_id = dai.id
         AND dai.app_id = #{appId}
         AND dai.env_id = #{envId}
+        AND de.object = 'instance'
         ORDER BY
         de.creation_date DESC
         LIMIT 1

@@ -127,7 +127,22 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.helmReleaseGetContent(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             case CommandNotSend:
-                deployMsgHandlerService.commandNotSend(msg.getCommandId(),msg.getPayload());
+                deployMsgHandlerService.commandNotSend(msg.getCommandId(), msg.getPayload());
+                break;
+            case NetworkServiceFailed:
+                deployMsgHandlerService.netWorkServiceFail(msg.getKey(), msg.getPayload());
+                break;
+            case NetworkIngressFailed:
+                deployMsgHandlerService.netWorkIngressFail(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+                break;
+            case NetworkServiceDeleteFailed:
+                deployMsgHandlerService.netWorkServiceDeleteFail(msg.getKey(), msg.getPayload());
+                break;
+            case NetworkIngressDeleteFailed:
+                deployMsgHandlerService.netWorkIngressDeleteFail(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+                break;
+            case ResourceSync:
+                deployMsgHandlerService.resourceSync(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             default:
                 break;

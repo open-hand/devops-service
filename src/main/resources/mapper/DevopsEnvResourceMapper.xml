@@ -26,4 +26,12 @@
         </if>
     </select>
 
+
+    <select id="listByEnvAndType" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+        SELECT * from devops_env_resource der
+        LEFT JOIN devops_app_instance dai
+        on der.app_instance_id = dai.id where dai.env_id = #{envId}
+        AND der.kind = #{type}
+    </select>
+
 </mapper>

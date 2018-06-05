@@ -281,6 +281,13 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
+    public List<DevopsIngressE> listByEnvId(Long envId) {
+        DevopsIngressDO devopsIngressDO = new DevopsIngressDO();
+        devopsIngressDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsIngressMapper.select(devopsIngressDO), DevopsIngressE.class);
+    }
+
+    @Override
     public void updateIngressPath(DevopsIngressPathE devopsIngressPathE) {
         if (devopsIngressPathMapper.updateByPrimaryKey(
                 ConvertHelper.convert(devopsIngressPathE, DevopsIngressPathDO.class)) != 1) {

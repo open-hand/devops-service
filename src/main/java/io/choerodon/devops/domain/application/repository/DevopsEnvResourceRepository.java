@@ -21,4 +21,6 @@ public interface DevopsEnvResourceRepository {
 
     void deleteByKindAndName(String kind, String name);
 
+    List<DevopsEnvResourceE> listByEnvAndType(Long envId, String type);
+
 }

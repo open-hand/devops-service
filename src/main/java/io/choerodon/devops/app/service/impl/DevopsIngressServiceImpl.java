@@ -46,11 +46,9 @@ import io.choerodon.websocket.helper.EnvSession;
 public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String PATH_ERROR = "error.path.empty";
     private static final String ENV_DISCONNECTED = "error.env.disconnect";
-
+    private static JSON json = new JSON();
     @Value("${agent.version}")
     private String agentExpectVersion;
-
-    private static JSON json = new JSON();
     private IDevopsIngressService idevopsIngressService;
     private DevopsIngressRepository devopsIngressRepository;
     private DevopsServiceRepository devopsServiceRepository;
@@ -170,7 +168,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params) {
-        return devopsIngressRepository.getIngress(projectId, pageRequest, params);
+        Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository.getIngress(projectId, pageRequest, params);
+        Map<String, EnvSession> envs = envListener.connectedEnv();
+        for (DevopsIngressDTO devopsIngressDTO : devopsIngressDTOS) {
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getEnvId().equals(devopsIngressDTO.getEnvId())&&agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                        devopsIngressDTO.setEnvStatus(true);
+                }
+            }
+        }
+        return devopsIngressDTOS;
     }
 
     @Override

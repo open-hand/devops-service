@@ -82,15 +82,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         Page<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
                 projectId, pageRequest, searchParam);
         Map<String, EnvSession> envs = envListener.connectedEnv();
-        for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
-            EnvSession envSession = entry.getValue();
-            for (DevopsServiceV ds : devopsServiceByPage) {
-                if (envSession.getRegisterKey().equals(ds.getNamespace())) {
-                    ds.setEnvStatus(true);
+        for (DevopsServiceV ds : devopsServiceByPage) {
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getRegisterKey().equals(ds.getNamespace())&&agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                        ds.setEnvStatus(true);
                 }
             }
         }
-
         return ConvertPageHelper.convertPage(devopsServiceByPage, DevopsServiceDTO.class);
     }
 
@@ -133,7 +132,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
 
             insertOrUpdateService(devopsServiceReqDTO, devopsServiceE,
-                    applicationE.getCode(),devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                    applicationE.getCode(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }
@@ -434,7 +433,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
-                appCode,commandId);
+                appCode, commandId);
     }
 
     /**
@@ -478,7 +477,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            if(agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+            if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
                 envIds.add(envSession.getEnvId());
             }
         }
