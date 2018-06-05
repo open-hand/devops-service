@@ -89,7 +89,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 serviceMsgHandlerService.handlerServiceCreateMessage(msg.getKey(), msg.getPayload());
                 break;
             case NetworkIngress:
-                deployMsgHandlerService.handlerDomainCreateMessage(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.handlerDomainCreateMessage(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case NetworkIngressDelete:
                 break;
