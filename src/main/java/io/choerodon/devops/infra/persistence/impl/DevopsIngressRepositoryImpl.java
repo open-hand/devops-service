@@ -146,7 +146,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
 
         Page<DevopsIngressDO> devopsIngressDOS =
                 PageHelper.doPageAndSort(pageRequest,
-                        () -> devopsIngressMapper.selectIngerss(projectId, searchParamMap, paramMap));
+                        () -> devopsIngressMapper.selectIngress(projectId, searchParamMap, paramMap));
         Map<String, EnvSession> envs = envListener.connectedEnv();
         devopsIngressDOS.getContent().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
