@@ -269,25 +269,30 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public void update(Long projectId, Long appMarketId, ApplicationReleasingDTO applicationRelease) {
         if (applicationRelease != null) {
             String publishLevel = applicationRelease.getPublishLevel();
-            if (!ORGANIZATION.equals(publishLevel) && !PUBLIC.equals(publishLevel)) {
+            if (publishLevel != null
+                    && !ORGANIZATION.equals(publishLevel)
+                    && !PUBLIC.equals(publishLevel)) {
                 throw new CommonException("error.publishLevel");
             }
         } else {
             throw new CommonException("error.app.check");
         }
-        if (!appMarketId.equals(applicationRelease.getId())) {
+        if (applicationRelease.getId() != null
+                && !appMarketId.equals(applicationRelease.getId())) {
             throw new CommonException("error.id.notMatch");
         }
         applicationMarketRepository.checkProject(projectId, appMarketId);
         ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
-        if (!applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
+        if (applicationRelease.getAppId() != null
+                && !applicationReleasingDTO.getAppId().equals(applicationRelease.getAppId())) {
             throw new CommonException("error.app.cannot.change");
         }
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         if (projectE == null || projectE.getOrganization() == null) {
             throw new CommonException("error.project.query");
         }
-        if (!applicationRelease.getPublishLevel().equals(applicationReleasingDTO.getPublishLevel())) {
+        if (applicationRelease.getPublishLevel() != null
+                && !applicationRelease.getPublishLevel().equals(applicationReleasingDTO.getPublishLevel())) {
             throw new CommonException("error.publishLevel.cannot.change");
         }
         DevopsAppMarketDO devopsAppMarketDO = ConvertHelper.convert(applicationRelease, DevopsAppMarketDO.class);
