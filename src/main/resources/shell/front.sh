@@ -2,13 +2,13 @@ export GROUP_NAME={{ GROUP_NAME }}
 export PROJECT_NAME={{ PROJECT_NAME }}
 export CI_COMMIT_TAG=$(GetVersion)
 function node_config(){
-    echo ""
+    npm config set registry ${NODE_REGISTRY:-"http://nexus3.deploy.saas.hand-china.com/repository/handnpm/"}
 }
 function node_module(){
     mkdir -p /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
     python ./boot/structure/configAuto.py ${1}
     cp -r config.yml /cache/${CI_PROJECT_NAME}-${CI_PROJECT_ID}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}/
-    cd boot && cnpm install && cd ../${1} && cnpm install && cd ..
+    cd boot && npm install && cd ../${1} && npm install && cd ..
 }
 # 开发使用devbuild，构建镜像使用build
 function node_build(){
