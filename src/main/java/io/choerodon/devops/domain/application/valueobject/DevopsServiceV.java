@@ -13,6 +13,7 @@ public class DevopsServiceV {
     private String name;
     private String externalIp;
     private Long port;
+    private Long targetPort;
     private String status;
     private Long envId;
     private String envName;
@@ -143,5 +144,13 @@ public class DevopsServiceV {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getTargetPort() {
+        return targetPort;
+    }
+
+    public void setTargetPort(Long targetPort) {
+        this.targetPort = targetPort;
     }
 }
