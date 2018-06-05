@@ -1,6 +1,9 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
@@ -111,6 +114,23 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
+    public void updateIngress(DevopsIngressDO devopsIngressDO) {
+        Long id = devopsIngressDO.getId();
+        DevopsIngressDO ingressDO = devopsIngressMapper.selectByPrimaryKey(id);
+        if (ingressDO == null) {
+            throw new CommonException("domain.not.exist");
+        }
+        if (!devopsIngressDO.getName().equals(ingressDO.getName())
+                && !checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
+            throw new CommonException("error.domain.name.exist");
+        }
+        if (!ingressDO.equals(devopsIngressDO)) {
+            devopsIngressDO.setObjectVersionNumber(ingressDO.getObjectVersionNumber());
+            devopsIngressMapper.updateByPrimaryKey(devopsIngressDO);
+        }
+    }
+
+    @Override
     public Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params) {
         List<DevopsIngressDTO> devopsIngressDTOS = new ArrayList<>();
         Map<String, Object> maps = gson.fromJson(params, Map.class);
@@ -127,14 +147,14 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         Page<DevopsIngressDO> devopsIngressDOS =
                 PageHelper.doPageAndSort(pageRequest,
                         () -> devopsIngressMapper.selectIngerss(projectId, searchParamMap, paramMap));
-        Map<String,EnvSession> envs = envListener.connectedEnv();
+        Map<String, EnvSession> envs = envListener.connectedEnv();
         devopsIngressDOS.getContent().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),
                             t.getEnvId(), t.getUsable(), t.getEnvName(),
                             t.getCommandStatus(), t.getCommandType(), t.getError());
-
-            for(Map.Entry<String,EnvSession> entry : envs.entrySet()) {
+            devopsIngressDTO.setStatus(t.getStatus());
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
                 if (envSession.getRegisterKey().equals(t.getNamespace())) {
                     devopsIngressDTO.setEnvStatus(true);
@@ -164,6 +184,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressPathMapper.select(devopsIngressPathDO).forEach(e -> {
                 getDevopsIngressDTO(devopsIngressDTO, e);
             });
+            devopsIngressDTO.setStatus(devopsIngressDO.getStatus());
             return devopsIngressDTO;
         }
 
@@ -185,6 +206,13 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     public void setUsable(String name) {
         DevopsIngressDO devopsIngressDO = devopsIngressMapper.select(new DevopsIngressDO(name)).get(0);
         devopsIngressDO.setUsable(true);
+        devopsIngressMapper.updateByPrimaryKey(devopsIngressDO);
+    }
+
+    @Override
+    public void setStatus(String name, String status) {
+        DevopsIngressDO devopsIngressDO = devopsIngressMapper.select(new DevopsIngressDO(name)).get(0);
+        devopsIngressDO.setStatus(status);
         devopsIngressMapper.updateByPrimaryKey(devopsIngressDO);
     }
 

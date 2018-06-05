@@ -21,6 +21,8 @@ public interface DevopsIngressRepository {
 
     void updateIngress(DevopsIngressDO devopsIngressDO, List<DevopsIngressPathDO> devopsIngressPathDOList);
 
+    void updateIngress(DevopsIngressDO devopsIngressDO);
+
     Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params);
 
     DevopsIngressDTO getIngress(Long projectId, Long ingressId);
@@ -30,6 +32,8 @@ public interface DevopsIngressRepository {
     void deleteIngress(Long ingressId);
 
     void setUsable(String name);
+
+    void setStatus(String name, String status);
 
     List<String> queryIngressNameByServiceId(Long serviceId);
 

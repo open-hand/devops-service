@@ -28,6 +28,7 @@ public class DevopsIngressDO extends AuditDomain {
     private String name;
     private String domain;
     private Boolean isUsable;
+    private String  status;
 
     @Transient
     private String envName;
@@ -169,6 +170,14 @@ public class DevopsIngressDO extends AuditDomain {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override

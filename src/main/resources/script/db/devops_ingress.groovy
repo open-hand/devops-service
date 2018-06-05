@@ -19,4 +19,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'Runge', id: '2018-06-05-add-column') {
+        addColumn(tableName: 'devops_ingress') {
+            column(name: 'status', type: 'VARCHAR(10)', remarks: '状态')
+        }
+    }
 }

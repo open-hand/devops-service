@@ -27,6 +27,7 @@ import io.choerodon.devops.domain.application.repository.DevopsServiceRepository
 import io.choerodon.devops.domain.service.IDevopsIngressService;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
@@ -99,6 +100,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         devopsIngressDTO.getId(), t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
                 ingress.getSpec().getRules().get(0).getHttp().addPathsItem(createPath(t.getPath(), t.getServiceId()));
             });
+            devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
             devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
             DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
             devopsEnvCommandE.setObject(ObjectType.INGRESS.getObjectType());
@@ -155,6 +157,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     idevopsIngressService.deleteIngress(
                             ingressDTO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId());
                 }
+                devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
                 devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
                 idevopsIngressService.createIngress(json.serialize(ingress),
                         name, devopsEnvironmentE.getCode(), devopsEnvCommandE.getId());

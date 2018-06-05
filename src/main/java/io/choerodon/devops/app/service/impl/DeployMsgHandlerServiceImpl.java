@@ -286,6 +286,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             devopsIngressE.setEnvId(devopsEnvironmentE.getId());
                             devopsIngressE.setName(v1beta1Ingress.getMetadata().getName());
                             devopsIngressE.setUsable(true);
+                            devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
                             devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
 
                             List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules()
@@ -493,7 +494,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         KeyParseTool.getResourceName(key));
 
         saveOrUpdateResource(devopsEnvResourceE, newDevopsEnvResourceE, devopsEnvResourceDetailE, null);
-        devopsIngressRepository.setUsable(ingress.getMetadata().getName());
+        String ingressName = ingress.getMetadata().getName();
+        devopsIngressRepository.setUsable(ingressName);
+        devopsIngressRepository.setStatus(ingressName, IngressStatus.RUNNING.getStatus());
     }
 
     @Override
@@ -726,8 +729,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsEnvCommandE.getObjectId());
             devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
             devopsServiceRepository.update(devopsServiceE);
-        } else {
-            //todo INGRESS状态更新
+        } else if (devopsEnvCommandE.getObject().equals(ObjectType.INGRESS.getObjectType())) {
+            DevopsIngressDO ingress = devopsIngressRepository.getIngress(devopsEnvCommandE.getObjectId());
+            ingress.setStatus(IngressStatus.FAILED.getStatus());
+            devopsIngressRepository.updateIngress(ingress);
         }
     }
 

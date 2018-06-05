@@ -22,6 +22,7 @@ public class DevopsIngressDTO {
     private String commandStatus;
     private String commandType;
     private String error;
+    private String status;
     private List<DevopsIngressPathDTO> pathList;
 
     public DevopsIngressDTO() {
@@ -154,6 +155,14 @@ public class DevopsIngressDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     @Override
