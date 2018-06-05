@@ -17,7 +17,7 @@ public interface DeployMsgHandlerService {
 
     void updateInstanceStatus(String key, String instanceStatus, String commandStatus, String commandMsg);
 
-    void handlerDomainCreateMessage(String key, String msg);
+    void handlerDomainCreateMessage(String key, String msg,Long envId);
 
     void helmReleasePreUpgrade(String msg);
 

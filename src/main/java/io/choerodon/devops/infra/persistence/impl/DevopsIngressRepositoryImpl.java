@@ -207,10 +207,13 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public void setStatus(String name, String status) {
-        DevopsIngressDO devopsIngressDO = devopsIngressMapper.select(new DevopsIngressDO(name)).get(0);
-        devopsIngressDO.setStatus(status);
-        devopsIngressMapper.updateByPrimaryKey(devopsIngressDO);
+    public Long setStatus(Long envId, String name, String status) {
+        DevopsIngressDO ingressDO = new DevopsIngressDO(name);
+        ingressDO.setEnvId(envId);
+        DevopsIngressDO ingress = devopsIngressMapper.selectOne(ingressDO);
+        ingress.setStatus(status);
+        devopsIngressMapper.updateByPrimaryKey(ingress);
+        return ingress.getId();
     }
 
     @Override

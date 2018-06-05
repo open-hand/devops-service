@@ -479,7 +479,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void handlerDomainCreateMessage(String key, String msg) {
+    public void handlerDomainCreateMessage(String key, String msg, Long envId) {
         V1beta1Ingress ingress = json.deserialize(msg, V1beta1Ingress.class);
         DevopsEnvResourceE devopsEnvResourceE = DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
         DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
@@ -496,7 +496,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         saveOrUpdateResource(devopsEnvResourceE, newDevopsEnvResourceE, devopsEnvResourceDetailE, null);
         String ingressName = ingress.getMetadata().getName();
         devopsIngressRepository.setUsable(ingressName);
-        devopsIngressRepository.setStatus(ingressName, IngressStatus.RUNNING.getStatus());
+        Long ingressId = devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
+        DevopsEnvCommandE commandE =
+                devopsEnvCommandRepository.queryByObject(ObjectType.INGRESS.getObjectType(), ingressId);
+        commandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+        devopsEnvCommandRepository.update(commandE);
     }
 
     @Override

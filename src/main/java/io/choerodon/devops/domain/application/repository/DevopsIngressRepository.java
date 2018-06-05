@@ -33,7 +33,7 @@ public interface DevopsIngressRepository {
 
     void setUsable(String name);
 
-    void setStatus(String name, String status);
+    Long setStatus(Long envId, String name, String status);
 
     List<String> queryIngressNameByServiceId(Long serviceId);
 
