@@ -220,6 +220,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
                     if (!isUpdate && devopsServiceE.getPort().equals(devopsServiceReqDTO.getPort())
+                            && devopsServiceE.getTargetPort().equals(devopsServiceReqDTO.getTargetPort())
                             && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
                         throw new CommonException("no change!");
                     }
