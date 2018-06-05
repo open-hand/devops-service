@@ -32,7 +32,7 @@ spec:
         - /bin/sh
         - -c
         - '
-          java -Dspring.datasource.url="jdbc:mysql://{{ .Values.preJob.preConfig.mysql.host }}:{{ .Values.preJob.preConfig.mysql.port }}/{{ .Values.preJob.preConfig.mysql.database }}?useUnicode=true&characterEncoding=utf-8&useSSL=false" -Dspring.datasource.username={{ .Values.preJob.preConfig.mysql.username }} -Dspring.datasource.password={{ .Values.preJob.preConfig.mysql.password }} -Dservice.name={{ .Chart.Name }} -Dservice.version={{ .Chart.Version }} -Dconfig.file={{ .Values.preJob.preConfig.configFile }} -Dconfig.jar=/app.jar -jar /var/choerodon/choerodon-tool-config.jar;
+          java -Dspring.datasource.url="jdbc:mysql://{{ .Values.preJob.preConfig.mysql.host }}:{{ .Values.preJob.preConfig.mysql.port }}/{{ .Values.preJob.preConfig.mysql.database }}?useUnicode=true&characterEncoding=utf-8&useSSL=false" -Dspring.datasource.username={{ .Values.preJob.preConfig.mysql.username }} -Dspring.datasource.password={{ .Values.preJob.preConfig.mysql.password }} -Dservice.name={{ .Chart.Name }} -Dservice.version={{ .Chart.Version }} -Dconfig.file={{ .Values.preJob.preConfig.configFile }} -Dconfig.jar=/{{ .Values.preJob.appname }}.jar -jar /var/choerodon/choerodon-tool-config.jar;
           '
         volumeMounts:
         - mountPath: /var/choerodon

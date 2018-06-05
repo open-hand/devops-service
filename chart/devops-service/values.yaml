@@ -9,6 +9,7 @@ image:
   pullPolicy: Always
 
 preJob:
+  appname: devops-service
   preConfig:
     configFile: application.yml
     mysql:
@@ -53,10 +54,10 @@ env:
     SECURITY_IGNORED: /ci,/v2/api-docs,/agent/**,/ws/**
 metrics:
   path: /prometheus
-  label: java-spring
+  group: spring-boot
 
 logs:
-  parser: java-spring
+  parser: spring-boot
 
 persistence:
   enabled: true
