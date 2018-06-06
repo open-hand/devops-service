@@ -127,7 +127,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         ApplicationTemplateRepDTO applicationTemplateRepDTO = ConvertHelper.convert(applicationTemplateRepository
                         .query(appTemplateId),
                 ApplicationTemplateRepDTO.class);
-        setUrl(applicationTemplateRepDTO);
+        applicationTemplateRepDTO.setRepoUrl(!gitlabUrl.endsWith("/") ? gitlabUrl + "/" + applicationTemplateRepDTO.getRepoUrl() : gitlabUrl + applicationTemplateRepDTO.getRepoUrl());
         return applicationTemplateRepDTO;
     }
 
@@ -139,7 +139,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                         ApplicationTemplateRepDTO.class);
         List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getContent();
         for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
-            setUrl(applicationTemplateRepDTO);
+            applicationTemplateRepDTO.setRepoUrl(!gitlabUrl.endsWith("/") ? gitlabUrl + "/" + applicationTemplateRepDTO.getRepoUrl() : gitlabUrl + applicationTemplateRepDTO.getRepoUrl());
         }
         applicationTemplateRepDTOPage.setContent(applicationTemplateRepDTOList);
         return applicationTemplateRepDTOPage;
@@ -159,7 +159,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             ApplicationTemplateRepDTO templateRepDTO = ConvertHelper.convert(applicationTemplateRepository
                     .query(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepDTO.class);
             //拉取模板
-            Git git = gitUtil.clone(applicationDir, gitlabUrl + templateRepDTO.getRepoUrl());
+            Git git = gitUtil.clone(applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + templateRepDTO.getRepoUrl() : gitlabUrl + templateRepDTO.getRepoUrl());
             List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
                     applicationDir, gitlabProjectEventDTO.getUserId());
             String accessToken = "";
@@ -170,7 +170,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                 accessToken = tokens.get(tokens.size() - 1);
             }
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
-            gitUtil.push(git, applicationDir, gitlabUrl + applicationTemplateE.getRepoUrl(),
+            gitUtil.push(git, applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + applicationTemplateE.getRepoUrl() : gitlabUrl + applicationTemplateE.getRepoUrl(),
                     gitlabUserE.getUsername(), accessToken, TEMPLATE);
         } else {
             gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
@@ -184,7 +184,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                 applicationTemplateRepository.list(organizationId),
                 ApplicationTemplateRepDTO.class);
         for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
-            setUrl(applicationTemplateRepDTO);
+            applicationTemplateRepDTO.setRepoUrl(!gitlabUrl.endsWith("/") ? gitlabUrl + "/" + applicationTemplateRepDTO.getRepoUrl() : gitlabUrl + applicationTemplateRepDTO.getRepoUrl());
         }
         return applicationTemplateRepDTOList;
     }
@@ -210,15 +210,4 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         return applicationTemplateRepository.applicationTemplateExist(uuid);
     }
 
-    private ApplicationTemplateRepDTO setUrl(ApplicationTemplateRepDTO applicationTemplateRepDTO) {
-        if (applicationTemplateRepDTO != null) {
-            String repoURL = applicationTemplateRepDTO.getRepoUrl();
-            String gitRepositoryURL = repoURL.startsWith("/")
-                    ? repoURL.substring(1, repoURL.length()) : repoURL;
-            String urlSlash = !gitlabUrl.endsWith("/") ? "/" : "";
-            String repoUrl = gitlabUrl + urlSlash + gitRepositoryURL;
-            applicationTemplateRepDTO.setRepoUrl(repoUrl);
-        }
-        return applicationTemplateRepDTO;
-    }
 }
