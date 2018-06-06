@@ -81,7 +81,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         for (ApplicationInstanceE applicationInstanceE : applicationInstanceEPage) {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getRegisterKey().equals(applicationInstanceE.getDevopsEnvironmentE().getCode())) {
+                if (envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())) {
                     if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
                         applicationInstanceE.setConnect(true);
                     }
