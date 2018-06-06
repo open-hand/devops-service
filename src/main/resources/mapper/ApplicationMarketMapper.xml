@@ -35,6 +35,20 @@
                     dam.contributor LIKE CONCAT(CONCAT('%', #{contributor, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
+            <if test='searchParam.publishLevel != null and searchParam.publishLevel.size > 0'>
+                AND
+                <foreach collection="searchParam.publishLevel" item="publishLevel" open="(" separator=" OR " close=")">
+                    <if test='publishLevel == 1'>
+                        dam.publish_level = 'organization'
+                    </if>
+                    <if test='publishLevel == 2'>
+                        dam.publish_level = 'public'
+                    </if>
+                    <if test="publishLevel != 1 and publishLevel != 2">
+                        1 = 1
+                    </if>
+                </foreach>
+            </if>
         </if>
         <if test='param != null and param != ""'>
             AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
@@ -76,6 +90,20 @@
                 AND
                 <foreach collection="searchParam.contributor" item="contributor" open="(" separator=" OR " close=")">
                     dam.contributor LIKE CONCAT(CONCAT('%', #{contributor, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.publishLevel != null and searchParam.publishLevel.size > 0'>
+                AND
+                <foreach collection="searchParam.publishLevel" item="publishLevel" open="(" separator=" OR " close=")">
+                    <if test='publishLevel == 1'>
+                        dam.publish_level = 'organization'
+                    </if>
+                    <if test='publishLevel == 2'>
+                        dam.publish_level = 'public'
+                    </if>
+                    <if test="publishLevel != 1 and publishLevel != 2">
+                        1 = 1
+                    </if>
                 </foreach>
             </if>
         </if>
