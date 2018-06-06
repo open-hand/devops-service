@@ -96,9 +96,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
      * pod 更新
      *
      * @param key 消息key
+     * @param envId 环境Id
      * @param msg 消息msg
      */
-    public void handlerUpdateMessage(String key, String msg) {
+    public void handlerUpdateMessage(String key, Long envId, String msg) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
         Msg msg1 = new Msg();
         ApplicationInstanceE applicationInstanceE =
@@ -111,7 +112,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     null,
                     null,
                     KeyParseTool.getReleaseName(key));
-            msg1.setKey("env:" + KeyParseTool.getNamespace(key) + ".release:" + KeyParseTool.getReleaseName(key));
+            msg1.setKey("env:" + KeyParseTool.getNamespace(key) + ".envId:"+ envId + ".release:" + KeyParseTool.getReleaseName(key));
             msg1.setType(HelmType.HelmReleaseGetContent.toValue());
             try {
                 msg1.setPayload(mapper.writeValueAsString(payload));
@@ -320,7 +321,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             devopsEnvResourceDetailE, null);
                     break;
                 case POD:
-                    handlerUpdateMessage(key, msg);
+                    handlerUpdateMessage(key, envId, msg);
                     break;
                 case SERVICE:
                     V1Service v1Service = json.deserialize(msg, V1Service.class);
