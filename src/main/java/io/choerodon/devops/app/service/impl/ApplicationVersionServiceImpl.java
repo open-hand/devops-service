@@ -44,9 +44,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Value("${services.helm.url}")
     private String helmUrl;
 
-    /**
-     * 构造函数
-     */
+
     public ApplicationVersionServiceImpl(ApplicationVersionRepository applicationVersionRepository, ApplicationRepository applicationRepository, IamRepository iamRepository, ApplicationVersionValueRepository applicationVersionValueRepository) {
         this.applicationVersionRepository = applicationVersionRepository;
         this.applicationRepository = applicationRepository;
@@ -87,7 +85,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         try {
             FileUtil.unTarGZ(path, DESTPATH);
-            applicationVersionValueE.setValue(FileUtil.replaceReturnString(new FileInputStream(new File (FileUtil.queryFileFromFiles(
+            applicationVersionValueE.setValue(FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
                     new File(DESTPATH), "values.yaml").getAbsolutePath())), null));
 
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository

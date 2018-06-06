@@ -157,7 +157,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressDTO.setStatus(t.getStatus());
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getRegisterKey().equals(t.getNamespace())) {
+                if (envSession.getEnvId().equals(t.getEnvId())) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }

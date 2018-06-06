@@ -41,6 +41,11 @@ public class ApplicationE {
 
     /**
      * 构造函数
+     *
+     * @param id     应用Id
+     * @param code   应用code
+     * @param name   应用name
+     * @param active 是否启用
      */
     public ApplicationE(Long id, String code, String name, Boolean active) {
         this.id = id;

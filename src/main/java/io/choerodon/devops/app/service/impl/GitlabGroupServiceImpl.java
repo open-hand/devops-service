@@ -32,13 +32,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     private GitlabGroupMemberService gitlabGroupMemberService;
     private UserAttrRepository userAttrRepository;
 
-    /**
-     * GitLab group 创建事件服务
-     *
-     * @param gitlabServiceClient     GitLab 平台接口
-     * @param devopsProjectRepository DevOps 项目 仓储类
-     * @param eventProducerTemplate   事件发送
-     */
+
     public GitlabGroupServiceImpl(GitlabServiceClient gitlabServiceClient,
                                   DevopsProjectRepository devopsProjectRepository,
                                   EventProducerTemplate eventProducerTemplate,

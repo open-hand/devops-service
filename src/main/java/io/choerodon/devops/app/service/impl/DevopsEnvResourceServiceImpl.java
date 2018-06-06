@@ -32,9 +32,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     private DevopsIngressRepository devopsIngressRepository;
 
-    /**
-     * 构造函数
-     */
     public DevopsEnvResourceServiceImpl(DevopsEnvResourceRepository devopsEnvResourceRepository,
                                         DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository,
                                         DevopsEnvCommandLogRepository devopsEnvCommandLogRepository,

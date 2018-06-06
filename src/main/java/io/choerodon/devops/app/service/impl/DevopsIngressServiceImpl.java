@@ -56,9 +56,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     private EnvListener envListener;
 
-    /**
-     * 构造函数
-     */
+
     public DevopsIngressServiceImpl(DevopsIngressRepository devopsIngressRepository,
                                     DevopsServiceRepository devopsServiceRepository,
                                     DevopsEnvironmentRepository devopsEnvironmentRepository,
@@ -108,6 +106,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             idevopsIngressService.createIngress(json.serialize(ingress),
                     name,
                     devopsEnvironmentE.getCode(),
+                    devopsEnvCommandE.getId(),
                     devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
             throw new CommonException(ENV_DISCONNECTED);
@@ -153,12 +152,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
                 if (!ingressDTO.getName().equals(name)) {
                     idevopsIngressService.deleteIngress(
-                            ingressDTO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId());
+                            ingressDTO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId(), devopsEnvCommandE.getId());
                 }
                 devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
                 devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
                 idevopsIngressService.createIngress(json.serialize(ingress),
-                        name, devopsEnvironmentE.getCode(), devopsEnvCommandE.getId());
+                        name, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvCommandE.getId());
 
             }
         } else {
@@ -173,8 +172,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         for (DevopsIngressDTO devopsIngressDTO : devopsIngressDTOS) {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(devopsIngressDTO.getEnvId())&&agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
-                        devopsIngressDTO.setEnvStatus(true);
+                if (envSession.getEnvId().equals(devopsIngressDTO.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                    devopsIngressDTO.setEnvStatus(true);
                 }
             }
         }
@@ -197,7 +196,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
             DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
             idevopsIngressService.deleteIngress(
-                    ingressDO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId());
+                    ingressDO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId(), devopsEnvCommandE.getId());
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }

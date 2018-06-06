@@ -17,6 +17,10 @@ public interface ApplicationInstanceService {
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
+     * @param envId       环境Id
+     * @param versionId   版本Id
+     * @param appId       应用Id
+     * @param params      模糊查询参数
      * @return page of applicationInstanceDTO
      */
     Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -45,7 +49,7 @@ public interface ApplicationInstanceService {
      * 部署应用
      *
      * @param applicationDeployDTO 部署信息
-     * @return
+     * @return boolean
      */
     Boolean create(ApplicationDeployDTO applicationDeployDTO);
 
@@ -71,7 +75,11 @@ public interface ApplicationInstanceService {
     /**
      * 实例升级
      *
-     * @param instanceId 实例id
+     * @param instanceId   实例id
+     * @param repoURL      仓库地址
+     * @param chartName    chart名
+     * @param chartVersion chart版本
+     * @param values       部署参数
      */
     void instanceUpgrade(Long instanceId, String repoURL, String chartName, String chartVersion, String values);
 
@@ -99,6 +107,7 @@ public interface ApplicationInstanceService {
     /**
      * 实例回滚
      *
+     * @param version    版本
      * @param instanceId 实例id
      */
     void instanceRollback(Integer version, Long instanceId);

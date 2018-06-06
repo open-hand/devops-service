@@ -26,6 +26,7 @@ public interface ApplicationMarketService {
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
+     * @param searchParam 模糊查询参数
      * @return list of ApplicationReleasingDTO
      */
     Page<ApplicationReleasingDTO> listMarketAppsByProjectId(
@@ -38,6 +39,7 @@ public interface ApplicationMarketService {
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
+     * @param searchParam 模糊查询参数
      * @return list of ApplicationReleasingDTO
      */
     Page<ApplicationReleasingDTO> listMarketApps(Long projectId, PageRequest pageRequest, String searchParam);

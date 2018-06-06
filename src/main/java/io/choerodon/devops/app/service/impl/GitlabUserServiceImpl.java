@@ -23,9 +23,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private GitlabUserRepository gitlabUserRepository;
     private UserAttrRepository userAttrRepository;
 
-    /**
-     * 构造函数
-     */
+
     public GitlabUserServiceImpl(GitlabUserRepository gitlabUserRepository,
                                  GitlabConfigurationProperties gitlabConfigurationProperties,
                                  UserAttrRepository userAttrRepository) {

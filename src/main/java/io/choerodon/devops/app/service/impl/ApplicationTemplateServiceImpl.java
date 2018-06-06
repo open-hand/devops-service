@@ -52,9 +52,6 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     private UserAttrRepository userAttrRepository;
     private GitlabUserRepository gitlabUserRepository;
 
-    /**
-     * 构造方法
-     */
     public ApplicationTemplateServiceImpl(GitUtil gitUtil, IamRepository iamRepository, GitlabRepository gitlabRepository, EventProducerTemplate eventProducerTemplate, ApplicationTemplateRepository applicationTemplateRepository, UserAttrRepository userAttrRepository, GitlabUserRepository gitlabUserRepository) {
         this.gitUtil = gitUtil;
         this.iamRepository = iamRepository;

@@ -28,7 +28,7 @@ public class DevopsIngressDO extends AuditDomain {
     private String name;
     private String domain;
     private Boolean isUsable;
-    private String  status;
+    private String status;
 
     @Transient
     private String envName;
@@ -193,6 +193,7 @@ public class DevopsIngressDO extends AuditDomain {
                 && Objects.equals(projectId, that.projectId)
                 && Objects.equals(envId, that.envId)
                 && Objects.equals(name, that.name)
+                && Objects.equals(status, that.status)
                 && Objects.equals(domain, that.domain);
     }
 

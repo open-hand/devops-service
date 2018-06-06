@@ -33,9 +33,7 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
     private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
-    /**
-     * 构造函数
-     */
+
     public ServiceMsgHandlerServiceImpl(DevopsServiceRepository devopsServiceRepository,
                                         ApplicationInstanceRepository applicationInstanceRepository,
                                         DevopsEnvResourceRepository devopsEnvResourceRepository,
