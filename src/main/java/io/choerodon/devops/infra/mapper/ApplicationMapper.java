@@ -20,7 +20,10 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
                                     @Param("envId") Long envId,
                                     @Param("status") String status);
 
-    List<ApplicationDO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId, @Param("active") Boolean active);
+    List<ApplicationDO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId,
+                                                     @Param("active") Boolean active,
+                                                     @Param("searchParam") Map<String, Object> searchParam,
+                                                     @Param("param") String param);
 
     ApplicationDO queryByToken(@Param("token") String token);
 

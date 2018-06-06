@@ -281,9 +281,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest) {
+    public Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params) {
         return ConvertPageHelper.convertPage(applicationRepository
-                        .listByActiveAndPubAndVersion(projectId, true, pageRequest),
+                        .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
                 ApplicationDTO.class);
     }
 
