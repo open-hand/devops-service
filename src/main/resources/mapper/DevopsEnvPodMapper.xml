@@ -78,6 +78,7 @@
         da.`name` appName,
         dav.version appVersion,
         dai.`code` instanceCode,
+        de.id envId,
         de.`code` envCode,
         de.`name` envName,
         dp.object_version_number
