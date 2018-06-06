@@ -85,8 +85,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         for (DevopsServiceV ds : devopsServiceByPage) {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getRegisterKey().equals(ds.getNamespace())&&agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
-                        ds.setEnvStatus(true);
+                if (envSession.getRegisterKey().equals(ds.getNamespace())
+                        && agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                    ds.setEnvStatus(true);
                 }
             }
         }
@@ -107,7 +108,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
         if (isEnvConnected(devopsServiceReqDTO.getEnvId())) {
-            DevopsServiceValidator.checkAppVersion(devopsServiceReqDTO);
+            DevopsServiceValidator.checkService(devopsServiceReqDTO);
             DevopsEnvironmentE devopsEnvironmentE =
                     devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
             if (devopsEnvironmentE == null) {
@@ -142,7 +143,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO) {
         if (isEnvConnected(devopsServiceReqDTO.getEnvId())) {
-            DevopsServiceValidator.checkAppVersion(devopsServiceReqDTO);
+            DevopsServiceValidator.checkService(devopsServiceReqDTO);
             DevopsServiceE devopsServiceE = getDevopsServiceE(id);
             if (!devopsServiceE.getEnvId().equals(devopsServiceReqDTO.getEnvId())) {
                 throw new CommonException("error.env.equal");

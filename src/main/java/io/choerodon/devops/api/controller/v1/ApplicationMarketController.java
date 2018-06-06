@@ -228,7 +228,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(
-                applicationMarketService.getAppVersions(projectId, appMarketId, isPublish, pageRequest))
+                applicationMarketService.getAppVersions(projectId, appMarketId, isPublish, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }

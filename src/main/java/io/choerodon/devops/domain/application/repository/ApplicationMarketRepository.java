@@ -36,5 +36,6 @@ public interface ApplicationMarketRepository {
 
     List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish);
 
-    Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish, PageRequest pageRequest);
+    Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
+                                               PageRequest pageRequest, String searchParam);
 }

@@ -24,11 +24,16 @@ public class DevopsServiceValidator {
     /**
      * 参数校验
      */
-    public static void checkAppVersion(DevopsServiceReqDTO devopsServiceReqDTO) {
+    public static void checkService(DevopsServiceReqDTO devopsServiceReqDTO) {
+        if (devopsServiceReqDTO.getTargetPort() == null) {
+            throw new CommonException("error.targetPort.notPresent");
+        }
+        if (devopsServiceReqDTO.getPort() == null) {
+            throw new CommonException("error.port.notPresent");
+        }
         if (!Pattern.matches(NAME_PATTERN, devopsServiceReqDTO.getName())) {
             throw new CommonException("error.network.name.notMatch");
         }
-
         if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())) {
             if (!Pattern.matches(IP_PATTERN, devopsServiceReqDTO.getExternalIp())) {
                 throw new CommonException("error.externalIp.notMatch");
