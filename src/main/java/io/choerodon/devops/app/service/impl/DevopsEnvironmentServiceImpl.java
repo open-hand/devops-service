@@ -46,9 +46,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsServiceRepository devopsServiceRepository;
     private ApplicationInstanceRepository applicationInstanceRepository;
 
-    /**
-     * 构造方法
-     */
     public DevopsEnvironmentServiceImpl(IamRepository iamRepository,
                                         DevopsEnvironmentRepository devopsEnviromentRepository,
                                         EnvListener envListener,
@@ -99,7 +96,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvironmentE.setUpdate(false);
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getRegisterKey().equals(devopsEnvironmentE.getCode())) {
+                if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
                     flag = agentExpectVersion.compareTo(envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
@@ -187,7 +184,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvironmentE.setUpdate(false);
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getRegisterKey().equals(devopsEnvironmentE.getCode())) {
+                if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
                     flag = agentExpectVersion.compareTo(envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
@@ -241,6 +238,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     /**
      * 校验name是否改变
+     *
+     * @param devopsEnvironmentUpdateDTO 环境参数
+     * @return boolean
      */
     public Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository

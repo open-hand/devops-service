@@ -38,9 +38,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     private UserAttrRepository userAttrRepository;
 
-    /**
-     * 构造函数
-     */
+
     public GitlabGroupMemberServiceImpl(DevopsProjectRepository devopsProjectRepository,
                                         GitlabUserRepository gitlabUserRepository,
                                         GitlabGroupMemberRepository gitlabGroupMemberRepository,

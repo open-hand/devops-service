@@ -12,6 +12,7 @@ public interface ProjectPipelineService {
      * 查询应用下的Pipeline信息
      *
      * @param projectId   项目id
+     * @param appId       应用Id
      * @param pageRequest 分页参数
      * @return ProjectPipelineResultTotalDTO
      */

@@ -27,8 +27,15 @@ public class DevopsEnvironmentE {
 
     /**
      * 重写构造方法
+     *
+     * @param id          环境Id
+     * @param name        环境name
+     * @param description 环境描述
+     * @param isConnect   环境是否连接
+     * @param isActive    环境是否启用
+     * @param code        环境code
      */
-    public DevopsEnvironmentE(Long id, String name, String namespace, String description, Boolean isConnect, Boolean isActive, String code) {
+    public DevopsEnvironmentE(Long id, String name, String description, Boolean isConnect, Boolean isActive, String code) {
 
         this.id = id;
         this.name = name;
@@ -40,6 +47,10 @@ public class DevopsEnvironmentE {
 
     /**
      * 构造函数
+     *
+     * @param id   环境Id
+     * @param code 环境code
+     * @param name 环境name
      */
     public DevopsEnvironmentE(Long id, String code, String name) {
         this.id = id;

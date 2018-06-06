@@ -25,9 +25,9 @@ public class IDevopsServiceServiceImpl implements IDevopsServiceService {
 
     @Override
     @Async
-    public void deploy(String serviceYaml, String name, String namespace, Long commandId) {
+    public void deploy(String serviceYaml, String name, String namespace, Long envId, Long commandId) {
         Msg msg = new Msg();
-        msg.setKey("env:" + namespace + ".Service:" + name);
+        msg.setKey("env:" + namespace + "envId:" + envId + ".Service:" + name);
         msg.setType(HelmType.NetworkService.toValue());
         msg.setPayload(serviceYaml);
         msg.setCommandId(commandId);
@@ -36,9 +36,9 @@ public class IDevopsServiceServiceImpl implements IDevopsServiceService {
     }
 
     @Override
-    public void delete(String name, String namespace, Long commandId) {
+    public void delete(String name, String namespace, Long envId, Long commandId) {
         Msg msg = new Msg();
-        msg.setKey("env:" + namespace + ".Service:" + name);
+        msg.setKey("env:" + namespace + "envId:" + envId + ".Service:" + name);
         msg.setType(HelmType.NetworkServiceDelete.toValue());
         msg.setPayload(name);
         msg.setCommandId(commandId);

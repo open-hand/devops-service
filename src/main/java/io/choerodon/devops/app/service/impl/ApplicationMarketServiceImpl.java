@@ -59,9 +59,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private ApplicationRepository applicationRepository;
     private GitlabServiceClient gitlabServiceClient;
 
-    /**
-     * 构造函数
-     */
     @Autowired
     public ApplicationMarketServiceImpl(ApplicationVersionRepository applicationVersionRepository,
                                         ApplicationMarketRepository applicationMarketRepository,

@@ -13,6 +13,13 @@ public class Payload {
 
     /**
      * 构造函数
+     *
+     * @param namespace    命名空间
+     * @param repoUrl      仓库地址
+     * @param chartName    chart名
+     * @param chartVersion chart版本
+     * @param values       部署值
+     * @param releaseName  release名
      */
     public Payload(String namespace, String repoUrl, String chartName, String chartVersion, String values, String releaseName) {
         this.namespace = namespace;

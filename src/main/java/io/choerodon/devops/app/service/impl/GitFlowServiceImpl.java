@@ -49,9 +49,7 @@ public class GitFlowServiceImpl implements GitFlowService {
     private ApplicationRepository applicationRepository;
     private UserAttrRepository userAttrRepository;
 
-    /**
-     * 构造方法
-     */
+
     public GitFlowServiceImpl(GitFlowRepository gitFlowRepository,
                               IGitFlowService igitflowservice,
                               EventProducerTemplate eventProducerTemplate,

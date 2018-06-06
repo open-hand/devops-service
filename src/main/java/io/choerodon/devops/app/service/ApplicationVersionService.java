@@ -31,7 +31,6 @@ public interface ApplicationVersionService {
      * @param version 版本
      * @param commit  commit
      * @param file    tgz包
-     * @return File
      */
     void create(String image, String token, String version, String commit, MultipartFile file);
 
@@ -59,6 +58,7 @@ public interface ApplicationVersionService {
      * @param projectId   项目id
      * @param appId       应用id
      * @param pageRequest 分页参数
+     * @param searchParam 模糊搜索参数
      * @return ApplicationVersionRepDTO
      */
     Page<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId,

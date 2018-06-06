@@ -47,9 +47,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     private String gitlabUrl;
     private UserAttrRepository userAttrRepository;
 
-    /**
-     * 构造函数
-     */
+
     public ProjectPipelineServiceImpl(GitlabProjectRepository gitlabProjectRepository,
                                       ApplicationRepository applicationRepository,
                                       IamRepository iamRepository,

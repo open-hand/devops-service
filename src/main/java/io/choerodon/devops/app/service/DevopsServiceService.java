@@ -25,8 +25,9 @@ public interface DevopsServiceService {
      * 更新网络
      *
      * @param projectId           项目id
+     * @param id                  网络Id
      * @param devopsServiceReqDTO 部署网络参数
-     * @return
+     * @return boolean
      */
     Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
 
@@ -34,14 +35,15 @@ public interface DevopsServiceService {
      * 删除网络
      *
      * @param id 网络ID
-     * @return
      */
     void deleteDevopsService(Long id);
 
     /**
      * 检查网络唯一性
      *
-     * @param name 网络名
+     * @param projectId 项目Id
+     * @param envId     环境Id
+     * @param name      网络名
      * @return Boolean
      */
     Boolean checkName(Long projectId, Long envId, String name);

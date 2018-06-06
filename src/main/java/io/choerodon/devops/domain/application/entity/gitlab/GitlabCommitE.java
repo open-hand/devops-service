@@ -13,6 +13,10 @@ public class GitlabCommitE {
 
     /**
      * 构造函数
+     *
+     * @param authorName 提交人
+     * @param shortId    commit hash value
+     * @param title      commit 标题
      */
     public GitlabCommitE(String authorName, String shortId, String title) {
         this.authorName = authorName;
