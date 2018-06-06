@@ -40,4 +40,14 @@ public interface DeployMsgHandlerService {
     void helmReleaseGetContent(String key, Long envId, String msg);
 
     void commandNotSend(Long commandId, String msg);
+
+    void netWorkServiceFail(String key, String msg);
+
+    void netWorkIngressFail(String key, Long envId, String msg);
+
+    void netWorkServiceDeleteFail(String key, String value);
+
+    void netWorkIngressDeleteFail(String key, Long envId, String value);
+
+    void resourceSync(String key, Long envId, String value);
 }

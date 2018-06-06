@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -595,6 +596,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseRollBackFail(String key, String msg) {
+        return;
     }
 
     @Override
@@ -621,6 +623,50 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 CommandStatus.FAILED.getCommandStatus(),
                 msg);
 
+    }
+
+    @Override
+    public void netWorkServiceFail(String key, String msg) {
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(KeyParseTool.getValue(key, "Service"), KeyParseTool.getValue(key, "env"));
+        devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
+        devopsServiceRepository.update(devopsServiceE);
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), devopsServiceE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+        devopsEnvCommandE.setError(msg);
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+    }
+
+    @Override
+    public void netWorkIngressFail(String key, Long envId, String msg) {
+        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, KeyParseTool.getValue(key, "Ingress"));
+        devopsIngressE.setStatus(IngressStatus.FAILED.getStatus());
+        devopsIngressRepository.updateIngress(ConvertHelper.convert(devopsIngressE,DevopsIngressDO.class));
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), devopsIngressE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+        devopsEnvCommandE.setError(msg);
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+    }
+
+    @Override
+    public void netWorkServiceDeleteFail(String key, String msg) {
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(KeyParseTool.getValue(key, "Service"), KeyParseTool.getValue(key, "env"));
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), devopsServiceE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+        devopsEnvCommandE.setError(msg);
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+    }
+
+    @Override
+    public void netWorkIngressDeleteFail(String key, Long envId, String msg) {
+        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, KeyParseTool.getValue(key, "Ingress"));
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), devopsIngressE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+        devopsEnvCommandE.setError(msg);
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 
     @Override
@@ -737,6 +783,67 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             DevopsIngressDO ingress = devopsIngressRepository.getIngress(devopsEnvCommandE.getObjectId());
             ingress.setStatus(IngressStatus.FAILED.getStatus());
             devopsIngressRepository.updateIngress(ingress);
+        }
+    }
+
+    @Override
+    public void resourceSync(String key, Long envId, String msg) {
+        ResourceSyncPayload resourceSyncPayload = JSONArray.parseObject(msg, ResourceSyncPayload.class);
+        ResourceType resourceType = ResourceType.forString(resourceSyncPayload.getResourceType());
+        List<DevopsEnvResourceE> devopsEnvResourceES;
+        if (resourceType != null) {
+            switch (resourceType) {
+                case POD:
+                    devopsEnvResourceES = devopsEnvResourceRepository.listByEnvAndType(envId, ResourceType.POD.getType());
+                    if (!devopsEnvResourceES.isEmpty()) {
+                        List<String> podNames = Arrays.asList(resourceSyncPayload.getResources());
+                        devopsEnvResourceES.parallelStream().filter(devopsEnvResourceE -> !podNames.contains(devopsEnvResourceE.getName())).forEach(devopsEnvResourceE -> {
+                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.POD.getType(), devopsEnvResourceE.getName());
+                            devopsEnvPodRepository.deleteByName(devopsEnvResourceE.getName(), KeyParseTool.getValue(key, "env"));
+                        });
+                    }
+                    break;
+                case DEPLOYMENT:
+                    devopsEnvResourceES = devopsEnvResourceRepository.listByEnvAndType(envId, ResourceType.DEPLOYMENT.getType());
+                    if (!devopsEnvResourceES.isEmpty()) {
+                        List<String> deploymentNames = Arrays.asList(resourceSyncPayload.getResources());
+                        devopsEnvResourceES.parallelStream().filter(devopsEnvResourceE -> !deploymentNames.contains(devopsEnvResourceE.getName())).forEach(devopsEnvResourceE ->
+                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.DEPLOYMENT.getType(), devopsEnvResourceE.getName())
+                        );
+                    }
+                    break;
+                case REPLICASET:
+                    devopsEnvResourceES = devopsEnvResourceRepository.listByEnvAndType(envId, ResourceType.REPLICASET.getType());
+                    if (!devopsEnvResourceES.isEmpty()) {
+                        List<String> replicaSetNames = Arrays.asList(resourceSyncPayload.getResources());
+                        devopsEnvResourceES.parallelStream().filter(devopsEnvResourceE -> !replicaSetNames.contains(devopsEnvResourceE.getName())).forEach(devopsEnvResourceE ->
+                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.REPLICASET.getType(), devopsEnvResourceE.getName())
+                        );
+                    }
+                    break;
+                case SERVICE:
+                    List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
+                    if (!devopsServiceVS.isEmpty()) {
+                        List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
+                        devopsServiceVS.parallelStream().filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName())).forEach(devopsServiceV -> {
+                            devopsServiceRepository.delete(devopsServiceV.getId());
+                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.SERVICE.getType(), devopsServiceV.getName());
+                        });
+                    }
+                    break;
+                case INGRESS:
+                    List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
+                    if (!devopsIngressES.isEmpty()) {
+                        List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
+                        devopsIngressES.parallelStream().filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName())).forEach(devopsIngressE -> {
+                            devopsIngressRepository.deleteIngress(devopsIngressE.getId());
+                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.INGRESS.getType(), devopsIngressE.getName());
+                        });
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
 

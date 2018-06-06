@@ -75,4 +75,9 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
         devopsEnvResourceMapper.delete(devopsEnvResourceDO);
     }
 
+    @Override
+    public List<DevopsEnvResourceE> listByEnvAndType(Long envId, String type) {
+        return ConvertHelper.convertList(devopsEnvResourceMapper.listByEnvAndType(envId, type), DevopsEnvResourceE.class);
+    }
+
 }

@@ -53,6 +53,8 @@ public interface DevopsIngressRepository {
 
     List<DevopsIngressPathE> selectByIngressId(Long ingressId);
 
+    List<DevopsIngressE> listByEnvId(Long envId);
+
     void updateIngressPath(DevopsIngressPathE devopsIngressPathE);
 
     void deleteIngressPath(Long ingressId);
