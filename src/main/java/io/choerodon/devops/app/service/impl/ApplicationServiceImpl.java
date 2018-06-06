@@ -254,14 +254,14 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
     @Override
-    public String queryFile(String token, String type) {
+    public String queryFile(String token) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
         if (applicationE == null) {
             throw new CommonException("error.app.query.by.token");
         }
         ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
+        InputStream inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{{ GROUP_NAME }}", organization.getCode() + "-" + projectE.getCode());
         params.put("{{ PROJECT_NAME }}", applicationE.getCode());

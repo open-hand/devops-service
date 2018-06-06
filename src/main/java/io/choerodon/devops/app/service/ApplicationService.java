@@ -72,10 +72,9 @@ public interface ApplicationService {
      * 项目下应用查询ci脚本文件
      *
      * @param token token
-     * @param type  类型
      * @return File
      */
-    String queryFile(String token, String type);
+    String queryFile(String token);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用
