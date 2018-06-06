@@ -104,6 +104,7 @@
         AND da.is_active = #{active}
         AND ((select count(1) from devops_app_market dam where da.id=dam.app_id)=0)
         AND ((select count(1) from devops_app_version dav where da.id=dav.app_id)>0)
+        <include refid="sqlparam"/>
     </select>
 
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">

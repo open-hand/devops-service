@@ -129,8 +129,10 @@ public interface ApplicationService {
     /**
      * 项目下查询已经启用有版本未发布的应用
      *
-     * @param projectId 项目id
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
      * @return list of ApplicationRepDTO
      */
-    Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest);
+    Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
 }

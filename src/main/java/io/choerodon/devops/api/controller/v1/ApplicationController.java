@@ -262,18 +262,23 @@ public class ApplicationController {
     /**
      * 项目下查询已经启用有版本未发布的应用
      *
-     * @param projectId 项目id
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
      * @return page of ApplicationRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_unpublish")
-    public ResponseEntity<Page<ApplicationDTO>> listByActiveAndPubAndVersion(@ApiParam(value = "项目 ID", required = true)
-                                                                             @PathVariable(value = "project_id") Long projectId,
-                                                                             @ApiParam(value = "分页参数")
-                                                                             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest))
+    public ResponseEntity<Page<ApplicationDTO>> listByActiveAndPubAndVersion(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));
     }

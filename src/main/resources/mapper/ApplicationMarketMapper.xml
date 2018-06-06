@@ -301,5 +301,25 @@
                     AND ( is_publish != TRUE OR is_publish IS NULL )
                 </if>
             </if>
+
+        <if test='searchParam != null'>
+            <if test='searchParam.version != null and searchParam.version.size > 0'>
+                AND
+                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
+                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.creationDate != null and searchParam.creationDate.size > 0'>
+                AND
+                <foreach collection="searchParam.creationDate" item="creationDate" open="(" separator=" OR " close=")">
+                    dav.creation_date LIKE CONCAT(CONCAT('%', #{creationDate, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dav.creation_date LIKE CONCAT(CONCAT('%', #{creationDate, jdbcType=VARCHAR}),'%')
+            )
+        </if>
     </select>
 </mapper>

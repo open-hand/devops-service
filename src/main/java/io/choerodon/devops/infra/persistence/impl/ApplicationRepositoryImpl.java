@@ -136,9 +136,19 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive, PageRequest pageRequest) {
+    public Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive,
+                                                           PageRequest pageRequest, String params) {
+        Map<String, Object> searchParam = null;
+        String param = null;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
+            searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM));
+        }
+        Map<String, Object> finalSearchParam = searchParam;
+        String finalParam = param;
         return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> applicationMapper
-                .listByActiveAndPubAndVersion(projectId, isActive)), ApplicationE.class);
+                .listByActiveAndPubAndVersion(projectId, isActive, finalSearchParam, finalParam)), ApplicationE.class);
     }
 
     @Override

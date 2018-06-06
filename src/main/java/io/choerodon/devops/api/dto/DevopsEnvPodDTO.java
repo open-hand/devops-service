@@ -15,6 +15,7 @@ public class DevopsEnvPodDTO {
     private String appVersion;
     private String publishLevel;
     private String instanceCode;
+    private Long envId;
     private String envCode;
     private String envName;
     private Long objectVersionNumber;
@@ -129,5 +130,13 @@ public class DevopsEnvPodDTO {
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }
