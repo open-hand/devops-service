@@ -193,8 +193,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     applicationE.getApplicationTemplateE().getId());
             String applicationDir = APPLICATION + System.currentTimeMillis();
             //拉取模板
-            Git git = gitUtil.clone(applicationDir, gitlabUrl + applicationTemplateE.getRepoUrl());
-
+            Git git = gitUtil.clone(applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + applicationTemplateE.getRepoUrl() : gitlabUrl + applicationTemplateE.getRepoUrl());
             //渲染模板里面的参数
             try {
                 File file = new File(gitUtil.getWorkingDirectory(applicationDir));
@@ -217,18 +216,19 @@ public class ApplicationServiceImpl implements ApplicationService {
             } else {
                 accessToken = tokens.get(tokens.size() - 1);
             }
-            applicationE.initGitlabProjectEByUrl(gitlabUrl + "/"
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            applicationE.initGitlabProjectEByUrl(repoUrl
                     + organization.getCode() + "-" + projectE.getCode() + "/"
                     + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                     gitlabUserE.getUsername(), accessToken, APPLICATION);
+            gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
+                    AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
+            gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(),
+                    DEVELOP, AccessLevel.DEVELOPER.toString(), AccessLevel.DEVELOPER.toString(),
+                    gitlabProjectEventDTO.getUserId());
         }
-        gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
-                AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
-        gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(),
-                DEVELOP, AccessLevel.DEVELOPER.toString(), AccessLevel.DEVELOPER.toString(),
-                gitlabProjectEventDTO.getUserId());
         gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId());
         try {
             String token = GenerateUUID.generateUUID();
