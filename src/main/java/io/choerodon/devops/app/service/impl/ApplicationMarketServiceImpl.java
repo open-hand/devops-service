@@ -208,7 +208,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             readmeFile = FileUtil.queryFileFromFiles(new File(DESTPATH), "README.md");
         } catch (Exception e) {
             logger.info("file not found");
-            readme = "# 暂无";
+            readme = "# 暂无。";
         }
         if (readme.isEmpty()) {
             readme = readmeFile == null

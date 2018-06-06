@@ -186,12 +186,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ReplaceResult replaceResult = new ReplaceResult();
         String versionValue = applicationVersionRepository.queryValue(versionId);
         String deployValue = applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId);
-        if (deployValue != null) {
-            versionValue = FileUtil.replace(versionValue, deployValue).getYaml();
-        }
         replaceResult.setYaml(versionValue);
+        if (deployValue != null) {
+            replaceResult = FileUtil.replace(versionValue, deployValue);
+        }
         try {
-            replaceResult.setTotalLine(FileUtil.getFileTotalLine(versionValue));
+            replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         } catch (IOException e) {
             throw new CommonException(e.getMessage());
         }
@@ -200,10 +200,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     @Override
-    public String queryValue(Long instanceId) {
+    public ReplaceResult queryValue(Long instanceId) {
+        ReplaceResult replaceResult = new ReplaceResult();
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
-        return applicationInstanceRepository.queryValueByEnvIdAndAppId(
+        String yaml = applicationInstanceRepository.queryValueByEnvIdAndAppId(
                 applicationInstanceE.getDevopsEnvironmentE().getId(), applicationInstanceE.getApplicationE().getId());
+        replaceResult.setYaml(yaml);
+        try {
+            replaceResult.setTotalLine(FileUtil.getFileTotalLine(yaml) + 1);
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
+        }
+        return replaceResult;
     }
 
     @Override

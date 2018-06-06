@@ -109,5 +109,5 @@ public interface ApplicationInstanceService {
      * @param instanceId 实例id
      * @return string
      */
-    String queryValue(Long instanceId);
+    ReplaceResult queryValue(Long instanceId);
 }
