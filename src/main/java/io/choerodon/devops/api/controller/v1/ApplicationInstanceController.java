@@ -138,7 +138,7 @@ public class ApplicationInstanceController {
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "获取部署 Value")
     @GetMapping(value = "/{appInstanceId}/value")
-    public ResponseEntity<String> queryValue(
+    public ResponseEntity<ReplaceResult> queryValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)
