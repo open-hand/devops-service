@@ -132,19 +132,19 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     /**
      * The user action
      *
-     * @param resourceId 资源Id
+     * @param resourceId   资源Id
      * @param resourceType 资源type
-     * @param level     level
-     * @param userId    userId
+     * @param level        level
+     * @param userId       userId
      */
     public void operation(Long resourceId, String resourceType, AccessLevel level, Long userId) {
         UserAttrE userAttrE = userAttrRepository.queryById(userId);
-        GitlabGroupE gitlabGroupE ;
-        if(resourceType.equals(PROJECT)) {
+        GitlabGroupE gitlabGroupE;
+        if (resourceType.equals(PROJECT)) {
             gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
-        }else {
+        } else {
             Organization organization = iamRepository.queryOrganizationById(resourceId);
-             gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
         if (gitlabGroupE.getId() == null) {
             LOGGER.error("error.gitlab.groupId.select");
@@ -159,12 +159,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         switch (level) {
             case NONE:
                 if (grouoMemberE != null) {
-                    ResponseEntity removeMember = gitlabGroupMemberRepository.deleteMember(
+                    gitlabGroupMemberRepository.deleteMember(
                             gitlabGroupE.getId(),
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                    if (removeMember.getStatusCode() != HttpStatus.NO_CONTENT) {
-                        LOGGER.error("error.gitlab.member.remove");
-                    }
                 }
                 break;
             case DEVELOPER:
@@ -175,19 +172,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 requestMember.setAccessLevel(level.toValue());
                 requestMember.setExpiresAt("");
                 if (grouoMemberE == null) {
-                    int addMember = gitlabGroupMemberRepository.insertMember(
+                    gitlabGroupMemberRepository.insertMember(
                             gitlabGroupE.getId(),
                             requestMember);
-                    if (addMember != HttpStatus.CREATED.value()) {
-                        LOGGER.error("error.gitlab.member.insert");
-                    }
                 } else {
-                    ResponseEntity updateMember = gitlabGroupMemberRepository.updateMember(
+                    gitlabGroupMemberRepository.updateMember(
                             gitlabGroupE.getId(),
                             requestMember);
-                    if (updateMember.getStatusCode() != HttpStatus.OK) {
-                        LOGGER.error("error.gitlab.member.update");
-                    }
                 }
                 break;
             default:

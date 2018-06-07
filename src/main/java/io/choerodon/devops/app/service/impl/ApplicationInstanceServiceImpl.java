@@ -276,7 +276,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             return Collections.emptyList();
         }
 
-        String username = GitUserNameUtil.getUsername();
         List<PipelineResultV> pipelineResultVS = new ArrayList<>();
         String branch = "";
         long pipelineId = 0;
@@ -286,7 +285,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
             if (gitlabPipelineE != null) {
                 pipelineResultV.setId(gitlabPipelineE.getId().longValue());
-//                pipelineResultV.setCreatedAt(gitlabPipelineE.getCreatedAt());
                 pipelineResultV.setRef(gitlabPipelineE.getRef());
 
                 UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
