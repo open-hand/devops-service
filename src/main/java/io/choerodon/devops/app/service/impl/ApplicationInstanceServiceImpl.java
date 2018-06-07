@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,14 +16,18 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandValueFactory;
 import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
@@ -265,49 +266,49 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public List<VersionFeaturesDTO> queryVersionFeatures(Long appInstanceId) {
-//        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
-//        ApplicationE applicationE = applicationRepository.query(
-//                applicationInstanceE.getApplicationE().getId());
-//
-//        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-//        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
-//        if (gitlabPipelineEList == null) {
-//            return Collections.emptyList();
-//        }
-//
-//        String username = GitUserNameUtil.getUsername();
-//        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
-//        String branch = "";
-//        long pipelineId = 0;
-//        for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
-//            PipelineResultV pipelineResultV = new PipelineResultV();
-//            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
-//                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
-//            if (gitlabPipelineE != null) {
-//                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
+        ApplicationE applicationE = applicationRepository.query(
+                applicationInstanceE.getApplicationE().getId());
+
+        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
+        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
+        if (gitlabPipelineEList == null) {
+            return Collections.emptyList();
+        }
+
+        String username = GitUserNameUtil.getUsername();
+        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
+        String branch = "";
+        long pipelineId = 0;
+        for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
+            PipelineResultV pipelineResultV = new PipelineResultV();
+            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
+                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
+            if (gitlabPipelineE != null) {
+                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
 //                pipelineResultV.setCreatedAt(gitlabPipelineE.getCreatedAt());
-//                pipelineResultV.setRef(gitlabPipelineE.getRef());
-//
-//                UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
-//                if (userE != null) {
-//                    pipelineResultV.setImageUrl(userE.getImageUrl());
-//                }
-//            }
-//            pipelineResultVS.add(pipelineResultV);
-//        }
-//
-//        List<PipelineResultV> pipelineResultVList = new ArrayList<>();
-//        for (PipelineResultV pipelineResult : pipelineResultVS) {
-//            if (branch.equals(pipelineResult.getRef())
-//                    && pipelineId >= pipelineResult.getId()) {
-//                pipelineResultVList.add(pipelineResult);
-//            }
-//        }
-//
-//        Collections.sort(pipelineResultVList);
-//
-//        return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
-        return null;
+                pipelineResultV.setRef(gitlabPipelineE.getRef());
+
+                UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
+                if (userE != null) {
+                    pipelineResultV.setImageUrl(userE.getImageUrl());
+                }
+            }
+            pipelineResultVS.add(pipelineResultV);
+        }
+
+        List<PipelineResultV> pipelineResultVList = new ArrayList<>();
+        for (PipelineResultV pipelineResult : pipelineResultVS) {
+            if (branch.equals(pipelineResult.getRef())
+                    && pipelineId >= pipelineResult.getId()) {
+                pipelineResultVList.add(pipelineResult);
+            }
+        }
+
+        Collections.sort(pipelineResultVList);
+
+        return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
+
     }
 
     @Override

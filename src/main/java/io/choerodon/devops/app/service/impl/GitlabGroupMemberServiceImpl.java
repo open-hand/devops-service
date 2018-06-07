@@ -16,10 +16,8 @@ import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
@@ -32,21 +30,26 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
     private static final String PROJECT = "project";
-
+    private static final String TEMPLATE = "template";
     private DevopsProjectRepository devopsProjectRepository;
     private GitlabUserRepository gitlabUserRepository;
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     private UserAttrRepository userAttrRepository;
-
+    private IamRepository iamRepository;
+    private GitlabRepository gitlabRepository;
 
     public GitlabGroupMemberServiceImpl(DevopsProjectRepository devopsProjectRepository,
                                         GitlabUserRepository gitlabUserRepository,
                                         GitlabGroupMemberRepository gitlabGroupMemberRepository,
-                                        UserAttrRepository userAttrRepository) {
+                                        UserAttrRepository userAttrRepository,
+                                        IamRepository iamRepository,
+                                        GitlabRepository gitlabRepository) {
         this.devopsProjectRepository = devopsProjectRepository;
         this.gitlabUserRepository = gitlabUserRepository;
         this.gitlabGroupMemberRepository = gitlabGroupMemberRepository;
         this.userAttrRepository = userAttrRepository;
+        this.iamRepository = iamRepository;
+        this.gitlabRepository = gitlabRepository;
     }
 
     @Override
@@ -61,7 +64,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 }
                 AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
 
-                operation(gitlabGroupMemberDTO.getResourceId(), level,
+                operation(gitlabGroupMemberDTO.getResourceId(), gitlabGroupMemberDTO.getResourceType(), level,
                         gitlabGroupMemberDTO.getUserId());
             }
         }
@@ -129,16 +132,22 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     /**
      * The user action
      *
-     * @param projectId projectId
+     * @param resourceId 资源Id
+     * @param resourceType 资源type
      * @param level     level
      * @param userId    userId
      */
-    public void operation(Long projectId, AccessLevel level, Long userId) {
+    public void operation(Long resourceId, String resourceType, AccessLevel level, Long userId) {
         UserAttrE userAttrE = userAttrRepository.queryById(userId);
-
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
+        GitlabGroupE gitlabGroupE ;
+        if(resourceType.equals(PROJECT)) {
+            gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+        }else {
+            Organization organization = iamRepository.queryOrganizationById(resourceId);
+             gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        }
         if (gitlabGroupE.getId() == null) {
-            LOGGER.error("error.gitlab.groupId.select: " + projectId);
+            LOGGER.error("error.gitlab.groupId.select");
             return;
         }
 

@@ -42,7 +42,4 @@ public enum ResourceType {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 }

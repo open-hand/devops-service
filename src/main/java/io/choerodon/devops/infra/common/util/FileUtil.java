@@ -86,7 +86,7 @@ public class FileUtil {
     public static void replaceReturnFile(File file, Map<String, String> params) {
         File[] files = file.listFiles();
         for (File a : files) {
-            if (a.getName().equals(".git")) {
+            if (a.getName().equals(".git") && a.getName().endsWith(".xlsx")) {
                 continue;
             }
             File newFile = null;
@@ -328,11 +328,11 @@ public class FileUtil {
         }
     }
 
-    public static int getFileTotalLine(String  file) throws IOException {
+    public static int getFileTotalLine(String file) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(file.getBytes(Charset.forName("utf8"))), Charset.forName("utf8")));
         Integer totalLine = 0;
         String line;
-        while ( (line = br.readLine()) != null ) {
+        while ((line = br.readLine()) != null) {
             totalLine = totalLine + 1;
         }
         return totalLine;
