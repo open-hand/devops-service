@@ -55,48 +55,49 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
         for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
-            if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
-                List<Integer> accessLevelList = new ArrayList<>();
-                accessLevelList.add(0);
-                List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                if (userMemberRoleList == null || userMemberRoleList.size() == 0) {
-                    LOGGER.info("user member role is empty");
-                }
-                AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
-
-                operation(gitlabGroupMemberDTO.getResourceId(), gitlabGroupMemberDTO.getResourceType(), level,
-                        gitlabGroupMemberDTO.getUserId());
+            List<Integer> accessLevelList = new ArrayList<>();
+            accessLevelList.add(0);
+            List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
+            if (userMemberRoleList.isEmpty()) {
+                LOGGER.info("user member role is empty");
             }
+            AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
+
+            operation(gitlabGroupMemberDTO.getResourceId(), gitlabGroupMemberDTO.getResourceType(), level,
+                    gitlabGroupMemberDTO.getUserId());
         }
     }
 
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
         for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
+            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
+            if (gitlabUserE == null) {
+                LOGGER.error("error.gitlab.username.select");
+                return;
+            }
+            GitlabGroupE gitlabGroupE;
             if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
-                GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
-                if (gitlabUserE == null) {
-                    LOGGER.error("error.gitlab.username.select: " + gitlabGroupMemberDTO.getUsername());
-                    return;
-                }
+                gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
+            } else {
+                Organization organization = iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
+                gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(gitlabUserE.getId()));
+            }
+            if (gitlabGroupE.getId() == null) {
+                LOGGER.error("error.gitlab.groupId.select");
+                return;
+            }
 
-                GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
-                if (gitlabGroupE.getId() == null) {
-                    LOGGER.error("error.gitlab.groupId.select: " + gitlabGroupMemberDTO.getResourceId());
-                    return;
-                }
+            GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                    gitlabGroupE.getId(),
+                    gitlabUserE.getId());
 
-                GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+            if (grouoMemberE != null) {
+                ResponseEntity removeMember = gitlabGroupMemberRepository.deleteMember(
                         gitlabGroupE.getId(),
                         gitlabUserE.getId());
-
-                if (grouoMemberE != null) {
-                    ResponseEntity removeMember = gitlabGroupMemberRepository.deleteMember(
-                            gitlabGroupE.getId(),
-                            gitlabUserE.getId());
-                    if (removeMember.getStatusCode() != HttpStatus.NO_CONTENT) {
-                        LOGGER.error("error.gitlab.member.remove");
-                    }
+                if (removeMember.getStatusCode() != HttpStatus.NO_CONTENT) {
+                    LOGGER.error("error.gitlab.member.remove");
                 }
             }
         }
