@@ -320,6 +320,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceUpgrade(Long instanceId, String repoURL, String chartName, String chartVersion, String values) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         if (isEnvConnected(instanceE.getDevopsEnvironmentE().getId())) {
+
             String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
             String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -334,7 +335,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             upgradeMap.put("ChartVersion", chartVersion);
             upgradeMap.put("Values", values);
             String payload = gson.toJson(upgradeMap);
-            sentInstance(payload, releaseName, HelmType.HelmReleasePreUpgrade.toValue(), namespace, devopsEnvCommandE.getId());
+            Long envId = instanceE.getDevopsEnvironmentE().getId();
+            sentInstance(payload, releaseName, HelmType.HelmReleasePreUpgrade.toValue(),
+                    namespace, devopsEnvCommandE.getId(), envId);
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }
@@ -357,7 +360,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             Map<String, String> stopMap = new HashMap<>();
             stopMap.put(RELEASE_NAME, releaseName);
             String payload = gson.toJson(stopMap);
-            sentInstance(payload, releaseName, HelmType.HelmReleaseStop.toValue(), namespace, devopsEnvCommandE.getId());
+            Long envId = instanceE.getDevopsEnvironmentE().getId();
+            sentInstance(payload, releaseName, HelmType.HelmReleaseStop.toValue(),
+                    namespace, devopsEnvCommandE.getId(), envId);
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }
@@ -380,7 +385,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             Map<String, String> stopMap = new HashMap<>();
             stopMap.put(RELEASE_NAME, releaseName);
             String payload = gson.toJson(stopMap);
-            sentInstance(payload, releaseName, HelmType.HelmReleaseStart.toValue(), namespace, devopsEnvCommandE.getId());
+            Long envId = instanceE.getDevopsEnvironmentE().getId();
+            sentInstance(payload, releaseName, HelmType.HelmReleaseStart.toValue(),
+                    namespace, devopsEnvCommandE.getId(), envId);
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }
@@ -400,7 +407,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             Map<String, String> deleteMap = new HashMap<>();
             deleteMap.put(RELEASE_NAME, releaseName);
             String payload = gson.toJson(deleteMap);
-            sentInstance(payload, releaseName, HelmType.HelmReleaseDelete.toValue(), namespace, devopsEnvCommandE.getId());
+            Long envId = instanceE.getDevopsEnvironmentE().getId();
+            sentInstance(payload, releaseName, HelmType.HelmReleaseDelete.toValue(),
+                    namespace, devopsEnvCommandE.getId(), envId);
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }
@@ -415,7 +424,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         rollbackMap.put(RELEASE_NAME, releaseName);
         rollbackMap.put("Version", version);
         String payload = gson.toJson(rollbackMap);
-        sentInstance(payload, releaseName, HelmType.HelmReleaseRollback.toValue(), namespace, null);
+        Long envId = instanceE.getDevopsEnvironmentE().getId();
+        sentInstance(payload, releaseName, HelmType.HelmReleaseRollback.toValue(), namespace, null, envId);
     }
 
 
@@ -431,9 +441,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Async
-    void sentInstance(String payload, String name, String type, String namespace, Long commandId) {
+    void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
         Msg msg = new Msg();
-        msg.setKey("env:" + namespace + ".release:" + name);
+        msg.setKey("env:" + namespace +".envId:" + envId + ".release:" + name);
         msg.setType(type);
         msg.setPayload(payload);
         msg.setCommandId(commandId);
