@@ -23,6 +23,7 @@ public interface ApplicationRepository {
     ApplicationE query(Long applicationId);
 
     Page<ApplicationE> listByOptions(Long projectId,
+                                     Boolean isActive,
                                      PageRequest pageRequest,
                                      String params);
 
@@ -38,4 +39,6 @@ public interface ApplicationRepository {
                                                     PageRequest pageRequest, String params);
 
     ApplicationE queryByToken(String token);
+
+    void checkAppCanDisable(Long applicationId);
 }

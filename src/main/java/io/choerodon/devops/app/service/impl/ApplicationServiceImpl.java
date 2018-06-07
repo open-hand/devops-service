@@ -127,6 +127,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Boolean active(Long applicationId, Boolean active) {
+        if (!active) {
+            applicationRepository.checkAppCanDisable(applicationId);
+        }
         ApplicationE applicationE = applicationRepository.query(applicationId);
         applicationE.initActive(active);
         if (applicationRepository.update(applicationE) != 1) {
@@ -136,9 +139,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationRepDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+    public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES =
-                applicationRepository.listByOptions(projectId, pageRequest, params);
+                applicationRepository.listByOptions(projectId, isActive, pageRequest, params);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
