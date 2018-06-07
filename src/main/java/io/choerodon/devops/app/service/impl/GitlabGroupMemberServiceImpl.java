@@ -58,7 +58,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             List<Integer> accessLevelList = new ArrayList<>();
             accessLevelList.add(0);
             List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-            if (userMemberRoleList == null || userMemberRoleList.size() == 0) {
+            if (userMemberRoleList.isEmpty()) {
                 LOGGER.info("user member role is empty");
             }
             AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
@@ -73,7 +73,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
             if (gitlabUserE == null) {
-                LOGGER.error("error.gitlab.username.select: " + gitlabGroupMemberDTO.getUsername());
+                LOGGER.error("error.gitlab.username.select");
                 return;
             }
             GitlabGroupE gitlabGroupE;
@@ -84,7 +84,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(gitlabUserE.getId()));
             }
             if (gitlabGroupE.getId() == null) {
-                LOGGER.error("error.gitlab.groupId.select: " + gitlabGroupMemberDTO.getResourceId());
+                LOGGER.error("error.gitlab.groupId.select");
                 return;
             }
 
