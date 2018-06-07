@@ -81,9 +81,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationRepository.checkCode(applicationE);
         applicationE.initActive(true);
         applicationE.initSynchro(false);
-        applicationE.initGitlabProjectEByUrl(gitlabUrl + "/"
-                + organization.getCode() + "-" + projectE.getCode() + "/"
-                + applicationE.getCode() + ".git");
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setType(APPLICATION);
@@ -110,7 +107,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = applicationRepository.query(applicationId);
-        applicationE.initGitlabProjectEByUrl(gitlabUrl + "/"
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        applicationE.initGitlabProjectEByUrl(gitlabUrl + urlSlash
                 + organization.getCode() + "-" + projectE.getCode() + "/"
                 + applicationE.getCode() + ".git");
         return ConvertHelper.convert(applicationE, ApplicationRepDTO.class);
@@ -193,7 +191,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     applicationE.getApplicationTemplateE().getId());
             String applicationDir = APPLICATION + System.currentTimeMillis();
             //拉取模板
-            Git git = gitUtil.clone(applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + applicationTemplateE.getRepoUrl() : gitlabUrl + applicationTemplateE.getRepoUrl());
+            String repoUrl = applicationTemplateE.getRepoUrl();
+            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
+            Git git = gitUtil.clone(applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
             //渲染模板里面的参数
             try {
                 File file = new File(gitUtil.getWorkingDirectory(applicationDir));
@@ -216,7 +216,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             } else {
                 accessToken = tokens.get(tokens.size() - 1);
             }
-            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             applicationE.initGitlabProjectEByUrl(repoUrl
                     + organization.getCode() + "-" + projectE.getCode() + "/"
                     + applicationE.getCode() + ".git");

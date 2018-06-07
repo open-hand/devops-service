@@ -28,6 +28,7 @@ public class IDevopsIngressServiceImpl implements IDevopsIngressService {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".envId:" + envId + ".Ingress:" + name);
         msg.setType(HelmType.NetworkIngress.toValue());
+        msg.setCommandId(commandId);
         msg.setPayload(ingressYaml);
         logger.info("send update ingress message: " + msg);
         commandSender.sendMsg(msg);
@@ -40,6 +41,7 @@ public class IDevopsIngressServiceImpl implements IDevopsIngressService {
         msg.setKey("env:" + namespace + ".envId:" + envId + ".Ingress:" + name);
         msg.setType(HelmType.NetworkIngressDelete.toValue());
         msg.setPayload(name);
+        msg.setCommandId(commandId);
         logger.info("send delete ingress message: " + msg);
         commandSender.sendMsg(msg);
     }

@@ -95,9 +95,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     /**
      * pod 更新
      *
-     * @param key 消息key
+     * @param key   消息key
      * @param envId 环境Id
-     * @param msg 消息msg
+     * @param msg   消息msg
      */
     public void handlerUpdateMessage(String key, Long envId, String msg) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -112,7 +112,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     null,
                     null,
                     KeyParseTool.getReleaseName(key));
-            msg1.setKey("env:" + KeyParseTool.getNamespace(key) + ".envId:"+ envId + ".release:" + KeyParseTool.getReleaseName(key));
+            msg1.setKey("env:" + KeyParseTool.getNamespace(key) + ".envId:" + envId + ".release:" + KeyParseTool.getReleaseName(key));
             msg1.setType(HelmType.HelmReleaseGetContent.toValue());
             try {
                 msg1.setPayload(mapper.writeValueAsString(payload));
@@ -778,18 +778,20 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
-        if (devopsEnvCommandE.getObject().equals(ObjectType.INSTANCE.getObjectType())) {
-            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsEnvCommandE.getObjectId());
-            applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
-            applicationInstanceRepository.update(applicationInstanceE);
-        } else if (devopsEnvCommandE.getObject().equals(ObjectType.SERVICE.getObjectType())) {
-            DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsEnvCommandE.getObjectId());
-            devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
-            devopsServiceRepository.update(devopsServiceE);
-        } else if (devopsEnvCommandE.getObject().equals(ObjectType.INGRESS.getObjectType())) {
-            DevopsIngressDO ingress = devopsIngressRepository.getIngress(devopsEnvCommandE.getObjectId());
-            ingress.setStatus(IngressStatus.FAILED.getStatus());
-            devopsIngressRepository.updateIngress(ingress);
+        if (devopsEnvCommandE.getCommandType().equals(CommandType.CREATE.getCommandType())) {
+            if (devopsEnvCommandE.getObject().equals(ObjectType.INSTANCE.getObjectType())) {
+                ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsEnvCommandE.getObjectId());
+                applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
+                applicationInstanceRepository.update(applicationInstanceE);
+            } else if (devopsEnvCommandE.getObject().equals(ObjectType.SERVICE.getObjectType())) {
+                DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsEnvCommandE.getObjectId());
+                devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
+                devopsServiceRepository.update(devopsServiceE);
+            } else if (devopsEnvCommandE.getObject().equals(ObjectType.INGRESS.getObjectType())) {
+                DevopsIngressDO ingress = devopsIngressRepository.getIngress(devopsEnvCommandE.getObjectId());
+                ingress.setStatus(IngressStatus.FAILED.getStatus());
+                devopsIngressRepository.updateIngress(ingress);
+            }
         }
     }
 

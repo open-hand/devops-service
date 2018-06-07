@@ -106,7 +106,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             idevopsIngressService.createIngress(json.serialize(ingress),
                     name,
                     devopsEnvironmentE.getCode(),
-                    devopsEnvCommandE.getId(),
+                    devopsIngressDTO.getEnvId(),
                     devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
             throw new CommonException(ENV_DISCONNECTED);
@@ -152,7 +152,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
                 if (!ingressDTO.getName().equals(name)) {
                     idevopsIngressService.deleteIngress(
-                            ingressDTO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId(), devopsEnvCommandE.getId());
+                            ingressDTO.getName(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvCommandE.getId());
                 }
                 devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
                 devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
@@ -196,7 +196,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
             DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
             idevopsIngressService.deleteIngress(
-                    ingressDO.getName(), devopsEnvironmentE.getCode(), devopsEnvCommandE.getId(), devopsEnvCommandE.getId());
+                    ingressDO.getName(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvCommandE.getId());
         } else {
             throw new CommonException(ENV_DISCONNECTED);
         }
