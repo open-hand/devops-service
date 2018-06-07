@@ -1,5 +1,6 @@
 package io.choerodon.devops.domain.service.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagNodeDO;
 
 /**
@@ -47,14 +49,12 @@ public class IGitFlowServiceImpl implements IGitFlowService {
             "dev_can_merge_and_master_merged", "dev_conflict_and_master_merged",
             "dev_no_commit_and_master_merged", "both_merged"
     };
-    private GitFlowRepository gitFlowRepository;
-    private UserAttrRepository userAttrRepository;
 
     @Autowired
-    public IGitFlowServiceImpl(GitFlowRepository gitFlowRepository, UserAttrRepository userAttrRepository) {
-        this.gitFlowRepository = gitFlowRepository;
-        this.userAttrRepository = userAttrRepository;
-    }
+    private GitFlowRepository gitFlowRepository;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -126,17 +126,26 @@ public class IGitFlowServiceImpl implements IGitFlowService {
     }
 
     @Override
-    public void createTag(Long serviceId, Integer projectId, String branchName, Integer userId) {
+    public String getTag(Long serviceId, String branchName, Integer userId) {
         String tag = branchName.split("-")[1];
-        if (!tag.matches("\\d+(\\.\\d+){2}")) {
+        List<TagDO> tagList = gitFlowRepository.getTagList(serviceId, userId);
+        String branchTag = tag;
+        if (!tag.matches("\\d+(\\.\\d+){2}")
+                || tagList.parallelStream().anyMatch(t -> branchTag.equals(t.getName()))) {
             if (branchName.startsWith(RELEASE_PREFIX)) {
                 tag = getReleaseNumber(serviceId, userId);
             } else if (branchName.startsWith(HOTFIX_PREFIX)) {
-                tag = getHotfixNumber(serviceId , userId);
+                tag = getHotfixNumber(serviceId, userId);
             } else {
                 throw new CommonException("create.tag.wrong.branch");
             }
         }
+        return tag;
+    }
+
+    @Override
+    public void createTag(Long serviceId, Integer projectId, String branchName, Integer userId) {
+        String tag = getTag(serviceId, branchName, userId);
         gitFlowRepository.createTag(projectId, tag, userId);
     }
 
@@ -219,7 +228,8 @@ public class IGitFlowServiceImpl implements IGitFlowService {
         }
     }
 
-    private void deleteBranchRecord(Integer projectId, String branchName, String targetBranch, Integer mergeStatus, Integer userId) {
+    private void deleteBranchRecord(Integer projectId, String branchName, String targetBranch,
+                                    Integer mergeStatus, Integer userId) {
         DevopsMergeRequestDO mergeRequestDO = gitFlowRepository
                 .getDevOpsMergeRequest(projectId, branchName, targetBranch);
         Long mergeRequestId = mergeRequestDO.getMergeRequestId();

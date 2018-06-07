@@ -142,6 +142,14 @@ public class GitFlowController {
                 .orElseThrow(() -> new CommonException("error.tag.get"));
     }
 
+    /**
+     * 获取新发布版本号
+     *
+     * @param projectId     项目ID
+     * @param applicationId 应用ID
+     * @param branch        分支名称
+     * @return 下一发布版本号
+     */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "获取新发布版本号")
     @GetMapping("/tags/release")
@@ -149,10 +157,22 @@ public class GitFlowController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId) {
-        return new ResponseEntity<>(gitFlowService.getReleaseNumber(applicationId), HttpStatus.OK);
+            @PathVariable Long applicationId,
+            @ApiParam(value = "分支名称", required = false)
+            @RequestParam(value = "branch", required = false) String branch) {
+        return Optional.ofNullable(gitFlowService.getReleaseNumber(applicationId, branch))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.release.tag.get"));
     }
 
+    /**
+     * 获取热修复版本号
+     *
+     * @param projectId     项目ID
+     * @param applicationId 应用ID
+     * @param branch        分支名称
+     * @return 下一热修复版本号
+     */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "获取热修复版本号")
     @GetMapping("/tags/hotfix")
@@ -160,7 +180,11 @@ public class GitFlowController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId) {
-        return new ResponseEntity<>(gitFlowService.getHotfixNumber(applicationId), HttpStatus.OK);
+            @PathVariable Long applicationId,
+            @ApiParam(value = "分支名称", required = false)
+            @RequestParam(value = "branch", required = false) String branch) {
+        return Optional.ofNullable(gitFlowService.getHotfixNumber(applicationId, branch))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.hotfix.tag.get"));
     }
 }

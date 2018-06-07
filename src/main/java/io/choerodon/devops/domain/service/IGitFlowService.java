@@ -21,6 +21,8 @@ public interface IGitFlowService {
 
     void finishBranch(Integer projectId, String branchName, Boolean isTargetDev, Integer mergeStatus, Integer userId);
 
+    String getTag(Long serviceId, String branchName, Integer userId);
+
     void createTag(Long serviceId, Integer projectId, String branchName, Integer userId);
 
     void deleteBranchSafely(

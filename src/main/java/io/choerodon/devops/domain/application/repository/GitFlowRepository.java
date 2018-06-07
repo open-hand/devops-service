@@ -4,10 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagNodeDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagsDO;
+import io.choerodon.devops.infra.dataobject.gitlab.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -46,4 +43,6 @@ public interface GitFlowRepository {
     void createTag(Integer projectId, String tag, Integer userId);
 
     TagsDO getTags(Long serviceId, String path, Integer page, Integer size, Integer userId);
+
+    List<TagDO> getTagList(Long appId, Integer userId);
 }

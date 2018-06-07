@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -31,20 +32,15 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     private static final Logger logger = LoggerFactory.getLogger(GitFlowRepository.class);
 
     private static final String BRANCH_MASTER = "master";
+
+
+    @Autowired
     private ApplicationMapper applicationMapper;
+    @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper;
+    @Autowired
     private GitlabServiceClient gitlabServiceClient;
 
-    /**
-     * 构造方法
-     */
-    public GitFlowRepositoryImpl(ApplicationMapper applicationMapper,
-                                 DevopsMergeRequestMapper devopsMergeRequestMapper,
-                                 GitlabServiceClient gitlabServiceClient) {
-        this.applicationMapper = applicationMapper;
-        this.devopsMergeRequestMapper = devopsMergeRequestMapper;
-        this.gitlabServiceClient = gitlabServiceClient;
-    }
 
     private String mergeRequestDescription(String sourceBranch, String targetBranch) {
         return "Created" + " right after creating branch `" + sourceBranch + "`.  \n"
@@ -179,16 +175,10 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
 
     @Override
     public Optional<TagNodeDO> getMaxTagNode(Long applicationId, Integer userId) {
-        Integer projectId = getGitLabId(applicationId);
-        ResponseEntity<List<TagDO>> tagsResponseEntity = gitlabServiceClient.getTags(projectId, userId);
-        if (tagsResponseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new CommonException("error.tags.get");
-        }
-        return tagsResponseEntity.getBody().stream()
+        return getTagList(applicationId, userId).stream()
                 .map(t -> TagNodeDO.tagNameToTagNode(t.getName()))
                 .filter(Objects::nonNull)
                 .max(TagNodeDO::compareTo);
-
     }
 
     @Override
@@ -197,18 +187,28 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public TagsDO getTags(Long serviceId, String path, Integer page, Integer size, Integer userId) {
-        Integer projectId = getGitLabId(serviceId);
-        ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+    public TagsDO getTags(Long appId, String path, Integer page, Integer size, Integer userId) {
+        Integer projectId = getGitLabId(appId);
         ResponseEntity<List<TagDO>> tags = gitlabServiceClient.getPageTags(projectId, page + 1, size, userId);
-        if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new CommonException("error.tags.get");
-        }
         List<TagDO> tagList = tags.getBody();
         tagList.parallelStream().forEach(t -> t.getCommit().setUrl(
                 String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())));
-        List<TagDO> tagTotalList = tagResponseEntity.getBody();
+        List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
         int totalPageSizes = tagTotalList.size() / size + (tagTotalList.size() % size == 0 ? 0 : 1);
         return new TagsDO(tagList, totalPageSizes, tagTotalList.size());
+    }
+
+    @Override
+    public List<TagDO> getTagList(Long appId, Integer userId) {
+        Integer projectId = getGitLabId(appId);
+        return getGitLabTags(projectId, userId);
+    }
+
+    private List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
+        ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+        if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new CommonException("error.tags.get");
+        }
+        return tagResponseEntity.getBody();
     }
 }
