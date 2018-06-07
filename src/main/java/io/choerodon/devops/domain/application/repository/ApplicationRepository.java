@@ -39,4 +39,6 @@ public interface ApplicationRepository {
                                                     PageRequest pageRequest, String params);
 
     ApplicationE queryByToken(String token);
+
+    void checkAppCanDisable(Long applicationId);
 }

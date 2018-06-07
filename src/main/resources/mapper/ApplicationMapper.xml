@@ -133,4 +133,15 @@
         WHERE
         da.token = #{token}
     </select>
+
+    <select id="checkAppCanDisable" resultType="java.lang.Integer">
+        SELECT
+            count( 1 )
+        FROM
+            devops_application da
+        WHERE
+            NOT EXISTS ( SELECT 1 FROM devops_app_market dam WHERE dam.app_id = da.id )
+            AND NOT EXISTS ( SELECT 1 FROM devops_app_instance dai JOIN devops_app_version dav ON dav.id = dai.app_version_id WHERE dav.app_id = da.id )
+            AND da.id = #{applicationId};
+    </select>
 </mapper>

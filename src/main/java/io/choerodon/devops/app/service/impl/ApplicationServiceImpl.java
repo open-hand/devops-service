@@ -127,6 +127,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Boolean active(Long applicationId, Boolean active) {
+        if (!active) {
+            applicationRepository.checkAppCanDisable(applicationId);
+        }
         ApplicationE applicationE = applicationRepository.query(applicationId);
         applicationE.initActive(active);
         if (applicationRepository.update(applicationE) != 1) {

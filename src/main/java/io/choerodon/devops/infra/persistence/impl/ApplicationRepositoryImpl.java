@@ -156,4 +156,11 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         ApplicationDO applicationDO = applicationMapper.queryByToken(token);
         return ConvertHelper.convert(applicationDO, ApplicationE.class);
     }
+
+    @Override
+    public void checkAppCanDisable(Long applicationId) {
+        if (applicationMapper.checkAppCanDisable(applicationId) == 0) {
+            throw new CommonException("error.app.publishedOrDeployed");
+        }
+    }
 }

@@ -30,8 +30,8 @@ public class ApplicationController {
 
     private ApplicationService applicationService;
 
-    public ApplicationController(ApplicationService applcationService) {
-        this.applicationService = applcationService;
+    public ApplicationController(ApplicationService applicationService) {
+        this.applicationService = applicationService;
     }
 
     /**
@@ -122,6 +122,7 @@ public class ApplicationController {
      * 项目下分页查询应用
      *
      * @param projectId   项目id
+     * @param isActive    项目是否启用
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
@@ -133,7 +134,7 @@ public class ApplicationController {
     public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "项目启用", required = false)
+            @ApiParam(value = "项目是否启用", required = false)
             @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
