@@ -14,4 +14,5 @@ helm install --repo={REPOURL} \
     --set config.connect={SERVICEURL} \
     --set config.token={TOKEN} \
     --set config.envId={ENVID} \
+    --set rbac.create=true \
     choerodon-agent
