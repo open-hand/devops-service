@@ -15,6 +15,14 @@
         da.uuid
         FROM devops_application da
         where da.project_id = #{projectId}
+        <if test="isActive != null">
+            <if test="isActive">
+                AND da.is_active = TRUE
+            </if>
+            <if test="!isActive">
+                AND da.is_active = FALSE
+            </if>
+        </if>
         <include refid="sqlparam"/>
     </select>
 

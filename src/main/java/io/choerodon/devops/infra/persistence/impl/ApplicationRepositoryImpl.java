@@ -74,24 +74,24 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+    public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, PageRequest pageRequest, String params) {
         Page<ApplicationDO> applicationES;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
             if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
-                                projectId, null,
+                                projectId, isActive, null,
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             } else {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
-                                projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                projectId, isActive, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMapper.list(projectId, null, null));
+                    pageRequest, () -> applicationMapper.list(projectId, isActive, null, null));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }

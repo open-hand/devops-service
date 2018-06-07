@@ -133,12 +133,14 @@ public class ApplicationController {
     public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "项目启用", required = false)
+            @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(applicationService.listByOptions(projectId, pageRequest, params))
+        return Optional.ofNullable(applicationService.listByOptions(projectId, isActive, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
@@ -197,8 +199,9 @@ public class ApplicationController {
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
-    public ResponseEntity<List<ApplicationRepDTO>> listByActive(@ApiParam(value = "项目 ID", required = true)
-                                                                @PathVariable(value = "project_id") Long projectId) {
+    public ResponseEntity<List<ApplicationRepDTO>> listByActive(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listByActive(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));

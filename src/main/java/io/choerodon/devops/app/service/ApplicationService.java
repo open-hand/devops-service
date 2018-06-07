@@ -53,11 +53,13 @@ public interface ApplicationService {
      * 组织下分页查询应用
      *
      * @param projectId   项目id
+     * @param isActive    是否启用
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
      */
     Page<ApplicationRepDTO> listByOptions(Long projectId,
+                                          Boolean isActive,
                                           PageRequest pageRequest,
                                           String params);
 
