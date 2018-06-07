@@ -55,7 +55,7 @@ public class TagNodeDO implements Comparable<TagNodeDO> {
         if (result == 0) {
             result = Integer.compare(this.ten, compare.ten);
             if (result == 0) {
-                return Integer.compare(this.unit, this.unit);
+                return Integer.compare(this.unit, compare.unit);
             }
         }
         return result;
