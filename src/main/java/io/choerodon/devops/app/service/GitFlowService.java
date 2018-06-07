@@ -49,17 +49,19 @@ public interface GitFlowService {
      * 获取release版本
      *
      * @param applicationId 服务ID
+     * @param branch        分支名
      * @return 发布版本号
      */
-    String getReleaseNumber(Long applicationId);
+    String getReleaseNumber(Long applicationId, String branch);
 
     /**
      * 获取hotfix版本
      *
      * @param applicationId 服务ID
+     * @param branch        分支名
      * @return 发布版本号
      */
-    String getHotfixNumber(Long applicationId);
+    String getHotfixNumber(Long applicationId, String branch);
 
     /**
      * 开始 GitFlow

@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -39,30 +40,24 @@ import io.choerodon.event.producer.execute.EventProducerTemplate;
 public class GitFlowServiceImpl implements GitFlowService {
     private static final String FEATURE_PREFIX = "feature-";
     private static final String HOTFIX_PREFIX = "hotfix-";
+    private static final String RELEAS_PREFIX = "release-";
     private static final String DEVOPS_SERVICE = "devops-service";
-    private final EventProducerTemplate eventProducerTemplate;
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+
+    @Autowired
+    private EventProducerTemplate eventProducerTemplate;
+    @Autowired
     private GitFlowRepository gitFlowRepository;
+    @Autowired
     private IGitFlowService igitflowservice;
+    @Autowired
     private IamRepository iamRepository;
+    @Autowired
     private ApplicationRepository applicationRepository;
+    @Autowired
     private UserAttrRepository userAttrRepository;
-
-
-    public GitFlowServiceImpl(GitFlowRepository gitFlowRepository,
-                              IGitFlowService igitflowservice,
-                              EventProducerTemplate eventProducerTemplate,
-                              IamRepository iamRepository,
-                              ApplicationRepository applicationRepository,
-                              UserAttrRepository userAttrRepository) {
-        this.gitFlowRepository = gitFlowRepository;
-        this.igitflowservice = igitflowservice;
-        this.eventProducerTemplate = eventProducerTemplate;
-        this.iamRepository = iamRepository;
-        this.applicationRepository = applicationRepository;
-        this.userAttrRepository = userAttrRepository;
-    }
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -108,13 +103,25 @@ public class GitFlowServiceImpl implements GitFlowService {
     }
 
     @Override
-    public String getReleaseNumber(Long applicationId) {
-        return igitflowservice.getReleaseNumber(applicationId, getGitlabUserId());
+    public String getReleaseNumber(Long applicationId, String branch) {
+        Boolean branchPresent = branch != null;
+        if (branchPresent && !branch.startsWith(RELEAS_PREFIX)) {
+            throw new CommonException("error.release.branch.notMatch");
+        }
+        return !branchPresent
+                ? igitflowservice.getReleaseNumber(applicationId, getGitlabUserId())
+                : getNextTag(applicationId, branch, getGitlabUserId());
     }
 
     @Override
-    public String getHotfixNumber(Long applicationId) {
-        return igitflowservice.getHotfixNumber(applicationId, getGitlabUserId());
+    public String getHotfixNumber(Long applicationId, String branch) {
+        Boolean branchPresent = branch != null;
+        if (branchPresent && !branch.startsWith(HOTFIX_PREFIX)) {
+            throw new CommonException("error.hotfix.branch.notMatch");
+        }
+        return !branchPresent
+                ? igitflowservice.getHotfixNumber(applicationId, getGitlabUserId())
+                : getNextTag(applicationId, branch, getGitlabUserId());
     }
 
     @Override
@@ -211,5 +218,9 @@ public class GitFlowServiceImpl implements GitFlowService {
         if (exception != null) {
             throw new CommonException(exception.getMessage());
         }
+    }
+
+    private String getNextTag(Long applicationId, String branch, Integer userId) {
+        return igitflowservice.getTag(applicationId, branch, userId);
     }
 }
