@@ -60,4 +60,15 @@ public class TagNodeDO implements Comparable<TagNodeDO> {
         }
         return result;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return true;
+    }
+
+
+    @Override
+    public int hashCode(){
+        return 0;
+    }
 }

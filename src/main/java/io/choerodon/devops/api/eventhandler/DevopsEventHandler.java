@@ -26,6 +26,7 @@ public class DevopsEventHandler {
     private static final String DEVOPS_SERVICE = "devops-service";
     private static final String IAM_SERVICE = "iam-service";
     private static final String TEMPLATE = "template";
+    private static final String ORG_SERVICE = "organization-service";
     private static final String APPLICATION = "application";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEventHandler.class);
@@ -46,11 +47,11 @@ public class DevopsEventHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private GitFlowService gitFlowService;
+    @Autowired
+    private OrganizationService organizationService;
 
     private void loggerInfo(Object o) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.info("data: {}", o);
-        }
+        LOGGER.info("data: {}", o);
     }
 
     /**
@@ -63,6 +64,15 @@ public class DevopsEventHandler {
         projectService.createProject(projectEvent);
     }
 
+    /**
+     * 创建组织事件
+     */
+    @EventListener(topic = ORG_SERVICE, businessType = "createOrganizationToDevops")
+    public void handleOrganizationCreateEvent(EventPayload<OrganizationEventPayload> payload) {
+        OrganizationEventPayload organizationEventPayload = payload.getData();
+        loggerInfo(organizationEventPayload);
+        organizationService.create(organizationEventPayload);
+    }
     /**
      * 创建应用事件
      */
