@@ -13,6 +13,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     List<ApplicationDO> list(@Param("projectId") Long projectId,
+                             @Param("isActive") Boolean isActive,
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("param") String param);
 
@@ -20,7 +21,17 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
                                     @Param("envId") Long envId,
                                     @Param("status") String status);
 
-    List<ApplicationDO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId, @Param("active") Boolean active);
+    List<ApplicationDO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId,
+                                                     @Param("active") Boolean active,
+                                                     @Param("searchParam") Map<String, Object> searchParam,
+                                                     @Param("param") String param);
 
     ApplicationDO queryByToken(@Param("token") String token);
+
+    List<ApplicationDO> listActive(@Param("projectId") Long projectId);
+
+    List<ApplicationDO> listAll(@Param("projectId") Long projectId,
+                                @Param("projectIds") List<Long> projectIds);
+
+    Integer checkAppCanDisable(@Param("applicationId") Long applicationId);
 }

@@ -26,6 +26,19 @@ public class GitUserNameUtil {
     }
 
     /**
+     * 获取登录用户Id
+     *
+     * @return userId
+     */
+    public static Integer getUserId() {
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        Long userId = details.getUserId();
+        LOGGER.info(String.format("=====%s", userId));
+        return TypeUtil.objToInteger(userId);
+    }
+
+
+    /**
      * 获取登录用户名
      *
      * @return username

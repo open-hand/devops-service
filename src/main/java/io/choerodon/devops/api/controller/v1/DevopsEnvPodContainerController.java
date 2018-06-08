@@ -27,16 +27,17 @@ import io.choerodon.swagger.annotation.Permission;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/app_pod/{podId}/containers")
+@RequestMapping(value = "/v1/projects/{project_id}/app_pod/{podId}/containers")
 public class DevopsEnvPodContainerController {
     @Autowired
     private DevopsEnvPodContainerService containerService;
 
     /**
      * 获取日志信息
-     * @param projectId 项目ID
-     * @param podId pod ID
-     * @param  containerId 容器ID
+     *
+     * @param projectId   项目ID
+     * @param podId       pod ID
+     * @param containerId 容器ID
      * @return DevopsEnvPodContainerLogDTO
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -44,7 +45,7 @@ public class DevopsEnvPodContainerController {
     @GetMapping(value = "/{containerId}/logs")
     public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLog(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
             @PathVariable Long podId,
             @ApiParam(value = "容器ID", required = true)
@@ -56,9 +57,10 @@ public class DevopsEnvPodContainerController {
 
     /**
      * 分页查询容器
-     * @param projectId 项目ID
-     * @param podId pod ID
-     * @param  pageRequest 分页参数
+     *
+     * @param projectId   项目ID
+     * @param podId       pod ID
+     * @param pageRequest 分页参数
      * @param searchParam 查询参数
      * @return Page
      */
@@ -68,7 +70,7 @@ public class DevopsEnvPodContainerController {
     @PostMapping(value = "/list_by_options")
     public ResponseEntity<Page<DevopsEnvPodContainerDTO>> listByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "容器ID", required = true)
             @PathVariable Long podId,
             @ApiParam(value = "分页参数")
@@ -82,8 +84,9 @@ public class DevopsEnvPodContainerController {
 
     /**
      * 获取日志信息 By Pod
+     *
      * @param projectId 项目ID
-     * @param podId pod ID
+     * @param podId     pod ID
      * @return DevopsEnvPodContainerLogDTO
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -91,7 +94,7 @@ public class DevopsEnvPodContainerController {
     @GetMapping(value = "/logs")
     public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLogByPod(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
             @PathVariable Long podId) {
         return Optional.ofNullable(containerService.logByPodId(podId))

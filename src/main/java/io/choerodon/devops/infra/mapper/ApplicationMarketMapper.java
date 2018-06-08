@@ -6,6 +6,7 @@ import java.util.Map;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
+import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 /**
@@ -19,4 +20,28 @@ public interface ApplicationMarketMapper extends BaseMapper<DevopsAppMarketDO> {
     List<DevopsAppMarketDO> listMarketApplication(@Param("projectIds") List projectIds,
                                                   @Param("searchParam") Map<String, Object> searchParam,
                                                   @Param("param") String param);
+
+    DevopsAppMarketDO getMarketApplication(@Param("projectId") Long projectId,
+                                           @Param("appMarketId") Long appMarketId,
+                                           @Param("projectIds") List<Long> projectIds);
+
+    int selectCountByAppId(@Param("appId") Long appId);
+
+    int checkProject(@Param("projectId") Long projectId, @Param("appMarketId") Long appMarketId);
+
+    int checkDeployed(@Param("projectId") Long projectId,
+                      @Param("appMarketId") Long appMarketId,
+                      @Param("versionId") Long versionId,
+                      @Param("projectIds") List<Long> projectIds);
+
+    void unpublishApplicationVersions(@Param("appMarketId") Long appMarketId, @Param("versionId") Long versionId);
+
+    Long getMarketIdByAppId(@Param("appId") Long appId);
+
+
+    List<DevopsAppMarketVersionDO> listAppVersions(@Param("projectId") Long projectId,
+                                                   @Param("appMarketId") Long appMarketId,
+                                                   @Param("isPublish") Boolean isPublish,
+                                                   @Param("searchParam") Map<String, Object> searchParam,
+                                                   @Param("param") String param);
 }

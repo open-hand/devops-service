@@ -1,10 +1,13 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -12,7 +15,9 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -27,6 +32,8 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     private JSON json = new JSON();
 
+    @Autowired
+    private IamRepository iamRepository;
     private ApplicationMapper applicationMapper;
 
     public ApplicationRepositoryImpl(ApplicationMapper applicationMapper) {
@@ -74,24 +81,24 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> listByOptions(Long projectId, PageRequest pageRequest, String params) {
+    public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, PageRequest pageRequest, String params) {
         Page<ApplicationDO> applicationES;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
             if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
-                                projectId, null,
+                                projectId, isActive, null,
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             } else {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
-                                projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                projectId, isActive, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMapper.list(projectId, null, null));
+                    pageRequest, () -> applicationMapper.list(projectId, isActive, null, null));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
@@ -122,22 +129,56 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public List<ApplicationE> listByActive(Long projectId) {
-        ApplicationDO applicationDO = new ApplicationDO();
-        applicationDO.setProjectId(projectId);
-        applicationDO.setActive(true);
-        return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
+    public Page<ApplicationE> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(
+                PageHelper.doPageAndSort(
+                        pageRequest, () -> applicationMapper.listByEnvId(projectId, envId, "nodeleted")),
+                ApplicationE.class
+        );
     }
 
     @Override
-    public List<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive) {
-        return ConvertHelper.convertList(applicationMapper
-                .listByActiveAndPubAndVersion(projectId, isActive), ApplicationE.class);
+    public List<ApplicationE> listByActive(Long projectId) {
+        return ConvertHelper.convertList(applicationMapper.listActive(projectId), ApplicationE.class);
+    }
+
+    @Override
+    public List<ApplicationE> listAll(Long projectId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Long organizationId = projectE.getOrganization().getId();
+        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
+        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return ConvertHelper.convertList(applicationMapper.listAll(projectId, projectIds), ApplicationE.class);
+    }
+
+    @Override
+    public Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive,
+                                                           PageRequest pageRequest, String params) {
+        Map<String, Object> searchParam = null;
+        String param = null;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> searchParamMap = json.deserialize(params, Map.class);
+            searchParam = TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM));
+        }
+        Map<String, Object> finalSearchParam = searchParam;
+        String finalParam = param;
+        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> applicationMapper
+                .listByActiveAndPubAndVersion(projectId, isActive, finalSearchParam, finalParam)), ApplicationE.class);
     }
 
     @Override
     public ApplicationE queryByToken(String token) {
         ApplicationDO applicationDO = applicationMapper.queryByToken(token);
         return ConvertHelper.convert(applicationDO, ApplicationE.class);
+    }
+
+    @Override
+    public void checkAppCanDisable(Long applicationId) {
+        if (applicationMapper.checkAppCanDisable(applicationId) == 0) {
+            throw new CommonException("error.app.publishedOrDeployed");
+        }
     }
 }

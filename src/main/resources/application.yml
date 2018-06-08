@@ -45,8 +45,9 @@ choerodon:
     max-redis-msg-listener-concurrency: 500
     security: false
 agent:
-  version: "0.5.0.RELEASE"
+  version: "0.5.0"
   serviceUrl: "agent.example.com"
+  repoUrl: "helm.example.com"
 eureka:
   instance:
     preferIpAddress: true

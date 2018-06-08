@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -43,9 +44,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Value("${services.helm.url}")
     private String helmUrl;
 
-    /**
-     * 构造函数
-     */
+
     public ApplicationVersionServiceImpl(ApplicationVersionRepository applicationVersionRepository, ApplicationRepository applicationRepository, IamRepository iamRepository, ApplicationVersionValueRepository applicationVersionValueRepository) {
         this.applicationVersionRepository = applicationVersionRepository;
         this.applicationRepository = applicationRepository;
@@ -86,9 +85,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         try {
             FileUtil.unTarGZ(path, DESTPATH);
-            applicationVersionValueE.setValue(FileUtil.yamltoJson(
-                    FileUtil.queryFileFromFiles(
-                            new File(DESTPATH), "values.yaml").getAbsolutePath()));
+            applicationVersionValueE.setValue(FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
+                    new File(DESTPATH), "values.yaml").getAbsolutePath())), null));
+
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());
         } catch (Exception e) {
@@ -99,9 +98,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public List<ApplicationVersionRepDTO> listByAppId(Long appId) {
+    public List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish) {
         return ConvertHelper.convertList(
-                applicationVersionRepository.listByAppId(appId), ApplicationVersionRepDTO.class);
+                applicationVersionRepository.listByAppId(appId, isPublish), ApplicationVersionRepDTO.class);
     }
 
     @Override

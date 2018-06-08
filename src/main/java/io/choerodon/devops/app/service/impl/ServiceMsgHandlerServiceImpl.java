@@ -5,6 +5,8 @@ import java.util.List;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.ServiceMsgHandlerService;
@@ -23,6 +25,7 @@ import io.choerodon.websocket.tool.KeyParseTool;
 @Service
 public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ServiceMsgHandlerServiceImpl.class);
     private static JSON json = new JSON();
     private DevopsServiceRepository devopsServiceRepository;
     private ApplicationInstanceRepository applicationInstanceRepository;
@@ -30,9 +33,7 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
     private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
-    /**
-     * 构造函数
-     */
+
     public ServiceMsgHandlerServiceImpl(DevopsServiceRepository devopsServiceRepository,
                                         ApplicationInstanceRepository applicationInstanceRepository,
                                         DevopsEnvResourceRepository devopsEnvResourceRepository,
@@ -82,8 +83,7 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
             newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
             devopsEnvCommandRepository.update(newdevopsEnvCommandE);
         } catch (Exception e) {
-            devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
-            devopsServiceRepository.update(devopsServiceE);
+            logger.info(e.getMessage());
         }
     }
 

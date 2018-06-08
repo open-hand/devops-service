@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.dataobject;
 
 import java.util.List;
+import javax.persistence.Transient;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -11,6 +12,7 @@ public class DevopsServiceQueryDO {
     private String name;
     private String externalIp;
     private Long port;
+    private Long targetPort;
     private String status;
     private Long envId;
     private String envName;
@@ -18,6 +20,13 @@ public class DevopsServiceQueryDO {
     private Long appId;
     private String appName;
     private List<ServiceVersionDO> appVersion;
+
+    @Transient
+    private String commandStatus;
+    @Transient
+    private String commandType;
+    @Transient
+    private String error;
 
     public Long getId() {
         return id;
@@ -105,5 +114,37 @@ public class DevopsServiceQueryDO {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
+    }
+
+    public Long getTargetPort() {
+        return targetPort;
+    }
+
+    public void setTargetPort(Long targetPort) {
+        this.targetPort = targetPort;
     }
 }

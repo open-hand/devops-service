@@ -13,6 +13,7 @@ public interface DevopsEnvironmentService {
     /**
      * 项目下创建环境
      *
+     * @param projectId           项目Id
      * @param devopsEnviromentDTO 环境信息
      * @return String
      */
@@ -57,6 +58,7 @@ public interface DevopsEnvironmentService {
      * 项目下更新环境
      *
      * @param devopsEnvironmentUpdateDTO 环境信息
+     * @param projectId                  项目Id
      * @return DevopsEnvironmentUpdateDTO
      */
     DevopsEnvironmentUpdateDTO update(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO, Long projectId);
@@ -74,16 +76,16 @@ public interface DevopsEnvironmentService {
      * 项目下查询单个环境的可执行shell
      *
      * @param environmentId 环境id
+     * @param update        是否更新
      * @return String
      */
-    String queryShell(Long environmentId);
+    String queryShell(Long environmentId, Boolean update);
 
     /**
      * 创建环境校验名称是否存在
      *
      * @param projectId 项目id
      * @param name      应用name
-     * @return
      */
     void checkName(Long projectId, String name);
 
@@ -92,7 +94,6 @@ public interface DevopsEnvironmentService {
      *
      * @param projectId 项目ID
      * @param code      应用code
-     * @return
      */
     void checkCode(Long projectId, String code);
 

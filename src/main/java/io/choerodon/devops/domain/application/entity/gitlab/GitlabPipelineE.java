@@ -14,7 +14,7 @@ public class GitlabPipelineE {
     private String ref;
     private String sha;
     private GitlabUserE user;
-    private String createdAt;
+    private Date createdAt;
     private Date started_at;
     private Date finished_at;
 
@@ -78,11 +78,12 @@ public class GitlabPipelineE {
         this.user = new GitlabUserE(id, username);
     }
 
-    public String getCreatedAt() {
+    public Date getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(String createdAt) {
+    public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
 }
+

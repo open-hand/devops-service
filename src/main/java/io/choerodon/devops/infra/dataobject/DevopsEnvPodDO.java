@@ -31,9 +31,13 @@ public class DevopsEnvPodDO extends AuditDomain {
     @Transient
     private String appName;
     @Transient
+    private String publishLevel;
+    @Transient
     private String appVersion;
     @Transient
     private String instanceCode;
+    @Transient
+    private Long envId;
     @Transient
     private String envCode;
     @Transient
@@ -160,5 +164,21 @@ public class DevopsEnvPodDO extends AuditDomain {
 
     public void setEnvName(String envName) {
         this.envName = envName;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

@@ -14,6 +14,7 @@ public interface ApplicationService {
     /**
      * 项目下创建应用
      *
+     * @param projectId      项目Id
      * @param applicationDTO 应用信息
      * @return ApplicationTemplateDTO
      */
@@ -51,11 +52,14 @@ public interface ApplicationService {
     /**
      * 组织下分页查询应用
      *
+     * @param projectId   项目id
+     * @param isActive    是否启用
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
      */
     Page<ApplicationRepDTO> listByOptions(Long projectId,
+                                          Boolean isActive,
                                           PageRequest pageRequest,
                                           String params);
 
@@ -72,18 +76,29 @@ public interface ApplicationService {
      * 项目下应用查询ci脚本文件
      *
      * @param token token
-     * @param type  类型
      * @return File
      */
-    String queryFile(String token, String type);
+    String queryFile(String token);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用
      *
      * @param projectId 项目id
+     * @param envId     环境Id
+     * @param status    环境状态
      * @return list of ApplicationRepDTO
      */
     List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status);
+
+    /**
+     * 根据环境id获取已部署正在运行实例的应用
+     *
+     * @param projectId   项目id
+     * @param envId       环境Id
+     * @param pageRequest 分页参数
+     * @return list of ApplicationRepDTO
+     */
+    Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest);
 
     /**
      * 项目下查询所有已经启用的应用
@@ -94,11 +109,18 @@ public interface ApplicationService {
     List<ApplicationRepDTO> listByActive(Long projectId);
 
     /**
+     * 项目下查询所有可选已经启用的应用
+     *
+     * @param projectId 项目id
+     * @return list of ApplicationRepDTO
+     */
+    List<ApplicationRepDTO> listAll(Long projectId);
+
+    /**
      * 创建应用校验名称是否存在
      *
      * @param projectId 项目id
      * @param name      应用name
-     * @return
      */
     void checkName(Long projectId, String name);
 
@@ -107,7 +129,6 @@ public interface ApplicationService {
      *
      * @param projectId 项目ID
      * @param code      应用code
-     * @return
      */
     void checkCode(Long projectId, String code);
 
@@ -122,8 +143,10 @@ public interface ApplicationService {
     /**
      * 项目下查询已经启用有版本未发布的应用
      *
-     * @param projectId 项目id
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
      * @return list of ApplicationRepDTO
      */
-    List<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId);
+    Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
 }

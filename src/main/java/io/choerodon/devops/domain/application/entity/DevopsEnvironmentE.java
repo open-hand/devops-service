@@ -18,20 +18,27 @@ public class DevopsEnvironmentE {
     private String name;
     private String code;
     private String token;
-    private String namespace;
     private Long sequence;
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
+    private Boolean isUpdate;
+    private String updateMessage;
 
     /**
      * 重写构造方法
+     *
+     * @param id          环境Id
+     * @param name        环境name
+     * @param description 环境描述
+     * @param isConnect   环境是否连接
+     * @param isActive    环境是否启用
+     * @param code        环境code
      */
-    public DevopsEnvironmentE(Long id, String name, String namespace, String description, Boolean isConnect, Boolean isActive, String code) {
+    public DevopsEnvironmentE(Long id, String name, String description, Boolean isConnect, Boolean isActive, String code) {
 
         this.id = id;
         this.name = name;
-        this.namespace = namespace;
         this.description = description;
         this.isConnected = isConnect;
         this.isActive = isActive;
@@ -40,6 +47,10 @@ public class DevopsEnvironmentE {
 
     /**
      * 构造函数
+     *
+     * @param id   环境Id
+     * @param code 环境code
+     * @param name 环境name
      */
     public DevopsEnvironmentE(Long id, String code, String name) {
         this.id = id;
@@ -87,13 +98,6 @@ public class DevopsEnvironmentE {
         this.token = token;
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
 
     public String getDescription() {
         return description;
@@ -141,6 +145,22 @@ public class DevopsEnvironmentE {
 
     }
 
+    public Boolean getUpdate() {
+        return isUpdate;
+    }
+
+    public void setUpdate(Boolean update) {
+        isUpdate = update;
+    }
+
+    public String getUpdateMessage() {
+        return updateMessage;
+    }
+
+    public void setUpdateMessage(String updateMessage) {
+        this.updateMessage = updateMessage;
+    }
+
     public Long getSequence() {
         return sequence;
     }
@@ -153,13 +173,8 @@ public class DevopsEnvironmentE {
         this.token = token;
     }
 
-    public void initNamespace(String orgCode, String projectCode) {
-        this.namespace = orgCode + "-" + projectCode + "-" + this.code;
-    }
-
     /**
      * 初始化序列
-     *
      */
     public void initSequence(List<DevopsEnvironmentE> devopsEnvironmentES) {
         this.sequence = 1L;

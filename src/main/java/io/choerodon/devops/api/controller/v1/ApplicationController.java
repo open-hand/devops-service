@@ -25,13 +25,13 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by younger on 2018/4/4.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/apps")
+@RequestMapping(value = "/v1/projects/{project_id}/apps")
 public class ApplicationController {
 
     private ApplicationService applicationService;
 
-    public ApplicationController(ApplicationService applcationService) {
-        this.applicationService = applcationService;
+    public ApplicationController(ApplicationService applicationService) {
+        this.applicationService = applicationService;
     }
 
     /**
@@ -46,7 +46,7 @@ public class ApplicationController {
     @PostMapping
     public ResponseEntity<ApplicationRepDTO> create(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody ApplicationDTO applicationDTO) {
         return Optional.ofNullable(applicationService.create(projectId, applicationDTO))
@@ -66,7 +66,7 @@ public class ApplicationController {
     @GetMapping("/{applicationId}")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
         return Optional.ofNullable(applicationService.query(projectId, applicationId))
@@ -86,7 +86,7 @@ public class ApplicationController {
     @PutMapping
     public ResponseEntity<Boolean> update(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody ApplicationUpdateDTO applicationUpdateDTO) {
         return Optional.ofNullable(applicationService.update(projectId, applicationUpdateDTO))
@@ -94,14 +94,6 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.query"));
     }
 
-
-    /**
-     * 项目下启用停用应用信息
-     *
-     * @param projectId 项目id
-     * @param active    启用停用
-     * @return ApplicationRepDTO
-     */
 
     /**
      * 项目下启用停用应用信息
@@ -116,7 +108,7 @@ public class ApplicationController {
     @PutMapping("/{applicationId}")
     public ResponseEntity<Boolean> queryByAppIdAndActive(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "启用停用", required = true)
@@ -130,6 +122,7 @@ public class ApplicationController {
      * 项目下分页查询应用
      *
      * @param projectId   项目id
+     * @param isActive    项目是否启用
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
@@ -140,13 +133,15 @@ public class ApplicationController {
     @PostMapping("/list_by_options")
     public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "项目是否启用", required = false)
+            @RequestParam(value = "active", required = false) Boolean isActive,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(applicationService.listByOptions(projectId, pageRequest, params))
+        return Optional.ofNullable(applicationService.listByOptions(projectId, isActive, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
@@ -155,8 +150,23 @@ public class ApplicationController {
      * 根据环境id获取已部署正在运行实例的应用
      *
      * @param projectId 项目id
-     * @return list of ApplicationRepDTO
+     * @return page of ApplicationRepDTO
      */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
+    @CustomPageRequest
+    @GetMapping("/pages")
+    public ResponseEntity<Page<ApplicationCodeDTO>> pageByEnvIdAndStatus(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境 ID", required = true)
+            @RequestParam Long envId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest) {
+        return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, pageRequest))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appName.query"));
+    }
 
     /**
      * 根据环境id获取已部署正在运行实例的应用
@@ -171,7 +181,7 @@ public class ApplicationController {
     @GetMapping("/options")
     public ResponseEntity<List<ApplicationCodeDTO>> listByEnvIdAndStatus(
             @ApiParam(value = "项目 ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例运行状态", required = true)
@@ -190,11 +200,30 @@ public class ApplicationController {
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
-    public ResponseEntity<List<ApplicationRepDTO>> listByActive(@ApiParam(value = "项目 ID", required = true)
-                                                                @PathVariable Long projectId) {
+    public ResponseEntity<List<ApplicationRepDTO>> listByActive(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listByActive(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));
+    }
+
+
+    /**
+     * 项目下查询所有可选已经启用的应用
+     *
+     * @param projectId 项目id
+     * @return list of ApplicationRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "项目下查询所有已经启用的应用")
+    @GetMapping(value = "/list_all")
+    public ResponseEntity<List<ApplicationRepDTO>> listAll(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(applicationService.listAll(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.applications.get"));
     }
 
     /**
@@ -209,7 +238,7 @@ public class ApplicationController {
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
         applicationService.checkName(projectId, name);
@@ -228,7 +257,7 @@ public class ApplicationController {
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String code) {
         applicationService.checkCode(projectId, code);
@@ -246,7 +275,7 @@ public class ApplicationController {
     @GetMapping("/template")
     public ResponseEntity<List<ApplicationTemplateRepDTO>> listTemplate(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId) {
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listTemplate(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.template.get"));
@@ -255,15 +284,23 @@ public class ApplicationController {
     /**
      * 项目下查询已经启用有版本未发布的应用
      *
-     * @param projectId 项目id
-     * @return list of ApplicationRepDTO
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return page of ApplicationRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
-    @GetMapping(value = "/listById")
-    public ResponseEntity<List<ApplicationDTO>> listByActiveAndPubAndVersion(@ApiParam(value = "项目 ID", required = true)
-                                                                             @PathVariable Long projectId) {
-        return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId))
+    @CustomPageRequest
+    @PostMapping(value = "/list_unpublish")
+    public ResponseEntity<Page<ApplicationDTO>> listByActiveAndPubAndVersion(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));
     }

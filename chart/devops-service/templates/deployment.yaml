@@ -1,11 +1,10 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  annotations:
-{{ include "service.annotations.standard" . | indent 4 }}
   name: {{ .Release.Name }}
   labels:
 {{ include "service.labels.standard" . | indent 4 }}
+{{ include "service.logging.deployment.label" . | indent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -13,7 +12,10 @@ spec:
 {{ include "service.match.labels" . | indent 6 }}
   template:
     metadata:
+      annotations:
+{{ include "service.monitoring.pod.annotations" . | indent 8 }}
       labels:
+{{ include "service.microservice.labels" . | indent 8 }}
 {{ include "service.labels.standard" . | indent 8 }}
     spec:
       containers:

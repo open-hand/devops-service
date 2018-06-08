@@ -69,6 +69,7 @@
         SELECT
         dp.id,
         dp.ip,
+        dam.publish_level,
         dp.`name`,
         dp.namespace namespace,
         dp.is_ready,
@@ -77,21 +78,18 @@
         da.`name` appName,
         dav.version appVersion,
         dai.`code` instanceCode,
+        de.id envId,
         de.`code` envCode,
         de.`name` envName,
         dp.object_version_number
         FROM
-        devops_env_pod dp,
-        devops_app_instance dai,
-        devops_app_version dav,
-        devops_application da,
-        devops_env de
-        WHERE
-        dp.app_instance_id = dai.id
-        AND dai.app_version_id = dav.id
-        AND dav.app_id = da.id
-        AND de.id = dai.env_id
-        AND da.project_id = #{projectId}
+        devops_env_pod dp
+        JOIN devops_app_instance dai ON dp.app_instance_id = dai.id
+        JOIN devops_app_version dav ON dai.app_version_id = dav.id
+        JOIN devops_application da ON dav.app_id = da.id
+        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_app_market dam on dam.app_id = da.id
+        WHERE da.project_id = #{projectId}
         <include refid="sqlparam"/>
     </select>
 </mapper>

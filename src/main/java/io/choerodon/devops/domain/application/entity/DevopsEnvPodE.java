@@ -15,10 +15,12 @@ public class DevopsEnvPodE {
     private String status;
     private String appName;
     private String appVersion;
+    private String publishLevel;
     private Date creationDate;
     private String resourceVersion;
     private String namespace;
     private String instanceCode;
+    private Long envId;
     private String envCode;
     private String envName;
     private Long objectVersionNumber;
@@ -153,5 +155,21 @@ public class DevopsEnvPodE {
 
     public void setEnvName(String envName) {
         this.envName = envName;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

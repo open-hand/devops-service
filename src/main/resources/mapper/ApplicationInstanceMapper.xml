@@ -6,7 +6,11 @@
         SELECT
         dai.id id,
         dai.`code` code,
+        dam.publish_level publishLevel,
+        dam.contributor,
+        dam.description,
         da.id appId,
+        da.project_id projectId,
         da.`name` appName,
         dav.version appVersion,
         dav.id appVersionId,
@@ -42,9 +46,11 @@
         JOIN devops_env de ON dai.env_id = de.id
         JOIN devops_application da ON da.id = dav.app_id
         JOIN devops_env_command cmd ON cmd.object_id = dai.id
-        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY  decmd.object,decmd.object_id ) mcmd ON mcmd.id =
+        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY
+        decmd.object,decmd.object_id ) mcmd ON mcmd.id =
         cmd.id
-        WHERE da.project_id = #{projectId}
+        LEFT JOIN devops_app_market dam ON dam.app_id = da.id
+        WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
         <include refid="sqlparam"/>
         ORDER BY dai.id DESC
@@ -73,7 +79,6 @@
         ORDER BY
         dai.id DESC
     </select>
-
 
 
     <select id="checkOptions" resultType="java.lang.Integer">
@@ -112,6 +117,7 @@
         de.object_id = dai.id
         AND dai.app_id = #{appId}
         AND dai.env_id = #{envId}
+        AND de.object = 'instance'
         ORDER BY
         de.creation_date DESC
         LIMIT 1
@@ -196,8 +202,10 @@
     <select id="listApplicationInstances" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstancesDO">
         SELECT
         da.id appId,
+        dam.publish_level publishLevel,
         da.`code` appCode,
         da.`name` appName,
+        da.project_id projectId,
         dav.id versionId,
         dai.id instanceId,
         dai.status instanceStatus,
@@ -209,13 +217,14 @@
         devops_application da
         JOIN devops_app_version dav ON dav.app_id = da.id
         JOIN devops_app_instance dai ON dai.app_version_id = dav.id
+        AND dai.status != 'deleted'
         JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_app_market dam ON dam.app_id = da.id
         WHERE
-        da.project_id = #{projectId}
+        de.project_id = #{projectId}
         <if test="appId != null">
             AND da.id = #{appId}
         </if>
-        AND dai.status != 'deleted'
         ORDER BY
         da.last_update_date DESC,
         de.sequence ASC,

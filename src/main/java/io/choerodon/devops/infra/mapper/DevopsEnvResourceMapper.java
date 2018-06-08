@@ -16,4 +16,7 @@ public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDO>
     DevopsEnvResourceDO queryByInstanceIdAndKindAndName(@Param("instanceId") Long instanceId,
                                                         @Param("kind") String kind,
                                                         @Param("name") String name);
+
+    List<DevopsEnvResourceDO> listByEnvAndType(@Param("envId") Long envId,
+                                               @Param("type") String type);
 }

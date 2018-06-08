@@ -43,10 +43,10 @@ public class CiController {
     @GetMapping
     public ResponseEntity<String> queryFile(
             @ApiParam(value = "token")
-            @RequestParam(required = true) String token,
+            @RequestParam String token,
             @ApiParam(value = "类型")
-            @RequestParam(required = true) String type) {
-        return Optional.ofNullable(applicationService.queryFile(token, type))
+            @RequestParam(required = false) String type) {
+        return Optional.ofNullable(applicationService.queryFile(token))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.file.get"));
     }
@@ -55,11 +55,11 @@ public class CiController {
     /**
      * 获取应用版本信息
      *
-     * @param token token
-     * @param image  类型
+     * @param token   token
+     * @param image   类型
      * @param version 版本
-     * @param  commit commit
-     * @param  file tgz包
+     * @param commit  commit
+     * @param file    tgz包
      * @return File
      */
     @Permission(level = ResourceLevel.PROJECT, permissionPublic = true)

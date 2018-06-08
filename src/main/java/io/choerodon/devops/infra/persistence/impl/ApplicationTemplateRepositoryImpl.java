@@ -53,9 +53,9 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
         ResponseEntity<OrganizationDO> organizationDO =
                 iamServiceClient.queryOrganizationById(applicationTemplateDO.getOrganizationId());
         if (organizationDO.getStatusCode().is2xxSuccessful()) {
-            applicationTemplateDO.setRepoUrl("/"
-                    + organizationDO.getBody().getCode() + "_template" + "/"
-                    + applicationTemplateE.getCode() + ".git");
+            applicationTemplateDO.setRepoUrl(
+                    organizationDO.getBody().getCode() + "_template" + "/"
+                            + applicationTemplateE.getCode() + ".git");
         }
         if (applicationTemplateMapper.insert(applicationTemplateDO) != 1) {
             throw new CommonException("error.insert.appTemplate");

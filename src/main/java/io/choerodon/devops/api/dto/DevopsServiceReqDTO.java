@@ -19,6 +19,7 @@ public class DevopsServiceReqDTO {
     private String externalIp;
     @NotNull
     private Long port;
+    private Long targetPort;
     @NotNull
     private Set<Long> appInstance;
 
@@ -68,5 +69,13 @@ public class DevopsServiceReqDTO {
 
     public void setAppInstance(Set<Long> appInstance) {
         this.appInstance = appInstance;
+    }
+
+    public Long getTargetPort() {
+        return targetPort;
+    }
+
+    public void setTargetPort(Long targetPort) {
+        this.targetPort = targetPort;
     }
 }

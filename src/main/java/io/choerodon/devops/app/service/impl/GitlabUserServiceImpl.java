@@ -10,6 +10,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
 
 /**
@@ -22,9 +23,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     private GitlabUserRepository gitlabUserRepository;
     private UserAttrRepository userAttrRepository;
 
-    /**
-     * 构造函数
-     */
+
     public GitlabUserServiceImpl(GitlabUserRepository gitlabUserRepository,
                                  GitlabConfigurationProperties gitlabConfigurationProperties,
                                  UserAttrRepository userAttrRepository) {
@@ -35,42 +34,37 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     @Override
     public void createGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
-        GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(gitlabUserReqDTO.getUsername());
-        GitlabUserE createOrUpdateGitlabUserE = null;
-        if (gitlabUserE == null) {
-            createOrUpdateGitlabUserE = gitlabUserRepository.createGitLabUser(
-                    gitlabConfigurationProperties.getPassword(),
-                    gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
 
-            if (createOrUpdateGitlabUserE != null) {
-                UserAttrE userAttrE = new UserAttrE();
-                userAttrE.setId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
-                userAttrE.setGitlabUserId(createOrUpdateGitlabUserE.getId().longValue());
-                userAttrRepository.insert(userAttrE);
-            }
+        GitlabUserE createOrUpdateGitlabUserE = gitlabUserRepository.createGitLabUser(
+                gitlabConfigurationProperties.getPassword(),
+                gitlabConfigurationProperties.getProjectLimit(),
+                ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
 
-        } else {
-            gitlabUserRepository.updateGitLabUser(gitlabUserReqDTO.getUsername(),
-                    gitlabConfigurationProperties.getProjectLimit(),
-                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+        if (createOrUpdateGitlabUserE != null) {
+            UserAttrE userAttrE = new UserAttrE();
+            userAttrE.setId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+            userAttrE.setGitlabUserId(createOrUpdateGitlabUserE.getId().longValue());
+            userAttrRepository.insert(userAttrE);
         }
     }
 
     @Override
     public void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
-        gitlabUserRepository.updateGitLabUser(gitlabUserReqDTO.getUsername(),
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
+        gitlabUserRepository.updateGitLabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
                 gitlabConfigurationProperties.getProjectLimit(),
                 ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
     }
 
     @Override
-    public void isEnabledGitlabUser(String userName) {
-        gitlabUserRepository.isEnabledGitlabUser(userName);
+    public void isEnabledGitlabUser(Integer userId) {
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
+        gitlabUserRepository.isEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
     }
 
     @Override
-    public void disEnabledGitlabUser(String userName) {
-        gitlabUserRepository.disEnabledGitlabUser(userName);
+    public void disEnabledGitlabUser(Integer userId) {
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
+        gitlabUserRepository.disEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
     }
 }

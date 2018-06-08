@@ -9,4 +9,5 @@ public interface UserAttrRepository {
 
     int insert(UserAttrE userAttrE);
 
+    UserAttrE queryById(Long id);
 }

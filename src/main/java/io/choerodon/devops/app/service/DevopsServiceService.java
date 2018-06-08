@@ -25,23 +25,25 @@ public interface DevopsServiceService {
      * 更新网络
      *
      * @param projectId           项目id
+     * @param id                  网络Id
      * @param devopsServiceReqDTO 部署网络参数
-     * @return
+     * @return boolean
      */
     Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
 
     /**
      * 删除网络
      *
-     * @param id        网络ID
-     * @return
+     * @param id 网络ID
      */
     void deleteDevopsService(Long id);
 
     /**
      * 检查网络唯一性
      *
-     * @param name 网络名
+     * @param projectId 项目Id
+     * @param envId     环境Id
+     * @param name      网络名
      * @return Boolean
      */
     Boolean checkName(Long projectId, Long envId, String name);
@@ -59,7 +61,7 @@ public interface DevopsServiceService {
     /**
      * 分页查询网络列表
      *
-     * @param envId     参数
+     * @param envId 参数
      * @return List of DevopsServiceDTO
      */
     List<DevopsServiceDTO> listDevopsService(Long envId);
@@ -67,7 +69,7 @@ public interface DevopsServiceService {
     /**
      * 查询单个网络
      *
-     * @param id        网络id
+     * @param id 网络id
      * @return DevopsServiceDTO
      */
     DevopsServiceDTO query(Long id);

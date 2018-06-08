@@ -1,5 +1,8 @@
 package io.choerodon.devops.domain.application.entity;
 
+import javax.persistence.Transient;
+import java.util.Date;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -13,8 +16,12 @@ public class ApplicationMarketE {
     private String code;
     private String publishLevel;
     private String imgUrl;
+    private String category;
+    private Boolean isActive;
     private String contributor;
     private String description;
+    private Boolean isDeployed;
+    private Date marketUpdatedDate;
 
     public ApplicationMarketE() {
 
@@ -72,6 +79,22 @@ public class ApplicationMarketE {
         this.imgUrl = imgUrl;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
     public String getContributor() {
         return contributor;
     }
@@ -92,4 +115,19 @@ public class ApplicationMarketE {
         this.applicationE = new ApplicationE(id);
     }
 
+    public Boolean getDeployed() {
+        return isDeployed;
+    }
+
+    public void setDeployed(Boolean deployed) {
+        isDeployed = deployed;
+    }
+
+    public Date getMarketUpdatedDate() {
+        return marketUpdatedDate;
+    }
+
+    public void setMarketUpdatedDate(Date marketUpdatedDate) {
+        this.marketUpdatedDate = marketUpdatedDate;
+    }
 }

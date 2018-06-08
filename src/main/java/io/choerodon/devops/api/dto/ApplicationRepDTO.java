@@ -13,6 +13,9 @@ public class ApplicationRepDTO {
     private String repoUrl;
     private Boolean isSynchro;
     private Boolean isActive;
+    private String publishLevel;
+    private String contributor;
+    private String description;
 
     public Long getId() {
         return id;
@@ -76,5 +79,29 @@ public class ApplicationRepDTO {
 
     public void setActive(Boolean active) {
         isActive = active;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

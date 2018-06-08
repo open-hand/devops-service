@@ -24,4 +24,9 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     public int insert(UserAttrE userAttrE) {
         return userAttrMapper.insert(ConvertHelper.convert(userAttrE, UserAttrDO.class));
     }
+
+    @Override
+    public UserAttrE queryById(Long id) {
+        return ConvertHelper.convert(userAttrMapper.selectByPrimaryKey(id), UserAttrE.class);
+    }
 }

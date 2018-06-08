@@ -29,6 +29,12 @@ public class ApplicationInstanceDO extends AuditDomain {
     @Transient
     private String appName;
     @Transient
+    private String publishLevel;
+    @Transient
+    private String contributor;
+    @Transient
+    private String description;
+    @Transient
     private String appVersion;
     @Transient
     private String envCode;
@@ -44,6 +50,8 @@ public class ApplicationInstanceDO extends AuditDomain {
     private String commandType;
     @Transient
     private String error;
+    @Transient
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -163,5 +171,37 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

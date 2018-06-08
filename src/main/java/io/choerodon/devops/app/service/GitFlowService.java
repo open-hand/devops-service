@@ -39,8 +39,9 @@ public interface GitFlowService {
     /**
      * 获取分支，不包括结束中分支
      *
+     * @param projectId     项目Id
      * @param applicationId 服务ID
-     * @return 服务代码远程仓库分支
+     * @return List
      */
     List<GitFlowE> getBranches(Long projectId, Long applicationId);
 
@@ -48,19 +49,19 @@ public interface GitFlowService {
      * 获取release版本
      *
      * @param applicationId 服务ID
-     * @param username      用户名
+     * @param branch        分支名
      * @return 发布版本号
      */
-    String getReleaseNumber(Long applicationId, String username);
+    String getReleaseNumber(Long applicationId, String branch);
 
     /**
      * 获取hotfix版本
      *
      * @param applicationId 服务ID
-     * @param username      用户名
+     * @param branch        分支名
      * @return 发布版本号
      */
-    String getHotfixNumber(Long applicationId, String username);
+    String getHotfixNumber(Long applicationId, String branch);
 
     /**
      * 开始 GitFlow

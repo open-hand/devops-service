@@ -23,7 +23,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/3.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}")
+@RequestMapping(value = "/v1/projects/{project_id}")
 public class ApplicationVersionController {
 
     private static final String VERSION_QUERY_ERROR = "error.application.version.query";
@@ -47,7 +47,7 @@ public class ApplicationVersionController {
     @PostMapping(value = "/app_version/list_by_options")
     public ResponseEntity<Page<ApplicationVersionRepDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
@@ -70,10 +70,12 @@ public class ApplicationVersionController {
     @GetMapping("/apps/{appId}/version/list")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")
-            @PathVariable Long appId) {
-        return Optional.ofNullable(applicationVersionService.listByAppId(appId))
+            @PathVariable Long appId,
+            @ApiParam(value = "是否发布", required = false)
+            @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
+        return Optional.ofNullable(applicationVersionService.listByAppId(appId, isPublish))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -91,7 +93,7 @@ public class ApplicationVersionController {
     @GetMapping("/apps/{appId}/version")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppIdAndEnvId(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id", required = true)
             @PathVariable Long appId,
             @ApiParam(value = "环境 ID", required = true)
@@ -116,7 +118,7 @@ public class ApplicationVersionController {
     @PostMapping(value = "/apps/{appId}/version/list_by_options")
     public ResponseEntity<Page<ApplicationVersionRepDTO>> pageByApp(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
             @PathVariable Long appId,
             @ApiParam(value = "分页参数")

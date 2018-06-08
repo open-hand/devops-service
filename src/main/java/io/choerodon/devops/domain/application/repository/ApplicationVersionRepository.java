@@ -18,7 +18,7 @@ public interface ApplicationVersionRepository {
 
     ApplicationVersionE create(ApplicationVersionE applicationVersionE);
 
-    List<ApplicationVersionE> listByAppId(Long appId);
+    List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
 
     ApplicationVersionE query(Long appVersionId);
 
@@ -36,5 +36,7 @@ public interface ApplicationVersionRepository {
                                                           String searchParam);
 
     List<ApplicationVersionE> listAllPublishedVersion(Long applicationId);
+
+    Boolean checkAppAndVersion(Long appId, List<Long> appVersionIds);
 
 }

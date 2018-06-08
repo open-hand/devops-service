@@ -12,7 +12,6 @@ public interface GitlabCommitService {
     /**
      * 查询gitlab下的Commit信息
      *
-     * @param projectId       项目id
      * @param gitlabProjectId gitlab项目id
      * @param shas            关联pipeline的值
      * @return GitlabCommitDTO

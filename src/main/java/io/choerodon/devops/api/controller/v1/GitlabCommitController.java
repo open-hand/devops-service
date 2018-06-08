@@ -19,7 +19,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/2.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/gitlab_projects")
+@RequestMapping(value = "/v1/projects/{project_id}/gitlab_projects")
 public class GitlabCommitController {
 
     private GitlabCommitService gitlabCommitService;
@@ -42,7 +42,7 @@ public class GitlabCommitController {
     @PostMapping(value = "/{gitlabProjectId}/commit_sha")
     public ResponseEntity<List<GitlabCommitDTO>> list(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Integer gitlabProjectId,
             @ApiParam(value = "关联pipeline的值", required = true)

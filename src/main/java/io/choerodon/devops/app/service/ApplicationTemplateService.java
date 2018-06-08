@@ -18,6 +18,7 @@ public interface ApplicationTemplateService {
      * 组织下创建应用模板
      *
      * @param applicationTemplateDTO 模板信息
+     * @param organizationId         组织Id
      * @return ApplicationTemplateDTO
      */
     ApplicationTemplateRepDTO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId);
@@ -26,6 +27,7 @@ public interface ApplicationTemplateService {
      * 组织下更新应用模板
      *
      * @param applicationTemplateUpdateDTO 模板信息
+     * @param organizationId               组织Id
      * @return ApplicationTemplateDTO
      */
     ApplicationTemplateRepDTO update(ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO, Long organizationId);
@@ -48,10 +50,12 @@ public interface ApplicationTemplateService {
     /**
      * 组织下分页查询应用模板
      *
-     * @param pageRequest 分页参数
+     * @param pageRequest    分页参数
+     * @param organizationId 组织Id
+     * @param searchParam    模糊查询参数
      * @return Page
      */
-    Page<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizaitionId, String searchParam);
+    Page<ApplicationTemplateRepDTO> listByOptions(PageRequest pageRequest, Long organizationId, String searchParam);
 
     /**
      * 处理模板创建逻辑
@@ -63,6 +67,7 @@ public interface ApplicationTemplateService {
     /**
      * 组织下查询应用模板
      *
+     * @param organizationId 组织Id
      * @return List
      */
     List<ApplicationTemplateRepDTO> list(Long organizationId);
@@ -72,7 +77,6 @@ public interface ApplicationTemplateService {
      *
      * @param organizationId 组织id
      * @param name           模板name
-     * @return
      */
     void checkName(Long organizationId, String name);
 
@@ -81,15 +85,14 @@ public interface ApplicationTemplateService {
      *
      * @param organizationId 组织id
      * @param code           模板code
-     * @return
      */
     void checkCode(Long organizationId, String code);
 
     /**
      * 判断模板是否存在
      *
-     * @param uuid           模板uuid
-     * @return
+     * @param uuid 模板uuid
+     * @return boolean
      */
     Boolean applicationTemplateExist(String uuid);
 }

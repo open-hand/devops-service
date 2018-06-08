@@ -33,7 +33,16 @@ public enum HelmType {
     HelmReleaseStopFailed("helm_release_stop_failed"),
     HelmReleaseDeleteFailed("helm_release_delete_failed"),
     KubernetesGetLogs("kubernetes_get_logs"),
-    NetworkServiceUpdate("network_service_update");
+    HelmReleaseGetContent("helm_release_get_content"),
+    HelmReleaseGetContentFailed("helm_release_get_content_failed"),
+    CommandNotSend("command_not_send"),
+    NetworkServiceUpdate("network_service_update"),
+    NetworkServiceFailed("network_service_failed"),
+    NetworkServiceDeleteFailed("network_service_delete_failed"),
+    NetworkIngressFailed("network_ingress_failed"),
+    NetworkIngressDeleteFailed("network_ingress_delete_failed"),
+    ResourceSync("resource_sync");
+
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
 
     static {
@@ -113,6 +122,22 @@ public enum HelmType {
                 return HelmType.HelmReleaseDeleteFailed;
             case "network_service_update":
                 return HelmType.NetworkServiceUpdate;
+            case "helm_release_get_content":
+                return HelmType.HelmReleaseGetContent;
+            case "helm_release_get_content_failed":
+                return HelmType.HelmReleaseGetContentFailed;
+            case "command_not_send":
+                return HelmType.CommandNotSend;
+            case "network_service_failed":
+                return HelmType.NetworkServiceFailed;
+            case "network_service_delete_failed":
+                return HelmType.NetworkServiceDeleteFailed;
+            case "network_ingress_failed":
+                return HelmType.NetworkIngressFailed;
+            case "network_ingress_delete_failed":
+                return HelmType.NetworkIngressDeleteFailed;
+            case "resource_sync":
+                return HelmType.ResourceSync;
             default:
                 break;
         }

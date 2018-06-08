@@ -33,8 +33,8 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public List<GitlabPipelineE> listPipeline(Integer projectId) {
-        ResponseEntity<List<PipelineDO>> responseEntity = gitlabServiceClient.listPipeline(projectId);
+    public List<GitlabPipelineE> listPipeline(Integer projectId, Integer userId) {
+        ResponseEntity<List<PipelineDO>> responseEntity = gitlabServiceClient.listPipeline(projectId, userId);
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             return new ArrayList<>();
         }
@@ -42,8 +42,9 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public List<GitlabPipelineE> listPipelines(Integer projectId, Integer page, Integer size) {
-        ResponseEntity<List<PipelineDO>> responseEntity = gitlabServiceClient.listPipelines(projectId, page, size);
+    public List<GitlabPipelineE> listPipelines(Integer projectId, Integer page, Integer size, Integer userId) {
+        ResponseEntity<List<PipelineDO>> responseEntity =
+                gitlabServiceClient.listPipelines(projectId, page, size, userId);
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             return new ArrayList<>();
         }
@@ -51,17 +52,14 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, String userName) {
-        ResponseEntity<PipelineDO> responseEntity = gitlabServiceClient.getPipeline(projectId, pipelineId, userName);
-        if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
-            return null;
-        }
+    public GitlabPipelineE getPipeline(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<PipelineDO> responseEntity = gitlabServiceClient.getPipeline(projectId, pipelineId, userId);
         return ConvertHelper.convert(responseEntity.getBody(), GitlabPipelineE.class);
     }
 
     @Override
-    public GitlabCommitE getCommit(Integer projectId, String sha, String userName) {
-        ResponseEntity<CommitDO> responseEntity = gitlabServiceClient.getCommit(projectId, sha, userName);
+    public GitlabCommitE getCommit(Integer projectId, String sha, Integer userId) {
+        ResponseEntity<CommitDO> responseEntity = gitlabServiceClient.getCommit(projectId, sha, userId);
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             return null;
         }
@@ -69,8 +67,8 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public List<GitlabJobE> listJobs(Integer projectId, Integer pipelineId, String userName) {
-        ResponseEntity<List<JobDO>> responseEntity = gitlabServiceClient.listJobs(projectId, pipelineId, userName);
+    public List<GitlabJobE> listJobs(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<List<JobDO>> responseEntity = gitlabServiceClient.listJobs(projectId, pipelineId, userId);
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             return new ArrayList<>();
         }
@@ -78,20 +76,25 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public Boolean retry(Integer projectId, Integer pipelineId, String userName) {
-        ResponseEntity<PipelineDO> responseEntity = gitlabServiceClient.retry(projectId, pipelineId, userName);
-        return HttpStatus.OK.equals(responseEntity.getStatusCode()) ? true : false;
+    public Boolean retry(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<PipelineDO> responseEntity = gitlabServiceClient.retry(projectId, pipelineId, userId);
+        return HttpStatus.OK.equals(responseEntity.getStatusCode());
     }
 
     @Override
-    public Boolean cancel(Integer projectId, Integer pipelineId, String userName) {
-        ResponseEntity<PipelineDO> responseEntity = gitlabServiceClient.cancel(projectId, pipelineId, userName);
-        return HttpStatus.OK.equals(responseEntity.getStatusCode()) ? true : false;
+    public Boolean cancel(Integer projectId, Integer pipelineId, Integer userId) {
+        ResponseEntity<PipelineDO> responseEntity = gitlabServiceClient.cancel(projectId, pipelineId, userId);
+        return HttpStatus.OK.equals(responseEntity.getStatusCode());
     }
 
     @Override
-    public List<BranchE> listBranches(Integer projectId) {
-        ResponseEntity<List<BranchDO>> responseEntity = gitlabServiceClient.listBranches(projectId);
+    public List<BranchE> listBranches(Integer projectId, Integer userId) {
+        ResponseEntity<List<BranchDO>> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.listBranches(projectId, userId);
+        } catch (Exception e) {
+            return null;
+        }
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             return Collections.emptyList();
         }

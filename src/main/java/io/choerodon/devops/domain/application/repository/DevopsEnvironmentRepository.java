@@ -23,7 +23,5 @@ public interface DevopsEnvironmentRepository {
 
     List<DevopsEnvironmentE> queryByProject(Long projectId);
 
-    DevopsEnvironmentE queryByNamespace(String namespace);
-
     List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active);
 }

@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import springfox.documentation.annotations.ApiIgnore;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ProjectPipelineResultTotalDTO;
 import io.choerodon.devops.app.service.ProjectPipelineService;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -20,9 +22,11 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/2.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}")
+@RequestMapping(value = "/v1/projects/{project_id}")
 public class ProjectPipelineController {
 
+    @Autowired
+    GitlabProjectRepository gitlabRepository;
     private ProjectPipelineService projectPipelineService;
 
     public ProjectPipelineController(ProjectPipelineService projectPipelineService) {
@@ -42,7 +46,7 @@ public class ProjectPipelineController {
     @GetMapping(value = "/applications/{appId}/pipelines")
     public ResponseEntity<ProjectPipelineResultTotalDTO> list(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
             @PathVariable Long appId,
             @ApiParam(value = "分页参数")
@@ -65,7 +69,7 @@ public class ProjectPipelineController {
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/retry")
     public ResponseEntity<Boolean> retry(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)
@@ -88,7 +92,7 @@ public class ProjectPipelineController {
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/cancel")
     public ResponseEntity<Boolean> cancel(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "gitlab项目ID", required = true)
             @PathVariable Long gitlabProjectId,
             @ApiParam(value = "流水线ID", required = true)

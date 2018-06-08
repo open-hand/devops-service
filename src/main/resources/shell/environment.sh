@@ -7,10 +7,12 @@ if ! [ -x "$(command -v helm)" ]; then
   exit 1
 fi
 kubectl create namespace {NAMESPACE}
-helm install --repo=http://charts.saas.choerodon.com.cn/hand-rdc/choerodon/ \
+helm install --repo={REPOURL} \
     --namespace={NAMESPACE} \
     --name={NAMESPACE} \
     --version={VERSION} \
     --set config.connect={SERVICEURL} \
     --set config.token={TOKEN} \
-    env-agent
+    --set config.envId={ENVID} \
+    --set rbac.create=true \
+    choerodon-agent

@@ -8,6 +8,7 @@ import java.util.Map;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
@@ -26,10 +27,13 @@ import io.choerodon.devops.domain.application.repository.DevopsServiceRepository
 import io.choerodon.devops.domain.service.IDevopsIngressService;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.helper.EnvListener;
+import io.choerodon.websocket.helper.EnvSession;
 
 
 /**
@@ -41,118 +45,139 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String PATH_ERROR = "error.path.empty";
-
+    private static final String ENV_DISCONNECTED = "error.env.disconnect";
     private static JSON json = new JSON();
+    @Value("${agent.version}")
+    private String agentExpectVersion;
     private IDevopsIngressService idevopsIngressService;
     private DevopsIngressRepository devopsIngressRepository;
     private DevopsServiceRepository devopsServiceRepository;
     private DevopsEnvironmentRepository environmentRepository;
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private EnvListener envListener;
 
-    /**
-     * 构造函数
-     */
+
     public DevopsIngressServiceImpl(DevopsIngressRepository devopsIngressRepository,
                                     DevopsServiceRepository devopsServiceRepository,
                                     DevopsEnvironmentRepository devopsEnvironmentRepository,
                                     IDevopsIngressService idevopsIngressService,
-                                    DevopsEnvCommandRepository devopsEnvCommandRepository) {
+                                    DevopsEnvCommandRepository devopsEnvCommandRepository,
+                                    EnvListener envListener) {
         this.devopsIngressRepository = devopsIngressRepository;
         this.devopsServiceRepository = devopsServiceRepository;
         this.environmentRepository = devopsEnvironmentRepository;
         this.idevopsIngressService = idevopsIngressService;
         this.devopsEnvCommandRepository = devopsEnvCommandRepository;
+        this.envListener = envListener;
     }
 
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
-        DevopsIngressValidator.checkAppVersion(devopsIngressDTO);
-        String name = devopsIngressDTO.getName();
-        String domain = devopsIngressDTO.getDomain();
-        Long envId = devopsIngressDTO.getEnvId();
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(envId);
-        DevopsIngressDO devopsIngressDO = new DevopsIngressDO(projectId, envId, domain, name);
-        List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
-        V1beta1Ingress ingress = createIngress(domain, name, devopsEnvironmentE.getNamespace());
-        if (devopsIngressDTO.getDevopsIngressPathDTOList().isEmpty()) {
-            throw new CommonException(PATH_ERROR);
-        }
-        devopsIngressDTO.getDevopsIngressPathDTOList().forEach(t -> {
-            if (t.getPath() == null || t.getServiceId() == null) {
-                throw new CommonException(PATH_ERROR);
-            }
-
-            DevopsServiceE devopsServiceE = getDevopsService(t.getServiceId());
-
-            devopsIngressPathDOS.add(new DevopsIngressPathDO(
-                    devopsIngressDTO.getId(), t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
-            ingress.getSpec().getRules().get(0).getHttp().addPathsItem(createPath(t.getPath(), t.getServiceId()));
-        });
-
-        devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
-        idevopsIngressService.createIngress(json.serialize(ingress),
-                name,
-                devopsEnvironmentE.getNamespace());
-
-        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-        devopsEnvCommandE.setObject(ObjectType.INGRESS.getObjectType());
-        devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
-        devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
-    }
-
-    @Override
-    public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
-        DevopsIngressValidator.checkAppVersion(devopsIngressDTO);
-        DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
-        if (!devopsIngressDTO.equals(ingressDTO)) {
+        if (isEnvConnected(devopsIngressDTO.getEnvId())) {
+            DevopsIngressValidator.checkAppVersion(devopsIngressDTO);
             String name = devopsIngressDTO.getName();
             String domain = devopsIngressDTO.getDomain();
-            Long domainEnvId = devopsIngressDTO.getEnvId();
-            DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(domainEnvId);
-
-            if (devopsIngressDTO.getDevopsIngressPathDTOList().isEmpty()) {
+            Long envId = devopsIngressDTO.getEnvId();
+            DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(envId);
+            DevopsIngressDO devopsIngressDO = new DevopsIngressDO(projectId, envId, domain, name);
+            List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
+            V1beta1Ingress ingress = createIngress(domain, name, devopsEnvironmentE.getCode());
+            if (devopsIngressDTO.getPathList().isEmpty()) {
                 throw new CommonException(PATH_ERROR);
             }
-            V1beta1Ingress ingress = createIngress(domain, name, devopsEnvironmentE.getNamespace());
-            DevopsIngressDO devopsIngressDO = new DevopsIngressDO(
-                    id, projectId, domainEnvId, domain, name);
-            List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
-            devopsIngressDTO.getDevopsIngressPathDTOList().forEach(t -> {
-                if (t.getPath() == null) {
+            devopsIngressDTO.getPathList().forEach(t -> {
+                if (t.getPath() == null || t.getServiceId() == null) {
                     throw new CommonException(PATH_ERROR);
-                } else if (t.getServiceId() == null) {
-                    throw new CommonException("error.service.id.get");
                 }
 
                 DevopsServiceE devopsServiceE = getDevopsService(t.getServiceId());
 
                 devopsIngressPathDOS.add(new DevopsIngressPathDO(
-                        id, t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
-                ingress.getSpec().getRules().get(0).getHttp()
-                        .addPathsItem(createPath(t.getPath(), t.getServiceId()));
+                        devopsIngressDTO.getId(), t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
+                ingress.getSpec().getRules().get(0).getHttp().addPathsItem(createPath(t.getPath(), t.getServiceId()));
             });
-            if (!ingressDTO.getName().equals(name)) {
-                idevopsIngressService.deleteIngress(ingressDTO.getName(), devopsEnvironmentE.getNamespace());
-            }
-
-            devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
-            idevopsIngressService.createIngress(json.serialize(ingress),
-                    name, devopsEnvironmentE.getNamespace());
-
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INGRESS.getObjectType(), id);
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
+            devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
+            devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+            DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+            devopsEnvCommandE.setObject(ObjectType.INGRESS.getObjectType());
+            devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
             devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
+            idevopsIngressService.createIngress(json.serialize(ingress),
+                    name,
+                    devopsEnvironmentE.getCode(),
+                    devopsIngressDTO.getEnvId(),
+                    devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        } else {
+            throw new CommonException(ENV_DISCONNECTED);
+        }
+    }
 
+    @Override
+    public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
+        if (isEnvConnected(devopsIngressDTO.getEnvId())) {
+            DevopsIngressValidator.checkAppVersion(devopsIngressDTO);
+            DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
+            if (!devopsIngressDTO.equals(ingressDTO)) {
+                String name = devopsIngressDTO.getName();
+                String domain = devopsIngressDTO.getDomain();
+                Long domainEnvId = devopsIngressDTO.getEnvId();
+                DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(domainEnvId);
+
+                if (devopsIngressDTO.getPathList().isEmpty()) {
+                    throw new CommonException(PATH_ERROR);
+                }
+                V1beta1Ingress ingress = createIngress(domain, name, devopsEnvironmentE.getCode());
+                DevopsIngressDO devopsIngressDO = new DevopsIngressDO(
+                        id, projectId, domainEnvId, domain, name);
+                List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
+                devopsIngressDTO.getPathList().forEach(t -> {
+                    if (t.getPath() == null) {
+                        throw new CommonException(PATH_ERROR);
+                    } else if (t.getServiceId() == null) {
+                        throw new CommonException("error.service.id.get");
+                    }
+
+                    DevopsServiceE devopsServiceE = getDevopsService(t.getServiceId());
+
+                    devopsIngressPathDOS.add(new DevopsIngressPathDO(
+                            id, t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
+                    ingress.getSpec().getRules().get(0).getHttp()
+                            .addPathsItem(createPath(t.getPath(), t.getServiceId()));
+                });
+                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                        .queryByObject(ObjectType.INGRESS.getObjectType(), id);
+                devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
+                devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+                devopsEnvCommandRepository.update(devopsEnvCommandE);
+                if (!ingressDTO.getName().equals(name)) {
+                    idevopsIngressService.deleteIngress(
+                            ingressDTO.getName(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvCommandE.getId());
+                }
+                devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
+                devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
+                idevopsIngressService.createIngress(json.serialize(ingress),
+                        name, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvCommandE.getId());
+
+            }
+        } else {
+            throw new CommonException(ENV_DISCONNECTED);
         }
     }
 
     @Override
     public Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params) {
-        return devopsIngressRepository.getIngress(projectId, pageRequest, params);
+        Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository.getIngress(projectId, pageRequest, params);
+        Map<String, EnvSession> envs = envListener.connectedEnv();
+        for (DevopsIngressDTO devopsIngressDTO : devopsIngressDTOS) {
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getEnvId().equals(devopsIngressDTO.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                    devopsIngressDTO.setEnvStatus(true);
+                }
+            }
+        }
+        return devopsIngressDTOS;
     }
 
     @Override
@@ -162,15 +187,19 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public void deleteIngress(Long ingressId) {
-        DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
-        idevopsIngressService.deleteIngress(ingressDO.getName(), devopsEnvironmentE.getNamespace());
-
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getObjectType(), ingressId);
-        devopsEnvCommandE.setCommandType(CommandType.DELETE.getCommandType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        if (isEnvConnected(devopsIngressRepository.getIngress(ingressId).getEnvId())) {
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.INGRESS.getObjectType(), ingressId);
+            devopsEnvCommandE.setCommandType(CommandType.DELETE.getCommandType());
+            devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+            devopsEnvCommandRepository.update(devopsEnvCommandE);
+            DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
+            DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
+            idevopsIngressService.deleteIngress(
+                    ingressDO.getName(), devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvCommandE.getId());
+        } else {
+            throw new CommonException(ENV_DISCONNECTED);
+        }
 
     }
 
@@ -234,5 +263,18 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             throw new CommonException("error.service.select");
         }
         return devopsServiceE;
+    }
+
+
+    Boolean isEnvConnected(Long envId) {
+        Map<String, EnvSession> envs = envListener.connectedEnv();
+        List<Long> envIds = new ArrayList<>();
+        for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+            EnvSession envSession = entry.getValue();
+            if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                envIds.add(envSession.getEnvId());
+            }
+        }
+        return envIds.contains(envId);
     }
 }

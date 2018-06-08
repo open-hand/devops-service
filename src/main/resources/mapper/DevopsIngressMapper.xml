@@ -5,50 +5,57 @@
 
     <select id="queryIngressNameByServiceId" resultType="java.lang.String">
         SELECT
-        dd. NAME
+        di. NAME
         FROM
-        devops_ingress dd,
+        devops_ingress di,
         (
         SELECT
         *
         FROM
-        devops_ingress_path dda
+        devops_ingress_path dip
         WHERE
         service_id = #{serviceId}
         ) r
         WHERE
-        dd.id = r.ingress_id
+        di.id = r.ingress_id
         GROUP BY
-        dd. NAME
+        di. NAME
     </select>
 
-    <select id="selectIngerss" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressDO">
+    <select id="selectIngress" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressDO">
         SELECT DISTINCT
-        dd.id id,
-        dd.project_id projectId,
-        dd.env_id envId,
-        dd.`name` name,
-        dd.`domain` domain,
-        dd.is_usable isUsable,
+        di.id id,
+        di.project_id projectId,
+        di.env_id envId,
+        di.`name` name,
+        di.`domain` domain,
+        di.status,
+        di.is_usable isUsable,
         de.`name` envName,
-        de.namespace namespace
+        de.`code` namespace,
+        cmd.`status` commandStatus,
+        cmd.command_type commandType,
+        cmd.error error
         FROM
-        devops_ingress dd
-        JOIN devops_ingress_path dda ON dda.ingress_id = dd.id
-        JOIN devops_env de on de.id = dd.env_id
-        LEFT JOIN devops_service dn on dn.id = dda.service_id
-        WHERE dd.project_id = #{projectId}
+        devops_ingress di
+        JOIN devops_ingress_path dip ON dip.ingress_id = di.id
+        JOIN devops_env de on de.id = di.env_id
+        JOIN devops_env_command cmd ON cmd.object_id = di.id
+        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "ingress" GROUP BY
+        decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
+        LEFT JOIN devops_service ds on ds.id = dip.service_id
+        WHERE di.project_id = #{projectId}
         <if test='searchParam != null'>
             <if test='searchParam.domain != null and searchParam.domain.size > 0'>
                 AND
                 <foreach collection="searchParam.domain" item="domain" open="(" separator=" OR " close=")">
-                    dd.domain LIKE CONCAT(CONCAT('%', #{domain, jdbcType=VARCHAR}),'%')
+                    di.domain LIKE CONCAT(CONCAT('%', #{domain, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
                 AND
                 <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    dd.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                    di.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.envName != null and searchParam.envName.size > 0'>
@@ -66,41 +73,41 @@
             <if test='searchParam.path != null and searchParam.path.size > 0'>
                 AND
                 <foreach collection="searchParam.path" item="path" open="(" separator=" OR " close=")">
-                    dda.path LIKE CONCAT(CONCAT('%', #{path, jdbcType=VARCHAR}),'%')
+                    dip.path LIKE CONCAT(CONCAT('%', #{path, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.serviceName != null and searchParam.serviceName.size > 0'>
                 AND
                 <foreach collection="searchParam.serviceName" item="serviceName" open="(" separator=" OR " close=")">
-                    dn.name LIKE CONCAT(CONCAT('%', #{serviceName, jdbcType=VARCHAR}),'%')
+                    ds.name LIKE CONCAT(CONCAT('%', #{serviceName, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.ingressId != null and searchParam.domainId.size > 0'>
                 AND
                 <foreach collection="searchParam.ingressId" item="ingressId" open="(" separator=" OR " close=")">
-                    dd.id = #{ingressId}
+                    di.id = #{ingressId}
                 </foreach>
             </if>
             <if test='searchParam.envId != null and searchParam.envId.size > 0'>
                 AND
                 <foreach collection="searchParam.envId" item="envId" open="(" separator=" OR " close=")">
-                    dd.env_id = #{envId}
+                    di.env_id = #{envId}
                 </foreach>
             </if>
             <if test='searchParam.serviceId != null and searchParam.serviceId.size > 0'>
                 AND
                 <foreach collection="searchParam.serviceId" item="serviceId" open="(" separator=" OR " close=")">
-                    dn.id = #{serviceId}
+                    ds.id = #{serviceId}
                 </foreach>
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (dd.domain LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dd.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (di.domain LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR di.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR de.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dda.path LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dn.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            OR dip.path LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR ds.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </select>
 

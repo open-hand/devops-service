@@ -27,7 +27,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by younger on 2018/3/27.
  */
 @RestController
-@RequestMapping(value = "/v1/organization/{organizationId}/app_templates")
+@RequestMapping(value = "/v1/organizations/{organization_id}/app_templates")
 public class ApplicationTemplateController {
     private static String ERRORGET = "error.appTemplate.get";
 
@@ -49,7 +49,7 @@ public class ApplicationTemplateController {
     @PostMapping
     public ResponseEntity<ApplicationTemplateRepDTO> create(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId,
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @RequestBody ApplicationTemplateDTO applicationTemplateDTO) {
         return Optional.ofNullable(applicationTemplateService.create(applicationTemplateDTO, organizationId))
@@ -69,7 +69,7 @@ public class ApplicationTemplateController {
     @PutMapping
     public ResponseEntity<ApplicationTemplateRepDTO> update(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId,
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "模板信息", required = true)
             @RequestBody ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO) {
         return Optional.ofNullable(applicationTemplateService.update(applicationTemplateUpdateDTO, organizationId))
@@ -89,7 +89,7 @@ public class ApplicationTemplateController {
     @DeleteMapping(value = "/{appTemplateId}")
     public ResponseEntity delete(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId,
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @PathVariable Long appTemplateId) {
         applicationTemplateService.delete(appTemplateId);
@@ -108,7 +108,7 @@ public class ApplicationTemplateController {
     @GetMapping(value = "/{appTemplateId}")
     public ResponseEntity<ApplicationTemplateRepDTO> queryByAppTemplateId(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId,
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @PathVariable Long appTemplateId) {
         return Optional.ofNullable(applicationTemplateService.query(appTemplateId))
@@ -130,7 +130,7 @@ public class ApplicationTemplateController {
     @PostMapping("/list_by_options")
     public ResponseEntity<Page<ApplicationTemplateRepDTO>> listByOptions(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId,
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
@@ -152,7 +152,7 @@ public class ApplicationTemplateController {
     @GetMapping
     public ResponseEntity<List<ApplicationTemplateRepDTO>> listByOrgId(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId) {
+            @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(applicationTemplateService.list(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERRORGET));
@@ -170,7 +170,7 @@ public class ApplicationTemplateController {
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId,
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
         applicationTemplateService.checkName(organizationId, name);
@@ -189,7 +189,7 @@ public class ApplicationTemplateController {
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
             @ApiParam(value = "组织ID", required = true)
-            @PathVariable Long organizationId,
+            @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String code) {
         applicationTemplateService.checkCode(organizationId, code);

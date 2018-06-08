@@ -39,4 +39,11 @@ public class ApplicationMarketConvertor implements ConvertorI<ApplicationMarketE
         applicationMarketE.initApplicationEById(devopsAppMarketDO.getAppId());
         return applicationMarketE;
     }
+
+    @Override
+    public DevopsAppMarketDO dtoToDo(ApplicationReleasingDTO dto) {
+        DevopsAppMarketDO appMarketDO = new DevopsAppMarketDO();
+        BeanUtils.copyProperties(dto, appMarketDO);
+        return appMarketDO;
+    }
 }

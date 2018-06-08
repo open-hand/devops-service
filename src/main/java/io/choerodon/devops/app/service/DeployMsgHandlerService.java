@@ -9,21 +9,19 @@ public interface DeployMsgHandlerService {
 
     void handlerPreInstall(String msg);
 
-    void resourceUpdate(String key, String msg);
+    void resourceUpdate(String key, Long envId, String msg);
 
-    void resourceDelete(String msg);
+    void resourceDelete(Long envId, String msg);
 
     void helmReleaseHookLogs(String key, String msg);
 
     void updateInstanceStatus(String key, String instanceStatus, String commandStatus, String commandMsg);
 
-    void handlerDomainCreateMessage(String key, String msg);
+    void handlerDomainCreateMessage(String key, String msg,Long envId);
 
     void helmReleasePreUpgrade(String msg);
 
     void handlerReleaseUpgrade(String msg);
-
-    void helmRelease(String msg);
 
     void helmReleaseDeleteFail(String key, String msg);
 
@@ -38,4 +36,18 @@ public interface DeployMsgHandlerService {
     void helmReleaeStopFail(String key, String msg);
 
     void netWorkUpdate(String key, String msg);
+
+    void helmReleaseGetContent(String key, Long envId, String msg);
+
+    void commandNotSend(Long commandId, String msg);
+
+    void netWorkServiceFail(String key, String msg);
+
+    void netWorkIngressFail(String key, Long envId, String msg);
+
+    void netWorkServiceDeleteFail(String key, String value);
+
+    void netWorkIngressDeleteFail(String key, Long envId, String value);
+
+    void resourceSync(String key, Long envId, String value);
 }

@@ -8,6 +8,9 @@ public class ApplicationInstanceDTO {
     private Long id;
     private Long appId;
     private Long envId;
+    private String publishLevel;
+    private String contributor;
+    private String description;
     private Long appVersionId;
     private String code;
     private String appName;
@@ -20,7 +23,9 @@ public class ApplicationInstanceDTO {
     private String commandStatus;
     private String commandType;
     private String error;
+    private Boolean isConnect;
     private Long objectVersionNumber;
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -148,5 +153,45 @@ public class ApplicationInstanceDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getConnect() {
+        return isConnect;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnect = connect;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

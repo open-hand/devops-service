@@ -74,7 +74,7 @@ public class GitUtil {
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage("Render Variables[skip ci]").call();
-            if(type.equals(APPLICATION)) {
+            if (type.equals(APPLICATION)) {
                 git.branchCreate().setName(DEVELOP).call();
             }
             List<Ref> refs = git.branchList().call();

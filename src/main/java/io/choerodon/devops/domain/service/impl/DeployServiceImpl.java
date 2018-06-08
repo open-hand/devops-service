@@ -35,16 +35,15 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     @Async
-    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, String type) {
+    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, String type, Long commandId) {
         Msg msg = new Msg();
         Payload payload = new Payload(
-                devopsEnvironmentE.getNamespace(),
+                devopsEnvironmentE.getCode(),
                 helmUrl + applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, applicationInstanceE.getCode());
-        msg.setKey("env:" + devopsEnvironmentE.getNamespace() + ".release:" + applicationInstanceE.getCode());
-        msg.setBrokerFrom("test");
+        msg.setKey("env:" + devopsEnvironmentE.getCode() + ".envId:" + devopsEnvironmentE.getId() + ".release:" + applicationInstanceE.getCode());
         if (type.equals("update")) {
             msg.setType(HelmType.HelmReleasePreUpgrade.toValue());
         } else {
@@ -52,9 +51,11 @@ public class DeployServiceImpl implements DeployService {
         }
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
+            msg.setCommandId(commandId);
         } catch (IOException e) {
             throw new CommonException("error.payload.error");
         }
         commandSender.sendMsg(msg);
     }
+
 }

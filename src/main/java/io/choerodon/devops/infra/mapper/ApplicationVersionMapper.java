@@ -20,7 +20,8 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
             @Param("searchParam") Map<String, Object> searchParam,
             @Param("param") String param);
 
-    List<ApplicationLatestVersionDO> listAppLatestVersion(@Param("projectId") Long projectId);
+    List<ApplicationLatestVersionDO> listAppLatestVersion(@Param("projectId") Long projectId,
+                                                          @Param("projectIds") List<Long> projectIds);
 
     List<ApplicationVersionDO> listByAppIdAndEnvId(@Param("projectId") Long projectId,
                                                    @Param("appId") Long appId,
@@ -28,7 +29,8 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
 
     String queryValue(@Param("versionId") Long versionId);
 
-    List<ApplicationVersionDO> selectByAppId(@Param("appId") Long appId);
+    List<ApplicationVersionDO> selectByAppId(@Param("appId") Long appId,
+                                             @Param("isPublish") Boolean isPublish);
 
     List<ApplicationVersionDO> listApplicationVersionInApp(
             @Param("projectId") Long projectId,
@@ -37,4 +39,6 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
             @Param("param") String param);
 
     List<ApplicationVersionDO> getAllPublishedVersion(@Param("applicationId") Long applicationId);
+
+    List<Long> selectVersionsByAppId(@Param("applicationId") Long applicationId);
 }

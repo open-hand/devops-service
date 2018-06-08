@@ -17,7 +17,6 @@ public enum ResourceType {
 
     /**
      * 获取k8s对象类型
-     *
      */
     public static ResourceType forString(String type) {
         switch (type) {
@@ -43,7 +42,4 @@ public enum ResourceType {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
-    }
 }

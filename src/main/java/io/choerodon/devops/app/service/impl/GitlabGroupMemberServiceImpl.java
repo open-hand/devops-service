@@ -6,18 +6,17 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 
@@ -29,70 +28,77 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
     private static final String PROJECT = "project";
-
+    private static final String TEMPLATE = "template";
+    private static final String SITE = "site";
     private DevopsProjectRepository devopsProjectRepository;
     private GitlabUserRepository gitlabUserRepository;
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    private UserAttrRepository userAttrRepository;
+    private IamRepository iamRepository;
+    private GitlabRepository gitlabRepository;
 
-    /**
-     * 构造函数
-     */
     public GitlabGroupMemberServiceImpl(DevopsProjectRepository devopsProjectRepository,
                                         GitlabUserRepository gitlabUserRepository,
-                                        GitlabGroupMemberRepository gitlabGroupMemberRepository) {
+                                        GitlabGroupMemberRepository gitlabGroupMemberRepository,
+                                        UserAttrRepository userAttrRepository,
+                                        IamRepository iamRepository,
+                                        GitlabRepository gitlabRepository) {
         this.devopsProjectRepository = devopsProjectRepository;
         this.gitlabUserRepository = gitlabUserRepository;
         this.gitlabGroupMemberRepository = gitlabGroupMemberRepository;
+        this.userAttrRepository = userAttrRepository;
+        this.iamRepository = iamRepository;
+        this.gitlabRepository = gitlabRepository;
     }
 
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
         for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
-            if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
+            if (!gitlabGroupMemberDTO.getResourceType().equals(SITE)) {
                 List<Integer> accessLevelList = new ArrayList<>();
                 accessLevelList.add(0);
                 List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                if (userMemberRoleList == null || userMemberRoleList.size() == 0) {
-                    LOGGER.error("user member role is empty,{}");
+                if (userMemberRoleList.isEmpty()) {
+                    LOGGER.info("user member role is empty");
                 }
                 AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
 
-                operation(gitlabGroupMemberDTO.getResourceId(), level,
-                        gitlabGroupMemberDTO.getUsername());
+                operation(gitlabGroupMemberDTO.getResourceId(), gitlabGroupMemberDTO.getResourceType(), level,
+                        gitlabGroupMemberDTO.getUserId());
             }
         }
     }
 
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        for (GitlabGroupMemberDTO gg : gitlabGroupMemberDTOList) {
-            if (PROJECT.equals(gg.getResourceType())) {
-                GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(gg.getUsername());
-                if (gitlabUserE == null) {
-                    LOGGER.error("error.gitlab.username.select: " + gg.getUsername());
-                    return;
-                }
+        gitlabGroupMemberDTOList.stream().filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE)).forEach(gitlabGroupMemberDTO -> {
+            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
+            if (gitlabUserE == null) {
+                LOGGER.error("error.gitlab.username.select");
+                return;
+            }
+            GitlabGroupE gitlabGroupE;
+            if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
+                gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
+            } else {
+                Organization organization = iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
+                gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(gitlabUserE.getId()));
+            }
+            if (gitlabGroupE.getId() == null) {
+                LOGGER.error("error.gitlab.groupId.select");
+                return;
+            }
 
-                GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(gg.getResourceId());
-                if (gitlabGroupE.getId() == null) {
-                    LOGGER.error("error.gitlab.groupId.select: " + gg.getResourceId());
-                    return;
-                }
+            GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                    gitlabGroupE.getId(),
+                    gitlabUserE.getId());
 
-                GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+            if (grouoMemberE != null) {
+                gitlabGroupMemberRepository.deleteMember(
                         gitlabGroupE.getId(),
                         gitlabUserE.getId());
-
-                if (grouoMemberE != null) {
-                    ResponseEntity removeMember = gitlabGroupMemberRepository.deleteMember(
-                            gitlabGroupE.getId(),
-                            gitlabUserE.getId());
-                    if (removeMember.getStatusCode() != HttpStatus.NO_CONTENT) {
-                        LOGGER.error("error.gitlab.member.remove");
-                    }
-                }
             }
-        }
+        });
     }
 
     /**
@@ -125,60 +131,53 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     /**
      * The user action
      *
-     * @param projectId projectId
-     * @param level     level
-     * @param userName  userName
+     * @param resourceId   资源Id
+     * @param resourceType 资源type
+     * @param level        level
+     * @param userId       userId
      */
-    public void operation(Long projectId, AccessLevel level, String userName) {
-        GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUsername(userName);
-        if (gitlabUserE == null) {
-            LOGGER.error("error.gitlab.username.select: " + userName);
-            return;
+    public void operation(Long resourceId, String resourceType, AccessLevel level, Long userId) {
+        UserAttrE userAttrE = userAttrRepository.queryById(userId);
+        GitlabGroupE gitlabGroupE;
+        if (resourceType.equals(PROJECT)) {
+            gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+        } else {
+            Organization organization = iamRepository.queryOrganizationById(resourceId);
+            gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
-
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         if (gitlabGroupE.getId() == null) {
-            LOGGER.error("error.gitlab.groupId.select: " + projectId);
+            LOGGER.error("error.gitlab.groupId.select");
             return;
         }
 
         GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 gitlabGroupE.getId(),
-                gitlabUserE.getId());
+                (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
 
         // 增删改用户
         switch (level) {
             case NONE:
                 if (grouoMemberE != null) {
-                    ResponseEntity removeMember = gitlabGroupMemberRepository.deleteMember(
+                    gitlabGroupMemberRepository.deleteMember(
                             gitlabGroupE.getId(),
-                            gitlabUserE.getId());
-                    if (removeMember.getStatusCode() != HttpStatus.NO_CONTENT) {
-                        LOGGER.error("error.gitlab.member.remove");
-                    }
+                            (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 }
                 break;
             case DEVELOPER:
             case MASTER:
             case OWNER:
                 RequestMemberDO requestMember = new RequestMemberDO();
-                requestMember.setUserId(gitlabUserE.getId());
+                requestMember.setUserId((TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 requestMember.setAccessLevel(level.toValue());
                 requestMember.setExpiresAt("");
                 if (grouoMemberE == null) {
-                    int addMember = gitlabGroupMemberRepository.insertMember(
+                    gitlabGroupMemberRepository.insertMember(
                             gitlabGroupE.getId(),
                             requestMember);
-                    if (addMember != HttpStatus.CREATED.value()) {
-                        LOGGER.error("error.gitlab.member.insert");
-                    }
                 } else {
-                    ResponseEntity updateMember = gitlabGroupMemberRepository.updateMember(
+                    gitlabGroupMemberRepository.updateMember(
                             gitlabGroupE.getId(),
                             requestMember);
-                    if (updateMember.getStatusCode() != HttpStatus.OK) {
-                        LOGGER.error("error.gitlab.member.update");
-                    }
                 }
                 break;
             default:

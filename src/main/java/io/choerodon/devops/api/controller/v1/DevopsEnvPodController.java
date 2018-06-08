@@ -22,7 +22,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by Zenger on 2018/4/17.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/app_pod")
+@RequestMapping(value = "/v1/projects/{project_id}/app_pod")
 public class DevopsEnvPodController {
 
     private DevopsEnvPodService devopsEnvPodService;
@@ -45,7 +45,7 @@ public class DevopsEnvPodController {
     @PostMapping(value = "/list_by_options")
     public ResponseEntity<Page<DevopsEnvPodDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")

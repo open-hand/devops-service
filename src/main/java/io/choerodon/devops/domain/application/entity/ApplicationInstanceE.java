@@ -12,6 +12,9 @@ public class ApplicationInstanceE {
 
     private Long id;
     private String code;
+    private String publishLevel;
+    private String contributor;
+    private String description;
     private ApplicationE applicationE;
     private ApplicationVersionE applicationVersionE;
     private DevopsEnvironmentE devopsEnvironmentE;
@@ -23,6 +26,8 @@ public class ApplicationInstanceE {
     private String commandStatus;
     private String commandType;
     private String error;
+    private Boolean isConnect;
+    private Long projectId;
 
     public ApplicationInstanceE() {
     }
@@ -149,5 +154,45 @@ public class ApplicationInstanceE {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Boolean getConnect() {
+        return isConnect;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnect = connect;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

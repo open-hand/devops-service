@@ -1,5 +1,8 @@
 package io.choerodon.devops.domain.application.entity;
 
+import javax.persistence.Transient;
+import java.util.Date;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -23,6 +26,10 @@ public class ApplicationE {
     private String groupName;
     private String uuid;
     private String token;
+    private String publishLevel;
+    private String contributor;
+    private String description;
+    private Date lastUpdateDate;
 
     public ApplicationE() {
     }
@@ -38,6 +45,11 @@ public class ApplicationE {
 
     /**
      * 构造函数
+     *
+     * @param id     应用Id
+     * @param code   应用code
+     * @param name   应用name
+     * @param active 是否启用
      */
     public ApplicationE(Long id, String code, String name, Boolean active) {
         this.id = id;
@@ -160,5 +172,37 @@ public class ApplicationE {
 
     public void initSynchro(boolean synchro) {
         this.isSynchro = synchro;
+    }
+
+    public String getPublishLevel() {
+        return publishLevel;
+    }
+
+    public void setPublishLevel(String publishLevel) {
+        this.publishLevel = publishLevel;
+    }
+
+    public String getContributor() {
+        return contributor;
+    }
+
+    public void setContributor(String contributor) {
+        this.contributor = contributor;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 }

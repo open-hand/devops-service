@@ -1,15 +1,21 @@
 package io.choerodon.devops.domain.service.impl;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.GitFlowRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.service.IGitFlowService;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagNodeDO;
 
 /**
@@ -30,7 +36,6 @@ public class IGitFlowServiceImpl implements IGitFlowService {
     private static final String CAN_BE_MERGED = "can_be_merged";
     private static final String MERGED = "merged";
 
-
     private String[] featureBranchStatus = {
             "can_be_merge", "dev_conflict", "no_commit", MERGED
     };
@@ -44,16 +49,20 @@ public class IGitFlowServiceImpl implements IGitFlowService {
             "dev_can_merge_and_master_merged", "dev_conflict_and_master_merged",
             "dev_no_commit_and_master_merged", "both_merged"
     };
-    private GitFlowRepository gitFlowRepository;
-
 
     @Autowired
-    public IGitFlowServiceImpl(GitFlowRepository gitFlowRepository) {
-        this.gitFlowRepository = gitFlowRepository;
+    private GitFlowRepository gitFlowRepository;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+
+
+    public Integer getGitlabUserId() {
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
     }
 
-    private String mergeRequestMessage(String sourceBranch, String targetBranch, String username) {
-        return "Merge '" + sourceBranch + "' into '" + targetBranch + "' by '" + username + "'.";
+    private String mergeRequestMessage(String sourceBranch, String targetBranch) {
+        return "Merge '" + sourceBranch + "' into '" + targetBranch + "'.";
     }
 
     /**
@@ -75,11 +84,11 @@ public class IGitFlowServiceImpl implements IGitFlowService {
      * @param branchName 分支名称
      * @return mergeStatus 分支状态
      */
-    public Integer getBranchState(Integer projectId, String branchName, String username) {
+    public Integer getBranchState(Integer projectId, String branchName, Integer userId) {
         Integer outcome = 0; // 看上面的备注表格
-        outcome += calculateMergeStatus(projectId, branchName, username, true);
+        outcome += calculateMergeStatus(projectId, branchName, userId, true);
         if (!branchName.startsWith(FEATURE_PREFIX)) {
-            outcome += calculateMergeStatus(projectId, branchName, username, false);
+            outcome += calculateMergeStatus(projectId, branchName, userId, false);
         }
         return outcome;
     }
@@ -90,61 +99,81 @@ public class IGitFlowServiceImpl implements IGitFlowService {
     }
 
     @Override
-    public String getReleaseNumber(Long serviceId, String username) {
-        return getBranchNumber(serviceId, username, true);
+    public String getReleaseNumber(Long serviceId, Integer userId) {
+        return getBranchNumber(serviceId, userId, true);
     }
 
     @Override
-    public String getHotfixNumber(Long serviceId, String username) {
-        return getBranchNumber(serviceId, username, false);
+    public String getHotfixNumber(Long serviceId, Integer userId) {
+        return getBranchNumber(serviceId, userId, false);
     }
 
     @Override
     public void createBranch(Integer projectId, String branchName) {
         Boolean isHotFix = branchName.startsWith(HOTFIX_PREFIX);
-        gitFlowRepository.createBranch(projectId, branchName, isHotFix ? BRANCH_MASTER : BRANCH_DEV);
+        gitFlowRepository.createBranch(projectId, branchName, isHotFix ? BRANCH_MASTER : BRANCH_DEV, getGitlabUserId());
     }
 
     @Override
-    public void finishBranch(Integer projectId, String branchName, Boolean isTargetDev, Integer mergeStatus, String username) {
+    public void finishBranch(Integer projectId, String branchName, Boolean isTargetDev, Integer mergeStatus, Integer userId) {
         if (mergeStatus == 0) {
             String targetBranch = isTargetDev ? BRANCH_DEV : BRANCH_MASTER;
             Integer mergeRequestId = gitFlowRepository
                     .getDevOpsMergeRequest(projectId, branchName, targetBranch)
                     .getMergeRequestId().intValue();
-            acceptBranchMR(projectId, mergeRequestId, branchName, targetBranch, username);
+            acceptBranchMR(projectId, mergeRequestId, branchName, targetBranch, userId);
         }
     }
 
     @Override
-    public void createTag(Long serviceId, Integer projectId, String branchName, String username) {
+    public String getTag(Long serviceId, String branchName, Integer userId) {
         String tag = branchName.split("-")[1];
-        if (!tag.matches("\\d+(\\.\\d+){2}")) {
-            if (branchName.startsWith(RELEASE_PREFIX)) {
-                tag = getReleaseNumber(serviceId, username);
-            } else if (branchName.startsWith(HOTFIX_PREFIX)) {
-                tag = getHotfixNumber(serviceId, username);
+        List<TagDO> tagList = gitFlowRepository.getTagList(serviceId, userId);
+        TagNodeDO tagNode = TagNodeDO.tagNameToTagNode(tag);
+
+        if (tagNode != null) {
+            String branchTag = tagNode.getTag();
+            if (tagList.parallelStream().anyMatch(t -> branchTag.equals(t.getName()))) {
+                tag = getTagNext(serviceId, branchName, userId);
             } else {
-                throw new CommonException("create.tag.wrong.branch");
+                tag = branchTag;
             }
+        } else {
+            tag = getTagNext(serviceId, branchName, userId);
         }
-        gitFlowRepository.createTag(projectId, tag, username);
+        return tag;
+    }
+
+    private String getTagNext(Long serviceId, String branchName, Integer userId) {
+        if (branchName.startsWith(RELEASE_PREFIX)) {
+            return getReleaseNumber(serviceId, userId);
+        } else if (branchName.startsWith(HOTFIX_PREFIX)) {
+            return getHotfixNumber(serviceId, userId);
+        } else {
+            throw new CommonException("create.tag.wrong.branch");
+        }
     }
 
     @Override
-    public void deleteBranchSafely(Integer projectId, String branchName, Integer devMergeStatus, Integer masterMergeStatus, String username) {
-        deleteBranchRecord(projectId, branchName, BRANCH_DEV, devMergeStatus);
-        if (!branchName.startsWith(FEATURE_PREFIX)) {
-            deleteBranchRecord(projectId, branchName, BRANCH_MASTER, masterMergeStatus);
-        }
-        gitFlowRepository.deleteBranch(projectId, branchName, username);
+    public void createTag(Long serviceId, Integer projectId, String branchName, Integer userId) {
+        String tag = getTag(serviceId, branchName, userId);
+        gitFlowRepository.createTag(projectId, tag, userId);
     }
 
     @Override
-    public void createMergeRequest(Integer projectId, String branchName, String username) {
-        gitFlowRepository.createMergeRequest(projectId, branchName, BRANCH_DEV, username);
+    public void deleteBranchSafely(Integer projectId, String branchName, Integer devMergeStatus, Integer masterMergeStatus, Integer userId) {
+        deleteBranchRecord(projectId, branchName, BRANCH_DEV, devMergeStatus, userId);
         if (!branchName.startsWith(FEATURE_PREFIX)) {
-            gitFlowRepository.createMergeRequest(projectId, branchName, BRANCH_MASTER, username);
+            deleteBranchRecord(projectId, branchName, BRANCH_MASTER, masterMergeStatus, userId);
+        }
+        gitFlowRepository.deleteBranch(projectId, branchName, userId);
+    }
+
+    @Override
+    public void createMergeRequest(Integer projectId, String branchName, Integer userId) {
+        gitFlowRepository.createMergeRequest(projectId, branchName, BRANCH_DEV, userId);
+        if (!branchName.startsWith(FEATURE_PREFIX)) {
+            gitFlowRepository.createMergeRequest(projectId, branchName, BRANCH_MASTER, userId);
         }
     }
 
@@ -158,20 +187,20 @@ public class IGitFlowServiceImpl implements IGitFlowService {
      *
      * @param applicationId 应用ID
      * @param branchName    分支名称
-     * @param username      用户名
+     * @param userId        用户Id
      * @param isTargetDev   目标分支是否为develop
      * @return 合并状态，master分支结果乘 4 方便状态计算
      */
     private Integer calculateMergeStatus(
             Integer applicationId,
             String branchName,
-            String username,
+            Integer userId,
             Boolean isTargetDev
     ) {
         Long mergeRequestId = gitFlowRepository.getDevOpsMergeRequest(
                 applicationId, branchName, isTargetDev ? BRANCH_DEV : BRANCH_MASTER).getMergeRequestId();
-        gitFlowRepository.updateMergeRequest(applicationId, mergeRequestId, username);
-        MergeRequestDO mergeRequest = gitFlowRepository.getMergeRequest(applicationId, mergeRequestId, username);
+        gitFlowRepository.updateMergeRequest(applicationId, mergeRequestId, userId);
+        MergeRequestDO mergeRequest = gitFlowRepository.getMergeRequest(applicationId, mergeRequestId, userId);
         String mergeRequestState = mergeRequest.getState();
         Integer statusCount = 0;
         if (MERGED.equals(mergeRequestState)) {
@@ -179,14 +208,14 @@ public class IGitFlowServiceImpl implements IGitFlowService {
         } else {
             String mergeRequestMergeStatus = mergeRequest.getMergeStatus();
             if (!CAN_BE_MERGED.equals(mergeRequestMergeStatus)) {
-                statusCount = gitFlowRepository.checkMergeRequestCommit(applicationId, mergeRequestId) ? 2 : 1;
+                statusCount = gitFlowRepository.checkMergeRequestCommit(applicationId, mergeRequestId, userId) ? 2 : 1;
             }
         }
         return isTargetDev ? statusCount : statusCount * 4;
     }
 
-    private String getBranchNumber(Long applicationId, String username, Boolean isRealease) {
-        Optional<TagNodeDO> maxTagNode = gitFlowRepository.getMaxTagNode(applicationId, username);
+    private String getBranchNumber(Long applicationId, Integer userId, Boolean isRealease) {
+        Optional<TagNodeDO> maxTagNode = gitFlowRepository.getMaxTagNode(applicationId, userId);
         if (maxTagNode.isPresent()) {
             TagNodeDO node = maxTagNode.get();
             return node.getNextTag(isRealease);
@@ -200,23 +229,24 @@ public class IGitFlowServiceImpl implements IGitFlowService {
             Integer mergeRequestId,
             String branchName,
             String targetBranch,
-            String username
+            Integer userId
     ) {
-        String message = mergeRequestMessage(branchName, targetBranch, username);
+        String message = mergeRequestMessage(branchName, targetBranch);
         MergeRequestDO mergeRequest = gitFlowRepository
-                .acceptMergeRequest(projectId, mergeRequestId, message, username);
+                .acceptMergeRequest(projectId, mergeRequestId, message, userId);
         if (!MERGED.equals(mergeRequest.getState())) {
             throw new CommonException("error.mergeRequest.accept");
         }
     }
 
-    private void deleteBranchRecord(Integer projectId, String branchName, String targetBranch, Integer mergeStatus) {
+    private void deleteBranchRecord(Integer projectId, String branchName, String targetBranch,
+                                    Integer mergeStatus, Integer userId) {
         DevopsMergeRequestDO mergeRequestDO = gitFlowRepository
                 .getDevOpsMergeRequest(projectId, branchName, targetBranch);
         Long mergeRequestId = mergeRequestDO.getMergeRequestId();
         gitFlowRepository.deleteDevOpsMergeRequest(mergeRequestDO.getId());
         if (mergeStatus == 2) {
-            gitFlowRepository.deleteMergeRequest(projectId, mergeRequestId.intValue());
+            gitFlowRepository.deleteMergeRequest(projectId, mergeRequestId.intValue(), userId);
         }
     }
 }

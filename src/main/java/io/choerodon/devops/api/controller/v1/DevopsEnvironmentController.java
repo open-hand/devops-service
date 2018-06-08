@@ -21,7 +21,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Created by younger on 2018/4/9.
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/envs")
+@RequestMapping(value = "/v1/projects/{project_id}/envs")
 public class DevopsEnvironmentController {
 
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -42,7 +42,7 @@ public class DevopsEnvironmentController {
     @PostMapping
     public ResponseEntity<String> create(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody DevopsEnviromentDTO devopsEnviromentDTO) {
         return Optional.ofNullable(devopsEnvironmentService.create(projectId, devopsEnviromentDTO))
@@ -61,7 +61,7 @@ public class DevopsEnvironmentController {
     @GetMapping(value = "/deployed")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdDeployed(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId) {
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listDeployed(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.service.environment.get"));
@@ -79,7 +79,7 @@ public class DevopsEnvironmentController {
     @GetMapping
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdAndActive(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否启用", required = true)
             @RequestParam Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectIdAndActive(projectId, active))
@@ -92,6 +92,7 @@ public class DevopsEnvironmentController {
      *
      * @param projectId     项目id
      * @param environmentId 环境id
+     * @param environmentId 是否更新
      * @return String
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -99,10 +100,12 @@ public class DevopsEnvironmentController {
     @GetMapping("/{environmentId}/shell")
     public ResponseEntity<String> queryShell(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable Long environmentId) {
-        return Optional.ofNullable(devopsEnvironmentService.queryShell(environmentId))
+            @PathVariable Long environmentId,
+            @ApiParam(value = "是否更新")
+            @RequestParam(required = false) Boolean update) {
+        return Optional.ofNullable(devopsEnvironmentService.queryShell(environmentId, update))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.shell.get"));
     }
@@ -120,7 +123,7 @@ public class DevopsEnvironmentController {
     @PutMapping("/{environmentId}/active")
     public ResponseEntity<Boolean> queryByEnvIdAndActive(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable Long environmentId,
             @ApiParam(value = "是否启用", required = true)
@@ -142,7 +145,7 @@ public class DevopsEnvironmentController {
     @GetMapping("/{environmentId}")
     public ResponseEntity<DevopsEnvironmentUpdateDTO> query(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable Long environmentId) {
         return Optional.ofNullable(devopsEnvironmentService.query(environmentId))
@@ -162,7 +165,7 @@ public class DevopsEnvironmentController {
     @PutMapping
     public ResponseEntity<DevopsEnvironmentUpdateDTO> update(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境信息", required = true)
             @RequestBody DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
         return Optional.ofNullable(devopsEnvironmentService.update(devopsEnvironmentUpdateDTO, projectId))
@@ -182,7 +185,7 @@ public class DevopsEnvironmentController {
     @PutMapping("/sort")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> sort(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境列表", required = true)
             @RequestBody Long[] environmentIds) {
         return Optional.ofNullable(devopsEnvironmentService.sort(environmentIds))
@@ -202,7 +205,7 @@ public class DevopsEnvironmentController {
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
         devopsEnvironmentService.checkName(projectId, name);
@@ -221,7 +224,7 @@ public class DevopsEnvironmentController {
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)
             @RequestParam String code) {
         devopsEnvironmentService.checkCode(projectId, code);
@@ -239,7 +242,7 @@ public class DevopsEnvironmentController {
     @GetMapping(value = "/instance")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectId(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId) {
+            @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.get"));

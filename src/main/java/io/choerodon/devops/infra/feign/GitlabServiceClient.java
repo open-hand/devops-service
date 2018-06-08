@@ -19,9 +19,9 @@ import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 @FeignClient(value = "gitlab-service", fallback = GitlabServiceClientFallback.class)
 public interface GitlabServiceClient {
 
-    @GetMapping(value = "/v1/users/{username}/details")
-    ResponseEntity<UserDO> queryUserByUsername(
-            @PathVariable("username") String username);
+    @GetMapping(value = "/v1/users/{userId}")
+    ResponseEntity<UserDO> queryUserByUserId(
+            @PathVariable("userId") Integer userId);
 
     @GetMapping(value = "/v1/groups/{groupId}/members/{userId}")
     ResponseEntity<MemberDO> getUserMemberByUserId(
@@ -48,149 +48,120 @@ public interface GitlabServiceClient {
                                             @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
                                             @RequestBody GitlabUserEvent gitlabUserEvent);
 
-    @PutMapping("/v1/users/{username}")
-    ResponseEntity<UserDO> updateGitLabUser(@PathVariable("username") String username,
+    @PutMapping("/v1/users/{userId}")
+    ResponseEntity<UserDO> updateGitLabUser(@PathVariable("userId") Integer userId,
                                             @RequestParam(value = "projectsLimit", required = false) Integer projectsLimit,
                                             @RequestBody GitlabUserEvent gitlabUserEvent);
 
-    @DeleteMapping(value = "/v1/users/{username}")
-    ResponseEntity deleteGitLabUser(@PathVariable("username") String username);
-
-    @PostMapping(value = "/v1/projects/name/event")
-    ResponseEntity<GitlabProjectDO> createProject(@RequestParam("groupId") Integer groupId,
-                                                  @RequestParam("projectName") String projectName,
-                                                  @RequestParam("userName") String userName);
 
     @PutMapping("/v1/projects/{projectId}")
     ResponseEntity<GitlabProjectDO> updateProject(@PathVariable("projectId") Integer projectId,
-                                                  @RequestParam("userName") String userName);
-
-    @PostMapping(value = "/v1/projects/{projectId}/variables")
-    ResponseEntity<Map<String, Object>> addVariable(@PathVariable("projectId") Integer projectId,
-                                                    @RequestParam("key") String key,
-                                                    @RequestParam("value") String value,
-                                                    @RequestParam("protecteds") Boolean protecteds);
+                                                  @RequestParam("userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<Map<String, Object>> addVariable(@PathVariable("projectId") Integer projectId,
                                                     @RequestParam("key") String key,
                                                     @RequestParam("value") String value,
                                                     @RequestParam("protecteds") Boolean protecteds,
-                                                    @RequestParam("userName") String userName);
+                                                    @RequestParam("userId") Integer userId);
 
     @DeleteMapping(value = "/v1/projects/{projectId}")
     ResponseEntity deleteProject(@PathVariable("projectId") Integer projectId,
-                                 @RequestParam("userName") String userName);
-
-    @GetMapping("/v1/projects/{projectId}/jobs/{jobId}")
-    ResponseEntity<JobDO> getJob(@PathVariable("projectId") Integer projectId, @PathVariable("jobId") Integer jobId);
-
-    @PostMapping(value = "/v1/projects/{projectId}/protected_branches")
-    ResponseEntity<Map<String, Object>> insertProtectedBranches(
-            @PathVariable("projectId") Integer projectId,
-            @RequestParam("name") String name,
-            @RequestParam("merge_access_level") String mergeAccessLevel,
-            @RequestParam("push_access_level") String pushAccessLevel,
-            @RequestParam("userName") String userName);
+                                 @RequestParam("userId") Integer userId);
 
 
-    @PostMapping(value = "/v1/users/{username}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDO> create(@PathVariable("username") String username);
-
-    @GetMapping(value = "/v1/users/{username}/impersonation_tokens")
-    ResponseEntity<List<ImpersonationTokenDO>> selectAll(@PathVariable("username") String username);
+    @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
+    ResponseEntity<ImpersonationTokenDO> create(@PathVariable("userId") Integer userId);
 
     @PostMapping(value = "/v1/groups")
     ResponseEntity<GroupDO> createGroup(
             @RequestBody @Valid GroupDO group,
-            @RequestParam("userName") String userName
+            @RequestParam("userId") Integer userId
     );
-
-    @PostMapping(value = "/v1/groups")
-    ResponseEntity<GroupDO> createGroup(@RequestBody GroupDO groupDO);
 
     @GetMapping(value = "/v1/groups/{groupId}/projects/event")
     ResponseEntity<List<GitlabProjectDO>> listProjects(@PathVariable("groupId") Integer groupId,
-                                                       @RequestParam(value = "userName", required = false) String userName);
+                                                       @RequestParam(value = "userId", required = false) Integer userId);
 
-    @PostMapping(value = "/v1/users/{username}/impersonation_tokens")
-    ResponseEntity<ImpersonationTokenDO> createToken(@PathVariable("username") String username);
+    @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
+    ResponseEntity<ImpersonationTokenDO> createToken(@PathVariable("userId") Integer userId);
 
-    @GetMapping(value = "/v1/users/{username}/impersonation_tokens")
-    ResponseEntity<List<ImpersonationTokenDO>> listTokenByUserName(@PathVariable("username") String username);
-
-
-    @PostMapping(value = "/v1/hook")
-    ResponseEntity<ProjectHookDO> addHookByProjectHook(@RequestParam("projectId") Integer projectId, @RequestBody ProjectHookDO projectHook,
-                                                       @RequestParam("userName") String userName);
+    @GetMapping(value = "/v1/users/{userId}/impersonation_tokens")
+    ResponseEntity<List<ImpersonationTokenDO>> listTokenByUserId(@PathVariable("userId") Integer userId);
 
     @GetMapping(value = "/v1/groups/{groupName}")
-    ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName);
+    ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName, @RequestParam(value = "userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<Boolean> createFile(@PathVariable("projectId") Integer projectId,
-                                       @RequestParam("userName") String userName);
+                                       @RequestParam("userId") Integer userId);
+
+    @GetMapping(value = "/v1/projects/{projectId}/repository/file/master/readme.md")
+    ResponseEntity<String> getReadme(@PathVariable("projectId") Integer projectId,
+                                     @RequestParam("commit") String commit);
 
     @PostMapping(value = "/v1/projects/{projectId}/protected_branches")
     ResponseEntity<Map<String, Object>> createProtectedBranches(@PathVariable("projectId") Integer projectId,
                                                                 @RequestParam("name") String name,
                                                                 @RequestParam("mergeAccessLevel") String mergeAccessLevel,
                                                                 @RequestParam("pushAccessLevel") String pushAccessLevel,
-                                                                @RequestParam("userName") String userName);
+                                                                @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines")
-    ResponseEntity<List<PipelineDO>> listPipeline(@PathVariable("projectId") Integer projectId);
+    ResponseEntity<List<PipelineDO>> listPipeline(@PathVariable("projectId") Integer projectId, @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/page")
     ResponseEntity<List<PipelineDO>> listPipelines(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("page") Integer page, @RequestParam("size") Integer size);
+                                                   @RequestParam("page") Integer page, @RequestParam("size") Integer size, @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}")
     ResponseEntity<PipelineDO> getPipeline(@PathVariable("projectId") Integer projectId,
                                            @PathVariable("pipelineId") Integer pipelineId,
-                                           @RequestParam("userName") String userName);
+                                           @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits")
     ResponseEntity<CommitDO> getCommit(@PathVariable("projectId") Integer projectId,
                                        @RequestParam("sha") String sha,
-                                       @RequestParam("userName") String userName);
+                                       @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDO>> listJobs(@PathVariable("projectId") Integer projectId,
                                          @PathVariable("pipelineId") Integer pipelineId,
-                                         @RequestParam("userName") String userName);
+                                         @RequestParam("userId") Integer userId);
 
     @PutMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
     ResponseEntity updateMergeRequest(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("mergeRequestId") Integer merRequestId,
-            @RequestParam(value = "username", required = false) String username);
+            @RequestParam(value = "userId", required = false) Integer userId);
 
     @GetMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
     ResponseEntity<MergeRequestDO> getMergeRequest(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("mergeRequestId") Integer mergeRequestId,
-            @RequestParam(value = "username", required = false) String username);
+            @RequestParam(value = "userId", required = false) Integer userId);
 
     @GetMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}/commit")
     ResponseEntity<List<CommitDO>> listCommits(
             @PathVariable("projectId") Integer projectId,
-            @PathVariable("mergeRequestId") Integer mergeRequestId);
+            @PathVariable("mergeRequestId") Integer mergeRequestId,
+            @RequestParam(value = "userId") Integer userId);
 
     @GetMapping("/v1/projects/{projectId}/repository/branches")
-    public ResponseEntity<List<BranchDO>> listBranches(@PathVariable("projectId") Integer projectId);
+    ResponseEntity<List<BranchDO>> listBranches(@PathVariable("projectId") Integer projectId,
+                                                @RequestParam(value = "userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/retry")
-    public ResponseEntity<PipelineDO> retry(
+    ResponseEntity<PipelineDO> retry(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
-            @RequestParam("userName") String userName);
+            @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/cancel")
-    public ResponseEntity<PipelineDO> cancel(
+    ResponseEntity<PipelineDO> cancel(
             @PathVariable("projectId") Integer projectId,
             @PathVariable("pipelineId") Integer pipelineId,
-            @RequestParam("userName") String userName);
+            @RequestParam("userId") Integer userId);
 
 
     /**
@@ -210,7 +181,7 @@ public interface GitlabServiceClient {
             @RequestParam("targetBranch") String targetBranch,
             @RequestParam("title") String title,
             @RequestParam("description") String description,
-            @RequestParam(value = "username", required = false) String username);
+            @RequestParam(value = "userId", required = false) Integer userId);
 
     /**
      * 执行merge请求
@@ -228,7 +199,7 @@ public interface GitlabServiceClient {
             @RequestParam("mergeCommitMessage") String mergeCommitMessage,
             @RequestParam("removeSourceBranch") Boolean shouldRemoveSourceBranch,
             @RequestParam("mergeWhenPipelineSucceeds") Boolean mergeWhenPipelineSucceeds,
-            @RequestParam(value = "username", required = false) String username);
+            @RequestParam(value = "userId", required = false) Integer userId);
 
     /**
      * 获取tag列表
@@ -239,7 +210,7 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/projects/{projectId}/repository/tags")
     ResponseEntity<List<TagDO>> getTags(
             @PathVariable("projectId") Integer projectId,
-            @RequestParam(value = "username", required = false) String username);
+            @RequestParam(value = "userId", required = false) Integer userId);
 
     /**
      * 创建tag
@@ -254,11 +225,12 @@ public interface GitlabServiceClient {
             @PathVariable("projectId") Integer projectId,
             @RequestParam("name") String name,
             @RequestParam("ref") String ref,
-            @RequestParam("username") String username);
+            @RequestParam("userId") Integer userId);
 
     @DeleteMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
     ResponseEntity deleteMergeRequest(@PathVariable("projectId") Integer projectId,
-                                      @PathVariable("mergeRequestId") Integer mergeRequestId);
+                                      @PathVariable("mergeRequestId") Integer mergeRequestId,
+                                      @RequestParam("userId") Integer userId);
 
     /**
      * 根据分支名删除分支
@@ -271,7 +243,7 @@ public interface GitlabServiceClient {
     ResponseEntity<Object> deleteBranch(
             @PathVariable("projectId") Integer projectId,
             @RequestParam("branchName") String branchName,
-            @RequestParam("username") String username);
+            @RequestParam("userId") Integer userId);
 
     /**
      * 创建新分支的接口
@@ -285,7 +257,8 @@ public interface GitlabServiceClient {
     ResponseEntity<BranchDO> createBranch(
             @PathVariable("projectId") Integer projectId,
             @RequestParam("name") String name,
-            @RequestParam("source") String source);
+            @RequestParam("source") String source,
+            @RequestParam("userId") Integer userId);
 
     /**
      * 获取tag列表
@@ -298,11 +271,12 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/projects/{projectId}/repository/tags/page")
     ResponseEntity<List<TagDO>> getPageTags(@PathVariable("projectId") Integer projectId,
                                             @RequestParam("page") int page,
-                                            @RequestParam("perPage") int perPage);
+                                            @RequestParam("perPage") int perPage,
+                                            @RequestParam("userId") Integer userId);
 
-    @PutMapping("/v1/users/{username}/is_enabled")
-    ResponseEntity enabledUserByUsername(@PathVariable("username") String username);
+    @PutMapping("/v1/users/{userId}/is_enabled")
+    ResponseEntity enabledUserByUserId(@PathVariable("userId") Integer userId);
 
-    @PutMapping("/v1/users/{username}/dis_enabled")
-    ResponseEntity disEnabledUserByUsername(@PathVariable("username") String username);
+    @PutMapping("/v1/users/{userId}/dis_enabled")
+    ResponseEntity disEnabledUserByUserId(@PathVariable("userId") Integer userId);
 }

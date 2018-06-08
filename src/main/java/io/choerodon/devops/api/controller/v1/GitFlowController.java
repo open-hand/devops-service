@@ -23,7 +23,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/project/{projectId}/apps/{applicationId}/git_flow")
+@RequestMapping(value = "/v1/projects/{project_id}/apps/{applicationId}/git_flow")
 public class GitFlowController {
 
     private GitFlowService gitFlowService;
@@ -44,7 +44,7 @@ public class GitFlowController {
     @GetMapping("/branches")
     public ResponseEntity<List<GitFlowE>> listByAppId(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
         return Optional.ofNullable(gitFlowService.getBranches(projectId, applicationId))
@@ -65,7 +65,7 @@ public class GitFlowController {
     @PostMapping("/update_merge_request_status")
     public ResponseEntity<String> finish(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -81,7 +81,7 @@ public class GitFlowController {
     @PostMapping("/start")
     public ResponseEntity start(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -95,7 +95,7 @@ public class GitFlowController {
     @PostMapping("/finish_feature")
     public ResponseEntity finishFeatureEvent(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -109,7 +109,7 @@ public class GitFlowController {
     @PostMapping("/finish")
     public ResponseEntity finishEvent(
             @ApiParam(value = "项目ID", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @ApiParam(value = "分支名称", required = true)
@@ -132,7 +132,7 @@ public class GitFlowController {
     @GetMapping("/tags")
     public ResponseEntity<TagsDO> queryTags(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
@@ -142,25 +142,49 @@ public class GitFlowController {
                 .orElseThrow(() -> new CommonException("error.tag.get"));
     }
 
+    /**
+     * 获取新发布版本号
+     *
+     * @param projectId     项目ID
+     * @param applicationId 应用ID
+     * @param branch        分支名称
+     * @return 下一发布版本号
+     */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "获取新发布版本号")
     @GetMapping("/tags/release")
     public ResponseEntity<String> queryReleaseNumber(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId) {
-        return new ResponseEntity<>(gitFlowService.getReleaseNumber(applicationId, null), HttpStatus.OK);
+            @PathVariable Long applicationId,
+            @ApiParam(value = "分支名称", required = false)
+            @RequestParam(value = "branch", required = false) String branch) {
+        return Optional.ofNullable(gitFlowService.getReleaseNumber(applicationId, branch))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.release.tag.get"));
     }
 
+    /**
+     * 获取热修复版本号
+     *
+     * @param projectId     项目ID
+     * @param applicationId 应用ID
+     * @param branch        分支名称
+     * @return 下一热修复版本号
+     */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "获取热修复版本号")
     @GetMapping("/tags/hotfix")
     public ResponseEntity<String> queryHotfixNumber(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable Long projectId,
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId) {
-        return new ResponseEntity<>(gitFlowService.getHotfixNumber(applicationId, null), HttpStatus.OK);
+            @PathVariable Long applicationId,
+            @ApiParam(value = "分支名称", required = false)
+            @RequestParam(value = "branch", required = false) String branch) {
+        return Optional.ofNullable(gitFlowService.getHotfixNumber(applicationId, branch))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.hotfix.tag.get"));
     }
 }

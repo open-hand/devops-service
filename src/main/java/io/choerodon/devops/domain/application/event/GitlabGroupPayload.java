@@ -17,7 +17,6 @@ public class GitlabGroupPayload {
     private List<String> roleLabels;
 
 
-
     public Long getProjectId() {
         return projectId;
     }

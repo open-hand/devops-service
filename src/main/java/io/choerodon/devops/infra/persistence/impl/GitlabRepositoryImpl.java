@@ -31,17 +31,17 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, String userName) {
-        gitlabServiceClient.addVariable(gitlabProjectId, key, value, protecteds, userName);
+    public void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
+        gitlabServiceClient.addVariable(gitlabProjectId, key, value, protecteds, userId);
     }
 
     @Override
-    public List<String> listTokenByUserName(Integer gitlabProjectId, String name, String userName) {
+    public List<String> listTokenByUserId(Integer gitlabProjectId, String name, Integer userId) {
         ResponseEntity<List<ImpersonationTokenDO>> impersonationTokens = gitlabServiceClient
-                .listTokenByUserName(userName);
+                .listTokenByUserId(userId);
         if (!impersonationTokens.getStatusCode().is2xxSuccessful()) {
             gitUtil.deleteWorkingDirectory(name);
-            gitlabServiceClient.deleteProject(gitlabProjectId, userName);
+            gitlabServiceClient.deleteProject(gitlabProjectId, userId);
         }
         List<String> tokens = new ArrayList<>();
         impersonationTokens.getBody().parallelStream().forEach(impersonationToken ->
@@ -51,18 +51,18 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public String createToken(Integer gitlabProjectId, String name, String userName) {
-        ResponseEntity<ImpersonationTokenDO> impersonationToken = gitlabServiceClient.createToken(userName);
+    public String createToken(Integer gitlabProjectId, String name, Integer userId) {
+        ResponseEntity<ImpersonationTokenDO> impersonationToken = gitlabServiceClient.createToken(userId);
         if (!impersonationToken.getStatusCode().is2xxSuccessful()) {
             gitUtil.deleteWorkingDirectory(name);
-            gitlabServiceClient.deleteProject(gitlabProjectId, userName);
+            gitlabServiceClient.deleteProject(gitlabProjectId, userId);
         }
         return impersonationToken.getBody().getToken();
     }
 
     @Override
-    public GitlabGroupE queryGroupByName(String groupName) {
-        ResponseEntity<GroupDO> groupDO = gitlabServiceClient.queryGroupByName(groupName);
+    public GitlabGroupE queryGroupByName(String groupName, Integer userId) {
+        ResponseEntity<GroupDO> groupDO = gitlabServiceClient.queryGroupByName(groupName, userId);
         if (groupDO != null) {
             return ConvertHelper.convert(groupDO.getBody(), GitlabGroupE.class);
         } else {
@@ -71,9 +71,9 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public GitlabGroupE createGroup(GitlabGroupE gitlabGroupE) {
+    public GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId) {
         ResponseEntity<GroupDO> groupDO = gitlabServiceClient.createGroup(ConvertHelper.convert(
-                gitlabGroupE, GroupDO.class));
+                gitlabGroupE, GroupDO.class), userId);
         if (groupDO.getStatusCode().is2xxSuccessful()) {
             return ConvertHelper.convert(groupDO.getBody(), GitlabGroupE.class);
         } else {
@@ -82,8 +82,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public Boolean createFile(Integer projectId, String userName) {
-        ResponseEntity<Boolean> result = gitlabServiceClient.createFile(projectId, userName);
+    public Boolean createFile(Integer projectId, Integer userId) {
+        ResponseEntity<Boolean> result = gitlabServiceClient.createFile(projectId, userId);
         if (result.getStatusCode().is2xxSuccessful()) {
             return result.getBody();
         } else {
@@ -92,23 +92,24 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, String userName) {
+    public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, Integer userId) {
         ResponseEntity<Map<String, Object>> branch = gitlabServiceClient.createProtectedBranches(
-                projectId, name, mergeAccessLevel, pushAccessLevel, userName);
+                projectId, name, mergeAccessLevel, pushAccessLevel, userId);
         if (!branch.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.branch.create");
         }
     }
 
     @Override
-    public void deleteProject(Integer projectId) {
-        gitlabServiceClient.deleteProject(projectId, null);
+    public void deleteProject(Integer projectId, Integer userId) {
+        gitlabServiceClient.deleteProject(projectId, userId);
     }
 
 
     @Override
-    public void updateProject(Integer projectId,String userName) {
-         gitlabServiceClient.updateProject(projectId,userName);
+
+    public void updateProject(Integer projectId, Integer userId) {
+        gitlabServiceClient.updateProject(projectId, userId);
     }
 
 }
