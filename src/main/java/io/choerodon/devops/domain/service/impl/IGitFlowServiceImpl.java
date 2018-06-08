@@ -129,20 +129,29 @@ public class IGitFlowServiceImpl implements IGitFlowService {
     public String getTag(Long serviceId, String branchName, Integer userId) {
         String tag = branchName.split("-")[1];
         List<TagDO> tagList = gitFlowRepository.getTagList(serviceId, userId);
-        String branchTag = tag;
         TagNodeDO tagNode = TagNodeDO.tagNameToTagNode(tag);
-        tag = tagNode != null ? tagNode.getTag() : tag;
-        if (!tag.matches("\\d+(\\.\\d+){2}")
-                || tagList.parallelStream().anyMatch(t -> branchTag.equals(t.getName()))) {
-            if (branchName.startsWith(RELEASE_PREFIX)) {
-                tag = getReleaseNumber(serviceId, userId);
-            } else if (branchName.startsWith(HOTFIX_PREFIX)) {
-                tag = getHotfixNumber(serviceId, userId);
+
+        if (tagNode != null) {
+            String branchTag = tagNode.getTag();
+            if (tagList.parallelStream().anyMatch(t -> branchTag.equals(t.getName()))) {
+                tag = getTagNext(serviceId, branchName, userId);
             } else {
-                throw new CommonException("create.tag.wrong.branch");
+                tag = branchTag;
             }
+        } else {
+            tag = getTagNext(serviceId, branchName, userId);
         }
         return tag;
+    }
+
+    private String getTagNext(Long serviceId, String branchName, Integer userId) {
+        if (branchName.startsWith(RELEASE_PREFIX)) {
+            return getReleaseNumber(serviceId, userId);
+        } else if (branchName.startsWith(HOTFIX_PREFIX)) {
+            return getHotfixNumber(serviceId, userId);
+        } else {
+            throw new CommonException("create.tag.wrong.branch");
+        }
     }
 
     @Override
