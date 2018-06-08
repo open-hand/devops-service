@@ -86,7 +86,7 @@ public class FileUtil {
     public static void replaceReturnFile(File file, Map<String, String> params) {
         File[] files = file.listFiles();
         for (File a : files) {
-            if (a.getName().equals(".git") && a.getName().endsWith(".xlsx")) {
+            if (a.getName().equals(".git") || a.getName().endsWith(".xlsx")) {
                 continue;
             }
             File newFile = null;

@@ -6,8 +6,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
@@ -31,6 +29,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
     private static final String PROJECT = "project";
     private static final String TEMPLATE = "template";
+    private static final String SITE = "site";
     private DevopsProjectRepository devopsProjectRepository;
     private GitlabUserRepository gitlabUserRepository;
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
@@ -55,22 +54,24 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
         for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
-            List<Integer> accessLevelList = new ArrayList<>();
-            accessLevelList.add(0);
-            List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-            if (userMemberRoleList.isEmpty()) {
-                LOGGER.info("user member role is empty");
-            }
-            AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
+            if (!gitlabGroupMemberDTO.getResourceType().equals(SITE)) {
+                List<Integer> accessLevelList = new ArrayList<>();
+                accessLevelList.add(0);
+                List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
+                if (userMemberRoleList.isEmpty()) {
+                    LOGGER.info("user member role is empty");
+                }
+                AccessLevel level = getGitlabGroupMemberRole(userMemberRoleList);
 
-            operation(gitlabGroupMemberDTO.getResourceId(), gitlabGroupMemberDTO.getResourceType(), level,
-                    gitlabGroupMemberDTO.getUserId());
+                operation(gitlabGroupMemberDTO.getResourceId(), gitlabGroupMemberDTO.getResourceType(), level,
+                        gitlabGroupMemberDTO.getUserId());
+            }
         }
     }
 
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
+        gitlabGroupMemberDTOList.stream().filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE)).forEach(gitlabGroupMemberDTO -> {
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
             if (gitlabUserE == null) {
                 LOGGER.error("error.gitlab.username.select");
@@ -93,14 +94,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     gitlabUserE.getId());
 
             if (grouoMemberE != null) {
-                ResponseEntity removeMember = gitlabGroupMemberRepository.deleteMember(
+                gitlabGroupMemberRepository.deleteMember(
                         gitlabGroupE.getId(),
                         gitlabUserE.getId());
-                if (removeMember.getStatusCode() != HttpStatus.NO_CONTENT) {
-                    LOGGER.error("error.gitlab.member.remove");
-                }
             }
-        }
+        });
     }
 
     /**

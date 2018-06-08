@@ -23,26 +23,30 @@
         <finalName>app</finalName>
     </build>
 
+    <properties>
+        <choerodon.starters.version>0.5.1.RELEASE</choerodon.starters.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-swagger</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-core</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-oauth-resource</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-feign-replay</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -52,12 +56,12 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-mybatis-mapper</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-hitoa</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>mysql</groupId>
@@ -125,7 +129,7 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-bus</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <!-- test -->
         <dependency>
@@ -174,12 +178,12 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-event-consumer</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-starter-event-producer</artifactId>
-            <version>0.5.0.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.kubernetes</groupId>
@@ -190,7 +194,7 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-websocket-helper</artifactId>
-            <version>0.5.8.RELEASE</version>
+            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
