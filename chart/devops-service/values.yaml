@@ -9,7 +9,6 @@ image:
   pullPolicy: Always
 
 preJob:
-  appname: devops-service
   preConfig:
     configFile: application.yml
     mysql:
