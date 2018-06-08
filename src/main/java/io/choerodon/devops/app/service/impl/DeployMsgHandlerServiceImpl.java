@@ -874,7 +874,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     public void syncService(DevopsServiceE devopsServiceE, String msg, ApplicationInstanceE applicationInstanceE) {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
-        devopsServiceE = new DevopsServiceE();
         devopsServiceE.setEnvId(applicationInstanceE.getDevopsEnvironmentE().getId());
         devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
         devopsServiceE.setName(v1Service.getMetadata().getName());
