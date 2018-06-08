@@ -613,9 +613,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseUpgradeFail(String key, String msg) {
-        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(KeyParseTool.getReleaseName(key));
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                instanceE.getStatus(),
+                InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getCommandStatus(),
                 msg);
     }
