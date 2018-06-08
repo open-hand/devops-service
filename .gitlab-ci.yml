@@ -19,7 +19,7 @@ maven-test-branches:
     - /^release-.*$/
     - /^hotfix-.*$/
 
-maven-test-docker:
+maven-test-build:
   stage: mvn-package
   script:
     - update_pom_version
