@@ -48,6 +48,10 @@ public class TagNodeDO implements Comparable<TagNodeDO> {
                 String.valueOf(this.hundred) + "." + this.ten + "." + (this.unit + 1);
     }
 
+    public String getTag() {
+        return String.format("%d.%d.%d", this.hundred, this.ten, this.unit);
+    }
+
     @Override
     public int compareTo(TagNodeDO compare) {
         Integer result;
@@ -68,7 +72,7 @@ public class TagNodeDO implements Comparable<TagNodeDO> {
 
 
     @Override
-    public int hashCode(){
+    public int hashCode() {
         return 0;
     }
 }

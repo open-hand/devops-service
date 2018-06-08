@@ -140,7 +140,8 @@ public class IGitFlowServiceImpl implements IGitFlowService {
                 throw new CommonException("create.tag.wrong.branch");
             }
         }
-        return tag;
+        TagNodeDO tagNode = TagNodeDO.tagNameToTagNode(tag);
+        return tagNode != null ? tagNode.getTag() : tag;
     }
 
     @Override
