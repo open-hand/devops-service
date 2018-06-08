@@ -1,0 +1,129 @@
+default: &default
+  docker:
+  - image: choerodon/cibase:latest
+
+version: 2
+jobs:
+  maven_test:
+    <<: *default
+    working_directory: ~/repo
+
+    environment:
+      # Customize the JVM maximum heap limit
+      MAVEN_OPTS: -Xmx3200m
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          - v1-dependencies-
+      - run: mkdir -p ~/.m2
+      - run: curl http://minio.staging.saas.hand-china.com/123/settings.xml -o ~/.m2/settings.xml
+      - run: mvn integration-test
+      
+
+  maven_build:
+    <<: *default
+
+    working_directory: ~/repo
+
+    environment:
+      MAVEN_OPTS: -Xmx3200m
+    
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "pom.xml" }}
+          - v1-dependencies-
+      - run: mkdir -p ~/.m2
+      - run: curl http://minio.staging.saas.hand-china.com/123/settings.xml -o ~/.m2/settings.xml
+      - run: |
+          export CI_COMMIT_TAG=$(GetVersion)
+          mvn versions:set -DnewVersion=${CI_COMMIT_TAG} || \
+          find . -name pom.xml | xargs xml ed -L \
+            -N x=http://maven.apache.org/POM/4.0.0 \
+            -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
+          mvn versions:commit
+          mvn package -U -DskipTests=true
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v1-dependencies-{{ checksum "pom.xml" }}
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - target/app.jar
+  
+  docker_build:
+    <<: *default
+    steps:
+      - setup_remote_docker:
+            version: 17.05.0-ce
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: |
+          export CI_COMMIT_TAG=$(GetVersion)
+          cp target/app.jar src/main/docker/app.jar
+          docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD}
+          docker build --pull -t ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}:${CI_COMMIT_TAG} src/main/docker
+          docker push ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}:${CI_COMMIT_TAG}
+  helm_chart_build:
+    <<: *default
+    steps:
+      - checkout
+      - run: |
+          export CI_COMMIT_TAG=$(GetVersion)
+          CHART_PATH=`find . -name Chart.yaml`
+          yq w -i ${CHART_PATH%/*}/values.yaml image.repository ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}
+          yq w -i ${CHART_PATH%/*}/values.yaml image.tag ${CI_COMMIT_TAG}
+          helm repo add choerodon "${CHART_REPOSITORY}/${CHART_ORGANIZATION}/${CHART_PROJECT}/"
+          helm push --username ${HELM_USER} --password ${HELM_PASSWORD} ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} choerodon
+workflows:
+  version: 2
+  release:
+    jobs:
+      - maven_build:
+          context: org-global
+          filters:
+            tags:
+              only: /^.*/
+            branches:
+              only:
+                - /^release-.*$/
+                - /^hotfix-.*$/
+      - docker_build:
+          context: org-global
+          requires:
+          - maven_build
+          filters:
+            tags:
+              only: /^.*/
+            branches:
+              only:
+                - /^release-.*$/
+                - /^hotfix-.*$/
+      - helm_chart_build:
+          context: org-global
+          requires:
+          - maven_build
+          - docker_build
+          filters:
+            tags:
+              only: /^.*/
+            branches:
+              only:
+                - /^release-.*$/
+                - /^hotfix-.*$/
+  daily:
+    jobs:
+      - maven_test:
+          context: org-global
+          filters:
+            branches:
+              only: 
+               - /^.*$/
