@@ -104,7 +104,7 @@ public class GitFlowServiceImpl implements GitFlowService {
 
     @Override
     public String getReleaseNumber(Long applicationId, String branch) {
-        Boolean branchPresent = branch != null;
+        Boolean branchPresent = branch != null && !branch.isEmpty();
         if (branchPresent && !branch.startsWith(RELEAS_PREFIX)) {
             throw new CommonException("error.release.branch.notMatch");
         }
@@ -115,7 +115,7 @@ public class GitFlowServiceImpl implements GitFlowService {
 
     @Override
     public String getHotfixNumber(Long applicationId, String branch) {
-        Boolean branchPresent = branch != null;
+        Boolean branchPresent = branch != null && !branch.isEmpty();
         if (branchPresent && !branch.startsWith(HOTFIX_PREFIX)) {
             throw new CommonException("error.hotfix.branch.notMatch");
         }
