@@ -900,6 +900,30 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 JSONObject jsonResult = JSONObject.parseObject(JSONObject.parseObject(resource.getObject()).get(METADATA).toString());
                 devopsEnvResourceE.setReversion(
                         TypeUtil.objToLong(jsonResult.get(RESOURCEVERSION).toString()));
+                if (resource.getKind().equals(ResourceType.POD.getType())) {
+                    V1Pod v1Pod = json.deserialize(resource.getObject(), V1Pod.class);
+                    String status = K8sUtil.changePodStatus(v1Pod);
+                    String resourceVersion = v1Pod.getMetadata().getResourceVersion();
+
+                    DevopsEnvPodE devopsEnvPodE = new DevopsEnvPodE();
+                    devopsEnvPodE.setName(v1Pod.getMetadata().getName());
+                    devopsEnvPodE.setIp(v1Pod.getStatus().getPodIP());
+                    devopsEnvPodE.setStatus(status);
+                    devopsEnvPodE.setResourceVersion(resourceVersion);
+                    devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
+                    if (!PENDING.equals(status)) {
+                        devopsEnvPodE.setReady(v1Pod.getStatus().getContainerStatuses().get(0).isReady());
+                    } else {
+                        devopsEnvPodE.setReady(false);
+                    }
+                    devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
+                    devopsEnvPodRepository.insert(devopsEnvPodE);
+                    Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
+                    v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+                            containerRepository.insert(new DevopsEnvPodContainerDO(
+                                    podId,
+                                    t.getName())));
+                }
                 saveOrUpdateResource(
                         devopsEnvResourceE,
                         newdevopsEnvResourceE,
