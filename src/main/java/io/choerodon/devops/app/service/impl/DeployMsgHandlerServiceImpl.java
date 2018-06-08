@@ -346,9 +346,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         if (flag) {
                             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
                                     v1Service.getMetadata().getName(), namespace);
-                            if (devopsServiceE == null) {
-                                if (applicationInstanceE != null) {
-                                    syncService(msg,applicationInstanceE);
+                            if (applicationInstanceE != null) {
+                                if (devopsServiceE == null) {
+                                    syncService(devopsServiceE, msg, applicationInstanceE);
                                     DevopsEnvResourceE newdevopsInsResourceE =
                                             devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                                     applicationInstanceE.getId(),
@@ -357,14 +357,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
                                             devopsEnvResourceDetailE, applicationInstanceE);
                                 }
-                            }
-
-                            List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceName(
-                                    devopsServiceE.getEnvId(), devopsServiceE.getName());
-                            for (DevopsIngressPathE dd : devopsIngressPathEList) {
-                                if (dd.getServiceId() == null) {
-                                    dd.setServiceId(devopsServiceE.getId());
-                                    devopsIngressRepository.updateIngressPath(dd);
+                                List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceName(
+                                        devopsServiceE.getEnvId(), devopsServiceE.getName());
+                                for (DevopsIngressPathE dd : devopsIngressPathEList) {
+                                    if (dd.getServiceId() == null) {
+                                        dd.setServiceId(devopsServiceE.getId());
+                                        devopsIngressRepository.updateIngressPath(dd);
+                                    }
                                 }
                             }
                         }
@@ -690,7 +689,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
                         v1Service.getMetadata().getName(), namespace);
                 if (devopsServiceE == null) {
-                    syncService(msg,applicationInstanceE);
+                    syncService(devopsServiceE, msg, applicationInstanceE);
                 }
 
                 List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceName(
@@ -860,10 +859,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         devopsEnvResourceDetailE,
                         applicationInstanceE);
                 if (resource.getKind().equals(ResourceType.POD.getType())) {
-                    syncPod(resource.getObject(),applicationInstanceE);
+                    syncPod(resource.getObject(), applicationInstanceE);
                 }
-                if(resource.getKind().equals(ResourceType.SERVICE.getType())) {
-                    syncService(resource.getObject(),applicationInstanceE);
+                if (resource.getKind().equals(ResourceType.SERVICE.getType())) {
+                    DevopsServiceE devopsServiceE = new DevopsServiceE();
+                    syncService(devopsServiceE, resource.getObject(), applicationInstanceE);
                 }
             }
         } catch (Exception e) {
@@ -872,10 +872,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
 
-
-    public void syncService(String msg, ApplicationInstanceE applicationInstanceE) {
+    public void syncService(DevopsServiceE devopsServiceE, String msg, ApplicationInstanceE applicationInstanceE) {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
-        DevopsServiceE devopsServiceE = new DevopsServiceE();
+        devopsServiceE = new DevopsServiceE();
         devopsServiceE.setEnvId(applicationInstanceE.getDevopsEnvironmentE().getId());
         devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
         devopsServiceE.setName(v1Service.getMetadata().getName());
