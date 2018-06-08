@@ -62,10 +62,17 @@
         dappv.app_id
         ) lv ON lv.id = dap.id
         JOIN devops_application da ON lv.app_id = da.id
-        <if test="projectId != null">
-            WHERE
-            da.project_id = #{projectId};
-        </if>
+        LEFT JOIN devops_app_market dam on dam.app_id = da.id
+        WHERE
+            da.project_id = #{projectId}
+            OR  (
+                da.project_id  IN
+                    <foreach collection="projectIds" item="project" open="(" separator="," close=")">
+                        #{project}
+                    </foreach>
+                AND dam.publish_level = 'organization'
+            )
+            OR dam.publish_level = 'public'
     </select>
 
     <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">

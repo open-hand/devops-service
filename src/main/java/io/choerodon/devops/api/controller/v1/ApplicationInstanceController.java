@@ -48,14 +48,6 @@ public class ApplicationInstanceController {
      * 分页查询应用部署
      *
      * @param projectId   项目id
-     * @param pageRequest c
-     * @return page of applicationInstanceDTO
-     */
-
-    /**
-     * 分页查询应用部署
-     *
-     * @param projectId   项目id
      * @param pageRequest 项目id
      * @param envId       环境id
      * @param versionId   版本id
@@ -101,8 +93,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
             @RequestParam(required = false) Long appId) {
-        return Optional.ofNullable(applicationInstanceService.listApplicationInstances(
-                projectId, appId))
+        return Optional.ofNullable(applicationInstanceService.listApplicationInstances(projectId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }

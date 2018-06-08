@@ -20,7 +20,8 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
             @Param("searchParam") Map<String, Object> searchParam,
             @Param("param") String param);
 
-    List<ApplicationLatestVersionDO> listAppLatestVersion(@Param("projectId") Long projectId);
+    List<ApplicationLatestVersionDO> listAppLatestVersion(@Param("projectId") Long projectId,
+                                                          @Param("projectIds") List<Long> projectIds);
 
     List<ApplicationVersionDO> listByAppIdAndEnvId(@Param("projectId") Long projectId,
                                                    @Param("appId") Long appId,

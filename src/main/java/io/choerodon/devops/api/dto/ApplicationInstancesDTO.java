@@ -19,6 +19,7 @@ public class ApplicationInstancesDTO {
     private Integer latestVersionRunning;
     private List<EnvInstancesDTO> instances;
     private List<EnvInstanceDTO> envInstances;
+    private Long projectId;
 
     public ApplicationInstancesDTO() {
     }
@@ -129,5 +130,13 @@ public class ApplicationInstancesDTO {
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }
