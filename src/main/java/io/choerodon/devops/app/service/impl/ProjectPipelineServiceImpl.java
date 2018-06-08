@@ -73,14 +73,18 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         Integer userId = getGitlabUserId();
         String userName = GitUserNameUtil.getUsername();
         Integer gitlabProjectId = app.getGitlabProjectE().getId();
+        List<BranchE> branchES = gitlabProjectRepository.listBranches(
+                gitlabProjectId, getGitlabUserId());
+        if (branchES == null) {
+            return new ProjectPipelineResultTotalDTO();
+        }
         int page = pageRequest.getPage();
         int size = pageRequest.getSize();
         List<GitlabPipelineE> gitlabPipelineEList =
                 gitlabProjectRepository.listPipeline(gitlabProjectId, getGitlabUserId());
         List<GitlabPipelineE> gitlabPipelineEListByPage = gitlabProjectRepository.listPipelines(
                 gitlabProjectId, page + 1, size, getGitlabUserId());
-        List<String> branchNames = gitlabProjectRepository.listBranches(
-                gitlabProjectId, getGitlabUserId()).stream().map(BranchE::getName).collect(Collectors.toList());
+        List<String> branchNames = branchES.stream().map(BranchE::getName).collect(Collectors.toList());
         List<PipelineResultV> pipelineResultVS = new ArrayList<>();
         if (gitlabPipelineEListByPage != null && !gitlabPipelineEListByPage.isEmpty()) {
             listPipelineResultV(gitlabPipelineEListByPage, pipelineResultVS, app, gitlabProjectId, userId, projectId, userName);

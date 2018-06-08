@@ -1,12 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -14,7 +13,9 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
@@ -32,6 +33,8 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     private static final String APPNAME = "appName";
     private static JSON json = new JSON();
     private ApplicationVersionMapper applicationVersionMapper;
+    @Autowired
+    private IamRepository iamRepository;
 
     public ApplicationVersionRepositoryImpl(ApplicationVersionMapper applicationVersionMapper) {
         this.applicationVersionMapper = applicationVersionMapper;
@@ -66,7 +69,13 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
 
     @Override
     public List<ApplicationLatestVersionDO> listAppLatestVersion(Long projectId) {
-        return applicationVersionMapper.listAppLatestVersion(projectId);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Long organizationId = projectE.getOrganization().getId();
+        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
+        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return applicationVersionMapper.listAppLatestVersion(projectId, projectIds);
     }
 
     @Override
@@ -80,8 +89,8 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public List<ApplicationVersionE> listByAppId(Long appId) {
-        List<ApplicationVersionDO> applicationVersionDOS = applicationVersionMapper.selectByAppId(appId);
+    public List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish) {
+        List<ApplicationVersionDO> applicationVersionDOS = applicationVersionMapper.selectByAppId(appId, isPublish);
         if (applicationVersionDOS.isEmpty()) {
             return Collections.emptyList();
         }

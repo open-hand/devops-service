@@ -89,7 +89,12 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
 
     @Override
     public List<BranchE> listBranches(Integer projectId, Integer userId) {
-        ResponseEntity<List<BranchDO>> responseEntity = gitlabServiceClient.listBranches(projectId, userId);
+        ResponseEntity<List<BranchDO>> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.listBranches(projectId, userId);
+        } catch (Exception e) {
+            return null;
+        }
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             return Collections.emptyList();
         }

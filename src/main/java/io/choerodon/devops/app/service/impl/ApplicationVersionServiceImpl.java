@@ -98,9 +98,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public List<ApplicationVersionRepDTO> listByAppId(Long appId) {
+    public List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish) {
         return ConvertHelper.convertList(
-                applicationVersionRepository.listByAppId(appId), ApplicationVersionRepDTO.class);
+                applicationVersionRepository.listByAppId(appId, isPublish), ApplicationVersionRepDTO.class);
     }
 
     @Override

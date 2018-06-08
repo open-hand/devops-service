@@ -32,6 +32,19 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
 
     changeSet(author: 'younger', id: '2018-05-21-drop-column')
             {
-                dropColumn(columnName: "namespace", tableName: "devops_env")
+                dropColumn(columnName: "code", tableName: "devops_env")
             }
+    changeSet(id: '2018-05-21-rename-column', author: 'younger') {
+        renameColumn(columnDataType: 'varchar(128)', newColumnName: 'code', oldColumnName: 'namespace', remarks: '环境命名空间', tableName: 'devops_env')
+    }
+
+    changeSet(id: '2018-05-22-update-constraint', author: 'younger') {
+        dropUniqueConstraint(tableName: 'devops_env',
+                constraintName: 'uk_project_id_code')
+        addUniqueConstraint(tableName: 'devops_env',
+                constraintName: 'uk_project_id_code', columnNames: 'project_id,code')
+
+    }
+
+
 }

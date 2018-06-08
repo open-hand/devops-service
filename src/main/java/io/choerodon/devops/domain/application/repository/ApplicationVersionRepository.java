@@ -18,7 +18,7 @@ public interface ApplicationVersionRepository {
 
     ApplicationVersionE create(ApplicationVersionE applicationVersionE);
 
-    List<ApplicationVersionE> listByAppId(Long appId);
+    List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
 
     ApplicationVersionE query(Long appVersionId);
 

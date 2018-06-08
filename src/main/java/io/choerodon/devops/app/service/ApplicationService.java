@@ -109,6 +109,14 @@ public interface ApplicationService {
     List<ApplicationRepDTO> listByActive(Long projectId);
 
     /**
+     * 项目下查询所有可选已经启用的应用
+     *
+     * @param projectId 项目id
+     * @return list of ApplicationRepDTO
+     */
+    List<ApplicationRepDTO> listAll(Long projectId);
+
+    /**
      * 创建应用校验名称是否存在
      *
      * @param projectId 项目id

@@ -37,10 +37,11 @@ public interface ApplicationVersionService {
     /**
      * 应用下查询应用所有版本
      *
-     * @param appId 应用Id
+     * @param appId     应用Id
+     * @param isPublish 是否发布
      * @return List
      */
-    List<ApplicationVersionRepDTO> listByAppId(Long appId);
+    List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish);
 
     /**
      * 查询部署在某个环境的应用版本

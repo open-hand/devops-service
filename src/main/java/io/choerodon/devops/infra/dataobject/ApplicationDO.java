@@ -5,6 +5,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import java.util.Date;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 
@@ -29,6 +31,7 @@ public class ApplicationDO {
     private String uuid;
     private String token;
     private Long objectVersionNumber;
+    private Date lastUpdateDate;
 
     @Transient
     private String publishLevel;
@@ -147,5 +150,13 @@ public class ApplicationDO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 }

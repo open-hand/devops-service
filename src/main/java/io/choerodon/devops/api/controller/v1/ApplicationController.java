@@ -208,6 +208,24 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.get"));
     }
 
+
+    /**
+     * 项目下查询所有可选已经启用的应用
+     *
+     * @param projectId 项目id
+     * @return list of ApplicationRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "项目下查询所有已经启用的应用")
+    @GetMapping(value = "/list_all")
+    public ResponseEntity<List<ApplicationRepDTO>> listAll(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(applicationService.listAll(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.applications.get"));
+    }
+
     /**
      * 创建应用校验名称是否存在
      *

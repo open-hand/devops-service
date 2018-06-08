@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -157,15 +158,27 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         List<DevopsAppMarketVersionDO> versionDOList = applicationMarketRepository
                 .getVersions(null, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
-                .convertList(versionDOList, AppMarketVersionDTO.class);
+                .convertList(versionDOList, AppMarketVersionDTO.class)
+                .parallelStream()
+                .sorted(this::compareAppMarketVersionDTO)
+                .collect(Collectors.toCollection(ArrayList::new));
         ApplicationReleasingDTO applicationReleasingDTO =
                 ConvertHelper.convert(applicationMarketE, ApplicationReleasingDTO.class);
         applicationReleasingDTO.setAppVersions(appMarketVersionDTOList);
+
         Long applicationId = applicationE.getId();
         applicationE = applicationRepository.query(applicationId);
         ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
         Long organizationId = projectE.getOrganization().getId();
         Organization organization = iamRepository.queryOrganizationById(organizationId);
+
+        Date latestUpdateDate = appMarketVersionDTOList.isEmpty()
+                ? getLaterDate(applicationE.getLastUpdateDate(), applicationMarketE.getMarketUpdatedDate())
+                : getLatestDate(
+                appMarketVersionDTOList.get(0).getUpdatedDate(),
+                applicationE.getLastUpdateDate(),
+                applicationMarketE.getMarketUpdatedDate());
+        applicationReleasingDTO.setLastUpdatedDate(latestUpdateDate);
 
         String readme = "";
         String latestVersionCommit;
@@ -174,13 +187,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         Long latestVersionId = versionId;
         if (!versionExist) {
             Optional<AppMarketVersionDTO> optional = appMarketVersionDTOList.parallelStream()
-                    .max((t, k) -> {
-                        if (t.getId() > k.getId()) {
-                            return 1;
-                        } else {
-                            return t.getId().equals(k.getId()) ? 0 : -1;
-                        }
-                    });
+                    .max(this::compareAppMarketVersionDTO);
             latestVersionId = optional.isPresent()
                     ? optional.get().getId()
                     : versionId;
@@ -215,6 +222,34 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         applicationReleasingDTO.setReadme(readme);
         FileUtil.deleteFile(new File(DESTPATH));
         return applicationReleasingDTO;
+    }
+
+    private Date getLatestDate(Date a, Date b, Date c) {
+        if (a.after(b)) {
+            return getLaterDate(a, c);
+        } else {
+            return getLaterDate(b, c);
+        }
+    }
+
+    private Date getLaterDate(Date a, Date b) {
+        return a.after(b) ? a : b;
+    }
+
+    private Integer compareAppMarketVersionDTO(AppMarketVersionDTO s, AppMarketVersionDTO t) {
+        if (s.getUpdatedDate().before(t.getUpdatedDate())) {
+            return 1;
+        } else {
+            if (s.getUpdatedDate().after(t.getUpdatedDate())) {
+                return -1;
+            } else {
+                if (s.getCreationDate().before(t.getCreationDate())) {
+                    return 1;
+                } else {
+                    return s.getCreationDate().after(t.getCreationDate()) ? -1 : 0;
+                }
+            }
+        }
     }
 
     private String getFileContent(File file) {

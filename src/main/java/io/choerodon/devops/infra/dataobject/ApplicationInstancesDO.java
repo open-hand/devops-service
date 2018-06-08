@@ -20,10 +20,7 @@ public class ApplicationInstancesDO {
     private Long instanceId;
     private String instanceCode;
     private String instanceStatus;
-
-    public ApplicationInstancesDO() {
-
-    }
+    private Long projectId;
 
     public Long getAppId() {
         return appId;
@@ -111,5 +108,13 @@ public class ApplicationInstancesDO {
 
     public void setPublishLevel(String publishLevel) {
         this.publishLevel = publishLevel;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }
