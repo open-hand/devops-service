@@ -18,8 +18,6 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
-      - run: mkdir -p ~/.m2
-      - run: curl http://minio.staging.saas.hand-china.com/123/settings.xml -o ~/.m2/settings.xml
       - run: mvn integration-test
       
 
@@ -38,8 +36,6 @@ jobs:
           keys:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
-      - run: mkdir -p ~/.m2
-      - run: curl http://minio.staging.saas.hand-china.com/123/settings.xml -o ~/.m2/settings.xml
       - run: |
           export CI_COMMIT_TAG=$(GetVersion)
           mvn versions:set -DnewVersion=${CI_COMMIT_TAG} || \
