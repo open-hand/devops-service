@@ -130,6 +130,8 @@ public class IGitFlowServiceImpl implements IGitFlowService {
         String tag = branchName.split("-")[1];
         List<TagDO> tagList = gitFlowRepository.getTagList(serviceId, userId);
         String branchTag = tag;
+        TagNodeDO tagNode = TagNodeDO.tagNameToTagNode(tag);
+        tag = tagNode != null ? tagNode.getTag() : tag;
         if (!tag.matches("\\d+(\\.\\d+){2}")
                 || tagList.parallelStream().anyMatch(t -> branchTag.equals(t.getName()))) {
             if (branchName.startsWith(RELEASE_PREFIX)) {
@@ -140,8 +142,7 @@ public class IGitFlowServiceImpl implements IGitFlowService {
                 throw new CommonException("create.tag.wrong.branch");
             }
         }
-        TagNodeDO tagNode = TagNodeDO.tagNameToTagNode(tag);
-        return tagNode != null ? tagNode.getTag() : tag;
+        return tag;
     }
 
     @Override
