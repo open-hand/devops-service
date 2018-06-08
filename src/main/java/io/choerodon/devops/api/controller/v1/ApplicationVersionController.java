@@ -72,8 +72,10 @@ public class ApplicationVersionController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")
-            @PathVariable Long appId) {
-        return Optional.ofNullable(applicationVersionService.listByAppId(appId))
+            @PathVariable Long appId,
+            @ApiParam(value = "是否发布", required = false)
+            @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
+        return Optional.ofNullable(applicationVersionService.listByAppId(appId, isPublish))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }

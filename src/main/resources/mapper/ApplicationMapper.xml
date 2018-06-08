@@ -52,6 +52,16 @@
 
     <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         SELECT
+        da.*
+        FROM
+        devops_application da
+        WHERE
+        da.is_active
+        AND da.project_id = #{projectId}
+    </select>
+
+    <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
         dam.publish_level publishLevel,
         dam.contributor,
         dam.description,
@@ -61,7 +71,17 @@
         LEFT JOIN devops_app_market dam ON dam.app_id = da.id
         WHERE
         da.is_active
-        AND da.project_id = #{projectId}
+        AND (
+            da.project_id = #{projectId}
+            OR (
+            da.project_id  IN
+            <foreach collection="projectIds" item="project" open="(" separator="," close=")">
+                #{project}
+            </foreach>
+            AND dam.publish_level = 'organization'
+            )
+            OR dam.publish_level = 'public'
+        )
     </select>
 
     <sql id="sqlparam">

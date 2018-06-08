@@ -1,10 +1,13 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -12,7 +15,9 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -27,6 +32,8 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     private JSON json = new JSON();
 
+    @Autowired
+    private IamRepository iamRepository;
     private ApplicationMapper applicationMapper;
 
     public ApplicationRepositoryImpl(ApplicationMapper applicationMapper) {
@@ -133,6 +140,18 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public List<ApplicationE> listByActive(Long projectId) {
         return ConvertHelper.convertList(applicationMapper.listActive(projectId), ApplicationE.class);
+    }
+
+    @Override
+    public List<ApplicationE> listAll(Long projectId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Long organizationId = projectE.getOrganization().getId();
+        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
+        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
+                .filter(t -> !t.equals(projectId))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        return ConvertHelper.convertList(applicationMapper.listAll(projectId, projectIds), ApplicationE.class);
     }
 
     @Override

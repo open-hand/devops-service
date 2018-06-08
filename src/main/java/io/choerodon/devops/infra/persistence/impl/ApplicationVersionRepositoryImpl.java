@@ -90,8 +90,8 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public List<ApplicationVersionE> listByAppId(Long appId) {
-        List<ApplicationVersionDO> applicationVersionDOS = applicationVersionMapper.selectByAppId(appId);
+    public List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish) {
+        List<ApplicationVersionDO> applicationVersionDOS = applicationVersionMapper.selectByAppId(appId, isPublish);
         if (applicationVersionDOS.isEmpty()) {
             return Collections.emptyList();
         }

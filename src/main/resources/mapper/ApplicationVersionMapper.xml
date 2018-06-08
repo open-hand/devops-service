@@ -116,6 +116,14 @@
         WHERE
         1 = 1
         AND dav.app_id = #{appId}
+        <if test="isPublish != null">
+            <if test="isPublish == true">
+                AND dav.is_publish = TRUE
+            </if>
+            <if test="isPublish != true">
+                AND ( is_publish != TRUE OR is_publish IS NULL )
+            </if>
+        </if>
         ORDER BY
         dav.id DESC
     </select>
