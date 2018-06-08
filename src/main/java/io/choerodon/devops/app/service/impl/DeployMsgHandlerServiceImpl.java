@@ -293,7 +293,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             devopsIngressE.setUsable(true);
                             devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
                             devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
-
+                            DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+                            devopsEnvCommandE.setObject(ObjectType.INGRESS.getObjectType());
+                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
+                            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+                            devopsEnvCommandRepository.create(devopsEnvCommandE);
                             List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules()
                                     .get(0).getHttp().getPaths();
                             for (V1beta1HTTPIngressPath path : paths) {
@@ -371,7 +376,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 devopsEnvCommandE.setObject(ObjectType.SERVICE.getObjectType());
                                 devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                                 devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
-                                devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+                                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
                                 devopsEnvCommandRepository.create(devopsEnvCommandE);
                             }
 
