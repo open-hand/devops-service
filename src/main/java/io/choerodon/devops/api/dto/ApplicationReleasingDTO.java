@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -19,6 +20,7 @@ public class ApplicationReleasingDTO {
     private String description;
     private String contributor;
     private String readme;
+    private Date lastUpdatedDate;
     private Boolean isDeployed;
 
     public Long getId() {
@@ -115,5 +117,13 @@ public class ApplicationReleasingDTO {
 
     public void setDeployed(Boolean deployed) {
         isDeployed = deployed;
+    }
+
+    public Date getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(Date lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 }
