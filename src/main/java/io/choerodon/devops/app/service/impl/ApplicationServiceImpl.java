@@ -159,6 +159,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public List<ApplicationRepDTO> listAll(Long projectId) {
+        return ConvertHelper.convertList(applicationRepository.listAll(projectId), ApplicationRepDTO.class);
+    }
+
+    @Override
     public void checkName(Long projectId, String name) {
         ApplicationE applicationE = ApplicationFactory.createApplicationE();
         applicationE.initProjectE(projectId);

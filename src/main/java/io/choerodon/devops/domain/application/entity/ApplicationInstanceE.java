@@ -27,6 +27,7 @@ public class ApplicationInstanceE {
     private String commandType;
     private String error;
     private Boolean isConnect;
+    private Long projectId;
 
     public ApplicationInstanceE() {
     }
@@ -185,5 +186,13 @@ public class ApplicationInstanceE {
 
     public void setConnect(Boolean connect) {
         isConnect = connect;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

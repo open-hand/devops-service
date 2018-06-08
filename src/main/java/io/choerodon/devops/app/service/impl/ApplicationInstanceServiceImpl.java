@@ -82,10 +82,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         for (ApplicationInstanceE applicationInstanceE : applicationInstanceEPage) {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())) {
-                    if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
-                        applicationInstanceE.setConnect(true);
-                    }
+                if (envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())
+                        && agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                    applicationInstanceE.setConnect(true);
                 }
             }
         }
@@ -113,6 +112,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                             t.getAppCode(),
                             latestVersionList.get(t.getAppId()).getVersionId(),
                             latestVersionList.get(t.getAppId()).getVersion());
+                    instancesDTO.setProjectId(t.getProjectId());
                     if (t.getInstanceId() != null) {
                         addAppInstance(instancesDTO, t);
                     }
@@ -230,7 +230,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
             DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
             if (applicationDeployDTO.getType().equals("create")) {
-                applicationInstanceE.setCode(applicationE.getCode() + "-" + GenerateUUID.generateUUID().substring(0, 5));
+                applicationInstanceE.setCode(
+                        String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
                 devopsEnvCommandE.setObject(ObjectType.INSTANCE.getObjectType());
                 devopsEnvCommandE.setObjectId(applicationInstanceRepository.create(applicationInstanceE).getId());
                 devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
@@ -271,7 +272,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE.getApplicationE().getId());
 
         Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        List<GitlabPipelineE> gitlabPipelineEList = gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
+        List<GitlabPipelineE> gitlabPipelineEList =
+                gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
         if (gitlabPipelineEList == null) {
             return Collections.emptyList();
         }
@@ -442,7 +444,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Async
     void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
         Msg msg = new Msg();
-        msg.setKey("env:" + namespace +".envId:" + envId + ".release:" + name);
+        msg.setKey("env:" + namespace + ".envId:" + envId + ".release:" + name);
         msg.setType(type);
         msg.setPayload(payload);
         msg.setCommandId(commandId);

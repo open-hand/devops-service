@@ -25,6 +25,7 @@ public class ApplicationInstanceDTO {
     private String error;
     private Boolean isConnect;
     private Long objectVersionNumber;
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -184,5 +185,13 @@ public class ApplicationInstanceDTO {
 
     public void setConnect(Boolean connect) {
         isConnect = connect;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

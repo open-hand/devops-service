@@ -30,5 +30,8 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
 
     List<ApplicationDO> listActive(@Param("projectId") Long projectId);
 
+    List<ApplicationDO> listAll(@Param("projectId") Long projectId,
+                                @Param("projectIds") List<Long> projectIds);
+
     Integer checkAppCanDisable(@Param("applicationId") Long applicationId);
 }

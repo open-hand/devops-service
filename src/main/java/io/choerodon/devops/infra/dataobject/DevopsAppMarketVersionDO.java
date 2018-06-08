@@ -14,6 +14,7 @@ public class DevopsAppMarketVersionDO {
     private Boolean isDeployed;
     private Boolean isPublish;
     private Date creationDate;
+    private Date updatedDate;
 
     public Long getId() {
         return id;
@@ -53,5 +54,13 @@ public class DevopsAppMarketVersionDO {
 
     public void setPublish(Boolean publish) {
         isPublish = publish;
+    }
+
+    public Date getUpdatedDate() {
+        return updatedDate;
+    }
+
+    public void setUpdatedDate(Date updatedDate) {
+        this.updatedDate = updatedDate;
     }
 }

@@ -35,6 +35,8 @@ public interface ApplicationRepository {
 
     List<ApplicationE> listByActive(Long projectId);
 
+    List<ApplicationE> listAll(Long projectId);
+
     Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive,
                                                     PageRequest pageRequest, String params);
 

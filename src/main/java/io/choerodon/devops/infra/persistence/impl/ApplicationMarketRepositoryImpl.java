@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -139,6 +140,14 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     @Override
     public Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                                       PageRequest pageRequest, String params) {
+        if (pageRequest.getSort() != null) {
+            Map<String, String> map = new HashMap<>();
+            map.put("version", "dav.version");
+            map.put("creationDate", "dav.creation_date");
+            map.put("updatedDate", "dav.last_update_date");
+            pageRequest.resetOrder("dav", map);
+        }
+
         Map<String, Object> searchParam = null;
         String param = null;
         if (!StringUtils.isEmpty(params)) {
