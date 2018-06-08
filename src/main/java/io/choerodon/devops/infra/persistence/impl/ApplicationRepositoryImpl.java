@@ -148,7 +148,6 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         Long organizationId = projectE.getOrganization().getId();
         List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
         List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
-                .filter(t -> !t.equals(projectId))
                 .collect(Collectors.toCollection(ArrayList::new));
 
         return ConvertHelper.convertList(applicationMapper.listAll(projectId, projectIds), ApplicationE.class);
