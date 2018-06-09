@@ -89,11 +89,11 @@
         AND de.id = dai.env_id
         AND dai.`status` = 'running'
         AND dai.app_version_id = dav.id
-        AND da.project_id = #{projectId}
+        AND de.project_id = #{projectId}
         AND de.id = #{envId}
         AND da.id = #{appId}
         GROUP BY
-        dav.version
+        dav.id,dav.version
     </select>
 
     <select id="queryValue" resultType="java.lang.String">
