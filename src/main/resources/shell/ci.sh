@@ -24,7 +24,7 @@ function chart_build(){
     # 查找Chart.yaml文件
     CHART_PATH=`find . -maxdepth 3 -name Chart.yaml`
     # 重置values.yaml文件中image.repository属性
-    yq w -i ${CHART_PATH%/*}/values.yaml image.repository ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}
+    sed -i 's/repository:.*$/repository\:\ '${DOCKER_REGISTRY}'\/'${GROUP_NAME}'\/'${PROJECT_NAME}'/g' ${CHART_PATH%/*}/values.yaml
     # 构建chart包，重写version与app-version为当前版本
     helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
     TEMP=${CHART_PATH%/*}
