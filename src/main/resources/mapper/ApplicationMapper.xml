@@ -31,14 +31,17 @@
         da.id,
         da.`code`,
         da.`name` ,
-        dam.publish_level
+        dam.publish_level,
+        da.project_id projectId,
+        dam.contributor contributor,
+        dam.description description
         FROM
         devops_application da
         JOIN devops_app_instance dai ON dai.app_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         left join devops_app_market dam on dam.app_id = da.id
         WHERE
-        da.project_id = #{projectId}
+        de.project_id = #{projectId}
         AND de.id = #{envId}
         <choose>
             <when test="status == 'running'">
@@ -72,15 +75,15 @@
         WHERE
         da.is_active
         AND (
-            da.project_id = #{projectId}
-            OR (
-            da.project_id  IN
-            <foreach collection="projectIds" item="project" open="(" separator="," close=")">
-                #{project}
-            </foreach>
-            AND dam.publish_level = 'organization'
-            )
-            OR dam.publish_level = 'public'
+        da.project_id = #{projectId}
+        OR (
+        da.project_id IN
+        <foreach collection="projectIds" item="project" open="(" separator="," close=")">
+            #{project}
+        </foreach>
+        AND dam.publish_level = 'organization'
+        )
+        OR dam.publish_level = 'public'
         )
     </select>
 
@@ -156,12 +159,13 @@
 
     <select id="checkAppCanDisable" resultType="java.lang.Integer">
         SELECT
-            count( 1 )
+        count( 1 )
         FROM
-            devops_application da
+        devops_application da
         WHERE
-            NOT EXISTS ( SELECT 1 FROM devops_app_market dam WHERE dam.app_id = da.id )
-            AND NOT EXISTS ( SELECT 1 FROM devops_app_instance dai JOIN devops_app_version dav ON dav.id = dai.app_version_id WHERE dav.app_id = da.id )
-            AND da.id = #{applicationId};
+        NOT EXISTS ( SELECT 1 FROM devops_app_market dam WHERE dam.app_id = da.id )
+        AND NOT EXISTS ( SELECT 1 FROM devops_app_instance dai JOIN devops_app_version dav ON dav.id =
+        dai.app_version_id WHERE dav.app_id = da.id )
+        AND da.id = #{applicationId};
     </select>
 </mapper>

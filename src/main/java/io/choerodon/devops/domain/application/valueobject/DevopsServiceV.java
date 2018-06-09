@@ -20,6 +20,7 @@ public class DevopsServiceV {
     private Boolean envStatus;
     private String namespace;
     private Long appId;
+    private Long appProjectId;
     private String appName;
     private String commandStatus;
     private String commandType;
@@ -152,5 +153,13 @@ public class DevopsServiceV {
 
     public void setTargetPort(Long targetPort) {
         this.targetPort = targetPort;
+    }
+
+    public Long getAppProjectId() {
+        return appProjectId;
+    }
+
+    public void setAppProjectId(Long appProjectId) {
+        this.appProjectId = appProjectId;
     }
 }
