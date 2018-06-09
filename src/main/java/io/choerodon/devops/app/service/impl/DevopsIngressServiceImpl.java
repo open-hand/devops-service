@@ -172,7 +172,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         for (DevopsIngressDTO devopsIngressDTO : devopsIngressDTOS) {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(devopsIngressDTO.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                if (envSession.getEnvId().equals(devopsIngressDTO.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }
@@ -271,7 +271,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+            if (agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                 envIds.add(envSession.getEnvId());
             }
         }

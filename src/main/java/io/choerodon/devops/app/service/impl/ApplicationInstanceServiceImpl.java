@@ -3,9 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.util.*;
 
-import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -460,7 +458,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+            if (agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                 envIds.add(envSession.getEnvId());
             }
         }
