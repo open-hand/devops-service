@@ -97,7 +97,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
                 if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
-                    flag = agentExpectVersion.compareTo(envSession.getVersion());
+                    flag = agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
                 if (flag > 0) {
@@ -185,7 +185,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
                 if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
-                    flag = agentExpectVersion.compareTo(envSession.getVersion());
+                    flag = agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion());
                     devopsEnvironmentE.initConnect(true);
                 }
                 if (flag > 0) {

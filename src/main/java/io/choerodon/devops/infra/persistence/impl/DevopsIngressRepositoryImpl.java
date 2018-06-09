@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -43,6 +44,9 @@ import io.choerodon.websocket.helper.EnvSession;
 @Component
 public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
+
+    @Value("${agent.version}")
+    private String agentExpectVersion;
 
     private static final Gson gson = new Gson();
     private DevopsIngressMapper devopsIngressMapper;
@@ -157,7 +161,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressDTO.setStatus(t.getStatus());
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(t.getEnvId())) {
+                if (envSession.getEnvId().equals(t.getEnvId())&& agentExpectVersion.compareTo(envSession.getVersion()==null?"0":envSession.getVersion()) < 1) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }

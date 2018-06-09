@@ -85,7 +85,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         for (DevopsServiceV ds : devopsServiceByPage) {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(ds.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                if (envSession.getEnvId().equals(ds.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                     ds.setEnvStatus(true);
                 }
             }
@@ -479,7 +479,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<Long> envIds = new ArrayList<>();
         for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
             EnvSession envSession = entry.getValue();
-            if (agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+            if (agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                 envIds.add(envSession.getEnvId());
             }
         }
