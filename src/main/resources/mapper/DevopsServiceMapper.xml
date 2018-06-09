@@ -69,6 +69,7 @@
         de.id AS env_id,
         de.`name` AS env_name,
         de.`code` AS namespace,
+        da.project_id AS appProjectId,
         dav.id AS app_version_id,
         dav.version AS version,
         dsai.app_instance_id AS app_instance_id,
@@ -80,14 +81,13 @@
         FROM
         (
         SELECT
-        ds.*
+        devs.*
         FROM
-        devops_service ds,
-        devops_application da
+        devops_service devs
+        INNER JOIN devops_env denv ON devs.env_id = denv.id
         WHERE
-        ds.app_id = da.id
-        AND da.project_id = #{projectId}
-        AND ds.`status` != 'deleted'
+         denv.project_id = #{projectId}
+        AND devs.`status` != 'deleted'
         <if test="start != null and  size != null">
             LIMIT #{start}, #{size}
         </if>
@@ -151,6 +151,7 @@
         <result property="appId" column="app_id"/>
         <result property="appName" column="app_name"/>
         <result property="envId" column="env_id"/>
+        <result property="appProjectId" column="appProjectId"/>
         <result property="envName" column="env_name"/>
         <result property="namespace" column="namespace"/>
         <result property="commandStatus" column="commandStatus"/>
