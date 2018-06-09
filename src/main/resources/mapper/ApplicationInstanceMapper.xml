@@ -25,6 +25,8 @@
         devops_env_pod dp
         WHERE
         dp.app_instance_id = dai.id
+        AND dp.namespace = de.code
+        AND de.id = dai.env_id
         ) podCount,
         (
         SELECT
@@ -35,6 +37,8 @@
         dp.app_instance_id = dai.id
         AND dp.`status` = 'Running'
         AND dp.is_ready = TRUE
+        AND dp.namespace = de.code
+        AND de.id = dai.env_id
         ) podRunningCount,
         dai.object_version_number,
         cmd.`status` commandStatus,
