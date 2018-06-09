@@ -69,7 +69,7 @@
         SELECT
         dp.id,
         dp.ip,
-        de.project_id projectId,
+        da.project_id projectId,
         dam.publish_level,
         dp.`name`,
         dp.namespace namespace,
