@@ -42,6 +42,8 @@ public class DevopsEnvPodDO extends AuditDomain {
     private String envCode;
     @Transient
     private String envName;
+    @Transient
+    private Long projectId;
 
     public DevopsEnvPodDO(Long appInstanceId) {
         this.appInstanceId = appInstanceId;
@@ -180,5 +182,13 @@ public class DevopsEnvPodDO extends AuditDomain {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

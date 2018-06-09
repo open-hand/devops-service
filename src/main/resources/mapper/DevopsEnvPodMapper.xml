@@ -69,6 +69,7 @@
         SELECT
         dp.id,
         dp.ip,
+        de.project_id projectId,
         dam.publish_level,
         dp.`name`,
         dp.namespace namespace,
@@ -89,7 +90,7 @@
         JOIN devops_application da ON dav.app_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_app_market dam on dam.app_id = da.id
-        WHERE da.project_id = #{projectId}
+        WHERE de.project_id = #{projectId}
         <include refid="sqlparam"/>
     </select>
 </mapper>
