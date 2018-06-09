@@ -3,11 +3,14 @@ package io.choerodon.devops.app.service.impl;
 import java.io.IOException;
 import java.util.*;
 
+import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -46,6 +49,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String RELEASE_NAME = "ReleaseName";
     private static final String ENV_DISCONNECTED = "error.env.disconnect";
     private static Gson gson = new Gson();
+    private static Yaml snakeyaml = new Yaml();
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -185,8 +189,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
         ReplaceResult replaceResult = new ReplaceResult();
-        String versionValue = applicationVersionRepository.queryValue(versionId);
-        String deployValue = applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId);
+        String versionValue = FileUtil.jungeValueFormat(applicationVersionRepository.queryValue(versionId));
+        String deployValue = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId));
         replaceResult.setYaml(versionValue);
         if (deployValue != null) {
             replaceResult = FileUtil.replace(versionValue, deployValue);
@@ -204,8 +208,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ReplaceResult queryValue(Long instanceId) {
         ReplaceResult replaceResult = new ReplaceResult();
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
-        String yaml = applicationInstanceRepository.queryValueByEnvIdAndAppId(
-                applicationInstanceE.getDevopsEnvironmentE().getId(), applicationInstanceE.getApplicationE().getId());
+        String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(
+                applicationInstanceE.getDevopsEnvironmentE().getId(), applicationInstanceE.getApplicationE().getId()));
         replaceResult.setYaml(yaml);
         try {
             replaceResult.setTotalLine(FileUtil.getFileTotalLine(yaml) + 1);
