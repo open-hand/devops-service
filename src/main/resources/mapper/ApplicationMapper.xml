@@ -31,14 +31,15 @@
         da.id,
         da.`code`,
         da.`name` ,
-        dam.publish_level
+        dam.publish_level,
+        da.project_id projectId
         FROM
         devops_application da
         JOIN devops_app_instance dai ON dai.app_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         left join devops_app_market dam on dam.app_id = da.id
         WHERE
-        da.project_id = #{projectId}
+        de.project_id = #{projectId}
         AND de.id = #{envId}
         <choose>
             <when test="status == 'running'">
