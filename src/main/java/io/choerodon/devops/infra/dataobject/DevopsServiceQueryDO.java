@@ -27,6 +27,8 @@ public class DevopsServiceQueryDO {
     private String commandType;
     @Transient
     private String error;
+    @Transient
+    private Long appProjectId;
 
     public Long getId() {
         return id;
@@ -142,6 +144,14 @@ public class DevopsServiceQueryDO {
 
     public Long getTargetPort() {
         return targetPort;
+    }
+
+    public Long getAppProjectId() {
+        return appProjectId;
+    }
+
+    public void setAppProjectId(Long appProjectId) {
+        this.appProjectId = appProjectId;
     }
 
     public void setTargetPort(Long targetPort) {

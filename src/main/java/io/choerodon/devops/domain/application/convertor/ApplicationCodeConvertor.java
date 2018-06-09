@@ -17,6 +17,7 @@ public class ApplicationCodeConvertor implements ConvertorI<ApplicationE, Object
     public ApplicationCodeDTO entityToDto(ApplicationE entity) {
         ApplicationCodeDTO applicationCodeDTO = new ApplicationCodeDTO();
         BeanUtils.copyProperties(entity, applicationCodeDTO);
+        applicationCodeDTO.setProjectId(entity.getProjectE().getId());
         return applicationCodeDTO;
     }
 }
