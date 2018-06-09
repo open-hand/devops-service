@@ -479,4 +479,14 @@ public class FileUtil {
         logger.info("not found key in tuple");
         return null;
     }
+
+    public static String jungeValueFormat(String value) {
+        try {
+            JSONObject.parseObject(value);
+            value = FileUtil.jsonToYaml(value);
+            return value;
+        } catch (Exception ignored) {
+            return value;
+        }
+    }
 }
