@@ -108,6 +108,7 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
+        da.project_id appProjectId,
         ds. port,
         ds.target_port,
         ds.`status`,
