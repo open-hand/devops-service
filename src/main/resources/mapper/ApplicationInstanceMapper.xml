@@ -66,11 +66,13 @@
         dai.`code` CODE
         FROM
         devops_app_instance dai,
-        devops_application da
+        devops_application da,
+        devops_env de
         WHERE
         dai.app_id = da.id
+        AND dai.env_id = de.id
         AND dai.`status` = 'running'
-        AND da.project_id = #{projectId}
+        AND de.project_id = #{projectId}
         <if test="envId != null">
             AND dai.env_id = #{envId}
         </if>
