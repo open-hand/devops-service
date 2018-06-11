@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -219,6 +220,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public Boolean create(ApplicationDeployDTO applicationDeployDTO) {
+        FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
         if (isEnvConnected(applicationDeployDTO.getEnvironmentId())) {
             ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
             DevopsEnvironmentE devopsEnvironmentE =
