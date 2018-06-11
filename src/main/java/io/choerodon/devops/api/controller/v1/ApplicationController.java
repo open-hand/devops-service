@@ -63,7 +63,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "项目下查询单个应用信息")
-    @GetMapping("/{applicationId}")
+    @GetMapping("/{applicationId}/detail")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
