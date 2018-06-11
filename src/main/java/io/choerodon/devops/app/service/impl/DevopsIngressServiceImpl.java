@@ -45,10 +45,16 @@ import io.choerodon.websocket.helper.EnvSession;
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String PATH_ERROR = "error.path.empty";
+    private static final String PATH_DUPLICATED = "error.path.duplicated";
+
     private static final String ENV_DISCONNECTED = "error.env.disconnect";
+
     private static JSON json = new JSON();
+
+
     @Value("${agent.version}")
     private String agentExpectVersion;
+
     private IDevopsIngressService idevopsIngressService;
     private DevopsIngressRepository devopsIngressRepository;
     private DevopsServiceRepository devopsServiceRepository;
@@ -85,11 +91,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             if (devopsIngressDTO.getPathList().isEmpty()) {
                 throw new CommonException(PATH_ERROR);
             }
+            List<String> pathCheckList = new ArrayList<>();
             devopsIngressDTO.getPathList().forEach(t -> {
                 if (t.getPath() == null || t.getServiceId() == null) {
                     throw new CommonException(PATH_ERROR);
                 }
-
+                if (pathCheckList.contains(t.getPath())) {
+                    throw new CommonException(PATH_DUPLICATED);
+                } else {
+                    pathCheckList.add(t.getPath());
+                }
                 DevopsServiceE devopsServiceE = getDevopsService(t.getServiceId());
 
                 devopsIngressPathDOS.add(new DevopsIngressPathDO(
@@ -131,11 +142,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 DevopsIngressDO devopsIngressDO = new DevopsIngressDO(
                         id, projectId, domainEnvId, domain, name);
                 List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
+                List<String> pathCheckList = new ArrayList<>();
                 devopsIngressDTO.getPathList().forEach(t -> {
                     if (t.getPath() == null) {
                         throw new CommonException(PATH_ERROR);
                     } else if (t.getServiceId() == null) {
                         throw new CommonException("error.service.id.get");
+                    }
+                    if (pathCheckList.contains(t.getPath())) {
+                        throw new CommonException(PATH_DUPLICATED);
+                    } else {
+                        pathCheckList.add(t.getPath());
                     }
 
                     DevopsServiceE devopsServiceE = getDevopsService(t.getServiceId());
