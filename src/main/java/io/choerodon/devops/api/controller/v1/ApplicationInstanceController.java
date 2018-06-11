@@ -173,7 +173,7 @@ public class ApplicationInstanceController {
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "校验values")
-    @GetMapping("/value")
+    @GetMapping("/value_format")
     public ResponseEntity<String> queryValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
