@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -189,6 +188,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
         ReplaceResult replaceResult = new ReplaceResult();
         String versionValue = FileUtil.jungeValueFormat(applicationVersionRepository.queryValue(versionId));
+        try{
+           FileUtil.jungeYamlFormat(versionValue);
+        }catch (Exception e) {
+            replaceResult.setYaml(versionValue);
+            replaceResult.setErrorMsg(e.getMessage());
+            return replaceResult;
+        }
         String deployValue = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId));
         replaceResult.setYaml(versionValue);
         if (deployValue != null) {
@@ -216,6 +222,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             throw new CommonException(e.getMessage());
         }
         return replaceResult;
+    }
+
+    @Override
+    public String formatValue(String value) {
+        try{
+            FileUtil.jungeYamlFormat(value);
+        }catch (Exception e) {
+            return e.getMessage();
+        }
+        return null;
     }
 
     @Override

@@ -119,4 +119,12 @@ public interface ApplicationInstanceService {
      * @return string
      */
     ReplaceResult queryValue(Long instanceId);
+
+    /**
+     *校验values
+     *
+     * @param  value values值
+     * @return String
+     */
+    String formatValue(String value);
 }

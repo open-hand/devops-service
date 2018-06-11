@@ -166,6 +166,25 @@ public class ApplicationInstanceController {
     }
 
     /**
+     *校验values
+     *
+     * @param  value values值
+     * @return String
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "校验values")
+    @GetMapping("/value")
+    public ResponseEntity<String> queryValues(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用ID", required = true)
+            @RequestParam String value) {
+        return Optional.ofNullable(applicationInstanceService.formatValue(value))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.values.query"));
+    }
+
+    /**
      * 部署应用
      *
      * @param projectId            项目id

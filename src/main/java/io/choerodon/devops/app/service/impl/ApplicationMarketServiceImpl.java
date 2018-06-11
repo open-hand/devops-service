@@ -196,7 +196,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         versionE = applicationVersionRepository.query(latestVersionId);
         latestVersionCommit = versionE.getCommit();
         String fileSeparator = System.getProperty("file.separator");
-        String classPath = String.format("Charts%s%s%s%s%s%s%s%s%s",
+        String classPath = String.format("/Charts%s%s%s%s%s%s%s%s%s",
                 fileSeparator,
                 organization.getCode(),
                 fileSeparator,

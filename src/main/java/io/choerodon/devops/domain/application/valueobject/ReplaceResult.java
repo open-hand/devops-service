@@ -9,6 +9,7 @@ public class ReplaceResult {
     private String yaml;
     private List<HighlightMarker> highlightMarkers;
     private Integer totalLine;
+    private String errorMsg;
 
     public String getYaml() {
         return yaml;
@@ -32,5 +33,13 @@ public class ReplaceResult {
 
     public void setTotalLine(Integer totalLine) {
         this.totalLine = totalLine;
+    }
+
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+
+    public void setErrorMsg(String errorMsg) {
+        this.errorMsg = errorMsg;
     }
 }
