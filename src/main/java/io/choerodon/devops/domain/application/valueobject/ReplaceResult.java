@@ -3,6 +3,8 @@ package io.choerodon.devops.domain.application.valueobject;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.api.dto.ErrorLineDTO;
+
 /**
  * @author crockitwood
  */
@@ -11,7 +13,7 @@ public class ReplaceResult {
     private List<HighlightMarker> highlightMarkers;
     private Integer totalLine;
     private String errorMsg;
-    private Map<Long,String> errorLines;
+    private List<ErrorLineDTO> errorLines;
 
     public String getYaml() {
         return yaml;
@@ -45,11 +47,11 @@ public class ReplaceResult {
         this.errorMsg = errorMsg;
     }
 
-    public Map<Long, String> getErrorLines() {
+    public List<ErrorLineDTO> getErrorLines() {
         return errorLines;
     }
 
-    public void setErrorLines(Map<Long, String> errorLines) {
+    public void setErrorLines(List<ErrorLineDTO> errorLines) {
         this.errorLines = errorLines;
     }
 }

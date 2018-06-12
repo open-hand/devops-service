@@ -125,7 +125,7 @@ public interface ApplicationInstanceService {
      *校验values
      *
      * @param  replaceResult values对象
-     * @return Map
+     * @return List
      */
-    Map formatValue(ReplaceResult replaceResult);
+    List<ErrorLineDTO> formatValue(ReplaceResult replaceResult);
 }

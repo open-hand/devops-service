@@ -170,12 +170,12 @@ public class ApplicationInstanceController {
      *校验values
      *
      * @param  replaceResult values对象
-     * @return Map
+     * @return List
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "校验values")
     @PostMapping("/value_format")
-    public ResponseEntity<Map> queryValues(
+    public ResponseEntity<List<ErrorLineDTO>> formatValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "value", required = true)

@@ -194,6 +194,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }catch (Exception e) {
             replaceResult.setYaml(versionValue);
             replaceResult.setErrorMsg(e.getMessage());
+            try {
+                replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+            } catch (IOException e1) {
+                throw new CommonException(e1.getMessage());
+            }
             replaceResult.setErrorLines(getErrorLine(e.getMessage()));
             return replaceResult;
         }
@@ -227,7 +232,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Map formatValue(ReplaceResult replaceResult) {
+    public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
         try{
             FileUtil.jungeYamlFormat(replaceResult.getYaml());
         }catch (Exception e) {
@@ -486,8 +491,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    Map getErrorLine(String value) {
-        Map<Long,String> errorLines = new HashMap<>();
+    List<ErrorLineDTO> getErrorLine(String value) {
+        List<ErrorLineDTO> errorLines = new ArrayList<>();
         List<Long> lineNumbers = new ArrayList<>();
         String[] errorMsg = value.split("\\^");
         for (int i = 0; i < value.length(); i++) {
@@ -499,7 +504,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
         }
         for(int i=0; i<lineNumbers.size();i++) {
-            errorLines.put(lineNumbers.get(i),errorMsg[i]);
+            ErrorLineDTO errorLineDTO = new ErrorLineDTO();
+            errorLineDTO.setLineNumber(lineNumbers.get(i));
+            errorLineDTO.setErrorMsg(errorMsg[i]);
+            errorLines.add(errorLineDTO);
         }
         return errorLines;
     }
