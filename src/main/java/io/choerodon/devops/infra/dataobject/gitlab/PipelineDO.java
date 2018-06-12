@@ -17,7 +17,7 @@ public class PipelineDO {
     private Boolean tag;
     private String yamlErrors;
     private UserDO user;
-    private Date createdAt;
+    private String created_at;
     private Date updatedAt;
     private Date started_at;
     private Date finished_at;
@@ -89,12 +89,12 @@ public class PipelineDO {
         this.user = user;
     }
 
-    public Date getCreatedAt() {
-        return createdAt;
+    public String getCreated_at() {
+        return created_at;
     }
 
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
+    public void setCreated_at(String created_at) {
+        this.created_at = created_at;
     }
 
     public Date getUpdatedAt() {
