@@ -173,13 +173,13 @@ public class ApplicationInstanceController {
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "校验values")
-    @GetMapping("/value_format")
+    @PostMapping("/value_format")
     public ResponseEntity<String> queryValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用ID", required = true)
-            @RequestParam String value) {
-        return Optional.ofNullable(applicationInstanceService.formatValue(value))
+            @ApiParam(value = "value", required = true)
+            @RequestBody ReplaceResult replaceResult) {
+        return Optional.ofNullable(applicationInstanceService.formatValue(replaceResult))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.values.query"));
     }

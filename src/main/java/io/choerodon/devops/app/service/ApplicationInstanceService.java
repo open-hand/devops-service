@@ -123,8 +123,8 @@ public interface ApplicationInstanceService {
     /**
      *校验values
      *
-     * @param  value values值
+     * @param  replaceResult values对象
      * @return String
      */
-    String formatValue(String value);
+    String formatValue(ReplaceResult replaceResult);
 }

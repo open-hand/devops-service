@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.*;
 
 import com.google.gson.Gson;
+import jdk.management.resource.ResourceId;
+import jdk.management.resource.ResourceRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -225,9 +227,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public String formatValue(String value) {
+    public String formatValue(ReplaceResult replaceResult) {
         try{
-            FileUtil.jungeYamlFormat(value);
+            FileUtil.jungeYamlFormat(replaceResult.getYaml());
         }catch (Exception e) {
             return e.getMessage();
         }
