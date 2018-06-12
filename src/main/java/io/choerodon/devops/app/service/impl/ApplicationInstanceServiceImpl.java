@@ -194,6 +194,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }catch (Exception e) {
             replaceResult.setYaml(versionValue);
             replaceResult.setErrorMsg(e.getMessage());
+            replaceResult.setErrorLines(getErrorLine(e.getMessage()));
             return replaceResult;
         }
         String deployValue = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId));
