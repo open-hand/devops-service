@@ -139,10 +139,6 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
             pipelineResultV.setCreateUser(gitlabPipelineE.getUser().getUsername());
             pipelineResultV.setRef(gitlabPipelineE.getRef());
             pipelineResultV.setSha(gitlabPipelineE.getSha());
-//            if (gitlabPipelineE.getStarted_at() != null && gitlabPipelineE.getFinished_at() != null) {
-//                pipelineResultV.setTime(getStageTime(gitlabPipelineE.getStarted_at(),
-//                        gitlabPipelineE.getFinished_at()));
-//            }
             pipelineResultV.setCreatedAt(gitlabPipelineE.getCreated_at());
 
             List<GitlabJobE> jobs =
