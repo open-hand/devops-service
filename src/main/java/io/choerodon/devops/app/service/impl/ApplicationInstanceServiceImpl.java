@@ -29,6 +29,7 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
@@ -225,11 +226,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public String formatValue(ReplaceResult replaceResult) {
+    public Map formatValue(ReplaceResult replaceResult) {
         try{
             FileUtil.jungeYamlFormat(replaceResult.getYaml());
         }catch (Exception e) {
-            return e.getMessage();
+            return getErrorLine(e.getMessage());
         }
         return null;
     }
@@ -481,5 +482,24 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
         }
         return envIds.contains(envId);
+    }
+
+
+    Map getErrorLine(String value) {
+        Map<Long,String> errorLines = new HashMap<>();
+        List<Long> lineNumbers = new ArrayList<>();
+        String[] errorMsg = value.split("\\^");
+        for (int i = 0; i < value.length(); i++) {
+            int j;
+            for (j = i; j < value.length(); j++) {
+                if (value.substring(i, j).equals("line")) {
+                    lineNumbers.add(TypeUtil.objToLong(value.substring(j + 1, j + 2)));
+                }
+            }
+        }
+        for(int i=0; i<lineNumbers.size();i++) {
+            errorLines.put(lineNumbers.get(i),errorMsg[i]);
+        }
+        return errorLines;
     }
 }

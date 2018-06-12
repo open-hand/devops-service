@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -169,12 +170,12 @@ public class ApplicationInstanceController {
      *校验values
      *
      * @param  replaceResult values对象
-     * @return String
+     * @return Map
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "校验values")
     @PostMapping("/value_format")
-    public ResponseEntity<String> queryValues(
+    public ResponseEntity<Map> queryValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "value", required = true)
