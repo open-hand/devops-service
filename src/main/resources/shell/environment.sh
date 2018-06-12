@@ -7,7 +7,7 @@ if ! [ -x "$(command -v helm)" ]; then
   exit 1
 fi
 kubectl create namespace {NAMESPACE}
-helm upgrade --repo={REPOURL} \
+helm install --repo={REPOURL} \
     --namespace={NAMESPACE} \
     --name={NAMESPACE} \
     --version={VERSION} \
@@ -15,5 +15,4 @@ helm upgrade --repo={REPOURL} \
     --set config.token={TOKEN} \
     --set config.envId={ENVID} \
     --set rbac.create=true \
-    --install \
     choerodon-agent
