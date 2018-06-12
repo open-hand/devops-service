@@ -168,7 +168,7 @@ public class ApplicationInstanceController {
     /**
      *校验values
      *
-     * @param  value values值
+     * @param  replaceResult values值
      * @return String
      */
     @Permission(level = ResourceLevel.PROJECT)
