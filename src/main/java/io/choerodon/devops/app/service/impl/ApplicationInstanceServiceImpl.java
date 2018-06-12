@@ -499,7 +499,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             int j;
             for (j = i; j < value.length(); j++) {
                 if (value.substring(i, j).equals("line")) {
-                    lineNumbers.add(TypeUtil.objToLong(value.substring(j + 1, j + 2)));
+                    lineNumbers.add(TypeUtil.objToLong(value.substring(j,value.indexOf(",",j)).trim()));
                 }
             }
         }
