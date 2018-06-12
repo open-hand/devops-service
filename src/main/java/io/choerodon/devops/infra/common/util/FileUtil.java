@@ -382,32 +382,36 @@ public class FileUtil {
     private static void compare(MappingNode oldMapping, MappingNode newMapping, List<ReplaceMarker> replaceMarkers) {
         List<NodeTuple> oldRootTuple = oldMapping.getValue();
         List<NodeTuple> newRootTuple = newMapping.getValue();
-        for (NodeTuple oldTuple : oldRootTuple) {
-            Node oldKeyNode = oldTuple.getKeyNode();
-            if (oldKeyNode instanceof ScalarNode) {
+        for (NodeTuple oldTuple : oldRootTuple){
+            Node oldKeyNode =  oldTuple.getKeyNode();
+            if (oldKeyNode instanceof ScalarNode){
                 ScalarNode scalarKeyNode = (ScalarNode) oldKeyNode;
                 Node oldValue = oldTuple.getValueNode();
-                if (oldValue != null && oldValue instanceof ScalarNode) {
+                if (oldValue!=null && oldValue instanceof ScalarNode){
                     ScalarNode oldValueScalar = (ScalarNode) oldValue;
-                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(), newRootTuple);
-                    if (newValueNode != null) {
-                        if (!oldValueScalar.getValue().equals(newValueNode.getValue())) {
+                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(),newRootTuple);
+                    if (newValueNode != null){
+                        if (!oldValueScalar.getValue().equals(newValueNode.getValue())){
                             ReplaceMarker replaceMarker = new ReplaceMarker();
                             replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
                             replaceMarker.setEndIndex(newValueNode.getEndMark().getIndex());
                             replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
                             replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
                             replaceMarker.setLine(newValueNode.getStartMark().getLine());
-                            replaceMarker.setToReplace(oldValueScalar.getValue());
+                            if (newValueNode.getValue().isEmpty()) {
+                                replaceMarker.setToReplace(" " + oldValueScalar.getValue());
+                            } else {
+                                replaceMarker.setToReplace(oldValueScalar.getValue());
+                            }
                             //记录相关并进行替换
                             replaceMarkers.add(replaceMarker);
                         }
                     }
-                } else if (oldValue instanceof MappingNode) {
-                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(), newRootTuple);
-                    if (oldValue != null && vaMappingNode != null) {
+                }else if(oldValue instanceof MappingNode){
+                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(),newRootTuple);
+                    if (oldValue != null && vaMappingNode != null){
                         MappingNode oldMappingNode = (MappingNode) oldValue;
-                        compare(oldMappingNode, vaMappingNode, replaceMarkers);
+                        compare(oldMappingNode,vaMappingNode,replaceMarkers);
                     }
                 }
             }
@@ -416,24 +420,56 @@ public class FileUtil {
     }
 
     private static String replace(String yaml, List<ReplaceMarker> replaceMarkers, List<HighlightMarker> highlights) {
+        String original = yaml;
         String temp = yaml;
-        if (highlights == null) {
+        if (highlights == null){
             highlights = new ArrayList<>();
         }
         int lengthChangeSum = 0;
-        for (ReplaceMarker replaceMarker : replaceMarkers) {
-            int originalLength = replaceMarker.getEndIndex() - replaceMarker.getStartIndex();
+
+        int len = replaceMarkers.size();
+
+        int[] index = new int[len];
+        int[] values = new int[len];
+
+        for ( int  i = 0; i < len; i++) {
+            values[i] = replaceMarkers.get(i).getLine();
+            index[i] = i;
+        }
+
+        int tem;
+        int tempIndex;
+        for ( int  i = 0; i < len; i++ ) {
+            for (int j = len - 1 ;  j > i  ; j--) {
+                if (values[j] < values[j-1]) {
+                    tem = values[j];
+                    values[j] = values[j-1];
+                    values[j-1] = tem;
+
+                    tempIndex = index[j-1];
+                    index[j-1] = index[j];
+                    index[j] = tempIndex;
+
+
+                }
+            }
+        }
+
+        ReplaceMarker replaceMarker;
+        for (int i = 0; i < len; i++) {
+            replaceMarker = replaceMarkers.get(index[i]);
+            int originalLength = replaceMarker.getEndIndex()-replaceMarker.getStartIndex();
             int replaceLength = replaceMarker.getToReplace().length();
             int lengthChange = replaceLength - originalLength;
-            String before = temp.substring(0, replaceMarker.getStartIndex() + lengthChangeSum);
-            String after = temp.substring(replaceMarker.getEndIndex() + lengthChangeSum);
+            String before = temp.substring(0,replaceMarker.getStartIndex()+lengthChangeSum);
+            String after = temp.substring(replaceMarker.getEndIndex()+lengthChangeSum);
             temp = before + replaceMarker.getToReplace() + after;
             HighlightMarker highlightMark = new HighlightMarker();
-            highlightMark.setStartIndex(replaceMarker.getStartIndex() + lengthChangeSum);
-            highlightMark.setEndIndex(highlightMark.getStartIndex() + replaceLength);
+            highlightMark.setStartIndex(replaceMarker.getStartIndex()+lengthChangeSum);
+            highlightMark.setEndIndex(highlightMark.getStartIndex()+replaceLength);
             highlightMark.setLine(replaceMarker.getLine());
             highlightMark.setStartColumn(replaceMarker.getStartColumn());
-            highlightMark.setEndColumn(replaceMarker.getStartColumn() + replaceLength);
+            highlightMark.setEndColumn(replaceMarker.getStartColumn()+replaceLength);
             highlights.add(highlightMark);
             lengthChangeSum += lengthChange;
         }
