@@ -168,7 +168,7 @@ public class ApplicationInstanceController {
     /**
      *校验values
      *
-     * @param  replaceResult values值
+     * @param  replaceResult values对象
      * @return String
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -179,9 +179,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "value", required = true)
             @RequestBody ReplaceResult replaceResult) {
-        return Optional.ofNullable(applicationInstanceService.formatValue(replaceResult))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.values.query"));
+        return new ResponseEntity<>(applicationInstanceService.formatValue(replaceResult), HttpStatus.OK);
     }
 
     /**
