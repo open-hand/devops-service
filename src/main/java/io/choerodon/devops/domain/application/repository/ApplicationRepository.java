@@ -44,4 +44,6 @@ public interface ApplicationRepository {
     ApplicationE queryByToken(String token);
 
     void checkAppCanDisable(Long applicationId);
+
+    List<ApplicationE> listByCode(String code);
 }
