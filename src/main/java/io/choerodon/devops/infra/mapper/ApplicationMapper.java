@@ -14,6 +14,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     List<ApplicationDO> list(@Param("projectId") Long projectId,
                              @Param("isActive") Boolean isActive,
+                             @Param("hasVersion") Boolean hasVersion,
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("param") String param);
 

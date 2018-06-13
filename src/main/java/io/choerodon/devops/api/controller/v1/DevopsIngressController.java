@@ -166,6 +166,7 @@ public class DevopsIngressController {
      * @param projectId 项目ID
      * @param domain    域名
      * @param path      路径
+     * @param id        ingress ID
      * @return Boolean
      */
     @Permission(level = ResourceLevel.PROJECT)
@@ -177,8 +178,10 @@ public class DevopsIngressController {
             @ApiParam(value = "域名", required = true)
             @RequestParam String domain,
             @ApiParam(value = "路径", required = true)
-            @RequestParam String path) {
-        return Optional.ofNullable(devopsIngressService.checkDomainAndPath(domain, path))
+            @RequestParam String path,
+            @ApiParam(value = "ingress ID", required = false)
+            @RequestParam(value = "id", required = false) Long id) {
+        return Optional.ofNullable(devopsIngressService.checkDomainAndPath(id, domain, path))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.domain.name.check"));
     }

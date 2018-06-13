@@ -139,4 +139,9 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         devopsServiceDO.setNamespace(namespace);
         return ConvertHelper.convert(devopsServiceMapper.selectOne(devopsServiceDO), DevopsServiceE.class);
     }
+
+    @Override
+    public Boolean checkEnvHasService(Long envId) {
+        return devopsServiceMapper.checkEnvHasService(envId);
+    }
 }

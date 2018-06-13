@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -163,6 +164,23 @@ public class ApplicationInstanceController {
         return Optional.ofNullable(applicationInstanceService.queryValues(appId, envId, appVersionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.values.query"));
+    }
+
+    /**
+     *校验values
+     *
+     * @param  replaceResult values对象
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "校验values")
+    @PostMapping("/value_format")
+    public ResponseEntity<List<ErrorLineDTO>> formatValue(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "value", required = true)
+            @RequestBody ReplaceResult replaceResult) {
+        return new ResponseEntity<>(applicationInstanceService.formatValue(replaceResult), HttpStatus.OK);
     }
 
     /**

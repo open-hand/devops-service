@@ -525,4 +525,13 @@ public class FileUtil {
             return value;
         }
     }
+
+    public static void jungeYamlFormat(String yaml) {
+        try {
+            Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
+            composer.getSingleNode();
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
 }

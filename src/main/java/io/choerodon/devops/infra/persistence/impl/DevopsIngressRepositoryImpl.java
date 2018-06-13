@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import org.springframework.beans.BeanUtils;
@@ -76,8 +75,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
         }
         if (!devopsIngressPathDOList.stream()
-                .filter(t -> !checkIngressAndPath(devopsIngressDO.getDomain(), t.getPath()))
-                .collect(Collectors.toList()).isEmpty()) {
+                .allMatch(t ->
+                        checkIngressAndPath(null, devopsIngressDO.getDomain(), t.getPath()))) {
             throw new CommonException("error.domain.path.exist");
         }
         devopsIngressMapper.insert(devopsIngressDO);
@@ -99,9 +98,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
         }
         if (!devopsIngressPathDOList.stream()
-                .filter(t -> !id.equals(t.getIngressId())
-                        && !checkIngressAndPath(devopsIngressDO.getDomain(), t.getPath()))
-                .collect(Collectors.toList()).isEmpty()) {
+                .allMatch(t -> (t.getId() != null && id.equals(t.getId()))
+                        || checkIngressAndPath(devopsIngressDO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
             throw new CommonException("error.domain.path.exist");
         }
         if (!ingressDO.equals(devopsIngressDO)) {
@@ -161,7 +159,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressDTO.setStatus(t.getStatus());
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(t.getEnvId())&& agentExpectVersion.compareTo(envSession.getVersion()==null?"0":envSession.getVersion()) < 1) {
+                if (envSession.getEnvId().equals(t.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }
@@ -233,8 +231,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public Boolean checkIngressAndPath(String domain, String path) {
-        return !devopsIngressPathMapper.checkDomainAndPath(domain, path);
+    public Boolean checkIngressAndPath(Long id, String domain, String path) {
+        return !devopsIngressPathMapper.checkDomainAndPath(id, domain, path);
     }
 
     @Override
@@ -304,6 +302,11 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         DevopsIngressPathDO devopsIngressPathDO = new DevopsIngressPathDO();
         devopsIngressPathDO.setIngressId(ingressId);
         devopsIngressPathMapper.delete(devopsIngressPathDO);
+    }
+
+    @Override
+    public Boolean checkEnvHasIngress(Long envId) {
+        return devopsIngressMapper.checkEnvHasIngress(envId);
     }
 
     public void getDevopsIngressDTO(DevopsIngressDTO devopsIngressDTO, DevopsIngressPathDO e) {

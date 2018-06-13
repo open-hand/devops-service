@@ -29,6 +29,7 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
@@ -188,6 +189,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
         ReplaceResult replaceResult = new ReplaceResult();
         String versionValue = FileUtil.jungeValueFormat(applicationVersionRepository.queryValue(versionId));
+        try{
+           FileUtil.jungeYamlFormat(versionValue);
+        }catch (Exception e) {
+            replaceResult.setYaml(versionValue);
+            replaceResult.setErrorMsg(e.getMessage());
+            try {
+                replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+            } catch (IOException e1) {
+                throw new CommonException(e1.getMessage());
+            }
+            replaceResult.setErrorLines(getErrorLine(e.getMessage()));
+            return replaceResult;
+        }
         String deployValue = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId));
         replaceResult.setYaml(versionValue);
         if (deployValue != null) {
@@ -218,7 +232,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
+        try{
+            FileUtil.jungeYamlFormat(replaceResult.getYaml());
+        }catch (Exception e) {
+            return getErrorLine(e.getMessage());
+        }
+        return null;
+    }
+
+    @Override
     public Boolean create(ApplicationDeployDTO applicationDeployDTO) {
+        FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
         if (isEnvConnected(applicationDeployDTO.getEnvironmentId())) {
             ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
             DevopsEnvironmentE devopsEnvironmentE =
@@ -463,5 +488,27 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
         }
         return envIds.contains(envId);
+    }
+
+
+    List<ErrorLineDTO> getErrorLine(String value) {
+        List<ErrorLineDTO> errorLines = new ArrayList<>();
+        List<Long> lineNumbers = new ArrayList<>();
+        String[] errorMsg = value.split("\\^");
+        for (int i = 0; i < value.length(); i++) {
+            int j;
+            for (j = i; j < value.length(); j++) {
+                if (value.substring(i, j).equals("line")) {
+                    lineNumbers.add(TypeUtil.objToLong(value.substring(j,value.indexOf(",",j)).trim()));
+                }
+            }
+        }
+        for(int i=0; i<lineNumbers.size();i++) {
+            ErrorLineDTO errorLineDTO = new ErrorLineDTO();
+            errorLineDTO.setLineNumber(lineNumbers.get(i));
+            errorLineDTO.setErrorMsg(errorMsg[i]);
+            errorLines.add(errorLineDTO);
+        }
+        return errorLines;
     }
 }
