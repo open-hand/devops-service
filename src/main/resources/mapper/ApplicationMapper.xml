@@ -176,4 +176,18 @@
         dai.app_version_id WHERE dav.app_id = da.id )
         AND da.id = #{applicationId};
     </select>
+
+    <select id="listByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+        da.`id`,
+        da.project_id
+        FROM
+        devops_application da
+        join devops_app_market dam
+        on da.id = dam.app_id
+        WHERE
+        da.code = #{code}
+    </select>
+
+
 </mapper>
