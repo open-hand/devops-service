@@ -23,6 +23,9 @@
         INNER JOIN devops_ingress_path dda ON dd.id = dda.ingress_id
         WHERE
         dd.domain = #{domain}
+        <if test="name != null">
+            AND dd.name != #{name}
+        </if>
         AND dda.path = #{path}
     </select>
 
