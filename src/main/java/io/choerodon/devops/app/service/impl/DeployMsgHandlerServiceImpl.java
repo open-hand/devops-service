@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -31,6 +32,7 @@ import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
+import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
 import io.choerodon.devops.infra.mapper.DevopsIngressMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.process.SocketMsgDispatcher;
@@ -45,6 +47,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String PENDING = "Pending";
     private static final String METADATA = "metadata";
+    private static final String PUBLIC = "public";
     private static final Logger logger = LoggerFactory.getLogger(DeployMsgHandlerServiceImpl.class);
     private static final String RESOURCEVERSION = "resourceVersion";
     private static JSON json = new JSON();
@@ -91,6 +94,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private DevopsIngressMapper devopsIngressMapper;
     @Autowired
     private SocketMsgDispatcher socketMsgDispatcher;
+    @Autowired
+    private ApplicationMarketMapper applicationMarketMapper;
+    @Autowired
+    private ApplicationMarketRepository applicationMarketRepository;
 
     /**
      * pod 更新
@@ -481,6 +488,27 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
                 ApplicationE applicationE = applicationRepository
                         .queryByCode(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId());
+                if (applicationE == null) {
+                    List<ApplicationE> applicationES = applicationRepository.listByCode(releasePayload.getChartName());
+                    List<ApplicationE> applicationList = applicationES.parallelStream().filter(newApplicationE -> iamRepository.queryIamProject(newApplicationE.getProjectE().getId()).getOrganization().getId().equals(organization.getId())).collect(Collectors.toList());
+                    if (!applicationList.isEmpty()) {
+                        applicationE = applicationList.get(0);
+                        if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) == 0) {
+                            applicationE = null;
+                        }
+                    } else {
+                        applicationE = applicationES.isEmpty() ? null : applicationES.get(0);
+                        if (applicationE != null) {
+                            ApplicationMarketE applicationMarketE = applicationMarketRepository.queryByAppId(applicationE.getId());
+                            if (applicationMarketE == null || (applicationMarketE != null && !applicationMarketE.getPublishLevel().equals(PUBLIC))) {
+                                applicationE = null;
+                            }
+                        }
+                    }
+                }
+                if (applicationE == null) {
+                    throw new CommonException("error.application.query");
+                }
                 applicationVersionE.initApplicationEById(applicationE.getId());
                 String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
                         System.getProperty("file.separator"),

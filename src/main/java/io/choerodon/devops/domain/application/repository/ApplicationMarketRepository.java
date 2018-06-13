@@ -38,4 +38,6 @@ public interface ApplicationMarketRepository {
 
     Page<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                                PageRequest pageRequest, String searchParam);
+
+    ApplicationMarketE queryByAppId(Long appId);
 }
