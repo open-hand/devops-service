@@ -88,7 +88,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         gitlabProjectPayload.setGroupId(gitlabGroupE.getId());
-        Exception exception = eventProducerTemplate.execute("CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
+        Exception exception = eventProducerTemplate.execute(
+                "CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
                 (String uuid) -> {
                     applicationE.initUuid(uuid);
                     if (applicationRepository.create(applicationE) != 1) {
@@ -139,9 +140,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, PageRequest pageRequest, String params) {
+    public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                 PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES =
-                applicationRepository.listByOptions(projectId, isActive, pageRequest, params);
+                applicationRepository.listByOptions(projectId, isActive, hasVersion, pageRequest, params);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -201,7 +203,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             //拉取模板
             String repoUrl = applicationTemplateE.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-            Git git = gitUtil.clone(applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
+            Git git = gitUtil.clone(applicationDir,
+                    !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
             //渲染模板里面的参数
             try {
                 File file = new File(gitUtil.getWorkingDirectory(applicationDir));

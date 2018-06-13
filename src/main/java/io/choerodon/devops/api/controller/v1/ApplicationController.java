@@ -134,14 +134,17 @@ public class ApplicationController {
     public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "项目是否启用", required = false)
+            @ApiParam(value = "应用是否启用", required = false)
             @RequestParam(value = "active", required = false) Boolean isActive,
+            @ApiParam(value = "应用是否存在版本", required = false)
+            @RequestParam(value = "has_version", required = false) Boolean hasVersion,
             @ApiParam(value = "分页参数")
             @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(applicationService.listByOptions(projectId, isActive, pageRequest, params))
+        return Optional.ofNullable(
+                applicationService.listByOptions(projectId, isActive, hasVersion, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
