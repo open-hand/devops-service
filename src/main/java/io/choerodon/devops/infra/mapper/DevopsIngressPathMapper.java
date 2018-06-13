@@ -21,5 +21,5 @@ public interface DevopsIngressPathMapper extends BaseMapper<DevopsIngressPathDO>
     List<DevopsIngressPathDO> selectByEnvIdAndServiceId(@Param("envId") Long envId,
                                                         @Param("serviceId") Long serviceId);
 
-    boolean checkDomainAndPath(@Param("domain") String domain, @Param("path") String path);
+    boolean checkDomainAndPath(@Param("ingressId") Long ingressId, @Param("domain") String domain, @Param("path") String path);
 }

@@ -72,9 +72,10 @@ public interface DevopsIngressService {
      *
      * @param domain 域名
      * @param path   路径
+     * @param id     ingress ID
      * @return boolean
      */
-    Boolean checkDomainAndPath(String domain, String path);
+    Boolean checkDomainAndPath(Long id, String domain, String path);
 
     /**
      * 项目下创建域名

@@ -231,4 +231,14 @@
             OR dsai.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </sql>
+
+    <select id="checkEnvHasService" resultType="java.lang.Boolean">
+        SELECT
+        COUNT( 1 ) > 0 exist
+        FROM
+        devops_service
+        WHERE
+        env_id = #{envId}
+        AND `status` != 'deleted';
+    </select>
 </mapper>

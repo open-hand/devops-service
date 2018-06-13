@@ -4,14 +4,15 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
+import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
@@ -39,12 +40,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
-    ;
+
     private IamRepository iamRepository;
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     private EnvListener envListener;
     private DevopsServiceRepository devopsServiceRepository;
     private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private DevopsEnvironmentValidator devopsEnvironmentValidator;
 
     public DevopsEnvironmentServiceImpl(IamRepository iamRepository,
                                         DevopsEnvironmentRepository devopsEnviromentRepository,
@@ -120,8 +123,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
-        if (!active && applicationInstanceRepository.selectByEnvId(environmentId) > 0) {
-            throw new CommonException("error.env.stop");
+        if (!active) {
+            devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);

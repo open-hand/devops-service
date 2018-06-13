@@ -54,12 +54,14 @@ public interface ApplicationService {
      *
      * @param projectId   项目id
      * @param isActive    是否启用
+     * @param hasVersion  是否存在版本
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
      */
     Page<ApplicationRepDTO> listByOptions(Long projectId,
                                           Boolean isActive,
+                                          Boolean hasVersion,
                                           PageRequest pageRequest,
                                           String params);
 

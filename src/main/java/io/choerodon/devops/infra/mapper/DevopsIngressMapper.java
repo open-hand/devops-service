@@ -21,4 +21,6 @@ public interface DevopsIngressMapper extends BaseMapper<DevopsIngressDO> {
             @Param("projectId") Long projectId,
             @Param("searchParam") Map<String, Object> searchParam,
             @Param("param") String param);
+
+    Boolean checkEnvHasIngress(@Param("envId") Long envId);
 }

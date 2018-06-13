@@ -31,4 +31,6 @@ public interface DevopsServiceMapper extends BaseMapper<DevopsServiceDO> {
 
     int selectCountByName(@Param("projectId") Long projectId, @Param("searchParam") Map<String, Object> searchParam,
                           @Param("param") String param);
+
+    Boolean checkEnvHasService(@Param("envId") Long envId);
 }
