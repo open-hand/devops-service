@@ -39,7 +39,7 @@ public interface DevopsIngressRepository {
 
     Boolean checkIngressName(Long envId, String name);
 
-    Boolean checkIngressAndPath(String name, String domain, String path);
+    Boolean checkIngressAndPath(Long id, String domain, String path);
 
     DevopsIngressE selectByEnvAndName(Long envId, String name);
 

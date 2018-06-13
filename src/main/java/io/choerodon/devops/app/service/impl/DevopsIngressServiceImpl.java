@@ -226,8 +226,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public Boolean checkDomainAndPath(String domain, String path) {
-        return devopsIngressRepository.checkIngressAndPath(null, domain, path);
+    public Boolean checkDomainAndPath(Long id, String domain, String path) {
+        return devopsIngressRepository.checkIngressAndPath(id, domain, path);
     }
 
     @Override

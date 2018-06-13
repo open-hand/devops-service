@@ -76,7 +76,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         }
         if (!devopsIngressPathDOList.stream()
                 .allMatch(t ->
-                        checkIngressAndPath(devopsIngressDO.getName(), devopsIngressDO.getDomain(), t.getPath()))) {
+                        checkIngressAndPath(null, devopsIngressDO.getDomain(), t.getPath()))) {
             throw new CommonException("error.domain.path.exist");
         }
         devopsIngressMapper.insert(devopsIngressDO);
@@ -99,7 +99,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         }
         if (!devopsIngressPathDOList.stream()
                 .allMatch(t -> (t.getId() != null && id.equals(t.getId()))
-                        || checkIngressAndPath(devopsIngressDO.getName(), devopsIngressDO.getDomain(), t.getPath()))) {
+                        || checkIngressAndPath(devopsIngressDO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
             throw new CommonException("error.domain.path.exist");
         }
         if (!ingressDO.equals(devopsIngressDO)) {
@@ -231,8 +231,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public Boolean checkIngressAndPath(String name, String domain, String path) {
-        return !devopsIngressPathMapper.checkDomainAndPath(name, domain, path);
+    public Boolean checkIngressAndPath(Long id, String domain, String path) {
+        return !devopsIngressPathMapper.checkDomainAndPath(id, domain, path);
     }
 
     @Override
