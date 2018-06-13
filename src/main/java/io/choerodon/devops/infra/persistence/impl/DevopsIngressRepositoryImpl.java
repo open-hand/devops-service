@@ -304,6 +304,11 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         devopsIngressPathMapper.delete(devopsIngressPathDO);
     }
 
+    @Override
+    public Boolean checkEnvHasIngress(Long envId) {
+        return devopsIngressMapper.checkEnvHasIngress(envId);
+    }
+
     public void getDevopsIngressDTO(DevopsIngressDTO devopsIngressDTO, DevopsIngressPathDO e) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(e.getServiceId());
         if (devopsServiceE == null) {
