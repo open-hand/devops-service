@@ -80,7 +80,7 @@ public interface ApplicationService {
      * @param token token
      * @return File
      */
-    String queryFile(String token);
+    String queryFile(String token, String type);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用

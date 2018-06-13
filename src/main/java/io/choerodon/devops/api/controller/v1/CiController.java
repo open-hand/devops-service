@@ -46,7 +46,7 @@ public class CiController {
             @RequestParam String token,
             @ApiParam(value = "类型")
             @RequestParam(required = false) String type) {
-        return Optional.ofNullable(applicationService.queryFile(token))
+        return Optional.ofNullable(applicationService.queryFile(token, type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.file.get"));
     }
