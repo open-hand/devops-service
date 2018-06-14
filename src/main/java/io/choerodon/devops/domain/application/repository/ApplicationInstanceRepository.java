@@ -15,7 +15,7 @@ public interface ApplicationInstanceRepository {
     Page<ApplicationInstanceE> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                        Long envId, Long versionId, Long appId, String params);
 
-    ApplicationInstanceE selectByCode(String code);
+    ApplicationInstanceE selectByCode(String code, Long envId);
 
     ApplicationInstanceE create(ApplicationInstanceE applicationInstanceE);
 
