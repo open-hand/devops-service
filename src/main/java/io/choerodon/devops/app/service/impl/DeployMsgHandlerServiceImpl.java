@@ -110,7 +110,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
         Msg msg1 = new Msg();
         ApplicationInstanceE applicationInstanceE =
-                applicationInstanceRepository.selectByCode(KeyParseTool.getReleaseName(key));
+                applicationInstanceRepository.selectByCode(KeyParseTool.getReleaseName(key), envId);
         if (applicationInstanceE == null) {
             Payload payload = new Payload(
                     null,
@@ -211,11 +211,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void handlerReleaseInstall(String msg) {
+    public void handlerReleaseInstall(String msg, Long envId) {
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
         List<Resource> resources = JSONArray.parseArray(releasePayload.getResources(), Resource.class);
         String releaseName = releasePayload.getName();
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName);
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
         applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
         applicationInstanceRepository.update(applicationInstanceE);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -227,7 +227,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
 
     @Override
-    public void handlerPreInstall(String msg) {
+    public void handlerPreInstall(String msg, Long envId) {
         if (msg.equals("null")) {
             return;
         }
@@ -235,7 +235,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         try {
             for (Job job : jobs) {
                 ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
-                        .selectByCode(job.getReleaseName());
+                        .selectByCode(job.getReleaseName(), envId);
                 DevopsEnvResourceE newdevopsEnvResourceE =
                         devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                 applicationInstanceE.getId(),
@@ -305,7 +305,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     }
                     for (String release : releases) {
                         applicationInstanceE = applicationInstanceRepository
-                                .selectByCode(release);
+                                .selectByCode(release, envId);
 
                         String namespace = v1Service.getMetadata().getNamespace();
                         if (flag) {
@@ -344,7 +344,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     break;
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
-                    applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName);
+                    applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName,envId);
                     if (applicationInstanceE == null) {
                         return;
                     }
@@ -414,9 +414,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseHookLogs(String key, String msg) {
+    public void helmReleaseHookLogs(String key, String msg, Long envId) {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
-                .selectByCode(KeyParseTool.getReleaseName(key));
+                .selectByCode(KeyParseTool.getReleaseName(key), envId);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getObjectType(), applicationInstanceE.getId());
         DevopsEnvCommandLogE devopsEnvCommandLogE = new DevopsEnvCommandLogE();
@@ -426,8 +426,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void updateInstanceStatus(String key, String instanceStatus, String commandStatus, String msg) {
-        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key);
+    public void updateInstanceStatus(String key, Long envId, String instanceStatus, String commandStatus, String msg) {
+        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key, envId);
         if (instanceE != null) {
             instanceE.setStatus(instanceStatus);
             applicationInstanceRepository.update(instanceE);
@@ -465,13 +465,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleasePreUpgrade(String msg) {
-        handlerPreInstall(msg);
+    public void helmReleasePreUpgrade(String msg , Long envId) {
+        handlerPreInstall(msg, envId);
     }
 
     @Override
-    public void handlerReleaseUpgrade(String msg) {
-        handlerReleaseInstall(msg);
+    public void handlerReleaseUpgrade(String msg, Long envId) {
+        handlerReleaseInstall(msg, envId);
     }
 
 
@@ -479,7 +479,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
         ApplicationVersionValueE applicationVersionValueE = ApplicationVersionValueFactory.create();
         ApplicationVersionE applicationVersionE = ApplicationVersionEFactory.create();
-        if (applicationInstanceRepository.selectByCode(releasePayload.getName()) == null) {
+        if (applicationInstanceRepository.selectByCode(releasePayload.getName(), envId) == null) {
             try {
                 ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
@@ -560,16 +560,18 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseDeleteFail(String key, String msg) {
+    public void helmReleaseDeleteFail(String key, String msg, Long envId) {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
+                envId,
                 InstanceStatus.DELETED.getStatus(),
                 CommandStatus.FAILED.getCommandStatus(),
                 msg);
     }
 
     @Override
-    public void helmReleaseStartFail(String key, String msg) {
+    public void helmReleaseStartFail(String key, String msg, Long envId) {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
+                envId,
                 InstanceStatus.STOPED.getStatus(),
                 CommandStatus.FAILED.getCommandStatus(),
                 msg);
@@ -581,24 +583,27 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseInstallFail(String key, String msg) {
+    public void helmReleaseInstallFail(String key, String msg, Long envId) {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
+                envId,
                 InstanceStatus.FAILED.getStatus(),
                 CommandStatus.FAILED.getCommandStatus(),
                 msg);
     }
 
     @Override
-    public void helmReleaseUpgradeFail(String key, String msg) {
+    public void helmReleaseUpgradeFail(String key, String msg, Long envId) {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
+                envId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getCommandStatus(),
                 msg);
     }
 
     @Override
-    public void helmReleaeStopFail(String key, String msg) {
+    public void helmReleaeStopFail(String key, String msg, Long envId) {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
+                envId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getCommandStatus(),
                 msg);
@@ -653,7 +658,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void netWorkUpdate(String key, String msg) {
+    public void netWorkUpdate(String key, String msg, Long envId) {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
 
         String releaseNames = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
@@ -676,7 +681,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         for (String release : releases) {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
-                    .selectByCode(release);
+                    .selectByCode(release, envId);
 
             String namespace = v1Service.getMetadata().getNamespace();
             if (flag) {

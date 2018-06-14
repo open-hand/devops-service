@@ -5,6 +5,6 @@ package io.choerodon.devops.app.service;
  */
 public interface ServiceMsgHandlerService {
 
-    void handlerServiceCreateMessage(String key, String msg);
+    void handlerServiceCreateMessage(String key, String msg, Long envId);
 
 }

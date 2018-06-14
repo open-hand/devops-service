@@ -46,9 +46,10 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public ApplicationInstanceE selectByCode(String code) {
+    public ApplicationInstanceE selectByCode(String code, Long envId) {
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         applicationInstanceDO.setCode(code);
+        applicationInstanceDO.setEnvId(envId);
         return ConvertHelper.convert(
                 applicationInstanceMapper.selectOne(applicationInstanceDO),
                 ApplicationInstanceE.class);

@@ -47,7 +47,7 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
     }
 
     @Override
-    public void handlerServiceCreateMessage(String key, String msg) {
+    public void handlerServiceCreateMessage(String key, String msg, Long envId) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
                 KeyParseTool.getResourceName(key), KeyParseTool.getNamespace(key));
         try {
@@ -64,7 +64,7 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
             devopsEnvResourceE.setReversion(TypeUtil.objToLong(v1Service.getMetadata().getResourceVersion()));
             for (String release : releases) {
                 ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
-                        .selectByCode(release);
+                        .selectByCode(release, envId);
 
                 DevopsEnvResourceE newdevopsEnvResourceE = devopsEnvResourceRepository
                         .queryByInstanceIdAndKindAndName(
