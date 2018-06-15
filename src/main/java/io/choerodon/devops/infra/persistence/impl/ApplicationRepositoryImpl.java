@@ -180,8 +180,6 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listByCode(String code) {
-        ApplicationDO applicationDO = new ApplicationDO();
-        applicationDO.setCode(code);
-        return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
+        return ConvertHelper.convertList(applicationMapper.listByCode(code), ApplicationE.class);
     }
 }
