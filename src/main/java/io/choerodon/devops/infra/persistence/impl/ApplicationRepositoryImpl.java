@@ -116,12 +116,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         ApplicationDO applicationDO = new ApplicationDO();
         applicationDO.setProjectId(projectId);
         applicationDO.setCode(code);
-        List<ApplicationDO> applicationDOS = applicationMapper.select(applicationDO);
-        if (!applicationDOS.isEmpty()) {
-            return ConvertHelper.convert(applicationDOS.get(0), ApplicationE.class);
-        } else {
-            throw new CommonException("error.application.get");
-        }
+        return ConvertHelper.convert(applicationMapper.selectOne(applicationDO), ApplicationE.class);
     }
 
     @Override
@@ -181,5 +176,10 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         if (applicationMapper.checkAppCanDisable(applicationId) == 0) {
             throw new CommonException("error.app.publishedOrDeployed");
         }
+    }
+
+    @Override
+    public List<ApplicationE> listByCode(String code) {
+        return ConvertHelper.convertList(applicationMapper.listByCode(code), ApplicationE.class);
     }
 }

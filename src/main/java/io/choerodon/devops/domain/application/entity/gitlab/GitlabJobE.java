@@ -2,6 +2,7 @@ package io.choerodon.devops.domain.application.entity.gitlab;
 
 import java.util.Date;
 
+import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.infra.common.util.enums.JobStatus;
 
 /**
@@ -80,5 +81,21 @@ public class GitlabJobE {
 
     public void setStatus(JobStatus status) {
         this.status = status;
+    }
+
+
+
+    public static Long getJobTime(GitlabJobE o) {
+        long diff = 0L;
+        if (o.getStartedAt() != null && o.getFinishedAt() != null) {
+            long time1 = o.getStartedAt().getTime();
+            long time2 = o.getFinishedAt().getTime();
+            if (time1 < time2) {
+                diff = time2 - time1;
+            } else {
+                diff = time1 - time2;
+            }
+        }
+        return diff;
     }
 }

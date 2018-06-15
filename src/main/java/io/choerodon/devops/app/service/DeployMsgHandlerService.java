@@ -5,37 +5,37 @@ package io.choerodon.devops.app.service;
  */
 public interface DeployMsgHandlerService {
 
-    void handlerReleaseInstall(String msg);
+    void handlerReleaseInstall(String msg, Long envId);
 
-    void handlerPreInstall(String msg);
+    void handlerPreInstall(String msg, Long envId);
 
     void resourceUpdate(String key, Long envId, String msg);
 
     void resourceDelete(Long envId, String msg);
 
-    void helmReleaseHookLogs(String key, String msg);
+    void helmReleaseHookLogs(String key, String msg, Long envId);
 
-    void updateInstanceStatus(String key, String instanceStatus, String commandStatus, String commandMsg);
+    void updateInstanceStatus(String key, Long envId, String instanceStatus, String commandStatus, String commandMsg);
 
     void handlerDomainCreateMessage(String key, String msg,Long envId);
 
-    void helmReleasePreUpgrade(String msg);
+    void helmReleasePreUpgrade(String msg, Long envId);
 
-    void handlerReleaseUpgrade(String msg);
+    void handlerReleaseUpgrade(String msg, Long envId);
 
-    void helmReleaseDeleteFail(String key, String msg);
+    void helmReleaseDeleteFail(String key, String msg, Long envId);
 
-    void helmReleaseStartFail(String key, String msg);
+    void helmReleaseStartFail(String key, String msg, Long envId);
 
     void helmReleaseRollBackFail(String key, String msg);
 
-    void helmReleaseInstallFail(String key, String msg);
+    void helmReleaseInstallFail(String key, String msg, Long envId);
 
-    void helmReleaseUpgradeFail(String key, String msg);
+    void helmReleaseUpgradeFail(String key, String msg, Long envId);
 
-    void helmReleaeStopFail(String key, String msg);
+    void helmReleaeStopFail(String key, String msg, Long envId);
 
-    void netWorkUpdate(String key, String msg);
+    void netWorkUpdate(String key, String msg, Long envId);
 
     void helmReleaseGetContent(String key, Long envId, String msg);
 

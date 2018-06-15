@@ -25,19 +25,31 @@ public class DevopsServiceValidator {
      * 参数校验
      */
     public static void checkService(DevopsServiceReqDTO devopsServiceReqDTO) {
-        if (devopsServiceReqDTO.getTargetPort() == null) {
+        Long targetPort = devopsServiceReqDTO.getTargetPort();
+        Long port = devopsServiceReqDTO.getPort();
+        if (targetPort == null) {
             throw new CommonException("error.targetPort.notPresent");
         }
-        if (devopsServiceReqDTO.getPort() == null) {
+        if (port == null) {
             throw new CommonException("error.port.notPresent");
+        }
+        if (!checkPort(targetPort)) {
+            throw new CommonException("error.targetPort.illegal");
+        }
+        if (!checkPort(port)) {
+            throw new CommonException("error.port.illegal");
         }
         if (!Pattern.matches(NAME_PATTERN, devopsServiceReqDTO.getName())) {
             throw new CommonException("error.network.name.notMatch");
         }
-        if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())) {
-            if (!Pattern.matches(IP_PATTERN, devopsServiceReqDTO.getExternalIp())) {
-                throw new CommonException("error.externalIp.notMatch");
-            }
+        if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
+                && !Pattern.matches(IP_PATTERN, devopsServiceReqDTO.getExternalIp())) {
+            throw new CommonException("error.externalIp.notMatch");
+
         }
+    }
+
+    private static Boolean checkPort(Long port) {
+        return port >= 1 && port <= 65535;
     }
 }

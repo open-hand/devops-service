@@ -46,15 +46,16 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
         }
         switch (helmType) {
             case HelmReleasePreInstall:
-                deployMsgHandlerService.handlerPreInstall(msg.getPayload());
+                deployMsgHandlerService.handlerPreInstall(msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmInstallRelease:
-                deployMsgHandlerService.handlerReleaseInstall(msg.getPayload());
+                deployMsgHandlerService.handlerReleaseInstall(msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmReleaseUpgrade:
-                deployMsgHandlerService.handlerReleaseUpgrade(msg.getPayload());
+                deployMsgHandlerService.handlerReleaseUpgrade(msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
+                        TypeUtil.objToLong(msg.getEnvId()),
                         InstanceStatus.RUNNING.getStatus(),
                         CommandStatus.SUCCESS.getCommandStatus(),
                         "");
@@ -64,6 +65,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case HelmReleaseStart:
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
+                        TypeUtil.objToLong(msg.getEnvId()),
                         InstanceStatus.RUNNING.getStatus(),
                         CommandStatus.SUCCESS.getCommandStatus(),
                         "");
@@ -71,6 +73,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case HelmReleaseStop:
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
+                        TypeUtil.objToLong(msg.getEnvId()),
                         InstanceStatus.STOPED.getStatus(),
                         CommandStatus.SUCCESS.getCommandStatus(),
                         "");
@@ -78,15 +81,16 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case HelmReleaseDelete:
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
+                        TypeUtil.objToLong(msg.getEnvId()),
                         InstanceStatus.DELETED.getStatus(),
                         CommandStatus.SUCCESS.getCommandStatus(),
                         "");
                 break;
             case HelmReleasePreUpgrade:
-                deployMsgHandlerService.helmReleasePreUpgrade(msg.getPayload());
+                deployMsgHandlerService.helmReleasePreUpgrade(msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case NetworkService:
-                serviceMsgHandlerService.handlerServiceCreateMessage(msg.getKey(), msg.getPayload());
+                serviceMsgHandlerService.handlerServiceCreateMessage(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case NetworkIngress:
                 deployMsgHandlerService.handlerDomainCreateMessage(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
@@ -100,28 +104,28 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.resourceDelete(TypeUtil.objToLong(msg.getEnvId()), msg.getKey());
                 break;
             case HelmReleaseHookLogs:
-                deployMsgHandlerService.helmReleaseHookLogs(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.helmReleaseHookLogs(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case NetworkServiceUpdate:
-                deployMsgHandlerService.netWorkUpdate(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.netWorkUpdate(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmReleaseDeleteFailed:
-                deployMsgHandlerService.helmReleaseDeleteFail(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.helmReleaseDeleteFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmReleaseInstallFailed:
-                deployMsgHandlerService.helmReleaseInstallFail(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.helmReleaseInstallFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmReleaseStartFailed:
-                deployMsgHandlerService.helmReleaseStartFail(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.helmReleaseStartFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmReleaseStopFailed:
-                deployMsgHandlerService.helmReleaeStopFail(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.helmReleaeStopFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmReleaseRollbackFailed:
                 deployMsgHandlerService.helmReleaseRollBackFail(msg.getKey(), msg.getPayload());
                 break;
             case HelmReleaseUpgradeFailed:
-                deployMsgHandlerService.helmReleaseUpgradeFail(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.helmReleaseUpgradeFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HelmReleaseGetContent:
                 deployMsgHandlerService.helmReleaseGetContent(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());

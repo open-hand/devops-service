@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.builder.Diff;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -138,17 +139,18 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
             pipelineResultV.setCreateUser(gitlabPipelineE.getUser().getUsername());
             pipelineResultV.setRef(gitlabPipelineE.getRef());
             pipelineResultV.setSha(gitlabPipelineE.getSha());
-            if (gitlabPipelineE.getStarted_at() != null && gitlabPipelineE.getFinished_at() != null) {
-                pipelineResultV.setTime(getStageTime(gitlabPipelineE.getStarted_at(),
-                        gitlabPipelineE.getFinished_at()));
-            }
-            pipelineResultV.setCreatedAt(formatter.format(gitlabPipelineE.getCreatedAt()));
+            pipelineResultV.setCreatedAt(gitlabPipelineE.getCreated_at());
 
             List<GitlabJobE> jobs =
                     gitlabProjectRepository.listJobs(gitlabProjectId, gitlabPipelineE.getId(), userId);
             if (jobs != null) {
                 List<GitlabJobE> realJobs = getRealJobs(jobs);
                 pipelineResultV.setJobs(realJobs);
+                Long diffs = 0L;
+                for(Long diff:realJobs.stream().map(GitlabJobE::getJobTime).collect(Collectors.toList())) {
+                    diffs = diff + diffs;
+                }
+                pipelineResultV.setTime(getStageTime(diffs));
             }
 
             UserE userE = iamRepository.queryByLoginName(userName);
@@ -171,23 +173,14 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     /**
      * 获取CI执行时间间隔
      *
-     * @param startTime 起始时间
-     * @param finshTime 结束时间
+     * @param diff 时间戳
      * @return Long[]
      */
-    public Long[] getStageTime(Date startTime, Date finshTime) {
+    public Long[] getStageTime(Long diff) {
         long day = 0;
         long hour = 0;
         long min = 0;
         long sec = 0;
-        long time1 = startTime.getTime();
-        long time2 = finshTime.getTime();
-        long diff;
-        if (time1 < time2) {
-            diff = time2 - time1;
-        } else {
-            diff = time1 - time2;
-        }
         day = diff / (24 * 60 * 60 * 1000);
         hour = (diff / (60 * 60 * 1000) - day * 24);
         min = ((diff / (60 * 1000)) - day * 24 * 60 - hour * 60);
@@ -228,6 +221,8 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
             gitlabJobE.setName(gitlabJobEList.get(index).getName());
             gitlabJobE.setStage(gitlabJobEList.get(index).getStage());
             gitlabJobE.setStatus(gitlabJobEList.get(index).getStatus());
+            gitlabJobE.setStartedAt(gitlabJobEList.get(index).getStartedAt());
+            gitlabJobE.setFinishedAt(gitlabJobEList.get(index).getFinishedAt());
             result.add(gitlabJobE);
         }
         return result;

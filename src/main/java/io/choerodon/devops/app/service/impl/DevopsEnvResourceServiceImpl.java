@@ -131,9 +131,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     if (v1Job.getStatus().getSucceeded() != null) {
                         if (v1Job.getStatus().getSucceeded() == 1) {
                             instanceStageDTO.setStatus("success");
-                            instanceStageDTO.setStageTime(
-                                    getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
-                                            new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime())));
+                            if (v1Job.getStatus().getStartTime() != null && v1Job.getStatus().getCompletionTime() != null) {
+                                instanceStageDTO.setStageTime(
+                                        getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
+                                                new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime())));
+                            }
                         } else {
                             instanceStageDTO.setStatus("fail");
                         }

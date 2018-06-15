@@ -162,4 +162,11 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
                         projectId, appMarketId, isPublish,
                         finalSearchParam, finalParam));
     }
+
+    @Override
+    public ApplicationMarketE queryByAppId(Long appId) {
+        DevopsAppMarketDO applicationMarketDO = new DevopsAppMarketDO();
+        applicationMarketDO.setAppId(appId);
+        return ConvertHelper.convert(applicationMarketMapper.selectOne(applicationMarketDO), ApplicationMarketE.class);
+    }
 }
