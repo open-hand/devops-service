@@ -305,11 +305,14 @@ public class FileUtil {
      */
     public static File queryFileFromFiles(File file, String fileName) {
         File[] files = file.listFiles();
-        for (File file1 : files) {
-            if (file1.isDirectory()) {
-                return queryFileFromFiles(file1, fileName);
-            } else if (file1.getName().equals(fileName)) {
-                return file1;
+        if (files != null) {
+            for (File file1 : files) {
+                if (file1.isDirectory()) {
+                    file1 = queryFileFromFiles(file1, fileName);
+                }
+                if (file1 != null && file1.getName().equals(fileName)) {
+                    return file1;
+                }
             }
         }
         return null;
