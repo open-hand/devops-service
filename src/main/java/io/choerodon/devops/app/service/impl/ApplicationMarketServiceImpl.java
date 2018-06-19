@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -27,10 +25,8 @@ import io.choerodon.devops.domain.application.repository.ApplicationMarketReposi
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -40,32 +36,19 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
-    private static final String DESTPATH = "devops";
 
-
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
-    private ApplicationVersionRepository applicationVersionRepository;
-    private ApplicationMarketRepository applicationMarketRepository;
-    private IamRepository iamRepository;
-    private ApplicationRepository applicationRepository;
-    private GitlabServiceClient gitlabServiceClient;
-
     @Autowired
-    public ApplicationMarketServiceImpl(ApplicationVersionRepository applicationVersionRepository,
-                                        ApplicationMarketRepository applicationMarketRepository,
-                                        IamRepository iamRepository,
-                                        ApplicationRepository applicationRepository,
-                                        GitlabServiceClient gitlabServiceClient) {
-        this.applicationVersionRepository = applicationVersionRepository;
-        this.applicationMarketRepository = applicationMarketRepository;
-        this.iamRepository = iamRepository;
-        this.gitlabServiceClient = gitlabServiceClient;
-        this.applicationRepository = applicationRepository;
-    }
+    private ApplicationVersionRepository applicationVersionRepository;
+    @Autowired
+    private ApplicationMarketRepository applicationMarketRepository;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Override
     public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
@@ -126,13 +109,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     @Override
     public ApplicationReleasingDTO getMarketAppInProject(Long projectId, Long appMarketId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Long organizationId = projectE.getOrganization().getId();
-        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
-        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
-                .collect(Collectors.toCollection(ArrayList::new));
         ApplicationMarketE applicationMarketE =
-                applicationMarketRepository.getMarket(projectId, appMarketId, projectIds);
+                applicationMarketRepository.getMarket(projectId, appMarketId);
         List<DevopsAppMarketVersionDO> versionDOList = applicationMarketRepository
                 .getVersions(projectId, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
@@ -147,7 +125,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     @Override
     public ApplicationReleasingDTO getMarketApp(Long appMarketId, Long versionId) {
         ApplicationMarketE applicationMarketE =
-                applicationMarketRepository.getMarket(null, appMarketId, null);
+                applicationMarketRepository.getMarket(null, appMarketId);
         ApplicationE applicationE = applicationMarketE.getApplicationE();
         List<DevopsAppMarketVersionDO> versionDOList = applicationMarketRepository
                 .getVersions(null, appMarketId, true);
@@ -162,9 +140,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
         Long applicationId = applicationE.getId();
         applicationE = applicationRepository.query(applicationId);
-        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        Long organizationId = projectE.getOrganization().getId();
-        Organization organization = iamRepository.queryOrganizationById(organizationId);
 
         Date latestUpdateDate = appMarketVersionDTOList.isEmpty()
                 ? getLaterDate(applicationE.getLastUpdateDate(), applicationMarketE.getMarketUpdatedDate())

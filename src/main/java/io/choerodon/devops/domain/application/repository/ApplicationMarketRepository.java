@@ -18,7 +18,7 @@ public interface ApplicationMarketRepository {
 
     Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam);
 
-    ApplicationMarketE getMarket(Long projectId, Long appMarketId, List<Long> projectIds);
+    ApplicationMarketE getMarket(Long projectId, Long appMarketId);
 
     Boolean checkCanPub(Long appId);
 
@@ -42,4 +42,6 @@ public interface ApplicationMarketRepository {
     ApplicationMarketE queryByAppId(Long appId);
 
     void checkMarketVersion(Long appMarketId, Long versionId);
+
+    void storePublishDetail(Long appMarketId, String destPath);
 }

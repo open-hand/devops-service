@@ -334,5 +334,6 @@
         WHERE
             dav.id = #{versionId}
             AND dam.id = #{appMarketId}
+            AND dav.is_publish = TRUE
     </select>
 </mapper>
