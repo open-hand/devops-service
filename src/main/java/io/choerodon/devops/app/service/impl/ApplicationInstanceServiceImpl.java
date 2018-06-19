@@ -194,11 +194,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }catch (Exception e) {
             replaceResult.setYaml(versionValue);
             replaceResult.setErrorMsg(e.getMessage());
-            try {
-                replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
-            } catch (IOException e1) {
-                throw new CommonException(e1.getMessage());
-            }
+            replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
             replaceResult.setErrorLines(getErrorLine(e.getMessage()));
             return replaceResult;
         }
@@ -207,11 +203,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (deployValue != null) {
             replaceResult = FileUtil.replace(versionValue, deployValue);
         }
-        try {
-            replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
-        } catch (IOException e) {
-            throw new CommonException(e.getMessage());
-        }
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
     }
 
@@ -223,11 +215,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(
                 applicationInstanceE.getDevopsEnvironmentE().getId(), applicationInstanceE.getApplicationE().getId()));
         replaceResult.setYaml(yaml);
-        try {
-            replaceResult.setTotalLine(FileUtil.getFileTotalLine(yaml) + 1);
-        } catch (IOException e) {
-            throw new CommonException(e.getMessage());
-        }
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(yaml) + 1);
         return replaceResult;
     }
 
