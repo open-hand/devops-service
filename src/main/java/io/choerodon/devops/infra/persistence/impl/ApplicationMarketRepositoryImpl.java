@@ -1,11 +1,15 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -13,7 +17,10 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
@@ -28,8 +35,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketRepositoryImpl implements ApplicationMarketRepository {
 
     private JSON json = new JSON();
+    private Gson gson = new Gson();
 
     private ApplicationMarketMapper applicationMarketMapper;
+    @Autowired
+    private IamRepository iamRepository;
 
     public ApplicationMarketRepositoryImpl(ApplicationMarketMapper applicationMarketMapper) {
         this.applicationMarketMapper = applicationMarketMapper;
@@ -44,7 +54,6 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public Page<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
-        //TODO 排序
         Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
@@ -62,7 +71,6 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
-        //TODO 排序
         Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
@@ -79,7 +87,17 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public ApplicationMarketE getMarket(Long projectId, Long appMarketId, List<Long> projectIds) {
+    public ApplicationMarketE getMarket(Long projectId, Long appMarketId) {
+        List<Long> projectIds;
+        if (projectId != null) {
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            Long organizationId = projectE.getOrganization().getId();
+            List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
+            projectIds = projectEList.parallelStream().map(ProjectE::getId)
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            projectIds = null;
+        }
         return ConvertHelper.convert(
                 applicationMarketMapper.getMarketApplication(projectId, appMarketId, projectIds),
                 ApplicationMarketE.class);
@@ -175,5 +193,13 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         if (!applicationMarketMapper.checkVersion(appMarketId, versionId)) {
             throw new CommonException("error.version.notMatch");
         }
+    }
+
+    @Override
+    public void storePublishDetail(Long appMarketId, String destPath) {
+        DevopsAppMarketDO appMarketDO =
+                applicationMarketMapper.getMarketApplication(null, appMarketId, null);
+        String appMarketJson = gson.toJson(appMarketDO);
+        FileUtil.saveDataToFile(destPath, appMarketDO.getCode(), appMarketJson);
     }
 }

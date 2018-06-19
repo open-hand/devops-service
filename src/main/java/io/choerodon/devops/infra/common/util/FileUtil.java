@@ -40,9 +40,7 @@ import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
  * Created by younger on 2018/4/13.
  */
 public class FileUtil {
-
-
-    public final static int BUFFER_SIZE = 2048;
+    private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
     private static final Yaml yaml = new Yaml();
 
@@ -265,16 +263,12 @@ public class FileUtil {
                 } else {
                     File tmpFile = new File(destDir + File.separator + entry.getName());
                     createDirectory(tmpFile.getParent() + File.separator, null);
-                    OutputStream out = null;
-                    try {
-                        out = new FileOutputStream(tmpFile);
+                    try (OutputStream out = new FileOutputStream(tmpFile)) {
                         int length = 0;
                         byte[] b = new byte[2048];
                         while ((length = tarIn.read(b)) != -1) {
                             out.write(b, 0, length);
                         }
-                    } finally {
-                        IOUtils.closeQuietly(out);
                     }
                 }
             }
@@ -331,12 +325,27 @@ public class FileUtil {
         }
     }
 
-    public static int getFileTotalLine(String file) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(file.getBytes(Charset.forName("utf8"))), Charset.forName("utf8")));
+    /**
+     * 获取文件总行数
+     *
+     * @param file 目标文件
+     * @return 文件函数
+     */
+    public static int getFileTotalLine(String file) {
         Integer totalLine = 0;
-        String line;
-        while ((line = br.readLine()) != null) {
-            totalLine = totalLine + 1;
+        try (ByteArrayInputStream byteArrayInputStream =
+                     new ByteArrayInputStream(file.getBytes(Charset.forName("utf8")))) {
+            try (InputStreamReader inputStreamReader =
+                         new InputStreamReader(byteArrayInputStream, Charset.forName("utf8"))) {
+                try (BufferedReader br = new BufferedReader(inputStreamReader)) {
+                    String lineTxt;
+                    while ((lineTxt = br.readLine()) != null) {
+                        totalLine =  totalLine + 1;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            logger.info(e.getMessage());
         }
         return totalLine;
     }
@@ -381,49 +390,7 @@ public class FileUtil {
         return replaceResult;
     }
 
-    //从将old的值替换至新的值
-    private static void compare(MappingNode oldMapping, MappingNode newMapping, List<ReplaceMarker> replaceMarkers) {
-        List<NodeTuple> oldRootTuple = oldMapping.getValue();
-        List<NodeTuple> newRootTuple = newMapping.getValue();
-        for (NodeTuple oldTuple : oldRootTuple) {
-            Node oldKeyNode = oldTuple.getKeyNode();
-            if (oldKeyNode instanceof ScalarNode) {
-                ScalarNode scalarKeyNode = (ScalarNode) oldKeyNode;
-                Node oldValue = oldTuple.getValueNode();
-                if (oldValue != null && oldValue instanceof ScalarNode) {
-                    ScalarNode oldValueScalar = (ScalarNode) oldValue;
-                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(), newRootTuple);
-                    if (newValueNode != null) {
-                        if (!oldValueScalar.getValue().equals(newValueNode.getValue())) {
-                            ReplaceMarker replaceMarker = new ReplaceMarker();
-                            replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
-                            replaceMarker.setEndIndex(newValueNode.getEndMark().getIndex());
-                            replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
-                            replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
-                            replaceMarker.setLine(newValueNode.getStartMark().getLine());
-                            if (newValueNode.getValue().isEmpty()) {
-                                replaceMarker.setToReplace(" " + oldValueScalar.getValue());
-                            } else {
-                                replaceMarker.setToReplace(oldValueScalar.getValue());
-                            }
-                            //记录相关并进行替换
-                            replaceMarkers.add(replaceMarker);
-                        }
-                    }
-                } else if (oldValue instanceof MappingNode) {
-                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(), newRootTuple);
-                    if (oldValue != null && vaMappingNode != null) {
-                        MappingNode oldMappingNode = (MappingNode) oldValue;
-                        compare(oldMappingNode, vaMappingNode, replaceMarkers);
-                    }
-                }
-            }
-        }
-
-    }
-
     private static String replace(String yaml, List<ReplaceMarker> replaceMarkers, List<HighlightMarker> highlights) {
-        String original = yaml;
         String temp = yaml;
         if (highlights == null) {
             highlights = new ArrayList<>();
@@ -479,6 +446,45 @@ public class FileUtil {
         return temp;
     }
 
+    //从将old的值替换至新的值
+    private static void compare(MappingNode oldMapping, MappingNode newMapping, List<ReplaceMarker> replaceMarkers) {
+        List<NodeTuple> oldRootTuple = oldMapping.getValue();
+        List<NodeTuple> newRootTuple = newMapping.getValue();
+        for (NodeTuple oldTuple : oldRootTuple) {
+            Node oldKeyNode = oldTuple.getKeyNode();
+            if (oldKeyNode instanceof ScalarNode) {
+                ScalarNode scalarKeyNode = (ScalarNode) oldKeyNode;
+                Node oldValue = oldTuple.getValueNode();
+                if (oldValue != null && oldValue instanceof ScalarNode) {
+                    ScalarNode oldValueScalar = (ScalarNode) oldValue;
+                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(), newRootTuple);
+                    if (newValueNode != null && !oldValueScalar.getValue().equals(newValueNode.getValue())) {
+                        ReplaceMarker replaceMarker = new ReplaceMarker();
+                        replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
+                        replaceMarker.setEndIndex(newValueNode.getEndMark().getIndex());
+                        replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
+                        replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
+                        replaceMarker.setLine(newValueNode.getStartMark().getLine());
+                        if (newValueNode.getValue().isEmpty()) {
+                            replaceMarker.setToReplace(" " + oldValueScalar.getValue());
+                        } else {
+                            replaceMarker.setToReplace(oldValueScalar.getValue());
+                        }
+                        //记录相关并进行替换
+                        replaceMarkers.add(replaceMarker);
+                    }
+                } else if (oldValue instanceof MappingNode) {
+                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(), newRootTuple);
+                    if (vaMappingNode != null) {
+                        MappingNode oldMappingNode = (MappingNode) oldValue;
+                        compare(oldMappingNode, vaMappingNode, replaceMarkers);
+                    }
+                }
+            }
+        }
+
+    }
+
     //检查同一层是否存在该key
     private static MappingNode getKeyMapping(String key, List<NodeTuple> tuples) {
         for (NodeTuple nodeTuple : tuples) {
@@ -519,6 +525,12 @@ public class FileUtil {
         return null;
     }
 
+    /**
+     * format yaml
+     *
+     * @param value json value
+     * @return yaml
+     */
     public static String jungeValueFormat(String value) {
         try {
             JSONObject.parseObject(value);
@@ -529,6 +541,11 @@ public class FileUtil {
         }
     }
 
+    /**
+     * yaml format
+     *
+     * @param yaml yaml value
+     */
     public static void jungeYamlFormat(String yaml) {
         try {
             Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
@@ -582,5 +599,37 @@ public class FileUtil {
             throw new CommonException("error.file.read");
         }
         return content.toString();
+    }
+
+    /**
+     * 保存 json 为文件
+     *
+     * @param path     目标路径
+     * @param fileName 存储文件名
+     * @param data     json 内容
+     */
+    public static void saveDataToFile(String path, String fileName, String data) {
+        File file = new File(path + System.lineSeparator() + fileName + ".json");
+        //如果文件不存在，则新建一个
+        if (!file.exists()) {
+            try {
+                if (!file.createNewFile()) {
+                    throw new CommonException("error.file.create");
+                }
+            } catch (IOException e) {
+                logger.info(e.getMessage());
+            }
+        }
+        //写入
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file, false)) {
+            try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(fileOutputStream, "UTF-8")) {
+                try (BufferedWriter writer = new BufferedWriter(outputStreamWriter)) {
+                    writer.write(data);
+                }
+            }
+        } catch (IOException e) {
+            logger.info(e.getMessage());
+        }
+        logger.info("文件写入成功！");
     }
 }
