@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,7 @@ public class ProjectPipelineController {
      * @param pageRequest 分页参数
      * @return ProjectPipelineResultTotalDTO
      */
-    @Permission
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询应用下的Pipeline信息")
     @CustomPageRequest
     @GetMapping(value = "/applications/{appId}/pipelines")
@@ -64,7 +65,7 @@ public class ProjectPipelineController {
      * @param pipelineId      流水线id
      * @return Boolean
      */
-    @Permission
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "Retry jobs in a pipeline")
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/retry")
     public ResponseEntity<Boolean> retry(
@@ -87,7 +88,7 @@ public class ProjectPipelineController {
      * @param pipelineId      流水线id
      * @return Boolean
      */
-    @Permission
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "Cancel jobs in a pipeline")
     @PostMapping(value = "/gitlab_projects/{gitlabProjectId}/pipelines/{pipelineId}/cancel")
     public ResponseEntity<Boolean> cancel(

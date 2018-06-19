@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -40,7 +41,7 @@ public class ApplicationMarketController {
      * @param applicationReleaseDTO 发布应用的信息
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用发布")
     @PostMapping
     public ResponseEntity<Long> create(
@@ -55,44 +56,6 @@ public class ApplicationMarketController {
     }
 
     /**
-     * 应用取消发布
-     *
-     * @param projectId   项目id
-     * @param appMarketId 发布ID
-     */
-    @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "应用取消发布")
-    @PostMapping("/{appMarketId}/unpublish")
-    public ResponseEntity unpublish(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "发布ID", required = true)
-            @PathVariable(required = true) Long appMarketId) {
-        applicationMarketService.unpublish(projectId, appMarketId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
-     * 应用版本取消发布
-     *
-     * @param projectId   项目id
-     * @param appMarketId 发布ID
-     */
-    @Permission(level = ResourceLevel.PROJECT)
-    @ApiOperation(value = "应用版本取消发布")
-    @PostMapping("/{appMarketId}/unpublish_version")
-    public ResponseEntity unpublishVersion(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "发布ID", required = true)
-            @PathVariable(required = true) Long appMarketId,
-            @ApiParam(value = "版本ID", required = true)
-            @RequestParam Long versionId) {
-        applicationMarketService.unpublish(projectId, appMarketId, versionId);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
      * 项目下查询所有发布在应用市场的应用
      *
      * @param projectId   项目id
@@ -100,7 +63,7 @@ public class ApplicationMarketController {
      * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询所有发布在应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/list")
@@ -125,7 +88,8 @@ public class ApplicationMarketController {
      * @param searchParam 搜索参数
      * @return list of ApplicationReleasingDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询发布级别为全局或者在本组织下的所有应用市场的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_all")
@@ -148,7 +112,8 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return ApplicationReleasingDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下单个应用市场的应用详情")
     @GetMapping("/{app_market_id}/detail")
     public ResponseEntity<ApplicationReleasingDTO> queryAppInProject(
@@ -168,7 +133,8 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return ApplicationReleasingDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个应用市场的应用")
     @GetMapping("/{app_market_id}")
     public ResponseEntity<ApplicationReleasingDTO> queryApp(
@@ -189,7 +155,8 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return List of AppMarketVersionDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下单个应用市场的应用的版本")
     @GetMapping("/{app_market_id}/versions")
     public ResponseEntity<List<AppMarketVersionDTO>> queryAppVersionsInProject(
@@ -212,7 +179,8 @@ public class ApplicationMarketController {
      * @param appMarketId 发布ID
      * @return Page of AppMarketVersionDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询项目下单个应用市场的应用的版本")
     @CustomPageRequest
     @PostMapping("/{app_market_id}/versions")
@@ -242,7 +210,8 @@ public class ApplicationMarketController {
      * @param versionId   版本ID
      * @return String of readme
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个应用市场的应用的单个版本README")
     @GetMapping("/{app_market_id}/versions/{version_id}/readme")
     public ResponseEntity<String> queryAppVersionReadme(
@@ -264,7 +233,7 @@ public class ApplicationMarketController {
      * @param projectId   项目id
      * @param appMarketId 发布ID
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新单个应用市场的应用")
     @PutMapping("/{app_market_id}")
     public ResponseEntity update(
@@ -284,7 +253,7 @@ public class ApplicationMarketController {
      * @param projectId   项目id
      * @param appMarketId 发布ID
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "更新单个应用市场的应用")
     @PutMapping("/{app_market_id}/versions")
     public ResponseEntity updateVersions(

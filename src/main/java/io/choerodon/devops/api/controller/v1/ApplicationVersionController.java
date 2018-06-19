@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,10 @@ public class ApplicationVersionController {
      * @param searchParam 查询参数
      * @return ApplicationVersionRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "分页查询应用版本")
     @CustomPageRequest
     @PostMapping(value = "/app_version/list_by_options")
@@ -66,7 +70,10 @@ public class ApplicationVersionController {
      * @return List
      */
     @ApiOperation(value = "应用下查询应用所有版本")
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @GetMapping("/apps/{appId}/version/list")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppId(
             @ApiParam(value = "项目ID", required = true)
@@ -88,7 +95,10 @@ public class ApplicationVersionController {
      * @param envId     环境Id
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询部署在某个环境应用的应用版本")
     @GetMapping("/apps/{appId}/version")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppIdAndEnvId(
@@ -112,7 +122,8 @@ public class ApplicationVersionController {
      * @param searchParam 查询参数
      * @return ApplicationVersionRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询某应用下的所有版本")
     @CustomPageRequest
     @PostMapping(value = "/apps/{appId}/version/list_by_options")

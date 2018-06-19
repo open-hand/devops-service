@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -38,7 +39,9 @@ public class CiController {
      * @param type  类型
      * @return File
      */
-    @Permission(level = ResourceLevel.PROJECT, permissionPublic = true)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER},
+            permissionPublic = true)
     @ApiOperation(value = "应用查询ci脚本文件")
     @GetMapping
     public ResponseEntity<String> queryFile(
@@ -62,7 +65,9 @@ public class CiController {
      * @param file    tgz包
      * @return File
      */
-    @Permission(level = ResourceLevel.PROJECT, permissionPublic = true)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER},
+            permissionPublic = true)
     @ApiOperation(value = "获取应用版本信息")
     @PostMapping
     public ResponseEntity create(

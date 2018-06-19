@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -39,7 +40,10 @@ public class DevopsEnvPodController {
      * @param searchParam 查询参数
      * @return page of devopsEnvPodDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "分页查询容器管理")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
