@@ -220,7 +220,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     @Override
     public String getMarketAppVersionReadme(Long appMarketId, Long versionId) {
-        return getMarketApp(appMarketId, versionId).getReadme();
+        applicationMarketRepository.checkMarketVersion(appMarketId, versionId);
+        return applicationVersionRepository.getReadme(versionId);
     }
 
     @Override

@@ -324,4 +324,15 @@
             )
         </if>
     </select>
+
+    <select id="checkVersion" resultType="java.lang.Boolean">
+        SELECT
+            count( 0 ) = 1 exist
+        FROM
+            devops_app_market dam
+            JOIN devops_app_version dav ON dav.app_id = dam.app_id
+        WHERE
+            dav.id = #{versionId}
+            AND dam.id = #{appMarketId}
+    </select>
 </mapper>

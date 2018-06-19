@@ -44,4 +44,6 @@ public interface ApplicationMarketMapper extends BaseMapper<DevopsAppMarketDO> {
                                                    @Param("isPublish") Boolean isPublish,
                                                    @Param("searchParam") Map<String, Object> searchParam,
                                                    @Param("param") String param);
+
+    Boolean checkVersion(@Param("appMarketId") Long appMarketId, @Param("versionId") Long versionId);
 }
