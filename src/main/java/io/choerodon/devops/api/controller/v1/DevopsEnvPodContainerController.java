@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +41,8 @@ public class DevopsEnvPodContainerController {
      * @param containerId 容器ID
      * @return DevopsEnvPodContainerLogDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取日志信息")
     @GetMapping(value = "/{containerId}/logs")
     public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLog(
@@ -64,7 +66,8 @@ public class DevopsEnvPodContainerController {
      * @param searchParam 查询参数
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "分页查询容器")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
@@ -89,7 +92,10 @@ public class DevopsEnvPodContainerController {
      * @param podId     pod ID
      * @return DevopsEnvPodContainerLogDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取日志信息 By Pod")
     @GetMapping(value = "/logs")
     public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLogByPod(

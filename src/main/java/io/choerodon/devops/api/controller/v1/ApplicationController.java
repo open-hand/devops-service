@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -41,7 +42,7 @@ public class ApplicationController {
      * @param applicationDTO 应用信息
      * @return ApplicationTemplateDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建应用")
     @PostMapping
     public ResponseEntity<ApplicationRepDTO> create(
@@ -61,7 +62,8 @@ public class ApplicationController {
      * @param applicationId 应用Id
      * @return ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询单个应用信息")
     @GetMapping("/{applicationId}/detail")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
@@ -81,7 +83,7 @@ public class ApplicationController {
      * @param applicationUpdateDTO 应用Id
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新应用信息")
     @PutMapping
     public ResponseEntity<Boolean> update(
@@ -103,7 +105,7 @@ public class ApplicationController {
      * @param active        启用停用
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用信息")
     @PutMapping("/{applicationId}")
     public ResponseEntity<Boolean> queryByAppIdAndActive(
@@ -127,7 +129,10 @@ public class ApplicationController {
      * @param params      参数
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下分页查询应用")
     @CustomPageRequest
     @PostMapping("/list_by_options")
@@ -155,7 +160,10 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return page of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
     @CustomPageRequest
     @GetMapping("/pages")
@@ -179,7 +187,10 @@ public class ApplicationController {
      * @param status    实例状态
      * @return list of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "根据环境id获取已部署正在运行实例的应用")
     @GetMapping("/options")
     public ResponseEntity<List<ApplicationCodeDTO>> listByEnvIdAndStatus(
@@ -200,7 +211,11 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return list of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {
+            InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER,
+            InitRoleCode.DEPLOY_ADMINISTRATOR
+    })
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
     public ResponseEntity<List<ApplicationRepDTO>> listByActive(
@@ -218,7 +233,11 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return list of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {
+            InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER,
+            InitRoleCode.DEPLOY_ADMINISTRATOR
+    })
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping(value = "/list_all")
     public ResponseEntity<List<ApplicationRepDTO>> listAll(
@@ -236,7 +255,7 @@ public class ApplicationController {
      * @param name      应用name
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建应用校验名称是否存在")
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
@@ -255,7 +274,7 @@ public class ApplicationController {
      * @param code      应用code
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建应用校验编码是否存在")
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
@@ -273,7 +292,7 @@ public class ApplicationController {
      * @param projectId 项目ID
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询所有应用模板")
     @GetMapping("/template")
     public ResponseEntity<List<ApplicationTemplateRepDTO>> listTemplate(
@@ -292,7 +311,7 @@ public class ApplicationController {
      * @param params      查询参数
      * @return page of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_unpublish")

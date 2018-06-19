@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -56,7 +57,10 @@ public class ApplicationInstanceController {
      * @param params      分页参数
      * @return page of applicationInstanceDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "分页查询应用部署")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
@@ -86,7 +90,10 @@ public class ApplicationInstanceController {
      * @param appId     应用id
      * @return page of ApplicationInstancesDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询多应用部署")
     @GetMapping(value = "/all")
     public ResponseEntity<List<ApplicationInstancesDTO>> listByAppId(
@@ -106,7 +113,8 @@ public class ApplicationInstanceController {
      * @param appInstanceId 实例id
      * @return list of DevOpsEnvPodDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取容器列表")
     @GetMapping(value = "/{appInstanceId}/pods")
     public ResponseEntity<List<DevopsEnvPodDTO>> listByAppInstanceId(
@@ -127,7 +135,8 @@ public class ApplicationInstanceController {
      * @param appInstanceId 实例id
      * @return string
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取部署 Value")
     @GetMapping(value = "/{appInstanceId}/value")
     public ResponseEntity<ReplaceResult> queryValue(
@@ -149,7 +158,7 @@ public class ApplicationInstanceController {
      * @param appVersionId 版本id
      * @return ReplaceResult
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询value列表")
     @GetMapping("/value")
     public ResponseEntity<ReplaceResult> queryValues(
@@ -167,12 +176,12 @@ public class ApplicationInstanceController {
     }
 
     /**
-     *校验values
+     * 校验values
      *
-     * @param  replaceResult values对象
+     * @param replaceResult values对象
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "校验values")
     @PostMapping("/value_format")
     public ResponseEntity<List<ErrorLineDTO>> formatValue(
@@ -191,7 +200,8 @@ public class ApplicationInstanceController {
      * @return Boolean
      */
     @ApiOperation(value = "部署应用")
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @PostMapping
     public ResponseEntity<Boolean> deploy(
             @ApiParam(value = "项目ID", required = true)
@@ -210,7 +220,7 @@ public class ApplicationInstanceController {
      * @param appInstanceId 实例id
      * @return list of versionFeaturesDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取版本特性")
     @GetMapping("/{appInstanceId}/version_features")
     public ResponseEntity<List<VersionFeaturesDTO>> queryVersionFeatures(
@@ -232,7 +242,8 @@ public class ApplicationInstanceController {
      * @param envId        环境id
      * @return list of AppInstanceCodeDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询运行中的实例")
     @GetMapping("/options")
     public ResponseEntity<List<AppInstanceCodeDTO>> listByAppVersionId(
@@ -257,7 +268,8 @@ public class ApplicationInstanceController {
      * @param appInstanceId 实例id
      * @return DevopsEnvResourceDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取部署实例资源对象")
     @GetMapping("/{appInstanceId}/resources")
     public ResponseEntity<DevopsEnvResourceDTO> listResources(
@@ -277,7 +289,8 @@ public class ApplicationInstanceController {
      * @param appInstanceId 实例id
      * @return list
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取部署实例hook阶段")
     @GetMapping("/{appInstanceId}/stages")
     public ResponseEntity<List<InstanceStageDTO>> listStages(
@@ -301,7 +314,7 @@ public class ApplicationInstanceController {
      * @param values       配置信息
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "实例更新")
     @PutMapping(value = "/{instanceId}/upgrade")
     public ResponseEntity upgrade(
@@ -328,7 +341,7 @@ public class ApplicationInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "实例停止")
     @PutMapping(value = "/{instanceId}/stop")
     public ResponseEntity stop(
@@ -347,7 +360,7 @@ public class ApplicationInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "实例重启")
     @PutMapping(value = "/{instanceId}/start")
     public ResponseEntity start(
@@ -366,7 +379,7 @@ public class ApplicationInstanceController {
      * @param instanceId 实例id
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "实例删除")
     @DeleteMapping(value = "/{instanceId}/delete")
     public ResponseEntity delete(

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -36,7 +37,7 @@ public class GitlabCommitController {
      * @param shas            关联pipeline的值
      * @return GitlabCommitDTO
      */
-    @Permission
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询gitlab下的Commit信息")
     @CustomPageRequest
     @PostMapping(value = "/{gitlabProjectId}/commit_sha")
