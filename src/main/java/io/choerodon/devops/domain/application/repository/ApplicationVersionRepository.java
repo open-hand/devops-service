@@ -39,4 +39,7 @@ public interface ApplicationVersionRepository {
 
     Boolean checkAppAndVersion(Long appId, List<Long> appVersionIds);
 
+    void setReadme(Long versionId, String readme);
+
+    String getReadme(Long versionId);
 }

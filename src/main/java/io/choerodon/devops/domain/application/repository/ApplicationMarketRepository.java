@@ -40,4 +40,6 @@ public interface ApplicationMarketRepository {
                                                PageRequest pageRequest, String searchParam);
 
     ApplicationMarketE queryByAppId(Long appId);
+
+    void checkMarketVersion(Long appMarketId, Long versionId);
 }

@@ -1,9 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,7 +21,6 @@ import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
@@ -33,7 +28,6 @@ import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -180,10 +174,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 applicationMarketE.getMarketUpdatedDate());
         applicationReleasingDTO.setLastUpdatedDate(latestUpdateDate);
 
-        String readme = "";
-        String latestVersionCommit;
         Boolean versionExist = appMarketVersionDTOList.parallelStream().anyMatch(t -> t.getId().equals(versionId));
-        ApplicationVersionE versionE;
         Long latestVersionId = versionId;
         if (!versionExist) {
             Optional<AppMarketVersionDTO> optional = appMarketVersionDTOList.parallelStream()
@@ -192,35 +183,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ? optional.get().getId()
                     : versionId;
         }
+        String readme = applicationVersionRepository.getReadme(latestVersionId);
 
-        versionE = applicationVersionRepository.query(latestVersionId);
-        latestVersionCommit = versionE.getCommit();
-        String fileSeparator = System.getProperty("file.separator");
-        String classPath = String.format("/Charts%s%s%s%s%s%s%s%s%s",
-                fileSeparator,
-                organization.getCode(),
-                fileSeparator,
-                projectE.getCode(),
-                fileSeparator,
-                applicationE.getCode(),
-                "-",
-                versionE.getVersion(),
-                ".tgz");
-        FileUtil.unTarGZ(classPath, DESTPATH);
-        File readmeFile = null;
-        try {
-            readmeFile = FileUtil.queryFileFromFiles(new File(DESTPATH), "README.md");
-        } catch (Exception e) {
-            logger.info("file not found");
-            readme = "# 暂无。";
-        }
-        if (readme.isEmpty()) {
-            readme = readmeFile == null
-                    ? getReadme(applicationE.getGitlabProjectE().getId(), latestVersionCommit)
-                    : getFileContent(readmeFile);
-        }
         applicationReleasingDTO.setReadme(readme);
-        FileUtil.deleteFile(new File(DESTPATH));
+
         return applicationReleasingDTO;
     }
 
@@ -252,34 +218,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         }
     }
 
-    private String getFileContent(File file) {
-        StringBuilder content = new StringBuilder();
-        try {
-            try (FileReader fileReader = new FileReader(file)) {
-                try (BufferedReader reader = new BufferedReader(fileReader)) {
-                    String lineTxt;
-                    while ((lineTxt = reader.readLine()) != null) {
-                        content.append(lineTxt).append("\n");
-                    }
-                }
-            }
-        } catch (IOException e) {
-            throw new CommonException("error.file.read");
-        }
-        return content.toString();
-    }
-
-
-    private String getReadme(Integer gitlabProjectId, String commit) {
-        String readme = gitlabServiceClient.getReadme(gitlabProjectId, commit).getBody();
-        return !"{\"failed\":true,\"message\":\"error.file.get\"}".equals(readme)
-                && !"error.readme.get".equals(readme)
-                ? readme : "# 暂无";
-    }
-
     @Override
     public String getMarketAppVersionReadme(Long appMarketId, Long versionId) {
-        return getMarketApp(appMarketId, versionId).getReadme();
+        applicationMarketRepository.checkMarketVersion(appMarketId, versionId);
+        return applicationVersionRepository.getReadme(versionId);
     }
 
     @Override

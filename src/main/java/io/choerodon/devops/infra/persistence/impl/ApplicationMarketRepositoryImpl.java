@@ -169,4 +169,11 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         applicationMarketDO.setAppId(appId);
         return ConvertHelper.convert(applicationMarketMapper.selectOne(applicationMarketDO), ApplicationMarketE.class);
     }
+
+    @Override
+    public void checkMarketVersion(Long appMarketId, Long versionId) {
+        if (!applicationMarketMapper.checkVersion(appMarketId, versionId)) {
+            throw new CommonException("error.version.notMatch");
+        }
+    }
 }

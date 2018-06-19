@@ -19,7 +19,9 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO;
+import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
+import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -29,24 +31,24 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepository {
 
-    private static final String APPCODE = "appCode";
-    private static final String APPNAME = "appName";
+    private static final String APP_CODE = "appCode";
+    private static final String APP_NAME = "appName";
     private static JSON json = new JSON();
+
+    @Autowired
     private ApplicationVersionMapper applicationVersionMapper;
     @Autowired
+    private ApplicationVersionReadmeMapper applicationVersionReadmeMapper;
+    @Autowired
     private IamRepository iamRepository;
-
-    public ApplicationVersionRepositoryImpl(ApplicationVersionMapper applicationVersionMapper) {
-        this.applicationVersionMapper = applicationVersionMapper;
-    }
 
     @Override
     public Page<ApplicationVersionE> listApplicationVersion(Long projectId, PageRequest pageRequest, String searchParam) {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("version", "dav.version");
-            map.put(APPCODE, APPCODE);
-            map.put(APPNAME, APPNAME);
+            map.put(APP_CODE, APP_CODE);
+            map.put(APP_NAME, APP_NAME);
             map.put("creationDate", "dav.creation_date");
             pageRequest.resetOrder("dav", map);
         }
@@ -85,6 +87,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         if (applicationVersionMapper.insert(applicationVersionDO) != 1) {
             throw new CommonException("error.application.insert");
         }
+        setReadme(applicationVersionDO.getId(), applicationVersionE.getApplicationVersionReadmeV().getReadme());
         return ConvertHelper.convert(applicationVersionDO, ApplicationVersionE.class);
     }
 
@@ -141,8 +144,8 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("version", "dav.version");
-            map.put(APPCODE, APPCODE);
-            map.put(APPNAME, APPNAME);
+            map.put(APP_CODE, APP_CODE);
+            map.put(APP_NAME, APP_NAME);
             map.put("creationDate", "dav.creation_date");
             pageRequest.resetOrder("dav", map);
         }
@@ -181,6 +184,22 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         }
 
         return true;
+    }
+
+    @Override
+    public void setReadme(Long versionId, String readme) {
+        applicationVersionReadmeMapper.insert(new ApplicationVersionReadmeDO(versionId, readme));
+    }
+
+    @Override
+    public String getReadme(Long versionId) {
+        String readme = "";
+        try {
+            readme = applicationVersionReadmeMapper.selectOne(new ApplicationVersionReadmeDO(versionId)).getReadme();
+        } catch (Exception ignore) {
+            readme = "# 暂无";
+        }
+        return readme;
     }
 
 }
