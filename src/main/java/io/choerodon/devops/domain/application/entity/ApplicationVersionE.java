@@ -5,6 +5,8 @@ import java.util.Date;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.domain.application.valueobject.ApplicationVersionReadmeV;
+
 @Component
 @Scope("prototype")
 public class ApplicationVersionE {
@@ -17,6 +19,7 @@ public class ApplicationVersionE {
     private ApplicationE applicationE;
     private String repository;
     private ApplicationVersionValueE applicationVersionValueE;
+    private ApplicationVersionReadmeV applicationVersionReadmeV;
 
     public ApplicationVersionE() {
 
@@ -101,5 +104,21 @@ public class ApplicationVersionE {
 
     public void initApplicationVersionValueE(Long id) {
         this.applicationVersionValueE = new ApplicationVersionValueE(id);
+    }
+
+    public void setApplicationVersionValueE(ApplicationVersionValueE applicationVersionValueE) {
+        this.applicationVersionValueE = applicationVersionValueE;
+    }
+
+    public ApplicationVersionReadmeV getApplicationVersionReadmeV() {
+        return applicationVersionReadmeV;
+    }
+
+    public void initApplicationVersionReadmeV(String readme) {
+        this.applicationVersionReadmeV = new ApplicationVersionReadmeV(readme);
+    }
+
+    public void setApplicationVersionReadmeV(ApplicationVersionReadmeV applicationVersionReadmeV) {
+        this.applicationVersionReadmeV = applicationVersionReadmeV;
     }
 }
