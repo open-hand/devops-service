@@ -63,16 +63,4 @@ public class AppMarketVersionDTO {
     public void setUpdatedDate(Date updatedDate) {
         this.updatedDate = updatedDate;
     }
-
-    @Override
-    public String toString() {
-        return "AppMarketVersionDTO{"
-                + "id=" + id
-                + ", version='" + version + '\''
-                + ", isDeployed=" + isDeployed
-                + ", isPublish=" + isPublish
-                + ", creationDate=" + creationDate
-                + ", updatedDate=" + updatedDate
-                + '}';
-    }
 }
