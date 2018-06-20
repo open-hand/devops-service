@@ -322,17 +322,17 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         } catch (IOException e) {
             logger.info(e.getMessage());
         }
-        File tgzDirectory = new File(destPath);
+        File zipDirectory = new File(destPath);
         AppMarketTgzDTO appMarketTgzDTO = new AppMarketTgzDTO();
-        String fileCode = "";
-        if (tgzDirectory.exists() && tgzDirectory.isDirectory()) {
-            File[] chartsDirectory = tgzDirectory.listFiles();
+        String fileCode;
+        if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+            File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
                     && chartsDirectory[0].getName().equals("charts")) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
-                    FileUtil.deleteFile(tgzDirectory);
+                    FileUtil.deleteFile(zipDirectory);
                     throw new CommonException("error.file.empty");
                 }
                 List<File> images = Arrays.stream(appFiles)
@@ -345,15 +345,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 // do sth with appFileList
                 analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList, false);
             } else {
-                FileUtil.deleteFile(tgzDirectory);
-                throw new CommonException("error.tgz.illegal");
+                FileUtil.deleteFile(zipDirectory);
+                throw new CommonException("error.zip.illegal");
             }
         } else {
-            FileUtil.deleteFile(tgzDirectory);
-            throw new CommonException("error.tgz.empty");
+            FileUtil.deleteFile(zipDirectory);
+            throw new CommonException("error.zip.empty");
         }
         appMarketTgzDTO.setFileCode(
-                tgzDirectory.renameTo(new File(String.format("%s%s%s", classPath, fileSeparator, fileCode)))
+                zipDirectory.renameTo(new File(String.format("%s%s%s", classPath, fileSeparator, fileCode)))
                         ? fileCode : "new");
         return appMarketTgzDTO;
     }
@@ -369,16 +369,16 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 organization.getCode(),
                 fileSeparator,
                 projectE.getCode(), fileSeparator, fileName);
-        File tgzDirectory = new File(destPath);
+        File zipDirectory = new File(destPath);
 
-        if (tgzDirectory.exists() && tgzDirectory.isDirectory()) {
-            File[] chartsDirectory = tgzDirectory.listFiles();
+        if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+            File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
                     && chartsDirectory[0].getName().equals("charts")) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
-                    FileUtil.deleteFile(tgzDirectory);
+                    FileUtil.deleteFile(zipDirectory);
                     throw new CommonException("error.file.empty");
                 }
                 List<File> images = Arrays.stream(appFiles)
@@ -407,12 +407,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         projectE.getCode());
                 appFileList.stream().parallel().forEach(t -> FileUtil.moveFile(t.getAbsolutePath(), classPath));
             } else {
-                throw new CommonException("error.tgz.illegal");
+                throw new CommonException("error.zip.illegal");
             }
         } else {
-            throw new CommonException("error.tgz.notFound");
+            throw new CommonException("error.zip.notFound");
         }
-        FileUtil.deleteFile(tgzDirectory);
+        FileUtil.deleteFile(zipDirectory);
     }
 
     private String hashImages(List<File> images) {
