@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,21 +37,18 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     private static final String DESTPATH = "devops";
 
+    @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
+    @Autowired
     private ApplicationRepository applicationRepository;
+    @Autowired
     private IamRepository iamRepository;
+    @Autowired
     private ApplicationVersionValueRepository applicationVersionValueRepository;
 
     @Value("${services.helm.url}")
     private String helmUrl;
 
-
-    public ApplicationVersionServiceImpl(ApplicationVersionRepository applicationVersionRepository, ApplicationRepository applicationRepository, IamRepository iamRepository, ApplicationVersionValueRepository applicationVersionValueRepository) {
-        this.applicationVersionRepository = applicationVersionRepository;
-        this.applicationRepository = applicationRepository;
-        this.iamRepository = iamRepository;
-        this.applicationVersionValueRepository = applicationVersionValueRepository;
-    }
 
     @Override
     public Page<ApplicationVersionRepDTO> listApplicationVersion(Long projectId, PageRequest pageRequest, String searchParam) {
@@ -96,7 +94,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(DESTPATH));
         applicationVersionRepository.create(applicationVersionE);
-        FileUtil.deleteFile(new File(DESTPATH));
+        FileUtil.deleteDirectory(new File(DESTPATH));
     }
 
     @Override
