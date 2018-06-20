@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -315,7 +316,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = tgzDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals("Charts")) {
+                    && chartsDirectory[0].getName().equals("Charts")
+                    ) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteFile(tgzDirectory);
@@ -344,6 +346,54 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         return appMarketTgzDTO;
     }
 
+    @Override
+    public void importApps(Long projectId, String fileName, Boolean isPublish) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String fileSeparator =
+                System.getProperty("file.separator");
+        String destPath = String.format(
+                "tmp%s%s%s%s%s%s",
+                fileSeparator,
+                organization.getCode(),
+                fileSeparator,
+                projectE.getCode(), fileSeparator, fileName);
+        File tgzDirectory = new File(destPath);
+
+        if (tgzDirectory.exists() && tgzDirectory.isDirectory()) {
+            File[] chartsDirectory = tgzDirectory.listFiles();
+            if (chartsDirectory != null
+                    && chartsDirectory.length == 1
+                    && chartsDirectory[0].getName().equals("Charts")
+                    ) {
+                File[] appFiles = chartsDirectory[0].listFiles();
+                if (appFiles == null || appFiles.length == 0) {
+                    FileUtil.deleteFile(tgzDirectory);
+                    throw new CommonException("error.file.empty");
+                }
+                List<File> images = Arrays.stream(appFiles)
+                        .filter(t -> t.getName().equals("images.txt")).collect(Collectors.toCollection(ArrayList::new));
+                String imageJson = readImages(images);
+                List<String> imageList = gson.fromJson(imageJson, new TypeToken<List<String>>() {
+                }.getType());
+                // do sth with image url list
+                imageList.forEach(logger::info);
+
+                List<File> appFileList = Arrays.stream(appFiles)
+                        .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
+                List<AppMarketVersionDTO> appMarketVersionDTOList = new ArrayList<>();
+                analyzeAppFile(appMarketVersionDTOList, appFileList);
+                // do sth with apps
+                appMarketVersionDTOList.forEach(t -> logger.info(t.toString()));
+            } else {
+                throw new CommonException("error.tgz.illegal");
+            }
+        } else {
+            throw new CommonException("error.tgz.notFound");
+        }
+        FileUtil.deleteFile(tgzDirectory);
+    }
+
     private String hashImages(List<File> images) {
         if (images != null && !images.isEmpty() && images.size() == 1) {
             File image = images.get(0);
@@ -354,6 +404,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 logger.info(e.getMessage());
                 throw new CommonException("error.image.read");
             }
+        } else {
+            throw new CommonException("error.images.illegal");
+        }
+    }
+
+    private String readImages(List<File> images) {
+        if (images != null && !images.isEmpty() && images.size() == 1) {
+            File image = images.get(0);
+            return FileUtil.getFileContent(image);
         } else {
             throw new CommonException("error.images.illegal");
         }

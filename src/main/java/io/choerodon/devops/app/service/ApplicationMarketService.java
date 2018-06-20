@@ -75,4 +75,6 @@ public interface ApplicationMarketService {
                                              PageRequest pageRequest, String searchParam);
 
     AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file);
+
+    void importApps(Long projectId, String fileName, Boolean isPublish);
 }
