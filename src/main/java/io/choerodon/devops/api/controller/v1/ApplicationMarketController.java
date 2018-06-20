@@ -1,10 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
-
 import javax.servlet.http.HttpServletResponse;
 
 import io.swagger.annotations.ApiOperation;
@@ -35,7 +35,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/apps_market")
 public class ApplicationMarketController {
-    private static final String path = "charts.zip";
+    private static final String PATH = "charts.zip";
     private ApplicationMarketService applicationMarketService;
 
     public ApplicationMarketController(ApplicationMarketService applicationMarketService) {
@@ -322,7 +322,8 @@ public class ApplicationMarketController {
     /**
      * 导出应用市场应用信息
      *
-     * @param projectId   项目id
+     * @param projectId 项目id
+     * @param appMarkets 应用市场应用信息
      */
     @Permission(level = ResourceLevel.PROJECT)
     @ApiOperation(value = "导出应用市场应用信息")
@@ -334,9 +335,9 @@ public class ApplicationMarketController {
             @RequestBody(required = true) List<AppMarketDownloadDTO> appMarkets,
             HttpServletResponse res) {
         applicationMarketService.export(appMarkets);
-        FileUtil.downloadFile(res, path);
+        FileUtil.downloadFile(res, PATH);
         try {
-            Files.delete(new File(path).toPath());
+            Files.delete(new File(PATH).toPath());
         } catch (IOException e) {
             throw new CommonException(e.getMessage());
         }

@@ -79,5 +79,10 @@ public interface ApplicationMarketService {
 
     void importApps(Long projectId, String fileName, Boolean isPublish);
 
+    /**
+     * 导出应用市场应用信息
+     *
+     * @param appMarkets 应用市场应用信息
+     */
     void export(List<AppMarketDownloadDTO> appMarkets);
 }

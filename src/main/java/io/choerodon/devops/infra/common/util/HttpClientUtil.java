@@ -14,6 +14,7 @@ import io.choerodon.core.exception.CommonException;
 
 public class HttpClientUtil {
 
+    HttpClientUtil(){}
 
     public static void getTgz(String getUrl, String fileUrl) {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
@@ -29,7 +30,7 @@ public class HttpClientUtil {
                 is.close();
             }
         } catch (IOException e) {
-        throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage());
         }
     }
 }

@@ -59,6 +59,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static Gson gson = new Gson();
     private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
 
+    private static final String FILESEPARATOR = "file.separator";
+
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -467,9 +469,9 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public void export(List<AppMarketDownloadDTO> appMarkets) {
         List<String> images = new ArrayList<>();
         for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
-            ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(),null);
+            ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(), null);
             String destpath = String.format("charts%s%s",
-                    System.getProperty("file.separator"),
+                    System.getProperty(FILESEPARATOR),
                     applicationReleasingDTO.getCode());
             ApplicationE applicationE = applicationRepository.query(applicationReleasingDTO.getAppId());
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
@@ -480,24 +482,24 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
                 images.add(applicationVersionE.getImage());
                 String repoUrl = String.format("%s%s%s%s%s%s%s%s%s%s%s%s", helmUrl,
-                        System.getProperty("file.separator"),
+                        System.getProperty(FILESEPARATOR),
                         organization.getCode(),
-                        System.getProperty("file.separator"),
+                        System.getProperty(FILESEPARATOR),
                         projectE.getCode(),
-                        System.getProperty("file.separator"),
+                        System.getProperty(FILESEPARATOR),
                         CHARTS,
-                        System.getProperty("file.separator"),
+                        System.getProperty(FILESEPARATOR),
                         applicationE.getCode(),
                         "-",
                         applicationVersionE.getVersion(),
                         ".tgz");
 
-                HttpClientUtil.getTgz(repoUrl, destpath + System.getProperty("file.separator") + applicationE.getCode() + "-" + applicationVersionE.getVersion() + ".tgz");
+                HttpClientUtil.getTgz(repoUrl, destpath + System.getProperty(FILESEPARATOR) + applicationE.getCode() + "-" + applicationVersionE.getVersion() + ".tgz");
 
             });
             FileUtil.saveDataToFile(CHARTS, IMAGES, images.toString());
         }
-        try (FileOutputStream outputStream = new FileOutputStream(CHARTS+".zip")) {
+        try (FileOutputStream outputStream = new FileOutputStream(CHARTS + ".zip")) {
             FileUtil.toZip(CHARTS, outputStream, true);
             FileUtil.deleteFile(new File(CHARTS));
         } catch (IOException e) {
