@@ -196,10 +196,12 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public void storePublishDetail(Long appMarketId, String destPath) {
+    public ApplicationMarketE storePublishDetail(Long appMarketId, String destPath) {
         DevopsAppMarketDO appMarketDO =
                 applicationMarketMapper.getMarketApplication(null, appMarketId, null);
         String appMarketJson = gson.toJson(appMarketDO);
         FileUtil.saveDataToFile(destPath, appMarketDO.getCode(), appMarketJson);
+        return ConvertHelper.convert(applicationMarketMapper.selectOne(appMarketDO), ApplicationMarketE.class);
+
     }
 }

@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -96,7 +98,9 @@ public class FileUtil {
             if (a.getName().equals("model-service")) {
                 String parentPath = a.getParent();
                 newFile = new File(parentPath + File.separator + params.get("{{service.code}}"));
-                a.renameTo(newFile);
+                if (!a.renameTo(newFile)) {
+                    throw new CommonException("error.file.rename");
+                }
             }
             if (newFile == null) {
                 fileToInputStream(a, params);
@@ -395,6 +399,47 @@ public class FileUtil {
         return replaceResult;
     }
 
+
+    //从将old的值替换至新的值
+    private static void compare(MappingNode oldMapping, MappingNode newMapping, List<ReplaceMarker> replaceMarkers) {
+        List<NodeTuple> oldRootTuple = oldMapping.getValue();
+        List<NodeTuple> newRootTuple = newMapping.getValue();
+        for (NodeTuple oldTuple : oldRootTuple) {
+            Node oldKeyNode = oldTuple.getKeyNode();
+            if (oldKeyNode instanceof ScalarNode) {
+                ScalarNode scalarKeyNode = (ScalarNode) oldKeyNode;
+                Node oldValue = oldTuple.getValueNode();
+                if (oldValue instanceof ScalarNode) {
+                    ScalarNode oldValueScalar = (ScalarNode) oldValue;
+                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(), newRootTuple);
+                    if (newValueNode != null && !oldValueScalar.getValue().equals(newValueNode.getValue())) {
+                        ReplaceMarker replaceMarker = new ReplaceMarker();
+                        replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
+                        replaceMarker.setEndIndex(newValueNode.getEndMark().getIndex());
+                        replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
+                        replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
+                        replaceMarker.setLine(newValueNode.getStartMark().getLine());
+                        if (newValueNode.getValue().isEmpty()) {
+                            replaceMarker.setToReplace(" " + oldValueScalar.getValue());
+                        } else {
+                            replaceMarker.setToReplace(oldValueScalar.getValue());
+                        }
+                        //记录相关并进行替换
+                        replaceMarkers.add(replaceMarker);
+                    }
+                } else if (oldValue instanceof MappingNode) {
+                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(), newRootTuple);
+                    if (vaMappingNode != null) {
+                        MappingNode oldMappingNode = (MappingNode) oldValue;
+                        compare(oldMappingNode, vaMappingNode, replaceMarkers);
+                    }
+                }
+            }
+        }
+
+    }
+
+
     private static String replace(String yaml, List<ReplaceMarker> replaceMarkers, List<HighlightMarker> highlights) {
         String temp = yaml;
         if (highlights == null) {
@@ -449,45 +494,6 @@ public class FileUtil {
             lengthChangeSum += lengthChange;
         }
         return temp;
-    }
-
-    //从将old的值替换至新的值
-    private static void compare(MappingNode oldMapping, MappingNode newMapping, List<ReplaceMarker> replaceMarkers) {
-        List<NodeTuple> oldRootTuple = oldMapping.getValue();
-        List<NodeTuple> newRootTuple = newMapping.getValue();
-        for (NodeTuple oldTuple : oldRootTuple) {
-            Node oldKeyNode = oldTuple.getKeyNode();
-            if (oldKeyNode instanceof ScalarNode) {
-                ScalarNode scalarKeyNode = (ScalarNode) oldKeyNode;
-                Node oldValue = oldTuple.getValueNode();
-                if (oldValue != null && oldValue instanceof ScalarNode) {
-                    ScalarNode oldValueScalar = (ScalarNode) oldValue;
-                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(), newRootTuple);
-                    if (newValueNode != null && !oldValueScalar.getValue().equals(newValueNode.getValue())) {
-                        ReplaceMarker replaceMarker = new ReplaceMarker();
-                        replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
-                        replaceMarker.setEndIndex(newValueNode.getEndMark().getIndex());
-                        replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
-                        replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
-                        replaceMarker.setLine(newValueNode.getStartMark().getLine());
-                        if (newValueNode.getValue().isEmpty()) {
-                            replaceMarker.setToReplace(" " + oldValueScalar.getValue());
-                        } else {
-                            replaceMarker.setToReplace(oldValueScalar.getValue());
-                        }
-                        //记录相关并进行替换
-                        replaceMarkers.add(replaceMarker);
-                    }
-                } else if (oldValue instanceof MappingNode) {
-                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(), newRootTuple);
-                    if (vaMappingNode != null) {
-                        MappingNode oldMappingNode = (MappingNode) oldValue;
-                        compare(oldMappingNode, vaMappingNode, replaceMarkers);
-                    }
-                }
-            }
-        }
-
     }
 
     //检查同一层是否存在该key
@@ -560,6 +566,7 @@ public class FileUtil {
         }
     }
 
+
     /**
      * 获取目录下 README.md 文件内容
      *
@@ -614,9 +621,10 @@ public class FileUtil {
      * @param data     json 内容
      */
     public static void saveDataToFile(String path, String fileName, String data) {
-        File file = new File(path + System.lineSeparator() + fileName + ".json");
+        File file = new File(path + System.getProperty("file.separator") + fileName + ".txt");
         //如果文件不存在，则新建一个
         if (!file.exists()) {
+            new File(path).mkdirs();
             try {
                 if (!file.createNewFile()) {
                     throw new CommonException("error.file.create");
@@ -679,6 +687,7 @@ public class FileUtil {
         }
     }
 
+
     /**
      * 使用renameTo移动文件，重复文件跳过
      *
@@ -699,10 +708,11 @@ public class FileUtil {
             }
             if (file.isFile()) {
                 File toFile = new File(toFolder + File.separator + file.getName());
-                if (!toFile.exists()) {
-                    //移动文件
-                    file.renameTo(toFile);
+                //移动文件
+                if (!toFile.exists() && !file.renameTo(toFile)) {
+                    throw new CommonException("error.file.renname");
                 }
+
             }
 
         }
@@ -752,5 +762,102 @@ public class FileUtil {
             throw new CommonException("error.not.zip");
         }
         logger.info("******************解压完毕********************");
+    }
+
+
+    /**
+     * 压缩成ZIP 方法1
+     *
+     * @param srcDir           压缩文件夹路径
+     * @param outputStream     压缩文件
+     * @param keepDirStructure 是否保留原来的目录结构,true:保留目录结构;
+     *                         false:所有文件跑到压缩包根目录下(注意：不保留目录结构可能会出现同名文件,会压缩失败)
+     * @throws RuntimeException 压缩失败会抛出运行时异常
+     */
+    public static void toZip(String srcDir, OutputStream outputStream, boolean keepDirStructure) {
+        try (ZipOutputStream zos = new ZipOutputStream(outputStream)) {
+            File sourceFile = new File(srcDir);
+            compress(sourceFile, zos, sourceFile.getName(), keepDirStructure);
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
+
+
+    /**
+     * 递归压缩方法
+     *
+     * @param sourceFile       源文件
+     * @param zos              zip输出流
+     * @param name             压缩后的名称
+     * @param keepDirStructure 是否保留原来的目录结构,true:保留目录结构;
+     *                         false:所有文件跑到压缩包根目录下(注意：不保留目录结构可能会出现同名文件,会压缩失败)
+     * @throws Exception
+     */
+    private static void compress(File sourceFile, ZipOutputStream zos, String name,
+                                 boolean keepDirStructure) {
+        byte[] buf = new byte[BUFFER_SIZE];
+        if (sourceFile.isFile()) {
+            // copy文件到zip输出流中
+            int len;
+            try (FileInputStream in = new FileInputStream(sourceFile)) {
+                // 向zip输出流中添加一个zip实体，构造器中name为zip实体的文件的名字
+                zos.putNextEntry(new ZipEntry(name));
+                while ((len = in.read(buf)) != -1) {
+                    zos.write(buf, 0, len);
+                }
+                zos.closeEntry();
+            } catch (IOException e) {
+                throw new CommonException(e.getMessage());
+            }
+        } else {
+            File[] listFiles = sourceFile.listFiles();
+            if (listFiles == null || listFiles.length == 0) {
+                // 需要保留原来的文件结构时,需要对空文件夹进行处理
+                if (keepDirStructure) {
+                    // 空文件夹的处理
+                    try {
+                        zos.putNextEntry(new ZipEntry(name + "/"));
+                        zos.closeEntry();
+                    } catch (IOException e) {
+                        throw new CommonException(e.getMessage());
+                    }
+                }
+
+            } else {
+                for (File file : listFiles) {
+                    // 判断是否需要保留原来的文件结构
+                    if (keepDirStructure) {
+                        // 注意：file.getName()前面需要带上父文件夹的名字加一斜杠,
+                        // 不然最后压缩包中就不能保留原来的文件结构,即：所有文件都跑到压缩包根目录下了
+                        compress(file, zos, name + "/" + file.getName(), keepDirStructure);
+                    } else {
+                        compress(file, zos, file.getName(), keepDirStructure);
+                    }
+
+                }
+            }
+        }
+    }
+
+
+    public static void downloadFile(HttpServletResponse res, String filePath) {
+        res.setHeader("content-type", "application/octet-stream");
+        res.setContentType("application/octet-stream");
+        res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
+        byte[] buff = new byte[1024];
+        OutputStream os = null;
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))) {
+            os = res.getOutputStream();
+            int i = bis.read(buff);
+            while (i != -1) {
+                os.write(buff, 0, buff.length);
+                os.flush();
+                i = bis.read(buff);
+            }
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
+        }
+
     }
 }

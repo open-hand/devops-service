@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
+import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -77,4 +78,11 @@ public interface ApplicationMarketService {
     AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file);
 
     void importApps(Long projectId, String fileName, Boolean isPublish);
+
+    /**
+     * 导出应用市场应用信息
+     *
+     * @param appMarkets 应用市场应用信息
+     */
+    void export(List<AppMarketDownloadDTO> appMarkets);
 }

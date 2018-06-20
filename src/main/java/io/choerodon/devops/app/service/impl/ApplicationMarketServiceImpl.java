@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
@@ -20,12 +21,14 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
@@ -34,6 +37,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationVersionRepos
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.HttpClientUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -45,13 +49,15 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
-
-    private static Gson gson = new Gson();
+    private static final String CHARTS = "charts";
+    private static final String IMAGES = "images";
     private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
-
-
+    private static final String FILESEPARATOR = "file.separator";
+    private static Gson gson = new Gson();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+    @Value("${services.helm.url}")
+    private String helmUrl;
 
     @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
@@ -308,17 +314,17 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         } catch (IOException e) {
             logger.info(e.getMessage());
         }
-        File tgzDirectory = new File(destPath);
+        File zipDirectory = new File(destPath);
         AppMarketTgzDTO appMarketTgzDTO = new AppMarketTgzDTO();
-        String fileCode = "";
-        if (tgzDirectory.exists() && tgzDirectory.isDirectory()) {
-            File[] chartsDirectory = tgzDirectory.listFiles();
+        String fileCode;
+        if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+            File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals("charts")) {
+                    && chartsDirectory[0].getName().equals(CHARTS)) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
-                    FileUtil.deleteFile(tgzDirectory);
+                    FileUtil.deleteFile(zipDirectory);
                     throw new CommonException("error.file.empty");
                 }
                 List<File> images = Arrays.stream(appFiles)
@@ -331,15 +337,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 // do sth with appFileList
                 analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList, false);
             } else {
-                FileUtil.deleteFile(tgzDirectory);
-                throw new CommonException("error.tgz.illegal");
+                FileUtil.deleteFile(zipDirectory);
+                throw new CommonException("error.zip.illegal");
             }
         } else {
-            FileUtil.deleteFile(tgzDirectory);
-            throw new CommonException("error.tgz.empty");
+            FileUtil.deleteFile(zipDirectory);
+            throw new CommonException("error.zip.empty");
         }
         appMarketTgzDTO.setFileCode(
-                tgzDirectory.renameTo(new File(String.format("%s%s%s", classPath, fileSeparator, fileCode)))
+                zipDirectory.renameTo(new File(String.format("%s%s%s", classPath, fileSeparator, fileCode)))
                         ? fileCode : "new");
         return appMarketTgzDTO;
     }
@@ -355,16 +361,16 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 organization.getCode(),
                 fileSeparator,
                 projectE.getCode(), fileSeparator, fileName);
-        File tgzDirectory = new File(destPath);
+        File zipDirectory = new File(destPath);
 
-        if (tgzDirectory.exists() && tgzDirectory.isDirectory()) {
-            File[] chartsDirectory = tgzDirectory.listFiles();
+        if (zipDirectory.exists() && zipDirectory.isDirectory()) {
+            File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals("charts")) {
+                    && chartsDirectory[0].getName().equals(CHARTS)) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
-                    FileUtil.deleteFile(tgzDirectory);
+                    FileUtil.deleteFile(zipDirectory);
                     throw new CommonException("error.file.empty");
                 }
                 List<File> images = Arrays.stream(appFiles)
@@ -393,12 +399,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         projectE.getCode());
                 appFileList.stream().parallel().forEach(t -> FileUtil.moveFile(t.getAbsolutePath(), classPath));
             } else {
-                throw new CommonException("error.tgz.illegal");
+                throw new CommonException("error.zip.illegal");
             }
         } else {
-            throw new CommonException("error.tgz.notFound");
+            throw new CommonException("error.zip.notFound");
         }
-        FileUtil.deleteFile(tgzDirectory);
+        FileUtil.deleteFile(zipDirectory);
     }
 
     private String hashImages(List<File> images) {
@@ -450,6 +456,54 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             }
         });
     }
+
+
+    public void export(List<AppMarketDownloadDTO> appMarkets) {
+        List<String> images = new ArrayList<>();
+        for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
+            ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(), null);
+            String destpath = String.format("charts%s%s",
+                    System.getProperty(FILESEPARATOR),
+                    applicationReleasingDTO.getCode());
+            ApplicationE applicationE = applicationRepository.query(applicationReleasingDTO.getAppId());
+            ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            String appMarketJson = gson.toJson(applicationReleasingDTO);
+            FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode(), appMarketJson);
+            appMarketDownloadDTO.getAppVersionIds().parallelStream().forEach(appVersionId -> {
+                ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
+                images.add(applicationVersionE.getImage());
+                String repoUrl = String.format("%s%s%s%s%s%s%s%s%s%s%s%s", helmUrl,
+                        System.getProperty(FILESEPARATOR),
+                        organization.getCode(),
+                        System.getProperty(FILESEPARATOR),
+                        projectE.getCode(),
+                        System.getProperty(FILESEPARATOR),
+                        CHARTS,
+                        System.getProperty(FILESEPARATOR),
+                        applicationE.getCode(),
+                        "-",
+                        applicationVersionE.getVersion(),
+                        ".tgz");
+
+                HttpClientUtil.getTgz(repoUrl, destpath + System.getProperty(FILESEPARATOR) + applicationE.getCode() + "-" + applicationVersionE.getVersion() + ".tgz");
+
+            });
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String image : images) {
+                stringBuilder.append(image);
+                stringBuilder.append(System.getProperty("line.separator"));
+            }
+            FileUtil.saveDataToFile(CHARTS, IMAGES, stringBuilder.toString());
+        }
+        try (FileOutputStream outputStream = new FileOutputStream(CHARTS + ".zip")) {
+            FileUtil.toZip(CHARTS, outputStream, true);
+            FileUtil.deleteFile(new File(CHARTS));
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
+
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
                                                            Page<ApplicationMarketE> applicationMarketEPage) {
