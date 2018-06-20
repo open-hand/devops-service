@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.*;
@@ -11,12 +12,6 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -26,8 +21,8 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
+import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
@@ -56,12 +51,9 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String PUBLIC = "public";
     private static final String CHARTS = "charts";
     private static final String IMAGES = "images";
-    private static Gson gson = new Gson();
     private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
-
     private static final String FILESEPARATOR = "file.separator";
-
-
+    private static Gson gson = new Gson();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.helm.url}")
@@ -329,7 +321,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals("charts")) {
+                    && chartsDirectory[0].getName().equals(CHARTS)) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteFile(zipDirectory);
@@ -375,7 +367,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals("charts")) {
+                    && chartsDirectory[0].getName().equals(CHARTS)) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteFile(zipDirectory);
@@ -497,7 +489,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 HttpClientUtil.getTgz(repoUrl, destpath + System.getProperty(FILESEPARATOR) + applicationE.getCode() + "-" + applicationVersionE.getVersion() + ".tgz");
 
             });
-            FileUtil.saveDataToFile(CHARTS, IMAGES, images.toString());
+            StringBuilder stringBuilder = new StringBuilder();
+            for (String image : images) {
+                stringBuilder.append(image);
+                stringBuilder.append(System.getProperty("line.separator"));
+            }
+            FileUtil.saveDataToFile(CHARTS, IMAGES, stringBuilder.toString());
         }
         try (FileOutputStream outputStream = new FileOutputStream(CHARTS + ".zip")) {
             FileUtil.toZip(CHARTS, outputStream, true);
