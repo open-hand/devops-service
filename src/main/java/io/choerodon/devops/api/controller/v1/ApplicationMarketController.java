@@ -3,17 +3,19 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
-import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
@@ -265,5 +267,26 @@ public class ApplicationMarketController {
             @RequestBody(required = true) List<AppMarketVersionDTO> versionList) {
         applicationMarketService.update(projectId, appMarketId, versionList);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 应用市场导入应用
+     *
+     * @param projectId 项目ID
+     * @param file      文件
+     * @return 应用列表
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "应用市场导入应用")
+    @PostMapping("/upload")
+    public ResponseEntity<AppMarketTgzDTO> importApps(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "文件", required = true)
+            @RequestParam MultipartFile file) {
+        return Optional.ofNullable(
+                applicationMarketService.getMarketAppListInFile(projectId, file))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.tgz.get"));
     }
 }
