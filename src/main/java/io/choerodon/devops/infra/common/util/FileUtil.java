@@ -1,7 +1,9 @@
 package io.choerodon.devops.infra.common.util;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -340,7 +342,7 @@ public class FileUtil {
                 try (BufferedReader br = new BufferedReader(inputStreamReader)) {
                     String lineTxt;
                     while ((lineTxt = br.readLine()) != null) {
-                        totalLine =  totalLine + 1;
+                        totalLine = totalLine + 1;
                     }
                 }
             }
@@ -631,5 +633,46 @@ public class FileUtil {
             logger.info(e.getMessage());
         }
         logger.info("文件写入成功！");
+    }
+
+
+    /**
+     * 获取文件的md5值 ，有可能不是32位
+     *
+     * @param filePath 文件路径
+     * @return md5HashCode
+     * @throws FileNotFoundException 文件丢失
+     */
+    public static String md5HashCode(String filePath) throws FileNotFoundException {
+        FileInputStream fis = new FileInputStream(filePath);
+        return md5HashCode(fis);
+    }
+
+    /**
+     * java获取文件的md5值
+     *
+     * @param fis 输入流
+     * @return md5HashCode
+     */
+    public static String md5HashCode(InputStream fis) {
+        try {
+            //拿到一个MD5转换器,如果想使用SHA-1或SHA-256，则传入SHA-1,SHA-256
+            MessageDigest md = MessageDigest.getInstance("MD5");
+
+            //分多次将一个文件读入，对于大型文件而言，比较推荐这种方式，占用内存比较少。
+            byte[] buffer = new byte[1024];
+            int length = -1;
+            while ((length = fis.read(buffer, 0, 1024)) != -1) {
+                md.update(buffer, 0, length);
+            }
+            fis.close();
+            //转换并返回包含16个元素字节数组,返回数值范围为-128到127
+            byte[] md5Bytes = md.digest();
+            BigInteger bigInt = new BigInteger(1, md5Bytes);//1代表绝对值
+            return bigInt.toString(16);//转换为16进制
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+            return "";
+        }
     }
 }

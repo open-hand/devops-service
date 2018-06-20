@@ -1,19 +1,25 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
@@ -25,6 +31,8 @@ import io.choerodon.devops.domain.application.repository.ApplicationMarketReposi
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -36,6 +44,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
+
+    private static Gson gson = new Gson();
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
 
 
     @Value("${services.gitlab.url}")
@@ -275,6 +286,96 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         return ConvertPageHelper.convertPage(
                 applicationMarketRepository.getVersions(projectId, appMarketId, isPublish, pageRequest, searchParam),
                 AppMarketVersionDTO.class);
+    }
+
+    @Override
+    public AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String fileSeparator =
+                System.getProperty("file.separator");
+        String classPath = String.format(
+                "tmp%s%s%s%s",
+                fileSeparator,
+                organization.getCode(),
+                fileSeparator,
+                projectE.getCode());
+        String path = FileUtil.multipartFileToFile(classPath, file);
+        String destPath = String.format("%s%s%s", classPath, fileSeparator, "new");
+        FileUtil.unTarGZ(path, destPath);
+        try {
+            Files.delete(new File(path).toPath());
+        } catch (IOException e) {
+            logger.info(e.getMessage());
+        }
+        File tgzDirectory = new File(destPath);
+        AppMarketTgzDTO appMarketTgzDTO = new AppMarketTgzDTO();
+        String fileCode = "";
+        if (tgzDirectory.exists() && tgzDirectory.isDirectory()) {
+            File[] chartsDirectory = tgzDirectory.listFiles();
+            if (chartsDirectory != null
+                    && chartsDirectory.length == 1
+                    && chartsDirectory[0].getName().equals("Charts")) {
+                File[] appFiles = chartsDirectory[0].listFiles();
+                if (appFiles == null || appFiles.length == 0) {
+                    FileUtil.deleteFile(tgzDirectory);
+                    throw new CommonException("error.file.empty");
+                }
+                List<File> images = Arrays.stream(appFiles)
+                        .filter(t -> t.getName().equals("images.txt")).collect(Collectors.toCollection(ArrayList::new));
+                // do sth with images[0]
+                fileCode = hashImages(images);
+
+                List<File> appFileList = Arrays.stream(appFiles)
+                        .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
+                // do sth with appFileList
+                analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList);
+            } else {
+                FileUtil.deleteFile(tgzDirectory);
+                throw new CommonException("error.tgz.illegal");
+            }
+        } else {
+            FileUtil.deleteFile(tgzDirectory);
+            throw new CommonException("error.tgz.empty");
+        }
+        appMarketTgzDTO.setFileCode(
+                tgzDirectory.renameTo(new File(String.format("%s%s%s", classPath, fileSeparator, fileCode)))
+                        ? fileCode : "new");
+        return appMarketTgzDTO;
+    }
+
+    private String hashImages(List<File> images) {
+        if (images != null && !images.isEmpty() && images.size() == 1) {
+            File image = images.get(0);
+            String imagePath = image.getAbsolutePath();
+            try {
+                return FileUtil.md5HashCode(imagePath);
+            } catch (FileNotFoundException e) {
+                logger.info(e.getMessage());
+                throw new CommonException("error.image.read");
+            }
+        } else {
+            throw new CommonException("error.images.illegal");
+        }
+    }
+
+    private void analyzeAppFile(List<AppMarketVersionDTO> appMarketVersionDTOS, List<File> appFileList) {
+        appFileList.parallelStream().forEach(t -> {
+            String appName = t.getName();
+            File[] appFiles = t.listFiles();
+            if (appFiles != null && !appFileList.isEmpty()) {
+                String appFileName = String.format("%s%s", appName, ".txt");
+                List<File> appMarkets = Arrays.stream(appFiles).parallel()
+                        .filter(k -> k.getName().equals(appFileName))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                if (appMarkets != null && !appMarkets.isEmpty() && appMarkets.size() == 1) {
+                    File appMarket = appMarkets.get(0);
+                    String appMarketJson = FileUtil.getFileContent(appMarket);
+                    AppMarketVersionDTO appMarketVersionDTO = gson.fromJson(appMarketJson, AppMarketVersionDTO.class);
+                    appMarketVersionDTOS.add(appMarketVersionDTO);
+                }
+            }
+        });
     }
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
