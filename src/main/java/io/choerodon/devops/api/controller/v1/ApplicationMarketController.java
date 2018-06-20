@@ -1,7 +1,11 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.io.*;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -16,9 +20,11 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
+import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
+import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -29,7 +35,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/apps_market")
 public class ApplicationMarketController {
-
+    private static final String path = "charts.zip";
     private ApplicationMarketService applicationMarketService;
 
     public ApplicationMarketController(ApplicationMarketService applicationMarketService) {
@@ -269,6 +275,7 @@ public class ApplicationMarketController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+
     /**
      * 应用市场解析导入应用
      *
@@ -311,4 +318,29 @@ public class ApplicationMarketController {
         applicationMarketService.importApps(projectId, fileName, isPublish);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    /**
+     * 导出应用市场应用信息
+     *
+     * @param projectId   项目id
+     */
+    @Permission(level = ResourceLevel.PROJECT)
+    @ApiOperation(value = "导出应用市场应用信息")
+    @PostMapping("/export")
+    public void exportFile(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "发布应用的信息", required = true)
+            @RequestBody(required = true) List<AppMarketDownloadDTO> appMarkets,
+            HttpServletResponse res) {
+        applicationMarketService.export(appMarkets);
+        FileUtil.downloadFile(res, path);
+        try {
+            Files.delete(new File(path).toPath());
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
+
 }
+

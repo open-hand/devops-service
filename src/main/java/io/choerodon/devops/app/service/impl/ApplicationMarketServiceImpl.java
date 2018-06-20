@@ -11,6 +11,12 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -21,11 +27,13 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.AppMarketTgzDTO;
+import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
@@ -34,6 +42,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationVersionRepos
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.HttpClientUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -45,13 +54,16 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
-
+    private static final String CHARTS = "charts";
+    private static final String IMAGES = "images";
     private static Gson gson = new Gson();
     private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
 
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+    @Value("${services.helm.url}")
+    private String helmUrl;
 
     @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
@@ -450,6 +462,49 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             }
         });
     }
+
+
+    public void export(List<AppMarketDownloadDTO> appMarkets) {
+        List<String> images = new ArrayList<>();
+        for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
+            ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(),null);
+            String destpath = String.format("charts%s%s",
+                    System.getProperty("file.separator"),
+                    applicationReleasingDTO.getCode());
+            ApplicationE applicationE = applicationRepository.query(applicationReleasingDTO.getAppId());
+            ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            String appMarketJson = gson.toJson(applicationReleasingDTO);
+            FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode(), appMarketJson);
+            appMarketDownloadDTO.getAppVersionIds().parallelStream().forEach(appVersionId -> {
+                ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
+                images.add(applicationVersionE.getImage());
+                String repoUrl = String.format("%s%s%s%s%s%s%s%s%s%s%s%s", helmUrl,
+                        System.getProperty("file.separator"),
+                        organization.getCode(),
+                        System.getProperty("file.separator"),
+                        projectE.getCode(),
+                        System.getProperty("file.separator"),
+                        CHARTS,
+                        System.getProperty("file.separator"),
+                        applicationE.getCode(),
+                        "-",
+                        applicationVersionE.getVersion(),
+                        ".tgz");
+
+                HttpClientUtil.getTgz(repoUrl, destpath + System.getProperty("file.separator") + applicationE.getCode() + "-" + applicationVersionE.getVersion() + ".tgz");
+
+            });
+            FileUtil.saveDataToFile(CHARTS, IMAGES, images.toString());
+        }
+        try (FileOutputStream outputStream = new FileOutputStream(CHARTS+".zip")) {
+            FileUtil.toZip(CHARTS, outputStream, true);
+            FileUtil.deleteFile(new File(CHARTS));
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
+
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
                                                            Page<ApplicationMarketE> applicationMarketEPage) {
