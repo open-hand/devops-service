@@ -270,23 +270,45 @@ public class ApplicationMarketController {
     }
 
     /**
-     * 应用市场导入应用
+     * 应用市场解析导入应用
      *
      * @param projectId 项目ID
      * @param file      文件
      * @return 应用列表
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "应用市场导入应用")
+    @ApiOperation(value = "应用市场解析导入应用")
     @PostMapping("/upload")
-    public ResponseEntity<AppMarketTgzDTO> importApps(
+    public ResponseEntity<AppMarketTgzDTO> uploadApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件", required = true)
-            @RequestParam MultipartFile file) {
+            @RequestParam(value = "file") MultipartFile file) {
         return Optional.ofNullable(
                 applicationMarketService.getMarketAppListInFile(projectId, file))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.tgz.get"));
+    }
+
+    /**
+     * 应用市场导入应用
+     *
+     * @param projectId 项目ID
+     * @param fileName  文件名
+     * @param isPublish 是否发布
+     * @return 应用列表
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "应用市场导入应用")
+    @PostMapping("/import")
+    public ResponseEntity importApps(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "文件名", required = true)
+            @RequestParam(value = "file_name") String fileName,
+            @ApiParam(value = "是否发布", required = true)
+            @RequestParam(value = "publish") Boolean isPublish) {
+        applicationMarketService.importApps(projectId, fileName, isPublish);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

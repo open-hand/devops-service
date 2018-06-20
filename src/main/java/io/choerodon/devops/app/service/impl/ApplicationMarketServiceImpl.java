@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -292,8 +293,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String fileSeparator =
-                System.getProperty("file.separator");
+        String fileSeparator = File.separator;
         String classPath = String.format(
                 "tmp%s%s%s%s",
                 fileSeparator,
@@ -302,7 +302,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 projectE.getCode());
         String path = FileUtil.multipartFileToFile(classPath, file);
         String destPath = String.format("%s%s%s", classPath, fileSeparator, "new");
-        FileUtil.unTarGZ(path, destPath);
+        FileUtil.unZipFiles(new File(path), destPath);
         try {
             Files.delete(new File(path).toPath());
         } catch (IOException e) {
@@ -315,7 +315,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = tgzDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals("Charts")) {
+                    && chartsDirectory[0].getName().equals("charts")) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteFile(tgzDirectory);
@@ -329,7 +329,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 List<File> appFileList = Arrays.stream(appFiles)
                         .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
                 // do sth with appFileList
-                analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList);
+                analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList, false);
             } else {
                 FileUtil.deleteFile(tgzDirectory);
                 throw new CommonException("error.tgz.illegal");
@@ -342,6 +342,63 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 tgzDirectory.renameTo(new File(String.format("%s%s%s", classPath, fileSeparator, fileCode)))
                         ? fileCode : "new");
         return appMarketTgzDTO;
+    }
+
+    @Override
+    public void importApps(Long projectId, String fileName, Boolean isPublish) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String fileSeparator = File.separator;
+        String destPath = String.format(
+                "tmp%s%s%s%s%s%s",
+                fileSeparator,
+                organization.getCode(),
+                fileSeparator,
+                projectE.getCode(), fileSeparator, fileName);
+        File tgzDirectory = new File(destPath);
+
+        if (tgzDirectory.exists() && tgzDirectory.isDirectory()) {
+            File[] chartsDirectory = tgzDirectory.listFiles();
+            if (chartsDirectory != null
+                    && chartsDirectory.length == 1
+                    && chartsDirectory[0].getName().equals("charts")) {
+                File[] appFiles = chartsDirectory[0].listFiles();
+                if (appFiles == null || appFiles.length == 0) {
+                    FileUtil.deleteFile(tgzDirectory);
+                    throw new CommonException("error.file.empty");
+                }
+                List<File> images = Arrays.stream(appFiles)
+                        .filter(t -> t.getName().equals("images.txt")).collect(Collectors.toCollection(ArrayList::new));
+                String imageJson = readImages(images);
+                try {
+                    List<String> imageList = gson.fromJson(imageJson, new TypeToken<List<String>>() {
+                    }.getType());
+                    // do sth with image url list
+                    imageList.forEach(logger::info);
+                } catch (Exception e) {
+                    logger.info(e.getMessage());
+                }
+
+                List<File> appFileList = Arrays.stream(appFiles)
+                        .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
+                List<ApplicationReleasingDTO> applicationReleasingDTOS = new ArrayList<>();
+                analyzeAppFile(applicationReleasingDTOS, appFileList, true);
+                // do sth with apps
+                appFileList.forEach(t -> logger.info(t.toString()));
+
+                String classPath = String.format("Charts%s%s%s%s",
+                        fileSeparator,
+                        organization.getCode(),
+                        fileSeparator,
+                        projectE.getCode());
+                appFileList.stream().parallel().forEach(t -> FileUtil.moveFile(t.getAbsolutePath(), classPath));
+            } else {
+                throw new CommonException("error.tgz.illegal");
+            }
+        } else {
+            throw new CommonException("error.tgz.notFound");
+        }
+        FileUtil.deleteFile(tgzDirectory);
     }
 
     private String hashImages(List<File> images) {
@@ -359,7 +416,16 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         }
     }
 
-    private void analyzeAppFile(List<AppMarketVersionDTO> appMarketVersionDTOS, List<File> appFileList) {
+    private String readImages(List<File> images) {
+        if (images != null && !images.isEmpty() && images.size() == 1) {
+            File image = images.get(0);
+            return FileUtil.getFileContent(image);
+        } else {
+            throw new CommonException("error.images.illegal");
+        }
+    }
+
+    private void analyzeAppFile(List<ApplicationReleasingDTO> appMarketVersionDTOS, List<File> appFileList, Boolean del) {
         appFileList.parallelStream().forEach(t -> {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
@@ -371,8 +437,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 if (appMarkets != null && !appMarkets.isEmpty() && appMarkets.size() == 1) {
                     File appMarket = appMarkets.get(0);
                     String appMarketJson = FileUtil.getFileContent(appMarket);
-                    AppMarketVersionDTO appMarketVersionDTO = gson.fromJson(appMarketJson, AppMarketVersionDTO.class);
+                    ApplicationReleasingDTO appMarketVersionDTO = gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
                     appMarketVersionDTOS.add(appMarketVersionDTO);
+                    if (del) {
+                        try {
+                            Files.delete(appMarket.toPath());
+                        } catch (IOException e) {
+                            logger.info(e.getMessage());
+                        }
+                    }
                 }
             }
         });

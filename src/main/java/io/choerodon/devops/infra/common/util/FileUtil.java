@@ -5,8 +5,11 @@ import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -674,5 +677,80 @@ public class FileUtil {
             logger.info(e.getMessage());
             return "";
         }
+    }
+
+    /**
+     * 使用renameTo移动文件，重复文件跳过
+     *
+     * @param fromPath 原文件路径
+     * @param toPath   目标文件路径
+     */
+    public static void moveFile(String fromPath, String toPath) {
+        File fromFolder = new File(fromPath);
+        File[] fromFiles = fromFolder.listFiles();
+        if (fromFiles == null) {
+            return;
+        }
+        File toFolder = new File(toPath);
+        toFolder.mkdirs();
+        for (File file : fromFiles) {
+            if (file.isDirectory()) {
+                moveFile(file.getPath(), toPath + File.separator + file.getName());
+            }
+            if (file.isFile()) {
+                File toFile = new File(toFolder + File.separator + file.getName());
+                if (!toFile.exists()) {
+                    //移动文件
+                    file.renameTo(toFile);
+                }
+            }
+
+        }
+    }
+
+    /**
+     * 解压文件到指定目录
+     *
+     * @param zipFile zip
+     * @param descDir 目标文件位置
+     */
+    @SuppressWarnings("rawtypes")
+    public static void unZipFiles(File zipFile, String descDir) {
+        File pathFile = new File(descDir);
+        pathFile.mkdirs();
+        try (ZipFile zip = new ZipFile(zipFile)) {
+            for (Enumeration entries = zip.entries(); entries.hasMoreElements(); ) {
+                ZipEntry entry = (ZipEntry) entries.nextElement();
+                String zipEntryName = entry.getName();
+                try (InputStream in = zip.getInputStream(entry)) {
+
+                    String outPath = (descDir + File.separator + zipEntryName).replaceAll("\\*", "/");
+                    //判断路径是否存在,不存在则创建文件路径
+                    File file = new File(outPath.substring(0, outPath.lastIndexOf('/')));
+                    file.mkdirs();
+                    //判断文件全路径是否为文件夹,如果是上面已经上传,不需要解压
+                    if (new File(outPath).isDirectory()) {
+                        continue;
+                    }
+                    //输出文件路径信息
+                    logger.info(outPath);
+
+                    try (OutputStream out = new FileOutputStream(outPath)) {
+                        byte[] buf1 = new byte[1024];
+                        int len;
+                        while ((len = in.read(buf1)) > 0) {
+                            out.write(buf1, 0, len);
+                        }
+                    } catch (FileNotFoundException e) {
+                        throw new CommonException("error.outPath");
+                    }
+                } catch (IOException e) {
+                    throw new CommonException("error.zip.inputStream");
+                }
+            }
+        } catch (IOException e) {
+            throw new CommonException("error.not.zip");
+        }
+        logger.info("******************解压完毕********************");
     }
 }
