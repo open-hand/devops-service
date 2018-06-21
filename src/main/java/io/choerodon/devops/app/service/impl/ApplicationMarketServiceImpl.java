@@ -342,7 +342,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public void importApps(Long projectId, String fileName, Boolean isPublish) {
+    public void importApps(Long projectId, String fileName, Boolean isPublic) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String fileSeparator = File.separator;
@@ -368,7 +368,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 }
                 List<File> appFileList = Arrays.stream(appFiles)
                         .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
-                importAppFile(projectId, appFileList);
+                importAppFile(projectId, appFileList, isPublic);
             } else {
                 throw new CommonException("error.zip.illegal");
             }
@@ -418,7 +418,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         });
     }
 
-    private void importAppFile(Long projectId, List<File> appFileList) {
+    private void importAppFile(Long projectId, List<File> appFileList, Boolean isPublic) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         appFileList.parallelStream().forEach(t -> {
@@ -432,19 +432,22 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 if (appMarkets != null && !appMarkets.isEmpty() && appMarkets.size() == 1) {
                     File appMarket = appMarkets.get(0);
                     String appMarketJson = FileUtil.getFileContent(appMarket);
-                    ApplicationReleasingDTO appMarketVersionDTO =
+                    ApplicationReleasingDTO applicationReleasingDTO =
                             gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
                     ApplicationE applicationE = new ApplicationE();
-                    applicationE.setCode(appMarketVersionDTO.getCode());
-                    applicationE.setName(appMarketVersionDTO.getName());
+                    applicationE.setCode(applicationReleasingDTO.getCode());
+                    applicationE.setName(applicationReleasingDTO.getName());
                     applicationE.initProjectE(projectId);
                     applicationE.setActive(true);
                     applicationE.setSynchro(true);
                     applicationE.setToken(GenerateUUID.generateUUID());
                     Long appId = applicationRepository.create(applicationE).getId();
-                    appMarketVersionDTO.getAppVersions().parallelStream().forEach(appVersion ->
-                            createVersionAndApp(appVersion, organization, projectE, applicationE, appId, appFiles)
-                    );
+                    applicationReleasingDTO.getAppVersions().parallelStream()
+                            .forEach(appVersion -> createVersionAndApp(
+                                    appVersion, organization, projectE, applicationE, appId, appFiles
+                            ));
+                    // 发布应用
+                    releaseApp(isPublic, applicationReleasingDTO);
                 }
             }
         });
@@ -582,6 +585,22 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     projectE.getCode());
             FileUtil.moveFiles(tgzVersions.get(0).getAbsolutePath(), classPath);
             FileUtil.deleteDirectory(new File(applicationE.getCode()));
+        }
+    }
+
+    private void releaseApp(Boolean isPublic, ApplicationReleasingDTO applicationReleasingDTO) {
+        if (isPublic != null) {
+            ApplicationMarketE applicationMarketE = new ApplicationMarketE();
+            applicationMarketE.initApplicationEById(applicationReleasingDTO.getAppId());
+            applicationMarketE.setPublishLevel(isPublic ? PUBLIC : ORGANIZATION);
+            applicationMarketE.setActive(true);
+            applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
+            applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
+            applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
+            applicationMarketRepository.create(applicationMarketE);
+            Long appMarketId =
+                    applicationMarketRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
+            applicationMarketRepository.updateVersion(appMarketId, null, true);
         }
     }
 }

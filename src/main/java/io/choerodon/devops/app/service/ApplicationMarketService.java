@@ -77,7 +77,7 @@ public interface ApplicationMarketService {
 
     AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file);
 
-    void importApps(Long projectId, String fileName, Boolean isPublish);
+    void importApps(Long projectId, String fileName, Boolean isPublic);
 
     /**
      * 导出应用市场应用信息

@@ -125,13 +125,18 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public void unpublishApplication(Long appMarketId) {
-        applicationMarketMapper.unpublishApplicationVersions(appMarketId, null);
+        applicationMarketMapper.changeApplicationVersions(appMarketId, null, null);
         applicationMarketMapper.deleteByPrimaryKey(appMarketId);
     }
 
     @Override
     public void unpublishVersion(Long appMarketId, Long versionId) {
-        applicationMarketMapper.unpublishApplicationVersions(appMarketId, versionId);
+        applicationMarketMapper.changeApplicationVersions(appMarketId, versionId, null);
+    }
+
+    @Override
+    public void updateVersion(Long appMarketId, Long versionId, Boolean isPublish) {
+        applicationMarketMapper.changeApplicationVersions(appMarketId, versionId, isPublish);
     }
 
     @Override

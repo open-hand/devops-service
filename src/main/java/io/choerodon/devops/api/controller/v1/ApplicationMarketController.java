@@ -1,11 +1,11 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
-import javax.servlet.http.HttpServletResponse;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -19,8 +19,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
+import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
@@ -302,7 +302,7 @@ public class ApplicationMarketController {
      *
      * @param projectId 项目ID
      * @param fileName  文件名
-     * @param isPublish 是否发布
+     * @param isPublic  是否发布
      * @return 应用列表
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -313,16 +313,16 @@ public class ApplicationMarketController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件名", required = true)
             @RequestParam(value = "file_name") String fileName,
-            @ApiParam(value = "是否发布", required = true)
-            @RequestParam(value = "publish") Boolean isPublish) {
-        applicationMarketService.importApps(projectId, fileName, isPublish);
+            @ApiParam(value = "是否公开", required = false)
+            @RequestParam(value = "public", required = false) Boolean isPublic) {
+        applicationMarketService.importApps(projectId, fileName, isPublic);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
      * 导出应用市场应用信息
      *
-     * @param projectId 项目id
+     * @param projectId  项目id
      * @param appMarkets 应用市场应用信息
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
