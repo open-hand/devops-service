@@ -18,7 +18,7 @@ public interface ApplicationRepository {
 
     int update(ApplicationE applicationE);
 
-    int create(ApplicationE applicationE);
+    ApplicationE create(ApplicationE applicationE);
 
     ApplicationE query(Long applicationId);
 

@@ -92,7 +92,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 "CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
                 (String uuid) -> {
                     applicationE.initUuid(uuid);
-                    if (applicationRepository.create(applicationE) != 1) {
+                    if (applicationRepository.create(applicationE).getId() == null) {
                         throw new CommonException("error.order.create.insert");
                     }
                 });
