@@ -292,8 +292,13 @@
             JOIN devops_application da ON da.id = dam.app_id
         WHERE
             dam.id =  #{appMarketId}
-            <if test='projectId != null'>
-                AND da.project_id = #{projectId}
+            <if test='projectIds != null'>
+                AND ( dam.publish_level = 'public'
+                OR ( dam.publish_level = 'organization' AND da.project_id IN
+                <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+                    #{projectId}
+                </foreach>
+                ) )
             </if>
             <if test="isPublish != null">
                 <if test="isPublish == true">

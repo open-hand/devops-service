@@ -88,16 +88,7 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public ApplicationMarketE getMarket(Long projectId, Long appMarketId) {
-        List<Long> projectIds;
-        if (projectId != null) {
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
-            Long organizationId = projectE.getOrganization().getId();
-            List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
-            projectIds = projectEList.parallelStream().map(ProjectE::getId)
-                    .collect(Collectors.toCollection(ArrayList::new));
-        } else {
-            projectIds = null;
-        }
+        List<Long> projectIds = getProjectIds(projectId);
         return ConvertHelper.convert(
                 applicationMarketMapper.getMarketApplication(projectId, appMarketId, projectIds),
                 ApplicationMarketE.class);
@@ -152,7 +143,8 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish) {
-        return applicationMarketMapper.listAppVersions(projectId, appMarketId, isPublish, null, null);
+        List<Long> projectIds = getProjectIds(projectId);
+        return applicationMarketMapper.listAppVersions(projectIds, appMarketId, isPublish, null, null);
     }
 
     @Override
@@ -175,9 +167,10 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         }
         Map<String, Object> finalSearchParam = searchParam;
         String finalParam = param;
+        List<Long> projectIds = getProjectIds(projectId);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> applicationMarketMapper.listAppVersions(
-                        projectId, appMarketId, isPublish,
+                        projectIds, appMarketId, isPublish,
                         finalSearchParam, finalParam));
     }
 
@@ -203,5 +196,19 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         FileUtil.saveDataToFile(destPath, appMarketDO.getCode(), appMarketJson);
         return ConvertHelper.convert(applicationMarketMapper.selectOne(appMarketDO), ApplicationMarketE.class);
 
+    }
+
+    private List<Long> getProjectIds(Long projectId) {
+        List<Long> projectIds;
+        if (projectId != null) {
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            Long organizationId = projectE.getOrganization().getId();
+            List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
+            projectIds = projectEList.parallelStream().map(ProjectE::getId)
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            projectIds = null;
+        }
+        return projectIds;
     }
 }

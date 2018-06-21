@@ -39,7 +39,7 @@ public interface ApplicationMarketMapper extends BaseMapper<DevopsAppMarketDO> {
     Long getMarketIdByAppId(@Param("appId") Long appId);
 
 
-    List<DevopsAppMarketVersionDO> listAppVersions(@Param("projectId") Long projectId,
+    List<DevopsAppMarketVersionDO> listAppVersions(@Param("projectIds") List<Long> projectIds,
                                                    @Param("appMarketId") Long appMarketId,
                                                    @Param("isPublish") Boolean isPublish,
                                                    @Param("searchParam") Map<String, Object> searchParam,
