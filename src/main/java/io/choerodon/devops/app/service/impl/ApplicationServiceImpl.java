@@ -23,6 +23,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
@@ -68,6 +69,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GitlabUserRepository gitlabUserRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
+    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
 
     @Override
     public ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO) {
@@ -82,6 +85,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE.initActive(true);
         applicationE.initSynchro(false);
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                gitlabGroupE.getId(),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+        }
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setType(APPLICATION);
         gitlabProjectPayload.setPath(applicationDTO.getCode());

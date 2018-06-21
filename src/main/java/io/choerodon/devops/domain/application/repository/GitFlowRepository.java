@@ -45,4 +45,6 @@ public interface GitFlowRepository {
     TagsDO getTags(Long serviceId, String path, Integer page, Integer size, Integer userId);
 
     List<TagDO> getTagList(Long appId, Integer userId);
+
+    List<TagDO> getGitLabTags(Integer projectId, Integer userId);
 }
