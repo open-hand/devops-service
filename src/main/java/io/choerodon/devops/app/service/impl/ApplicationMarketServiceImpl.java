@@ -351,7 +351,9 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 fileSeparator,
                 organization.getCode(),
                 fileSeparator,
-                projectE.getCode(), fileSeparator, fileName);
+                projectE.getCode(),
+                fileSeparator,
+                fileName);
         File zipDirectory = new File(destPath);
 
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
@@ -578,8 +580,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     organization.getCode(),
                     System.getProperty(FILE_SEPARATOR),
                     projectE.getCode());
-            FileUtil.moveFile(tgzVersions.get(0).getAbsolutePath(), classPath);
-            FileUtil.deleteFile(new File(applicationE.getCode()));
+            FileUtil.moveFiles(tgzVersions.get(0).getAbsolutePath(), classPath);
+            FileUtil.deleteDirectory(new File(applicationE.getCode()));
         }
     }
 }

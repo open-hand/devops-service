@@ -7,10 +7,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -477,11 +474,9 @@ public class FileUtil {
                         replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
                         replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
                         replaceMarker.setLine(newValueNode.getStartMark().getLine());
-                        if (newValueNode.getValue().isEmpty()) {
-                            replaceMarker.setToReplace(" " + oldValueScalar.getValue());
-                        } else {
-                            replaceMarker.setToReplace(oldValueScalar.getValue());
-                        }
+                        replaceMarker.setToReplace(newValueNode.getValue().isEmpty()
+                                ? " " + oldValueScalar.getValue()
+                                : oldValueScalar.getValue());
                         //记录相关并进行替换
                         replaceMarkers.add(replaceMarker);
                     }
@@ -695,35 +690,32 @@ public class FileUtil {
      * @param fromPath 原文件路径
      * @param toPath   目标文件路径
      */
-    public static void moveFile(String fromPath, String toPath) {
+    public static void moveFiles(String fromPath, String toPath) {
         File fromFolder = new File(fromPath);
         if (fromFolder.isFile()) {
-            File toFile = new File(toPath + File.separator + fromFolder.getName());
-            //移动文件
-            if (!toFile.exists() && !fromFolder.renameTo(toFile)) {
-                throw new CommonException("error.file.rename");
-            }
+            moveFile(fromFolder, toPath, fromFolder.getName());
         } else {
             File[] fromFiles = fromFolder.listFiles();
             if (fromFiles == null) {
                 return;
             }
-            File toFolder = new File(toPath);
-            toFolder.mkdirs();
-            for (File file : fromFiles) {
+            Arrays.stream(fromFiles).forEachOrdered(file -> {
                 if (file.isDirectory()) {
-                    moveFile(file.getPath(), toPath + File.separator + file.getName());
+                    moveFiles(file.getPath(), toPath + File.separator + file.getName());
                 }
                 if (file.isFile()) {
-                    File toFile = new File(toFolder + File.separator + file.getName());
-                    //移动文件
-                    if (!toFile.exists() && !file.renameTo(toFile)) {
-                        throw new CommonException("error.file.rename");
-                    }
-
+                    moveFile(file, toPath + "", file.getName());
                 }
+            });
+        }
+    }
 
-            }
+    private static void moveFile(File file, String path, String fileName) {
+        new File(path).mkdirs();
+        File toFile = new File(path + File.separator + fileName);
+        //移动文件
+        if (!toFile.exists() && !file.renameTo(toFile)) {
+            throw new CommonException("error.file.rename");
         }
     }
 
@@ -842,17 +834,15 @@ public class FileUtil {
                 }
 
             } else {
-                for (File file : listFiles) {
-                    // 判断是否需要保留原来的文件结构
-                    if (keepDirStructure) {
+                // 判断是否需要保留原来的文件结构
+                Arrays.stream(listFiles).forEachOrdered(file ->
                         // 注意：file.getName()前面需要带上父文件夹的名字加一斜杠,
                         // 不然最后压缩包中就不能保留原来的文件结构,即：所有文件都跑到压缩包根目录下了
-                        compress(file, zos, name + "/" + file.getName(), keepDirStructure);
-                    } else {
-                        compress(file, zos, file.getName(), keepDirStructure);
-                    }
-
-                }
+                        compress(file, zos,
+                                keepDirStructure
+                                        ? name + "/" + file.getName()
+                                        : file.getName(), keepDirStructure)
+                );
             }
         }
     }
