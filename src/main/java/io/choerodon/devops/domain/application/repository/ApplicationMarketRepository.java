@@ -32,6 +32,8 @@ public interface ApplicationMarketRepository {
 
     void unpublishVersion(Long appMarketId, Long versionId);
 
+    void updateVersion(Long appMarketId, Long versionId, Boolean isPublish);
+
     void update(DevopsAppMarketDO devopsAppMarketDO);
 
     List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish);

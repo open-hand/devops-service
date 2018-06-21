@@ -259,9 +259,9 @@
             AND da.project_id = #{projectId}
     </select>
 
-    <update id="unpublishApplicationVersions" parameterType = "io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+    <update id="changeApplicationVersions" parameterType = "io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
         UPDATE devops_app_version dav
-        SET dav.is_publish = NULL
+        SET dav.is_publish = #{isPublish}
         WHERE
             dav.app_id IN ( SELECT dam.app_id FROM devops_app_market dam WHERE dam.id = #{appMarketId} )
             <if test='versionId != null'>
