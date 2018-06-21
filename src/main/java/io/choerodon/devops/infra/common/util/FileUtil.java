@@ -617,7 +617,7 @@ public class FileUtil {
      * @param data     json 内容
      */
     public static void saveDataToFile(String path, String fileName, String data) {
-        File file = new File(path + System.getProperty("file.separator") + fileName + ".txt");
+        File file = new File(path + System.getProperty("file.separator") + fileName);
         //如果文件不存在，则新建一个
         if (!file.exists()) {
             new File(path).mkdirs();

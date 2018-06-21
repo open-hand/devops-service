@@ -20,10 +20,10 @@ import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepo
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.websocket.helper.EnvListener;
-import io.choerodon.websocket.helper.EnvSession;
 
 
 /**
@@ -41,26 +41,20 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
 
+    @Autowired
     private IamRepository iamRepository;
+    @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
+    @Autowired
     private EnvListener envListener;
+    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
     private DevopsEnvironmentValidator devopsEnvironmentValidator;
-
-    public DevopsEnvironmentServiceImpl(IamRepository iamRepository,
-                                        DevopsEnvironmentRepository devopsEnviromentRepository,
-                                        EnvListener envListener,
-                                        DevopsServiceRepository devopsServiceRepository,
-                                        ApplicationInstanceRepository applicationInstanceRepository) {
-        this.iamRepository = iamRepository;
-        this.devopsEnviromentRepository = devopsEnviromentRepository;
-        this.envListener = envListener;
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.applicationInstanceRepository = applicationInstanceRepository;
-    }
-
+    @Autowired
+    private EnvUtil envUtil;
 
     @Override
     public String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
@@ -89,28 +83,27 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
-        Map<String, EnvSession> envs = envListener.connectedEnv();
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).parallelStream()
+                .peek(t -> {
+                    t.setUpdate(false);
+                    if (connectedEnvList.contains(t.getId())) {
+                        if (updatedEnvList.contains(t.getId())) {
+                            t.initConnect(true);
+                        } else {
+                            t.setUpdate(true);
+                            t.initConnect(false);
+                            t.setUpdateMessage("Version is too low, please upgrade!");
+
+                        }
+                    } else {
+                        t.initConnect(false);
+                    }
+                })
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                 .collect(Collectors.toList());
-        for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-            Integer flag = 0;
-            devopsEnvironmentE.setUpdate(false);
-            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
-                EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
-                    flag = agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion());
-                    devopsEnvironmentE.initConnect(true);
-                }
-                if (flag > 0) {
-                    devopsEnvironmentE.setUpdate(true);
-                    devopsEnvironmentE.initConnect(false);
-                    devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");
-                }
-            }
-        }
-
         return ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class);
     }
 
@@ -181,23 +174,24 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnviromentRepository.update(devopsEnvironmentE);
             sequence = sequence + 1;
         }
-        Map<String, EnvSession> envs = envListener.connectedEnv();
-        for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-            Integer flag = 0;
-            devopsEnvironmentE.setUpdate(false);
-            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
-                EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
-                    flag = agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion());
-                    devopsEnvironmentE.initConnect(true);
-                }
-                if (flag > 0) {
-                    devopsEnvironmentE.setUpdate(true);
-                    devopsEnvironmentE.initConnect(false);
-                    devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");
-                }
-            }
-        }
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        devopsEnvironmentES.stream()
+                .forEach(t -> {
+                    t.setUpdate(false);
+                    if (connectedEnvList.contains(t.getId())) {
+                        if (updatedEnvList.contains(t.getId())) {
+                            t.initConnect(true);
+                        } else {
+                            t.setUpdate(true);
+                            t.initConnect(false);
+                            t.setUpdateMessage("Version is too low, please upgrade!");
+
+                        }
+                    } else {
+                        t.initConnect(false);
+                    }
+                });
         return ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class);
     }
 

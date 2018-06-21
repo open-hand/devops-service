@@ -20,7 +20,6 @@ import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
@@ -191,16 +190,6 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         if (!applicationMarketMapper.checkVersion(appMarketId, versionId)) {
             throw new CommonException("error.version.notMatch");
         }
-    }
-
-    @Override
-    public ApplicationMarketE storePublishDetail(Long appMarketId, String destPath) {
-        DevopsAppMarketDO appMarketDO =
-                applicationMarketMapper.getMarketApplication(null, appMarketId, null);
-        String appMarketJson = gson.toJson(appMarketDO);
-        FileUtil.saveDataToFile(destPath, appMarketDO.getCode(), appMarketJson);
-        return ConvertHelper.convert(applicationMarketMapper.selectOne(appMarketDO), ApplicationMarketE.class);
-
     }
 
     private List<Long> getProjectIds(Long projectId) {

@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
 import java.util.*;
 
 import com.google.gson.Gson;
@@ -26,10 +25,7 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
@@ -46,7 +42,7 @@ import io.choerodon.websocket.helper.EnvSession;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
     private static final String RELEASE_NAME = "ReleaseName";
-    private static final String ENV_DISCONNECTED = "error.env.disconnect";
+
     private static Gson gson = new Gson();
     private static Yaml snakeyaml = new Yaml();
 
@@ -75,6 +71,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
     @Autowired
     private EnvListener envListener;
+    @Autowired
+    private EnvUtil envUtil;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -189,9 +187,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
         ReplaceResult replaceResult = new ReplaceResult();
         String versionValue = FileUtil.jungeValueFormat(applicationVersionRepository.queryValue(versionId));
-        try{
-           FileUtil.jungeYamlFormat(versionValue);
-        }catch (Exception e) {
+        try {
+            FileUtil.jungeYamlFormat(versionValue);
+        } catch (Exception e) {
             replaceResult.setYaml(versionValue);
             replaceResult.setErrorMsg(e.getMessage());
             replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
@@ -221,62 +219,59 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
-        try{
+        try {
             FileUtil.jungeYamlFormat(replaceResult.getYaml());
-        }catch (Exception e) {
+        } catch (Exception e) {
             return getErrorLine(e.getMessage());
         }
-        return null;
+        return new ArrayList<>() ;
     }
 
     @Override
     public Boolean create(ApplicationDeployDTO applicationDeployDTO) {
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
-        if (isEnvConnected(applicationDeployDTO.getEnvironmentId())) {
-            ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
-            DevopsEnvironmentE devopsEnvironmentE =
-                    devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
-            ApplicationVersionE applicationVersionE =
-                    applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
-            ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
-            applicationInstanceE.initApplicationVersionEById(applicationDeployDTO.getAppVerisonId());
-            applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
-            applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
-            applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-            DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-            if (applicationDeployDTO.getType().equals("create")) {
-                applicationInstanceE.setCode(
-                        String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
-                devopsEnvCommandE.setObject(ObjectType.INSTANCE.getObjectType());
-                devopsEnvCommandE.setObjectId(applicationInstanceRepository.create(applicationInstanceE).getId());
-                devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
-                devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-            }
-            if (applicationDeployDTO.getType().equals("update")) {
-                ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
-                        applicationDeployDTO.getAppInstanceId());
-                applicationInstanceE.setCode(newApplicationInstanceE.getCode());
-                devopsEnvCommandE.setObject(ObjectType.INSTANCE.getObjectType());
-                devopsEnvCommandE.setObjectId(applicationDeployDTO.getAppInstanceId());
-                devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
-                devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-                applicationInstanceE.setId(applicationDeployDTO.getAppInstanceId());
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
-            DevopsEnvCommandValueE devopsEnvCommandValueE = DevopsEnvCommandValueFactory.createDevopsEnvCommandE();
-            devopsEnvCommandValueE.setValue(applicationDeployDTO.getValues());
-            devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository
-                    .create(devopsEnvCommandValueE).getId());
-            deployService.deploy(
-                    applicationE,
-                    applicationVersionE,
-                    applicationInstanceE,
-                    devopsEnvironmentE,
-                    applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
-                    devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-        } else {
-            throw new CommonException(ENV_DISCONNECTED);
+        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+        ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
+        DevopsEnvironmentE devopsEnvironmentE =
+                devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
+        ApplicationVersionE applicationVersionE =
+                applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
+        ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
+        applicationInstanceE.initApplicationVersionEById(applicationDeployDTO.getAppVerisonId());
+        applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
+        applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
+        applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+        if (applicationDeployDTO.getType().equals("create")) {
+            applicationInstanceE.setCode(
+                    String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
+            devopsEnvCommandE.setObject(ObjectType.INSTANCE.getObjectType());
+            devopsEnvCommandE.setObjectId(applicationInstanceRepository.create(applicationInstanceE).getId());
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
+            devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
         }
+        if (applicationDeployDTO.getType().equals("update")) {
+            ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
+                    applicationDeployDTO.getAppInstanceId());
+            applicationInstanceE.setCode(newApplicationInstanceE.getCode());
+            devopsEnvCommandE.setObject(ObjectType.INSTANCE.getObjectType());
+            devopsEnvCommandE.setObjectId(applicationDeployDTO.getAppInstanceId());
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
+            devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+            applicationInstanceE.setId(applicationDeployDTO.getAppInstanceId());
+            applicationInstanceRepository.update(applicationInstanceE);
+        }
+        DevopsEnvCommandValueE devopsEnvCommandValueE = DevopsEnvCommandValueFactory.createDevopsEnvCommandE();
+        devopsEnvCommandValueE.setValue(applicationDeployDTO.getValues());
+        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository
+                .create(devopsEnvCommandValueE).getId());
+        deployService.deploy(
+                applicationE,
+                applicationVersionE,
+                applicationInstanceE,
+                devopsEnvironmentE,
+                applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
+                devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         return true;
     }
 
@@ -335,100 +330,87 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceUpgrade(Long instanceId, String repoURL, String chartName, String chartVersion, String values) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        if (isEnvConnected(instanceE.getDevopsEnvironmentE().getId())) {
-
-            String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
-            String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
-            Map<String, String> upgradeMap = new HashMap<>();
-            upgradeMap.put(RELEASE_NAME, releaseName);
-            upgradeMap.put("RepoURL", repoURL);
-            upgradeMap.put("ChartName", chartName);
-            upgradeMap.put("ChartVersion", chartVersion);
-            upgradeMap.put("Values", values);
-            String payload = gson.toJson(upgradeMap);
-            Long envId = instanceE.getDevopsEnvironmentE().getId();
-            sentInstance(payload, releaseName, HelmType.HelmReleasePreUpgrade.toValue(),
-                    namespace, devopsEnvCommandE.getId(), envId);
-        } else {
-            throw new CommonException(ENV_DISCONNECTED);
-        }
+        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+        String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
+        String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
+        devopsEnvCommandE.setCommandType(CommandType.UPDATE.getCommandType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        Map<String, String> upgradeMap = new HashMap<>();
+        upgradeMap.put(RELEASE_NAME, releaseName);
+        upgradeMap.put("RepoURL", repoURL);
+        upgradeMap.put("ChartName", chartName);
+        upgradeMap.put("ChartVersion", chartVersion);
+        upgradeMap.put("Values", values);
+        String payload = gson.toJson(upgradeMap);
+        Long envId = instanceE.getDevopsEnvironmentE().getId();
+        sentInstance(payload, releaseName, HelmType.HelmReleasePreUpgrade.toValue(),
+                namespace, devopsEnvCommandE.getId(), envId);
     }
 
     @Override
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        if (isEnvConnected(instanceE.getDevopsEnvironmentE().getId())) {
-            if (!instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
-                throw new CommonException("error.instance.notRunning");
-            }
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
-            devopsEnvCommandE.setCommandType(CommandType.STOP.getCommandType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
-            String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
-            String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-            Map<String, String> stopMap = new HashMap<>();
-            stopMap.put(RELEASE_NAME, releaseName);
-            String payload = gson.toJson(stopMap);
-            Long envId = instanceE.getDevopsEnvironmentE().getId();
-            sentInstance(payload, releaseName, HelmType.HelmReleaseStop.toValue(),
-                    namespace, devopsEnvCommandE.getId(), envId);
-        } else {
-            throw new CommonException(ENV_DISCONNECTED);
+        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+        if (!instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
+            throw new CommonException("error.instance.notRunning");
         }
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
+        devopsEnvCommandE.setCommandType(CommandType.STOP.getCommandType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
+        String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+        Map<String, String> stopMap = new HashMap<>();
+        stopMap.put(RELEASE_NAME, releaseName);
+        String payload = gson.toJson(stopMap);
+        Long envId = instanceE.getDevopsEnvironmentE().getId();
+        sentInstance(payload, releaseName, HelmType.HelmReleaseStop.toValue(),
+                namespace, devopsEnvCommandE.getId(), envId);
     }
 
     @Override
     public void instanceStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        if (isEnvConnected(instanceE.getDevopsEnvironmentE().getId())) {
-            if (!instanceE.getStatus().equals(InstanceStatus.STOPED.getStatus())) {
-                throw new CommonException("error.instance.notStop");
-            }
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
-            devopsEnvCommandE.setCommandType(CommandType.RESTART.getCommandType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
-            String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
-            String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-            Map<String, String> stopMap = new HashMap<>();
-            stopMap.put(RELEASE_NAME, releaseName);
-            String payload = gson.toJson(stopMap);
-            Long envId = instanceE.getDevopsEnvironmentE().getId();
-            sentInstance(payload, releaseName, HelmType.HelmReleaseStart.toValue(),
-                    namespace, devopsEnvCommandE.getId(), envId);
-        } else {
-            throw new CommonException(ENV_DISCONNECTED);
+        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+        if (!instanceE.getStatus().equals(InstanceStatus.STOPED.getStatus())) {
+            throw new CommonException("error.instance.notStop");
         }
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
+        devopsEnvCommandE.setCommandType(CommandType.RESTART.getCommandType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
+        String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+        Map<String, String> stopMap = new HashMap<>();
+        stopMap.put(RELEASE_NAME, releaseName);
+        String payload = gson.toJson(stopMap);
+        Long envId = instanceE.getDevopsEnvironmentE().getId();
+        sentInstance(payload, releaseName, HelmType.HelmReleaseStart.toValue(),
+                namespace, devopsEnvCommandE.getId(), envId);
     }
 
     @Override
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        if (isEnvConnected(instanceE.getDevopsEnvironmentE().getId())) {
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
-            devopsEnvCommandE.setCommandType(CommandType.DELETE.getCommandType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
-            String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
-            String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-            Map<String, String> deleteMap = new HashMap<>();
-            deleteMap.put(RELEASE_NAME, releaseName);
-            String payload = gson.toJson(deleteMap);
-            Long envId = instanceE.getDevopsEnvironmentE().getId();
-            sentInstance(payload, releaseName, HelmType.HelmReleaseDelete.toValue(),
-                    namespace, devopsEnvCommandE.getId(), envId);
-        } else {
-            throw new CommonException(ENV_DISCONNECTED);
-        }
+        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
+        devopsEnvCommandE.setCommandType(CommandType.DELETE.getCommandType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getCommandStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
+        String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+        Map<String, String> deleteMap = new HashMap<>();
+        deleteMap.put(RELEASE_NAME, releaseName);
+        String payload = gson.toJson(deleteMap);
+        Long envId = instanceE.getDevopsEnvironmentE().getId();
+        sentInstance(payload, releaseName, HelmType.HelmReleaseDelete.toValue(),
+                namespace, devopsEnvCommandE.getId(), envId);
     }
 
     @Override
@@ -466,19 +448,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         commandSender.sendMsg(msg);
     }
 
-    Boolean isEnvConnected(Long envId) {
-        Map<String, EnvSession> envs = envListener.connectedEnv();
-        List<Long> envIds = new ArrayList<>();
-        for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
-            EnvSession envSession = entry.getValue();
-            if (agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
-                envIds.add(envSession.getEnvId());
-            }
-        }
-        return envIds.contains(envId);
-    }
-
-
     List<ErrorLineDTO> getErrorLine(String value) {
         List<ErrorLineDTO> errorLines = new ArrayList<>();
         List<Long> lineNumbers = new ArrayList<>();
@@ -487,11 +456,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             int j;
             for (j = i; j < value.length(); j++) {
                 if (value.substring(i, j).equals("line")) {
-                    lineNumbers.add(TypeUtil.objToLong(value.substring(j,value.indexOf(",",j)).trim()));
+                    lineNumbers.add(TypeUtil.objToLong(value.substring(j, value.indexOf(',', j)).trim()));
                 }
             }
         }
-        for(int i=0; i<lineNumbers.size();i++) {
+        for (int i = 0; i < lineNumbers.size(); i++) {
             ErrorLineDTO errorLineDTO = new ErrorLineDTO();
             errorLineDTO.setLineNumber(lineNumbers.get(i));
             errorLineDTO.setErrorMsg(errorMsg[i]);
