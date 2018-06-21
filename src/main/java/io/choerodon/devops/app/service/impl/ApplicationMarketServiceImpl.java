@@ -1,15 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,18 +22,14 @@ import io.choerodon.devops.api.dto.AppMarketTgzDTO;
 import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
-import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.HttpClientUtil;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -67,6 +59,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private IamRepository iamRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
+    @Autowired
+    private HarborConfigurationProperties harborConfigurationProperties;
+    @Autowired
+    private ApplicationVersionValueRepository applicationVersionValueRepository;
 
     @Override
     public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
@@ -373,31 +369,9 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     FileUtil.deleteFile(zipDirectory);
                     throw new CommonException("error.file.empty");
                 }
-                List<File> images = Arrays.stream(appFiles)
-                        .filter(t -> t.getName().equals("images.txt")).collect(Collectors.toCollection(ArrayList::new));
-                String imageJson = readImages(images);
-                try {
-                    List<String> imageList = gson.fromJson(imageJson, new TypeToken<List<String>>() {
-                    }.getType());
-                    // do sth with image url list
-                    imageList.forEach(logger::info);
-                } catch (Exception e) {
-                    logger.info(e.getMessage());
-                }
-
                 List<File> appFileList = Arrays.stream(appFiles)
                         .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
-                List<ApplicationReleasingDTO> applicationReleasingDTOS = new ArrayList<>();
-                analyzeAppFile(applicationReleasingDTOS, appFileList, true);
-                // do sth with apps
-                appFileList.forEach(t -> logger.info(t.toString()));
-
-                String classPath = String.format("Charts%s%s%s%s",
-                        fileSeparator,
-                        organization.getCode(),
-                        fileSeparator,
-                        projectE.getCode());
-                appFileList.stream().parallel().forEach(t -> FileUtil.moveFile(t.getAbsolutePath(), classPath));
+                importAppFile(projectId, appFileList);
             } else {
                 throw new CommonException("error.zip.illegal");
             }
@@ -417,15 +391,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 logger.info(e.getMessage());
                 throw new CommonException("error.image.read");
             }
-        } else {
-            throw new CommonException("error.images.illegal");
-        }
-    }
-
-    private String readImages(List<File> images) {
-        if (images != null && !images.isEmpty() && images.size() == 1) {
-            File image = images.get(0);
-            return FileUtil.getFileContent(image);
         } else {
             throw new CommonException("error.images.illegal");
         }
@@ -457,6 +422,37 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         });
     }
 
+
+    private void importAppFile(Long projectId, List<File> appFileList) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        appFileList.parallelStream().forEach(t -> {
+            String appName = t.getName();
+            File[] appFiles = t.listFiles();
+            if (appFiles != null && !appFileList.isEmpty()) {
+                String appFileName = String.format("%s%s", appName, ".txt");
+                List<File> appMarkets = Arrays.stream(appFiles).parallel()
+                        .filter(k -> k.getName().equals(appFileName))
+                        .collect(Collectors.toCollection(ArrayList::new));
+                if (appMarkets != null && !appMarkets.isEmpty() && appMarkets.size() == 1) {
+                    File appMarket = appMarkets.get(0);
+                    String appMarketJson = FileUtil.getFileContent(appMarket);
+                    ApplicationReleasingDTO appMarketVersionDTO = gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
+                    ApplicationE applicationE = new ApplicationE();
+                    applicationE.setCode(appMarketVersionDTO.getCode());
+                    applicationE.setName(appMarketVersionDTO.getName());
+                    applicationE.initProjectE(projectId);
+                    applicationE.setActive(true);
+                    applicationE.setSynchro(true);
+                    applicationE.setToken(GenerateUUID.generateUUID());
+                    Long appId = applicationRepository.create(applicationE).getId();
+                    appMarketVersionDTO.getAppVersions().parallelStream().forEach(appVersion ->
+                        createVersionAndApp(appVersion,organization,projectE,applicationE,appId,appFiles)
+                        );
+                }
+            }
+        });
+    }
 
     public void export(List<AppMarketDownloadDTO> appMarkets) {
         List<String> images = new ArrayList<>();
@@ -520,5 +516,56 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             applicationReleasingDTO.setAppVersions(marketVersionDTOList);
         }
         return applicationReleasingDTOPage;
+    }
+
+
+    private void createVersionAndApp(AppMarketVersionDTO appVersion,Organization organization,ProjectE projectE,ApplicationE applicationE, Long appId, File[] appFiles) {
+        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
+        String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
+                System.getProperty(FILESEPARATOR),
+                organization.getCode(),
+                "-",
+                projectE.getCode(),
+                System.getProperty(FILESEPARATOR),
+                applicationE.getCode(),
+                ":",
+                appVersion.getVersion()
+        );
+        applicationVersionE.setImage(image);
+        applicationVersionE.setRepository(String.format("%s%s%s%s%s", System.getProperty(FILESEPARATOR), organization.getCode(), System.getProperty(FILESEPARATOR), projectE.getCode(), System.getProperty(FILESEPARATOR)));
+        applicationVersionE.setVersion(appVersion.getVersion());
+        applicationVersionE.initApplicationEById(appId);
+        String tazName = String.format("%s%s%s%s",
+                applicationE.getCode(),
+                "-",
+                appVersion.getVersion(),
+                ".tgz"
+        );
+        List<File> tgzVersions = Arrays.stream(appFiles).parallel()
+                .filter(k -> k.getName().equals(tazName))
+                .collect(Collectors.toCollection(ArrayList::new));
+        if (!tgzVersions.isEmpty()) {
+            ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
+            try {
+                FileUtil.unTarGZ(tgzVersions.get(0).getAbsolutePath(), applicationE.getCode());
+                applicationVersionValueE.setValue(
+                        FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
+                                new File(applicationE.getCode()), "values.yaml").getAbsolutePath())), null));
+
+                applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
+                        .create(applicationVersionValueE).getId());
+            } catch (Exception e) {
+                throw new CommonException("error.version.insert");
+            }
+            applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(applicationE.getCode()));
+            applicationVersionRepository.create(applicationVersionE);
+            String classPath = String.format("Charts%s%s%s%s",
+                    System.getProperty(FILESEPARATOR),
+                    organization.getCode(),
+                    System.getProperty(FILESEPARATOR),
+                    projectE.getCode());
+            FileUtil.moveFile(tgzVersions.get(0).getAbsolutePath(), classPath);
+            FileUtil.deleteFile(new File(applicationE.getCode()));
+        }
     }
 }

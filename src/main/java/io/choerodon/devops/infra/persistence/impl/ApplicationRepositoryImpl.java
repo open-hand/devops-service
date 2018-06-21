@@ -61,8 +61,10 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public int create(ApplicationE applicationE) {
-        return applicationMapper.insert(ConvertHelper.convert(applicationE, ApplicationDO.class));
+    public ApplicationE create(ApplicationE applicationE) {
+        ApplicationDO applicationDO = ConvertHelper.convert(applicationE,ApplicationDO.class);
+        applicationMapper.insert(applicationDO);
+        return ConvertHelper.convert(applicationDO, ApplicationE.class);
     }
 
 

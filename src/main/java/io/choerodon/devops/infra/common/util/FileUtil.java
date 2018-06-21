@@ -99,7 +99,7 @@ public class FileUtil {
                 String parentPath = a.getParent();
                 newFile = new File(parentPath + File.separator + params.get("{{service.code}}"));
                 if (!a.renameTo(newFile)) {
-                    throw new CommonException("error.file.rename");
+                    throw new CommonException("error.rename.file");
                 }
             }
             if (newFile == null) {
@@ -696,25 +696,33 @@ public class FileUtil {
      */
     public static void moveFile(String fromPath, String toPath) {
         File fromFolder = new File(fromPath);
-        File[] fromFiles = fromFolder.listFiles();
-        if (fromFiles == null) {
-            return;
-        }
-        File toFolder = new File(toPath);
-        toFolder.mkdirs();
-        for (File file : fromFiles) {
-            if (file.isDirectory()) {
-                moveFile(file.getPath(), toPath + File.separator + file.getName());
+        if (fromFolder.isFile()) {
+            File toFile = new File(toPath + File.separator + fromFolder.getName());
+            //移动文件
+            if (!toFile.exists() && !fromFolder.renameTo(toFile)) {
+                throw new CommonException("error.file.rename");
             }
-            if (file.isFile()) {
-                File toFile = new File(toFolder + File.separator + file.getName());
-                //移动文件
-                if (!toFile.exists() && !file.renameTo(toFile)) {
-                    throw new CommonException("error.file.renname");
+        } else {
+            File[] fromFiles = fromFolder.listFiles();
+            if (fromFiles == null) {
+                return;
+            }
+            File toFolder = new File(toPath);
+            toFolder.mkdirs();
+            for (File file : fromFiles) {
+                if (file.isDirectory()) {
+                    moveFile(file.getPath(), toPath + File.separator + file.getName());
+                }
+                if (file.isFile()) {
+                    File toFile = new File(toFolder + File.separator + file.getName());
+                    //移动文件
+                    if (!toFile.exists() && !file.renameTo(toFile)) {
+                        throw new CommonException("error.file.rename");
+                    }
+
                 }
 
             }
-
         }
     }
 
