@@ -325,7 +325,7 @@ public class ApplicationMarketController {
      * @param projectId 项目id
      * @param appMarkets 应用市场应用信息
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "导出应用市场应用信息")
     @PostMapping("/export")
     public void exportFile(
