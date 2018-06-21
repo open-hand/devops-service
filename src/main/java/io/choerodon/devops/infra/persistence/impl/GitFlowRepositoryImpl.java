@@ -204,7 +204,8 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
         return getGitLabTags(projectId, userId);
     }
 
-    private List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
+    @Override
+    public List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
         ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
         if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
             throw new CommonException("error.tags.get");

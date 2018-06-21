@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.builder.Diff;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -22,15 +21,13 @@ import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ProjectPipelineResultTotalV;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -39,24 +36,24 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ProjectPipelineServiceImpl implements ProjectPipelineService {
 
-    private SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
     private ApplicationRepository applicationRepository;
     private IamRepository iamRepository;
     private GitlabProjectRepository gitlabProjectRepository;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     private UserAttrRepository userAttrRepository;
-
+    private GitFlowRepository gitFlowRepository;
 
     public ProjectPipelineServiceImpl(GitlabProjectRepository gitlabProjectRepository,
                                       ApplicationRepository applicationRepository,
                                       IamRepository iamRepository,
-                                      UserAttrRepository userAttrRepository) {
+                                      UserAttrRepository userAttrRepository,
+                                      GitFlowRepository gitFlowRepository) {
         this.gitlabProjectRepository = gitlabProjectRepository;
         this.applicationRepository = applicationRepository;
         this.iamRepository = iamRepository;
         this.userAttrRepository = userAttrRepository;
+        this.gitFlowRepository = gitFlowRepository;
     }
 
     public Integer getGitlabUserId() {
@@ -76,6 +73,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         Integer gitlabProjectId = app.getGitlabProjectE().getId();
         List<BranchE> branchES = gitlabProjectRepository.listBranches(
                 gitlabProjectId, getGitlabUserId());
+        List<TagDO> tagTotalList = gitFlowRepository.getGitLabTags(gitlabProjectId, userId);
         if (branchES == null) {
             return new ProjectPipelineResultTotalDTO();
         }
@@ -86,12 +84,16 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         List<GitlabPipelineE> gitlabPipelineEListByPage = gitlabProjectRepository.listPipelines(
                 gitlabProjectId, page + 1, size, getGitlabUserId());
         List<String> branchNames = branchES.stream().map(BranchE::getName).collect(Collectors.toList());
+        List<String> tagNames = tagTotalList.stream().map(TagDO::getName).collect(Collectors.toList());
+        branchNames.addAll(tagNames);
         List<PipelineResultV> pipelineResultVS = new ArrayList<>();
         if (gitlabPipelineEListByPage != null && !gitlabPipelineEListByPage.isEmpty()) {
             listPipelineResultV(gitlabPipelineEListByPage, pipelineResultVS, app, gitlabProjectId, userId, projectId, userName);
-            branchNames.stream().forEach(b -> {
+            branchNames.stream().forEach(branchName -> {
                 final long[] id = {0};
-                gitlabPipelineEList.parallelStream().filter(p -> b.contains(p.getRef()) && p.getId() > id[0]).forEach(r -> id[0] = r.getId());
+                gitlabPipelineEList.parallelStream()
+                        .filter(p -> branchName.contains(p.getRef()) && p.getId() > id[0])
+                        .forEach(r -> id[0] = r.getId());
                 pipelineResultVS.parallelStream().filter(p -> p.getId() == id[0]).forEach(r -> r.setLatest(true));
             });
             Collections.sort(pipelineResultVS);
@@ -147,7 +149,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
                 List<GitlabJobE> realJobs = getRealJobs(jobs);
                 pipelineResultV.setJobs(realJobs);
                 Long diffs = 0L;
-                for(Long diff:realJobs.stream().map(GitlabJobE::getJobTime).collect(Collectors.toList())) {
+                for (Long diff : realJobs.stream().map(GitlabJobE::getJobTime).collect(Collectors.toList())) {
                     diffs = diff + diffs;
                 }
                 pipelineResultV.setTime(getStageTime(diffs));
