@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import io.choerodon.core.iam.InitRoleCode;
@@ -107,28 +106,6 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 获取容器列表
-     *
-     * @param projectId     项目id
-     * @param appInstanceId 实例id
-     * @return list of DevOpsEnvPodDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "获取容器列表")
-    @GetMapping(value = "/{appInstanceId}/pods")
-    public ResponseEntity<List<DevopsEnvPodDTO>> listByAppInstanceId(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "部署ID", required = true)
-            @PathVariable Long appInstanceId) {
-        return Optional.ofNullable(deployDetailService.getPods(appInstanceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.instance.pods.get"));
-    }
-
-
-    /**
      * 获取部署 Value
      *
      * @param projectId     项目id
@@ -136,7 +113,7 @@ public class ApplicationInstanceController {
      * @return string
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取部署 Value")
     @GetMapping(value = "/{appInstanceId}/value")
     public ResponseEntity<ReplaceResult> queryValue(
@@ -242,8 +219,7 @@ public class ApplicationInstanceController {
      * @param envId        环境id
      * @return list of AppInstanceCodeDTO
      */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询运行中的实例")
     @GetMapping("/options")
     public ResponseEntity<List<AppInstanceCodeDTO>> listByAppVersionId(
@@ -269,7 +245,7 @@ public class ApplicationInstanceController {
      * @return DevopsEnvResourceDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取部署实例资源对象")
     @GetMapping("/{appInstanceId}/resources")
     public ResponseEntity<DevopsEnvResourceDTO> listResources(
@@ -290,7 +266,7 @@ public class ApplicationInstanceController {
      * @return list
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取部署实例hook阶段")
     @GetMapping("/{appInstanceId}/stages")
     public ResponseEntity<List<InstanceStageDTO>> listStages(

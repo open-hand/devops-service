@@ -145,7 +145,7 @@ public class DevopsEnvironmentController {
      * @return DevopsEnvironmentUpdateDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询单个环境")
     @GetMapping("/{environmentId}")
     public ResponseEntity<DevopsEnvironmentUpdateDTO> query(

@@ -34,58 +34,6 @@ public class DevopsEnvPodContainerController {
     private DevopsEnvPodContainerService containerService;
 
     /**
-     * 获取日志信息
-     *
-     * @param projectId   项目ID
-     * @param podId       pod ID
-     * @param containerId 容器ID
-     * @return DevopsEnvPodContainerLogDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "获取日志信息")
-    @GetMapping(value = "/{containerId}/logs")
-    public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLog(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "pod ID", required = true)
-            @PathVariable Long podId,
-            @ApiParam(value = "容器ID", required = true)
-            @PathVariable Long containerId) {
-        return Optional.ofNullable(containerService.log(containerId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.pod.query"));
-    }
-
-    /**
-     * 分页查询容器
-     *
-     * @param projectId   项目ID
-     * @param podId       pod ID
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @return Page
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "分页查询容器")
-    @CustomPageRequest
-    @PostMapping(value = "/list_by_options")
-    public ResponseEntity<Page<DevopsEnvPodContainerDTO>> listByOptions(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "容器ID", required = true)
-            @PathVariable Long podId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(containerService.listByOptions(podId, pageRequest, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.pod.query"));
-    }
-
-    /**
      * 获取日志信息 By Pod
      *
      * @param projectId 项目ID
