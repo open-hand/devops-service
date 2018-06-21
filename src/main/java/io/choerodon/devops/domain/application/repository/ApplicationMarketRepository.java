@@ -45,5 +45,4 @@ public interface ApplicationMarketRepository {
 
     void checkMarketVersion(Long appMarketId, Long versionId);
 
-    ApplicationMarketE storePublishDetail(Long appMarketId, String destPath);
 }
