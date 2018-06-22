@@ -342,7 +342,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public void importApps(Long projectId, String fileName, Boolean isPublic) {
+    public Boolean importApps(Long projectId, String fileName, Boolean isPublic) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String fileSeparator = File.separator;
@@ -376,6 +376,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             throw new CommonException("error.zip.notFound");
         }
         FileUtil.deleteDirectory(zipDirectory);
+        return true;
     }
 
     @Override

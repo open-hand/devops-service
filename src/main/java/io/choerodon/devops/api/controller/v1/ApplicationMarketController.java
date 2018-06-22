@@ -308,15 +308,17 @@ public class ApplicationMarketController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用市场导入应用")
     @PostMapping("/import")
-    public ResponseEntity importApps(
+    public ResponseEntity<Boolean> importApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件名", required = true)
             @RequestParam(value = "file_name") String fileName,
             @ApiParam(value = "是否公开", required = false)
             @RequestParam(value = "public", required = false) Boolean isPublic) {
-        applicationMarketService.importApps(projectId, fileName, isPublic);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable(
+                applicationMarketService.importApps(projectId, fileName, isPublic))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.import"));
     }
 
     /**
