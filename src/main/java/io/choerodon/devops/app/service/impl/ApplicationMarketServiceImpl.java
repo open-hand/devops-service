@@ -319,7 +319,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     throw new CommonException("error.file.empty");
                 }
                 List<File> images = Arrays.stream(appFiles)
-                        .filter(t -> t.getName().equals("images.txt")).collect(Collectors.toCollection(ArrayList::new));
+                        .filter(t -> t.getName().equals("images")).collect(Collectors.toCollection(ArrayList::new));
                 // do sth with images[0]
                 fileCode = hashImages(images);
 
@@ -400,7 +400,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
             if (appFiles != null && !appFileList.isEmpty()) {
-                String appFileName = String.format("%s%s", appName, ".txt");
+                String appFileName = String.format("%s%s", appName, ".json");
                 List<File> appMarkets = Arrays.stream(appFiles).parallel()
                         .filter(k -> k.getName().equals(appFileName))
                         .collect(Collectors.toCollection(ArrayList::new));
@@ -425,7 +425,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
             if (appFiles != null && !appFileList.isEmpty()) {
-                String appFileName = String.format("%s%s", appName, ".txt");
+                String appFileName = String.format("%s%s", appName, ".json");
                 List<File> appMarkets = Arrays.stream(appFiles).parallel()
                         .filter(k -> k.getName().equals(appFileName))
                         .collect(Collectors.toCollection(ArrayList::new));
