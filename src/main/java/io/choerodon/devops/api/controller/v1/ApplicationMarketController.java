@@ -283,7 +283,7 @@ public class ApplicationMarketController {
      * @param file      文件
      * @return 应用列表
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "应用市场解析导入应用")
     @PostMapping("/upload")
     public ResponseEntity<AppMarketTgzDTO> uploadApps(
@@ -305,7 +305,7 @@ public class ApplicationMarketController {
      * @param isPublic  是否发布
      * @return 应用列表
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "应用市场导入应用")
     @PostMapping("/import")
     public ResponseEntity<Boolean> importApps(
@@ -322,14 +322,14 @@ public class ApplicationMarketController {
     }
 
     /**
-     * 应用市场导入应用
+     * 应用市场取消导入应用
      *
      * @param projectId 项目ID
      * @param fileName  文件名
      * @return 应用列表
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "应用市场导入应用")
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "应用市场取消导入应用")
     @PostMapping("/import_cancel")
     public ResponseEntity deleteZip(
             @ApiParam(value = "项目ID", required = true)
@@ -346,7 +346,7 @@ public class ApplicationMarketController {
      * @param projectId  项目id
      * @param appMarkets 应用市场应用信息
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "导出应用市场应用信息")
     @PostMapping("/export")
     public void exportFile(
