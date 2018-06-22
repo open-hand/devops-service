@@ -320,6 +320,25 @@ public class ApplicationMarketController {
     }
 
     /**
+     * 应用市场导入应用
+     *
+     * @param projectId 项目ID
+     * @param fileName  文件名
+     * @return 应用列表
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "应用市场导入应用")
+    @PostMapping("/import_cancel")
+    public ResponseEntity deleteZip(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "文件名", required = true)
+            @RequestParam(value = "file_name") String fileName) {
+        applicationMarketService.deleteZip(projectId, fileName);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
      * 导出应用市场应用信息
      *
      * @param projectId  项目id

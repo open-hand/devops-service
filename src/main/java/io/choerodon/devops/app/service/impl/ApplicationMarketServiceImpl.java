@@ -378,6 +378,23 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         FileUtil.deleteDirectory(zipDirectory);
     }
 
+    @Override
+    public void deleteZip(Long projectId, String fileName) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String fileSeparator = File.separator;
+        String destPath = String.format(
+                "tmp%s%s%s%s%s%s",
+                fileSeparator,
+                organization.getCode(),
+                fileSeparator,
+                projectE.getCode(),
+                fileSeparator,
+                fileName);
+        File zipDirectory = new File(destPath);
+        FileUtil.deleteDirectory(zipDirectory);
+    }
+
     private String hashImages(List<File> images) {
         if (images != null && !images.isEmpty() && images.size() == 1) {
             File image = images.get(0);

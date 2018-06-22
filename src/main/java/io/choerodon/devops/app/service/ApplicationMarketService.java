@@ -79,6 +79,8 @@ public interface ApplicationMarketService {
 
     void importApps(Long projectId, String fileName, Boolean isPublic);
 
+    void deleteZip(Long projectId, String fileName);
+
     /**
      * 导出应用市场应用信息
      *
