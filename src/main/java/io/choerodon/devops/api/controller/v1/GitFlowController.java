@@ -110,7 +110,7 @@ public class GitFlowController {
     }
 
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "结束 GitFlow")
     @PostMapping("/finish")
     public ResponseEntity finishEvent(
