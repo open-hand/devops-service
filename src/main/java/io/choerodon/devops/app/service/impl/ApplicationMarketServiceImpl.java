@@ -42,9 +42,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String PUBLIC = "public";
     private static final String CHARTS = "charts";
     private static final String IMAGES = "images";
-    private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
     private static final String FILE_SEPARATOR = "file.separator";
+    private static final String JSON_FILE = ".json";
+
     private static Gson gson = new Gson();
+
+    private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.helm.url}")
@@ -319,7 +323,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     throw new CommonException("error.file.empty");
                 }
                 List<File> images = Arrays.stream(appFiles)
-                        .filter(t -> t.getName().equals("images")).collect(Collectors.toCollection(ArrayList::new));
+                        .filter(t -> IMAGES.equals(t.getName()))
+                        .collect(Collectors.toCollection(ArrayList::new));
                 // do sth with images[0]
                 fileCode = hashImages(images);
 
@@ -342,7 +347,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public void importApps(Long projectId, String fileName, Boolean isPublic) {
+    public Boolean importApps(Long projectId, String fileName, Boolean isPublic) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String fileSeparator = File.separator;
@@ -376,6 +381,24 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             throw new CommonException("error.zip.notFound");
         }
         FileUtil.deleteDirectory(zipDirectory);
+        return true;
+    }
+
+    @Override
+    public void deleteZip(Long projectId, String fileName) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String fileSeparator = File.separator;
+        String destPath = String.format(
+                "tmp%s%s%s%s%s%s",
+                fileSeparator,
+                organization.getCode(),
+                fileSeparator,
+                projectE.getCode(),
+                fileSeparator,
+                fileName);
+        File zipDirectory = new File(destPath);
+        FileUtil.deleteDirectory(zipDirectory);
     }
 
     private String hashImages(List<File> images) {
@@ -400,7 +423,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
             if (appFiles != null && !appFileList.isEmpty()) {
-                String appFileName = String.format("%s%s", appName, ".json");
+                String appFileName = String.format("%s%s", appName, JSON_FILE);
                 List<File> appMarkets = Arrays.stream(appFiles).parallel()
                         .filter(k -> k.getName().equals(appFileName))
                         .collect(Collectors.toCollection(ArrayList::new));
@@ -425,7 +448,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
             if (appFiles != null && !appFileList.isEmpty()) {
-                String appFileName = String.format("%s%s", appName, ".json");
+                String appFileName = String.format("%s%s", appName, JSON_FILE);
                 List<File> appMarkets = Arrays.stream(appFiles).parallel()
                         .filter(k -> k.getName().equals(appFileName))
                         .collect(Collectors.toCollection(ArrayList::new));
@@ -469,7 +492,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             String appMarketJson = gson.toJson(applicationReleasingDTO);
-            FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + ".json", appMarketJson);
+            FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
             appMarketDownloadDTO.getAppVersionIds().parallelStream().forEach(appVersionId -> {
                 ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
                 images.add(applicationVersionE.getImage());

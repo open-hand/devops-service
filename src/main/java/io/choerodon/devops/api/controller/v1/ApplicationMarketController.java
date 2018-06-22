@@ -283,7 +283,7 @@ public class ApplicationMarketController {
      * @param file      文件
      * @return 应用列表
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "应用市场解析导入应用")
     @PostMapping("/upload")
     public ResponseEntity<AppMarketTgzDTO> uploadApps(
@@ -305,17 +305,38 @@ public class ApplicationMarketController {
      * @param isPublic  是否发布
      * @return 应用列表
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "应用市场导入应用")
     @PostMapping("/import")
-    public ResponseEntity importApps(
+    public ResponseEntity<Boolean> importApps(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件名", required = true)
             @RequestParam(value = "file_name") String fileName,
             @ApiParam(value = "是否公开", required = false)
             @RequestParam(value = "public", required = false) Boolean isPublic) {
-        applicationMarketService.importApps(projectId, fileName, isPublic);
+        return Optional.ofNullable(
+                applicationMarketService.importApps(projectId, fileName, isPublic))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.import"));
+    }
+
+    /**
+     * 应用市场取消导入应用
+     *
+     * @param projectId 项目ID
+     * @param fileName  文件名
+     * @return 应用列表
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "应用市场取消导入应用")
+    @PostMapping("/import_cancel")
+    public ResponseEntity deleteZip(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable("project_id") Long projectId,
+            @ApiParam(value = "文件名", required = true)
+            @RequestParam(value = "file_name") String fileName) {
+        applicationMarketService.deleteZip(projectId, fileName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -325,7 +346,7 @@ public class ApplicationMarketController {
      * @param projectId  项目id
      * @param appMarkets 应用市场应用信息
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "导出应用市场应用信息")
     @PostMapping("/export")
     public void exportFile(
