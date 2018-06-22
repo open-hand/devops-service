@@ -73,6 +73,7 @@ public class DevopsEventHandler {
         loggerInfo(organizationEventPayload);
         organizationService.create(organizationEventPayload);
     }
+
     /**
      * 创建应用事件
      */

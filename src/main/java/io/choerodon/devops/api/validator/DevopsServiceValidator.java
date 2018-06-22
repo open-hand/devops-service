@@ -21,6 +21,9 @@ public class DevopsServiceValidator {
     //service name
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
 
+    private DevopsServiceValidator() {
+    }
+
     /**
      * 参数校验
      */

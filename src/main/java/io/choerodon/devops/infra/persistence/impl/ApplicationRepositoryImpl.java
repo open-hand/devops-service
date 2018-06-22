@@ -62,7 +62,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public ApplicationE create(ApplicationE applicationE) {
-        ApplicationDO applicationDO = ConvertHelper.convert(applicationE,ApplicationDO.class);
+        ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
         applicationMapper.insert(applicationDO);
         return ConvertHelper.convert(applicationDO, ApplicationE.class);
     }
@@ -96,12 +96,12 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
             } else {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
-                                projectId, isActive,hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                projectId, isActive, hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMapper.list(projectId, isActive,hasVersion, null, null));
+                    pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, null, null));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }

@@ -77,7 +77,8 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
 
     @Override
     public List<DevopsEnvResourceE> listByEnvAndType(Long envId, String type) {
-        return ConvertHelper.convertList(devopsEnvResourceMapper.listByEnvAndType(envId, type), DevopsEnvResourceE.class);
+        return ConvertHelper.convertList(
+                devopsEnvResourceMapper.listByEnvAndType(envId, type), DevopsEnvResourceE.class);
     }
 
 }

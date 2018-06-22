@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
-import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.ProjectPipelineResultTotalDTO;
 import io.choerodon.devops.app.service.ProjectPipelineService;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;

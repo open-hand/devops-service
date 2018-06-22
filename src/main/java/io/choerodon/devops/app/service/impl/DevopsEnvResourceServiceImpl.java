@@ -6,6 +6,7 @@ import java.util.List;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.dto.*;
@@ -25,26 +26,19 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     private static JSON json = new JSON();
 
+    @Autowired
     private DevopsEnvResourceRepository devopsEnvResourceRepository;
+    @Autowired
     private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
+    @Autowired
     private DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
+    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
     private DevopsIngressRepository devopsIngressRepository;
 
-    public DevopsEnvResourceServiceImpl(DevopsEnvResourceRepository devopsEnvResourceRepository,
-                                        DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository,
-                                        DevopsEnvCommandLogRepository devopsEnvCommandLogRepository,
-                                        DevopsServiceRepository devopsServiceRepository,
-                                        DevopsIngressRepository devopsIngressRepository,
-                                        DevopsEnvCommandRepository devopsEnvCommandRepository) {
-        this.devopsEnvCommandLogRepository = devopsEnvCommandLogRepository;
-        this.devopsEnvResourceDetailRepository = devopsEnvResourceDetailRepository;
-        this.devopsEnvResourceRepository = devopsEnvResourceRepository;
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.devopsIngressRepository = devopsIngressRepository;
-    }
 
     @Override
     public DevopsEnvResourceDTO listResources(Long instanceId) {
@@ -114,11 +108,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public List<InstanceStageDTO> listStages(Long instanceId) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
+                .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         List<DevopsEnvResourceE> devopsEnvResourceES =
                 devopsEnvResourceRepository.listJobByInstanceId(instanceId);
         List<InstanceStageDTO> instanceStageDTOS = new ArrayList<>();
-        devopsEnvResourceES.stream().forEach(devopsInstanceResourceE -> {
+        devopsEnvResourceES.forEach(devopsInstanceResourceE -> {
             if (devopsInstanceResourceE.getKind().equals(ResourceType.JOB.getType())) {
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE =
                         devopsEnvResourceDetailRepository.query(
@@ -127,20 +121,22 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 InstanceStageDTO instanceStageDTO = new InstanceStageDTO();
                 instanceStageDTO.setStageName(v1Job.getMetadata().getName());
                 instanceStageDTO.setWeight(devopsInstanceResourceE.getWeight());
-                if (v1Job.getStatus() != null) {
-                    if (v1Job.getStatus().getSucceeded() != null) {
-                        if (v1Job.getStatus().getSucceeded() == 1) {
-                            instanceStageDTO.setStatus("success");
-                            if (v1Job.getStatus().getStartTime() != null && v1Job.getStatus().getCompletionTime() != null) {
-                                instanceStageDTO.setStageTime(
-                                        getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
-                                                new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime())));
-                            }
-                        } else {
-                            instanceStageDTO.setStatus("fail");
+                if (v1Job.getStatus() != null
+                        && v1Job.getStatus().getSucceeded() != null) {
+                    if (v1Job.getStatus().getSucceeded() == 1) {
+                        instanceStageDTO.setStatus("success");
+                        if (v1Job.getStatus().getStartTime() != null
+                                && v1Job.getStatus().getCompletionTime() != null) {
+                            instanceStageDTO.setStageTime(
+                                    getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
+                                            new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime()))
+                            );
                         }
+                    } else {
+                        instanceStageDTO.setStatus("fail");
                     }
                 }
+
                 instanceStageDTOS.add(instanceStageDTO);
             }
         });
@@ -280,7 +276,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         hour = (diff / (60 * 60 * 1000) - day * 24);
         min = ((diff / (60 * 1000)) - day * 24 * 60 - hour * 60);
         sec = (diff / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-        Long[] times = {day, hour, min, sec};
-        return times;
+        return new Long[]{day, hour, min, sec};
     }
 }

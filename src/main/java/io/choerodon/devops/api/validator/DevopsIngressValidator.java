@@ -13,6 +13,9 @@ public class DevopsIngressValidator {
     //ingress name
     private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
 
+    private DevopsIngressValidator() {
+    }
+
     /**
      * 参数校验
      */

@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.List;
 import javax.persistence.Transient;
+import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -146,15 +146,15 @@ public class DevopsServiceQueryDO {
         return targetPort;
     }
 
+    public void setTargetPort(Long targetPort) {
+        this.targetPort = targetPort;
+    }
+
     public Long getAppProjectId() {
         return appProjectId;
     }
 
     public void setAppProjectId(Long appProjectId) {
         this.appProjectId = appProjectId;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 }

@@ -7,17 +7,13 @@ public enum ObjectType {
     INGRESS("ingress"),;
 
 
-    private String objectType;
+    private String type;
 
-    ObjectType(String objectType) {
-        this.objectType = objectType;
+    ObjectType(String type) {
+        this.type = type;
     }
 
-    public String getObjectType() {
-        return objectType;
-    }
-
-    public void setObjectType(String objectType) {
-        this.objectType = objectType;
+    public String getType() {
+        return type;
     }
 }

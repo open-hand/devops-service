@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.common.util;
 
-
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,8 +13,15 @@ import io.choerodon.core.exception.CommonException;
 
 public class HttpClientUtil {
 
-    HttpClientUtil(){}
+    HttpClientUtil() {
+    }
 
+    /**
+     * 下载 tgz
+     *
+     * @param getUrl  tgz路径
+     * @param fileUrl 目标路径
+     */
     public static void getTgz(String getUrl, String fileUrl) {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
             HttpGet httpGet = new HttpGet(getUrl);

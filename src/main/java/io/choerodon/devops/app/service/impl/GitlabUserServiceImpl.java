@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -18,19 +19,13 @@ import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
  */
 @Service
 public class GitlabUserServiceImpl implements GitlabUserService {
-
+    @Autowired
     private GitlabConfigurationProperties gitlabConfigurationProperties;
+    @Autowired
     private GitlabUserRepository gitlabUserRepository;
+    @Autowired
     private UserAttrRepository userAttrRepository;
 
-
-    public GitlabUserServiceImpl(GitlabUserRepository gitlabUserRepository,
-                                 GitlabConfigurationProperties gitlabConfigurationProperties,
-                                 UserAttrRepository userAttrRepository) {
-        this.gitlabUserRepository = gitlabUserRepository;
-        this.gitlabConfigurationProperties = gitlabConfigurationProperties;
-        this.userAttrRepository = userAttrRepository;
-    }
 
     @Override
     public void createGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {

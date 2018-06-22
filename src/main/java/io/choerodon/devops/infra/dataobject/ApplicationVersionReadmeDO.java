@@ -5,7 +5,6 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
 
 /**
  * Creator: Runge
@@ -29,6 +28,12 @@ public class ApplicationVersionReadmeDO {
         this.versionId = versionId;
     }
 
+    /**
+     * constructor
+     *
+     * @param versionId 版本ID
+     * @param readme    README.md 内容
+     */
     public ApplicationVersionReadmeDO(Long versionId, String readme) {
 
         this.versionId = versionId;

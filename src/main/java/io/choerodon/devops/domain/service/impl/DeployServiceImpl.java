@@ -43,11 +43,14 @@ public class DeployServiceImpl implements DeployService {
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, applicationInstanceE.getCode());
-        msg.setKey("env:" + devopsEnvironmentE.getCode() + ".envId:" + devopsEnvironmentE.getId() + ".release:" + applicationInstanceE.getCode());
+        msg.setKey(String.format("env:%s.envId:%d.release:%s",
+                devopsEnvironmentE.getCode(),
+                devopsEnvironmentE.getId(),
+                applicationInstanceE.getCode()));
         if (type.equals("update")) {
-            msg.setType(HelmType.HelmReleasePreUpgrade.toValue());
+            msg.setType(HelmType.HELM_RELEASE_PRE_UPGRADE.toValue());
         } else {
-            msg.setType(HelmType.HelmReleasePreInstall.toValue());
+            msg.setType(HelmType.HELM_RELEASE_PRE_INSTALL.toValue());
         }
         try {
             msg.setPayload(mapper.writeValueAsString(payload));

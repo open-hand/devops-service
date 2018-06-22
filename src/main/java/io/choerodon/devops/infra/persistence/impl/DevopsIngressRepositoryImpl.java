@@ -43,11 +43,9 @@ import io.choerodon.websocket.helper.EnvSession;
 @Component
 public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
-
+    private static final Gson gson = new Gson();
     @Value("${agent.version}")
     private String agentExpectVersion;
-
-    private static final Gson gson = new Gson();
     private DevopsIngressMapper devopsIngressMapper;
     private DevopsIngressPathMapper devopsIngressPathMapper;
     private DevopsEnvironmentRepository environmentRepository;
@@ -159,7 +157,9 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressDTO.setStatus(t.getStatus());
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(t.getEnvId()) && agentExpectVersion.compareTo(envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
+                if (envSession.getEnvId().equals(t.getEnvId())
+                        && agentExpectVersion.compareTo(
+                                envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }
@@ -309,7 +309,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         return devopsIngressMapper.checkEnvHasIngress(envId);
     }
 
-    public void getDevopsIngressDTO(DevopsIngressDTO devopsIngressDTO, DevopsIngressPathDO e) {
+    private void getDevopsIngressDTO(DevopsIngressDTO devopsIngressDTO, DevopsIngressPathDO e) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(e.getServiceId());
         if (devopsServiceE == null) {
             devopsIngressDTO.addDevopsIngressPathDTO(new DevopsIngressPathDTO(
