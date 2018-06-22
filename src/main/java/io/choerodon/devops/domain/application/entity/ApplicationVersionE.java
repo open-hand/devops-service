@@ -102,23 +102,23 @@ public class ApplicationVersionE {
         return applicationVersionValueE;
     }
 
-    public void initApplicationVersionValueE(Long id) {
-        this.applicationVersionValueE = new ApplicationVersionValueE(id);
-    }
-
     public void setApplicationVersionValueE(ApplicationVersionValueE applicationVersionValueE) {
         this.applicationVersionValueE = applicationVersionValueE;
+    }
+
+    public void initApplicationVersionValueE(Long id) {
+        this.applicationVersionValueE = new ApplicationVersionValueE(id);
     }
 
     public ApplicationVersionReadmeV getApplicationVersionReadmeV() {
         return applicationVersionReadmeV;
     }
 
-    public void initApplicationVersionReadmeV(String readme) {
-        this.applicationVersionReadmeV = new ApplicationVersionReadmeV(readme);
-    }
-
     public void setApplicationVersionReadmeV(ApplicationVersionReadmeV applicationVersionReadmeV) {
         this.applicationVersionReadmeV = applicationVersionReadmeV;
+    }
+
+    public void initApplicationVersionReadmeV(String readme) {
+        this.applicationVersionReadmeV = new ApplicationVersionReadmeV(readme);
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
@@ -25,31 +26,25 @@ import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
  */
 @Service
 public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
     private static final String PROJECT = "project";
     private static final String TEMPLATE = "template";
     private static final String SITE = "site";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabGroupMemberServiceImpl.class);
+
+    @Autowired
     private DevopsProjectRepository devopsProjectRepository;
+    @Autowired
     private GitlabUserRepository gitlabUserRepository;
+    @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
     private IamRepository iamRepository;
+    @Autowired
     private GitlabRepository gitlabRepository;
 
-    public GitlabGroupMemberServiceImpl(DevopsProjectRepository devopsProjectRepository,
-                                        GitlabUserRepository gitlabUserRepository,
-                                        GitlabGroupMemberRepository gitlabGroupMemberRepository,
-                                        UserAttrRepository userAttrRepository,
-                                        IamRepository iamRepository,
-                                        GitlabRepository gitlabRepository) {
-        this.devopsProjectRepository = devopsProjectRepository;
-        this.gitlabUserRepository = gitlabUserRepository;
-        this.gitlabGroupMemberRepository = gitlabGroupMemberRepository;
-        this.userAttrRepository = userAttrRepository;
-        this.iamRepository = iamRepository;
-        this.gitlabRepository = gitlabRepository;
-    }
 
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
@@ -71,34 +66,40 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        gitlabGroupMemberDTOList.stream().filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE)).forEach(gitlabGroupMemberDTO -> {
-            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
-            if (gitlabUserE == null) {
-                LOGGER.error("error.gitlab.username.select");
-                return;
-            }
-            GitlabGroupE gitlabGroupE;
-            if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
-                gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
-            } else {
-                Organization organization = iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
-                gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(gitlabUserE.getId()));
-            }
-            if (gitlabGroupE.getId() == null) {
-                LOGGER.error("error.gitlab.groupId.select");
-                return;
-            }
+        gitlabGroupMemberDTOList.stream()
+                .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
+                .forEach(gitlabGroupMemberDTO -> {
+                    GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(
+                            TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
+                    if (gitlabUserE == null) {
+                        LOGGER.error("error.gitlab.username.select");
+                        return;
+                    }
+                    GitlabGroupE gitlabGroupE;
+                    if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
+                        gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
+                    } else {
+                        Organization organization =
+                                iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
+                        gitlabGroupE = gitlabRepository.queryGroupByName(
+                                organization.getCode() + "_" + TEMPLATE,
+                                TypeUtil.objToInteger(gitlabUserE.getId()));
+                    }
+                    if (gitlabGroupE.getId() == null) {
+                        LOGGER.error("error.gitlab.groupId.select");
+                        return;
+                    }
 
-            GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                    gitlabGroupE.getId(),
-                    gitlabUserE.getId());
+                    GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                            gitlabGroupE.getId(),
+                            gitlabUserE.getId());
 
-            if (grouoMemberE != null) {
-                gitlabGroupMemberRepository.deleteMember(
-                        gitlabGroupE.getId(),
-                        gitlabUserE.getId());
-            }
-        });
+                    if (grouoMemberE != null) {
+                        gitlabGroupMemberRepository.deleteMember(
+                                gitlabGroupE.getId(),
+                                gitlabUserE.getId());
+                    }
+                });
     }
 
     /**
@@ -106,7 +107,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      *
      * @param userMemberRoleList userMemberRoleList
      */
-    public AccessLevel getGitlabGroupMemberRole(List<String> userMemberRoleList) {
+    private AccessLevel getGitlabGroupMemberRole(List<String> userMemberRoleList) {
         List<Integer> accessLevelList = new ArrayList<>();
         accessLevelList.add(0);
         userMemberRoleList.forEach(level -> {
@@ -143,7 +144,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
         } else {
             Organization organization = iamRepository.queryOrganizationById(resourceId);
-            gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            gitlabGroupE = gitlabRepository.queryGroupByName(
+                    organization.getCode() + "_" + TEMPLATE,
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
         if (gitlabGroupE.getId() == null) {
             LOGGER.error("error.gitlab.groupId.select");

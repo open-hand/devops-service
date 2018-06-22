@@ -44,11 +44,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String IMAGES = "images";
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String JSON_FILE = ".json";
-
-    private static Gson gson = new Gson();
-
     private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
-
+    private static Gson gson = new Gson();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.helm.url}")

@@ -1,11 +1,11 @@
 package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
-import java.util.Map;
 
 import io.choerodon.devops.api.dto.ErrorLineDTO;
 
 /**
+ * yaml 转换结果
  * @author crockitwood
  */
 public class ReplaceResult {

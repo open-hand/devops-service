@@ -1,9 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
@@ -13,7 +13,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 
 /**
  * Created with IntelliJ IDEA.
@@ -26,24 +25,13 @@ import io.choerodon.event.producer.execute.EventProducerTemplate;
 public class GitlabGroupServiceImpl implements GitlabGroupService {
 
 
+    @Autowired
     private GitlabServiceClient gitlabServiceClient;
+    @Autowired
     private DevopsProjectRepository devopsProjectRepository;
-    private EventProducerTemplate eventProducerTemplate;
-    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
     private UserAttrRepository userAttrRepository;
 
-
-    public GitlabGroupServiceImpl(GitlabServiceClient gitlabServiceClient,
-                                  DevopsProjectRepository devopsProjectRepository,
-                                  EventProducerTemplate eventProducerTemplate,
-                                  GitlabGroupMemberService gitlabGroupMemberService,
-                                  UserAttrRepository userAttrRepository) {
-        this.gitlabServiceClient = gitlabServiceClient;
-        this.devopsProjectRepository = devopsProjectRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
-        this.userAttrRepository = userAttrRepository;
-    }
 
     @Override
     public void createGroup(GitlabGroupPayload gitlabGroupPayload) {

@@ -3,9 +3,9 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
-import io.choerodon.core.iam.InitRoleCode;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +13,10 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DeployDetailService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -30,20 +30,10 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/app_instances")
 public class ApplicationInstanceController {
 
+    @Autowired
     private ApplicationInstanceService applicationInstanceService;
-    private DeployDetailService deployDetailService;
+    @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
-
-    /**
-     * 构造函数
-     */
-    public ApplicationInstanceController(ApplicationInstanceService applicationInstanceService,
-                                         DeployDetailService deployDetailService,
-                                         DevopsEnvResourceService devopsEnvResourceService) {
-        this.applicationInstanceService = applicationInstanceService;
-        this.deployDetailService = deployDetailService;
-        this.devopsEnvResourceService = devopsEnvResourceService;
-    }
 
     /**
      * 分页查询应用部署

@@ -93,7 +93,7 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
         try {
             responseEntity = gitlabServiceClient.listBranches(projectId, userId);
         } catch (Exception e) {
-            return null;
+            return new ArrayList<>();
         }
         if (!HttpStatus.OK.equals(responseEntity.getStatusCode())) {
             return Collections.emptyList();

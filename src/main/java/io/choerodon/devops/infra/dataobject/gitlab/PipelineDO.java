@@ -89,11 +89,11 @@ public class PipelineDO {
         this.user = user;
     }
 
-    public String getCreated_at() {
+    public String getCreatedAt() {
         return created_at;
     }
 
-    public void setCreated_at(String created_at) {
+    public void setCreatedAt(String created_at) {
         this.created_at = created_at;
     }
 
@@ -105,19 +105,19 @@ public class PipelineDO {
         this.updatedAt = updatedAt;
     }
 
-    public Date getStarted_at() {
+    public Date getStartedAt() {
         return started_at;
     }
 
-    public void setStarted_at(Date started_at) {
+    public void setStartedAt(Date started_at) {
         this.started_at = started_at;
     }
 
-    public Date getFinished_at() {
+    public Date getFinishedAt() {
         return finished_at;
     }
 
-    public void setFinished_at(Date finished_at) {
+    public void setFinishedAt(Date finished_at) {
         this.finished_at = finished_at;
     }
 

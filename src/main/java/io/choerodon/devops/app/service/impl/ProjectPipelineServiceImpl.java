@@ -1,12 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,26 +35,20 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class ProjectPipelineServiceImpl implements ProjectPipelineService {
-
-    private ApplicationRepository applicationRepository;
-    private IamRepository iamRepository;
-    private GitlabProjectRepository gitlabProjectRepository;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+
+    @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository;
+    @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
     private GitFlowRepository gitFlowRepository;
 
-    public ProjectPipelineServiceImpl(GitlabProjectRepository gitlabProjectRepository,
-                                      ApplicationRepository applicationRepository,
-                                      IamRepository iamRepository,
-                                      UserAttrRepository userAttrRepository,
-                                      GitFlowRepository gitFlowRepository) {
-        this.gitlabProjectRepository = gitlabProjectRepository;
-        this.applicationRepository = applicationRepository;
-        this.iamRepository = iamRepository;
-        this.userAttrRepository = userAttrRepository;
-        this.gitFlowRepository = gitFlowRepository;
-    }
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -88,8 +82,15 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         branchNames.addAll(tagNames);
         List<PipelineResultV> pipelineResultVS = new ArrayList<>();
         if (gitlabPipelineEListByPage != null && !gitlabPipelineEListByPage.isEmpty()) {
-            listPipelineResultV(gitlabPipelineEListByPage, pipelineResultVS, app, gitlabProjectId, userId, projectId, userName);
-            branchNames.stream().forEach(branchName -> {
+            listPipelineResultV(
+                    gitlabPipelineEListByPage,
+                    pipelineResultVS,
+                    app,
+                    gitlabProjectId,
+                    userId,
+                    projectId,
+                    userName);
+            branchNames.forEach(branchName -> {
                 final long[] id = {0};
                 gitlabPipelineEList.parallelStream()
                         .filter(p -> branchName.contains(p.getRef()) && p.getId() > id[0])
@@ -126,10 +127,17 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     }
 
 
-    public void listPipelineResultV(List<GitlabPipelineE> gitlabPipelineEListByPage, List<PipelineResultV> pipelineResultVS, ApplicationE applicationE, Integer gitlabProjectId, Integer userId, Long projectId, String userName) {
+    private void listPipelineResultV(List<GitlabPipelineE> gitlabPipelineEListByPage,
+                                     List<PipelineResultV> pipelineResultVS,
+                                     ApplicationE applicationE,
+                                     Integer gitlabProjectId,
+                                     Integer userId,
+                                     Long projectId,
+                                     String userName) {
 
         gitlabPipelineEListByPage.parallelStream().forEach(gitlabPipeline -> {
-            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(gitlabProjectId, gitlabPipeline.getId(), userId);
+            GitlabPipelineE gitlabPipelineE =
+                    gitlabProjectRepository.getPipeline(gitlabProjectId, gitlabPipeline.getId(), userId);
             PipelineResultV pipelineResultV = new PipelineResultV();
             pipelineResultV.setGitlabProjectId(gitlabProjectId.longValue());
             pipelineResultV.setAppCode(applicationE.getCode());
@@ -141,7 +149,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
             pipelineResultV.setCreateUser(gitlabPipelineE.getUser().getUsername());
             pipelineResultV.setRef(gitlabPipelineE.getRef());
             pipelineResultV.setSha(gitlabPipelineE.getSha());
-            pipelineResultV.setCreatedAt(gitlabPipelineE.getCreated_at());
+            pipelineResultV.setCreatedAt(gitlabPipelineE.getCreatedAt());
 
             List<GitlabJobE> jobs =
                     gitlabProjectRepository.listJobs(gitlabProjectId, gitlabPipelineE.getId(), userId);

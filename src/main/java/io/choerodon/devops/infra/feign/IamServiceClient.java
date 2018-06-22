@@ -28,8 +28,6 @@ public interface IamServiceClient {
     @GetMapping("/v1/organizations/{organizationId}")
     ResponseEntity<OrganizationDO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
-
-    // TODO: PATH NEED TO BE CHANGE
     @RequestMapping(value = "/v1/project/{projectId}/memberRoles/single", method = RequestMethod.POST)
     ResponseEntity<MemberRoleV> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleV memberRoleVo);
 

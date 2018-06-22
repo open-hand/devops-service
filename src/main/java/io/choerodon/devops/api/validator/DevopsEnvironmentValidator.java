@@ -23,6 +23,11 @@ public class DevopsEnvironmentValidator {
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
 
+    /**
+     * 验证环境是否可以禁用
+     *
+     * @param envId 环境ID
+     */
     public void checkEnvCanDisabled(Long envId) {
         if (applicationInstanceRepository.selectByEnvId(envId) > 0) {
             throw new CommonException("error.env.stop.instanceExist");

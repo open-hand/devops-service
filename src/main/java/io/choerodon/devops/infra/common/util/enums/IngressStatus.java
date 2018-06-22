@@ -6,7 +6,7 @@ package io.choerodon.devops.infra.common.util.enums;
  * Time: 09:23
  * Description:
  */
-public enum  IngressStatus {
+public enum IngressStatus {
     OPERATING("operating"),
     RUNNING("running"),
     FAILED("failed");
@@ -19,9 +19,5 @@ public enum  IngressStatus {
 
     public String getStatus() {
         return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 }

@@ -1,6 +1,8 @@
 package io.choerodon.devops.domain.application.valueobject;
 
 /**
+ * 标记高亮
+ *
  * @author crockitwood
  */
 public class HighlightMarker {
@@ -52,12 +54,12 @@ public class HighlightMarker {
 
     @Override
     public String toString() {
-        return "HighlightMarker{" +
-                "line=" + line +
-                ", startIndex=" + startIndex +
-                ", endIndex=" + endIndex +
-                ", startColumn=" + startColumn +
-                ", endColumn=" + endColumn +
-                '}';
+        return "HighlightMarker{"
+                + "line=" + line
+                + ", startIndex=" + startIndex
+                + ", endIndex=" + endIndex
+                + ", startColumn=" + startColumn
+                + ", endColumn=" + endColumn
+                + '}';
     }
 }

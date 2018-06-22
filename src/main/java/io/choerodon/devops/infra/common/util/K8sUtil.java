@@ -14,6 +14,10 @@ public class K8sUtil {
     private static final String INIT = "Init:";
     private static final String SIGNAL = "Signal:";
     private static final String EXIT_CODE = "ExitCode:";
+    private static final String NONE_LABEL = "<none>";
+
+    private K8sUtil() {
+    }
 
     /**
      * pod状态生成规则
@@ -79,20 +83,20 @@ public class K8sUtil {
      */
     public static String getServiceExternalIp(V1Service v1Service) {
         if (v1Service.getSpec().getExternalIPs() == null) {
-            return "<none>";
+            return NONE_LABEL;
         }
         switch (v1Service.getSpec().getType()) {
             case "ClusterIP":
                 if (!v1Service.getSpec().getExternalIPs().isEmpty()) {
                     return String.join(",", v1Service.getSpec().getExternalIPs());
                 } else {
-                    return "<none>";
+                    return NONE_LABEL;
                 }
             case "NodePort":
                 if (!v1Service.getSpec().getExternalIPs().isEmpty()) {
                     return String.join(",", v1Service.getSpec().getExternalIPs());
                 } else {
-                    return "<none>";
+                    return NONE_LABEL;
                 }
             case "LoadBalancer":
                 String lbips = loadBalancerStatusStringer(v1Service.getStatus().getLoadBalancer());
@@ -175,7 +179,7 @@ public class K8sUtil {
                 results.add(v1beta1IngressRule.getHost());
             }
         }
-        if (results.size() == 0) {
+        if (results.isEmpty()) {
             return "*";
         }
         String result = String.join(",", results);
@@ -192,10 +196,8 @@ public class K8sUtil {
      * @return string
      */
     public static String formatPorts(List<V1beta1IngressTLS> v1beta1IngressTLS) {
-        if (v1beta1IngressTLS != null) {
-            if (v1beta1IngressTLS.size() > 0) {
-                return "80,443";
-            }
+        if (v1beta1IngressTLS != null && !v1beta1IngressTLS.isEmpty()) {
+            return "80,443";
         }
         return "80";
     }

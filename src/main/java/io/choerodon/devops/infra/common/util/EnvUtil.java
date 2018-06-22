@@ -25,6 +25,12 @@ public class EnvUtil {
     @Value("${agent.version}")
     private String agentExpectVersion;
 
+    /**
+     * 检查环境是否链接
+     *
+     * @param envId       环境ID
+     * @param envListener EnvListener
+     */
     public void checkEnvConnection(Long envId, EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         Boolean envConnected = connectedEnv.entrySet().parallelStream()
@@ -36,6 +42,12 @@ public class EnvUtil {
         }
     }
 
+    /**
+     * 环境链接列表
+     *
+     * @param envListener EnvListener
+     * @return 环境链接列表
+     */
     public List<Long> getConnectedEnvList(EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().parallelStream()
@@ -43,6 +55,12 @@ public class EnvUtil {
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
+    /**
+     * 环境更新列表
+     *
+     * @param envListener EnvListener
+     * @return 环境更新列表
+     */
     public List<Long> getUpdatedEnvList(EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().parallelStream()

@@ -7,6 +7,7 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.ServiceMsgHandlerService;
@@ -26,25 +27,20 @@ import io.choerodon.websocket.tool.KeyParseTool;
 public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
 
     private static final Logger logger = LoggerFactory.getLogger(ServiceMsgHandlerServiceImpl.class);
+
     private static JSON json = new JSON();
+
+    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
     private DevopsEnvResourceRepository devopsEnvResourceRepository;
+    @Autowired
     private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
+    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
-
-    public ServiceMsgHandlerServiceImpl(DevopsServiceRepository devopsServiceRepository,
-                                        ApplicationInstanceRepository applicationInstanceRepository,
-                                        DevopsEnvResourceRepository devopsEnvResourceRepository,
-                                        DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository,
-                                        DevopsEnvCommandRepository devopsEnvCommandRepository) {
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.applicationInstanceRepository = applicationInstanceRepository;
-        this.devopsEnvResourceDetailRepository = devopsEnvResourceDetailRepository;
-        this.devopsEnvResourceRepository = devopsEnvResourceRepository;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-    }
 
     @Override
     public void handlerServiceCreateMessage(String key, String msg, Long envId) {
@@ -79,8 +75,8 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
             devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
             devopsServiceRepository.update(devopsServiceE);
             DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.SERVICE.getObjectType(), devopsServiceE.getId());
-            newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+                    .queryByObject(ObjectType.SERVICE.getType(), devopsServiceE.getId());
+            newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
             devopsEnvCommandRepository.update(newdevopsEnvCommandE);
         } catch (Exception e) {
             logger.info(e.getMessage());
