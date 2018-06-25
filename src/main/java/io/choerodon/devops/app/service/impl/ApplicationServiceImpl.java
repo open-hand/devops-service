@@ -215,7 +215,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
             }
-            Git git = gitUtil.clone(applicationDir,
+            Git git = gitUtil.clone(applicationDir, applicationTemplateE.getCode(),
                     repoUrl);
             //渲染模板里面的参数
             try {
@@ -246,13 +246,20 @@ public class ApplicationServiceImpl implements ApplicationService {
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                     gitlabUserE.getUsername(), accessToken, APPLICATION);
+            gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId());
+            boolean flag = true;
+            while (flag) {
+                if (gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId()).equals(DEVELOP)) {
+                    flag = false;
+                }
+            }
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(),
                     DEVELOP, AccessLevel.DEVELOPER.toString(), AccessLevel.DEVELOPER.toString(),
                     gitlabProjectEventDTO.getUserId());
         }
-        gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId());
+
         try {
             String token = GenerateUUID.generateUUID();
             gitlabRepository.addVariable(gitlabProjectEventDTO.getGitlabProjectId(), "Token",

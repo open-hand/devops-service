@@ -38,6 +38,11 @@ services:
     projectLimit: 100
   helm:
     url: "helm.example.com"
+template:
+  version:
+    MicroService: 0.7.0
+    MicroServiceFront: 0.7.0
+    JavaLib: 0.7.0
 choerodon:
   event:
     consumer:
