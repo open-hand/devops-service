@@ -51,6 +51,9 @@ env:
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     SECURITY_BASIC_ENABLE: false
     SECURITY_IGNORED: /ci,/v2/api-docs,/agent/**,/ws/**
+    TEMPLATE_VERSION_MICROSERVICE: 0.7.0
+    TEMPLATE_VERSION_MICROSERVICEFRONT: 0.7.0
+    TEMPLATE_VERSION_JAVALIB: 0.7.0
 metrics:
   path: /prometheus
   group: spring-boot

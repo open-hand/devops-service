@@ -186,6 +186,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             }
             Git git = gitUtil.clone(
                     applicationDir,
+                    templateRepDTO.getCode(),
                     repoUrl);
             List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
                     applicationDir, gitlabProjectEventDTO.getUserId());

@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 
 /**
  * Created by younger on 2018/3/29.
@@ -26,6 +27,6 @@ public interface GitlabRepository {
 
     void deleteProject(Integer projectId, Integer userId);
 
-    void updateProject(Integer projectId, Integer userId);
+    String updateProject(Integer projectId, Integer userId);
 
 }
