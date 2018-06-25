@@ -898,7 +898,7 @@ public class FileUtil {
      * 复制单个文件
      *
      * @param oldPath String  原文件路径  如：c:/fqf.txt
-     * @param newPath String  复制后路径  如：f:/fqf.txt
+     * @param newPath String  复制后上级路径  如：f:/
      */
     public static void copyFile(String oldPath, String newPath) {
         try {
