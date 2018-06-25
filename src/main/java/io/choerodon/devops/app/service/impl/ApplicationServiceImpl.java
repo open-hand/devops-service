@@ -211,7 +211,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             String applicationDir = APPLICATION + System.currentTimeMillis();
             //拉取模板
             String repoUrl = applicationTemplateE.getRepoUrl();
-            if (applicationTemplateE.getOrganization() != null) {
+            if (applicationTemplateE.getOrganization().getId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
             }
