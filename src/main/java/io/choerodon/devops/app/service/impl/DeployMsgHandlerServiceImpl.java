@@ -910,39 +910,42 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     private void syncService(DevopsServiceE devopsServiceE, String msg, ApplicationInstanceE applicationInstanceE) {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(
-                applicationInstanceE.getDevopsEnvironmentE().getId());
-        if (devopsServiceRepository.selectByNameAndNamespace(
-                v1Service.getMetadata().getName(), devopsEnvironmentE.getCode()) == null) {
-            devopsServiceE.setEnvId(devopsEnvironmentE.getId());
-            devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
-            devopsServiceE.setName(v1Service.getMetadata().getName());
-            devopsServiceE.setNamespace(v1Service.getMetadata().getNamespace());
-            devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
-            devopsServiceE.setPort(TypeUtil.objToLong(v1Service.getSpec().getPorts().get(0).getPort()));
-            devopsServiceE.setTargetPort(null);
-            if (v1Service.getSpec().getExternalIPs() != null) {
-                devopsServiceE.setExternalIp(v1Service.getSpec().getExternalIPs().get(0));
-            }
-            devopsServiceE.setLabel(json.serialize(v1Service.getMetadata().getLabels()));
-            devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
+        Map<String, String> lab = v1Service.getMetadata().getLabels();
+        if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals("service")) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(
+                    applicationInstanceE.getDevopsEnvironmentE().getId());
+            if (devopsServiceRepository.selectByNameAndNamespace(
+                    v1Service.getMetadata().getName(), devopsEnvironmentE.getCode()) == null) {
+                devopsServiceE.setEnvId(devopsEnvironmentE.getId());
+                devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
+                devopsServiceE.setName(v1Service.getMetadata().getName());
+                devopsServiceE.setNamespace(v1Service.getMetadata().getNamespace());
+                devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
+                devopsServiceE.setPort(TypeUtil.objToLong(v1Service.getSpec().getPorts().get(0).getPort()));
+                devopsServiceE.setTargetPort(null);
+                if (v1Service.getSpec().getExternalIPs() != null) {
+                    devopsServiceE.setExternalIp(v1Service.getSpec().getExternalIPs().get(0));
+                }
+                devopsServiceE.setLabel(json.serialize(v1Service.getMetadata().getLabels()));
+                devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
-            DevopsServiceAppInstanceE devopsServiceAppInstanceE = devopsServiceInstanceRepository
-                    .queryByOptions(devopsServiceE.getId(), applicationInstanceE.getId());
-            if (devopsServiceAppInstanceE == null) {
-                devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
-                devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
-                devopsServiceAppInstanceE.setAppInstanceId(applicationInstanceE.getId());
-                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
-                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
-            }
+                DevopsServiceAppInstanceE devopsServiceAppInstanceE = devopsServiceInstanceRepository
+                        .queryByOptions(devopsServiceE.getId(), applicationInstanceE.getId());
+                if (devopsServiceAppInstanceE == null) {
+                    devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
+                    devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
+                    devopsServiceAppInstanceE.setAppInstanceId(applicationInstanceE.getId());
+                    devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
+                    devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+                }
 
-            DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-            devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
+                DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+                devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
+                devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                devopsEnvCommandRepository.create(devopsEnvCommandE);
+            }
         }
     }
 
@@ -974,41 +977,45 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     private void syncIngress(String msg, Long envId) {
         V1beta1Ingress v1beta1Ingress = json.deserialize(msg, V1beta1Ingress.class);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        if (devopsEnvironmentE == null) {
-            return;
-        }
-        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
-                devopsEnvironmentE.getId(), v1beta1Ingress.getMetadata().getName());
-        if (devopsIngressE == null) {
-            devopsIngressE = new DevopsIngressE();
-            devopsIngressE.setProjectId(devopsEnvironmentE.getProjectE().getId());
-            devopsIngressE.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost());
-            devopsIngressE.setEnvId(devopsEnvironmentE.getId());
-            devopsIngressE.setName(v1beta1Ingress.getMetadata().getName());
-            devopsIngressE.setUsable(true);
-            devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
-            devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
-            DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-            devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
-            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
-            List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules()
-                    .get(0).getHttp().getPaths();
-            for (V1beta1HTTPIngressPath path : paths) {
-                DevopsIngressPathE devopsIngressPathE = new DevopsIngressPathE();
-                devopsIngressPathE.setDevopsIngressE(devopsIngressE);
-                devopsIngressPathE.setServiceName(path.getBackend().getServiceName());
-                DevopsServiceE devopsServiceE = devopsServiceRepository
-                        .selectByNameAndNamespace(path.getBackend().getServiceName(),
-                                v1beta1Ingress.getMetadata().getNamespace());
-                if (devopsServiceE != null) {
-                    devopsIngressPathE.setServiceId(devopsServiceE.getId());
+        Map<String, String> label = v1beta1Ingress.getMetadata().getLabels();
+        if (label.get(SERVICE_LABLE) != null
+                && label.get(SERVICE_LABLE).equals("ingress")) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+            if (devopsEnvironmentE == null) {
+                return;
+            }
+            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
+                    devopsEnvironmentE.getId(), v1beta1Ingress.getMetadata().getName());
+            if (devopsIngressE == null) {
+                devopsIngressE = new DevopsIngressE();
+                devopsIngressE.setProjectId(devopsEnvironmentE.getProjectE().getId());
+                devopsIngressE.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost());
+                devopsIngressE.setEnvId(devopsEnvironmentE.getId());
+                devopsIngressE.setName(v1beta1Ingress.getMetadata().getName());
+                devopsIngressE.setUsable(true);
+                devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
+                devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
+                DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+                devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
+                devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                devopsEnvCommandRepository.create(devopsEnvCommandE);
+                List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules()
+                        .get(0).getHttp().getPaths();
+                for (V1beta1HTTPIngressPath path : paths) {
+                    DevopsIngressPathE devopsIngressPathE = new DevopsIngressPathE();
+                    devopsIngressPathE.setDevopsIngressE(devopsIngressE);
+                    devopsIngressPathE.setServiceName(path.getBackend().getServiceName());
+                    DevopsServiceE devopsServiceE = devopsServiceRepository
+                            .selectByNameAndNamespace(path.getBackend().getServiceName(),
+                                    v1beta1Ingress.getMetadata().getNamespace());
+                    if (devopsServiceE != null) {
+                        devopsIngressPathE.setServiceId(devopsServiceE.getId());
+                    }
+                    devopsIngressPathE.setPath(path.getPath());
+                    devopsIngressRepository.insertIngressPath(devopsIngressPathE);
                 }
-                devopsIngressPathE.setPath(path.getPath());
-                devopsIngressRepository.insertIngressPath(devopsIngressPathE);
             }
         }
     }
