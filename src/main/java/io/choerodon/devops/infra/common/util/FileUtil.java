@@ -893,4 +893,31 @@ public class FileUtil {
             logger.info(e.getMessage());
         }
     }
+
+    /**
+     * 复制单个文件
+     *
+     * @param oldPath String  原文件路径  如：c:/fqf.txt
+     * @param newPath String  复制后路径  如：f:/fqf.txt
+     */
+    public static void copyFile(String oldPath, String newPath) {
+        try {
+            int byteread = 0;
+            File oldfile = new File(oldPath);
+            new File(newPath).mkdirs();
+            if (oldfile.exists() && oldfile.isFile()) {  //文件存在时
+                try (InputStream inStream = new FileInputStream(oldPath)) {  //读入原文件
+                    try (FileOutputStream fs = new FileOutputStream(newPath + File.separator + oldfile.getName())) {
+                        byte[] buffer = new byte[1444];
+                        while ((byteread = inStream.read(buffer)) != -1) {
+                            fs.write(buffer, 0, byteread);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            logger.info("复制单个文件操作出错");
+        }
+
+    }
 }

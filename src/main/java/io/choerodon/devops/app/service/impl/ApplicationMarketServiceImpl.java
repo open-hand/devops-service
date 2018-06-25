@@ -604,7 +604,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     organization.getCode(),
                     System.getProperty(FILE_SEPARATOR),
                     projectE.getCode());
-            FileUtil.moveFiles(tgzVersions.get(0).getAbsolutePath(), classPath);
+            FileUtil.copyFile(tgzVersions.get(0).getAbsolutePath(), classPath);
             FileUtil.deleteDirectory(new File(applicationE.getCode()));
         }
     }
