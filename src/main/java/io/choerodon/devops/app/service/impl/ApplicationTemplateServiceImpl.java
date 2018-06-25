@@ -134,7 +134,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         String repoUrl = applicationTemplateRepDTO.getRepoUrl();
         if (applicationTemplateRepDTO.getOrganizationId() != null) {
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-            repoUrl = gitlabUrl.endsWith("/")
+            repoUrl = !gitlabUrl.endsWith("/")
                     ? gitlabUrl + "/" + repoUrl
                     : gitlabUrl + repoUrl;
         }
@@ -154,7 +154,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
             if (applicationTemplateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-                repoUrl = gitlabUrl.endsWith("/")
+                repoUrl = !gitlabUrl.endsWith("/")
                         ? gitlabUrl + "/" + repoUrl
                         : gitlabUrl + repoUrl;
             }
@@ -221,7 +221,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
             if (applicationTemplateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-                repoUrl = gitlabUrl.endsWith("/")
+                repoUrl = !gitlabUrl.endsWith("/")
                         ? gitlabUrl + "/" + repoUrl
                         : gitlabUrl + repoUrl;
             }
