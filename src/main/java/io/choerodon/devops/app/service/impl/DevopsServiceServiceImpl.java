@@ -431,7 +431,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
         devopsServiceE.setPort(devopsServiceReqDTO.getPort());
-        devopsServiceE.setTargetPort(devopsServiceReqDTO.getPort());
+        devopsServiceE.setTargetPort(devopsServiceReqDTO.getTargetPort());
         devopsServiceE.setExternalIp(devopsServiceReqDTO.getExternalIp());
         devopsServiceRepository.update(devopsServiceE);
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceEList = devopsServiceInstanceRepository
