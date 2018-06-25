@@ -467,7 +467,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                                     appVersion, organization, projectE, applicationE, appId, appFiles
                             ));
                     // 发布应用
-                    releaseApp(isPublic, applicationReleasingDTO);
+                    releaseApp(isPublic, applicationReleasingDTO, appId);
                 }
             }
         });
@@ -608,10 +608,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         }
     }
 
-    private void releaseApp(Boolean isPublic, ApplicationReleasingDTO applicationReleasingDTO) {
+    private void releaseApp(Boolean isPublic, ApplicationReleasingDTO applicationReleasingDTO, Long appId) {
         if (isPublic != null) {
             ApplicationMarketE applicationMarketE = new ApplicationMarketE();
-            applicationMarketE.initApplicationEById(applicationReleasingDTO.getAppId());
+            applicationMarketE.initApplicationEById(appId);
             applicationMarketE.setPublishLevel(isPublic ? PUBLIC : ORGANIZATION);
             applicationMarketE.setActive(true);
             applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
