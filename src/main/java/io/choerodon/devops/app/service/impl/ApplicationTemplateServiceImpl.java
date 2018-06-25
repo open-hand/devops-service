@@ -132,7 +132,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                         .query(appTemplateId),
                 ApplicationTemplateRepDTO.class);
         String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-        if(applicationTemplateRepDTO.getOrganizationId()!=null) {
+        if (applicationTemplateRepDTO.getOrganizationId() != null) {
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
             repoUrl = gitlabUrl.endsWith("/")
                     ? gitlabUrl + "/" + repoUrl
@@ -152,7 +152,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getContent();
         for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-            if(applicationTemplateRepDTO.getOrganizationId()!=null) {
+            if (applicationTemplateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = gitlabUrl.endsWith("/")
                         ? gitlabUrl + "/" + repoUrl
@@ -219,7 +219,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                 ApplicationTemplateRepDTO.class);
         for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-            if(applicationTemplateRepDTO.getOrganizationId()!=null) {
+            if (applicationTemplateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = gitlabUrl.endsWith("/")
                         ? gitlabUrl + "/" + repoUrl
