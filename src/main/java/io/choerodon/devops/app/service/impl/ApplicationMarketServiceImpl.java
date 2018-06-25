@@ -488,6 +488,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             ApplicationE applicationE = applicationRepository.query(applicationReleasingDTO.getAppId());
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            applicationReleasingDTO.setAppVersions(
+                    applicationReleasingDTO.getAppVersions().parallelStream()
+                            .filter(t -> appMarketDownloadDTO.getAppVersionIds().contains(t.getId()))
+                            .collect(Collectors.toCollection(ArrayList::new))
+            );
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
             appMarketDownloadDTO.getAppVersionIds().parallelStream().forEach(appVersionId -> {
