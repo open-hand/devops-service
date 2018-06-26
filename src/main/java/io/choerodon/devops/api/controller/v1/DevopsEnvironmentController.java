@@ -251,6 +251,6 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.get"));
+                .orElseThrow(() -> new CommonException("error.environment.running.get"));
     }
 }

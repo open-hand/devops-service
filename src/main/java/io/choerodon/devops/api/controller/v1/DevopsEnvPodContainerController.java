@@ -51,6 +51,6 @@ public class DevopsEnvPodContainerController {
             @PathVariable Long podId) {
         return Optional.ofNullable(containerService.logByPodId(podId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.pod.query"));
+                .orElseThrow(() -> new CommonException("error.application.pod.get"));
     }
 }

@@ -525,6 +525,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             FileUtil.toZip(CHARTS, outputStream, true);
             FileUtil.deleteDirectory(new File(CHARTS));
         } catch (IOException e) {
+            //todo
             throw new CommonException(e.getMessage());
         }
     }

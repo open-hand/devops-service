@@ -104,7 +104,7 @@ public class DevopsIngressController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsIngressService.getIngress(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appTemplate.create"));
+                .orElseThrow(() -> new CommonException("error.Ingress.query"));
     }
 
     /**
@@ -127,7 +127,7 @@ public class DevopsIngressController {
             @PathVariable Long id) {
         return Optional.ofNullable(devopsIngressService.getIngress(projectId, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appTemplate.create"));
+                .orElseThrow(() -> new CommonException("error.IngressName.query"));
     }
 
     /**
