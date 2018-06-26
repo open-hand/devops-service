@@ -127,7 +127,7 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
         ResponseEntity<BranchDO> responseEntity =
                 gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
         if ("create branch message:Branch already exists".equals(responseEntity.getBody().getName())) {
-            throw new CommonException("error.feature.exist");
+            throw new CommonException("error.branch.exist");
         }
     }
 
