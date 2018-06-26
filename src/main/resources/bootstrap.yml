@@ -14,3 +14,5 @@ spring:
       enabled: false
 management:
   port: 8061
+  security:
+    enabled: false
