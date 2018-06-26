@@ -455,12 +455,27 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ApplicationE applicationE = new ApplicationE();
                     String appCode = applicationReleasingDTO.getCode();
                     applicationE.setCode(appCode);
-                    applicationE.setName(applicationReleasingDTO.getName());
                     applicationE.initProjectE(projectId);
-                    applicationE.setActive(true);
-                    applicationE.setSynchro(true);
-                    applicationE.setToken(GenerateUUID.generateUUID());
-                    Long appId = applicationRepository.create(applicationE).getId();
+                    Boolean appCodeExist = false;
+                    try {
+                        applicationRepository.checkCode(applicationE);
+                    } catch (Exception e) {
+                        logger.info(e.getMessage());
+                        appCodeExist = true;
+                    }
+                    applicationE.setName(applicationReleasingDTO.getName());
+                    Long appId;
+                    if (!appCodeExist) {
+                        applicationE.setActive(true);
+                        applicationE.setSynchro(true);
+                        applicationE.setToken(GenerateUUID.generateUUID());
+                        appId = applicationRepository.create(applicationE).getId();
+                    } else {
+                        ApplicationE existApplication = applicationRepository.queryByCode(appCode, projectId);
+                        appId = existApplication.getId();
+                        applicationE.setId(appId);
+                        applicationRepository.update(applicationE);
+                    }
                     applicationReleasingDTO.getAppVersions().parallelStream()
                             .forEach(appVersion -> createVersionAndApp(
                                     appVersion, orgCode, projectCode, appCode, appId, appFiles
