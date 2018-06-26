@@ -42,10 +42,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String PUBLIC = "public";
     private static final String CHARTS = "charts";
     private static final String IMAGES = "images";
-    private static final String FILE_SEPARATOR = "file.separator";
     private static final String JSON_FILE = ".json";
+
+    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
     private static final Logger logger = LoggerFactory.getLogger(ApplicationMarketServiceImpl.class);
+
     private static Gson gson = new Gson();
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${services.helm.url}")
@@ -295,15 +298,14 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String fileSeparator = File.separator;
         String classPath = String.format(
                 "tmp%s%s%s%s",
-                fileSeparator,
+                FILE_SEPARATOR,
                 organization.getCode(),
-                fileSeparator,
+                FILE_SEPARATOR,
                 projectE.getCode());
         String path = FileUtil.multipartFileToFile(classPath, file);
-        String destPath = String.format("%s%s%s", classPath, fileSeparator, "new");
+        String destPath = String.format("%s%s%s", classPath, FILE_SEPARATOR, "new");
         FileUtil.unZipFiles(new File(path), destPath);
         FileUtil.deleteFile(path);
         File zipDirectory = new File(destPath);
@@ -328,7 +330,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 List<File> appFileList = Arrays.stream(appFiles)
                         .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
                 // do sth with appFileList
-                analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList, false);
+                analyzeAppFile(appMarketTgzDTO.getAppMarketList(), appFileList);
             } else {
                 FileUtil.deleteDirectory(zipDirectory);
                 throw new CommonException("error.zip.illegal");
@@ -338,7 +340,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             throw new CommonException("error.zip.empty");
         }
         appMarketTgzDTO.setFileCode(
-                zipDirectory.renameTo(new File(String.format("%s%s%s", classPath, fileSeparator, fileCode)))
+                zipDirectory.renameTo(new File(String.format("%s%s%s", classPath, FILE_SEPARATOR, fileCode)))
                         ? fileCode : "new");
         return appMarketTgzDTO;
     }
@@ -347,14 +349,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public Boolean importApps(Long projectId, String fileName, Boolean isPublic) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String fileSeparator = File.separator;
         String destPath = String.format(
                 "tmp%s%s%s%s%s%s",
-                fileSeparator,
+                FILE_SEPARATOR,
                 organization.getCode(),
-                fileSeparator,
+                FILE_SEPARATOR,
                 projectE.getCode(),
-                fileSeparator,
+                FILE_SEPARATOR,
                 fileName);
         File zipDirectory = new File(destPath);
 
@@ -385,14 +386,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public void deleteZip(Long projectId, String fileName) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String fileSeparator = File.separator;
         String destPath = String.format(
                 "tmp%s%s%s%s%s%s",
-                fileSeparator,
+                FILE_SEPARATOR,
                 organization.getCode(),
-                fileSeparator,
+                FILE_SEPARATOR,
                 projectE.getCode(),
-                fileSeparator,
+                FILE_SEPARATOR,
                 fileName);
         File zipDirectory = new File(destPath);
         FileUtil.deleteDirectory(zipDirectory);
@@ -414,8 +414,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     private void analyzeAppFile(List<ApplicationReleasingDTO> appMarketVersionDTOS,
-                                List<File> appFileList,
-                                Boolean del) {
+                                List<File> appFileList) {
         appFileList.parallelStream().forEach(t -> {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
@@ -430,9 +429,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ApplicationReleasingDTO appMarketVersionDTO =
                             gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
                     appMarketVersionDTOS.add(appMarketVersionDTO);
-                    if (del) {
-                        FileUtil.deleteFile(appMarket);
-                    }
                 }
             }
         });
@@ -441,6 +437,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private void importAppFile(Long projectId, List<File> appFileList, Boolean isPublic) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String orgCode = organization.getCode();
+        String projectCode = projectE.getCode();
         appFileList.parallelStream().forEach(t -> {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
@@ -455,16 +453,32 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ApplicationReleasingDTO applicationReleasingDTO =
                             gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
                     ApplicationE applicationE = new ApplicationE();
-                    applicationE.setCode(applicationReleasingDTO.getCode());
-                    applicationE.setName(applicationReleasingDTO.getName());
+                    String appCode = applicationReleasingDTO.getCode();
+                    applicationE.setCode(appCode);
                     applicationE.initProjectE(projectId);
-                    applicationE.setActive(true);
-                    applicationE.setSynchro(true);
-                    applicationE.setToken(GenerateUUID.generateUUID());
-                    Long appId = applicationRepository.create(applicationE).getId();
+                    Boolean appCodeExist = false;
+                    try {
+                        applicationRepository.checkCode(applicationE);
+                    } catch (Exception e) {
+                        logger.info(e.getMessage());
+                        appCodeExist = true;
+                    }
+                    applicationE.setName(applicationReleasingDTO.getName());
+                    Long appId;
+                    if (!appCodeExist) {
+                        applicationE.setActive(true);
+                        applicationE.setSynchro(true);
+                        applicationE.setToken(GenerateUUID.generateUUID());
+                        appId = applicationRepository.create(applicationE).getId();
+                    } else {
+                        ApplicationE existApplication = applicationRepository.queryByCode(appCode, projectId);
+                        appId = existApplication.getId();
+                        applicationE.setId(appId);
+                        applicationRepository.update(applicationE);
+                    }
                     applicationReleasingDTO.getAppVersions().parallelStream()
                             .forEach(appVersion -> createVersionAndApp(
-                                    appVersion, organization, projectE, applicationE, appId, appFiles
+                                    appVersion, orgCode, projectCode, appCode, appId, appFiles
                             ));
                     // 发布应用
                     releaseApp(isPublic, applicationReleasingDTO, appId);
@@ -483,24 +497,29 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
             ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(), null);
             String destpath = String.format("charts%s%s",
-                    System.getProperty(FILE_SEPARATOR),
+                    FILE_SEPARATOR,
                     applicationReleasingDTO.getCode());
             ApplicationE applicationE = applicationRepository.query(applicationReleasingDTO.getAppId());
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            applicationReleasingDTO.setAppVersions(
+                    applicationReleasingDTO.getAppVersions().parallelStream()
+                            .filter(t -> appMarketDownloadDTO.getAppVersionIds().contains(t.getId()))
+                            .collect(Collectors.toCollection(ArrayList::new))
+            );
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
             appMarketDownloadDTO.getAppVersionIds().parallelStream().forEach(appVersionId -> {
                 ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
                 images.add(applicationVersionE.getImage());
                 String repoUrl = String.format("%s%s%s%s%s%s%s%s%s%s%s%s", helmUrl,
-                        System.getProperty(FILE_SEPARATOR),
+                        FILE_SEPARATOR,
                         organization.getCode(),
-                        System.getProperty(FILE_SEPARATOR),
+                        FILE_SEPARATOR,
                         projectE.getCode(),
-                        System.getProperty(FILE_SEPARATOR),
+                        FILE_SEPARATOR,
                         CHARTS,
-                        System.getProperty(FILE_SEPARATOR),
+                        FILE_SEPARATOR,
                         applicationE.getCode(),
                         "-",
                         applicationVersionE.getVersion(),
@@ -509,7 +528,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 HttpClientUtil.getTgz(repoUrl,
                         String.format("%s%s%s-%s.tgz",
                                 destpath,
-                                System.getProperty(FILE_SEPARATOR),
+                                FILE_SEPARATOR,
                                 applicationE.getCode(),
                                 applicationVersionE.getVersion()));
 
@@ -550,33 +569,33 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
 
     private void createVersionAndApp(AppMarketVersionDTO appVersion,
-                                     Organization organization,
-                                     ProjectE projectE,
-                                     ApplicationE applicationE,
+                                     String organizationCode,
+                                     String projectCode,
+                                     String appCode,
                                      Long appId,
                                      File[] appFiles) {
         ApplicationVersionE applicationVersionE = new ApplicationVersionE();
         String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
-                System.getProperty(FILE_SEPARATOR),
-                organization.getCode(),
+                FILE_SEPARATOR,
+                organizationCode,
                 "-",
-                projectE.getCode(),
-                System.getProperty(FILE_SEPARATOR),
-                applicationE.getCode(),
+                projectCode,
+                FILE_SEPARATOR,
+                appCode,
                 ":",
                 appVersion.getVersion()
         );
         applicationVersionE.setImage(image);
         applicationVersionE.setRepository(String.format("%s%s%s%s%s",
-                System.getProperty(FILE_SEPARATOR),
-                organization.getCode(),
-                System.getProperty(FILE_SEPARATOR),
-                projectE.getCode(),
-                System.getProperty(FILE_SEPARATOR)));
+                FILE_SEPARATOR,
+                organizationCode,
+                FILE_SEPARATOR,
+                projectCode,
+                FILE_SEPARATOR));
         applicationVersionE.setVersion(appVersion.getVersion());
         applicationVersionE.initApplicationEById(appId);
         String tazName = String.format("%s%s%s%s",
-                applicationE.getCode(),
+                appCode,
                 "-",
                 appVersion.getVersion(),
                 ".tgz"
@@ -587,25 +606,25 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         if (!tgzVersions.isEmpty()) {
             ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
             try {
-                FileUtil.unTarGZ(tgzVersions.get(0).getAbsolutePath(), applicationE.getCode());
+                FileUtil.unTarGZ(tgzVersions.get(0).getAbsolutePath(), appCode);
                 applicationVersionValueE.setValue(
                         FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
-                                new File(applicationE.getCode()), "values.yaml").getAbsolutePath())), null));
+                                new File(appCode), "values.yaml").getAbsolutePath())), null));
 
                 applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                         .create(applicationVersionValueE).getId());
             } catch (Exception e) {
                 throw new CommonException("error.version.insert");
             }
-            applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(applicationE.getCode()));
+            applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(appCode));
             applicationVersionRepository.create(applicationVersionE);
             String classPath = String.format("Charts%s%s%s%s",
-                    System.getProperty(FILE_SEPARATOR),
-                    organization.getCode(),
-                    System.getProperty(FILE_SEPARATOR),
-                    projectE.getCode());
-            FileUtil.moveFiles(tgzVersions.get(0).getAbsolutePath(), classPath);
-            FileUtil.deleteDirectory(new File(applicationE.getCode()));
+                    FILE_SEPARATOR,
+                    organizationCode,
+                    FILE_SEPARATOR,
+                    projectCode);
+            FileUtil.copyFile(tgzVersions.get(0).getAbsolutePath(), classPath);
+            FileUtil.deleteDirectory(new File(appCode));
         }
     }
 
