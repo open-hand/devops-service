@@ -102,10 +102,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 (String uuid) -> {
                     applicationE.initUuid(uuid);
                     if (applicationRepository.create(applicationE).getId() == null) {
-                        throw new CommonException("error.order.create.insert");
+                        // todo
+                        throw new CommonException("error.application.create.insert");
                     }
                 });
         if (exception != null) {
+            // todo
             throw new CommonException(exception.getMessage());
         }
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),

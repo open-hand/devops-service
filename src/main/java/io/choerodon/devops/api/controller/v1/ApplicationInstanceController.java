@@ -197,7 +197,7 @@ public class ApplicationInstanceController {
             @PathVariable Long appInstanceId) {
         return Optional.ofNullable(applicationInstanceService.queryVersionFeatures(appInstanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.values.query"));
+                .orElseThrow(() -> new CommonException("error.version.values.query"));
     }
 
     /**

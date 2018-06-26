@@ -110,7 +110,7 @@ public class ApplicationMarketController {
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(applicationMarketService.listMarketApps(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.market.applications.get"));
+                .orElseThrow(() -> new CommonException("error.market.applications.query"));
     }
 
     /**
@@ -206,7 +206,7 @@ public class ApplicationMarketController {
         return Optional.ofNullable(
                 applicationMarketService.getAppVersions(projectId, appMarketId, isPublish, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
+                .orElseThrow(() -> new CommonException("error.market.application.versions.query"));
     }
 
 
