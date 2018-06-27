@@ -49,7 +49,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
         ResponseEntity<GroupDO> responseEntity =
                 gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        logger.info(responseEntity.getBody().toString());
+        logger.info("testbug" + responseEntity.getBody().toString());
         group = responseEntity.getBody();
         if (group != null) {
             DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
