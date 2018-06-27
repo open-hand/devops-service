@@ -42,6 +42,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String PUBLIC = "public";
     private static final String CHARTS = "charts";
     private static final String IMAGES = "images";
+    private static final String PUSH_IAMGES = "push_image.sh";
     private static final String JSON_FILE = ".json";
 
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
@@ -538,13 +539,14 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 stringBuilder.append(image);
                 stringBuilder.append(System.getProperty("line.separator"));
             }
+            InputStream inputStream = this.getClass().getResourceAsStream("/shell/push_image.sh");
+            FileUtil.saveDataToFile(CHARTS, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream,null));
             FileUtil.saveDataToFile(CHARTS, IMAGES, stringBuilder.toString());
         }
         try (FileOutputStream outputStream = new FileOutputStream(CHARTS + ".zip")) {
             FileUtil.toZip(CHARTS, outputStream, true);
             FileUtil.deleteDirectory(new File(CHARTS));
         } catch (IOException e) {
-            //todo
             throw new CommonException(e.getMessage());
         }
     }
