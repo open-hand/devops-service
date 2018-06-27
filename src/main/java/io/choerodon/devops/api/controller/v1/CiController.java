@@ -40,7 +40,6 @@ public class CiController {
      * @return File
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER},
             permissionPublic = true)
     @ApiOperation(value = "应用查询ci脚本文件")
     @GetMapping
@@ -66,7 +65,6 @@ public class CiController {
      * @return File
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER},
             permissionPublic = true)
     @ApiOperation(value = "获取应用版本信息")
     @PostMapping
