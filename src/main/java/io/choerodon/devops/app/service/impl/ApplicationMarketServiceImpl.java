@@ -477,7 +477,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         applicationRepository.update(applicationE);
                     }
                     applicationReleasingDTO.getAppVersions().parallelStream()
-                            .forEach(appVersion -> createVersionAndApp(
+                            .forEach(appVersion -> createVersion(
                                     appVersion, orgCode, projectCode, appCode, appId, appFiles
                             ));
                     // 发布应用
@@ -568,12 +568,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
 
-    private void createVersionAndApp(AppMarketVersionDTO appVersion,
-                                     String organizationCode,
-                                     String projectCode,
-                                     String appCode,
-                                     Long appId,
-                                     File[] appFiles) {
+    private void createVersion(AppMarketVersionDTO appVersion,
+                               String organizationCode,
+                               String projectCode,
+                               String appCode,
+                               Long appId,
+                               File[] appFiles) {
         ApplicationVersionE applicationVersionE = new ApplicationVersionE();
         String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
                 FILE_SEPARATOR,
@@ -607,9 +607,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
             try {
                 FileUtil.unTarGZ(tgzVersions.get(0).getAbsolutePath(), appCode);
-                applicationVersionValueE.setValue(
-                        FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
-                                new File(appCode), "values.yaml").getAbsolutePath())), null));
+                File valueYaml = FileUtil.queryFileFromFiles(new File(appCode), "values.yaml");
+                if (valueYaml == null) {
+                    throw new CommonException("error.version.values.notExist");
+                }
+                applicationVersionValueE.setValue(FileUtil.replaceReturnString(new FileInputStream(valueYaml), null));
 
                 applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                         .create(applicationVersionValueE).getId());
@@ -617,7 +619,14 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 throw new CommonException("error.version.insert");
             }
             applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(appCode));
-            applicationVersionRepository.create(applicationVersionE);
+            ApplicationVersionE version = applicationVersionRepository
+                    .queryByAppAndVersion(appId, appVersion.getVersion());
+            if (version == null) {
+                applicationVersionRepository.create(applicationVersionE);
+            } else {
+                applicationVersionE.setId(version.getId());
+                applicationVersionRepository.updateVersion(applicationVersionE);
+            }
             String classPath = String.format("Charts%s%s%s%s",
                     FILE_SEPARATOR,
                     organizationCode,
@@ -630,17 +639,25 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     private void releaseApp(Boolean isPublic, ApplicationReleasingDTO applicationReleasingDTO, Long appId) {
         if (isPublic != null) {
-            ApplicationMarketE applicationMarketE = new ApplicationMarketE();
-            applicationMarketE.initApplicationEById(appId);
-            applicationMarketE.setPublishLevel(isPublic ? PUBLIC : ORGANIZATION);
-            applicationMarketE.setActive(true);
-            applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
-            applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
-            applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
-            applicationMarketRepository.create(applicationMarketE);
-            Long appMarketId =
-                    applicationMarketRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
-            applicationMarketRepository.updateVersion(appMarketId, null, true);
+            Boolean canPub;
+            try {
+                canPub = applicationMarketRepository.checkCanPub(appId);
+            } catch (Exception e) {
+                canPub = false;
+            }
+            if (canPub) {
+                ApplicationMarketE applicationMarketE = new ApplicationMarketE();
+                applicationMarketE.initApplicationEById(appId);
+                applicationMarketE.setPublishLevel(isPublic ? PUBLIC : ORGANIZATION);
+                applicationMarketE.setActive(true);
+                applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
+                applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
+                applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
+                applicationMarketRepository.create(applicationMarketE);
+                Long appMarketId =
+                        applicationMarketRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
+                applicationMarketRepository.updateVersion(appMarketId, null, true);
+            }
         }
     }
 }

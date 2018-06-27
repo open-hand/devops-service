@@ -42,4 +42,6 @@ public interface ApplicationVersionRepository {
     void setReadme(Long versionId, String readme);
 
     String getReadme(Long versionId);
+
+    void updateVersion(ApplicationVersionE applicationVersionE);
 }
