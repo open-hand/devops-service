@@ -123,7 +123,7 @@ public class ApplicationVersionController {
      * @return ApplicationVersionRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "分页查询某应用下的所有版本")
     @CustomPageRequest
     @PostMapping(value = "/apps/{appId}/version/list_by_options")
