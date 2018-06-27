@@ -39,6 +39,7 @@ env:
     SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
     SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181
     SPRING_CLOUD_CONFIG_URI: http://config-server.framework:8010/
+    SPRING_CLOUD_CONFIG_ENABLED: true
     SERVICES_GITLAB_URL: http://git.choerodon.com.cn
     SERVICES_GITLAB_PASSWORD: abc123456
     SERVICES_GITLAB_PROJECTLIMIT: 100

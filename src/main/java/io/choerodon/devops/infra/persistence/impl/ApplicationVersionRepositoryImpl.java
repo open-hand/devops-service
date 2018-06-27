@@ -85,7 +85,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         ApplicationVersionDO applicationVersionDO =
                 ConvertHelper.convert(applicationVersionE, ApplicationVersionDO.class);
         if (applicationVersionMapper.insert(applicationVersionDO) != 1) {
-            throw new CommonException("error.application.insert");
+            throw new CommonException("error.version.insert");
         }
         setReadme(applicationVersionDO.getId(), applicationVersionE.getApplicationVersionReadmeV().getReadme());
         return ConvertHelper.convert(applicationVersionDO, ApplicationVersionE.class);
@@ -200,6 +200,28 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             readme = "# 暂无";
         }
         return readme;
+    }
+
+    @Override
+    public void updateVersion(ApplicationVersionE applicationVersionE) {
+        ApplicationVersionDO applicationVersionDO =
+                ConvertHelper.convert(applicationVersionE, ApplicationVersionDO.class);
+        if (applicationVersionMapper.updateByPrimaryKey(applicationVersionDO) != 1) {
+            throw new CommonException("error.version.update");
+        }
+        updateReadme(applicationVersionDO.getId(), applicationVersionE.getApplicationVersionReadmeV().getReadme());
+    }
+
+    private void updateReadme(Long versionId, String readme) {
+        ApplicationVersionReadmeDO readmeDO;
+        try {
+            readmeDO = applicationVersionReadmeMapper.selectOne(new ApplicationVersionReadmeDO(versionId));
+            readmeDO.setReadme(readme);
+            applicationVersionReadmeMapper.updateByPrimaryKey(readmeDO);
+        } catch (Exception e) {
+            readmeDO = new ApplicationVersionReadmeDO(versionId, readme);
+            applicationVersionReadmeMapper.insert(readmeDO);
+        }
     }
 
 }
