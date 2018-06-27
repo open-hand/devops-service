@@ -23,7 +23,7 @@ else
     exit 0
 fi
 docker login -u $2 -p $3 $1
-lastch=${1: -1}
+lastch=`echo $1 | awk '{print substr($0,length,1)}'`
 harobr_url=$1
 if [  "$lastch" != "/" ] ;then
     harobr_url="$1/"

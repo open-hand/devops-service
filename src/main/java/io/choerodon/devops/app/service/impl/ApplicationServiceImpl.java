@@ -251,7 +251,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                     gitlabUserE.getUsername(), accessToken, APPLICATION);
-            gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId());
             boolean flag = true;
             while (flag) {
                 if (gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId()).equals(DEVELOP)) {
