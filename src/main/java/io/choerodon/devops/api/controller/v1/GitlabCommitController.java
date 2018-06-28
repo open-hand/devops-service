@@ -37,7 +37,7 @@ public class GitlabCommitController {
      * @param shas            关联pipeline的值
      * @return GitlabCommitDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询gitlab下的Commit信息")
     @CustomPageRequest
     @PostMapping(value = "/{gitlabProjectId}/commit_sha")
