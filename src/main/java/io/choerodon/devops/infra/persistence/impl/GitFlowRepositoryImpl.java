@@ -84,8 +84,8 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public void deleteMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId) {
-        gitlabServiceClient.deleteMergeRequest(projectId, mergeRequestId, userId);
+    public void deleteMergeRequest(Integer projectId, Integer mergeRequestId) {
+        gitlabServiceClient.deleteMergeRequest(projectId, mergeRequestId);
     }
 
 
