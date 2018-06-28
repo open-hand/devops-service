@@ -67,8 +67,10 @@ public class GitUtil {
             branch = microServiceFront;
         } else if (type.equals("MicroService")) {
             branch = microService;
-        } else {
+        } else if(type.equals("JavaLib")){
             branch = javaLib;
+        }else {
+            branch = MASTER;
         }
         try {
             git = Git.cloneRepository()

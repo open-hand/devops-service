@@ -216,11 +216,15 @@ public class ApplicationServiceImpl implements ApplicationService {
             String applicationDir = APPLICATION + System.currentTimeMillis();
             //拉取模板
             String repoUrl = applicationTemplateE.getRepoUrl();
+            String type = applicationTemplateE.getCode();
+            if(applicationTemplateE.getOrganization().getId()!=null) {
+               type = MASTER;
+            }
             if (applicationTemplateE.getOrganization().getId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
             }
-            Git git = gitUtil.clone(applicationDir, applicationTemplateE.getCode(),
+            Git git = gitUtil.clone(applicationDir, type,
                     repoUrl);
             //渲染模板里面的参数
             try {
