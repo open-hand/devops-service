@@ -189,10 +189,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity deleteMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId) {
-        return new ResponseEntity("error.mergeRequest.delete", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity deleteMergeRequest(Integer projectId, Integer mergeRequestId) {
+        return null;
     }
-
+git a
     @Override
     public ResponseEntity<Object> deleteBranch(Integer projectId, String branchName, Integer userId) {
         return new ResponseEntity("error.branch.delete", HttpStatus.INTERNAL_SERVER_ERROR);
