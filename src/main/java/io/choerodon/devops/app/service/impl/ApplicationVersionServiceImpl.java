@@ -61,8 +61,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public void create(String image, String token, String version, String commit, MultipartFile files) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
 
-        ApplicationVersionValueE applicationVersionValueE = ApplicationVersionValueFactory.create();
-        ApplicationVersionE applicationVersionE = ApplicationVersionEFactory.create();
+        ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
+        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
         ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationVersionE newApplicationVersionE = applicationVersionRepository

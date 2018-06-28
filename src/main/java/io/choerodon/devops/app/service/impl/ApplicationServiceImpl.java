@@ -162,10 +162,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 .forEach(t -> t.initGitlabProjectEByUrl(
                         t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null
                                 ? gitlabUrl + urlSlash
-                                    + organization.getCode() + "-" + projectE.getCode() + "/"
-                                    + t.getCode() + ".git"
+                                + organization.getCode() + "-" + projectE.getCode() + "/"
+                                + t.getCode() + ".git"
                                 : null
-        ));
+                ));
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
 
@@ -217,12 +217,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             //拉取模板
             String repoUrl = applicationTemplateE.getRepoUrl();
             String type = applicationTemplateE.getCode();
-            if(applicationTemplateE.getOrganization().getId()!=null) {
-               type = MASTER;
-            }
+            boolean teamplateType = true;
             if (applicationTemplateE.getOrganization().getId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
+                type = MASTER;
+                teamplateType = false;
             }
             Git git = gitUtil.clone(applicationDir, type,
                     repoUrl);
@@ -254,7 +254,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
-                    gitlabUserE.getUsername(), accessToken, APPLICATION);
+                    gitlabUserE.getUsername(), accessToken, APPLICATION, teamplateType);
             boolean flag = true;
             while (flag) {
                 if (gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId()).equals(DEVELOP)) {

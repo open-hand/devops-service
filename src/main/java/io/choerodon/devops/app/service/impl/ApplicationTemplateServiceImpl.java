@@ -182,10 +182,12 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             //拉取模板
             String repoUrl = templateRepDTO.getRepoUrl();
             String type = templateRepDTO.getCode();
+            boolean teamplateType = true;
             if (templateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
                 type = MASTER;
+                teamplateType = false;
             }
             Git git = gitUtil.clone(
                     applicationDir,
@@ -209,7 +211,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl,
                     gitlabUserE.getUsername(),
                     accessToken,
-                    TEMPLATE);
+                    TEMPLATE,
+                    teamplateType);
         } else {
             gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
                     gitlabProjectEventDTO.getUserId());
