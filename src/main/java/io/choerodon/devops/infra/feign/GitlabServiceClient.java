@@ -229,8 +229,7 @@ public interface GitlabServiceClient {
 
     @DeleteMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
     ResponseEntity deleteMergeRequest(@PathVariable("projectId") Integer projectId,
-                                      @PathVariable("mergeRequestId") Integer mergeRequestId,
-                                      @RequestParam("userId") Integer userId);
+                                      @PathVariable("mergeRequestId") Integer mergeRequestId);
 
     /**
      * 根据分支名删除分支
