@@ -154,27 +154,51 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 newDevopsEnvResourceE,
                 devopsEnvResourceDetailE,
                 applicationInstanceE);
-        if (v1OwnerReferences.get(0).getKind().equals(ResourceType.REPLICASET.getType())) {
-            String status = K8sUtil.changePodStatus(v1Pod);
-            String resourceVersion = v1Pod.getMetadata().getResourceVersion();
+        String status = K8sUtil.changePodStatus(v1Pod);
+        String resourceVersion = v1Pod.getMetadata().getResourceVersion();
 
-            DevopsEnvPodE devopsEnvPodE = new DevopsEnvPodE();
-            devopsEnvPodE.setName(v1Pod.getMetadata().getName());
-            devopsEnvPodE.setIp(v1Pod.getStatus().getPodIP());
-            devopsEnvPodE.setStatus(status);
-            devopsEnvPodE.setResourceVersion(resourceVersion);
-            devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
-            if (!PENDING.equals(status)) {
-                devopsEnvPodE.setReady(v1Pod.getStatus().getContainerStatuses().get(0).isReady());
+        DevopsEnvPodE devopsEnvPodE = new DevopsEnvPodE();
+        devopsEnvPodE.setName(v1Pod.getMetadata().getName());
+        devopsEnvPodE.setIp(v1Pod.getStatus().getPodIP());
+        devopsEnvPodE.setStatus(status);
+        devopsEnvPodE.setResourceVersion(resourceVersion);
+        devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
+        if (!PENDING.equals(status)) {
+            devopsEnvPodE.setReady(v1Pod.getStatus().getContainerStatuses().get(0).isReady());
+        } else {
+            devopsEnvPodE.setReady(false);
+        }
+
+        Boolean flag = false;
+        if (applicationInstanceE.getId() != null) {
+            List<DevopsEnvPodE> devopsEnvPodEList = devopsEnvPodRepository
+                    .selectByInstanceId(applicationInstanceE.getId());
+            if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
+                devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
+                devopsEnvPodRepository.insert(devopsEnvPodE);
+                Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
+                v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+                        containerRepository.insert(new DevopsEnvPodContainerDO(
+                                podId,
+                                t.getName())));
             } else {
-                devopsEnvPodE.setReady(false);
-            }
-
-            Boolean flag = false;
-            if (applicationInstanceE.getId() != null) {
-                List<DevopsEnvPodE> devopsEnvPodEList = devopsEnvPodRepository
-                        .selectByInstanceId(applicationInstanceE.getId());
-                if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
+                for (DevopsEnvPodE pod : devopsEnvPodEList) {
+                    if (pod.getName().equals(v1Pod.getMetadata().getName())
+                            && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
+                        if (!resourceVersion.equals(pod.getResourceVersion())) {
+                            devopsEnvPodE.setId(pod.getId());
+                            devopsEnvPodE.initApplicationInstanceE(pod.getApplicationInstanceE().getId());
+                            devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
+                            devopsEnvPodRepository.update(devopsEnvPodE);
+                            containerRepository.deleteByPodId(pod.getId());
+                            v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+                                    containerRepository.insert(
+                                            new DevopsEnvPodContainerDO(pod.getId(), t.getName())));
+                        }
+                        flag = true;
+                    }
+                }
+                if (!flag) {
                     devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
                     devopsEnvPodRepository.insert(devopsEnvPodE);
                     Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
@@ -182,32 +206,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             containerRepository.insert(new DevopsEnvPodContainerDO(
                                     podId,
                                     t.getName())));
-                } else {
-                    for (DevopsEnvPodE pod : devopsEnvPodEList) {
-                        if (pod.getName().equals(v1Pod.getMetadata().getName())
-                                && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
-                            if (!resourceVersion.equals(pod.getResourceVersion())) {
-                                devopsEnvPodE.setId(pod.getId());
-                                devopsEnvPodE.initApplicationInstanceE(pod.getApplicationInstanceE().getId());
-                                devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
-                                devopsEnvPodRepository.update(devopsEnvPodE);
-                                containerRepository.deleteByPodId(pod.getId());
-                                v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
-                                        containerRepository.insert(
-                                                new DevopsEnvPodContainerDO(pod.getId(), t.getName())));
-                            }
-                            flag = true;
-                        }
-                    }
-                    if (!flag) {
-                        devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
-                        devopsEnvPodRepository.insert(devopsEnvPodE);
-                        Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-                        v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
-                                containerRepository.insert(new DevopsEnvPodContainerDO(
-                                        podId,
-                                        t.getName())));
-                    }
                 }
             }
         }
@@ -282,6 +280,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             DevopsEnvResourceE newdevopsEnvResourceE = null;
             ApplicationInstanceE applicationInstanceE = null;
             ResourceType resourceType = ResourceType.forString(KeyParseTool.getResourceType(key));
+            if (resourceType == null) {
+                resourceType = ResourceType.forString("MissType");
+            }
             switch (resourceType) {
                 case INGRESS:
                     syncIngress(msg, envId);
@@ -766,76 +767,77 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ResourceSyncPayload resourceSyncPayload = JSONArray.parseObject(msg, ResourceSyncPayload.class);
         ResourceType resourceType = ResourceType.forString(resourceSyncPayload.getResourceType());
         List<DevopsEnvResourceE> devopsEnvResourceES;
-        if (resourceType != null) {
-            switch (resourceType) {
-                case POD:
-                    devopsEnvResourceES = devopsEnvResourceRepository
-                            .listByEnvAndType(envId, ResourceType.POD.getType());
-                    if (!devopsEnvResourceES.isEmpty()) {
-                        List<String> podNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsEnvResourceES.parallelStream()
-                                .filter(devopsEnvResourceE -> !podNames.contains(devopsEnvResourceE.getName()))
-                                .forEach(devopsEnvResourceE -> {
+        if (resourceType == null) {
+            resourceType = ResourceType.forString("MissType");
+        }
+        switch (resourceType) {
+            case POD:
+                devopsEnvResourceES = devopsEnvResourceRepository
+                        .listByEnvAndType(envId, ResourceType.POD.getType());
+                if (!devopsEnvResourceES.isEmpty()) {
+                    List<String> podNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsEnvResourceES.parallelStream()
+                            .filter(devopsEnvResourceE -> !podNames.contains(devopsEnvResourceE.getName()))
+                            .forEach(devopsEnvResourceE -> {
+                                devopsEnvResourceRepository.deleteByKindAndName(
+                                        ResourceType.POD.getType(), devopsEnvResourceE.getName());
+                                devopsEnvPodRepository.deleteByName(
+                                        devopsEnvResourceE.getName(), KeyParseTool.getValue(key, "env"));
+                            });
+                }
+                break;
+            case DEPLOYMENT:
+                devopsEnvResourceES = devopsEnvResourceRepository
+                        .listByEnvAndType(envId, ResourceType.DEPLOYMENT.getType());
+                if (!devopsEnvResourceES.isEmpty()) {
+                    List<String> deploymentNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsEnvResourceES.parallelStream()
+                            .filter(devopsEnvResourceE -> !deploymentNames.contains(devopsEnvResourceE.getName()))
+                            .forEach(devopsEnvResourceE ->
                                     devopsEnvResourceRepository.deleteByKindAndName(
-                                            ResourceType.POD.getType(), devopsEnvResourceE.getName());
-                                    devopsEnvPodRepository.deleteByName(
-                                            devopsEnvResourceE.getName(), KeyParseTool.getValue(key, "env"));
-                                });
-                    }
-                    break;
-                case DEPLOYMENT:
-                    devopsEnvResourceES = devopsEnvResourceRepository
-                            .listByEnvAndType(envId, ResourceType.DEPLOYMENT.getType());
-                    if (!devopsEnvResourceES.isEmpty()) {
-                        List<String> deploymentNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsEnvResourceES.parallelStream()
-                                .filter(devopsEnvResourceE -> !deploymentNames.contains(devopsEnvResourceE.getName()))
-                                .forEach(devopsEnvResourceE ->
-                                        devopsEnvResourceRepository.deleteByKindAndName(
-                                                ResourceType.DEPLOYMENT.getType(), devopsEnvResourceE.getName()));
-                    }
-                    break;
-                case REPLICASET:
-                    devopsEnvResourceES = devopsEnvResourceRepository
-                            .listByEnvAndType(envId, ResourceType.REPLICASET.getType());
-                    if (!devopsEnvResourceES.isEmpty()) {
-                        List<String> replicaSetNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsEnvResourceES.parallelStream()
-                                .filter(devopsEnvResourceE -> !replicaSetNames.contains(devopsEnvResourceE.getName()))
-                                .forEach(devopsEnvResourceE ->
-                                        devopsEnvResourceRepository.deleteByKindAndName(
-                                                ResourceType.REPLICASET.getType(), devopsEnvResourceE.getName()));
-                    }
-                    break;
-                case SERVICE:
-                    List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
-                    if (!devopsServiceVS.isEmpty()) {
-                        List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsServiceVS.parallelStream()
-                                .filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName()))
-                                .forEach(devopsServiceV -> {
-                                    devopsServiceRepository.delete(devopsServiceV.getId());
+                                            ResourceType.DEPLOYMENT.getType(), devopsEnvResourceE.getName()));
+                }
+                break;
+            case REPLICASET:
+                devopsEnvResourceES = devopsEnvResourceRepository
+                        .listByEnvAndType(envId, ResourceType.REPLICASET.getType());
+                if (!devopsEnvResourceES.isEmpty()) {
+                    List<String> replicaSetNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsEnvResourceES.parallelStream()
+                            .filter(devopsEnvResourceE -> !replicaSetNames.contains(devopsEnvResourceE.getName()))
+                            .forEach(devopsEnvResourceE ->
                                     devopsEnvResourceRepository.deleteByKindAndName(
-                                            ResourceType.SERVICE.getType(), devopsServiceV.getName());
-                                });
-                    }
-                    break;
-                case INGRESS:
-                    List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
-                    if (!devopsIngressES.isEmpty()) {
-                        List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsIngressES.parallelStream()
-                                .filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName()))
-                                .forEach(devopsIngressE -> {
-                                    devopsIngressRepository.deleteIngress(devopsIngressE.getId());
-                                    devopsEnvResourceRepository.deleteByKindAndName(
-                                            ResourceType.INGRESS.getType(), devopsIngressE.getName());
-                                });
-                    }
-                    break;
-                default:
-                    break;
-            }
+                                            ResourceType.REPLICASET.getType(), devopsEnvResourceE.getName()));
+                }
+                break;
+            case SERVICE:
+                List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
+                if (!devopsServiceVS.isEmpty()) {
+                    List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsServiceVS.parallelStream()
+                            .filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName()))
+                            .forEach(devopsServiceV -> {
+                                devopsServiceRepository.delete(devopsServiceV.getId());
+                                devopsEnvResourceRepository.deleteByKindAndName(
+                                        ResourceType.SERVICE.getType(), devopsServiceV.getName());
+                            });
+                }
+                break;
+            case INGRESS:
+                List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
+                if (!devopsIngressES.isEmpty()) {
+                    List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsIngressES.parallelStream()
+                            .filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName()))
+                            .forEach(devopsIngressE -> {
+                                devopsIngressRepository.deleteIngress(devopsIngressE.getId());
+                                devopsEnvResourceRepository.deleteByKindAndName(
+                                        ResourceType.INGRESS.getType(), devopsIngressE.getName());
+                            });
+                }
+                break;
+            default:
+                break;
         }
     }
 

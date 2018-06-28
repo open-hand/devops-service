@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -49,12 +50,11 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
         ResponseEntity<GroupDO> responseEntity =
                 gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        logger.info("testbug" + responseEntity.getBody().toString());
-        group = responseEntity.getBody();
-        if (group != null) {
-            DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
-            devopsProjectDO.setGitlabGroupId(group.getId());
-            devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+        if(responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+            group = responseEntity.getBody();
+                DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
+                devopsProjectDO.setGitlabGroupId(group.getId());
+                devopsProjectRepository.updateProjectAttr(devopsProjectDO);
         }
     }
 
