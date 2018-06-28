@@ -53,6 +53,9 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     devopsEnvResourceDetailRepository.query(
                             devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
             ResourceType resourceType = ResourceType.forString(devopsInstanceResourceE.getKind());
+            if (resourceType == null) {
+                resourceType = ResourceType.forString("MissType");
+            }
             switch (resourceType) {
                 case POD:
                     V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Pod.class);
