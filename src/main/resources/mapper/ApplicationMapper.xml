@@ -72,7 +72,7 @@
     </select>
 
     <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
-        SELECT
+        SELECT DISTINCT
         dam.publish_level publishLevel,
         dam.contributor,
         dam.description,
