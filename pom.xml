@@ -24,7 +24,7 @@
     </build>
 
     <properties>
-        <choerodon.starters.version>0.5.2.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.5.3.RELEASE</choerodon.starters.version>
     </properties>
 
     <dependencies>

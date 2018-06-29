@@ -67,6 +67,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         Integer gitlabProjectId = app.getGitlabProjectE().getId();
         List<BranchE> branchES = gitlabProjectRepository.listBranches(
                 gitlabProjectId, getGitlabUserId());
+        System.out.println("zzzzahhaha"+gitlabProjectId);
         List<TagDO> tagTotalList = gitFlowRepository.getGitLabTags(gitlabProjectId, userId);
         if (branchES == null) {
             return new ProjectPipelineResultTotalDTO();
