@@ -79,6 +79,8 @@
         da.*
         FROM
         devops_application da
+        JOIN devops_app_instance dai ON dai.app_id = da.id
+        AND dai.`status` != 'deleted'
         LEFT JOIN devops_app_market dam ON dam.app_id = da.id
         WHERE
         da.is_active
