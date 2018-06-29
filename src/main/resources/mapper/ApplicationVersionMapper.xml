@@ -114,8 +114,7 @@
         FROM
         devops_app_version dav
         WHERE
-        1 = 1
-        AND dav.app_id = #{appId}
+        dav.app_id = #{appId}
         <if test="isPublish != null">
             <if test="isPublish == true">
                 AND dav.is_publish = TRUE
@@ -126,6 +125,22 @@
         </if>
         ORDER BY
         dav.id DESC
+    </select>
+
+    <select id="selectDeployedByAppId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT DISTINCT
+            dav.id,
+            dav.version
+        FROM
+            devops_app_version dav
+            JOIN devops_app_instance dai ON dai.app_version_id = dav.id
+            AND dai.`status` != 'deleted'
+            JOIN devops_env de ON de.id = dai.env_id
+        WHERE
+            de.project_id = #{projectId}
+            AND dav.app_id = #{appId}
+        ORDER BY
+            dav.id DESC
     </select>
 
     <select id="getAllPublishedVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
