@@ -929,7 +929,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsServiceE.setExternalIp(v1Service.getSpec().getExternalIPs().get(0));
                 }
                 devopsServiceE.setLabel(json.serialize(v1Service.getMetadata().getLabels()));
-                devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
+                devopsServiceE.setId(devopsServiceRepository.insert(devopsServiceE).getId());
 
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = devopsServiceInstanceRepository
                         .queryByOptions(devopsServiceE.getId(), applicationInstanceE.getId());
@@ -948,6 +948,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
+        }else {
+            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.SERVICE.getType(),v1Service.getMetadata().getName());
         }
     }
 
@@ -1019,6 +1021,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsIngressRepository.insertIngressPath(devopsIngressPathE);
                 }
             }
+        }else {
+            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.INGRESS.getType(),v1beta1Ingress.getMetadata().getName());
         }
     }
 }
