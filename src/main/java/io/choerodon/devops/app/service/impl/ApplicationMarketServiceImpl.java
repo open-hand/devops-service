@@ -605,8 +605,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(appCode));
             ApplicationVersionE version = applicationVersionRepository
                     .queryByAppAndVersion(appId, appVersion.getVersion());
+
             if (isVersionPublish) {
                 applicationVersionE.setIsPublish(1L);
+            } else {
+                applicationVersionE.setIsPublish(version == null ? null : version.getIsPublish());
             }
             if (version == null) {
                 applicationVersionRepository.create(applicationVersionE);
