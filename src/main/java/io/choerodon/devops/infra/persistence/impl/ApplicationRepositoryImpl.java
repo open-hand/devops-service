@@ -142,13 +142,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listAll(Long projectId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Long organizationId = projectE.getOrganization().getId();
-        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
-        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        return ConvertHelper.convertList(applicationMapper.listAll(projectId, projectIds), ApplicationE.class);
+        return ConvertHelper.convertList(applicationMapper.listAll(projectId), ApplicationE.class);
     }
 
     @Override

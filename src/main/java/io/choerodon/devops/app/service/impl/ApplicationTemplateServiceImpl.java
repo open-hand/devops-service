@@ -40,6 +40,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationTemplateServiceImpl implements ApplicationTemplateService {
 
     private static final String TEMPLATE = "template";
+    private static final String MASTER = "master";
     @Value("${spring.application.name}")
     private String applicationName;
     @Value("${services.gitlab.url}")
@@ -180,13 +181,17 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     .query(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepDTO.class);
             //拉取模板
             String repoUrl = templateRepDTO.getRepoUrl();
+            String type = templateRepDTO.getCode();
+            boolean teamplateType = true;
             if (templateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
+                type = MASTER;
+                teamplateType = false;
             }
             Git git = gitUtil.clone(
                     applicationDir,
-                    templateRepDTO.getCode(),
+                    type,
                     repoUrl);
             List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
                     applicationDir, gitlabProjectEventDTO.getUserId());
@@ -206,7 +211,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl,
                     gitlabUserE.getUsername(),
                     accessToken,
-                    TEMPLATE);
+                    TEMPLATE,
+                    teamplateType);
         } else {
             gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
                     gitlabProjectEventDTO.getUserId());

@@ -18,6 +18,7 @@ public class ApplicationVersionE {
     private Date creationDate;
     private ApplicationE applicationE;
     private String repository;
+    private Long isPublish;
     private ApplicationVersionValueE applicationVersionValueE;
     private ApplicationVersionReadmeV applicationVersionReadmeV;
 
@@ -120,5 +121,13 @@ public class ApplicationVersionE {
 
     public void initApplicationVersionReadmeV(String readme) {
         this.applicationVersionReadmeV = new ApplicationVersionReadmeV(readme);
+    }
+
+    public Long getIsPublish() {
+        return isPublish;
+    }
+
+    public void setIsPublish(Long isPublish) {
+        this.isPublish = isPublish;
     }
 }

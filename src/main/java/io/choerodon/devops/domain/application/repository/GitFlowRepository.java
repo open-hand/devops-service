@@ -20,7 +20,7 @@ public interface GitFlowRepository {
 
     MergeRequestDO getMergeRequest(Integer projectId, Long mergeRequestId, Integer userId);
 
-    void deleteMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId);
+    void deleteMergeRequest(Integer projectId, Integer mergeRequestId);
 
     DevopsMergeRequestDO getDevOpsMergeRequest(Integer projectId, String branchName, String targetBranch);
 

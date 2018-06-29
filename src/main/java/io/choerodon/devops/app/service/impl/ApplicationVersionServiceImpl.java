@@ -19,8 +19,6 @@ import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.factory.ApplicationVersionEFactory;
-import io.choerodon.devops.domain.application.factory.ApplicationVersionValueFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
@@ -61,8 +59,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public void create(String image, String token, String version, String commit, MultipartFile files) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
 
-        ApplicationVersionValueE applicationVersionValueE = ApplicationVersionValueFactory.create();
-        ApplicationVersionE applicationVersionE = ApplicationVersionEFactory.create();
+        ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
+        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
         ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationVersionE newApplicationVersionE = applicationVersionRepository
@@ -101,6 +99,12 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish) {
         return ConvertHelper.convertList(
                 applicationVersionRepository.listByAppId(appId, isPublish), ApplicationVersionRepDTO.class);
+    }
+
+    @Override
+    public List<ApplicationVersionRepDTO> listDeployedByAppId(Long projectId, Long appId) {
+        return ConvertHelper.convertList(
+                applicationVersionRepository.listDeployedByAppId(projectId, appId), ApplicationVersionRepDTO.class);
     }
 
     @Override

@@ -67,8 +67,10 @@ public class GitUtil {
             branch = microServiceFront;
         } else if (type.equals("MicroService")) {
             branch = microService;
-        } else {
+        } else if(type.equals("JavaLib")){
             branch = javaLib;
+        }else {
+            branch = MASTER;
         }
         try {
             git = Git.cloneRepository()
@@ -85,13 +87,15 @@ public class GitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String repoUrl, String userName, String accessToken, String type) {
+    public void push(Git git, String name, String repoUrl, String userName, String accessToken, String type, Boolean  teamplateType) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage("Render Variables[skip ci]").call();
-            git.branchCreate().setName(MASTER).call();
+            if(teamplateType) {
+                git.branchCreate().setName(MASTER).call();
+            }
             if (type.equals(APPLICATION)) {
                 git.branchCreate().setName(DEVELOP).call();
             }

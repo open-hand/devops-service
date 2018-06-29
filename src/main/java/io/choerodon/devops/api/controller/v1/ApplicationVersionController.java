@@ -67,6 +67,7 @@ public class ApplicationVersionController {
      *
      * @param projectId 项目id
      * @param appId     应用Id
+     * @param isPublish 版本是否发布
      * @return List
      */
     @ApiOperation(value = "应用下查询应用所有版本")
@@ -83,6 +84,28 @@ public class ApplicationVersionController {
             @ApiParam(value = "是否发布", required = false)
             @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
         return Optional.ofNullable(applicationVersionService.listByAppId(appId, isPublish))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+    /**
+     * 项目下查询应用所有已部署版本
+     *
+     * @param projectId 项目id
+     * @param appId     应用Id
+     * @return List
+     */
+    @ApiOperation(value = "项目下查询应用所有已部署版本")
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/apps/{app_id}/version/list_deployed")
+    public ResponseEntity<List<ApplicationVersionRepDTO>> queryDeployedByAppId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id")
+            @PathVariable(value = "app_id") Long appId) {
+        return Optional.ofNullable(applicationVersionService.listDeployedByAppId(projectId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }

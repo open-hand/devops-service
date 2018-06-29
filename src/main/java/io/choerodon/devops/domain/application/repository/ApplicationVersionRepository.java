@@ -20,6 +20,8 @@ public interface ApplicationVersionRepository {
 
     List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
 
+    List<ApplicationVersionE> listDeployedByAppId(Long projectId, Long appId);
+
     ApplicationVersionE query(Long appVersionId);
 
     List<ApplicationVersionE> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);

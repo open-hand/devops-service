@@ -455,31 +455,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                             gson.fromJson(appMarketJson, ApplicationReleasingDTO.class);
                     ApplicationE applicationE = new ApplicationE();
                     String appCode = applicationReleasingDTO.getCode();
-                    applicationE.setCode(appCode);
-                    applicationE.initProjectE(projectId);
-                    Boolean appCodeExist = false;
-                    try {
-                        applicationRepository.checkCode(applicationE);
-                    } catch (Exception e) {
-                        logger.info(e.getMessage());
-                        appCodeExist = true;
-                    }
                     applicationE.setName(applicationReleasingDTO.getName());
-                    Long appId;
-                    if (!appCodeExist) {
-                        applicationE.setActive(true);
-                        applicationE.setSynchro(true);
-                        applicationE.setToken(GenerateUUID.generateUUID());
-                        appId = applicationRepository.create(applicationE).getId();
-                    } else {
-                        ApplicationE existApplication = applicationRepository.queryByCode(appCode, projectId);
-                        appId = existApplication.getId();
-                        applicationE.setId(appId);
-                        applicationRepository.update(applicationE);
-                    }
+                    Long appId = createOrUpdateApp(applicationE, appCode, projectId);
+                    Boolean isVersionPublish = isPublic != null;
                     applicationReleasingDTO.getAppVersions().parallelStream()
                             .forEach(appVersion -> createVersion(
-                                    appVersion, orgCode, projectCode, appCode, appId, appFiles
+                                    appVersion, orgCode, projectCode, appCode, appId, appFiles, isVersionPublish
                             ));
                     // 发布应用
                     releaseApp(isPublic, applicationReleasingDTO, appId);
@@ -540,7 +521,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 stringBuilder.append(System.getProperty("line.separator"));
             }
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/push_image.sh");
-            FileUtil.saveDataToFile(CHARTS, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream,null));
+            FileUtil.saveDataToFile(CHARTS, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream, null));
             FileUtil.saveDataToFile(CHARTS, IMAGES, stringBuilder.toString());
         }
         try (FileOutputStream outputStream = new FileOutputStream(CHARTS + ".zip")) {
@@ -575,7 +556,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                                String projectCode,
                                String appCode,
                                Long appId,
-                               File[] appFiles) {
+                               File[] appFiles,
+                               Boolean isVersionPublish) {
         ApplicationVersionE applicationVersionE = new ApplicationVersionE();
         String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
                 FILE_SEPARATOR,
@@ -623,6 +605,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(appCode));
             ApplicationVersionE version = applicationVersionRepository
                     .queryByAppAndVersion(appId, appVersion.getVersion());
+
+            if (isVersionPublish) {
+                applicationVersionE.setIsPublish(1L);
+            } else {
+                applicationVersionE.setIsPublish(version == null ? null : version.getIsPublish());
+            }
             if (version == null) {
                 applicationVersionRepository.create(applicationVersionE);
             } else {
@@ -639,14 +627,43 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         }
     }
 
-    private void releaseApp(Boolean isPublic, ApplicationReleasingDTO applicationReleasingDTO, Long appId) {
+    private Long createOrUpdateApp(ApplicationE applicationE, String appCode, Long projectId) {
+        applicationE.setCode(appCode);
+        applicationE.initProjectE(projectId);
+        Long appId;
+        Boolean appCodeExist = false;
+        try {
+            applicationRepository.checkCode(applicationE);
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+            appCodeExist = true;
+        }
+        if (!appCodeExist) {
+            applicationE.setActive(true);
+            applicationE.setSynchro(true);
+            applicationE.setToken(GenerateUUID.generateUUID());
+            appId = applicationRepository.create(applicationE).getId();
+        } else {
+            ApplicationE existApplication = applicationRepository.queryByCode(appCode, projectId);
+            appId = existApplication.getId();
+            applicationE.setId(appId);
+            applicationRepository.update(applicationE);
+        }
+        return appId;
+    }
+
+    private Boolean checkAppCanPub(Long appId) {
+        try {
+            return applicationMarketRepository.checkCanPub(appId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void releaseApp(Boolean isPublic,
+                            ApplicationReleasingDTO applicationReleasingDTO, Long appId) {
         if (isPublic != null) {
-            Boolean canPub;
-            try {
-                canPub = applicationMarketRepository.checkCanPub(appId);
-            } catch (Exception e) {
-                canPub = false;
-            }
+            Boolean canPub = checkAppCanPub(appId);
             if (canPub) {
                 ApplicationMarketE applicationMarketE = new ApplicationMarketE();
                 applicationMarketE.initApplicationEById(appId);
@@ -656,9 +673,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
                 applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
                 applicationMarketRepository.create(applicationMarketE);
-                Long appMarketId =
-                        applicationMarketRepository.getMarketIdByAppId(applicationReleasingDTO.getAppId());
-                applicationMarketRepository.updateVersion(appMarketId, null, true);
             }
         }
     }

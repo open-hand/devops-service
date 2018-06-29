@@ -101,6 +101,16 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
+    public List<ApplicationVersionE> listDeployedByAppId(Long projectId, Long appId) {
+        List<ApplicationVersionDO> applicationVersionDOS =
+                applicationVersionMapper.selectDeployedByAppId(projectId, appId);
+        if (applicationVersionDOS.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return ConvertHelper.convertList(applicationVersionDOS, ApplicationVersionE.class);
+    }
+
+    @Override
     public ApplicationVersionE query(Long appVersionId) {
         return ConvertHelper.convert(
                 applicationVersionMapper.selectByPrimaryKey(appVersionId), ApplicationVersionE.class);
