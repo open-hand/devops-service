@@ -132,7 +132,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             socketMsgDispatcher.dispatcher(msg1);
             return;
         }
-        DevopsEnvResourceE devopsEnvResourceE = DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+        DevopsEnvResourceE devopsEnvResourceE = new DevopsEnvResourceE();
         DevopsEnvResourceE newDevopsEnvResourceE =
                 devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                         applicationInstanceE.getId(),
@@ -243,7 +243,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 job.getKind(),
                                 job.getName());
                 DevopsEnvResourceE devopsEnvResourceE =
-                        DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                       new DevopsEnvResourceE();
                 devopsEnvResourceE.setKind(job.getKind());
                 devopsEnvResourceE.setName(job.getName());
                 devopsEnvResourceE.setWeight(
@@ -267,7 +267,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         try {
             Object obj = objectMapper.readValue(msg, Object.class);
             DevopsEnvResourceE devopsEnvResourceE =
-                    DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                    new DevopsEnvResourceE();
             DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
             devopsEnvResourceDetailE.setMessage(msg);
             devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
@@ -448,7 +448,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Override
     public void handlerDomainCreateMessage(String key, String msg, Long envId) {
         V1beta1Ingress ingress = json.deserialize(msg, V1beta1Ingress.class);
-        DevopsEnvResourceE devopsEnvResourceE = DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+        DevopsEnvResourceE devopsEnvResourceE = new DevopsEnvResourceE();
         DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
         devopsEnvResourceDetailE.setMessage(msg);
         devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
@@ -482,11 +482,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     private ApplicationInstanceE helmRelease(Long envId, String msg) {
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
-        ApplicationVersionValueE applicationVersionValueE = ApplicationVersionValueFactory.create();
-        ApplicationVersionE applicationVersionE = ApplicationVersionEFactory.create();
+        ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
+        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
         if (applicationInstanceRepository.selectByCode(releasePayload.getName(), envId) == null) {
             try {
-                ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
+                ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                         .queryById(envId);
                 ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
@@ -551,8 +551,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     applicationInstanceE.initApplicationVersionEById(newApplicationVersionE.getId());
                 }
                 applicationInstanceE.initDevopsEnvironmentEById(devopsEnvironmentE.getId());
-                DevopsEnvCommandValueE devopsEnvCommandValueE = DevopsEnvCommandValueFactory
-                        .createDevopsEnvCommandE();
+                DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
                 devopsEnvCommandValueE.setValue(releasePayload.getConfig());
                 devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
                 devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
@@ -680,7 +679,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<String> releases = Arrays.asList(releaseNames.split("\\+"));
 
         DevopsEnvResourceE devopsEnvResourceE =
-                DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                new DevopsEnvResourceE();
         DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
         devopsEnvResourceDetailE.setMessage(msg);
         devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
@@ -881,7 +880,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
                 devopsEnvResourceDetailE.setMessage(resource.getObject());
                 DevopsEnvResourceE devopsEnvResourceE =
-                        DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                        new DevopsEnvResourceE();
                 devopsEnvResourceE.setKind(resource.getKind());
                 devopsEnvResourceE.setName(resource.getName());
                 JSONObject jsonResult = JSONObject.parseObject(JSONObject.parseObject(resource.getObject())
@@ -941,7 +940,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
                 }
 
-                DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
                 devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
                 devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                 devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
@@ -999,7 +998,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsIngressE.setUsable(true);
                 devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
                 devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
-                DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
                 devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
                 devopsEnvCommandE.setObjectId(devopsIngressE.getId());
                 devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
