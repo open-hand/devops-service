@@ -457,14 +457,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     String appCode = applicationReleasingDTO.getCode();
                     applicationE.setName(applicationReleasingDTO.getName());
                     Long appId = createOrUpdateApp(applicationE, appCode, projectId);
-                    Boolean canPub = checkAppCanPub(appId);
-                    Boolean isVersionPublish = isPublic != null && canPub;
+                    Boolean isVersionPublish = isPublic != null;
                     applicationReleasingDTO.getAppVersions().parallelStream()
                             .forEach(appVersion -> createVersion(
                                     appVersion, orgCode, projectCode, appCode, appId, appFiles, isVersionPublish
                             ));
                     // 发布应用
-                    releaseApp(isPublic, canPub, applicationReleasingDTO, appId);
+                    releaseApp(isPublic, applicationReleasingDTO, appId);
                 }
             }
         });
@@ -658,17 +657,20 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         }
     }
 
-    private void releaseApp(Boolean isPublic, Boolean canPub,
+    private void releaseApp(Boolean isPublic,
                             ApplicationReleasingDTO applicationReleasingDTO, Long appId) {
-        if (isPublic != null && canPub) {
-            ApplicationMarketE applicationMarketE = new ApplicationMarketE();
-            applicationMarketE.initApplicationEById(appId);
-            applicationMarketE.setPublishLevel(isPublic ? PUBLIC : ORGANIZATION);
-            applicationMarketE.setActive(true);
-            applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
-            applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
-            applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
-            applicationMarketRepository.create(applicationMarketE);
+        if (isPublic != null) {
+            Boolean canPub = checkAppCanPub(appId);
+            if (canPub) {
+                ApplicationMarketE applicationMarketE = new ApplicationMarketE();
+                applicationMarketE.initApplicationEById(appId);
+                applicationMarketE.setPublishLevel(isPublic ? PUBLIC : ORGANIZATION);
+                applicationMarketE.setActive(true);
+                applicationMarketE.setContributor(applicationReleasingDTO.getContributor());
+                applicationMarketE.setDescription(applicationReleasingDTO.getDescription());
+                applicationMarketE.setCategory(applicationReleasingDTO.getCategory());
+                applicationMarketRepository.create(applicationMarketE);
+            }
         }
     }
 }
