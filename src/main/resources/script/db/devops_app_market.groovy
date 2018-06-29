@@ -35,4 +35,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_market.groovy') {
         }
     }
 
+    changeSet(author: 'Runge', id: '2018-06-29-updateDataType') {
+        modifyDataType(tableName: 'devops_app_market', columnName: 'contributor', newDataType: 'VARCHAR(128)')
+    }
+
 }
