@@ -164,7 +164,7 @@ public class ApplicationMarketController {
      * @return List of AppMarketVersionDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询项目下单个应用市场的应用的版本")
     @GetMapping("/{app_market_id}/versions")
     public ResponseEntity<List<AppMarketVersionDTO>> queryAppVersionsInProject(
