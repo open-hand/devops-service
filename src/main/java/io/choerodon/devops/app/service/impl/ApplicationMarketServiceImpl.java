@@ -458,7 +458,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     applicationE.setName(applicationReleasingDTO.getName());
                     Long appId = createOrUpdateApp(applicationE, appCode, projectId);
                     Boolean canPub = checkAppCanPub(appId);
-                    Boolean isVersionPublish = isPublic && canPub;
+                    Boolean isVersionPublish = isPublic != null && canPub;
                     applicationReleasingDTO.getAppVersions().parallelStream()
                             .forEach(appVersion -> createVersion(
                                     appVersion, orgCode, projectCode, appCode, appId, appFiles, isVersionPublish
