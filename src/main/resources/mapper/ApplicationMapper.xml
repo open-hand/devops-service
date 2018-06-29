@@ -87,6 +87,9 @@
         WHERE
         da.is_active
         AND de.project_id = #{projectId}
+        ORDER BY
+            dam.publish_level ASC,
+            da.id DESC
     </select>
 
     <sql id="sqlparam">
