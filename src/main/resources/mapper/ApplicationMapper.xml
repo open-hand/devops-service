@@ -68,6 +68,7 @@
         devops_application da
         WHERE
         da.is_active
+        AND da.gitlab_project_id is not null
         AND da.project_id = #{projectId}
     </select>
 
