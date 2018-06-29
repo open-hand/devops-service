@@ -148,15 +148,4 @@
         WHERE
             dav.app_id = #{applicationId}
     </select>
-
-    <update id="changeApplicationVersions" parameterType = "io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
-        UPDATE devops_app_version dav
-        SET dav.is_publish = #{isPublish}
-        WHERE
-        dav.app_id  #{appId}
-        <if test='versionId != null'>
-            AND dav.id = #{versionId}
-        </if>
-    </update>
-
 </mapper>
