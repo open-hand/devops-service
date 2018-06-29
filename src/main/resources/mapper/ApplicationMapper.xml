@@ -81,20 +81,11 @@
         devops_application da
         JOIN devops_app_instance dai ON dai.app_id = da.id
         AND dai.`status` != 'deleted'
+        JOIN devops_env de ON dai.env_id = de.id
         LEFT JOIN devops_app_market dam ON dam.app_id = da.id
         WHERE
         da.is_active
-        AND (
-        da.project_id = #{projectId}
-        OR (
-        da.project_id IN
-        <foreach collection="projectIds" item="project" open="(" separator="," close=")">
-            #{project}
-        </foreach>
-        AND dam.publish_level = 'organization'
-        )
-        OR dam.publish_level = 'public'
-        )
+        AND de.project_id = #{projectId}
     </select>
 
     <sql id="sqlparam">
