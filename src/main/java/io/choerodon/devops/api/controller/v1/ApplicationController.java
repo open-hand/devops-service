@@ -213,8 +213,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {
             InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER,
-            InitRoleCode.DEPLOY_ADMINISTRATOR
+            InitRoleCode.PROJECT_MEMBER
     })
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping

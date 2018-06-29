@@ -41,7 +41,7 @@ public class ProjectPipelineController {
      * @param pageRequest 分页参数
      * @return ProjectPipelineResultTotalDTO
      */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询应用下的Pipeline信息")
     @CustomPageRequest
     @GetMapping(value = "/applications/{appId}/pipelines")
