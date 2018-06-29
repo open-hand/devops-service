@@ -142,7 +142,7 @@ public class ApplicationMarketController {
      * @return ApplicationReleasingDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER,InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询单个应用市场的应用")
     @GetMapping("/{app_market_id}")
     public ResponseEntity<ApplicationReleasingDTO> queryApp(
@@ -164,7 +164,7 @@ public class ApplicationMarketController {
      * @return List of AppMarketVersionDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER,InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目下单个应用市场的应用的版本")
     @GetMapping("/{app_market_id}/versions")
     public ResponseEntity<List<AppMarketVersionDTO>> queryAppVersionsInProject(
@@ -219,7 +219,7 @@ public class ApplicationMarketController {
      * @return String of readme
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询单个应用市场的应用的单个版本README")
     @GetMapping("/{app_market_id}/versions/{version_id}/readme")
     public ResponseEntity<String> queryAppVersionReadme(
