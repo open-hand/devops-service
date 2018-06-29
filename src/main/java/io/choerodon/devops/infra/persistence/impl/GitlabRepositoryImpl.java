@@ -74,11 +74,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId) {
         ResponseEntity<GroupDO> groupDO = gitlabServiceClient.createGroup(ConvertHelper.convert(
                 gitlabGroupE, GroupDO.class), userId);
-        if (groupDO.getStatusCode().is2xxSuccessful()) {
-            return ConvertHelper.convert(groupDO.getBody(), GitlabGroupE.class);
-        } else {
-            throw new CommonException("error.group.create");
-        }
+        return ConvertHelper.convert(groupDO.getBody(), GitlabGroupE.class);
     }
 
     @Override
@@ -108,8 +104,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
 
-    public void updateProject(Integer projectId, Integer userId) {
-        gitlabServiceClient.updateProject(projectId, userId);
+    public String updateProject(Integer projectId, Integer userId) {
+        return gitlabServiceClient.updateProject(projectId, userId).getBody().getDefaultBranch();
     }
 
 }

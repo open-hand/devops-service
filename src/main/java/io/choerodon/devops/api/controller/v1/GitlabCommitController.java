@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.devops.api.dto.GitlabCommitDTO;
 import io.choerodon.devops.app.service.GitlabCommitService;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -36,7 +37,7 @@ public class GitlabCommitController {
      * @param shas            关联pipeline的值
      * @return GitlabCommitDTO
      */
-    @Permission
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询gitlab下的Commit信息")
     @CustomPageRequest
     @PostMapping(value = "/{gitlabProjectId}/commit_sha")

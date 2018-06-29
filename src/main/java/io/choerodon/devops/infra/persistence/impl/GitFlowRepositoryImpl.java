@@ -84,8 +84,8 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
     }
 
     @Override
-    public void deleteMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId) {
-        gitlabServiceClient.deleteMergeRequest(projectId, mergeRequestId, userId);
+    public void deleteMergeRequest(Integer projectId, Integer mergeRequestId) {
+        gitlabServiceClient.deleteMergeRequest(projectId, mergeRequestId);
     }
 
 
@@ -127,7 +127,7 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
         ResponseEntity<BranchDO> responseEntity =
                 gitlabServiceClient.createBranch(projectId, branchName, baseBranch, userId);
         if ("create branch message:Branch already exists".equals(responseEntity.getBody().getName())) {
-            throw new CommonException("error.feature.exist");
+            throw new CommonException("error.branch.exist");
         }
     }
 
@@ -204,7 +204,8 @@ public class GitFlowRepositoryImpl implements GitFlowRepository {
         return getGitLabTags(projectId, userId);
     }
 
-    private List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
+    @Override
+    public List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
         ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
         if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
             throw new CommonException("error.tags.get");

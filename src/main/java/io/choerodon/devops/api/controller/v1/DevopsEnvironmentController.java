@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
@@ -37,7 +38,7 @@ public class DevopsEnvironmentController {
      * @param devopsEnviromentDTO 环境信息
      * @return String
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
     public ResponseEntity<String> create(
@@ -56,7 +57,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询存在网络环境")
     @GetMapping(value = "/deployed")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdDeployed(
@@ -74,7 +75,10 @@ public class DevopsEnvironmentController {
      * @param active    是否启用
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询环境")
     @GetMapping
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdAndActive(
@@ -92,10 +96,9 @@ public class DevopsEnvironmentController {
      *
      * @param projectId     项目id
      * @param environmentId 环境id
-     * @param environmentId 是否更新
      * @return String
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询单个环境的可执行shell")
     @GetMapping("/{environmentId}/shell")
     public ResponseEntity<String> queryShell(
@@ -118,7 +121,7 @@ public class DevopsEnvironmentController {
      * @param active        是否可用
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下启用停用环境")
     @PutMapping("/{environmentId}/active")
     public ResponseEntity<Boolean> queryByEnvIdAndActive(
@@ -140,7 +143,8 @@ public class DevopsEnvironmentController {
      * @param environmentId 环境id
      * @return DevopsEnvironmentUpdateDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询单个环境")
     @GetMapping("/{environmentId}")
     public ResponseEntity<DevopsEnvironmentUpdateDTO> query(
@@ -160,7 +164,9 @@ public class DevopsEnvironmentController {
      * @param devopsEnvironmentUpdateDTO 环境信息
      * @return DevopsEnvironmentUpdateDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {
+            InitRoleCode.DEPLOY_ADMINISTRATOR
+    })
     @ApiOperation(value = "项目下更新环境")
     @PutMapping
     public ResponseEntity<DevopsEnvironmentUpdateDTO> update(
@@ -180,7 +186,7 @@ public class DevopsEnvironmentController {
      * @param environmentIds 环境列表
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下环境流水线排序")
     @PutMapping("/sort")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> sort(
@@ -200,7 +206,7 @@ public class DevopsEnvironmentController {
      * @param name      环境名
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "创建环境校验名称是否存在")
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
@@ -219,7 +225,7 @@ public class DevopsEnvironmentController {
      * @param code      应用code
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "创建环境校验编码是否存在")
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
@@ -237,7 +243,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询有正在运行实例的环境")
     @GetMapping(value = "/instance")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectId(
@@ -245,6 +251,6 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.get"));
+                .orElseThrow(() -> new CommonException("error.environment.running.get"));
     }
 }

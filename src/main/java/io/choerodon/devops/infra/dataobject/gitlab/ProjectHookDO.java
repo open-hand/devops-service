@@ -23,7 +23,15 @@ public class ProjectHookDO {
     /**
      * 重写构造方法
      */
-    public ProjectHookDO(Boolean buildEvents, Boolean issuesEvents, Boolean mergeRequestsEvents, Boolean noteEvents, Boolean jobEvents, Boolean pipelineEvents, Boolean pushEvents, Boolean tagPushEvents, Boolean wikiPageEvents) {
+    public ProjectHookDO(Boolean buildEvents,
+                         Boolean issuesEvents,
+                         Boolean mergeRequestsEvents,
+                         Boolean noteEvents,
+                         Boolean jobEvents,
+                         Boolean pipelineEvents,
+                         Boolean pushEvents,
+                         Boolean tagPushEvents,
+                         Boolean wikiPageEvents) {
         this.buildEvents = buildEvents;
         this.issuesEvents = issuesEvents;
         this.mergeRequestsEvents = mergeRequestsEvents;

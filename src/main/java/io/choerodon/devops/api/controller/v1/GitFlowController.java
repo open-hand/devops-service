@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.GitFlowService;
 import io.choerodon.devops.domain.application.entity.gitlab.GitFlowE;
@@ -39,7 +40,8 @@ public class GitFlowController {
      * @param applicationId 应用ID
      * @return GitFlow 列表
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取工程下所有分支名")
     @GetMapping("/branches")
     public ResponseEntity<List<GitFlowE>> listByAppId(
@@ -60,7 +62,8 @@ public class GitFlowController {
      * @param branch        分支名称
      * @return 合并请求状态
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("刷新分支合并请求")
     @PostMapping("/update_merge_request_status")
     public ResponseEntity<String> finish(
@@ -76,7 +79,8 @@ public class GitFlowController {
                 .orElseThrow(() -> new CommonException("error.branch.update"));
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "开始 GitFlow")
     @PostMapping("/start")
     public ResponseEntity start(
@@ -90,7 +94,8 @@ public class GitFlowController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation("结束Feature分支")
     @PostMapping("/finish_feature")
     public ResponseEntity finishFeatureEvent(
@@ -104,7 +109,8 @@ public class GitFlowController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "结束 GitFlow")
     @PostMapping("/finish")
     public ResponseEntity finishEvent(
@@ -127,7 +133,8 @@ public class GitFlowController {
      * @param size          页大小
      * @return Tag List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取应用下所有 tag")
     @GetMapping("/tags")
     public ResponseEntity<TagsDO> queryTags(
@@ -150,7 +157,8 @@ public class GitFlowController {
      * @param branch        分支名称
      * @return 下一发布版本号
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取新发布版本号")
     @GetMapping("/tags/release")
     public ResponseEntity<String> queryReleaseNumber(
@@ -173,7 +181,8 @@ public class GitFlowController {
      * @param branch        分支名称
      * @return 下一热修复版本号
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取热修复版本号")
     @GetMapping("/tags/hotfix")
     public ResponseEntity<String> queryHotfixNumber(

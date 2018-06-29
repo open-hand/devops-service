@@ -19,6 +19,14 @@ spring:
         percentage: 1.0
   redis:
     host: localhost
+  http:
+    encoding:
+     charset: UTF-8
+     force: true
+     enabled: true
+    multipart:
+     max-file-size: 30MB
+     max-request-size: 30MB
 services:
   harbor:
     baseUrl: "harbor.example.com"
@@ -30,6 +38,11 @@ services:
     projectLimit: 100
   helm:
     url: "helm.example.com"
+template:
+  version:
+    MicroService: 0.7.0
+    MicroServiceFront: 0.7.0
+    JavaLib: 0.7.0
 choerodon:
   event:
     consumer:
@@ -77,3 +90,6 @@ feign:
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
+logging:
+  level:
+    io.choerodon.event.consumer: debug

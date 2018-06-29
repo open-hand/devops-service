@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
@@ -122,9 +121,9 @@ public interface ApplicationInstanceService {
     ReplaceResult queryValue(Long instanceId);
 
     /**
-     *校验values
+     * 校验values
      *
-     * @param  replaceResult values对象
+     * @param replaceResult values对象
      * @return List
      */
     List<ErrorLineDTO> formatValue(ReplaceResult replaceResult);

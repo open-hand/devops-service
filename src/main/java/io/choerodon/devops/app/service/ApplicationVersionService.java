@@ -44,6 +44,15 @@ public interface ApplicationVersionService {
     List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish);
 
     /**
+     * 项目下查询应用所有已部署版本
+     *
+     * @param projectId 项目ID
+     * @param appId     应用ID
+     * @return List
+     */
+    List<ApplicationVersionRepDTO> listDeployedByAppId(Long projectId, Long appId);
+
+    /**
      * 查询部署在某个环境的应用版本
      *
      * @param projectId 项目id

@@ -8,17 +8,13 @@ public enum CommandType {
     DELETE("delete"),
     UPDATE("update");
 
-    private String commandType;
+    private String type;
 
-    CommandType(String commandType) {
-        this.commandType = commandType;
+    CommandType(String type) {
+        this.type = type;
     }
 
-    public String getCommandType() {
-        return commandType;
-    }
-
-    public void setCommandType(String commandType) {
-        this.commandType = commandType;
+    public String getType() {
+        return type;
     }
 }

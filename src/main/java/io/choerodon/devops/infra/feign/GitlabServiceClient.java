@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -229,8 +229,7 @@ public interface GitlabServiceClient {
 
     @DeleteMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
     ResponseEntity deleteMergeRequest(@PathVariable("projectId") Integer projectId,
-                                      @PathVariable("mergeRequestId") Integer mergeRequestId,
-                                      @RequestParam("userId") Integer userId);
+                                      @PathVariable("mergeRequestId") Integer mergeRequestId);
 
     /**
      * 根据分支名删除分支

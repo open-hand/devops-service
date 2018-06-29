@@ -207,6 +207,7 @@ public class GitFlowServiceImpl implements GitFlowService {
                 (String uuid) -> {
                 });
         if (exception != null) {
+            // todo
             throw new CommonException(exception.getMessage());
         }
     }
@@ -216,6 +217,7 @@ public class GitFlowServiceImpl implements GitFlowService {
                 (String uuid) -> {
                 });
         if (exception != null) {
+            // todo
             throw new CommonException(exception.getMessage());
         }
     }

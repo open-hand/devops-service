@@ -61,8 +61,10 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public int create(ApplicationE applicationE) {
-        return applicationMapper.insert(ConvertHelper.convert(applicationE, ApplicationDO.class));
+    public ApplicationE create(ApplicationE applicationE) {
+        ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
+        applicationMapper.insert(applicationDO);
+        return ConvertHelper.convert(applicationDO, ApplicationE.class);
     }
 
 
@@ -94,12 +96,12 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
             } else {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
-                                projectId, isActive,hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                projectId, isActive, hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMapper.list(projectId, isActive,hasVersion, null, null));
+                    pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, null, null));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
@@ -140,13 +142,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listAll(Long projectId) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Long organizationId = projectE.getOrganization().getId();
-        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
-        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
-                .collect(Collectors.toCollection(ArrayList::new));
-
-        return ConvertHelper.convertList(applicationMapper.listAll(projectId, projectIds), ApplicationE.class);
+        return ConvertHelper.convertList(applicationMapper.listAll(projectId), ApplicationE.class);
     }
 
     @Override

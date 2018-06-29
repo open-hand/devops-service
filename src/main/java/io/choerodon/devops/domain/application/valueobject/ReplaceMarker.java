@@ -1,6 +1,8 @@
 package io.choerodon.devops.domain.application.valueobject;
 
 /**
+ * 文件替换
+ *
  * @author crockitwood
  */
 public class ReplaceMarker {
@@ -62,13 +64,13 @@ public class ReplaceMarker {
 
     @Override
     public String toString() {
-        return "ReplaceMarker{" +
-                "line=" + line +
-                ", startIndex=" + startIndex +
-                ", endIndex=" + endIndex +
-                ", startColumn=" + startColumn +
-                ", endColumn=" + endColumn +
-                ", toReplace='" + toReplace + '\'' +
-                '}';
+        return "ReplaceMarker{"
+                + "line=" + line
+                + ", startIndex=" + startIndex
+                + ", endIndex=" + endIndex
+                + ", startColumn=" + startColumn
+                + ", endColumn=" + endColumn
+                + ", toReplace='" + toReplace + '\''
+                + '}';
     }
 }

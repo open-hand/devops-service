@@ -23,6 +23,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
@@ -68,6 +69,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GitlabUserRepository gitlabUserRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
+    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
 
     @Override
     public ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO) {
@@ -82,6 +85,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE.initActive(true);
         applicationE.initSynchro(false);
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                gitlabGroupE.getId(),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+        }
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setType(APPLICATION);
         gitlabProjectPayload.setPath(applicationDTO.getCode());
@@ -92,11 +101,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                 "CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
                 (String uuid) -> {
                     applicationE.initUuid(uuid);
-                    if (applicationRepository.create(applicationE) != 1) {
-                        throw new CommonException("error.order.create.insert");
+                    if (applicationRepository.create(applicationE).getId() == null) {
+                        // todo
+                        throw new CommonException("error.application.create.insert");
                     }
                 });
         if (exception != null) {
+            // todo
             throw new CommonException(exception.getMessage());
         }
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
@@ -147,11 +158,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        for (ApplicationE applicationE : applicationES) {
-            applicationE.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                    + organization.getCode() + "-" + projectE.getCode() + "/"
-                    + applicationE.getCode() + ".git");
-        }
+        applicationES.getContent().parallelStream()
+                .forEach(t -> t.initGitlabProjectEByUrl(
+                        t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null
+                                ? gitlabUrl + urlSlash
+                                + organization.getCode() + "-" + projectE.getCode() + "/"
+                                + t.getCode() + ".git"
+                                : null
+                ));
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
 
@@ -202,9 +216,16 @@ public class ApplicationServiceImpl implements ApplicationService {
             String applicationDir = APPLICATION + System.currentTimeMillis();
             //拉取模板
             String repoUrl = applicationTemplateE.getRepoUrl();
-            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-            Git git = gitUtil.clone(applicationDir,
-                    !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
+            String type = applicationTemplateE.getCode();
+            boolean teamplateType = true;
+            if (applicationTemplateE.getOrganization().getId() != null) {
+                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
+                repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
+                type = MASTER;
+                teamplateType = false;
+            }
+            Git git = gitUtil.clone(applicationDir, type,
+                    repoUrl);
             //渲染模板里面的参数
             try {
                 File file = new File(gitUtil.getWorkingDirectory(applicationDir));
@@ -233,14 +254,20 @@ public class ApplicationServiceImpl implements ApplicationService {
                     + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
-                    gitlabUserE.getUsername(), accessToken, APPLICATION);
+                    gitlabUserE.getUsername(), accessToken, APPLICATION, teamplateType);
+            boolean flag = true;
+            while (flag) {
+                if (gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId()).equals(DEVELOP)) {
+                    flag = false;
+                }
+            }
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(),
                     DEVELOP, AccessLevel.DEVELOPER.toString(), AccessLevel.DEVELOPER.toString(),
                     gitlabProjectEventDTO.getUserId());
         }
-        gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId());
+
         try {
             String token = GenerateUUID.generateUUID();
             gitlabRepository.addVariable(gitlabProjectEventDTO.getGitlabProjectId(), "Token",

@@ -28,10 +28,10 @@ public class IDevopsServiceServiceImpl implements IDevopsServiceService {
     public void deploy(String serviceYaml, String name, String namespace, Long envId, Long commandId) {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".envId:" + envId + ".Service:" + name);
-        msg.setType(HelmType.NetworkService.toValue());
+        msg.setType(HelmType.NETWORK_SERVICE.toValue());
         msg.setPayload(serviceYaml);
         msg.setCommandId(commandId);
-        logger.info("send update service message: " + msg);
+        logger.info(String.format("send update service message: %s", msg));
         commandSender.sendMsg(msg);
     }
 
@@ -39,10 +39,10 @@ public class IDevopsServiceServiceImpl implements IDevopsServiceService {
     public void delete(String name, String namespace, Long envId, Long commandId) {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".envId:" + envId + ".Service:" + name);
-        msg.setType(HelmType.NetworkServiceDelete.toValue());
+        msg.setType(HelmType.NETWORK_SERVICE_DELETE.toValue());
         msg.setPayload(name);
         msg.setCommandId(commandId);
-        logger.info("send delete service message: " + msg);
+        logger.info(String.format("send delete service message: %s", msg));
         commandSender.sendMsg(msg);
     }
 }

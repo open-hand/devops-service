@@ -162,9 +162,9 @@ public class IGitFlowServiceImpl implements IGitFlowService {
 
     @Override
     public void deleteBranchSafely(Integer projectId, String branchName, Integer devMergeStatus, Integer masterMergeStatus, Integer userId) {
-        deleteBranchRecord(projectId, branchName, BRANCH_DEV, devMergeStatus, userId);
+        deleteBranchRecord(projectId, branchName, BRANCH_DEV, devMergeStatus);
         if (!branchName.startsWith(FEATURE_PREFIX)) {
-            deleteBranchRecord(projectId, branchName, BRANCH_MASTER, masterMergeStatus, userId);
+            deleteBranchRecord(projectId, branchName, BRANCH_MASTER, masterMergeStatus);
         }
         gitFlowRepository.deleteBranch(projectId, branchName, userId);
     }
@@ -240,13 +240,13 @@ public class IGitFlowServiceImpl implements IGitFlowService {
     }
 
     private void deleteBranchRecord(Integer projectId, String branchName, String targetBranch,
-                                    Integer mergeStatus, Integer userId) {
+                                    Integer mergeStatus) {
         DevopsMergeRequestDO mergeRequestDO = gitFlowRepository
                 .getDevOpsMergeRequest(projectId, branchName, targetBranch);
         Long mergeRequestId = mergeRequestDO.getMergeRequestId();
         gitFlowRepository.deleteDevOpsMergeRequest(mergeRequestDO.getId());
         if (mergeStatus == 2) {
-            gitFlowRepository.deleteMergeRequest(projectId, mergeRequestId.intValue(), userId);
+            gitFlowRepository.deleteMergeRequest(projectId, mergeRequestId.intValue());
         }
     }
 }

@@ -20,6 +20,8 @@ public interface ApplicationVersionRepository {
 
     List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
 
+    List<ApplicationVersionE> listDeployedByAppId(Long projectId, Long appId);
+
     ApplicationVersionE query(Long appVersionId);
 
     List<ApplicationVersionE> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
@@ -39,4 +41,9 @@ public interface ApplicationVersionRepository {
 
     Boolean checkAppAndVersion(Long appId, List<Long> appVersionIds);
 
+    void setReadme(Long versionId, String readme);
+
+    String getReadme(Long versionId);
+
+    void updateVersion(ApplicationVersionE applicationVersionE);
 }

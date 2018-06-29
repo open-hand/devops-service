@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import org.eclipse.jgit.api.Git;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -39,28 +40,27 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationTemplateServiceImpl implements ApplicationTemplateService {
 
     private static final String TEMPLATE = "template";
+    private static final String MASTER = "master";
     @Value("${spring.application.name}")
     private String applicationName;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
+    @Autowired
     private IamRepository iamRepository;
+    @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
     private EventProducerTemplate eventProducerTemplate;
+    @Autowired
     private ApplicationTemplateRepository applicationTemplateRepository;
+    @Autowired
     private GitUtil gitUtil;
+    @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
     private GitlabUserRepository gitlabUserRepository;
 
-    public ApplicationTemplateServiceImpl(GitUtil gitUtil, IamRepository iamRepository, GitlabRepository gitlabRepository, EventProducerTemplate eventProducerTemplate, ApplicationTemplateRepository applicationTemplateRepository, UserAttrRepository userAttrRepository, GitlabUserRepository gitlabUserRepository) {
-        this.gitUtil = gitUtil;
-        this.iamRepository = iamRepository;
-        this.gitlabRepository = gitlabRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
-        this.applicationTemplateRepository = applicationTemplateRepository;
-        this.userAttrRepository = userAttrRepository;
-        this.gitlabUserRepository = gitlabUserRepository;
-    }
 
     @Override
     public ApplicationTemplateRepDTO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId) {
@@ -73,13 +73,15 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         Organization organization = iamRepository.queryOrganizationById(organizationId);
         applicationTemplateE.initOrganization(organization.getId());
-        GitlabGroupE gitlabGroupE = gitlabRepository.queryGroupByName(organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        GitlabGroupE gitlabGroupE = gitlabRepository.queryGroupByName(
+                organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (gitlabGroupE == null) {
             GitlabGroupE gitlabGroupENew = new GitlabGroupE();
             gitlabGroupENew.initName(organization.getCode() + "_" + TEMPLATE);
             gitlabGroupENew.initPath(organization.getCode() + "_" + TEMPLATE);
             gitlabGroupENew.initVisibility(Visibility.PUBLIC);
-            gitlabGroupId = gitlabRepository.createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getId();
+            gitlabGroupId = gitlabRepository
+                    .createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getId();
         } else {
             gitlabGroupId = gitlabGroupE.getId();
         }
@@ -89,13 +91,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         gitlabProjectPayload.setPath(applicationTemplateDTO.getCode());
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setType(TEMPLATE);
-        Exception exception = eventProducerTemplate.execute("CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
-                (String uuid) -> {
-                    applicationTemplateE.initUuid(uuid);
-                    if (applicationTemplateRepository.create(applicationTemplateE) == null) {
-                        throw new CommonException("error.applicationTemplate.insert");
-                    }
-                });
+        Exception exception = eventProducerTemplate
+                .execute("CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
+                        (String uuid) -> {
+                            applicationTemplateE.initUuid(uuid);
+                            if (applicationTemplateRepository.create(applicationTemplateE) == null) {
+                                throw new CommonException("error.applicationTemplate.insert");
+                            }
+                        });
         if (exception != null) {
             throw new CommonException(exception.getMessage());
         }
@@ -117,7 +120,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(appTemplateId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         if (applicationTemplateE.getGitlabProjectE() != null) {
-            gitlabRepository.deleteProject(applicationTemplateE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            gitlabRepository.deleteProject(
+                    applicationTemplateE.getGitlabProjectE().getId(),
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
         applicationTemplateRepository.delete(appTemplateId);
     }
@@ -128,8 +133,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                         .query(appTemplateId),
                 ApplicationTemplateRepDTO.class);
         String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-        repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-        applicationTemplateRepDTO.setRepoUrl(!gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
+        if (applicationTemplateRepDTO.getOrganizationId() != null) {
+            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
+            repoUrl = !gitlabUrl.endsWith("/")
+                    ? gitlabUrl + "/" + repoUrl
+                    : gitlabUrl + repoUrl;
+        }
+        applicationTemplateRepDTO.setRepoUrl(
+                repoUrl);
         return applicationTemplateRepDTO;
     }
 
@@ -142,8 +153,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getContent();
         for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-            applicationTemplateRepDTO.setRepoUrl(!gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
+            if (applicationTemplateRepDTO.getOrganizationId() != null) {
+                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
+                repoUrl = !gitlabUrl.endsWith("/")
+                        ? gitlabUrl + "/" + repoUrl
+                        : gitlabUrl + repoUrl;
+            }
+            applicationTemplateRepDTO.setRepoUrl(
+                    repoUrl);
         }
         applicationTemplateRepDTOPage.setContent(applicationTemplateRepDTOList);
         return applicationTemplateRepDTOPage;
@@ -164,8 +181,18 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     .query(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepDTO.class);
             //拉取模板
             String repoUrl = templateRepDTO.getRepoUrl();
-            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-            Git git = gitUtil.clone(applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
+            String type = templateRepDTO.getCode();
+            boolean teamplateType = true;
+            if (templateRepDTO.getOrganizationId() != null) {
+                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
+                repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
+                type = MASTER;
+                teamplateType = false;
+            }
+            Git git = gitUtil.clone(
+                    applicationDir,
+                    type,
+                    repoUrl);
             List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
                     applicationDir, gitlabProjectEventDTO.getUserId());
             String accessToken = "";
@@ -178,8 +205,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             repoUrl = applicationTemplateE.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-            gitUtil.push(git, applicationDir, !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl,
-                    gitlabUserE.getUsername(), accessToken, TEMPLATE);
+            gitUtil.push(
+                    git,
+                    applicationDir,
+                    !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl,
+                    gitlabUserE.getUsername(),
+                    accessToken,
+                    TEMPLATE,
+                    teamplateType);
         } else {
             gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
                     gitlabProjectEventDTO.getUserId());
@@ -193,8 +226,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                 ApplicationTemplateRepDTO.class);
         for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
-            applicationTemplateRepDTO.setRepoUrl(!gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl);
+            if (applicationTemplateRepDTO.getOrganizationId() != null) {
+                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
+                repoUrl = !gitlabUrl.endsWith("/")
+                        ? gitlabUrl + "/" + repoUrl
+                        : gitlabUrl + repoUrl;
+            }
+            applicationTemplateRepDTO.setRepoUrl(
+                    repoUrl);
         }
         return applicationTemplateRepDTOList;
     }

@@ -39,6 +39,7 @@ env:
     SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
     SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181
     SPRING_CLOUD_CONFIG_URI: http://config-server.framework:8010/
+    SPRING_CLOUD_CONFIG_ENABLED: true
     SERVICES_GITLAB_URL: http://git.choerodon.com.cn
     SERVICES_GITLAB_PASSWORD: abc123456
     SERVICES_GITLAB_PROJECTLIMIT: 100
@@ -48,9 +49,12 @@ env:
     SERVICES_HARBOR_PASSWORD:
     AGENT_VERSION: 0.5.0.RELEASE
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
-    AGENT_REPOURL: helm.example.com
+    AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     SECURITY_BASIC_ENABLE: false
     SECURITY_IGNORED: /ci,/v2/api-docs,/agent/**,/ws/**
+    TEMPLATE_VERSION_MICROSERVICE: 0.7.0
+    TEMPLATE_VERSION_MICROSERVICEFRONT: 0.7.0
+    TEMPLATE_VERSION_JAVALIB: 0.7.0
 metrics:
   path: /prometheus
   group: spring-boot

@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.PushCommand;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
@@ -24,10 +25,18 @@ public class GitUtil {
 
     private static final String APPLICATION = "application";
     private static final String DEVELOP = "develop";
+    private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPONAME = "devops-service-repo";
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
     private String classPath;
+
+    @Value("${template.version.MicroService}")
+    private String microService;
+    @Value("${template.version.MicroServiceFront}")
+    private String microServiceFront;
+    @Value("${template.version.JavaLib}")
+    private String javaLib;
 
     /**
      * 构造方法
@@ -48,15 +57,25 @@ public class GitUtil {
     /**
      * Git克隆
      */
-    public Git clone(String name, String remoteUrl) {
+    public Git clone(String name, String type, String remoteUrl) {
         Git git = null;
+        String branch = "";
         String workingDirectory = getWorkingDirectory(name);
         File localPathFile = new File(workingDirectory);
         deleteDirectory(localPathFile);
+        if (type.equals("MicroServiceFront")) {
+            branch = microServiceFront;
+        } else if (type.equals("MicroService")) {
+            branch = microService;
+        } else if(type.equals("JavaLib")){
+            branch = javaLib;
+        }else {
+            branch = MASTER;
+        }
         try {
             git = Git.cloneRepository()
                     .setURI(remoteUrl)
-                    .setBranch("master")
+                    .setBranch(branch)
                     .setDirectory(localPathFile)
                     .call();
         } catch (GitAPIException e) {
@@ -68,12 +87,15 @@ public class GitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String repoUrl, String userName, String accessToken, String type) {
+    public void push(Git git, String name, String repoUrl, String userName, String accessToken, String type, Boolean  teamplateType) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage("Render Variables[skip ci]").call();
+            if(teamplateType) {
+                git.branchCreate().setName(MASTER).call();
+            }
             if (type.equals(APPLICATION)) {
                 git.branchCreate().setName(DEVELOP).call();
             }

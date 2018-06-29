@@ -1,9 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.api.eventhandler.SocketMessageHandler;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
@@ -13,7 +17,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,25 +28,15 @@ import io.choerodon.event.producer.execute.EventProducerTemplate;
 @Component
 public class GitlabGroupServiceImpl implements GitlabGroupService {
 
+    private static final Logger logger = LoggerFactory.getLogger(GitlabGroupServiceImpl.class);
 
+    @Autowired
     private GitlabServiceClient gitlabServiceClient;
+    @Autowired
     private DevopsProjectRepository devopsProjectRepository;
-    private EventProducerTemplate eventProducerTemplate;
-    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
     private UserAttrRepository userAttrRepository;
 
-
-    public GitlabGroupServiceImpl(GitlabServiceClient gitlabServiceClient,
-                                  DevopsProjectRepository devopsProjectRepository,
-                                  EventProducerTemplate eventProducerTemplate,
-                                  GitlabGroupMemberService gitlabGroupMemberService,
-                                  UserAttrRepository userAttrRepository) {
-        this.gitlabServiceClient = gitlabServiceClient;
-        this.devopsProjectRepository = devopsProjectRepository;
-        this.eventProducerTemplate = eventProducerTemplate;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
-        this.userAttrRepository = userAttrRepository;
-    }
 
     @Override
     public void createGroup(GitlabGroupPayload gitlabGroupPayload) {
@@ -57,11 +50,11 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
         ResponseEntity<GroupDO> responseEntity =
                 gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        group = responseEntity.getBody();
-        if (group != null) {
-            DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
-            devopsProjectDO.setGitlabGroupId(group.getId());
-            devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+        if(responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+            group = responseEntity.getBody();
+                DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
+                devopsProjectDO.setGitlabGroupId(group.getId());
+                devopsProjectRepository.updateProjectAttr(devopsProjectDO);
         }
     }
 

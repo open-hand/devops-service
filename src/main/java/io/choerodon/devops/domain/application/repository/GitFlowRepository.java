@@ -20,7 +20,7 @@ public interface GitFlowRepository {
 
     MergeRequestDO getMergeRequest(Integer projectId, Long mergeRequestId, Integer userId);
 
-    void deleteMergeRequest(Integer projectId, Integer mergeRequestId, Integer userId);
+    void deleteMergeRequest(Integer projectId, Integer mergeRequestId);
 
     DevopsMergeRequestDO getDevOpsMergeRequest(Integer projectId, String branchName, String targetBranch);
 
@@ -45,4 +45,6 @@ public interface GitFlowRepository {
     TagsDO getTags(Long serviceId, String path, Integer page, Integer size, Integer userId);
 
     List<TagDO> getTagList(Long appId, Integer userId);
+
+    List<TagDO> getGitLabTags(Integer projectId, Integer userId);
 }

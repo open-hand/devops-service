@@ -119,8 +119,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     null,
                     null,
                     KeyParseTool.getReleaseName(key));
-            msg1.setKey("env:" + KeyParseTool.getNamespace(key) + ".envId:" + envId + ".release:" + KeyParseTool.getReleaseName(key));
-            msg1.setType(HelmType.HelmReleaseGetContent.toValue());
+            msg1.setKey(String.format("env:%s.envId:%d.release:%s",
+                    KeyParseTool.getNamespace(key),
+                    envId,
+                    KeyParseTool.getReleaseName(key)));
+            msg1.setType(HelmType.HELM_RELEASE_GET_CONTENT.toValue());
             try {
                 msg1.setPayload(mapper.writeValueAsString(payload));
             } catch (IOException e) {
@@ -129,7 +132,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             socketMsgDispatcher.dispatcher(msg1);
             return;
         }
-        DevopsEnvResourceE devopsEnvResourceE = DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+        DevopsEnvResourceE devopsEnvResourceE = new DevopsEnvResourceE();
         DevopsEnvResourceE newDevopsEnvResourceE =
                 devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                         applicationInstanceE.getId(),
@@ -151,27 +154,51 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 newDevopsEnvResourceE,
                 devopsEnvResourceDetailE,
                 applicationInstanceE);
-        if (v1OwnerReferences.get(0).getKind().equals(ResourceType.REPLICASET.getType())) {
-            String status = K8sUtil.changePodStatus(v1Pod);
-            String resourceVersion = v1Pod.getMetadata().getResourceVersion();
+        String status = K8sUtil.changePodStatus(v1Pod);
+        String resourceVersion = v1Pod.getMetadata().getResourceVersion();
 
-            DevopsEnvPodE devopsEnvPodE = new DevopsEnvPodE();
-            devopsEnvPodE.setName(v1Pod.getMetadata().getName());
-            devopsEnvPodE.setIp(v1Pod.getStatus().getPodIP());
-            devopsEnvPodE.setStatus(status);
-            devopsEnvPodE.setResourceVersion(resourceVersion);
-            devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
-            if (!PENDING.equals(status)) {
-                devopsEnvPodE.setReady(v1Pod.getStatus().getContainerStatuses().get(0).isReady());
+        DevopsEnvPodE devopsEnvPodE = new DevopsEnvPodE();
+        devopsEnvPodE.setName(v1Pod.getMetadata().getName());
+        devopsEnvPodE.setIp(v1Pod.getStatus().getPodIP());
+        devopsEnvPodE.setStatus(status);
+        devopsEnvPodE.setResourceVersion(resourceVersion);
+        devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
+        if (!PENDING.equals(status)) {
+            devopsEnvPodE.setReady(v1Pod.getStatus().getContainerStatuses().get(0).isReady());
+        } else {
+            devopsEnvPodE.setReady(false);
+        }
+
+        Boolean flag = false;
+        if (applicationInstanceE.getId() != null) {
+            List<DevopsEnvPodE> devopsEnvPodEList = devopsEnvPodRepository
+                    .selectByInstanceId(applicationInstanceE.getId());
+            if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
+                devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
+                devopsEnvPodRepository.insert(devopsEnvPodE);
+                Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
+                v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+                        containerRepository.insert(new DevopsEnvPodContainerDO(
+                                podId,
+                                t.getName())));
             } else {
-                devopsEnvPodE.setReady(false);
-            }
-
-            Boolean flag = false;
-            if (applicationInstanceE.getId() != null) {
-                List<DevopsEnvPodE> devopsEnvPodEList = devopsEnvPodRepository
-                        .selectByInstanceId(applicationInstanceE.getId());
-                if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
+                for (DevopsEnvPodE pod : devopsEnvPodEList) {
+                    if (pod.getName().equals(v1Pod.getMetadata().getName())
+                            && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
+                        if (!resourceVersion.equals(pod.getResourceVersion())) {
+                            devopsEnvPodE.setId(pod.getId());
+                            devopsEnvPodE.initApplicationInstanceE(pod.getApplicationInstanceE().getId());
+                            devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
+                            devopsEnvPodRepository.update(devopsEnvPodE);
+                            containerRepository.deleteByPodId(pod.getId());
+                            v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+                                    containerRepository.insert(
+                                            new DevopsEnvPodContainerDO(pod.getId(), t.getName())));
+                        }
+                        flag = true;
+                    }
+                }
+                if (!flag) {
                     devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
                     devopsEnvPodRepository.insert(devopsEnvPodE);
                     Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
@@ -179,32 +206,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             containerRepository.insert(new DevopsEnvPodContainerDO(
                                     podId,
                                     t.getName())));
-                } else {
-                    for (DevopsEnvPodE pod : devopsEnvPodEList) {
-                        if (pod.getName().equals(v1Pod.getMetadata().getName())
-                                && pod.getNamespace().equals(v1Pod.getMetadata().getNamespace())) {
-                            if (!resourceVersion.equals(pod.getResourceVersion())) {
-                                devopsEnvPodE.setId(pod.getId());
-                                devopsEnvPodE.initApplicationInstanceE(pod.getApplicationInstanceE().getId());
-                                devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
-                                devopsEnvPodRepository.update(devopsEnvPodE);
-                                containerRepository.deleteByPodId(pod.getId());
-                                v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
-                                        containerRepository.insert(
-                                                new DevopsEnvPodContainerDO(pod.getId(), t.getName())));
-                            }
-                            flag = true;
-                        }
-                    }
-                    if (!flag) {
-                        devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
-                        devopsEnvPodRepository.insert(devopsEnvPodE);
-                        Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-                        v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
-                                containerRepository.insert(new DevopsEnvPodContainerDO(
-                                        podId,
-                                        t.getName())));
-                    }
                 }
             }
         }
@@ -219,8 +220,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
         applicationInstanceRepository.update(applicationInstanceE);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getObjectType(), applicationInstanceE.getId());
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+                .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
         installResource(resources, applicationInstanceE);
     }
@@ -242,7 +243,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 job.getKind(),
                                 job.getName());
                 DevopsEnvResourceE devopsEnvResourceE =
-                        DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                       new DevopsEnvResourceE();
                 devopsEnvResourceE.setKind(job.getKind());
                 devopsEnvResourceE.setName(job.getName());
                 devopsEnvResourceE.setWeight(
@@ -266,7 +267,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         try {
             Object obj = objectMapper.readValue(msg, Object.class);
             DevopsEnvResourceE devopsEnvResourceE =
-                    DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                    new DevopsEnvResourceE();
             DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
             devopsEnvResourceDetailE.setMessage(msg);
             devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
@@ -279,6 +280,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             DevopsEnvResourceE newdevopsEnvResourceE = null;
             ApplicationInstanceE applicationInstanceE = null;
             ResourceType resourceType = ResourceType.forString(KeyParseTool.getResourceType(key));
+            if (resourceType == null) {
+                resourceType = ResourceType.forString("MissType");
+            }
             switch (resourceType) {
                 case INGRESS:
                     syncIngress(msg, envId);
@@ -295,7 +299,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     break;
                 case SERVICE:
                     V1Service v1Service = json.deserialize(msg, V1Service.class);
-                    String releaseNames = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
+                    String releaseNames = v1Service.getMetadata().getAnnotations()
+                            .get("choerodon.io/network-service-instances");
                     List<String> releases = Arrays.asList(releaseNames.split("\\+"));
 
                     Boolean flag = false;
@@ -323,8 +328,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
                                             devopsEnvResourceDetailE, applicationInstanceE);
                                 }
-                                List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceName(
-                                        devopsServiceE.getEnvId(), devopsServiceE.getName());
+                                List<DevopsIngressPathE> devopsIngressPathEList =
+                                        devopsIngressRepository.selectByEnvIdAndServiceName(
+                                                devopsServiceE.getEnvId(), devopsServiceE.getName());
                                 for (DevopsIngressPathE dd : devopsIngressPathEList) {
                                     if (dd.getServiceId() == null) {
                                         dd.setServiceId(devopsServiceE.getId());
@@ -344,7 +350,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     break;
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
-                    applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName,envId);
+                    applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
                     if (applicationInstanceE == null) {
                         return;
                     }
@@ -386,8 +392,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsServiceRepository.update(devopsServiceE);
 
                     DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
-                            .queryByObject(ObjectType.SERVICE.getObjectType(), devopsServiceE.getId());
-                    newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+                            .queryByObject(ObjectType.SERVICE.getType(), devopsServiceE.getId());
+                    newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                     devopsEnvCommandRepository.update(newdevopsEnvCommandE);
                 }
             }
@@ -402,8 +408,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 DevopsIngressDO domainDO = devopsIngressMapper
                         .select(new DevopsIngressDO(KeyParseTool.getResourceName(msg))).get(0);
                 DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
-                        .queryByObject(ObjectType.INGRESS.getObjectType(), domainDO.getId());
-                newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+                        .queryByObject(ObjectType.INGRESS.getType(), domainDO.getId());
+                newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandRepository.update(newdevopsEnvCommandE);
             }
 
@@ -418,7 +424,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                 .selectByCode(KeyParseTool.getReleaseName(key), envId);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getObjectType(), applicationInstanceE.getId());
+                .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
         DevopsEnvCommandLogE devopsEnvCommandLogE = new DevopsEnvCommandLogE();
         devopsEnvCommandLogE.initDevopsEnvCommandE(devopsEnvCommandE.getId());
         devopsEnvCommandLogE.setLog(msg);
@@ -432,7 +438,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             instanceE.setStatus(instanceStatus);
             applicationInstanceRepository.update(instanceE);
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceE.getId());
+                    .queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
             devopsEnvCommandE.setStatus(commandStatus);
             devopsEnvCommandE.setError(msg);
             devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -442,7 +448,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Override
     public void handlerDomainCreateMessage(String key, String msg, Long envId) {
         V1beta1Ingress ingress = json.deserialize(msg, V1beta1Ingress.class);
-        DevopsEnvResourceE devopsEnvResourceE = DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+        DevopsEnvResourceE devopsEnvResourceE = new DevopsEnvResourceE();
         DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
         devopsEnvResourceDetailE.setMessage(msg);
         devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
@@ -459,13 +465,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsIngressRepository.setUsable(ingressName);
         Long ingressId = devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
         DevopsEnvCommandE commandE =
-                devopsEnvCommandRepository.queryByObject(ObjectType.INGRESS.getObjectType(), ingressId);
-        commandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+                devopsEnvCommandRepository.queryByObject(ObjectType.INGRESS.getType(), ingressId);
+        commandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(commandE);
     }
 
     @Override
-    public void helmReleasePreUpgrade(String msg , Long envId) {
+    public void helmReleasePreUpgrade(String msg, Long envId) {
         handlerPreInstall(msg, envId);
     }
 
@@ -474,14 +480,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         handlerReleaseInstall(msg, envId);
     }
 
-
-    public ApplicationInstanceE helmRelease(Long envId, String msg) {
+    private ApplicationInstanceE helmRelease(Long envId, String msg) {
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
-        ApplicationVersionValueE applicationVersionValueE = ApplicationVersionValueFactory.create();
-        ApplicationVersionE applicationVersionE = ApplicationVersionEFactory.create();
+        ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
+        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
         if (applicationInstanceRepository.selectByCode(releasePayload.getName(), envId) == null) {
             try {
-                ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
+                ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                         .queryById(envId);
                 ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
@@ -490,7 +495,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         .queryByCode(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId());
                 if (applicationE == null) {
                     List<ApplicationE> applicationES = applicationRepository.listByCode(releasePayload.getChartName());
-                    List<ApplicationE> applicationList = applicationES.parallelStream().filter(newApplicationE -> iamRepository.queryIamProject(newApplicationE.getProjectE().getId()).getOrganization().getId().equals(organization.getId())).collect(Collectors.toList());
+                    List<ApplicationE> applicationList = applicationES.parallelStream()
+                            .filter(newApplicationE ->
+                                    iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
+                                            .getOrganization().getId().equals(organization.getId()))
+                            .collect(Collectors.toList());
                     if (!applicationList.isEmpty()) {
                         applicationE = applicationList.get(0);
                         if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) == 0) {
@@ -499,8 +508,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     } else {
                         applicationE = applicationES.isEmpty() ? null : applicationES.get(0);
                         if (applicationE != null) {
-                            ApplicationMarketE applicationMarketE = applicationMarketRepository.queryByAppId(applicationE.getId());
-                            if (applicationMarketE == null || (applicationMarketE != null && !applicationMarketE.getPublishLevel().equals(PUBLIC))) {
+                            ApplicationMarketE applicationMarketE =
+                                    applicationMarketRepository.queryByAppId(applicationE.getId());
+                            if (applicationMarketE == null
+                                    || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
                                 applicationE = null;
                             }
                         }
@@ -540,13 +551,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     applicationInstanceE.initApplicationVersionEById(newApplicationVersionE.getId());
                 }
                 applicationInstanceE.initDevopsEnvironmentEById(devopsEnvironmentE.getId());
-                DevopsEnvCommandValueE devopsEnvCommandValueE = DevopsEnvCommandValueFactory
-                        .createDevopsEnvCommandE();
+                DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
                 devopsEnvCommandValueE.setValue(releasePayload.getConfig());
-                devopsEnvCommandE.setObject(ObjectType.INSTANCE.getObjectType());
-                devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
+                devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
+                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
                 devopsEnvCommandE.setObjectId(applicationInstanceRepository.create(applicationInstanceE).getId());
-                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
+                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandE.initDevopsEnvCommandValueE(
                         devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
@@ -564,7 +574,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.DELETED.getStatus(),
-                CommandStatus.FAILED.getCommandStatus(),
+                CommandStatus.FAILED.getStatus(),
                 msg);
     }
 
@@ -573,7 +583,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.STOPED.getStatus(),
-                CommandStatus.FAILED.getCommandStatus(),
+                CommandStatus.FAILED.getStatus(),
                 msg);
     }
 
@@ -587,7 +597,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.FAILED.getStatus(),
-                CommandStatus.FAILED.getCommandStatus(),
+                CommandStatus.FAILED.getStatus(),
                 msg);
     }
 
@@ -596,7 +606,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.RUNNING.getStatus(),
-                CommandStatus.FAILED.getCommandStatus(),
+                CommandStatus.FAILED.getStatus(),
                 msg);
     }
 
@@ -605,54 +615,58 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.RUNNING.getStatus(),
-                CommandStatus.FAILED.getCommandStatus(),
+                CommandStatus.FAILED.getStatus(),
                 msg);
 
     }
 
     @Override
     public void netWorkServiceFail(String key, String msg) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(KeyParseTool.getValue(key, "Service"), KeyParseTool.getValue(key, "env"));
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
+                KeyParseTool.getValue(key, "Service"), KeyParseTool.getValue(key, "env"));
         devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
         devopsServiceRepository.update(devopsServiceE);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.SERVICE.getObjectType(), devopsServiceE.getId());
-        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+                .queryByObject(ObjectType.SERVICE.getType(), devopsServiceE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 
     @Override
     public void netWorkIngressFail(String key, Long envId, String msg) {
-        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, KeyParseTool.getValue(key, "Ingress"));
+        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
+                envId, KeyParseTool.getValue(key, "Ingress"));
         devopsIngressE.setStatus(IngressStatus.FAILED.getStatus());
         devopsIngressRepository.updateIngress(ConvertHelper.convert(devopsIngressE, DevopsIngressDO.class));
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getObjectType(), devopsIngressE.getId());
-        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 
     @Override
     public void netWorkServiceDeleteFail(String key, String msg) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(KeyParseTool.getValue(key, "Service"), KeyParseTool.getValue(key, "env"));
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
+                KeyParseTool.getValue(key, "Service"), KeyParseTool.getValue(key, "env"));
         devopsServiceE.setStatus(ServiceStatus.DELETED.getStatus());
         devopsServiceRepository.update(devopsServiceE);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.SERVICE.getObjectType(), devopsServiceE.getId());
-        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+                .queryByObject(ObjectType.SERVICE.getType(), devopsServiceE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 
     @Override
     public void netWorkIngressDeleteFail(String key, Long envId, String msg) {
-        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, KeyParseTool.getValue(key, "Ingress"));
+        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
+                envId, KeyParseTool.getValue(key, "Ingress"));
         devopsIngressRepository.deleteIngress(devopsIngressE.getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getObjectType(), devopsIngressE.getId());
-        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
@@ -665,7 +679,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<String> releases = Arrays.asList(releaseNames.split("\\+"));
 
         DevopsEnvResourceE devopsEnvResourceE =
-                DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                new DevopsEnvResourceE();
         DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
         devopsEnvResourceDetailE.setMessage(msg);
         devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
@@ -726,19 +740,20 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Override
     public void commandNotSend(Long commandId, String msg) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
-        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getCommandStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
         devopsEnvCommandE.setError(msg);
         devopsEnvCommandRepository.update(devopsEnvCommandE);
-        if (devopsEnvCommandE.getCommandType().equals(CommandType.CREATE.getCommandType())) {
-            if (devopsEnvCommandE.getObject().equals(ObjectType.INSTANCE.getObjectType())) {
-                ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsEnvCommandE.getObjectId());
+        if (devopsEnvCommandE.getCommandType().equals(CommandType.CREATE.getType())) {
+            if (devopsEnvCommandE.getObject().equals(ObjectType.INSTANCE.getType())) {
+                ApplicationInstanceE applicationInstanceE =
+                        applicationInstanceRepository.selectById(devopsEnvCommandE.getObjectId());
                 applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
                 applicationInstanceRepository.update(applicationInstanceE);
-            } else if (devopsEnvCommandE.getObject().equals(ObjectType.SERVICE.getObjectType())) {
+            } else if (devopsEnvCommandE.getObject().equals(ObjectType.SERVICE.getType())) {
                 DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsEnvCommandE.getObjectId());
                 devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
                 devopsServiceRepository.update(devopsServiceE);
-            } else if (devopsEnvCommandE.getObject().equals(ObjectType.INGRESS.getObjectType())) {
+            } else if (devopsEnvCommandE.getObject().equals(ObjectType.INGRESS.getType())) {
                 DevopsIngressDO ingress = devopsIngressRepository.getIngress(devopsEnvCommandE.getObjectId());
                 ingress.setStatus(IngressStatus.FAILED.getStatus());
                 devopsIngressRepository.updateIngress(ingress);
@@ -751,59 +766,77 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ResourceSyncPayload resourceSyncPayload = JSONArray.parseObject(msg, ResourceSyncPayload.class);
         ResourceType resourceType = ResourceType.forString(resourceSyncPayload.getResourceType());
         List<DevopsEnvResourceE> devopsEnvResourceES;
-        if (resourceType != null) {
-            switch (resourceType) {
-                case POD:
-                    devopsEnvResourceES = devopsEnvResourceRepository.listByEnvAndType(envId, ResourceType.POD.getType());
-                    if (!devopsEnvResourceES.isEmpty()) {
-                        List<String> podNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsEnvResourceES.parallelStream().filter(devopsEnvResourceE -> !podNames.contains(devopsEnvResourceE.getName())).forEach(devopsEnvResourceE -> {
-                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.POD.getType(), devopsEnvResourceE.getName());
-                            devopsEnvPodRepository.deleteByName(devopsEnvResourceE.getName(), KeyParseTool.getValue(key, "env"));
-                        });
-                    }
-                    break;
-                case DEPLOYMENT:
-                    devopsEnvResourceES = devopsEnvResourceRepository.listByEnvAndType(envId, ResourceType.DEPLOYMENT.getType());
-                    if (!devopsEnvResourceES.isEmpty()) {
-                        List<String> deploymentNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsEnvResourceES.parallelStream().filter(devopsEnvResourceE -> !deploymentNames.contains(devopsEnvResourceE.getName())).forEach(devopsEnvResourceE ->
-                                devopsEnvResourceRepository.deleteByKindAndName(ResourceType.DEPLOYMENT.getType(), devopsEnvResourceE.getName())
-                        );
-                    }
-                    break;
-                case REPLICASET:
-                    devopsEnvResourceES = devopsEnvResourceRepository.listByEnvAndType(envId, ResourceType.REPLICASET.getType());
-                    if (!devopsEnvResourceES.isEmpty()) {
-                        List<String> replicaSetNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsEnvResourceES.parallelStream().filter(devopsEnvResourceE -> !replicaSetNames.contains(devopsEnvResourceE.getName())).forEach(devopsEnvResourceE ->
-                                devopsEnvResourceRepository.deleteByKindAndName(ResourceType.REPLICASET.getType(), devopsEnvResourceE.getName())
-                        );
-                    }
-                    break;
-                case SERVICE:
-                    List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
-                    if (!devopsServiceVS.isEmpty()) {
-                        List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsServiceVS.parallelStream().filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName())).forEach(devopsServiceV -> {
-                            devopsServiceRepository.delete(devopsServiceV.getId());
-                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.SERVICE.getType(), devopsServiceV.getName());
-                        });
-                    }
-                    break;
-                case INGRESS:
-                    List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
-                    if (!devopsIngressES.isEmpty()) {
-                        List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
-                        devopsIngressES.parallelStream().filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName())).forEach(devopsIngressE -> {
-                            devopsIngressRepository.deleteIngress(devopsIngressE.getId());
-                            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.INGRESS.getType(), devopsIngressE.getName());
-                        });
-                    }
-                    break;
-                default:
-                    break;
-            }
+        if (resourceType == null) {
+            resourceType = ResourceType.forString("MissType");
+        }
+        switch (resourceType) {
+            case POD:
+                devopsEnvResourceES = devopsEnvResourceRepository
+                        .listByEnvAndType(envId, ResourceType.POD.getType());
+                if (!devopsEnvResourceES.isEmpty()) {
+                    List<String> podNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsEnvResourceES.parallelStream()
+                            .filter(devopsEnvResourceE -> !podNames.contains(devopsEnvResourceE.getName()))
+                            .forEach(devopsEnvResourceE -> {
+                                devopsEnvResourceRepository.deleteByKindAndName(
+                                        ResourceType.POD.getType(), devopsEnvResourceE.getName());
+                                devopsEnvPodRepository.deleteByName(
+                                        devopsEnvResourceE.getName(), KeyParseTool.getValue(key, "env"));
+                            });
+                }
+                break;
+            case DEPLOYMENT:
+                devopsEnvResourceES = devopsEnvResourceRepository
+                        .listByEnvAndType(envId, ResourceType.DEPLOYMENT.getType());
+                if (!devopsEnvResourceES.isEmpty()) {
+                    List<String> deploymentNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsEnvResourceES.parallelStream()
+                            .filter(devopsEnvResourceE -> !deploymentNames.contains(devopsEnvResourceE.getName()))
+                            .forEach(devopsEnvResourceE ->
+                                    devopsEnvResourceRepository.deleteByKindAndName(
+                                            ResourceType.DEPLOYMENT.getType(), devopsEnvResourceE.getName()));
+                }
+                break;
+            case REPLICASET:
+                devopsEnvResourceES = devopsEnvResourceRepository
+                        .listByEnvAndType(envId, ResourceType.REPLICASET.getType());
+                if (!devopsEnvResourceES.isEmpty()) {
+                    List<String> replicaSetNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsEnvResourceES.parallelStream()
+                            .filter(devopsEnvResourceE -> !replicaSetNames.contains(devopsEnvResourceE.getName()))
+                            .forEach(devopsEnvResourceE ->
+                                    devopsEnvResourceRepository.deleteByKindAndName(
+                                            ResourceType.REPLICASET.getType(), devopsEnvResourceE.getName()));
+                }
+                break;
+            case SERVICE:
+                List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
+                if (!devopsServiceVS.isEmpty()) {
+                    List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsServiceVS.parallelStream()
+                            .filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName()))
+                            .forEach(devopsServiceV -> {
+                                devopsServiceRepository.delete(devopsServiceV.getId());
+                                devopsEnvResourceRepository.deleteByKindAndName(
+                                        ResourceType.SERVICE.getType(), devopsServiceV.getName());
+                            });
+                }
+                break;
+            case INGRESS:
+                List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
+                if (!devopsIngressES.isEmpty()) {
+                    List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
+                    devopsIngressES.parallelStream()
+                            .filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName()))
+                            .forEach(devopsIngressE -> {
+                                devopsIngressRepository.deleteIngress(devopsIngressE.getId());
+                                devopsEnvResourceRepository.deleteByKindAndName(
+                                        ResourceType.INGRESS.getType(), devopsIngressE.getName());
+                            });
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -836,7 +869,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     }
 
-    public void installResource(List<Resource> resources, ApplicationInstanceE applicationInstanceE) {
+    private void installResource(List<Resource> resources, ApplicationInstanceE applicationInstanceE) {
         try {
             for (Resource resource : resources) {
                 DevopsEnvResourceE newdevopsEnvResourceE =
@@ -847,10 +880,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
                 devopsEnvResourceDetailE.setMessage(resource.getObject());
                 DevopsEnvResourceE devopsEnvResourceE =
-                        DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+                        new DevopsEnvResourceE();
                 devopsEnvResourceE.setKind(resource.getKind());
                 devopsEnvResourceE.setName(resource.getName());
-                JSONObject jsonResult = JSONObject.parseObject(JSONObject.parseObject(resource.getObject()).get(METADATA).toString());
+                JSONObject jsonResult = JSONObject.parseObject(JSONObject.parseObject(resource.getObject())
+                        .get(METADATA).toString());
                 devopsEnvResourceE.setReversion(
                         TypeUtil.objToLong(jsonResult.get(RESOURCEVERSION).toString()));
                 saveOrUpdateResource(
@@ -875,44 +909,51 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
 
-    public void syncService(DevopsServiceE devopsServiceE, String msg, ApplicationInstanceE applicationInstanceE) {
+    private void syncService(DevopsServiceE devopsServiceE, String msg, ApplicationInstanceE applicationInstanceE) {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
-        if (devopsServiceRepository.selectByNameAndNamespace(v1Service.getMetadata().getName(), devopsEnvironmentE.getCode()) == null) {
-            devopsServiceE.setEnvId(devopsEnvironmentE.getId());
-            devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
-            devopsServiceE.setName(v1Service.getMetadata().getName());
-            devopsServiceE.setNamespace(v1Service.getMetadata().getNamespace());
-            devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
-            devopsServiceE.setPort(TypeUtil.objToLong(v1Service.getSpec().getPorts().get(0).getPort()));
-            devopsServiceE.setTargetPort(null);
-            if (v1Service.getSpec().getExternalIPs() != null) {
-                devopsServiceE.setExternalIp(v1Service.getSpec().getExternalIPs().get(0));
-            }
-            devopsServiceE.setLabel(json.serialize(v1Service.getMetadata().getLabels()));
-            devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
+        Map<String, String> lab = v1Service.getMetadata().getLabels();
+        if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals("service")) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(
+                    applicationInstanceE.getDevopsEnvironmentE().getId());
+            if (devopsServiceRepository.selectByNameAndNamespace(
+                    v1Service.getMetadata().getName(), devopsEnvironmentE.getCode()) == null) {
+                devopsServiceE.setEnvId(devopsEnvironmentE.getId());
+                devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
+                devopsServiceE.setName(v1Service.getMetadata().getName());
+                devopsServiceE.setNamespace(v1Service.getMetadata().getNamespace());
+                devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
+                devopsServiceE.setPort(TypeUtil.objToLong(v1Service.getSpec().getPorts().get(0).getPort()));
+                devopsServiceE.setTargetPort(null);
+                if (v1Service.getSpec().getExternalIPs() != null) {
+                    devopsServiceE.setExternalIp(v1Service.getSpec().getExternalIPs().get(0));
+                }
+                devopsServiceE.setLabel(json.serialize(v1Service.getMetadata().getLabels()));
+                devopsServiceE.setId(devopsServiceRepository.insert(devopsServiceE).getId());
 
-            DevopsServiceAppInstanceE devopsServiceAppInstanceE = devopsServiceInstanceRepository
-                    .queryByOptions(devopsServiceE.getId(), applicationInstanceE.getId());
-            if (devopsServiceAppInstanceE == null) {
-                devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
-                devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
-                devopsServiceAppInstanceE.setAppInstanceId(applicationInstanceE.getId());
-                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
-                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
-            }
+                DevopsServiceAppInstanceE devopsServiceAppInstanceE = devopsServiceInstanceRepository
+                        .queryByOptions(devopsServiceE.getId(), applicationInstanceE.getId());
+                if (devopsServiceAppInstanceE == null) {
+                    devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
+                    devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
+                    devopsServiceAppInstanceE.setAppInstanceId(applicationInstanceE.getId());
+                    devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
+                    devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+                }
 
-            DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-            devopsEnvCommandE.setObject(ObjectType.SERVICE.getObjectType());
-            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
-            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
+                devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                devopsEnvCommandRepository.create(devopsEnvCommandE);
+            }
+        }else {
+            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.SERVICE.getType(),v1Service.getMetadata().getName());
         }
     }
 
 
-    public void syncPod(String msg, ApplicationInstanceE applicationInstanceE) {
+    private void syncPod(String msg, ApplicationInstanceE applicationInstanceE) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
         String status = K8sUtil.changePodStatus(v1Pod);
         String resourceVersion = v1Pod.getMetadata().getResourceVersion();
@@ -937,44 +978,50 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         t.getName())));
     }
 
-    public void syncIngress(String msg, Long envId) {
+    private void syncIngress(String msg, Long envId) {
         V1beta1Ingress v1beta1Ingress = json.deserialize(msg, V1beta1Ingress.class);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        if (devopsEnvironmentE == null) {
-            return;
-        }
-        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
-                devopsEnvironmentE.getId(), v1beta1Ingress.getMetadata().getName());
-        if (devopsIngressE == null) {
-            devopsIngressE = new DevopsIngressE();
-            devopsIngressE.setProjectId(devopsEnvironmentE.getProjectE().getId());
-            devopsIngressE.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost());
-            devopsIngressE.setEnvId(devopsEnvironmentE.getId());
-            devopsIngressE.setName(v1beta1Ingress.getMetadata().getName());
-            devopsIngressE.setUsable(true);
-            devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
-            devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
-            DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-            devopsEnvCommandE.setObject(ObjectType.INGRESS.getObjectType());
-            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getCommandType());
-            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getCommandStatus());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
-            List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules()
-                    .get(0).getHttp().getPaths();
-            for (V1beta1HTTPIngressPath path : paths) {
-                DevopsIngressPathE devopsIngressPathE = new DevopsIngressPathE();
-                devopsIngressPathE.setDevopsIngressE(devopsIngressE);
-                devopsIngressPathE.setServiceName(path.getBackend().getServiceName());
-                DevopsServiceE devopsServiceE = devopsServiceRepository
-                        .selectByNameAndNamespace(path.getBackend().getServiceName(),
-                                v1beta1Ingress.getMetadata().getNamespace());
-                if (devopsServiceE != null) {
-                    devopsIngressPathE.setServiceId(devopsServiceE.getId());
-                }
-                devopsIngressPathE.setPath(path.getPath());
-                devopsIngressRepository.insertIngressPath(devopsIngressPathE);
+        Map<String, String> label = v1beta1Ingress.getMetadata().getLabels();
+        if (label.get(SERVICE_LABLE) != null
+                && label.get(SERVICE_LABLE).equals("ingress")) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+            if (devopsEnvironmentE == null) {
+                return;
             }
+            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
+                    devopsEnvironmentE.getId(), v1beta1Ingress.getMetadata().getName());
+            if (devopsIngressE == null) {
+                devopsIngressE = new DevopsIngressE();
+                devopsIngressE.setProjectId(devopsEnvironmentE.getProjectE().getId());
+                devopsIngressE.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost());
+                devopsIngressE.setEnvId(devopsEnvironmentE.getId());
+                devopsIngressE.setName(v1beta1Ingress.getMetadata().getName());
+                devopsIngressE.setUsable(true);
+                devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
+                devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
+                devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                devopsEnvCommandRepository.create(devopsEnvCommandE);
+                List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules()
+                        .get(0).getHttp().getPaths();
+                for (V1beta1HTTPIngressPath path : paths) {
+                    DevopsIngressPathE devopsIngressPathE = new DevopsIngressPathE();
+                    devopsIngressPathE.setDevopsIngressE(devopsIngressE);
+                    devopsIngressPathE.setServiceName(path.getBackend().getServiceName());
+                    DevopsServiceE devopsServiceE = devopsServiceRepository
+                            .selectByNameAndNamespace(path.getBackend().getServiceName(),
+                                    v1beta1Ingress.getMetadata().getNamespace());
+                    if (devopsServiceE != null) {
+                        devopsIngressPathE.setServiceId(devopsServiceE.getId());
+                    }
+                    devopsIngressPathE.setPath(path.getPath());
+                    devopsIngressRepository.insertIngressPath(devopsIngressPathE);
+                }
+            }
+        }else {
+            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.INGRESS.getType(),v1beta1Ingress.getMetadata().getName());
         }
     }
 }

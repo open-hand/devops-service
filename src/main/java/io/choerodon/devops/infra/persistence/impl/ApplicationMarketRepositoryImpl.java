@@ -1,11 +1,15 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -13,7 +17,9 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
@@ -28,8 +34,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketRepositoryImpl implements ApplicationMarketRepository {
 
     private JSON json = new JSON();
+    private Gson gson = new Gson();
 
     private ApplicationMarketMapper applicationMarketMapper;
+    @Autowired
+    private IamRepository iamRepository;
 
     public ApplicationMarketRepositoryImpl(ApplicationMarketMapper applicationMarketMapper) {
         this.applicationMarketMapper = applicationMarketMapper;
@@ -44,7 +53,6 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public Page<ApplicationMarketE> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
-        //TODO 排序
         Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
@@ -62,7 +70,6 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public Page<ApplicationMarketE> listMarketApps(List<Long> projectIds, PageRequest pageRequest, String searchParam) {
-        //TODO 排序
         Page<DevopsAppMarketDO> applicationMarketQueryDOPage;
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
@@ -79,7 +86,8 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
     }
 
     @Override
-    public ApplicationMarketE getMarket(Long projectId, Long appMarketId, List<Long> projectIds) {
+    public ApplicationMarketE getMarket(Long projectId, Long appMarketId) {
+        List<Long> projectIds = getProjectIds(projectId);
         return ConvertHelper.convert(
                 applicationMarketMapper.getMarketApplication(projectId, appMarketId, projectIds),
                 ApplicationMarketE.class);
@@ -116,13 +124,18 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public void unpublishApplication(Long appMarketId) {
-        applicationMarketMapper.unpublishApplicationVersions(appMarketId, null);
+        applicationMarketMapper.changeApplicationVersions(appMarketId, null, null);
         applicationMarketMapper.deleteByPrimaryKey(appMarketId);
     }
 
     @Override
     public void unpublishVersion(Long appMarketId, Long versionId) {
-        applicationMarketMapper.unpublishApplicationVersions(appMarketId, versionId);
+        applicationMarketMapper.changeApplicationVersions(appMarketId, versionId, null);
+    }
+
+    @Override
+    public void updateVersion(Long appMarketId, Long versionId, Boolean isPublish) {
+        applicationMarketMapper.changeApplicationVersions(appMarketId, versionId, isPublish);
     }
 
     @Override
@@ -134,7 +147,8 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
 
     @Override
     public List<DevopsAppMarketVersionDO> getVersions(Long projectId, Long appMarketId, Boolean isPublish) {
-        return applicationMarketMapper.listAppVersions(projectId, appMarketId, isPublish, null, null);
+        List<Long> projectIds = getProjectIds(projectId);
+        return applicationMarketMapper.listAppVersions(projectIds, appMarketId, isPublish, null, null);
     }
 
     @Override
@@ -157,9 +171,10 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         }
         Map<String, Object> finalSearchParam = searchParam;
         String finalParam = param;
+        List<Long> projectIds = getProjectIds(projectId);
         return PageHelper.doPageAndSort(pageRequest,
                 () -> applicationMarketMapper.listAppVersions(
-                        projectId, appMarketId, isPublish,
+                        projectIds, appMarketId, isPublish,
                         finalSearchParam, finalParam));
     }
 
@@ -168,5 +183,26 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
         DevopsAppMarketDO applicationMarketDO = new DevopsAppMarketDO();
         applicationMarketDO.setAppId(appId);
         return ConvertHelper.convert(applicationMarketMapper.selectOne(applicationMarketDO), ApplicationMarketE.class);
+    }
+
+    @Override
+    public void checkMarketVersion(Long appMarketId, Long versionId) {
+        if (!applicationMarketMapper.checkVersion(appMarketId, versionId)) {
+            throw new CommonException("error.version.notMatch");
+        }
+    }
+
+    private List<Long> getProjectIds(Long projectId) {
+        List<Long> projectIds;
+        if (projectId != null) {
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            Long organizationId = projectE.getOrganization().getId();
+            List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId);
+            projectIds = projectEList.parallelStream().map(ProjectE::getId)
+                    .collect(Collectors.toCollection(ArrayList::new));
+        } else {
+            projectIds = null;
+        }
+        return projectIds;
     }
 }

@@ -4,7 +4,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
 import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
