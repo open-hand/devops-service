@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -51,5 +52,29 @@ public class DevopsGitController {
         devopsGitService.createTag(projectId, applicationId, tag, ref);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /**
+     * 创建分支
+     *
+     * @param projectId       项目ID
+     * @param applicationId   应用ID
+     * @param devopsBranchDTO 分支
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "创建分支")
+    @PostMapping("/branch")
+    public ResponseEntity createBranch(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "application_id") Long applicationId,
+            @ApiParam(value = "分支", required = true)
+            @RequestBody DevopsBranchDTO devopsBranchDTO) {
+        devopsGitService.createBranch(
+                projectId, applicationId, devopsBranchDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
 }

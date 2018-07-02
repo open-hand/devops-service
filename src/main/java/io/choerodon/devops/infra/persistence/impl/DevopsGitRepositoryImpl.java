@@ -12,6 +12,10 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 
 /**
  * Creator: Runge
@@ -27,6 +31,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     private ApplicationMapper applicationMapper;
     @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
+    private DevopsBranchMapper devopsBranchMapper;
 
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId) {
@@ -47,5 +53,10 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
+    }
+
+    @Override
+    public void createBranch(DevopsBranchE devopsBranchE) {
+        devopsBranchMapper.insert(ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class));
     }
 }

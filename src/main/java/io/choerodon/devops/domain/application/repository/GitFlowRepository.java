@@ -30,7 +30,7 @@ public interface GitFlowRepository {
 
     Boolean checkMergeRequestCommit(Integer projectId, Long mergeRequestId, Integer userId);
 
-    void createBranch(Integer projectId, String branchName, String baseBranch, Integer userId);
+    BranchDO createBranch(Integer projectId, String branchName, String baseBranch, Integer userId);
 
     List<BranchDO> listBranches(Integer projectId, String path, Integer userId);
 
