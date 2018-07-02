@@ -38,6 +38,8 @@ services:
     projectLimit: 100
   helm:
     url: "helm.example.com"
+  sonarqube:
+    url: "http://sonarqube.saas.hand-china.com"
 template:
   version:
     MicroService: 0.7.0
