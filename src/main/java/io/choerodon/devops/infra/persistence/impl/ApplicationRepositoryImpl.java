@@ -1,9 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -15,7 +13,6 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -38,6 +35,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     public ApplicationRepositoryImpl(ApplicationMapper applicationMapper) {
         this.applicationMapper = applicationMapper;
+    }
+
+    @Override
+    public void checkApp(Long projectId, Long appId) {
+        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(appId);
+        if (applicationDO == null || !applicationDO.getProjectId().equals(projectId)) {
+            throw new CommonException("error.app.project.notMatch");
+        }
     }
 
     @Override

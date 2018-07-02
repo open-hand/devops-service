@@ -43,7 +43,7 @@ public class DevopsGitController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @PathVariable Long applicationId,
+            @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "标签名称", required = true)
             @RequestParam String tag,
             @ApiParam(value = "参考名称", required = true)

@@ -10,6 +10,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Created by younger on 2018/3/28.
  */
 public interface ApplicationRepository {
+    void checkApp(Long projectId, Long appId);
+
     void checkName(ApplicationE applicationE);
 
     void checkCode(ApplicationE applicationE);

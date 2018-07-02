@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
 
 /**
@@ -16,11 +17,14 @@ import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
 public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private DevopsGitRepository devopsGitRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     @Override
     public void createTag(Long projectId, Long appId, String tag, String ref) {
-        Integer gitLabProjectId = 0;
-        Integer gitLabUserId = 0;
+        applicationRepository.checkApp(projectId, appId);
+        Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
+        Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
         devopsGitRepository.createTag(gitLabProjectId, tag, ref, gitLabUserId);
     }
 }
