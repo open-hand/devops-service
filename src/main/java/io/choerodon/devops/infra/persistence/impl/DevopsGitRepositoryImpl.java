@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
@@ -19,11 +22,13 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagsDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -107,12 +112,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public DevopsBranchE queryByAppAndBranchName(Long appId, String branchName) {
-        return ConvertHelper.convert(devopsBranchMapper.queryByAppAndBranchName(appId, branchName), DevopsBranchE.class);
+        return ConvertHelper.convert(devopsBranchMapper
+                .queryByAppAndBranchName(appId, branchName), DevopsBranchE.class);
     }
 
     @Override
     public void updateBranch(Long appId, DevopsBranchE devopsBranchE) {
-        DevopsBranchDO devopsBranchDO = devopsBranchMapper.queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
+        DevopsBranchDO devopsBranchDO = devopsBranchMapper
+                .queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
         if (devopsBranchDO == null) {
             DevopsBranchDO devopsBranchDO1 = ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class);
             devopsBranchDO1.setAppId(appId);
@@ -126,5 +133,25 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     @Override
     public void createDevopsBranch(DevopsBranchE devopsBranchE) {
         devopsBranchMapper.insert(ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class));
+    }
+
+    @Override
+    public Page<MergeRequestDTO> getMergeRequestList(Integer gitLabProjectId, PageRequest pageRequest) {
+        Page<MergeRequestDTO> pageResult = new Page<>();
+        int page = pageRequest.getPage();
+        int size = pageRequest.getSize() == 0 ? 10 : pageRequest.getSize();
+        pageResult.setSize(size);
+        List<MergeRequestDO> mergeRequestDOS = gitlabServiceClient.getMergeRequestList(gitLabProjectId).getBody();
+        if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
+            int totalSize = mergeRequestDOS.size();
+            int totalPage = totalSize % size == 0 ? totalSize / size : (totalSize / size) + 1;
+            List<MergeRequestDO> listData = mergeRequestDOS.stream().limit((page + 1L) * size)
+                    .skip(page * size * 1L).collect(Collectors.toList());
+            List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(listData, MergeRequestDTO.class);
+            pageResult.setContent(mergeRequestDTOS);
+            pageResult.setTotalPages(totalPage);
+            pageResult.setTotalElements(totalSize);
+        }
+        return pageResult;
     }
 }

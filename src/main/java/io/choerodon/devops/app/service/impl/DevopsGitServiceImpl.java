@@ -10,7 +10,11 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.BranchDTO;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
@@ -24,6 +28,8 @@ import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -53,6 +59,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
     }
 
+    @Autowired
+    private ApplicationMapper applicationMapper;
+
     @Override
     public void createTag(Long projectId, Long appId, String tag, String ref) {
         applicationRepository.checkApp(projectId, appId);
@@ -66,7 +75,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
         devopsBranchE.initApplicationE(applicationId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
-        BranchDO branchDO = devopsGitRepository.createBranch(TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()), devopsBranchDTO.getBranchName(), devopsBranchDTO.getOriginBranch(), getGitlabUserId());
+        BranchDO branchDO = devopsGitRepository.createBranch(
+                TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()),
+                devopsBranchDTO.getBranchName(),
+                devopsBranchDTO.getOriginBranch(),
+                getGitlabUserId());
         devopsBranchE.setLastCommitDate(branchDO.getCommit().getCommittedDate());
         devopsBranchE.setUserId(TypeUtil.objToLong(getGitlabUserId()));
         devopsGitRepository.createDevopsBranch(devopsBranchE);
@@ -96,14 +109,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
                 userE = iamRepository.queryById(devopsBranchE.getUserId());
             }
-            UserE commitUserE = iamRepository.queryByLoginName(t.getCommit().getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
+            UserE commitUserE = iamRepository.queryByLoginName(t.getCommit()
+                    .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
             return getBranchDTO(t, commitUserE, userE, devopsBranchE, projectInfo, issue);
         }).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     @Override
     public DevopsBranchDTO queryBranch(Long projectId, Long applicationId, String branchName) {
-        return ConvertHelper.convert(devopsGitRepository.queryByAppAndBranchName(applicationId, branchName), DevopsBranchDTO.class);
+        return ConvertHelper.convert(devopsGitRepository
+                .queryByAppAndBranchName(applicationId, branchName), DevopsBranchDTO.class);
     }
 
     @Override
@@ -119,7 +134,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsGitRepository.deleteBranch(gitLabId, branchName, getGitlabUserId());
     }
 
-    public BranchDTO getBranchDTO(BranchDO t, UserE commitUserE, UserE userE, DevopsBranchE devopsBranchE, ProjectInfo projectInfo, Issue issue) {
+
+    private BranchDTO getBranchDTO(BranchDO t, UserE commitUserE, UserE userE,
+                                   DevopsBranchE devopsBranchE,
+                                   ProjectInfo projectInfo,
+                                   Issue issue) {
         String createUserUrl = null;
         Long issueId = null;
         if (userE != null) {
@@ -132,6 +151,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsBranchE != null && devopsBranchE.getIssueId() != null) {
             issueId = devopsBranchE.getIssueId();
         }
-        return new BranchDTO(t, devopsBranchE == null ? null : devopsBranchE.getCreationDate(), createUserUrl, issueId, projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(), issue == null ? null : issue.getSummary(), commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl());
+        return new BranchDTO(t, devopsBranchE == null ? null :
+                devopsBranchE.getCreationDate(), createUserUrl,
+                issueId, projectInfo == null ? null :
+                projectInfo.getProjectCode() + issue.getIssueNum(), issue == null ? null :
+                issue.getSummary(), commitUserE.getImageUrl() == null ? commitUserE.getLoginName() :
+                commitUserE.getImageUrl());
+    }
+
+    @Override
+    public Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long applicationId, PageRequest pageRequest) {
+        applicationRepository.checkApp(projectId, applicationId);
+        Integer gitLabProjectId = devopsGitRepository.getGitLabId(applicationId);
+        if (gitLabProjectId == null) {
+            throw new CommonException("error.gitlabProjectId.not.exists");
+        }
+        return devopsGitRepository.getMergeRequestList(gitLabProjectId, pageRequest);
     }
 }

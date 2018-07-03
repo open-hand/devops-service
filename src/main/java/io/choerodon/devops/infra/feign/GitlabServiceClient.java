@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +18,7 @@ import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
  */
 @FeignClient(value = "gitlab-service", fallback = GitlabServiceClientFallback.class)
 public interface GitlabServiceClient {
+
 
     @GetMapping(value = "/v1/users/{userId}")
     ResponseEntity<UserDO> queryUserByUserId(
@@ -146,6 +147,9 @@ public interface GitlabServiceClient {
             @PathVariable("projectId") Integer projectId,
             @PathVariable("mergeRequestId") Integer mergeRequestId,
             @RequestParam(value = "userId") Integer userId);
+
+    @GetMapping(value = "/v1/projects/{projectId}/merge_requests")
+    ResponseEntity<List<MergeRequestDO>> getMergeRequestList(@PathVariable("projectId") Integer projectId);
 
     @GetMapping("/v1/projects/{projectId}/repository/branches")
     ResponseEntity<List<BranchDO>> listBranches(@PathVariable("projectId") Integer projectId,

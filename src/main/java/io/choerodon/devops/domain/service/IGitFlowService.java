@@ -29,4 +29,5 @@ public interface IGitFlowService {
             Integer projectId, String branchName, Integer devMergeStatus, Integer masterMergeStatus, Integer userId);
 
     void createMergeRequest(Integer projectId, String branchName, Integer userId);
+
 }

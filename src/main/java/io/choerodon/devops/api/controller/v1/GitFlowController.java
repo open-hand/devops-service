@@ -196,4 +196,5 @@ public class GitFlowController {
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.hotfix.tag.get"));
     }
+
 }
