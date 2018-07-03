@@ -15,10 +15,12 @@ public class BranchDTO {
     private Long issueId;
     private String issueCode;
     private String issueName;
+    private String typeCode;
 
-    public BranchDTO(){}
+    public BranchDTO() {
+    }
 
-    public BranchDTO(BranchDO branchDO, Date createDate, String createUserUrl, Long issueId, String issueCode, String issueName, String commitUserUrl) {
+    public BranchDTO(BranchDO branchDO, Date createDate, String createUserUrl, Long issueId, String issueCode, String issueName, String commitUserUrl, String typeCode) {
         this.name = branchDO.getName();
         this.sha = branchDO.getCommit().getShortId();
         this.commitComent = branchDO.getCommit().getMessage();
@@ -29,6 +31,7 @@ public class BranchDTO {
         this.issueCode = issueCode;
         this.issueName = issueName;
         this.createUserUrl = createUserUrl;
+        this.typeCode = typeCode;
     }
 
     public String getName() {
@@ -111,4 +114,11 @@ public class BranchDTO {
         this.createUserUrl = createUserUrl;
     }
 
+    public String getTypeCode() {
+        return typeCode;
+    }
+
+    public void setTypeCode(String typeCode) {
+        this.typeCode = typeCode;
+    }
 }

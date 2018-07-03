@@ -9,10 +9,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-
+import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
@@ -53,14 +52,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private IamRepository iamRepository;
     @Autowired
     private AgileRepository agileRepository;
+    @Autowired
+    private ApplicationMapper applicationMapper;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
     }
-
-    @Autowired
-    private ApplicationMapper applicationMapper;
 
     @Override
     public void createTag(Long projectId, Long appId, String tag, String ref) {
@@ -151,12 +149,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsBranchE != null && devopsBranchE.getIssueId() != null) {
             issueId = devopsBranchE.getIssueId();
         }
-        return new BranchDTO(t, devopsBranchE == null ? null :
-                devopsBranchE.getCreationDate(), createUserUrl,
-                issueId, projectInfo == null ? null :
-                projectInfo.getProjectCode() + issue.getIssueNum(), issue == null ? null :
-                issue.getSummary(), commitUserE.getImageUrl() == null ? commitUserE.getLoginName() :
-                commitUserE.getImageUrl());
+        return new BranchDTO(t, devopsBranchE == null ? null : devopsBranchE.getCreationDate(), createUserUrl, issueId, projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(), issue == null ? null : issue.getSummary(), commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(), issue.getTypeCode());
     }
 
     @Override

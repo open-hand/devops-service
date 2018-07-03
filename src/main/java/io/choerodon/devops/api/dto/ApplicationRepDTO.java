@@ -16,6 +16,7 @@ public class ApplicationRepDTO {
     private String publishLevel;
     private String contributor;
     private String description;
+    private String sonarUrl;
 
     public Long getId() {
         return id;
@@ -103,5 +104,14 @@ public class ApplicationRepDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+
+    public String getSonarUrl() {
+        return sonarUrl;
+    }
+
+    public void setSonarUrl(String sonarUrl) {
+        this.sonarUrl = sonarUrl;
     }
 }
