@@ -234,4 +234,16 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         }
     }
 
+    @Override
+    public List<ApplicationVersionE> selectUpgradeVersions(Long appVersionId) {
+        return ConvertHelper.convertList(applicationVersionMapper.selectUpgradeVersions(appVersionId),ApplicationVersionE.class);
+    }
+
+    @Override
+    public void checkProIdAndVerId(Long projectId, Long appVersionId) {
+        Integer index = applicationVersionMapper.checkProIdAndVerId(projectId, appVersionId);
+        if (index == 0) {
+            throw new CommonException("error.project.AppVersion.notExist");
+        }
+    }
 }

@@ -164,4 +164,25 @@ public class ApplicationVersionController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
+
+    /**
+     * 根据实例ID查询，可升级的应用版本
+     *
+     * @param projectId    项目ID
+     * @param appVersionId 应用版本ID
+     * @return ApplicationVersionRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "实例下查询可升级版本")
+    @GetMapping(value = "/version/{app_version_id}/upgrade_version")
+    public ResponseEntity<List<ApplicationVersionRepDTO>> getUpgradeAppVersion(
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用版本ID", required = true)
+            @PathVariable(value = "app_version_id") Long appVersionId) {
+        return Optional.ofNullable(applicationVersionService.getUpgradeAppVersion(projectId, appVersionId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
 }

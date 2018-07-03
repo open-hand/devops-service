@@ -44,4 +44,8 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
     List<ApplicationVersionDO> getAllPublishedVersion(@Param("applicationId") Long applicationId);
 
     List<Long> selectVersionsByAppId(@Param("applicationId") Long applicationId);
+
+    List<ApplicationVersionDO> selectUpgradeVersions(@Param("appVersionId") Long appVersionId);
+
+    Integer checkProIdAndVerId(@Param("projectId") Long projectId,@Param("appVersionId") Long appVersionId);
 }
