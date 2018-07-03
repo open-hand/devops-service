@@ -34,6 +34,10 @@ public interface IamServiceClient {
     @GetMapping(value = "/v1/users")
     ResponseEntity<UserDO> queryByLoginName(@RequestParam("login_name") String loginName);
 
+    @GetMapping(value = "/v1/users/{id}/info")
+    ResponseEntity<UserDO> queryById(@PathVariable("id") Long id);
+
+
     @GetMapping(value = "/v1/organizations/{id}/projects")
     ResponseEntity<Page<ProjectDO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size);
 }

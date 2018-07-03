@@ -16,6 +16,8 @@ public class DevopsBranchE {
     private String branchName;
     private String originBranch;
     private Date lastCommitDate;
+    private Date creationDate;
+
 
     public Long getId() {
         return id;
@@ -75,6 +77,14 @@ public class DevopsBranchE {
 
     public void setOriginBranch(String originBranch) {
         this.originBranch = originBranch;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 }
 

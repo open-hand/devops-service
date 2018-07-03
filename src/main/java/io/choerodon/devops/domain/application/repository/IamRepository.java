@@ -20,4 +20,6 @@ public interface IamRepository {
     UserE queryByLoginName(String userName);
 
     List<ProjectE> listIamProjectByOrgId(Long organizationId);
+
+    UserE queryById(Long id);
 }

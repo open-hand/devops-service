@@ -76,29 +76,36 @@ public class IamRepositoryImpl implements IamRepository {
         int size = 200;
         ResponseEntity<Page<ProjectDO>> pageResponseEntity =
                 iamServiceClient.queryProjectByOrgId(organizationId, page, size);
-        if (pageResponseEntity != null) {
-            Page<ProjectDO> projectDOPage = pageResponseEntity.getBody();
-            List<ProjectE> projectEList = ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class);
-            if (projectEList != null) {
-                returnList.addAll(projectEList);
-            }
-            int totalPages = projectDOPage.getTotalPages();
-            if (totalPages > 1) {
-                for (int i = 1; i < totalPages; i++) {
-                    page = i;
-                    ResponseEntity<Page<ProjectDO>> entity = iamServiceClient
-                            .queryProjectByOrgId(organizationId, page, size);
-                    if (entity != null) {
-                        Page<ProjectDO> project = entity.getBody();
-                        List<ProjectE> projectE = ConvertHelper.convertList(project.getContent(), ProjectE.class);
-                        if (projectE != null) {
-                            returnList.addAll(projectE);
-                        }
+        Page<ProjectDO> projectDOPage = pageResponseEntity.getBody();
+        List<ProjectE> projectEList = ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class);
+        if (ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class) != null) {
+            returnList.addAll(projectEList);
+        }
+        int totalPages = projectDOPage.getTotalPages();
+        if (totalPages > 1) {
+            for (int i = 1; i < totalPages; i++) {
+                page = i;
+                ResponseEntity<Page<ProjectDO>> entity = iamServiceClient
+                        .queryProjectByOrgId(organizationId, page, size);
+                if (entity != null) {
+                    Page<ProjectDO> project = entity.getBody();
+                    List<ProjectE> projectE = ConvertHelper.convertList(project.getContent(), ProjectE.class);
+                    if (projectE != null) {
+                        returnList.addAll(projectE);
                     }
                 }
             }
-
         }
         return returnList;
+    }
+
+    @Override
+    public UserE queryById(Long id) {
+        try {
+            ResponseEntity<UserDO> responseEntity = iamServiceClient.queryById(id);
+            return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

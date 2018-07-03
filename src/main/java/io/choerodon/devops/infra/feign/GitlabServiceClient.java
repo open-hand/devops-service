@@ -244,6 +244,21 @@ public interface GitlabServiceClient {
             @RequestParam("branchName") String branchName,
             @RequestParam("userId") Integer userId);
 
+
+    /**
+     * 根据分支名查询分支
+     *
+     * @param projectId  工程ID
+     * @param branchName 分支名
+     * @return 不含任何消息体的ResponseEntity
+     */
+    @GetMapping("/v1/projects/{projectId}/repository/branches/{branchName}")
+    ResponseEntity<BranchDO> getBranch(
+            @PathVariable("projectId") Integer projectId,
+            @PathVariable("branchName") String branchName,
+            @RequestParam("userId") Integer userId);
+
+
     /**
      * 创建新分支的接口
      *
@@ -278,4 +293,6 @@ public interface GitlabServiceClient {
 
     @PutMapping("/v1/users/{userId}/dis_enabled")
     ResponseEntity disEnabledUserByUserId(@PathVariable("userId") Integer userId);
+
+
 }

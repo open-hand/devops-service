@@ -3,18 +3,9 @@ package io.choerodon.devops.api.dto;
 
 public class DevopsBranchDTO {
 
-    private Long userId;
     private String originBranch;
     private Long issueId;
     private String branchName;
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
-    }
 
     public String getOriginBranch() {
         return originBranch;

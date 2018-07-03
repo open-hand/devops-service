@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsBranchMapper">
+    <select id="queryByAppAndBranchName" resultType="io.choerodon.devops.infra.dataobject.DevopsBranchDO">
+        SELECT
+        db.id,
+        db.issue_id,
+        db.creation_date,
+        db.branch_name,
+        db.user_id,
+        db.object_version_number
+        FROM
+        devops_branch db
+        WHERE
+        db.app_id = #{appId}
+        and db.branch_name = #{branchName}
+        ORDER BY
+        db.creation_date DESC
+        LIMIT 1
+    </select>
+</mapper>
