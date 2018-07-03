@@ -166,7 +166,7 @@ public class ApplicationVersionController {
     }
 
     /**
-     * 根据实例ID查询，可升级的应用版本
+     * 根据应用版本ID查询，可升级的应用版本
      *
      * @param projectId    项目ID
      * @param appVersionId 应用版本ID
