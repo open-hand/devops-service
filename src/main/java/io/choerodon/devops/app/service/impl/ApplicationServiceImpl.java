@@ -9,6 +9,7 @@ import java.util.Map;
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -45,6 +46,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private String gitlabUrl;
     @Value("${spring.application.name}")
     private String applicationName;
+    @Value("${services.sonarqube.url}")
+    private String sonarqubeUrl;
 
     @Autowired
     private GitlabRepository gitlabRepository;
@@ -158,13 +161,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationES.getContent().parallelStream()
-                .forEach(t -> t.initGitlabProjectEByUrl(
-                        t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null
-                                ? gitlabUrl + urlSlash
+                .forEach(t -> {
+                    if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
+                        t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
                                 + organization.getCode() + "-" + projectE.getCode() + "/"
-                                + t.getCode() + ".git"
-                                : null
-                ));
+                                + t.getCode() + ".git");
+                        if (!sonarqubeUrl.equals("")) {
+                            Integer result = HttpClientUtil.getSonar(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/" + "api/project_links/search?projectKey=" + organization.getCode() + "-" + projectE.getCode() + ":" + t.getCode());
+                            if (result.equals(HttpStatus.OK.value())) {
+                                t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
+                                        + "dashboard?id="
+                                        + organization.getCode() + "-" + projectE.getCode() + ":"
+                                        + t.getCode());
+                            }
+                        }
+                    }
+                });
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
 
