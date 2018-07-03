@@ -96,9 +96,6 @@ public class GitUtil {
             if(teamplateType) {
                 git.branchCreate().setName(MASTER).call();
             }
-            if (type.equals(APPLICATION)) {
-                git.branchCreate().setName(DEVELOP).call();
-            }
             List<Ref> refs = git.branchList().call();
             PushCommand pushCommand = git.push();
             for (Ref ref : refs) {
