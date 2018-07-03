@@ -46,4 +46,8 @@ public interface ApplicationVersionRepository {
     String getReadme(Long versionId);
 
     void updateVersion(ApplicationVersionE applicationVersionE);
+
+    List<ApplicationVersionE> selectUpgradeVersions(Long appVersionId);
+
+    void checkProIdAndVerId(Long projectId, Long appVersionId);
 }
