@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service;
 
-
 import java.util.List;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.MergeRequestDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -13,6 +15,7 @@ import io.choerodon.devops.api.dto.DevopsBranchDTO;
  * Description:
  */
 public interface DevopsGitService {
+
     void createTag(Long projectId, Long appId, String tag, String ref);
 
     /**
@@ -48,7 +51,7 @@ public interface DevopsGitService {
      *
      * @param projectId       项目 ID
      * @param applicationId   应用ID
-     * @param devopsBranchDTO
+     * @param devopsBranchDTO 分支
      */
     void updateBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO);
 
@@ -60,4 +63,7 @@ public interface DevopsGitService {
      * @param branchName    分支名
      */
     void deleteBranch(Long projectId, Long applicationId, String branchName);
+
+    Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long aplicationId, PageRequest pageRequest);
+
 }

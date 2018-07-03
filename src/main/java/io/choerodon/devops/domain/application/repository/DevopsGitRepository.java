@@ -1,12 +1,14 @@
 package io.choerodon.devops.domain.application.repository;
 
-
 import java.util.List;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagsDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Creator: Runge
@@ -39,4 +41,6 @@ public interface DevopsGitRepository {
     DevopsBranchE queryByAppAndBranchName(Long appId, String branchName);
 
     void updateBranch(Long appId, DevopsBranchE devopsBranchE);
+
+    Page<MergeRequestDTO> getMergeRequestList(Integer gitLabProjectId, PageRequest pageRequest);
 }

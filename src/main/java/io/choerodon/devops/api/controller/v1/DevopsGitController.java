@@ -9,13 +9,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -134,7 +139,6 @@ public class DevopsGitController {
      * @param projectId       项目 ID
      * @param applicationId   应用ID
      * @param devopsBranchDTO 分支
-     * @param devopsBranchDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -171,5 +175,29 @@ public class DevopsGitController {
             @RequestParam String branchName) {
         devopsGitService.deleteBranch(projectId, applicationId, branchName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 查看所有合并请求
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用id
+     * @return mergeRequest列表
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查看所有合并请求")
+    @GetMapping(value = "/merge_request/list")
+    @CustomPageRequest
+    public ResponseEntity<Page<MergeRequestDTO>> getMergeRequestList(
+            @ApiParam(value = "项目ID")
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用ID")
+            @PathVariable(value = "application_id") Long applicationId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest) {
+        return Optional.ofNullable(devopsGitService.getMergeRequestList(projectId, applicationId, pageRequest))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.mergerequest.get"));
     }
 }

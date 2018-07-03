@@ -104,6 +104,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<MergeRequestDO>> getMergeRequestList(Integer projectId) {
+        return  new ResponseEntity("error.mergerequest.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<List<BranchDO>> listBranches(Integer projectId, Integer userId) {
         return new ResponseEntity("error.select.branch", HttpStatus.INTERNAL_SERVER_ERROR);
     }
