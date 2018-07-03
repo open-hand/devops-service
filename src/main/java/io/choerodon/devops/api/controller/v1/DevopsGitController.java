@@ -140,7 +140,7 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新分支关联的问题")
     @PutMapping("/branch")
-    public ResponseEntity queryByAppId(
+    public ResponseEntity update(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)

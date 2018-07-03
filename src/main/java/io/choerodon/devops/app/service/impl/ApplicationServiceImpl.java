@@ -18,10 +18,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
@@ -71,6 +68,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private UserAttrRepository userAttrRepository;
     @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    @Autowired
+    private DevopsGitRepository devopsGitRepository;
 
     @Override
     public ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO) {
@@ -255,19 +254,14 @@ public class ApplicationServiceImpl implements ApplicationService {
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                     gitlabUserE.getUsername(), accessToken, APPLICATION, teamplateType);
-            boolean flag = true;
-            while (flag) {
-                if (gitlabRepository.updateProject(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId()).equals(DEVELOP)) {
-                    flag = false;
-                }
-            }
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
-            gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(),
-                    DEVELOP, AccessLevel.DEVELOPER.toString(), AccessLevel.DEVELOPER.toString(),
-                    gitlabProjectEventDTO.getUserId());
+            DevopsBranchE devopsBranchE = new DevopsBranchE();
+            devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectEventDTO.getUserId()));
+            devopsBranchE.setApplicationE(new ApplicationE(TypeUtil.objToLong(gitlabProjectEventDTO.getGitlabProjectId())));
+            devopsBranchE.setBranchName(MASTER);
+            devopsGitRepository.createDevopsBranch(devopsBranchE);
         }
-
         try {
             String token = GenerateUUID.generateUUID();
             gitlabRepository.addVariable(gitlabProjectEventDTO.getGitlabProjectId(), "Token",
