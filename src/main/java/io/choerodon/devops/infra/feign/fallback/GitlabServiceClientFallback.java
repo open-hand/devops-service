@@ -199,6 +199,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<BranchDO> getBranch(Integer projectId, String branchName, Integer userId) {
+        return new ResponseEntity("error.branch.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<BranchDO> createBranch(Integer projectId, String name, String source, Integer userId) {
         return new ResponseEntity("error.branch.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }

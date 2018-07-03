@@ -22,6 +22,8 @@ public class DevopsBranchDO {
     private String originBranch;
     private String branchName;
     private Date lastCommitDate;
+    private Date creationDate;
+    private Long objectVersionNumber;
 
 
     public Long getId() {
@@ -78,5 +80,21 @@ public class DevopsBranchDO {
 
     public void setLastCommitDate(Date lastCommitDate) {
         this.lastCommitDate = lastCommitDate;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
