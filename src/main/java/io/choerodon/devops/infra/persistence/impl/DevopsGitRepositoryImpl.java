@@ -22,10 +22,7 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
@@ -110,6 +107,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         }
 
         List<TagDO> tagList = tagTotalList.stream()
+                .sorted(this::sortTag)
                 .skip(page.longValue() * size).limit(size)
                 .peek(t -> t.getCommit().setUrl(
                         String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())))
@@ -203,5 +201,20 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         DevopsBranchDO devopsBranchDO = new DevopsBranchDO();
         devopsBranchDO.setAppId(appId);
         return ConvertHelper.convertList(devopsBranchMapper.select(devopsBranchDO), DevopsBranchE.class);
+    }
+
+    private Integer sortTag(TagDO a, TagDO b) {
+        TagNodeDO tagA = TagNodeDO.tagNameToTagNode(a.getName());
+        TagNodeDO tagB = TagNodeDO.tagNameToTagNode(b.getName());
+        if (tagA != null && tagB != null) {
+            return tagA.compareTo(tagB) * -1;
+        } else if (tagA == null && tagB != null) {
+            return 1;
+        } else if (tagA != null) {
+            return -1;
+        } else {
+            return a.getName().compareToIgnoreCase(b.getName());
+        }
+
     }
 }
