@@ -92,6 +92,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO.getOriginBranch(),
                 getGitlabUserId());
         devopsBranchE.setLastCommitDate(branchDO.getCommit().getCommittedDate());
+        devopsBranchE.setCommit(branchDO.getCommit().getShortId());
         devopsBranchE.setUserId(TypeUtil.objToLong(getGitlabUserId()));
         devopsGitRepository.createDevopsBranch(devopsBranchE);
     }
@@ -151,26 +152,20 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                    ProjectInfo projectInfo,
                                    Issue issue) {
         String createUserUrl = null;
+        String createUserName = null;
         Long issueId = null;
         if (userE != null) {
+            createUserName = userE.getLoginName();
             if (userE.getImageUrl() != null) {
                 createUserUrl = userE.getImageUrl();
             } else {
-                createUserUrl = userE.getLoginName();
+                createUserUrl = createUserName;
             }
         }
         if (devopsBranchE != null && devopsBranchE.getIssueId() != null) {
             issueId = devopsBranchE.getIssueId();
         }
-        return new BranchDTO(
-                t,
-                devopsBranchE == null ? null : devopsBranchE.getCreationDate(),
-                createUserUrl,
-                issueId,
-                projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(),
-                issue != null ? issue.getSummary() : null,
-                commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(),
-                issue != null ? issue.getTypeCode() : null);
+        return new BranchDTO(t, devopsBranchE == null ? null : devopsBranchE.getCreationDate(), createUserUrl, issueId, projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(), issue == null ? null : issue.getSummary(), commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(), issue == null ? null : issue.getTypeCode(), commitUserE.getLoginName(), createUserName);
     }
 
     @Override

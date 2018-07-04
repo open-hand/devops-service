@@ -20,4 +20,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'younger', id: '2018-07-04-add-column') {
+        addColumn(tableName: 'devops_branch') {
+            column(name: 'commit', type: 'VARCHAR(64)', remarks: 'commit', afterColumn: 'origin_branch')
+        }
+        addUniqueConstraint(tableName: 'devops_branch',
+                constraintName: 'uk_branch_name_commit', columnNames: 'branch_name,commit')
+    }
+
+
 }

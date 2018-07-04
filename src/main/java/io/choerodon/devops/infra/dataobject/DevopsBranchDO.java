@@ -22,6 +22,7 @@ public class DevopsBranchDO {
     private String originBranch;
     private String branchName;
     private Date lastCommitDate;
+    private String commit;
     private Date creationDate;
     private Long objectVersionNumber;
 
@@ -96,5 +97,13 @@ public class DevopsBranchDO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public String getCommit() {
+        return commit;
+    }
+
+    public void setCommit(String commit) {
+        this.commit = commit;
     }
 }
