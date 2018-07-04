@@ -21,6 +21,8 @@ public interface DevopsGitService {
 
     void createTag(Long projectId, Long appId, String tag, String ref);
 
+    void deleteTag(Long projectId, Long appId, String tag);
+
     /**
      * 创建分支
      *

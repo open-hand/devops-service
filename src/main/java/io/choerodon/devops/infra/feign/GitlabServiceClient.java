@@ -231,6 +231,18 @@ public interface GitlabServiceClient {
             @RequestParam("ref") String ref,
             @RequestParam("userId") Integer userId);
 
+    /**
+     * 删除tag
+     *
+     * @param projectId 工程ID
+     * @param name      tag名称
+     */
+    @DeleteMapping("/v1/projects/{projectId}/repository/tags")
+    ResponseEntity deleteTag(
+            @PathVariable("projectId") Integer projectId,
+            @RequestParam("name") String name,
+            @RequestParam("userId") Integer userId);
+
     @DeleteMapping("/v1/projects/{projectId}/merge_requests/{mergeRequestId}")
     ResponseEntity deleteMergeRequest(@PathVariable("projectId") Integer projectId,
                                       @PathVariable("mergeRequestId") Integer mergeRequestId);
