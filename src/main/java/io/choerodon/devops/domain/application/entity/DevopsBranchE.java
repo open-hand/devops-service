@@ -19,6 +19,17 @@ public class DevopsBranchE {
     private Date creationDate;
     private String commit;
 
+    public DevopsBranchE() {
+    }
+
+    public DevopsBranchE(String commit, String branchName, ApplicationE applicationE, Date lastCommitDate) {
+        this.commit = commit;
+        this.branchName = branchName;
+        this.applicationE = applicationE;
+        this.lastCommitDate = lastCommitDate;
+    }
+
+
     public Long getId() {
         return id;
     }

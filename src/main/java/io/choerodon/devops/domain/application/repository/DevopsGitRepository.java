@@ -43,4 +43,8 @@ public interface DevopsGitRepository {
     void updateBranch(Long appId, DevopsBranchE devopsBranchE);
 
     Page<MergeRequestDTO> getMergeRequestList(Integer gitLabProjectId, String state, PageRequest pageRequest);
+
+    List<DevopsBranchE> listDevopsBranchesByAppId(Long appId);
+
+    List<DevopsBranchE> listDevopsBranchesByAppIdAndBranchName(Long appId, String branchName);
 }
