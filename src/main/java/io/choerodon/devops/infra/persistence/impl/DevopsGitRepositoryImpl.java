@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +24,10 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
@@ -162,25 +164,21 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public Map<String, Object> getMergeRequestList(Integer gitLabProjectId,
                                                    String state,
                                                    PageRequest pageRequest) {
-        Stream<MergeRequestDO> stream = gitlabServiceClient
+        List<MergeRequestDO> collect = gitlabServiceClient
                 .getMergeRequestList(gitLabProjectId)
-                .getBody()
-                .stream();
-        int mergeCount = 0;
-        int openCount = 0;
-        int closeCount = 0;
-        List<MergeRequestDO> collect = stream.collect(Collectors.toList());
-        if (collect != null && !collect.isEmpty()) {
-            for (MergeRequestDO mergeRequestDO : collect) {
-                if ("merged".equals(mergeRequestDO.getState())) {
-                    mergeCount++;
-                } else if ("opened".equals(mergeRequestDO.getState())) {
-                    openCount++;
-                } else if ("closed".equals(mergeRequestDO.getState())) {
-                    closeCount++;
-                }
+                .getBody();
+        final int[] mergeCount = {0};
+        final int[] openCount = {0};
+        final int[] closeCount = {0};
+        collect.forEach(mergeRequestDO -> {
+            if ("merged".equals(mergeRequestDO.getState())) {
+                mergeCount[0]++;
+            } else if ("opened".equals(mergeRequestDO.getState())) {
+                openCount[0]++;
+            } else if ("closed".equals(mergeRequestDO.getState())) {
+                closeCount[0]++;
             }
-        }
+        });
         List<MergeRequestDO> mergeRequestDOS = null;
         if (StringUtil.isNotEmpty(state)) {
             mergeRequestDOS = collect.stream().filter(mergeRequestDO ->
@@ -198,16 +196,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         mergeRequestDOS = mergeRequestDOS.stream().skip(skipNumber).limit(size).collect(Collectors.toList());
         if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
             mergeRequestDOS.stream()
-                    .forEach(mergeRequestDO -> {
-                        ResponseEntity<MergeRequestDO> mergeRequestInfo = gitlabServiceClient.getMergeRequest(gitLabProjectId, mergeRequestDO.getIid(),
-                                devopsGitRepository.getGitlabUserId());
-                        AuthorDO author = mergeRequestInfo.getBody().getAuthor();
-                        mergeRequestDO.setAuthor(author);
-                        List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
-                                mergeRequestDO.getIid(), devopsGitRepository.getGitlabUserId()).getBody();
-                        List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
-                        mergeRequestDO.setCommits(commitDTOS);
-                    });
+                    .forEach(mergeRequestDO ->
+                            getMergeRequestCommits(gitLabProjectId, mergeRequestDO));
         }
         List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(mergeRequestDOS, MergeRequestDTO.class);
         Page<MergeRequestDTO> pageResult = new Page<>();
@@ -215,14 +205,23 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         pageResult.setTotalPages(totalPages);
         pageResult.setSize(size);
         pageResult.setContent(mergeRequestDTOS);
-        int total = mergeCount + openCount + closeCount;
+        int total = mergeCount[0] + openCount[0] + closeCount[0];
         Map<String, Object> result = new HashMap<>();
-        result.put("mergeCount", mergeCount);
-        result.put("openCount", openCount);
-        result.put("closeCcount", closeCount);
+        result.put("mergeCount", mergeCount[0]);
+        result.put("openCount", openCount[0]);
+        result.put("closeCcount", closeCount[0]);
         result.put("totalCount", total);
         result.put("pageResult", pageResult);
         return result;
+    }
+
+    private void getMergeRequestCommits(Integer gitLabProjectId,
+                                        MergeRequestDO mergeRequestDO) {
+        List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
+                mergeRequestDO.getIid(),
+                devopsGitRepository.getGitlabUserId()).getBody();
+        List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
+        mergeRequestDO.setCommits(commitDTOS);
     }
 
 
