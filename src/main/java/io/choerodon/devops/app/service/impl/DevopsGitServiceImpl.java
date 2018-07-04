@@ -236,6 +236,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    public List<TagDO> getTags(Long projectId, Long applicationId) {
+        return devopsGitRepository.getTagList(applicationId, getGitlabUserId());
+    }
+
+    @Override
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
         return devopsGitRepository.getTagList(applicationId, getGitlabUserId()).parallelStream()
                 .noneMatch(t -> tagName.equals(t.getName()));

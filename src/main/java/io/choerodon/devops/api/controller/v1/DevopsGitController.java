@@ -94,7 +94,7 @@ public class DevopsGitController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取标签列表")
+    @ApiOperation(value = "获取标签分页列表")
     @GetMapping("/tags")
     public ResponseEntity<Page<TagDO>> getTag(
             @ApiParam(value = "项目id", required = true)
@@ -104,6 +104,27 @@ public class DevopsGitController {
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         return Optional.ofNullable(devopsGitService.getTags(projectId, applicationId, page, size))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.tags.get"));
+    }
+
+    /**
+     * 获取标签列表
+     *
+     * @param projectId     项目ID
+     * @param applicationId 应用ID
+     * @return null
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取标签列表")
+    @GetMapping("/tag_list")
+    public ResponseEntity<List<TagDO>> getTagList(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "application_id") Long applicationId) {
+        return Optional.ofNullable(devopsGitService.getTags(projectId, applicationId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.tags.get"));
     }
