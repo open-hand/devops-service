@@ -7,7 +7,6 @@ import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagsDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -32,7 +31,7 @@ public interface DevopsGitRepository {
 
     void deleteBranch(Integer projectId, String branchName, Integer userId);
 
-    TagsDO getTags(Long serviceId, String path, Integer page, Integer size, Integer userId);
+    Page<TagDO> getTags(Long appId, String path, Integer page, Integer size, Integer userId);
 
     List<TagDO> getTagList(Long appId, Integer userId);
 

@@ -26,6 +26,7 @@ import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -165,7 +166,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsBranchE != null && devopsBranchE.getIssueId() != null) {
             issueId = devopsBranchE.getIssueId();
         }
-        return new BranchDTO(t, devopsBranchE == null ? null : devopsBranchE.getCreationDate(), createUserUrl, issueId, projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(), issue == null ? null : issue.getSummary(), commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(), issue == null ? null : issue.getTypeCode(), commitUserE.getLoginName(), createUserName);
+        return new BranchDTO(
+                t,
+                devopsBranchE == null ? null : devopsBranchE.getCreationDate(),
+                createUserUrl,
+                issueId,
+                projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(),
+                issue == null ? null : issue.getSummary(),
+                commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(),
+                issue == null ? null : issue.getTypeCode(),
+                commitUserE.getLoginName(),
+                createUserName);
     }
 
     @Override
@@ -180,18 +191,45 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void isBranchExist(Long applicationId, List<BranchDO> branchDOS) {
         List<DevopsBranchE> devopsBranches = devopsGitRepository.listDevopsBranchesByAppId(applicationId);
-        List<String> branchNames = devopsBranches.stream().map(DevopsBranchE::getBranchName).collect(Collectors.toList());
+        List<String> branchNames = devopsBranches.stream()
+                .map(DevopsBranchE::getBranchName).collect(Collectors.toList());
         branchDOS.parallelStream().forEach(branchDO -> {
             if (!branchNames.contains(branchDO.getName())) {
-                DevopsBranchE devopsBranchE = new DevopsBranchE(branchDO.getCommit().getShortId(), branchDO.getName(), new ApplicationE(applicationId), branchDO.getCommit().getCommittedDate());
+                DevopsBranchE devopsBranchE =
+                        new DevopsBranchE(
+                                branchDO.getCommit().getShortId(),
+                                branchDO.getName(),
+                                new ApplicationE(applicationId),
+                                branchDO.getCommit().getCommittedDate());
                 devopsGitRepository.createDevopsBranch(devopsBranchE);
             } else {
-                List<String> commits = devopsGitRepository.listDevopsBranchesByAppIdAndBranchName(applicationId, branchDO.getName()).stream().map(DevopsBranchE::getCommit).collect(Collectors.toList());
+                List<String> commits = devopsGitRepository
+                        .listDevopsBranchesByAppIdAndBranchName(
+                                applicationId,
+                                branchDO.getName())
+                        .stream()
+                        .map(DevopsBranchE::getCommit).collect(Collectors.toList());
                 if (!commits.contains(branchDO.getCommit().getShortId())) {
-                    DevopsBranchE devopsBranchE = new DevopsBranchE(branchDO.getCommit().getShortId(), branchDO.getName(), new ApplicationE(applicationId), branchDO.getCommit().getCommittedDate());
+                    DevopsBranchE devopsBranchE =
+                            new DevopsBranchE(
+                                    branchDO.getCommit().getShortId(),
+                                    branchDO.getName(),
+                                    new ApplicationE(applicationId),
+                                    branchDO.getCommit().getCommittedDate());
                     devopsGitRepository.createDevopsBranch(devopsBranchE);
                 }
             }
         });
+    }
+
+    @Override
+    public Page<TagDO> getTags(Long projectId, Long applicationId, Integer page, Integer size) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        ApplicationE applicationE = applicationRepository.query(applicationId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        String path = String.format("%s%s%s-%s/%s",
+                gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
+        return devopsGitRepository.getTags(applicationId, path, page, size, getGitlabUserId());
     }
 }
