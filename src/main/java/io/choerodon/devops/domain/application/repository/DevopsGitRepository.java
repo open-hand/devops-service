@@ -1,9 +1,9 @@
 package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
@@ -41,9 +41,9 @@ public interface DevopsGitRepository {
 
     void updateBranch(Long appId, DevopsBranchE devopsBranchE);
 
-    Page<MergeRequestDTO> getMergeRequestList(Integer gitLabProjectId, String state, PageRequest pageRequest);
-
     List<DevopsBranchE> listDevopsBranchesByAppId(Long appId);
 
     List<DevopsBranchE> listDevopsBranchesByAppIdAndBranchName(Long appId, String branchName);
+
+    Map<String, Object> getMergeRequestList(Integer gitLabProjectId, String state, PageRequest pageRequest);
 }
