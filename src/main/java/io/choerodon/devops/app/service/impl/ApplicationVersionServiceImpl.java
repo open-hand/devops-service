@@ -79,10 +79,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             return;
         }
         try {
-            FileUtil.unTarGZ(path, DESTPATH);
+            FileUtil.unTarGZ(path, DESTPATH + version);
             applicationVersionValueE.setValue(
                     FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
-                            new File(DESTPATH), "values.yaml").getAbsolutePath())), null));
+                            new File(DESTPATH + version), "values.yaml").getAbsolutePath())), null));
 
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());
@@ -91,7 +91,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(DESTPATH));
         applicationVersionRepository.create(applicationVersionE);
-        FileUtil.deleteDirectory(new File(DESTPATH));
+        FileUtil.deleteDirectory(new File(DESTPATH + version));
     }
 
     @Override

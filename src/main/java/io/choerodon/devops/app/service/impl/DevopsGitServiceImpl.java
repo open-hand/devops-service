@@ -210,13 +210,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         .stream()
                         .map(DevopsBranchE::getCommit).collect(Collectors.toList());
                 if (!commits.contains(branchDO.getCommit().getShortId())) {
-                    DevopsBranchE devopsBranchE =
-                            new DevopsBranchE(
-                                    branchDO.getCommit().getShortId(),
-                                    branchDO.getName(),
-                                    new ApplicationE(applicationId),
-                                    branchDO.getCommit().getCommittedDate());
-                    devopsGitRepository.createDevopsBranch(devopsBranchE);
+                    if (!branchDO.getName().equals("master")) {
+                        DevopsBranchE devopsBranchE =
+                                new DevopsBranchE(
+                                        branchDO.getCommit().getShortId(),
+                                        branchDO.getName(),
+                                        new ApplicationE(applicationId),
+                                        branchDO.getCommit().getCommittedDate());
+                        devopsGitRepository.createDevopsBranch(devopsBranchE);
+                    }
                 }
             }
         });
