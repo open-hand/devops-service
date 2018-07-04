@@ -121,12 +121,6 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public void updateBranch(Long appId, DevopsBranchE devopsBranchE) {
         DevopsBranchDO devopsBranchDO = devopsBranchMapper
                 .queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
-        if (devopsBranchDO == null) {
-            DevopsBranchDO devopsBranchDO1 = ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class);
-            devopsBranchDO1.setAppId(appId);
-            devopsBranchMapper.insert(devopsBranchDO1);
-            return;
-        }
         devopsBranchDO.setIssueId(devopsBranchE.getIssueId());
         devopsBranchMapper.updateByPrimaryKeySelective(devopsBranchDO);
     }
@@ -165,5 +159,21 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             pageResult.setTotalElements(totalSize);
         }
         return pageResult;
+    }
+
+
+    @Override
+    public List<DevopsBranchE> listDevopsBranchesByAppIdAndBranchName(Long appId, String branchName) {
+        DevopsBranchDO devopsBranchDO = new DevopsBranchDO();
+        devopsBranchDO.setAppId(appId);
+        devopsBranchDO.setBranchName(branchName);
+        return ConvertHelper.convertList(devopsBranchMapper.select(devopsBranchDO), DevopsBranchE.class);
+    }
+
+    @Override
+    public List<DevopsBranchE> listDevopsBranchesByAppId(Long appId) {
+        DevopsBranchDO devopsBranchDO = new DevopsBranchDO();
+        devopsBranchDO.setAppId(appId);
+        return ConvertHelper.convertList(devopsBranchMapper.select(devopsBranchDO), DevopsBranchE.class);
     }
 }
