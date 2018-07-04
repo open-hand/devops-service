@@ -6,6 +6,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -68,4 +69,7 @@ public interface DevopsGitService {
 
     Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 
+    Page<TagDO> getTags(Long projectId, Long applicationId, Integer page, Integer size);
+
+    Boolean checkTag(Long projectId, Long applicationId, String tagName);
 }

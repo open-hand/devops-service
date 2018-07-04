@@ -22,7 +22,10 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
@@ -97,18 +100,43 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public TagsDO getTags(Long serviceId, String path, Integer page, Integer size, Integer userId) {
-        return null;
+    public Page<TagDO> getTags(Long appId, String path, Integer page, Integer size, Integer userId) {
+        Integer projectId = getGitLabId(appId);
+        List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
+        Integer totalSize = tagTotalList.size();
+        int totalPageSizes = totalSize / size + (totalSize % size == 0 ? 0 : 1);
+        if (page > totalPageSizes - 1 && page > 0) {
+            page = totalPageSizes - 1;
+        }
+
+        List<TagDO> tagList = tagTotalList.stream()
+                .skip(page.longValue() * size).limit(size)
+                .peek(t -> t.getCommit().setUrl(
+                        String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())))
+                .collect(Collectors.toCollection(ArrayList::new));
+        Page<TagDO> tagsPage = new Page<>();
+        tagsPage.setSize(size);
+        tagsPage.setTotalElements(totalSize);
+        tagsPage.setTotalPages(totalPageSizes);
+        tagsPage.setContent(tagList);
+        tagsPage.setNumber(page);
+        tagsPage.setNumberOfElements(tagList.size());
+        return tagsPage;
     }
 
     @Override
     public List<TagDO> getTagList(Long appId, Integer userId) {
-        return new ArrayList<>();
+        Integer projectId = getGitLabId(appId);
+        return getGitLabTags(projectId, userId);
     }
 
     @Override
     public List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
-        return new ArrayList<>();
+        ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+        if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new CommonException("error.tags.get");
+        }
+        return tagResponseEntity.getBody();
     }
 
     @Override

@@ -19,6 +19,7 @@ import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -35,8 +36,6 @@ public class DevopsGitController {
 
     @Autowired
     private DevopsGitService devopsGitService;
-
-
 
 
     /**
@@ -84,6 +83,52 @@ public class DevopsGitController {
             @RequestParam String ref) {
         devopsGitService.createTag(projectId, applicationId, tag, ref);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    /**
+     * 获取标签列表
+     *
+     * @param projectId     项目ID
+     * @param applicationId 应用ID
+     * @return null
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取标签列表")
+    @GetMapping("/tags")
+    public ResponseEntity<Page<TagDO>> getTag(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "application_id") Long applicationId,
+            @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
+        return Optional.ofNullable(devopsGitService.getTags(projectId, applicationId, page, size))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.tags.get"));
+    }
+
+    /**
+     * 检查标签
+     *
+     * @param projectId     项目ID
+     * @param applicationId 应用ID
+     * @return null
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "检查标签")
+    @GetMapping("/tags_check")
+    public ResponseEntity<Boolean> checkTag(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "application_id") Long applicationId,
+            @ApiParam(value = "Tag 名称",required = true)
+            @RequestParam String tagName) {
+        return Optional.ofNullable(devopsGitService.checkTag(projectId, applicationId,tagName))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.tag.check"));
     }
 
     /**
@@ -214,11 +259,11 @@ public class DevopsGitController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
             @PathVariable(value = "application_id") Long applicationId,
-            @ApiParam(value = "合并请求状态",required = false)
-            @RequestParam(value = "state",required = false) String state,
+            @ApiParam(value = "合并请求状态", required = false)
+            @RequestParam(value = "state", required = false) String state,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(devopsGitService.getMergeRequestList(projectId, applicationId, state,pageRequest))
+        return Optional.ofNullable(devopsGitService.getMergeRequestList(projectId, applicationId, state, pageRequest))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.mergerequest.get"));
     }
