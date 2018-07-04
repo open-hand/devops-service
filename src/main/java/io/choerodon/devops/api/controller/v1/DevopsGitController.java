@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -11,13 +12,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -254,7 +253,7 @@ public class DevopsGitController {
     @ApiOperation(value = "查看所有合并请求")
     @GetMapping(value = "/merge_request/list")
     @CustomPageRequest
-    public ResponseEntity<Page<MergeRequestDTO>> getMergeRequestList(
+    public ResponseEntity<Map<String, Object>> getMergeRequestList(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")

@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +13,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
@@ -180,7 +180,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long applicationId, String state, PageRequest pageRequest) {
+    public Map<String, Object> getMergeRequestList(Long projectId, Long applicationId, String state, PageRequest pageRequest) {
         applicationRepository.checkApp(projectId, applicationId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(applicationId);
         if (gitLabProjectId == null) {

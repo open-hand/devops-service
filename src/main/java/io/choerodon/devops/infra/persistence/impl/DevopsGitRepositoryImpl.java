@@ -1,8 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -159,19 +162,45 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Page<MergeRequestDTO> getMergeRequestList(Integer gitLabProjectId, String state, PageRequest pageRequest) {
-        Page<MergeRequestDTO> pageResult = new Page<>();
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize() == 0 ? 10 : pageRequest.getSize();
-        pageResult.setSize(size);
-        List<MergeRequestDO> mergeRequestDOS = gitlabServiceClient.getMergeRequestList(gitLabProjectId).getBody();
-        if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
-            if (StringUtil.isNotEmpty(state)) {
-                mergeRequestDOS = mergeRequestDOS.stream().filter(mergeRequestDO ->
-                        mergeRequestDO.getState().equals(state)).skip(page * size * 1L)
-                        .limit(size * 1L).collect(Collectors.toList());
+    public Map<String, Object> getMergeRequestList(Integer gitLabProjectId,
+                                                   String state,
+                                                   PageRequest pageRequest) {
+        Stream<MergeRequestDO> stream = gitlabServiceClient
+                .getMergeRequestList(gitLabProjectId)
+                .getBody()
+                .stream();
+        int mergeCount = 0;
+        int openCount = 0;
+        int closeCount = 0;
+        List<MergeRequestDO> collect = stream.collect(Collectors.toList());
+        if (collect != null && !collect.isEmpty()) {
+            for (MergeRequestDO mergeRequestDO : collect) {
+                if ("merged".equals(mergeRequestDO.getState())) {
+                    mergeCount++;
+                } else if ("opened".equals(mergeRequestDO.getState())) {
+                    openCount++;
+                } else if ("closed".equals(mergeRequestDO.getState())) {
+                    closeCount++;
+                }
             }
-            mergeRequestDOS.parallelStream()
+        }
+        List<MergeRequestDO> mergeRequestDOS = null;
+        if (StringUtil.isNotEmpty(state)) {
+            mergeRequestDOS = collect.stream().filter(mergeRequestDO ->
+                    state.equals(mergeRequestDO.getState())
+            ).collect(Collectors.toList());
+        } else {
+            mergeRequestDOS = collect.stream().collect(Collectors.toList());
+        }
+        int totalElments = mergeRequestDOS.size();
+        int size = pageRequest.getSize();
+        int page = pageRequest.getPage();
+        int totalPages = totalElments % size == 0 ? totalElments / size : totalElments / size + 1;
+        int tempPage = page == 0 ? 1 : page - 1;
+        int skipNumber = page * size > totalElments ? tempPage * size : page * size;
+        mergeRequestDOS = mergeRequestDOS.stream().skip(skipNumber).limit(size).collect(Collectors.toList());
+        if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
+            mergeRequestDOS.stream()
                     .forEach(mergeRequestDO -> {
                         List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
                                 mergeRequestDO.getIid(),
@@ -179,14 +208,21 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                         List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
                         mergeRequestDO.setCommits(commitDTOS);
                     });
-            int totalSize = mergeRequestDOS.size();
-            int totalPage = totalSize % size == 0 ? totalSize / size : (totalSize / size) + 1;
-            List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(mergeRequestDOS, MergeRequestDTO.class);
-            pageResult.setContent(mergeRequestDTOS);
-            pageResult.setTotalPages(totalPage);
-            pageResult.setTotalElements(totalSize);
         }
-        return pageResult;
+        List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(mergeRequestDOS, MergeRequestDTO.class);
+        Page<MergeRequestDTO> pageResult = new Page<>();
+        pageResult.setTotalElements(totalElments);
+        pageResult.setTotalPages(totalPages);
+        pageResult.setSize(size);
+        pageResult.setContent(mergeRequestDTOS);
+        int total = mergeCount + openCount + closeCount;
+        Map<String, Object> result = new HashMap<>();
+        result.put("mergeCount", mergeCount);
+        result.put("openCount", openCount);
+        result.put("closeCcount", closeCount);
+        result.put("totalCount", total);
+        result.put("pageResult", pageResult);
+        return result;
     }
 
 
