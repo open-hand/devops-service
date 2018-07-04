@@ -95,3 +95,4 @@ ribbon:
 logging:
   level:
     io.choerodon.event.consumer: debug
+    io.choreodon.infra.mapper: debug
