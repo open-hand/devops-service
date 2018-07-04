@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.CommitDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
@@ -21,14 +22,12 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagsDO;
+import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.util.StringUtil;
 
 /**
  * Creator: Runge
@@ -46,6 +45,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     private UserAttrRepository userAttrRepository;
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
+    @Autowired
+    private DevopsGitRepository devopsGitRepository;
 
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId) {
@@ -136,18 +137,29 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Page<MergeRequestDTO> getMergeRequestList(Integer gitLabProjectId, PageRequest pageRequest) {
+    public Page<MergeRequestDTO> getMergeRequestList(Integer gitLabProjectId, String state, PageRequest pageRequest) {
         Page<MergeRequestDTO> pageResult = new Page<>();
         int page = pageRequest.getPage();
         int size = pageRequest.getSize() == 0 ? 10 : pageRequest.getSize();
         pageResult.setSize(size);
         List<MergeRequestDO> mergeRequestDOS = gitlabServiceClient.getMergeRequestList(gitLabProjectId).getBody();
         if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
+            if (StringUtil.isNotEmpty(state)) {
+                mergeRequestDOS = mergeRequestDOS.stream().filter(mergeRequestDO ->
+                        mergeRequestDO.getState().equals(state)).skip(page * size * 1L)
+                        .limit(size * 1L).collect(Collectors.toList());
+            }
+            mergeRequestDOS.parallelStream()
+                    .forEach(mergeRequestDO -> {
+                        List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
+                                mergeRequestDO.getIid(),
+                                devopsGitRepository.getGitlabUserId()).getBody();
+                        List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
+                        mergeRequestDO.setCommits(commitDTOS);
+                    });
             int totalSize = mergeRequestDOS.size();
             int totalPage = totalSize % size == 0 ? totalSize / size : (totalSize / size) + 1;
-            List<MergeRequestDO> listData = mergeRequestDOS.stream().limit((page + 1L) * size)
-                    .skip(page * size * 1L).collect(Collectors.toList());
-            List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(listData, MergeRequestDTO.class);
+            List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(mergeRequestDOS, MergeRequestDTO.class);
             pageResult.setContent(mergeRequestDTOS);
             pageResult.setTotalPages(totalPage);
             pageResult.setTotalElements(totalSize);

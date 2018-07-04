@@ -194,9 +194,11 @@ public class DevopsGitController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
             @PathVariable(value = "application_id") Long applicationId,
+            @ApiParam(value = "合并请求状态",required = false)
+            @RequestParam(value = "state",required = false) String state,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(devopsGitService.getMergeRequestList(projectId, applicationId, pageRequest))
+        return Optional.ofNullable(devopsGitService.getMergeRequestList(projectId, applicationId, state,pageRequest))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.mergerequest.get"));
     }

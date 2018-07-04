@@ -153,12 +153,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long applicationId, PageRequest pageRequest) {
+    public Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long applicationId, String state, PageRequest pageRequest) {
         applicationRepository.checkApp(projectId, applicationId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(applicationId);
         if (gitLabProjectId == null) {
             throw new CommonException("error.gitlabProjectId.not.exists");
         }
-        return devopsGitRepository.getMergeRequestList(gitLabProjectId, pageRequest);
+        return devopsGitRepository.getMergeRequestList(gitLabProjectId, state, pageRequest);
     }
 }

@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dataobject.gitlab;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.api.dto.CommitDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.domain.application.entity.gitlab.MilestoneE;
 import io.choerodon.devops.domain.application.entity.gitlab.UserE;
@@ -49,6 +50,16 @@ public class MergeRequestDO {
     private Integer approvalsMissing;
 
     private List<UserE> approvedBy;
+
+    private List<CommitDTO> commits;
+
+    public List<CommitDTO> getCommits() {
+        return commits;
+    }
+
+    public void setCommits(List<CommitDTO> commits) {
+        this.commits = commits;
+    }
 
     public static Boolean isValid(MergeRequestDO mergeRequest) {
         return (mergeRequest != null && mergeRequest.getId() != null);

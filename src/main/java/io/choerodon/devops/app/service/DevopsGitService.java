@@ -64,6 +64,6 @@ public interface DevopsGitService {
      */
     void deleteBranch(Long projectId, Long applicationId, String branchName);
 
-    Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long aplicationId, PageRequest pageRequest);
+    Page<MergeRequestDTO> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 
 }
