@@ -71,5 +71,7 @@ public interface DevopsGitService {
 
     Page<TagDO> getTags(Long projectId, Long applicationId, Integer page, Integer size);
 
+    List<TagDO> getTags(Long projectId, Long applicationId);
+
     Boolean checkTag(Long projectId, Long applicationId, String tagName);
 }
