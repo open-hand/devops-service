@@ -47,6 +47,7 @@ env:
     SERVICES_HARBOR_BASEURL: https://registry.choerodon.com.cn
     SERVICES_HARBOR_USERNAME:  admin
     SERVICES_HARBOR_PASSWORD:
+    SERVICES_SONARQUBE_URL:
     AGENT_VERSION: 0.5.0.RELEASE
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
