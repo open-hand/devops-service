@@ -37,6 +37,29 @@ public class DevopsGitController {
     private DevopsGitService devopsGitService;
 
 
+
+
+    /**
+     * 获取工程下地址
+     *
+     * @param projectId     项目 ID
+     * @param applicationId 应用ID
+     * @return url
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取工程下地址")
+    @GetMapping("/url")
+    public ResponseEntity<String> getUrl(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "application_id") Long applicationId) {
+        return Optional.ofNullable(devopsGitService.getUrl(projectId, applicationId))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.url.get"));
+    }
+
     /**
      * 创建标签
      *
@@ -86,7 +109,6 @@ public class DevopsGitController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-
     /**
      * 获取工程下所有分支名
      *
@@ -107,7 +129,6 @@ public class DevopsGitController {
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.branch.get"));
     }
-
 
     /**
      * 查询单个分支
@@ -131,7 +152,6 @@ public class DevopsGitController {
         devopsGitService.queryBranch(projectId, applicationId, branchName);
         return new ResponseEntity<>(devopsGitService.queryBranch(projectId, applicationId, branchName), HttpStatus.OK);
     }
-
 
     /**
      * 更新分支关联的问题
