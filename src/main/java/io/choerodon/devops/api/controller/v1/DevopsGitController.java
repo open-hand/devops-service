@@ -125,7 +125,7 @@ public class DevopsGitController {
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "Tag 名称",required = true)
-            @RequestParam String tagName) {
+            @RequestParam(value = "tag_name") String tagName) {
         return Optional.ofNullable(devopsGitService.checkTag(projectId, applicationId,tagName))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.tag.check"));
