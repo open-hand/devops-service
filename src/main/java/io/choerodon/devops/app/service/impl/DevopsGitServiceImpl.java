@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,7 +123,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             UserE commitUserE = iamRepository.queryByLoginName(t.getCommit()
                     .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
             return getBranchDTO(t, commitUserE, userE, devopsBranchE, projectInfo, issue);
-        }).filter(Objects::nonNull).collect(Collectors.toList());
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -163,7 +162,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (devopsBranchE != null && devopsBranchE.getIssueId() != null) {
             issueId = devopsBranchE.getIssueId();
         }
-        return new BranchDTO(t, devopsBranchE == null ? null : devopsBranchE.getCreationDate(), createUserUrl, issueId, projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(), issue == null ? null : issue.getSummary(), commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(), issue.getTypeCode());
+        return new BranchDTO(
+                t,
+                devopsBranchE == null ? null : devopsBranchE.getCreationDate(),
+                createUserUrl,
+                issueId,
+                projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(),
+                issue != null ? issue.getSummary() : null,
+                commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(),
+                issue != null ? issue.getTypeCode() : null);
     }
 
     @Override
