@@ -144,7 +144,6 @@ public class ApplicationController {
             @ApiParam(value = "应用是否存在版本", required = false)
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
             @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
