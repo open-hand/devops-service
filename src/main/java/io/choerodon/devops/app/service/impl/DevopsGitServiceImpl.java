@@ -232,4 +232,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
         return devopsGitRepository.getTags(applicationId, path, page, size, getGitlabUserId());
     }
+
+    @Override
+    public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
+        return devopsGitRepository.getTagList(applicationId, getGitlabUserId()).parallelStream()
+                .noneMatch(t -> tagName.equals(t.getName()));
+    }
 }
