@@ -270,7 +270,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
             DevopsBranchE devopsBranchE = new DevopsBranchE();
             devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectEventDTO.getUserId()));
-            devopsBranchE.setApplicationE(new ApplicationE(TypeUtil.objToLong(gitlabProjectEventDTO.getGitlabProjectId())));
+            devopsBranchE.setApplicationE(new ApplicationE(applicationE.getId()));
             devopsBranchE.setBranchName(MASTER);
             devopsGitRepository.createDevopsBranch(devopsBranchE);
         }
