@@ -16,6 +16,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsGitService {
 
+    String getUrl(Long projectId, Long appId);
+
     void createTag(Long projectId, Long appId, String tag, String ref);
 
     /**

@@ -61,6 +61,20 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    public String getUrl(Long projectId, Long appId) {
+        ApplicationE applicationE = applicationRepository.query(appId);
+        if (applicationE.getGitlabProjectE() != null && applicationE.getGitlabProjectE().getId() != null) {
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+            return gitlabUrl + urlSlash
+                    + organization.getCode() + "-" + projectE.getCode() + "/"
+                    + applicationE.getCode();
+        }
+        return "";
+    }
+
+    @Override
     public void createTag(Long projectId, Long appId, String tag, String ref) {
         applicationRepository.checkApp(projectId, appId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
