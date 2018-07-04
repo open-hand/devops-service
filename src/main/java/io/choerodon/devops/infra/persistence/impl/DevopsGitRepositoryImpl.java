@@ -25,10 +25,7 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
@@ -202,9 +199,12 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
             mergeRequestDOS.stream()
                     .forEach(mergeRequestDO -> {
+                        ResponseEntity<MergeRequestDO> mergeRequestInfo = gitlabServiceClient.getMergeRequest(gitLabProjectId, mergeRequestDO.getIid(),
+                                devopsGitRepository.getGitlabUserId());
+                        AuthorDO author = mergeRequestInfo.getBody().getAuthor();
+                        mergeRequestDO.setAuthor(author);
                         List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
-                                mergeRequestDO.getIid(),
-                                devopsGitRepository.getGitlabUserId()).getBody();
+                                mergeRequestDO.getIid(), devopsGitRepository.getGitlabUserId()).getBody();
                         List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
                         mergeRequestDO.setCommits(commitDTOS);
                     });
