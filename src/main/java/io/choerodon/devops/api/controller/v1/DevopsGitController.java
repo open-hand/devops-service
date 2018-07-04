@@ -101,6 +101,7 @@ public class DevopsGitController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
+
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         return Optional.ofNullable(devopsGitService.getTags(projectId, applicationId, page, size))
@@ -150,6 +151,29 @@ public class DevopsGitController {
         return Optional.ofNullable(devopsGitService.checkTag(projectId, applicationId,tagName))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.tag.check"));
+    }
+
+    /**
+     * 删除标签
+     *
+     * @param projectId      项目Id
+     * @param applicationId  应用Id
+     * @param tag            标签名
+     * @return null
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "删除标签")
+    @DeleteMapping("/tags")
+    public ResponseEntity deleteTag(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "application_id") Long applicationId,
+            @ApiParam(value = "标签名称", required = true)
+            @RequestParam String tag) {
+        devopsGitService.deleteTag(projectId, applicationId, tag);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**

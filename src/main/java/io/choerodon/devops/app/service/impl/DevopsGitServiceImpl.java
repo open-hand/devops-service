@@ -83,6 +83,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    public void deleteTag(Long projectId, Long appId, String tag) {
+        applicationRepository.checkApp(projectId, appId);
+        Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
+        Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
+        devopsGitRepository.deleteTag(gitLabProjectId, tag, gitLabUserId);
+    }
+
+    @Override
     public void createBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
         devopsBranchE.initApplicationE(applicationId);

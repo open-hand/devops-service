@@ -19,6 +19,8 @@ public interface DevopsGitRepository {
 
     void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId);
 
+    void deleteTag(Integer gitLabProjectId, String tag, Integer userId);
+
     Integer getGitLabId(Long applicationId);
 
     Integer getGitlabUserId();

@@ -56,6 +56,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
+    public void deleteTag(Integer gitLabProjectId, String tag, Integer userId) {
+        gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
+    }
+
+    @Override
     public Integer getGitLabId(Long applicationId) {
         ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(applicationId);
         if (applicationDO != null) {
