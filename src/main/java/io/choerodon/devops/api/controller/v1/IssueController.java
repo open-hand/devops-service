@@ -31,7 +31,8 @@ public class IssueController {
 
 
     /**
-     *根据issueId获取issue关联的commit
+     * 根据issueId获取issue关联的commit
+     *
      * @param issueId issueID
      * @return commit列表
      */
@@ -49,6 +50,7 @@ public class IssueController {
 
     /**
      * 根据issueId获取issue关联的mergerequest
+     *
      * @param issueId issueID
      * @return 返回mergerequest列表
      */
@@ -66,6 +68,7 @@ public class IssueController {
 
     /**
      * 根据issueId获取issue关联的mergerequest和commit数量
+     *
      * @param issueId issueID
      * @return 返回mergerequest和commit数量
      */
@@ -79,5 +82,4 @@ public class IssueController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.issue.commit.mergerequest.count"));
     }
-
 }
