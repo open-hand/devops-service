@@ -30,6 +30,10 @@ public interface ApplicationRepository {
                                      PageRequest pageRequest,
                                      String params);
 
+    Page<ApplicationE> listCodeRepository(Long projectId,
+                                     PageRequest pageRequest,
+                                     String params);
+
     Boolean applicationExist(String uuid);
 
     List<ApplicationE> listByEnvId(Long projectId, Long envId, String status);
