@@ -188,4 +188,23 @@
         WHERE
         da.code = #{code}
     </select>
+
+    <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT
+        da.id,
+        da.project_id,
+        da.name,
+        da.code,
+        da.is_active,
+        da.is_synchro,
+        da.gitlab_project_id,
+        da.app_template_id,
+        da.uuid
+        FROM devops_application da
+        where da.project_id = #{projectId}
+        AND da.is_active = 1
+        AND da.gitlab_project_id IS NOT NULL
+        <include refid="sqlparam"/>
+        ORDER BY da.id DESC
+    </select>
 </mapper>

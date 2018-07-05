@@ -181,6 +181,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    public Page<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
+        Page<ApplicationE> applicationES = applicationRepository.listCodeRepository(projectId, pageRequest, params);
+        applicationES.forEach(t -> t.initGitlabProjectEByUrl( devopsGitRepository.getGitlabUrl(projectId, t.getId())));
+        return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
+    }
+
+    @Override
     public List<ApplicationRepDTO> listByActive(Long projectId) {
         return ConvertHelper.convertList(applicationRepository.listByActive(projectId), ApplicationRepDTO.class);
     }
@@ -335,5 +342,4 @@ public class ApplicationServiceImpl implements ApplicationService {
                         .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
                 ApplicationDTO.class);
     }
-
 }

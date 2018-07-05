@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -16,10 +17,15 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.CommitDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
@@ -39,6 +45,10 @@ import io.choerodon.mybatis.util.StringUtil;
  */
 @Component
 public class DevopsGitRepositoryImpl implements DevopsGitRepository {
+
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
+
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
     @Autowired
@@ -48,7 +58,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     @Autowired
     private DevopsBranchMapper devopsBranchMapper;
     @Autowired
-    private DevopsGitRepository devopsGitRepository;
+    private ApplicationRepository applicationRepository;
+    @Autowired
+    private IamRepository iamRepository;
 
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId) {
@@ -74,6 +86,20 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
+    }
+
+    @Override
+    public String getGitlabUrl(Long projectId, Long appId) {
+        ApplicationE applicationE = applicationRepository.query(appId);
+        if (applicationE.getGitlabProjectE() != null && applicationE.getGitlabProjectE().getId() != null) {
+            ProjectE projectE = iamRepository.queryIamProject(projectId);
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+            return gitlabUrl + urlSlash
+                    + organization.getCode() + "-" + projectE.getCode() + "/"
+                    + applicationE.getCode();
+        }
+        return "";
     }
 
     @Override
@@ -116,6 +142,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         List<TagDO> tagList = tagTotalList.stream()
                 .sorted(this::sortTag)
                 .skip(page.longValue() * size).limit(size)
+                .parallel()
                 .peek(t -> t.getCommit().setUrl(
                         String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())))
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -222,7 +249,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                                         MergeRequestDO mergeRequestDO) {
         List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
                 mergeRequestDO.getIid(),
-                devopsGitRepository.getGitlabUserId()).getBody();
+               getGitlabUserId()).getBody();
         List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
         mergeRequestDO.setCommits(commitDTOS);
     }

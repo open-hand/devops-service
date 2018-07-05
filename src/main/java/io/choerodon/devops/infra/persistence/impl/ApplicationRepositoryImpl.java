@@ -113,6 +113,29 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
+    public Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
+        Page<ApplicationDO> applicationES;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> maps = json.deserialize(params, Map.class);
+            if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
+                applicationES = PageHelper.doPageAndSort(
+                        pageRequest, () -> applicationMapper.listCodeRepository(
+                                projectId, null, TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+            } else {
+                applicationES = PageHelper.doPageAndSort(
+                        pageRequest, () -> applicationMapper.listCodeRepository(
+                                projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+            }
+        } else {
+            applicationES = PageHelper.doPageAndSort(
+                    pageRequest, () -> applicationMapper.listCodeRepository(projectId,
+                            null, null));
+        }
+        return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
+    }
+
+    @Override
     public Boolean applicationExist(String uuid) {
         ApplicationDO applicationDO = new ApplicationDO();
         applicationDO.setUuid(uuid);

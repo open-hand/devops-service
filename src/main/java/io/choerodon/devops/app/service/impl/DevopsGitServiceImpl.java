@@ -27,7 +27,6 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -52,8 +51,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private IamRepository iamRepository;
     @Autowired
     private AgileRepository agileRepository;
-    @Autowired
-    private ApplicationMapper applicationMapper;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -62,16 +59,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public String getUrl(Long projectId, Long appId) {
-        ApplicationE applicationE = applicationRepository.query(appId);
-        if (applicationE.getGitlabProjectE() != null && applicationE.getGitlabProjectE().getId() != null) {
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-            return gitlabUrl + urlSlash
-                    + organization.getCode() + "-" + projectE.getCode() + "/"
-                    + applicationE.getCode();
-        }
-        return "";
+        return devopsGitRepository.getGitlabUrl(projectId, appId);
     }
 
     @Override
