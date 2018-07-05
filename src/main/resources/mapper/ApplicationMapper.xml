@@ -205,6 +205,5 @@
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
         <include refid="sqlparam"/>
-        ORDER BY da.id DESC
     </select>
 </mapper>
