@@ -16,7 +16,8 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
                              @Param("isActive") Boolean isActive,
                              @Param("hasVersion") Boolean hasVersion,
                              @Param("searchParam") Map<String, Object> searchParam,
-                             @Param("param") String param);
+                             @Param("param") String param,
+                             @Param("index") String index);
 
     List<ApplicationDO> listByEnvId(@Param("projectId") Long projectId,
                                     @Param("envId") Long envId,

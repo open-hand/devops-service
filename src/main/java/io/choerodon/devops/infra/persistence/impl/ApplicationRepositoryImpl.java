@@ -97,16 +97,17 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
                                 projectId, isActive, hasVersion, null,
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM)),checkSortIsEmpty(pageRequest)));
             } else {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
                                 projectId, isActive, hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM)),checkSortIsEmpty(pageRequest)));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, null, null));
+                    pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion,
+                            null, null,checkSortIsEmpty(pageRequest)));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
@@ -182,5 +183,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public List<ApplicationE> listByCode(String code) {
         return ConvertHelper.convertList(applicationMapper.listByCode(code), ApplicationE.class);
+    }
+
+    @Override
+    public String checkSortIsEmpty(PageRequest pageRequest) {
+        String index = "";
+        if (pageRequest.getSort() == null) {
+            index = "true";
+        }
+        return index;
     }
 }

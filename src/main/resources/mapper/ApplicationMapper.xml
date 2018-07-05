@@ -32,7 +32,9 @@
             </if>
         </if>
         <include refid="sqlparam"/>
+        <if test="index !=''">
         ORDER BY da.is_active DESC,is_synchro DESC,gitlab_project_id DESC
+        </if>
     </select>
 
     <select id="listByEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">

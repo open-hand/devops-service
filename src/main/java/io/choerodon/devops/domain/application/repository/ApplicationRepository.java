@@ -48,4 +48,6 @@ public interface ApplicationRepository {
     void checkAppCanDisable(Long applicationId);
 
     List<ApplicationE> listByCode(String code);
+
+    String checkSortIsEmpty(PageRequest pageRequest);
 }
