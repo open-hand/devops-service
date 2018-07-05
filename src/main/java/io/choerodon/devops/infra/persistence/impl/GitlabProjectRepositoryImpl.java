@@ -14,10 +14,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.JobDO;
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
+import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
 /**
@@ -99,5 +96,15 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
             return Collections.emptyList();
         }
         return ConvertHelper.convertList(responseEntity.getBody(), BranchE.class);
+    }
+
+    @Override
+    public List<CommitStatuseDO> getCommitStatuse(Integer projectId, String sha, Integer useId) {
+        ResponseEntity<List<CommitStatuseDO>> commitStatuse;
+        commitStatuse = gitlabServiceClient.getCommitStatuse(projectId, sha, useId);
+        if (!HttpStatus.OK.equals(commitStatuse.getStatusCode())) {
+            return Collections.emptyList();
+        }
+        return commitStatuse.getBody();
     }
 }

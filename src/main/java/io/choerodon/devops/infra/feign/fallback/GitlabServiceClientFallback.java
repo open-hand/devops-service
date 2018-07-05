@@ -105,7 +105,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<List<MergeRequestDO>> getMergeRequestList(Integer projectId) {
-        return  new ResponseEntity("error.mergerequest.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity("error.mergerequest.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -116,6 +116,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<io.choerodon.devops.infra.dataobject.gitlab.CommitDO> getCommit(Integer projectId, String sha, Integer userId) {
         return new ResponseEntity("error.commit.select", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(Integer projectId, String sha, Integer userId) {
+        return new ResponseEntity("error.commitStatuse.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override

@@ -6,6 +6,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 
 /**
  * Created by Zenger on 2018/4/9.
@@ -27,4 +28,6 @@ public interface GitlabProjectRepository {
     Boolean cancel(Integer projectId, Integer pipelineId, Integer userId);
 
     List<BranchE> listBranches(Integer projectId, Integer userId);
+
+    List<CommitStatuseDO> getCommitStatuse(Integer projectId, String sha, Integer useId);
 }

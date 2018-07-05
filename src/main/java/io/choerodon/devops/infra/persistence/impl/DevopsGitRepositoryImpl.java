@@ -218,6 +218,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         return result;
     }
 
+    @Override
+    public DevopsBranchE queryByBranchNameAndCommit(String branchName, String commit) {
+        DevopsBranchDO devopsBranchDO = new DevopsBranchDO();
+        devopsBranchDO.setBranchName(branchName);
+        devopsBranchDO.setCommit(commit);
+        return ConvertHelper.convert(devopsBranchMapper.selectOne(devopsBranchDO), DevopsBranchE.class);
+    }
+
     private void getMergeRequestCommits(Integer gitLabProjectId,
                                         MergeRequestDO mergeRequestDO) {
         List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,

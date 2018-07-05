@@ -17,9 +17,11 @@ public class GitlabJobE {
     private Boolean tag;
     private String stage;
     private JobStatus status;
+    private String description;
 
     /**
      * getJobTime from GitlabJobE
+     *
      * @param o GitlabJobE
      * @return time diff
      */
@@ -99,5 +101,13 @@ public class GitlabJobE {
 
     public void setStatus(JobStatus status) {
         this.status = status;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
