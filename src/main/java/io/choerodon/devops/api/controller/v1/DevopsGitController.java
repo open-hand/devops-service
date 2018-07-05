@@ -72,7 +72,7 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建标签")
     @PostMapping("/tags")
-    public ResponseEntity start(
+    public ResponseEntity createTag(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
