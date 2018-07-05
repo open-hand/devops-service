@@ -48,4 +48,6 @@ public interface DevopsGitRepository {
     List<DevopsBranchE> listDevopsBranchesByAppIdAndBranchName(Long appId, String branchName);
 
     Map<String, Object> getMergeRequestList(Integer gitLabProjectId, String state, PageRequest pageRequest);
+
+    DevopsBranchE queryByBranchNameAndCommit(String branchName, String commit);
 }

@@ -117,8 +117,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Integer gitLabId = devopsGitRepository.getGitLabId(applicationId);
         List<BranchDO> branches =
                 devopsGitRepository.listBranches(gitLabId, path, getGitlabUserId());
-        isBranchExist(applicationId, branches);
         return branches.stream().map(t -> {
+            if (!t.getName().equals("master")) {
+                DevopsBranchE devopsBranchE = devopsGitRepository.queryByBranchNameAndCommit(t.getName(), t.getCommit().getShortId());
+                if (devopsBranchE == null) {
+                    devopsGitRepository.createDevopsBranch(new DevopsBranchE(
+                            t.getCommit().getShortId(),
+                            t.getName(),
+                            new ApplicationE(applicationId),
+                            t.getCommit().getCommittedDate()));
+                }
+            }
             DevopsBranchE devopsBranchE = devopsGitRepository.queryByAppAndBranchName(applicationId, t.getName());
             UserE userE = null;
             ProjectInfo projectInfo = null;
@@ -195,41 +204,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             throw new CommonException("error.gitlabProjectId.not.exists");
         }
         return devopsGitRepository.getMergeRequestList(gitLabProjectId, state, pageRequest);
-    }
-
-    private void isBranchExist(Long applicationId, List<BranchDO> branchDOS) {
-        List<DevopsBranchE> devopsBranches = devopsGitRepository.listDevopsBranchesByAppId(applicationId);
-        List<String> branchNames = devopsBranches.stream()
-                .map(DevopsBranchE::getBranchName).collect(Collectors.toList());
-        branchDOS.parallelStream().forEach(branchDO -> {
-            if (!branchNames.contains(branchDO.getName())) {
-                DevopsBranchE devopsBranchE =
-                        new DevopsBranchE(
-                                branchDO.getCommit().getShortId(),
-                                branchDO.getName(),
-                                new ApplicationE(applicationId),
-                                branchDO.getCommit().getCommittedDate());
-                devopsGitRepository.createDevopsBranch(devopsBranchE);
-            } else {
-                List<String> commits = devopsGitRepository
-                        .listDevopsBranchesByAppIdAndBranchName(
-                                applicationId,
-                                branchDO.getName())
-                        .stream()
-                        .map(DevopsBranchE::getCommit).collect(Collectors.toList());
-                if (!commits.contains(branchDO.getCommit().getShortId())) {
-                    if (!branchDO.getName().equals("master")) {
-                        DevopsBranchE devopsBranchE =
-                                new DevopsBranchE(
-                                        branchDO.getCommit().getShortId(),
-                                        branchDO.getName(),
-                                        new ApplicationE(applicationId),
-                                        branchDO.getCommit().getCommittedDate());
-                        devopsGitRepository.createDevopsBranch(devopsBranchE);
-                    }
-                }
-            }
-        });
     }
 
     @Override

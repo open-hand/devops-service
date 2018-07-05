@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -18,8 +18,6 @@ import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
  */
 @FeignClient(value = "gitlab-service", fallback = GitlabServiceClientFallback.class)
 public interface GitlabServiceClient {
-
-
     @GetMapping(value = "/v1/users/{userId}")
     ResponseEntity<UserDO> queryUserByUserId(
             @PathVariable("userId") Integer userId);
@@ -124,6 +122,11 @@ public interface GitlabServiceClient {
     ResponseEntity<CommitDO> getCommit(@PathVariable("projectId") Integer projectId,
                                        @RequestParam("sha") String sha,
                                        @RequestParam("userId") Integer userId);
+
+    @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
+    ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(@PathVariable("projectId") Integer projectId,
+                                                           @RequestParam("sha") String sha,
+                                                           @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDO>> listJobs(@PathVariable("projectId") Integer projectId,
