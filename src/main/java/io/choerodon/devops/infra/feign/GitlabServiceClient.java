@@ -314,12 +314,9 @@ public interface GitlabServiceClient {
     @PutMapping("/v1/users/{userId}/dis_enabled")
     ResponseEntity disEnabledUserByUserId(@PathVariable("userId") Integer userId);
 
-
     @PostMapping("/v1/hook")
     ResponseEntity<ProjectHook> createProjectHook(
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId,
             @RequestBody ProjectHook projectHook);
-
-
 }
