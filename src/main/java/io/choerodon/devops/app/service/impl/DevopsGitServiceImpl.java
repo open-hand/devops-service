@@ -179,7 +179,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 issueId,
                 projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(),
                 issue == null ? null : issue.getSummary(),
-                commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(),
+                commitUserE.getImageUrl(),
                 issue == null ? null : issue.getTypeCode(),
                 commitUserE.getLoginName(),
                 createUserName);
