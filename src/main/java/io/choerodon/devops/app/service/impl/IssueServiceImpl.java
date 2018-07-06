@@ -3,24 +3,31 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.CommitDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.IssueService;
+import io.choerodon.devops.domain.application.repository.DevopsBranchRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 
+/**
+ * Creator: chenwei
+ * Date: 18-7-5
+ * Time: 下午3:48
+ * Description:
+ */
 @Service
 public class IssueServiceImpl implements IssueService {
 
     @Autowired
-    private DevopsBranchMapper devopsBranchMapper;
-
+    private DevopsBranchRepository devopsBranchRepository;
 
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
@@ -30,42 +37,65 @@ public class IssueServiceImpl implements IssueService {
 
 
     @Override
-    public Map<String, Object> getCommitsAndMergeRequests(Long issueId) {
+    public Map<String, Object> countCommitAndMergeRequest(Long issueId) {
         List<CommitDTO> commitDTOS = getCommitsByIssueId(issueId);
         List<MergeRequestDTO> mergeRequestDTOS = getMergeRequestsByIssueId(issueId);
-        CommitDTO commitDTO = commitDTOS.parallelStream().max(new Comparator<CommitDTO>() {
-            @Override
-            public int compare(CommitDTO o1, CommitDTO o2) {
-                return 0;
-            }
-        }).get();
-        MergeRequestDTO mergeRequestDTO = mergeRequestDTOS.parallelStream().max(new Comparator<MergeRequestDTO>() {
-            @Override
-            public int compare(MergeRequestDTO o1, MergeRequestDTO o2) {
-                return o1.getUpdatedAt().compareTo(o2.getUpdatedAt());
-            }
-        }).get();
+        CommitDTO commitDTO = null;
+        if (commitDTOS != null && !commitDTOS.isEmpty()) {
+            commitDTO = commitDTOS.parallelStream().max(new Comparator<CommitDTO>() {
+                @Override
+                public int compare(CommitDTO o1, CommitDTO o2) {
+                    return o1.getCreatedAt().compareTo(o2.getCreatedAt());
+                }
+            }).get();
+        }
+        MergeRequestDTO mergeRequestDTO = null;
+        if (mergeRequestDTOS != null && !mergeRequestDTOS.isEmpty()) {
+            mergeRequestDTO = mergeRequestDTOS.parallelStream().max(new Comparator<MergeRequestDTO>() {
+                @Override
+                public int compare(MergeRequestDTO o1, MergeRequestDTO o2) {
+                    return o1.getUpdatedAt().compareTo(o2.getUpdatedAt());
+                }
+            }).get();
+        }
         Map<String, Object> result = new HashMap<>();
         result.put("totalCommit", commitDTOS.size());
-        result.put("commitUpdateTime", null);
+        result.put("commitUpdateTime", commitDTO == null ? null : commitDTO.getCreatedAt());
         result.put("totalMergeRequest", mergeRequestDTOS.size());
-        result.put("mergeRequestUpdateTime", mergeRequestDTO.getUpdatedAt());
+        result.put("mergeRequestUpdateTime", mergeRequestDTO == null ? null : mergeRequestDTO.getUpdatedAt());
         return result;
     }
 
     @Override
     public List<CommitDTO> getCommitsByIssueId(Long issueId) {
-
-        return null;
+        List<DevopsBranchDO> devopsBranchDOs = devopsBranchRepository.getDevopsBranchsByIssueId(issueId);
+        List<CommitDTO> commitDTOS = new ArrayList<>();
+        devopsBranchDOs.stream().forEach(devopsBranchDO -> {
+            Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
+            String sha = devopsBranchDO.getCommit();
+            Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
+            ResponseEntity<CommitDO> commitResult = gitlabServiceClient.getCommit(gitLabProjectId, sha, gitlabUserId);
+            // commitResult.getBody().getParentIds();
+            List<CommitDO> commitDOs = gitlabServiceClient
+                    .getCommits(gitLabProjectId,
+                            devopsBranchDO.getBranchName(),
+                            commitResult.getBody().getCreatedAt()).getBody();
+            commitDOs.add(commitResult.getBody());
+            commitDTOS.addAll(ConvertHelper.convertList(commitDOs, CommitDTO.class));
+        });
+        return commitDTOS;
     }
 
     @Override
     public List<MergeRequestDTO> getMergeRequestsByIssueId(Long issueId) {
-        DevopsBranchDO queryDevopsBranchDO = new DevopsBranchDO();
-        queryDevopsBranchDO.setIssueId(issueId);
-        List<DevopsBranchDO> devopsBranchDOs = devopsBranchMapper.select(queryDevopsBranchDO);
+        List<DevopsBranchDO> devopsBranchDOs = devopsBranchRepository.getDevopsBranchsByIssueId(issueId);
         List<MergeRequestDO> mergeRequests = new ArrayList<>();
-        devopsBranchDOs.stream().forEach(devopsBranchDO -> {
+        StringBuffer appIds = new StringBuffer();
+        devopsBranchDOs.stream().filter(devopsBranchDO -> {
+            boolean flag = appIds.toString().contains(devopsBranchDO.getAppId().toString());
+            appIds.append("_").append(devopsBranchDO.getAppId());
+            return !flag;
+        }).forEach(devopsBranchDO -> {
             Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
             mergeRequests.addAll(gitlabServiceClient.getMergeRequestList(gitLabProjectId).getBody());
         });

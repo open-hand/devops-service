@@ -8,7 +8,7 @@ import io.choerodon.devops.api.dto.MergeRequestDTO;
 
 public interface IssueService {
 
-    Map<String, Object> getCommitsAndMergeRequests(Long issueId);
+    Map<String, Object> countCommitAndMergeRequest(Long issueId);
 
     List<CommitDTO> getCommitsByIssueId(Long issueId);
 

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -122,6 +123,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(Integer projectId, String sha, Integer userId) {
         return new ResponseEntity("error.commitStatuse.select", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<CommitDO>> getCommits(Integer projectId, String branchName, Date since) {
+        return new ResponseEntity("error.commits.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
