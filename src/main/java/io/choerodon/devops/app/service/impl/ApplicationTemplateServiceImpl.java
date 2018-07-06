@@ -196,12 +196,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
                     applicationDir, gitlabProjectEventDTO.getUserId());
             String accessToken = "";
-            if (tokens.isEmpty()) {
-                accessToken = gitlabRepository.createToken(gitlabProjectEventDTO.getGitlabProjectId(),
-                        applicationDir, gitlabProjectEventDTO.getUserId());
-            } else {
-                accessToken = tokens.get(tokens.size() - 1);
-            }
+            accessToken = tokens.isEmpty() ? gitlabRepository.createToken(gitlabProjectEventDTO.getGitlabProjectId(),
+                    applicationDir, gitlabProjectEventDTO.getUserId()) : tokens.get(tokens.size() - 1);
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             repoUrl = applicationTemplateE.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
@@ -211,7 +207,6 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl,
                     gitlabUserE.getUsername(),
                     accessToken,
-                    TEMPLATE,
                     teamplateType);
         } else {
             gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
