@@ -27,6 +27,7 @@ import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.config.CiYamlConfig;
@@ -48,6 +49,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private String applicationName;
     @Value("${services.sonarqube.url}")
     private String sonarqubeUrl;
+    @Value("${services.gateway.url}")
+    private String gatewayUrl;
 
     @Autowired
     private GitlabRepository gitlabRepository;
@@ -272,7 +275,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
-                    gitlabUserE.getUsername(), accessToken, APPLICATION, teamplateType);
+                    gitlabUserE.getUsername(), accessToken,  teamplateType);
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
             DevopsBranchE devopsBranchE = new DevopsBranchE();
@@ -293,6 +296,14 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException("error.application.update");
             }
+            ProjectHook projectHook = ProjectHook.allHook();
+            projectHook.setEnableSslVerification(true);
+            projectHook.setProjectId(gitlabProjectEventDTO.getGitlabProjectId());
+            projectHook.setToken(token);
+            String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+            uri += "devops/webhook";
+            projectHook.setUrl(uri);
+            gitlabRepository.createWebHook(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook);
         } catch (Exception e) {
             throw new CommonException(e.getMessage());
         }

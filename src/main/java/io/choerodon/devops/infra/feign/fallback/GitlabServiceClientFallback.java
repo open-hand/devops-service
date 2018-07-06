@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
@@ -236,5 +237,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity disEnabledUserByUserId(Integer userId) {
         return new ResponseEntity("error.user.blockUser", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<ProjectHook> createProjectHook(Integer projectId, Integer userId, ProjectHook projectHook) {
+        return new ResponseEntity("error.projecthook.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
