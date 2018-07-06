@@ -1,8 +1,9 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -128,6 +129,11 @@ public interface GitlabServiceClient {
     ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(@PathVariable("projectId") Integer projectId,
                                                            @RequestParam("sha") String sha,
                                                            @RequestParam("userId") Integer userId);
+
+    @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
+    ResponseEntity<List<CommitDO>> getCommits(@PathVariable("projectId") Integer projectId,
+                                              @RequestParam("branchName") String branchName,
+                                              @RequestParam("since") Date since);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDO>> listJobs(@PathVariable("projectId") Integer projectId,
@@ -314,12 +320,9 @@ public interface GitlabServiceClient {
     @PutMapping("/v1/users/{userId}/dis_enabled")
     ResponseEntity disEnabledUserByUserId(@PathVariable("userId") Integer userId);
 
-
     @PostMapping("/v1/hook")
     ResponseEntity<ProjectHook> createProjectHook(
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId,
             @RequestBody ProjectHook projectHook);
-
-
 }
