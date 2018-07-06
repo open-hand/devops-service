@@ -1,12 +1,9 @@
 package io.choerodon.devops.infra.feign;
 
-<<<<<<< feca756924c986253be4891c996bf2852215376b
-import javax.validation.Valid;
-=======
 import java.util.Date;
->>>>>>> [ADD] issue commit and merge
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -128,19 +125,15 @@ public interface GitlabServiceClient {
                                        @RequestParam("sha") String sha,
                                        @RequestParam("userId") Integer userId);
 
-<<<<<<< feca756924c986253be4891c996bf2852215376b
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
     ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(@PathVariable("projectId") Integer projectId,
                                                            @RequestParam("sha") String sha,
                                                            @RequestParam("userId") Integer userId);
-=======
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
     ResponseEntity<List<CommitDO>> getCommits(@PathVariable("projectId") Integer projectId,
                                               @RequestParam("branchName") String branchName,
                                               @RequestParam("since") Date since);
-
->>>>>>> [ADD] issue commit and merge
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDO>> listJobs(@PathVariable("projectId") Integer projectId,
