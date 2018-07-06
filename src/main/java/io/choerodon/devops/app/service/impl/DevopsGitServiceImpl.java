@@ -108,7 +108,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsGitRepository.listBranches(gitLabId, path, getGitlabUserId());
         return branches.stream().map(t -> {
             if (!t.getName().equals("master")) {
-                DevopsBranchE devopsBranchE = devopsGitRepository.queryByBranchNameAndCommit(t.getName(), t.getCommit().getShortId());
+                DevopsBranchE devopsBranchE =
+                        devopsGitRepository.queryByBranchNameAndCommit(t.getName(), t.getCommit().getShortId());
                 if (devopsBranchE == null) {
                     devopsGitRepository.createDevopsBranch(new DevopsBranchE(
                             t.getCommit().getShortId(),
