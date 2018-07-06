@@ -13,6 +13,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
@@ -195,7 +196,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<TagDO> getTags(Long projectId, Long applicationId, Integer page, Integer size) {
+    public Page<TagDTO> getTags(Long projectId, Long applicationId, Integer page, Integer size) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());

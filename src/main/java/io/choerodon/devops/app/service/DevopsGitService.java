@@ -6,6 +6,7 @@ import java.util.Map;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -71,7 +72,7 @@ public interface DevopsGitService {
 
     Map<String, Object> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 
-    Page<TagDO> getTags(Long projectId, Long applicationId, Integer page, Integer size);
+    Page<TagDTO> getTags(Long projectId, Long applicationId, Integer page, Integer size);
 
     List<TagDO> getTags(Long projectId, Long applicationId);
 
