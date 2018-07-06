@@ -13,6 +13,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
@@ -107,7 +108,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsGitRepository.listBranches(gitLabId, path, getGitlabUserId());
         return branches.stream().map(t -> {
             if (!t.getName().equals("master")) {
-                DevopsBranchE devopsBranchE = devopsGitRepository.queryByBranchNameAndCommit(t.getName(), t.getCommit().getShortId());
+                DevopsBranchE devopsBranchE =
+                        devopsGitRepository.queryByBranchNameAndCommit(t.getName(), t.getCommit().getShortId());
                 if (devopsBranchE == null) {
                     devopsGitRepository.createDevopsBranch(new DevopsBranchE(
                             t.getCommit().getShortId(),
@@ -178,7 +180,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 issueId,
                 projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(),
                 issue == null ? null : issue.getSummary(),
-                commitUserE.getImageUrl() == null ? commitUserE.getLoginName() : commitUserE.getImageUrl(),
+                commitUserE.getImageUrl(),
                 issue == null ? null : issue.getTypeCode(),
                 commitUserE.getLoginName(),
                 createUserName);
@@ -195,7 +197,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<TagDO> getTags(Long projectId, Long applicationId, Integer page, Integer size) {
+    public Page<TagDTO> getTags(Long projectId, Long applicationId, Integer page, Integer size) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());

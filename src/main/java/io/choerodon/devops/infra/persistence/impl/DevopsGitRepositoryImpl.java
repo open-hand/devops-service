@@ -17,10 +17,12 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.CommitDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
+import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -130,7 +132,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Page<TagDO> getTags(Long appId, String path, Integer page, Integer size, Integer userId) {
+    public Page<TagDTO> getTags(Long appId, String path, Integer page, Integer size, Integer userId) {
         Integer projectId = getGitLabId(appId);
         List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
         Integer totalSize = tagTotalList.size();
@@ -139,14 +141,19 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             page = totalPageSizes - 1;
         }
 
-        List<TagDO> tagList = tagTotalList.stream()
+        List<TagDTO> tagList = tagTotalList.stream()
                 .sorted(this::sortTag)
                 .skip(page.longValue() * size).limit(size)
+                .map(TagDTO::new)
                 .parallel()
-                .peek(t -> t.getCommit().setUrl(
-                        String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())))
+                .peek(t -> {
+                    UserE commitUserE = iamRepository.queryByLoginName(t.getCommit()
+                            .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
+                    t.setCommitUserImage(commitUserE.getImageUrl());
+                    t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
+                })
                 .collect(Collectors.toCollection(ArrayList::new));
-        Page<TagDO> tagsPage = new Page<>();
+        Page<TagDTO> tagsPage = new Page<>();
         tagsPage.setSize(size);
         tagsPage.setTotalElements(totalSize);
         tagsPage.setTotalPages(totalPageSizes);
@@ -257,7 +264,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                                         MergeRequestDO mergeRequestDO) {
         List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
                 mergeRequestDO.getIid(),
-               getGitlabUserId()).getBody();
+                getGitlabUserId()).getBody();
         List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
         mergeRequestDO.setCommits(commitDTOS);
     }

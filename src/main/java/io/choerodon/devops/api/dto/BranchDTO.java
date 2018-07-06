@@ -7,8 +7,9 @@ import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 public class BranchDTO {
     private String name;
     private String sha;
-    private String commitComent;
+    private String commitContent;
     private String commitUrl;
+    private Date commitDate;
     private Date createDate;
     private String commitUserUrl;
     private String commitUserName;
@@ -22,16 +23,21 @@ public class BranchDTO {
     public BranchDTO() {
     }
 
-    public BranchDTO(BranchDO branchDO, Date createDate, String createUserUrl, Long issueId, String issueCode, String issueName, String commitUserUrl, String typeCode, String commitUserName,String createUserName) {
+    public BranchDTO(BranchDO branchDO, Date createDate,
+                     String createUserUrl, Long issueId,
+                     String issueCode, String issueName,
+                     String commitUserUrl, String typeCode,
+                     String commitUserName,String createUserName) {
         this.name = branchDO.getName();
         this.sha = branchDO.getCommit().getShortId();
-        this.commitComent = branchDO.getCommit().getMessage();
+        this.commitContent = branchDO.getCommit().getMessage();
         this.commitUserUrl = commitUserUrl;
         this.createDate = createDate;
         this.commitUrl = branchDO.getCommit().getUrl();
         this.issueId = issueId;
         this.issueCode = issueCode;
         this.issueName = issueName;
+        this.commitDate = branchDO.getCommit().getCommittedDate();
         this.createUserUrl = createUserUrl;
         this.typeCode = typeCode;
         this.commitUserName = commitUserName;
@@ -54,12 +60,12 @@ public class BranchDTO {
         this.sha = sha;
     }
 
-    public String getCommitComent() {
-        return commitComent;
+    public String getCommitContent() {
+        return commitContent;
     }
 
-    public void setCommitComent(String commitComent) {
-        this.commitComent = commitComent;
+    public void setCommitContent(String commitContent) {
+        this.commitContent = commitContent;
     }
 
     public Date getCreateDate() {
@@ -140,5 +146,13 @@ public class BranchDTO {
 
     public void setCreateUserName(String createUserName) {
         this.createUserName = createUserName;
+    }
+
+    public Date getCommitDate() {
+        return commitDate;
+    }
+
+    public void setCommitDate(Date commitDate) {
+        this.commitDate = commitDate;
     }
 }
