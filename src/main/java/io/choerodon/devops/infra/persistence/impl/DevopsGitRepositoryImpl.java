@@ -189,7 +189,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         DevopsBranchDO devopsBranchDO = devopsBranchMapper
                 .queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
         devopsBranchDO.setIssueId(devopsBranchE.getIssueId());
-        devopsBranchMapper.updateByPrimaryKeySelective(devopsBranchDO);
+        devopsBranchMapper.updateByPrimaryKey(devopsBranchDO);
     }
 
     @Override
