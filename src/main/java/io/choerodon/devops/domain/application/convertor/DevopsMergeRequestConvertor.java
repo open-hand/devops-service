@@ -17,4 +17,11 @@ public class DevopsMergeRequestConvertor implements ConvertorI<DevopsMergeReques
         BeanUtils.copyProperties(entity, devopsMergeRequestDTO);
         return devopsMergeRequestDTO;
     }
+
+    @Override
+    public DevopsMergeRequestDO entityToDo(DevopsMergeRequestE entity) {
+        DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO();
+        BeanUtils.copyProperties(entity, devopsMergeRequestDO);
+        return devopsMergeRequestDO;
+    }
 }

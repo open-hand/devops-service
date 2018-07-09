@@ -1,8 +1,5 @@
 package io.choerodon.devops.api.dto;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
 public class DevopsMergeRequestDTO {
     private Long id;
 
