@@ -48,6 +48,11 @@ public class IamServiceClientFallback implements IamServiceClient {
     }
 
     @Override
+    public ResponseEntity<Page<UserDO>> queryInProjectById(Long projectId, Long id) {
+        return new ResponseEntity("error.userInProject.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<Page<ProjectDO>> queryProjectByOrgId(Long organizationId, int page, int size) {
         return new ResponseEntity("error.project.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }

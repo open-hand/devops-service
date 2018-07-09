@@ -22,4 +22,6 @@ public interface IamRepository {
     List<ProjectE> listIamProjectByOrgId(Long organizationId);
 
     UserE queryById(Long id);
+
+    UserE queryByProjectAndId(Long projectId, Long id);
 }
