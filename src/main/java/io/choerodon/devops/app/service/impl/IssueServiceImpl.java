@@ -8,10 +8,14 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.CommitDTO;
+import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.IssueService;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsBranchRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsServiceInstanceRepository;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
@@ -35,10 +39,16 @@ public class IssueServiceImpl implements IssueService {
     @Autowired
     private DevopsGitRepository devopsGitRepository;
 
+    @Autowired
+    ApplicationRepository applicationRepository;
+
+    @Autowired
+    private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
+
 
     @Override
     public Map<String, Object> countCommitAndMergeRequest(Long issueId) {
-        List<CommitDTO> commitDTOS = getCommitsByIssueId(issueId);
+        List<CommitDTO> commitDTOS = getAllCommit(issueId);
         List<MergeRequestDTO> mergeRequestDTOS = getMergeRequestsByIssueId(issueId);
         CommitDTO commitDTO = null;
         if (commitDTOS != null && !commitDTOS.isEmpty()) {
@@ -66,10 +76,22 @@ public class IssueServiceImpl implements IssueService {
         return result;
     }
 
+
+    private List<CommitDTO> getAllCommit(Long issueId) {
+        List<DevopsBranchDTO> devopsBranchDTOS = getBranchsByIssueId(issueId);
+        List<CommitDTO> commitDTOS=new ArrayList<>();
+        if (devopsBranchDTOS != null && !devopsBranchDTOS.isEmpty()) {
+            devopsBranchDTOS.stream().forEach(devopsBranchDTO -> {
+                commitDTOS.addAll(devopsBranchDTO.getCommits());
+            });
+        }
+        return commitDTOS;
+    }
+
     @Override
-    public List<CommitDTO> getCommitsByIssueId(Long issueId) {
+    public List<DevopsBranchDTO> getBranchsByIssueId(Long issueId) {
         List<DevopsBranchDO> devopsBranchDOs = devopsBranchRepository.getDevopsBranchsByIssueId(issueId);
-        List<CommitDTO> commitDTOS = new ArrayList<>();
+        List<DevopsBranchDTO> devopsBranchDTOS = new ArrayList<>();
         devopsBranchDOs.stream().forEach(devopsBranchDO -> {
             Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
             String sha = devopsBranchDO.getCommit();
@@ -81,9 +103,13 @@ public class IssueServiceImpl implements IssueService {
                             devopsBranchDO.getBranchName(),
                             commitResult.getBody().getCreatedAt()).getBody();
             commitDOs.add(commitResult.getBody());
-            commitDTOS.addAll(ConvertHelper.convertList(commitDOs, CommitDTO.class));
+            DevopsBranchDTO devopsBranchDTO = ConvertHelper.convert(devopsBranchDO, DevopsBranchDTO.class);
+            devopsBranchDTO.setCommits(ConvertHelper.convertList(commitDOs, CommitDTO.class));
+            ApplicationE app = applicationRepository.query(devopsBranchDO.getAppId());
+            devopsBranchDTO.setAppName(app.getName());
+            devopsBranchDTOS.add(devopsBranchDTO);
         });
-        return commitDTOS;
+        return devopsBranchDTOS;
     }
 
     @Override

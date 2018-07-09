@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.CommitDTO;
+import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.IssueService;
 import io.choerodon.swagger.annotation.Permission;
@@ -38,11 +38,11 @@ public class IssueController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "根据issueId获取issue关联的commit列表")
     @GetMapping("/commit/list")
-    public ResponseEntity<List<CommitDTO>> getCommitsByIssueId(
+    public ResponseEntity<List<DevopsBranchDTO>> getCommitsByIssueId(
             @ApiParam(value = "issueID")
             @PathVariable(value = "issueId") Long issueId) {
 
-        return Optional.ofNullable(issueService.getCommitsByIssueId(issueId))
+        return Optional.ofNullable(issueService.getBranchsByIssueId(issueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.issue.commit.get"));
     }
