@@ -1,8 +1,5 @@
 package io.choerodon.devops.domain.application.entity;
 
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
 public class DevopsMergeRequestE {
     private Long id;
 
