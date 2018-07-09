@@ -336,8 +336,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询代码仓库")
     @CustomPageRequest
     @PostMapping("/list_code_repository")
