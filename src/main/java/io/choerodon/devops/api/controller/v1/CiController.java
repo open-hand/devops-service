@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
@@ -57,8 +56,7 @@ public class CiController {
     /**
      * 获取应用版本信息
      *
-     * @param token   token
-     * @param image   类型
+     * @param token   @param image   类型
      * @param version 版本
      * @param commit  commit
      * @param file    tgz包
