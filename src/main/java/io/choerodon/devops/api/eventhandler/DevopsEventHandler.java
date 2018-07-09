@@ -46,8 +46,6 @@ public class DevopsEventHandler {
     @Autowired
     private GitlabUserService gitlabUserService;
     @Autowired
-    private GitFlowService gitFlowService;
-    @Autowired
     private OrganizationService organizationService;
 
     private void loggerInfo(Object o) {
@@ -191,27 +189,5 @@ public class DevopsEventHandler {
         loggerInfo(gitlabUserDTO);
 
         gitlabUserService.disEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserDTO.getId()));
-    }
-
-    /**
-     * 分支事件
-     */
-    @EventListener(topic = DEVOPS_SERVICE, businessType = "gitFlowStart")
-    public void handleGitFlowStartEvent(EventPayload<GitFlowStartPayload> payload) {
-        GitFlowStartPayload gitFlowStartPayload = payload.getData();
-        loggerInfo(gitFlowStartPayload);
-        gitFlowService.gitFlowStart(gitFlowStartPayload);
-    }
-
-    /**
-     * GitFlow 结束事件消费
-     *
-     * @param payload GitFlow 结束事件消息
-     */
-    @EventListener(topic = DEVOPS_SERVICE, businessType = "gitFlowFinish")
-    public void handleGitFlowFinishEvent(EventPayload<GitFlowFinishPayload> payload) {
-        GitFlowFinishPayload gitFlowFinishPayload = payload.getData();
-        loggerInfo(gitFlowFinishPayload);
-        gitFlowService.gitFlowFinish(gitFlowFinishPayload);
     }
 }

@@ -25,7 +25,7 @@ public class GitlabWebHookController {
     @Permission(permissionPublic = true)
     @ApiOperation(value = "webhook转发")
     @PostMapping
-    public ResponseEntity forwardGitlabWebhook(HttpServletRequest httpServletRequest, @RequestBody String body) {
+    public ResponseEntity forwardGitlabWebHook(HttpServletRequest httpServletRequest, @RequestBody String body) {
         gitlabWebHookService.forwardingEventToPortal(body, httpServletRequest.getHeader("X-Gitlab-Token"));
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
