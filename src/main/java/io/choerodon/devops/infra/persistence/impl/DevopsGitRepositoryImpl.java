@@ -204,16 +204,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         List<MergeRequestDO> collect = gitlabServiceClient
                 .getMergeRequestList(gitLabProjectId)
                 .getBody();
-        final int[] mergeCount = {0};
-        final int[] openCount = {0};
-        final int[] closeCount = {0};
+        final int[] count = {0, 0, 0};
         collect.forEach(mergeRequestDO -> {
             if ("merged".equals(mergeRequestDO.getState())) {
-                mergeCount[0]++;
+                count[0]++;
             } else if ("opened".equals(mergeRequestDO.getState())) {
-                openCount[0]++;
+                count[1]++;
             } else if ("closed".equals(mergeRequestDO.getState())) {
-                closeCount[0]++;
+                count[2]++;
             }
         });
         List<MergeRequestDO> mergeRequestDOS = null;
@@ -222,7 +220,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                     state.equals(mergeRequestDO.getState())
             ).collect(Collectors.toList());
         } else {
-            mergeRequestDOS = collect.stream().collect(Collectors.toList());
+            mergeRequestDOS = collect;
         }
         int totalElments = mergeRequestDOS.size();
         int size = pageRequest.getSize();
@@ -232,7 +230,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         int skipNumber = page * size > totalElments ? tempPage * size : page * size;
         mergeRequestDOS = mergeRequestDOS.stream().skip(skipNumber).limit(size).collect(Collectors.toList());
         if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
-            mergeRequestDOS.stream()
+            mergeRequestDOS
                     .forEach(mergeRequestDO ->
                             getMergeRequestCommits(gitLabProjectId, mergeRequestDO));
         }
@@ -242,11 +240,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         pageResult.setTotalPages(totalPages);
         pageResult.setSize(size);
         pageResult.setContent(mergeRequestDTOS);
-        int total = mergeCount[0] + openCount[0] + closeCount[0];
+        int total = count[0] + count[1] + count[2];
         Map<String, Object> result = new HashMap<>();
-        result.put("mergeCount", mergeCount[0]);
-        result.put("openCount", openCount[0]);
-        result.put("closeCcount", closeCount[0]);
+        result.put("mergeCount", count[0]);
+        result.put("openCount", count[1]);
+        result.put("closeCount", count[2]);
         result.put("totalCount", total);
         result.put("pageResult", pageResult);
         return result;
@@ -297,6 +295,5 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         } else {
             return a.getName().compareToIgnoreCase(b.getName());
         }
-
     }
 }

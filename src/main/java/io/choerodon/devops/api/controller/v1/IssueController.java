@@ -23,7 +23,7 @@ import io.choerodon.devops.app.service.IssueService;
 import io.choerodon.swagger.annotation.Permission;
 
 @RestController
-@RequestMapping("/v1/issue/{issueId}")
+@RequestMapping("/v1/project/{project_id}/issue/{issueId}")
 public class IssueController {
 
     @Autowired
@@ -31,7 +31,8 @@ public class IssueController {
 
 
     /**
-     *根据issueId获取issue关联的commit
+     * 根据issueId获取issue关联的commit
+     *
      * @param issueId issueID
      * @return commit列表
      */
@@ -39,6 +40,8 @@ public class IssueController {
     @ApiOperation(value = "根据issueId获取issue关联的commit列表")
     @GetMapping("/commit/list")
     public ResponseEntity<List<DevopsBranchDTO>> getCommitsByIssueId(
+            @ApiParam(value = "项目ID")
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")
             @PathVariable(value = "issueId") Long issueId) {
 
@@ -49,6 +52,7 @@ public class IssueController {
 
     /**
      * 根据issueId获取issue关联的mergerequest
+     *
      * @param issueId issueID
      * @return 返回mergerequest列表
      */
@@ -56,6 +60,8 @@ public class IssueController {
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest列表")
     @GetMapping("/merge_request/list")
     public ResponseEntity<List<MergeRequestDTO>> getMergeRequestsByIssueId(
+            @ApiParam(value = "项目ID")
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")
             @PathVariable(value = "issueId") Long issueId) {
 
@@ -66,18 +72,20 @@ public class IssueController {
 
     /**
      * 根据issueId获取issue关联的mergerequest和commit数量
+     *
      * @param issueId issueID
      * @return 返回mergerequest和commit数量
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest和commit数量")
-    @GetMapping("/Commit_and_mergeRequest/count")
+    @GetMapping("/commit_and_merge_request/count")
     public ResponseEntity<Map<String, Object>> countCommitAndMergeRequest(
+            @ApiParam(value = "项目ID")
+            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")
             @PathVariable(value = "issueId") Long issueId) {
         return Optional.ofNullable(issueService.countCommitAndMergeRequest(issueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.issue.commit.mergerequest.count"));
     }
-
 }

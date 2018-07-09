@@ -1,24 +1,9 @@
-package io.choerodon.devops.infra.dataobject;
+package io.choerodon.devops.domain.application.entity;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-
-/**
- * Created with IntelliJ IDEA.
- * User: Runge
- * Date: 2018/4/9
- * Time: 14:23
- * Description:
- */
-@ModifyAudit
-@Table(name = "devops_merge_request")
-public class DevopsMergeRequestDO {
-
-    @Id
-    @GeneratedValue
+public class DevopsMergeRequestE {
     private Long id;
 
     private Long applicationId;
@@ -34,22 +19,6 @@ public class DevopsMergeRequestDO {
     private String targetBranch;
 
     private String state;
-
-    public DevopsMergeRequestDO() {
-    }
-
-    /**
-     * constructor a new merge request item
-     *
-     * @param applicationId devops application ID
-     * @param sourceBranch  source branch to merge
-     * @param targetBranch  target merge branch
-     */
-    public DevopsMergeRequestDO(Long applicationId, String sourceBranch, String targetBranch) {
-        this.applicationId = applicationId;
-        this.sourceBranch = sourceBranch;
-        this.targetBranch = targetBranch;
-    }
 
     public Long getId() {
         return id;

@@ -49,7 +49,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
-    private GitFlowRepository gitFlowRepository;
+    private DevopsGitRepository devopsGitRepository;
 
 
     public Integer getGitlabUserId() {
@@ -69,7 +69,7 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         Integer gitlabProjectId = app.getGitlabProjectE().getId();
         List<BranchE> branchES = gitlabProjectRepository.listBranches(
                 gitlabProjectId, getGitlabUserId());
-        List<TagDO> tagTotalList = gitFlowRepository.getGitLabTags(gitlabProjectId, userId);
+        List<TagDO> tagTotalList = devopsGitRepository.getGitLabTags(gitlabProjectId, userId);
         if (branchES == null) {
             return new ProjectPipelineResultTotalDTO();
         }
