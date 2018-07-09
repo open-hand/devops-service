@@ -10,6 +10,7 @@ import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -41,8 +42,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationServiceImpl implements ApplicationService {
 
     private static final String MASTER = "master";
-    private static final String DEVELOP = "develop";
     private static final String APPLICATION = "application";
+    private static final Integer ADMIN = 1;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${spring.application.name}")
@@ -76,6 +77,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     @Autowired
     private DevopsGitRepository devopsGitRepository;
+    @Autowired
+    private DevopsAppWebHookRepository devopsAppWebHookRepository;
 
     @Override
     public ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO) {
@@ -107,12 +110,10 @@ public class ApplicationServiceImpl implements ApplicationService {
                 (String uuid) -> {
                     applicationE.initUuid(uuid);
                     if (applicationRepository.create(applicationE).getId() == null) {
-                        // todo
                         throw new CommonException("error.application.create.insert");
                     }
                 });
         if (exception != null) {
-            // todo
             throw new CommonException(exception.getMessage());
         }
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
@@ -165,6 +166,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationES.getContent().parallelStream()
                 .forEach(t -> {
+                    if (t.getGitlabProjectE().getId() != null && devopsAppWebHookRepository.queryByAppId(t.getId()) == null) {
+                        syncWebHook(t);
+                    }
                     if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
                         t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
                                 + organization.getCode() + "-" + projectE.getCode() + "/"
@@ -186,7 +190,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Page<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES = applicationRepository.listCodeRepository(projectId, pageRequest, params);
-        applicationES.forEach(t -> t.initGitlabProjectEByUrl( devopsGitRepository.getGitlabUrl(projectId, t.getId())));
+        applicationES.forEach(t -> t.initGitlabProjectEByUrl(devopsGitRepository.getGitlabUrl(projectId, t.getId())));
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
 
@@ -275,7 +279,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
-                    gitlabUserE.getUsername(), accessToken,  teamplateType);
+                    gitlabUserE.getUsername(), accessToken, teamplateType);
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
             DevopsBranchE devopsBranchE = new DevopsBranchE();
@@ -303,7 +307,10 @@ public class ApplicationServiceImpl implements ApplicationService {
             String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
             uri += "devops/webhook";
             projectHook.setUrl(uri);
-            gitlabRepository.createWebHook(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook);
+            DevopsAppWebHookE devopsAppWebHookE = new DevopsAppWebHookE();
+            devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook).getId());
+            devopsAppWebHookE.initApplicationE(applicationE.getId());
+            devopsAppWebHookRepository.createHook(devopsAppWebHookE);
         } catch (Exception e) {
             throw new CommonException(e.getMessage());
         }
@@ -352,5 +359,21 @@ public class ApplicationServiceImpl implements ApplicationService {
         return ConvertPageHelper.convertPage(applicationRepository
                         .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
                 ApplicationDTO.class);
+    }
+
+
+    @Async
+    private void syncWebHook(ApplicationE applicationE) {
+        ProjectHook projectHook = ProjectHook.allHook();
+        projectHook.setEnableSslVerification(true);
+        projectHook.setProjectId(applicationE.getGitlabProjectE().getId());
+        projectHook.setToken(applicationE.getToken());
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook";
+        projectHook.setUrl(uri);
+        DevopsAppWebHookE devopsAppWebHookE = new DevopsAppWebHookE();
+        devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(applicationE.getGitlabProjectE().getId(), ADMIN, projectHook).getId());
+        devopsAppWebHookE.initApplicationE(applicationE.getId());
+        devopsAppWebHookRepository.createHook(devopsAppWebHookE);
     }
 }

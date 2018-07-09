@@ -36,10 +36,12 @@ public class ProjectHook {
     public ProjectHook() {
     }
 
-    ;
+    public ProjectHook(Integer id) {
+        this.id = id;
+    }
 
     public static ProjectHook allHook() {
-        ProjectHook projectHook = new ProjectHook(true, true, true, true, true, true, true, true, true);
+        ProjectHook projectHook = new ProjectHook(false, false, true, false, false, false, true, false, false);
         return projectHook;
     }
 

@@ -111,11 +111,12 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
+    public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
         ResponseEntity<ProjectHook> projectHookResponseEntity = gitlabServiceClient.createProjectHook(projectId, userId, projectHook);
         if (!projectHookResponseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
             throw new CommonException("error.projecthook.create");
         }
+        return projectHookResponseEntity.getBody();
     }
 
 }

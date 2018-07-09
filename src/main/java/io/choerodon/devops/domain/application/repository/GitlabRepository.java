@@ -29,7 +29,7 @@ public interface GitlabRepository {
 
     String updateProject(Integer projectId, Integer userId);
 
-    void createWebHook(Integer projectId, Integer userId, ProjectHook projectHook);
+    ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook);
 
 
 }
