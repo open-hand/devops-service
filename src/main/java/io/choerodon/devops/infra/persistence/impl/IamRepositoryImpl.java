@@ -108,4 +108,14 @@ public class IamRepositoryImpl implements IamRepository {
             return null;
         }
     }
+
+    @Override
+    public UserE queryByProjectAndId(Long projectId, Long id) {
+        try {
+            ResponseEntity<Page<UserDO>> responseEntity = iamServiceClient.queryInProjectById(projectId, id);
+            return ConvertHelper.convert(responseEntity.getBody().getContent().get(0), UserE.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 }

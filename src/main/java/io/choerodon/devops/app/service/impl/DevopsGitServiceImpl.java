@@ -42,6 +42,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
+
     @Autowired
     private DevopsGitRepository devopsGitRepository;
     @Autowired
@@ -128,7 +129,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     projectInfo = agileRepository.queryProjectInfo(projectId);
 
                 }
-                userE = iamRepository.queryById(devopsBranchE.getUserId());
+                userE = iamRepository.queryByProjectAndId(projectId, devopsBranchE.getUserId());
             }
             UserE commitUserE = iamRepository.queryByLoginName(t.getCommit()
                     .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
