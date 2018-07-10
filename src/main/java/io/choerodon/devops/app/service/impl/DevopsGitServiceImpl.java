@@ -265,7 +265,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
             devopsBranchE.setCommit(lastCommit);
             devopsBranchE.setBranchName(branchName);
-            devopsBranchE.setDeleted(false);
 
             devopsGitRepository.createDevopsBranch(devopsBranchE);
         }
