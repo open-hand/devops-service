@@ -9,7 +9,7 @@ public interface DevopsMergeRequestRepository {
 
     Integer create(DevopsMergeRequestE devopsMergeRequestE);
 
-    List<MergeRequestE> getBySourceBranch(String sourceBranchName);
+    Integer queryByAppIdAndGitlabId(Long applicationId, Long gitlabMergeRequestId);
 
-    Integer queryByAppIdAndGitlabId(Long applicationId,Long gitlabMergeRequestId);
+    List<MergeRequestE> getBySourceBranch(String sourceBranchName, Long gitLabProjectId);
 }

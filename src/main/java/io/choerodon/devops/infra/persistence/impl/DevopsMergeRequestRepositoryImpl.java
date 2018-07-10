@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -28,15 +27,16 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
     }
 
     @Override
-    public List<MergeRequestE> getBySourceBranch(String sourceBranchName) {
+    public List<MergeRequestE> getBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
         DevopsMergeRequestDO mergeRequestDO = new DevopsMergeRequestDO();
         mergeRequestDO.setSourceBranch(sourceBranchName);
+        mergeRequestDO.setProjectId(gitLabProjectId);
         return ConvertHelper.convertList(devopsMergeRequestMapper.select(mergeRequestDO), MergeRequestE.class);
     }
 
     @Override
     public Integer queryByAppIdAndGitlabId(Long applicationId, Long gitlabMergeRequestId) {
-        return devopsMergeRequestMapper.queryByAppIdAndGitlabId(applicationId,gitlabMergeRequestId);
+        return devopsMergeRequestMapper.queryByAppIdAndGitlabId(applicationId, gitlabMergeRequestId);
     }
 
 }

@@ -112,8 +112,9 @@ public class IssueServiceImpl implements IssueService {
         List<DevopsBranchDO> devopsBranchDOs = devopsBranchRepository.getDevopsBranchsByIssueId(issueId);
         List<MergeRequestDTO> mergeRequests = new ArrayList<>();
         devopsBranchDOs.forEach(devopsBranchDO -> {
+            Integer gitLabProjectId = devopsGitRepository.getGitLabId(devopsBranchDO.getAppId());
             List<MergeRequestE> mergeRequestEs = devopsMergeRequestRepository.getBySourceBranch(
-                    devopsBranchDO.getBranchName());
+                    devopsBranchDO.getBranchName(), gitLabProjectId * 1L);
             List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(mergeRequestEs, MergeRequestDTO.class);
             mergeRequests.addAll(mergeRequestDTOS);
         });

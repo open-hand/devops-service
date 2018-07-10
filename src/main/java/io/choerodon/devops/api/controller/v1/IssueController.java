@@ -23,7 +23,7 @@ import io.choerodon.devops.app.service.IssueService;
 import io.choerodon.swagger.annotation.Permission;
 
 @RestController
-@RequestMapping("/v1/project/{project_id}/issue/{issueId}")
+@RequestMapping("/v1/project/{project_id}/issue/{issue_id}")
 public class IssueController {
 
     @Autowired
@@ -43,7 +43,7 @@ public class IssueController {
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")
-            @PathVariable(value = "issueId") Long issueId) {
+            @PathVariable(value = "issue_id") Long issueId) {
 
         return Optional.ofNullable(issueService.getBranchsByIssueId(issueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -63,7 +63,7 @@ public class IssueController {
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")
-            @PathVariable(value = "issueId") Long issueId) {
+            @PathVariable(value = "issue_id") Long issueId) {
 
         return Optional.ofNullable(issueService.getMergeRequestsByIssueId(issueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -83,7 +83,7 @@ public class IssueController {
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")
-            @PathVariable(value = "issueId") Long issueId) {
+            @PathVariable(value = "issue_id") Long issueId) {
         return Optional.ofNullable(issueService.countCommitAndMergeRequest(issueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.issue.commit.mergerequest.count"));
