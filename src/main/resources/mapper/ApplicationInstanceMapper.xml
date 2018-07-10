@@ -114,7 +114,7 @@
         (
         SELECT
         dai.id instance_id,
-        de.id command_id,
+        de.id commandId,
         de.value_id value_id
         FROM
         devops_env_command de,

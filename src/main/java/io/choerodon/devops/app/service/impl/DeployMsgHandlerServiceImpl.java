@@ -22,7 +22,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.factory.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.FileUtil;
@@ -98,6 +97,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private ApplicationMarketMapper applicationMarketMapper;
     @Autowired
     private ApplicationMarketRepository applicationMarketRepository;
+    @Autowired
+    private DevopsCommandEventRepository devopsCommandEventRepository;
 
     /**
      * pod 更新
@@ -243,7 +244,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 job.getKind(),
                                 job.getName());
                 DevopsEnvResourceE devopsEnvResourceE =
-                       new DevopsEnvResourceE();
+                        new DevopsEnvResourceE();
                 devopsEnvResourceE.setKind(job.getKind());
                 devopsEnvResourceE.setName(job.getName());
                 devopsEnvResourceE.setWeight(
@@ -840,6 +841,22 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
     }
 
+    @Override
+    public void jobEvent(String key, String msg, Long envId) {
+        Event event = JSONArray.parseObject(msg, Event.class);
+        if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
+            event.getInvolvedObject().setKind(ResourceType.JOB.getType());
+            event.getInvolvedObject().setName(event.getInvolvedObject().getName().substring(0, event.getInvolvedObject().getName().lastIndexOf("-")));
+            insertDevopsCommandEvent(event, ResourceType.JOB.getType());
+        }
+    }
+
+    @Override
+    public void releasePodEvent(String key, String msg, Long envId) {
+        Event event = JSONArray.parseObject(msg, Event.class);
+        insertDevopsCommandEvent(event, ResourceType.POD.getType());
+    }
+
     private void saveOrUpdateResource(DevopsEnvResourceE devopsEnvResourceE,
                                       DevopsEnvResourceE newdevopsEnvResourceE,
                                       DevopsEnvResourceDetailE devopsEnvResourceDetailE,
@@ -947,8 +964,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
-        }else {
-            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.SERVICE.getType(),v1Service.getMetadata().getName());
+        } else {
+            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
         }
     }
 
@@ -1020,9 +1037,24 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsIngressRepository.insertIngressPath(devopsIngressPathE);
                 }
             }
-        }else {
-            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.INGRESS.getType(),v1beta1Ingress.getMetadata().getName());
+        } else {
+            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.INGRESS.getType(), v1beta1Ingress.getMetadata().getName());
         }
     }
+
+    private void insertDevopsCommandEvent(Event event, String type) {
+        DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryLatestJob(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceE.getApplicationInstanceE().getId());
+        DevopsCommandEventE devopsCommandEventE = new DevopsCommandEventE();
+        devopsCommandEventE.setEventCreationTime(event.getMetadata().getCreationTimestamp());
+        devopsCommandEventE.setMessage(event.getMessage());
+        devopsCommandEventE.setName(event.getInvolvedObject().getName());
+        devopsCommandEventE.initDevopsEnvCommandE(devopsEnvCommandE.getId());
+        devopsCommandEventE.setType(type);
+        devopsCommandEventRepository.create(devopsCommandEventE);
+
+    }
+
 }
 
