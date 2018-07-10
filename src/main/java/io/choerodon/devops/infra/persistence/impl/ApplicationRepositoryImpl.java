@@ -97,17 +97,17 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
                                 projectId, isActive, hasVersion, null,
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM)),checkSortIsEmpty(pageRequest)));
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
             } else {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
                                 projectId, isActive, hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM)),checkSortIsEmpty(pageRequest)));
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
                     pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion,
-                            null, null,checkSortIsEmpty(pageRequest)));
+                            null, null, checkSortIsEmpty(pageRequest)));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
@@ -215,5 +215,16 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
             index = "true";
         }
         return index;
+    }
+
+    @Override
+    public ApplicationE getAppByGitLabId(Long gitLabProjectId) {
+        ApplicationDO applicationDO = new ApplicationDO();
+        applicationDO.setGitlabProjectId(gitLabProjectId.intValue());
+        try {
+            return ConvertHelper.convert(applicationMapper.selectOne(applicationDO), ApplicationE.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

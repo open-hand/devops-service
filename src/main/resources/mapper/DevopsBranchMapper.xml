@@ -4,17 +4,13 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsBranchMapper">
     <select id="queryByAppAndBranchName" resultType="io.choerodon.devops.infra.dataobject.DevopsBranchDO">
         SELECT
-        db.id,
-        db.issue_id,
-        db.creation_date,
-        db.branch_name,
-        db.user_id,
-        db.object_version_number
+        db.*
         FROM
         devops_branch db
         WHERE
         db.app_id = #{appId}
         and db.branch_name = #{branchName}
+        and db.is_deleted = FALSE
         ORDER BY
         db.creation_date DESC
         LIMIT 1

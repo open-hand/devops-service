@@ -13,12 +13,14 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Issue;
@@ -38,6 +40,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
+    private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -153,6 +156,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void deleteBranch(Long projectId, Long applicationId, String branchName) {
         Integer gitLabId = devopsGitRepository.getGitLabId(applicationId);
         devopsGitRepository.deleteBranch(gitLabId, branchName, getGitlabUserId());
+        devopsGitRepository.deleteDevopsBranch(applicationId, branchName);
     }
 
 
@@ -217,5 +221,53 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
         return devopsGitRepository.getTagList(applicationId, getGitlabUserId()).parallelStream()
                 .noneMatch(t -> tagName.equals(t.getName()));
+    }
+
+    @Override
+    public void branchSync(PushWebHookDTO pushWebHookDTO, String token) {
+        ApplicationE applicationE = applicationRepository.queryByToken(token);
+
+        if (NO_COMMIT_SHA.equals(pushWebHookDTO.getBefore())) {
+            createBranchSync(pushWebHookDTO, applicationE.getId());
+        } else if (NO_COMMIT_SHA.equals(pushWebHookDTO.getAfter())) {
+            deleteBranchSync(pushWebHookDTO, applicationE.getId());
+        }
+        // commitBranchSync(pushWebHookDTO, applicationE.getId())
+    }
+
+    private void deleteBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+        try {
+            String branchName = pushWebHookDTO.getRef().replaceFirst("refs/heads/", "");
+            devopsGitRepository.deleteDevopsBranch(appId, branchName);
+        } catch (Exception e) {
+            throw new CommonException("error.devops.branch.delete");
+        }
+    }
+
+    private void createBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+        String lastCommit = pushWebHookDTO.getAfter();
+        Long userId = pushWebHookDTO.getUserId().longValue();
+        CommitE commitE = devopsGitRepository.getCommit(
+                pushWebHookDTO.getProjectId(),
+                lastCommit,
+                userId.intValue());
+        String branchName = pushWebHookDTO.getRef().replaceFirst("refs/heads/", "");
+        Boolean branchExist;
+        try {
+            branchExist = devopsGitRepository.queryByAppAndBranchName(appId, branchName) != null;
+        } catch (Exception e) {
+            branchExist = false;
+        }
+        if (!branchExist) {
+            DevopsBranchE devopsBranchE = new DevopsBranchE();
+            devopsBranchE.setUserId(userId);
+            devopsBranchE.initApplicationE(appId);
+            devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
+            devopsBranchE.setCommit(lastCommit);
+            devopsBranchE.setBranchName(branchName);
+            devopsBranchE.setDeleted(false);
+
+            devopsGitRepository.createDevopsBranch(devopsBranchE);
+        }
     }
 }

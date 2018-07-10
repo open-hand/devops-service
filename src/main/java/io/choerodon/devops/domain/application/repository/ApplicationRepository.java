@@ -54,4 +54,6 @@ public interface ApplicationRepository {
     List<ApplicationE> listByCode(String code);
 
     String checkSortIsEmpty(PageRequest pageRequest);
+
+    ApplicationE getAppByGitLabId(Long gitLabProjectId);
 }

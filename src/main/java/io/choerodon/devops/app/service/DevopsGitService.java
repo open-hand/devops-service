@@ -6,6 +6,7 @@ import java.util.Map;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -77,4 +78,6 @@ public interface DevopsGitService {
     List<TagDO> getTags(Long projectId, Long applicationId);
 
     Boolean checkTag(Long projectId, Long applicationId, String tagName);
+
+    void branchSync(PushWebHookDTO pushWebHookDTO, String token);
 }
