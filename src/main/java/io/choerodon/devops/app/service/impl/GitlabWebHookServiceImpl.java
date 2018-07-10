@@ -1,13 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.alibaba.fastjson.JSONArray;
-
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.GitlabWebHookService;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
@@ -15,24 +19,25 @@ import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepos
 @Service
 public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabWebHookServiceImpl.class);
+
     @Autowired
-    DevopsMergeRequestRepository devopsMergeRequestRepository;
+    private DevopsMergeRequestRepository devopsMergeRequestRepository;
+    @Autowired
+    private DevopsGitServiceImpl devopsGitService;
 
     @Override
     public void forwardingEventToPortal(String body, String token) {
-        DevopsMergeRequestDTO devopsMergeRequestDTO =JSONArray.parseObject(body, DevopsMergeRequestDTO.class);
-        String type=devopsMergeRequestDTO.getObjectKind();
-        switch (type) {
+        LOGGER.info(body);
+        JsonObject returnData = new JsonParser().parse(body).getAsJsonObject();
+        String kind = returnData.get("object_kind").getAsString();
+        switch (kind) {
             case "merge_request":
+                DevopsMergeRequestDTO devopsMergeRequestDTO = JSONArray.parseObject(body, DevopsMergeRequestDTO.class);
                 saveDevopsMergeRequest(devopsMergeRequestDTO);
                 break;
-            case "pipeline":
-                break;
             case "push":
-                break;
-            case "issues":
-                break;
-            case "job":
+                devopsGitService.branchSync(JSONArray.parseObject(body, PushWebHookDTO.class), token);
                 break;
             default:
                 break;
@@ -41,8 +46,8 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
     private void saveDevopsMergeRequest(DevopsMergeRequestDTO devopsMergeRequestDTO) {
         Long projectId = devopsMergeRequestDTO.getProject().getId();
-        Long gitlabMergeRequestId =devopsMergeRequestDTO.getObjectAttributes().getIid();
-        if (devopsMergeRequestRepository.queryByAppIdAndGitlabId(projectId,gitlabMergeRequestId) == 0) {
+        Long gitlabMergeRequestId = devopsMergeRequestDTO.getObjectAttributes().getIid();
+        if (devopsMergeRequestRepository.queryByAppIdAndGitlabId(projectId, gitlabMergeRequestId) == 0) {
             DevopsMergeRequestE devopsMergeRequestE = ConvertHelper.convert(devopsMergeRequestDTO,
                     DevopsMergeRequestE.class);
             Integer index = devopsMergeRequestRepository.create(devopsMergeRequestE);

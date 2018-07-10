@@ -23,6 +23,7 @@ public class DevopsBranchDO {
     private String branchName;
     private Date lastCommitDate;
     private String commit;
+    private Boolean isDeleted;
     private Date creationDate;
     private Long objectVersionNumber;
 
@@ -105,5 +106,13 @@ public class DevopsBranchDO {
 
     public void setCommit(String commit) {
         this.commit = commit;
+    }
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 }

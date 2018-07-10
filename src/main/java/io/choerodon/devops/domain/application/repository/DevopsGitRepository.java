@@ -6,6 +6,7 @@ import java.util.Map;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -26,7 +27,7 @@ public interface DevopsGitRepository {
 
     Integer getGitlabUserId();
 
-    String getGitlabUrl(Long projectId,Long appId);
+    String getGitlabUrl(Long projectId, Long appId);
 
     void createDevopsBranch(DevopsBranchE devopsBranchE);
 
@@ -35,6 +36,8 @@ public interface DevopsGitRepository {
     List<BranchDO> listBranches(Integer projectId, String path, Integer userId);
 
     void deleteBranch(Integer projectId, String branchName, Integer userId);
+
+    void deleteDevopsBranch(Long appId, String branchName);
 
     Page<TagDTO> getTags(Long appId, String path, Integer page, Integer size, Integer userId);
 
@@ -53,4 +56,6 @@ public interface DevopsGitRepository {
     Map<String, Object> getMergeRequestList(Integer gitLabProjectId, String state, PageRequest pageRequest);
 
     DevopsBranchE queryByBranchNameAndCommit(String branchName, String commit);
+
+    CommitE getCommit(Integer gitLabProjectId, String commit, Integer userId);
 }

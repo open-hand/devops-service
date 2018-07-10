@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -22,6 +23,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
@@ -129,6 +131,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     @Override
     public void deleteBranch(Integer projectId, String branchName, Integer userId) {
         gitlabServiceClient.deleteBranch(projectId, branchName, userId);
+    }
+
+    @Override
+    public void deleteDevopsBranch(Long appId, String branchName) {
+        DevopsBranchDO devopsBranchDO = devopsBranchMapper
+                .queryByAppAndBranchName(appId, branchName);
+        devopsBranchDO.setDeleted(true);
+        devopsBranchMapper.updateByPrimaryKeySelective(devopsBranchDO);
     }
 
     @Override
@@ -256,6 +266,15 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         devopsBranchDO.setBranchName(branchName);
         devopsBranchDO.setCommit(commit);
         return ConvertHelper.convert(devopsBranchMapper.selectOne(devopsBranchDO), DevopsBranchE.class);
+    }
+
+    @Override
+    public CommitE getCommit(Integer gitLabProjectId, String commit, Integer userId) {
+        CommitE commitE = new CommitE();
+        BeanUtils.copyProperties(
+                gitlabServiceClient.getCommit(gitLabProjectId, commit, userId).getBody(),
+                commitE);
+        return commitE;
     }
 
     private void getMergeRequestCommits(Integer gitLabProjectId,

@@ -18,10 +18,19 @@ public class DevopsBranchE {
     private Date lastCommitDate;
     private Date creationDate;
     private String commit;
+    private Boolean isDeleted;
 
     public DevopsBranchE() {
     }
 
+    /**
+     * Construct
+     *
+     * @param commit         提交
+     * @param branchName     分支名
+     * @param applicationE   应用
+     * @param lastCommitDate 最新提交时间
+     */
     public DevopsBranchE(String commit, String branchName, ApplicationE applicationE, Date lastCommitDate) {
         this.commit = commit;
         this.branchName = branchName;
@@ -104,6 +113,14 @@ public class DevopsBranchE {
 
     public void setCommit(String commit) {
         this.commit = commit;
+    }
+
+    public Boolean getDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(Boolean deleted) {
+        isDeleted = deleted;
     }
 }
 
