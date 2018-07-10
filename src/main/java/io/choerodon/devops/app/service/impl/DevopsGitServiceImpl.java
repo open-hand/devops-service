@@ -93,8 +93,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO.getBranchName(),
                 devopsBranchDTO.getOriginBranch(),
                 getGitlabUserId());
-        devopsBranchE.setLastCommitDate(branchDO.getCommit().getCommittedDate());
-        devopsBranchE.setCommit(branchDO.getCommit().getShortId());
+        devopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
+        devopsBranchE.setCheckoutCommit(branchDO.getCommit().getShortId());
         devopsBranchE.setUserId(TypeUtil.objToLong(getGitlabUserId()));
         devopsGitRepository.createDevopsBranch(devopsBranchE);
     }
@@ -262,8 +262,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             DevopsBranchE devopsBranchE = new DevopsBranchE();
             devopsBranchE.setUserId(userId);
             devopsBranchE.initApplicationE(appId);
-            devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
-            devopsBranchE.setCommit(lastCommit);
+            devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
+            devopsBranchE.setCheckoutCommit(lastCommit);
             devopsBranchE.setBranchName(branchName);
 
             devopsGitRepository.createDevopsBranch(devopsBranchE);

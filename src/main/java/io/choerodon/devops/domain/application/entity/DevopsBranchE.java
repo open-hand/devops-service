@@ -15,10 +15,14 @@ public class DevopsBranchE {
     private Long issueId;
     private String branchName;
     private String originBranch;
-    private Date lastCommitDate;
+    private Date checkoutDate;
     private Date creationDate;
-    private String commit;
+    private String checkoutCommit;
     private Boolean isDeleted;
+    private String lastCommit;
+    private String lastCommitMsg;
+    private Long lastCommitUser;
+    private Date lastCommitDate;
 
     public DevopsBranchE() {
     }
@@ -26,16 +30,16 @@ public class DevopsBranchE {
     /**
      * Construct
      *
-     * @param commit         提交
-     * @param branchName     分支名
-     * @param applicationE   应用
-     * @param lastCommitDate 最新提交时间
+     * @param checkoutCommit       提交
+     * @param branchName   分支名
+     * @param applicationE 应用
+     * @param checkoutDate 最新提交时间
      */
-    public DevopsBranchE(String commit, String branchName, ApplicationE applicationE, Date lastCommitDate) {
-        this.commit = commit;
+    public DevopsBranchE(String checkoutCommit, String branchName, ApplicationE applicationE, Date checkoutDate) {
+        this.checkoutCommit = checkoutCommit;
         this.branchName = branchName;
         this.applicationE = applicationE;
-        this.lastCommitDate = lastCommitDate;
+        this.checkoutDate = checkoutDate;
     }
 
 
@@ -63,12 +67,12 @@ public class DevopsBranchE {
         this.branchName = branchName;
     }
 
-    public Date getLastCommitDate() {
-        return lastCommitDate;
+    public Date getCheckoutDate() {
+        return checkoutDate;
     }
 
-    public void setLastCommitDate(Date lastCommitDate) {
-        this.lastCommitDate = lastCommitDate;
+    public void setCheckoutDate(Date checkoutDate) {
+        this.checkoutDate = checkoutDate;
     }
 
     public ApplicationE getApplicationE() {
@@ -107,12 +111,12 @@ public class DevopsBranchE {
         this.creationDate = creationDate;
     }
 
-    public String getCommit() {
-        return commit;
+    public String getCheckoutCommit() {
+        return checkoutCommit;
     }
 
-    public void setCommit(String commit) {
-        this.commit = commit;
+    public void setCheckoutCommit(String checkoutCommit) {
+        this.checkoutCommit = checkoutCommit;
     }
 
     public Boolean getDeleted() {
@@ -121,6 +125,38 @@ public class DevopsBranchE {
 
     public void setDeleted(Boolean deleted) {
         isDeleted = deleted;
+    }
+
+    public String getLastCommit() {
+        return lastCommit;
+    }
+
+    public void setLastCommit(String lastCommit) {
+        this.lastCommit = lastCommit;
+    }
+
+    public String getLastCommitMsg() {
+        return lastCommitMsg;
+    }
+
+    public void setLastCommitMsg(String lastCommitMsg) {
+        this.lastCommitMsg = lastCommitMsg;
+    }
+
+    public Long getLastCommitUser() {
+        return lastCommitUser;
+    }
+
+    public void setLastCommitUser(Long lastCommitUser) {
+        this.lastCommitUser = lastCommitUser;
+    }
+
+    public Date getLastCommitDate() {
+        return lastCommitDate;
+    }
+
+    public void setLastCommitDate(Date lastCommitDate) {
+        this.lastCommitDate = lastCommitDate;
     }
 }
 
