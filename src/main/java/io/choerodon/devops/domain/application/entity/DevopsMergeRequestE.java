@@ -1,9 +1,11 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 public class DevopsMergeRequestE {
     private Long id;
 
-    private Long applicationId;
+    private Long projectId;
 
     private Long gitlabMergeRequestId;
 
@@ -17,6 +19,12 @@ public class DevopsMergeRequestE {
 
     private String state;
 
+    private String title;
+
+    private Date createdAt;
+
+    private Date updatedAt;
+
     public Long getId() {
         return id;
     }
@@ -25,12 +33,12 @@ public class DevopsMergeRequestE {
         this.id = id;
     }
 
-    public Long getApplicationId() {
-        return applicationId;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setApplicationId(Long applicationId) {
-        this.applicationId = applicationId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public Long getGitlabMergeRequestId() {
@@ -79,5 +87,29 @@ public class DevopsMergeRequestE {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

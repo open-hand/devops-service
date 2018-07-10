@@ -8,7 +8,7 @@
     FROM
         devops_merge_request
     WHERE
-        application_id = #{applicationId}
+        project_id = #{projectId}
     AND gitlab_merge_request_id = #{gitlabMergeRequestId}
     </select>
 </mapper>
