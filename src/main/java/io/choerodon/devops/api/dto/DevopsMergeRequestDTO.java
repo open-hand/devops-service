@@ -1,83 +1,34 @@
 package io.choerodon.devops.api.dto;
 
 public class DevopsMergeRequestDTO {
-    private Long id;
 
-    private Long applicationId;
+    private String objectKind;
 
-    private Long gitlabMergeRequestId;
+    private ProjectDTO project;
 
-    private Long authorId;
+    private ObjectAttributesDTO objectAttributes;
 
-    private Long assigneeId;
-
-    private String sourceBranch;
-
-    private String targetBranch;
-
-    private String state;
-
-    public Long getId() {
-        return id;
+    public ProjectDTO getProject() {
+        return project;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setProject(ProjectDTO project) {
+        this.project = project;
     }
 
-    public Long getApplicationId() {
-        return applicationId;
+    public ObjectAttributesDTO getObjectAttributes() {
+        return objectAttributes;
     }
 
-    public void setApplicationId(Long applicationId) {
-        this.applicationId = applicationId;
+    public void setObjectAttributes(ObjectAttributesDTO objectAttributesDTODTO) {
+        this.objectAttributes = objectAttributesDTODTO;
     }
 
-    public Long getGitlabMergeRequestId() {
-        return gitlabMergeRequestId;
+    public String getObjectKind() {
+        return objectKind;
     }
 
-    public void setGitlabMergeRequestId(Long gitlabMergeRequestId) {
-        this.gitlabMergeRequestId = gitlabMergeRequestId;
-    }
-
-    public Long getAuthorId() {
-        return authorId;
-    }
-
-    public void setAuthorId(Long authorId) {
-        this.authorId = authorId;
-    }
-
-    public Long getAssigneeId() {
-        return assigneeId;
-    }
-
-    public void setAssigneeId(Long assigneeId) {
-        this.assigneeId = assigneeId;
-    }
-
-    public String getSourceBranch() {
-        return sourceBranch;
-    }
-
-    public void setSourceBranch(String sourceBranch) {
-        this.sourceBranch = sourceBranch;
-    }
-
-    public String getTargetBranch() {
-        return targetBranch;
-    }
-
-    public void setTargetBranch(String targetBranch) {
-        this.targetBranch = targetBranch;
-    }
-
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
+    public void setObjectKind(String objectKind) {
+        this.objectKind = objectKind;
     }
 }

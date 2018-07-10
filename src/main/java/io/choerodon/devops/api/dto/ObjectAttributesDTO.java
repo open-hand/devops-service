@@ -1,30 +1,10 @@
-package io.choerodon.devops.infra.dataobject;
+package io.choerodon.devops.api.dto;
 
 import java.util.Date;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
+public class ObjectAttributesDTO {
 
-/**
- * Created with IntelliJ IDEA.
- * User: Runge
- * Date: 2018/4/9
- * Time: 14:23
- * Description:
- */
-@ModifyAudit
-@Table(name = "devops_merge_request")
-public class DevopsMergeRequestDO {
-
-    @Id
-    @GeneratedValue
-    private Long id;
-
-    private Long projectId;
-
-    private Long gitlabMergeRequestId;
+    private Long iid;
 
     private Long authorId;
 
@@ -42,44 +22,12 @@ public class DevopsMergeRequestDO {
 
     private Date updatedAt;
 
-    public DevopsMergeRequestDO() {
+    public Long getIid() {
+        return iid;
     }
 
-    /**
-     * constructor a new merge request item
-     *
-     * @param projectId devops application ID
-     * @param sourceBranch  source branch to merge
-     * @param targetBranch  target merge branch
-     */
-    public DevopsMergeRequestDO(Long projectId, String sourceBranch, String targetBranch) {
-        this.projectId = projectId;
-        this.sourceBranch = sourceBranch;
-        this.targetBranch = targetBranch;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Long getProjectId() {
-        return projectId;
-    }
-
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
-    public Long getGitlabMergeRequestId() {
-        return gitlabMergeRequestId;
-    }
-
-    public void setGitlabMergeRequestId(Long gitlabMergeRequestId) {
-        this.gitlabMergeRequestId = gitlabMergeRequestId;
+    public void setIid(Long iid) {
+        this.iid = iid;
     }
 
     public Long getAuthorId() {

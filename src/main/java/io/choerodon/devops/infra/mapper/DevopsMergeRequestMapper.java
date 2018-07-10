@@ -14,6 +14,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DevopsMergeRequestMapper extends BaseMapper<DevopsMergeRequestDO> {
 
-   Integer queryByAppIdAndGitlabId(@Param("applicationId") Long applicationId,
+   Integer queryByAppIdAndGitlabId(@Param("projectId") Long applicationId,
                                    @Param("gitlabMergeRequestId") Long gitlabMergeRequestId);
 }
