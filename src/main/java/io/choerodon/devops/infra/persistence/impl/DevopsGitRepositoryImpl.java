@@ -204,6 +204,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public void createDevopsBranch(DevopsBranchE devopsBranchE) {
+        devopsBranchE.setDeleted(false);
         devopsBranchMapper.insert(ConvertHelper.convert(devopsBranchE, DevopsBranchDO.class));
     }
 
