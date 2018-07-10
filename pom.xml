@@ -171,6 +171,11 @@
             <version>2.3.0</version>
         </dependency>
         <dependency>
+            <groupId>io.codearte.props2yaml</groupId>
+            <artifactId>props2yaml</artifactId>
+            <version>0.5</version>
+        </dependency>
+        <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>converter-jackson</artifactId>
             <version>2.3.0</version>

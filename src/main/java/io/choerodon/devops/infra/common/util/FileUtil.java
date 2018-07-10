@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.gson.Gson;
+import io.codearte.props2yaml.Props2YAML;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -919,5 +920,95 @@ public class FileUtil {
             logger.info("复制单个文件操作出错");
         }
 
+    }
+
+
+    public static String getChangeYaml(String oldyam1, String newYaml) {
+        Map<String, Object> map1 = (Map<String, Object>) yaml.load(oldyam1);
+        Map<String, Object> map2 = (Map<String, Object>) yaml.load(newYaml);
+        List<String> primaryKeys = getPrimaryKey(map1);
+        List<String> newprimaryKeys = getPrimaryKey(map2);
+        Map<String, String> oldProperties = new HashMap<>();
+        Map<String, String> newProperties = new HashMap<>();
+        List<String> keys = new ArrayList<>();
+        getdep(map1, 1, keys, primaryKeys, oldProperties);
+        keys.clear();
+        getdep(map2, 1, keys, newprimaryKeys, newProperties);
+        Map<String, String> changeProperties = getChangeProperties(oldProperties, newProperties);
+        return Props2YAML.fromContent(propertiesToString(changeProperties))
+                .convert();
+    }
+
+
+    public static int getdep(Map map, int complex, List<String> keys, List<String> primaryKeys, Map<String, String> maps) {
+        Iterator it = map.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry entry = (Map.Entry) it.next();
+            if (primaryKeys.contains(entry.getKey().toString())) {
+                complex = 1;
+                keys.clear();
+            }
+            if (keys.size() != complex) {
+                keys.add(entry.getKey().toString());
+            } else {
+                keys.set(complex - 1, entry.getKey().toString());
+            }
+            Object val = entry.getValue();
+            if (val instanceof Map) {
+                complex++;
+                complex = getdep((Map) val, complex, keys, primaryKeys, maps);
+            } else {
+                maps.put(getKeyValue(complex, keys), val.toString());
+            }
+        }
+        keys.remove(keys.get(complex - 1));
+        return complex - 1;
+    }
+
+    public static String getKeyValue(int complex, List<String> keys) {
+        String result = "";
+        for (int i = 0; i < complex; i++) {
+            result = result.equals("") ? result + keys.get(i) : result + "." + keys.get(i);
+        }
+        return result;
+    }
+
+    public static Map<String, String> getChangeProperties(Map<String, String> map, Map<String, String> newMap) {
+        Map<String, String> properties = new HashMap<>();
+        for (Map.Entry<String, String> entry : newMap.entrySet()) {
+            String m1value = entry.getValue() == null ? "" : entry.getValue();
+            if (!map.containsKey(entry.getKey())) {
+                properties.put(entry.getKey(), entry.getValue());
+            } else {
+                String m2value = map.get(entry.getKey()) == null ? "" : map.get(entry.getKey());
+                if (!m1value.equals(m2value)) {
+                    properties.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        return properties;
+    }
+
+    public static List<String> getPrimaryKey(Map<String, Object> map) {
+        List<String> primaryKeys = new ArrayList<>();
+        Iterator iterator = map.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry entry = (Map.Entry) iterator.next();
+            primaryKeys.add(entry.getKey().toString());
+        }
+        return primaryKeys;
+    }
+
+
+    public static String propertiesToString(Map<String, String> map) {
+        StringBuilder res = new StringBuilder();
+        Set<String> keySet = map.keySet();
+        for (String key : keySet) {
+            res.append(key);
+            res.append("=");
+            res.append(map.getOrDefault(key, ""));
+            res.append("\n");
+        }
+        return res.toString();
     }
 }

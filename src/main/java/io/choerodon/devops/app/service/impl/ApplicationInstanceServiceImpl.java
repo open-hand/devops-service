@@ -209,11 +209,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult queryValue(Long instanceId) {
-        ReplaceResult replaceResult = new ReplaceResult();
+        ReplaceResult replaceResult;
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(
                 applicationInstanceE.getDevopsEnvironmentE().getId(), applicationInstanceE.getApplicationE().getId()));
-        replaceResult.setYaml(yaml);
+        String versionValue = applicationVersionRepository.queryValue(applicationInstanceE.getApplicationVersionE().getId());
+        replaceResult = FileUtil.replace(versionValue, yaml);
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(yaml) + 1);
         return replaceResult;
     }
@@ -263,7 +264,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationInstanceRepository.update(applicationInstanceE);
         }
         DevopsEnvCommandValueE devopsEnvCommandValueE = DevopsEnvCommandValueFactory.createDevopsEnvCommandE();
-        devopsEnvCommandValueE.setValue(applicationDeployDTO.getValues());
+        applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId());
+        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()));
         devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository
                 .create(devopsEnvCommandValueE).getId());
         deployService.deploy(
