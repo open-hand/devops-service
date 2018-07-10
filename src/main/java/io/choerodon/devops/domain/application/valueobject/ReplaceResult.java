@@ -14,6 +14,7 @@ public class ReplaceResult {
     private Integer totalLine;
     private String errorMsg;
     private List<ErrorLineDTO> errorLines;
+    private List<Integer> newLines;
 
     public String getYaml() {
         return yaml;
@@ -53,5 +54,13 @@ public class ReplaceResult {
 
     public void setErrorLines(List<ErrorLineDTO> errorLines) {
         this.errorLines = errorLines;
+    }
+
+    public List<Integer> getNewLines() {
+        return newLines;
+    }
+
+    public void setNewLines(List<Integer> newLines) {
+        this.newLines = newLines;
     }
 }
