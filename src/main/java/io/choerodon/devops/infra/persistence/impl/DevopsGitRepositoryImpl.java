@@ -265,7 +265,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public DevopsBranchE queryByBranchNameAndCommit(String branchName, String commit) {
         DevopsBranchDO devopsBranchDO = new DevopsBranchDO();
         devopsBranchDO.setBranchName(branchName);
-        devopsBranchDO.setCommit(commit);
+        devopsBranchDO.setCheckoutCommit(commit);
         return ConvertHelper.convert(devopsBranchMapper.selectOne(devopsBranchDO), DevopsBranchE.class);
     }
 

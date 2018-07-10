@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.dto;
 
-
 import java.util.List;
 
 public class DevopsBranchDTO {

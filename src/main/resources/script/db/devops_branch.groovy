@@ -34,4 +34,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
             column(name: 'is_deleted', type: 'TINYINT UNSIGNED', remarks: '分支是否删除', afterColumn: 'commit', defaultValue: "0")
         }
     }
+
+    changeSet(author: 'runge', id: '2018-07-10-rename-column-and-add-last-commit') {
+        renameColumn(tableName: 'devops_branch', columnDataType: 'VARCHAR(64)',
+                oldColumnName: 'commit', newColumnName: 'checkout_commit', remarks: 'checkout sha')
+        renameColumn(tableName: 'devops_branch', columnDataType: 'DATETIME',
+                oldColumnName: 'last_commit_date', newColumnName: 'checkout_date', remarks: 'checkout date')
+        addColumn(tableName: 'devops_branch') {
+            column(name: 'last_commit', type: 'VARCHAR(64)', remarks: '最新提交', afterColumn: 'checkout_date')
+            column(name: 'last_commit_msg', type: 'VARCHAR(512)', remarks: '最新提交信息', afterColumn: 'last_commit')
+            column(name: 'last_commit_user', type: 'BIGINT UNSIGNED', remarks: '最新提交用户Id', afterColumn: 'last_commit_msg')
+            column(name: 'last_commit_date', type: 'DATETIME', remarks: '最新提交时间', afterColumn: 'last_commit_user')
+        }
+    }
 }
