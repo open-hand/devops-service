@@ -1,8 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
@@ -24,8 +23,8 @@ import io.choerodon.devops.infra.common.util.enums.ResourceType;
 @Service
 public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
+    private static final String LINE_SEPARATOR = "line.separator";
     private static JSON json = new JSON();
-
     @Autowired
     private DevopsEnvResourceRepository devopsEnvResourceRepository;
     @Autowired
@@ -38,7 +37,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
-
+    @Autowired
+    private DevopsCommandEventRepository devopsCommandEventRepository;
 
     @Override
     public DevopsEnvResourceDTO listResources(Long instanceId) {
@@ -122,35 +122,68 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                                 devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
                 V1Job v1Job = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Job.class);
                 InstanceStageDTO instanceStageDTO = new InstanceStageDTO();
-                instanceStageDTO.setStageName(v1Job.getMetadata().getName());
-                instanceStageDTO.setWeight(devopsInstanceResourceE.getWeight());
-                if (v1Job.getStatus() != null
-                        && v1Job.getStatus().getSucceeded() != null) {
-                    if (v1Job.getStatus().getSucceeded() == 1) {
-                        instanceStageDTO.setStatus("success");
-                        if (v1Job.getStatus().getStartTime() != null
-                                && v1Job.getStatus().getCompletionTime() != null) {
-                            instanceStageDTO.setStageTime(
-                                    getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
-                                            new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime()))
-                            );
-                        }
-                    } else {
-                        instanceStageDTO.setStatus("fail");
-                    }
-                }
-
+                getInstanceStage(v1Job, instanceStageDTO, devopsInstanceResourceE.getWeight());
                 instanceStageDTOS.add(instanceStageDTO);
             }
         });
         List<DevopsEnvCommandLogE> devopsEnvCommandLogES = devopsEnvCommandLogRepository
                 .queryByDeployId(devopsEnvCommandE.getId());
-        for (int i = 0; i < devopsEnvCommandLogES.size(); i++) {
-            DevopsEnvCommandLogE devopsEnvCommandLogE = devopsEnvCommandLogES.get(i);
+        List<String> results = new ArrayList<>();
+        getDevopsCommandEvent(devopsEnvCommandE, results);
+        for (int i = 0; i < results.size(); i++) {
+            String log = "";
+            if (devopsEnvCommandLogES.size() - i > 0) {
+                log = devopsEnvCommandLogES.get(i).getLog();
+            }
             InstanceStageDTO instanceStageDTO = instanceStageDTOS.get(i);
-            instanceStageDTO.setLog(devopsEnvCommandLogE.getLog());
+            instanceStageDTO.setLog(results.get(i) + System.getProperty(LINE_SEPARATOR)
+                    + System.getProperty(LINE_SEPARATOR) + log);
         }
         return instanceStageDTOS;
+    }
+
+    private void getInstanceStage(V1Job v1Job, InstanceStageDTO instanceStageDTO, Long weight) {
+        instanceStageDTO.setStageName(v1Job.getMetadata().getName());
+        instanceStageDTO.setWeight(weight);
+        if (v1Job.getStatus() != null
+                && v1Job.getStatus().getSucceeded() != null) {
+            if (v1Job.getStatus().getSucceeded() == 1) {
+                instanceStageDTO.setStatus("success");
+                if (v1Job.getStatus().getStartTime() != null
+                        && v1Job.getStatus().getCompletionTime() != null) {
+                    instanceStageDTO.setStageTime(
+                            getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
+                                    new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime()))
+                    );
+                }
+            } else {
+                instanceStageDTO.setStatus("fail");
+            }
+        }
+    }
+
+
+    private void getDevopsCommandEvent(DevopsEnvCommandE devopsEnvCommandE, List<String> results) {
+        List<DevopsCommandEventE> devopsCommandEventES = devopsCommandEventRepository.listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
+        devopsCommandEventES.sort(Comparator.comparing(DevopsCommandEventE::getId));
+        Map<String, List<DevopsCommandEventE>> event = new HashMap<>();
+        for (DevopsCommandEventE devopsCommandEventE : devopsCommandEventES) {
+            if (!event.containsKey(devopsCommandEventE.getName())) {
+                List<DevopsCommandEventE> commandEventES = new ArrayList<>();
+                commandEventES.add(devopsCommandEventE);
+                event.put(devopsCommandEventE.getName(), commandEventES);
+            } else {
+                event.get(devopsCommandEventE.getName()).add(devopsCommandEventE);
+            }
+        }
+        for (Map.Entry<String, List<DevopsCommandEventE>> entry : event.entrySet()) {
+            String[] a = {""};
+            entry.getValue().stream().forEach(t -> {
+                a[0] += t.getMessage();
+                a[0] += System.getProperty(LINE_SEPARATOR);
+            });
+            results.add(a[0]);
+        }
     }
 
     /**

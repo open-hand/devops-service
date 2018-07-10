@@ -23,4 +23,6 @@ public interface DevopsEnvResourceRepository {
 
     List<DevopsEnvResourceE> listByEnvAndType(Long envId, String type);
 
+    DevopsEnvResourceE queryLatestJob(String kind, String name);
+
 }

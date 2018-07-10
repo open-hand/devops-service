@@ -1,14 +1,17 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'dba/devops_env_command_log.groovy') {
-    changeSet(author: 'Younger', id: '2018-04-24-create-table') {
-        createTable(tableName: "devops_env_command_log", remarks: '部署') {
+
+databaseChangeLog(logicalFilePath: 'dba/devops_command_event.groovy') {
+    changeSet(author: 'Younger', id: '2018-07-01-create-table') {
+        createTable(tableName: "devops_command_event", remarks: 'command event') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'commandId', type: 'BIGINT UNSIGNED', remarks: '操作ID')
-            column(name: 'log', type: 'TEXT', remarks: '资源日志')
-
+            column(name: 'commandId', type: 'BIGINT UNSIGNED', remarks: 'command Id')
+            column(name: 'type', type: 'VARCHAR(64)', remarks: '类型')
+            column(name: 'name', type: 'VARCHAR(64)', remarks: 'name')
+            column(name: 'message', type: 'VARCHAR(2000)', remarks: '信息')
+            column(name: 'event_creation_time', type: 'DATETIME', remarks: 'Event时间')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")

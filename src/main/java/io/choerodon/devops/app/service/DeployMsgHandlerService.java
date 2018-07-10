@@ -50,4 +50,8 @@ public interface DeployMsgHandlerService {
     void netWorkIngressDeleteFail(String key, Long envId, String value);
 
     void resourceSync(String key, Long envId, String value);
+
+    void jobEvent(String key, String msg, Long envId);
+
+    void releasePodEvent(String key, String msg, Long envId);
 }

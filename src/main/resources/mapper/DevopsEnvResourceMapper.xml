@@ -34,4 +34,15 @@
         AND der.kind = #{type}
     </select>
 
+    <select id="queryLatestJob"
+            resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+        SELECT
+        *
+        FROM devops_env_resource dir where dir.kind = #{kind}
+        and dir.name = #{name}
+        ORDER BY
+        dir.creation_date DESC
+        LIMIT 1
+    </select>
+
 </mapper>
