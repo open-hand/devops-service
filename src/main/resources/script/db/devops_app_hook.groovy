@@ -18,8 +18,5 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_webhook.groovy') {
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
-
-        addUniqueConstraint(tableName: 'devops_app_webhook',
-                constraintName: 'uk_app_id', columnNames: 'app_id')
     }
 }
