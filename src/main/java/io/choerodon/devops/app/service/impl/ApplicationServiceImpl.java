@@ -10,7 +10,6 @@ import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -44,7 +43,6 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
-    private static final Integer ADMIN = 1;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${spring.application.name}")
@@ -78,8 +76,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     @Autowired
     private DevopsGitRepository devopsGitRepository;
-    @Autowired
-    private DevopsAppWebHookRepository devopsAppWebHookRepository;
 
     @Override
     public ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO) {
@@ -167,33 +163,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationES.getContent().parallelStream()
                 .forEach(t -> {
-                    if (t.getGitlabProjectE().getId() != null
-                            && devopsAppWebHookRepository.queryByAppId(t.getId()) == null) {
-                        syncWebHook(t);
-                    }
                     if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
                         t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
                                 + organization.getCode() + "-" + projectE.getCode() + "/"
                                 + t.getCode() + ".git");
                         if (!sonarqubeUrl.equals("")) {
-                            Integer result = HttpClientUtil.getSonar(
-                                    sonarqubeUrl.endsWith("/")
-                                            ? sonarqubeUrl
-                                            : String.format(
-                                                    "%s/api/project_links/search?projectKey=%s-%s:%s",
-                                            sonarqubeUrl,
-                                            organization.getCode(),
-                                            projectE.getCode(),
-                                            t.getCode()));
-                            if (result.equals(HttpStatus.OK.value())) {
-                                t.initSonarUrl(sonarqubeUrl.endsWith("/")
-                                        ? sonarqubeUrl
-                                        : String.format(
-                                                "%s/dashboard?id=%s-%s:%s",
-                                        sonarqubeUrl,
-                                        organization.getCode(),
-                                        projectE.getCode(),
-                                        t.getCode()));
+                            Integer result = 0;
+                            try {
+                                result = HttpClientUtil.getSonar(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/" + "api/project_links/search?projectKey=" + organization.getCode() + "-" + projectE.getCode() + ":" + t.getCode());
+                                if (result.equals(HttpStatus.OK.value())) {
+                                    t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
+                                            + "dashboard?id="
+                                            + organization.getCode() + "-" + projectE.getCode() + ":"
+                                            + t.getCode());
+                                }
+                            } catch (Exception e) {
+                                t.initSonarUrl(null);
                             }
                         }
                     }
@@ -324,9 +309,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             applicationE.initGitlabProjectE(
                     TypeUtil.objToInteger(gitlabProjectEventDTO.getGitlabProjectId()));
             applicationE.initSynchro(true);
-            if (applicationRepository.update(applicationE) != 1) {
-                throw new CommonException("error.application.update");
-            }
             ProjectHook projectHook = ProjectHook.allHook();
             projectHook.setEnableSslVerification(true);
             projectHook.setProjectId(gitlabProjectEventDTO.getGitlabProjectId());
@@ -334,12 +316,10 @@ public class ApplicationServiceImpl implements ApplicationService {
             String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
             uri += "devops/webhook";
             projectHook.setUrl(uri);
-            DevopsAppWebHookE devopsAppWebHookE = new DevopsAppWebHookE();
-            devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(
-                    gitlabProjectEventDTO.getGitlabProjectId(),
-                    gitlabProjectEventDTO.getUserId(), projectHook).getId());
-            devopsAppWebHookE.initApplicationE(applicationE.getId());
-            devopsAppWebHookRepository.createHook(devopsAppWebHookE);
+            applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook).getId()));
+            if (applicationRepository.update(applicationE) != 1) {
+                throw new CommonException("error.application.update");
+            }
         } catch (Exception e) {
             throw new CommonException(e.getMessage());
         }
@@ -390,20 +370,4 @@ public class ApplicationServiceImpl implements ApplicationService {
                 ApplicationDTO.class);
     }
 
-
-    @Async
-    void syncWebHook(ApplicationE applicationE) {
-        ProjectHook projectHook = ProjectHook.allHook();
-        projectHook.setEnableSslVerification(true);
-        projectHook.setProjectId(applicationE.getGitlabProjectE().getId());
-        projectHook.setToken(applicationE.getToken());
-        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-        uri += "devops/webhook";
-        projectHook.setUrl(uri);
-        DevopsAppWebHookE devopsAppWebHookE = new DevopsAppWebHookE();
-        devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(
-                applicationE.getGitlabProjectE().getId(), ADMIN, projectHook).getId());
-        devopsAppWebHookE.initApplicationE(applicationE.getId());
-        devopsAppWebHookRepository.createHook(devopsAppWebHookE);
-    }
 }

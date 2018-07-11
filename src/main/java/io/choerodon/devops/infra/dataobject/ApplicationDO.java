@@ -31,6 +31,7 @@ public class ApplicationDO {
     private String token;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
+    private Long hookId;
 
     @Transient
     private String publishLevel;
@@ -157,5 +158,13 @@ public class ApplicationDO {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getHookId() {
+        return hookId;
+    }
+
+    public void setHookId(Long hookId) {
+        this.hookId = hookId;
     }
 }

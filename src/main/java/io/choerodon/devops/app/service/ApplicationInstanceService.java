@@ -131,9 +131,9 @@ public interface ApplicationInstanceService {
     /**
      * 获取预览 Value
      *
-     * @param value yaml
-     * @param appVersionId 版本Id
+     * @param replaceResult yaml
+     * @param appVersionId  版本Id
      * @return ReplaceResult
      */
-    ReplaceResult previewValues(String value,Long appVersionId);
+    ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
 }

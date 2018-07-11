@@ -382,20 +382,20 @@ public class FileUtil {
      * @return result yaml and highlightMarkers
      */
     public static ReplaceResult replace(String yamlNew, String yamlOld) {
-        Composer composerNew = new Composer(new ParserImpl(new StreamReader(yamlNew)),new Resolver());
-        Composer composerOld = new Composer(new ParserImpl(new StreamReader(yamlOld)),new Resolver());
-        Node nodeNew =  composerNew.getSingleNode();
-        Node nodeOld =  composerOld.getSingleNode();
-        if (!(nodeNew instanceof MappingNode) || !(nodeOld instanceof MappingNode)){
+        Composer composerNew = new Composer(new ParserImpl(new StreamReader(yamlNew)), new Resolver());
+        Composer composerOld = new Composer(new ParserImpl(new StreamReader(yamlOld)), new Resolver());
+        Node nodeNew = composerNew.getSingleNode();
+        Node nodeOld = composerOld.getSingleNode();
+        if (!(nodeNew instanceof MappingNode) || !(nodeOld instanceof MappingNode)) {
             logger.info("not mapping node");
             return null;
         }
         List<ReplaceMarker> replaceMarkers = new ArrayList<>();
         List<InsertNode> insertNodes = new ArrayList<>();
-        compareAndReplace((MappingNode) nodeOld,(MappingNode) nodeNew,insertNodes,replaceMarkers);
+        compareAndReplace((MappingNode) nodeOld, (MappingNode) nodeNew, insertNodes, replaceMarkers);
         List<HighlightMarker> highlightMarks = new ArrayList<>();
         List<Integer> insertLines = new ArrayList<>();
-        String result =  replace(yamlNew,replaceMarkers,highlightMarks,insertNodes,insertLines);
+        String result = replace(yamlNew, replaceMarkers, highlightMarks, insertNodes, insertLines);
         ReplaceResult replaceResult = new ReplaceResult();
         replaceResult.setYaml(result);
         replaceResult.setHighlightMarkers(highlightMarks);
@@ -403,9 +403,9 @@ public class FileUtil {
         return replaceResult;
     }
 
-    private static String replace(String yaml, List<ReplaceMarker> replaceMarkers,List<HighlightMarker> highlights, List<InsertNode> insertNodes, List<Integer> newLines) {
+    private static String replace(String yaml, List<ReplaceMarker> replaceMarkers, List<HighlightMarker> highlights, List<InsertNode> insertNodes, List<Integer> newLines) {
         String temp = yaml;
-        if (highlights == null){
+        if (highlights == null) {
             highlights = new ArrayList<>();
         }
         int lengthChangeSum = 0;
@@ -415,7 +415,7 @@ public class FileUtil {
         int[] index = new int[len];
         int[] values = new int[len];
 
-        for ( int  i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             values[i] = replaceMarkers.get(i).getLine();
             index[i] = i;
         }
@@ -425,45 +425,45 @@ public class FileUtil {
         ReplaceMarker replaceMarker;
         for (int i = 0; i < len; i++) {
             replaceMarker = replaceMarkers.get(index[i]);
-            int originalLength = replaceMarker.getEndIndex()-replaceMarker.getStartIndex();
+            int originalLength = replaceMarker.getEndIndex() - replaceMarker.getStartIndex();
             int replaceLength = replaceMarker.getToReplace().length();
             int lengthChange = replaceLength - originalLength;
-            String before = temp.substring(0,replaceMarker.getStartIndex()+lengthChangeSum);
-            String after = temp.substring(replaceMarker.getEndIndex()+lengthChangeSum);
+            String before = temp.substring(0, replaceMarker.getStartIndex() + lengthChangeSum);
+            String after = temp.substring(replaceMarker.getEndIndex() + lengthChangeSum);
             temp = before + replaceMarker.getToReplace() + after;
             HighlightMarker highlightMark = new HighlightMarker();
-            highlightMark.setStartIndex(replaceMarker.getStartIndex()+lengthChangeSum);
-            highlightMark.setEndIndex(highlightMark.getStartIndex()+replaceLength);
+            highlightMark.setStartIndex(replaceMarker.getStartIndex() + lengthChangeSum);
+            highlightMark.setEndIndex(highlightMark.getStartIndex() + replaceLength);
             highlightMark.setLine(replaceMarker.getLine());
             highlightMark.setStartColumn(replaceMarker.getStartColumn());
-            highlightMark.setEndColumn(replaceMarker.getStartColumn()+replaceLength);
+            highlightMark.setEndColumn(replaceMarker.getStartColumn() + replaceLength);
             highlights.add(highlightMark);
             lengthChangeSum += lengthChange;
-            for (InsertNode insertNode : insertNodes){
-                if (highlightMark.getLine() <= insertNode.getLine()){
-                    insertNode.setLastIndex(insertNode.getLastIndex()+lengthChange);
+            for (InsertNode insertNode : insertNodes) {
+                if (highlightMark.getLine() <= insertNode.getLine()) {
+                    insertNode.setLastIndex(insertNode.getLastIndex() + lengthChange);
                 }
             }
         }
         len = insertNodes.size();
         int[] lineIndex = new int[len];
         int[] lineValues = new int[len];
-        for ( int  i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             lineValues[i] = insertNodes.get(i).getLine();
             lineIndex[i] = i;
         }
         compareAndSwap(lineIndex, lineValues);
         int[] insertLineCounts = new int[len];
-        for (int i = len-1; i >= 0; i--){
+        for (int i = len - 1; i >= 0; i--) {
             //行号最大的节点
             InsertNode insertNode = insertNodes.get(lineIndex[i]);
             StringBuilder stringBuilder = new StringBuilder();
-            printBlank(insertNode.getStartColumn(),stringBuilder);
+            printBlank(insertNode.getStartColumn(), stringBuilder);
             stringBuilder.append(insertNode.getKey());
             stringBuilder.append(":");
-            stringBuilder.append(printNode(insertNode.getValue(),insertNode.getStartColumn()));
+            stringBuilder.append(printNode(insertNode.getValue(), insertNode.getStartColumn()));
             String insertString = stringBuilder.toString();
-            temp = temp.substring(0,insertNode.getLastIndex()+1)+insertString+temp.substring(insertNode.getLastIndex()+1);
+            temp = temp.substring(0, insertNode.getLastIndex() + 1) + insertString + temp.substring(insertNode.getLastIndex() + 1);
             int insertLineCount = countLine(insertString);
             insertLineCounts[i] = insertLineCount;
             for (HighlightMarker highlightMarker : highlights) {
@@ -475,8 +475,8 @@ public class FileUtil {
         int lineChange = 0;
         for (int i = 0; i < len; i++) {
             int lineNumber = insertNodes.get(lineIndex[i]).getLine();
-            for (int n =0; n < insertLineCounts[i]; n++){
-                newLines.add(lineNumber+n+1+lineChange);
+            for (int n = 0; n < insertLineCounts[i]; n++) {
+                newLines.add(lineNumber + n + 1 + lineChange);
             }
             lineChange += insertLineCounts[i];
 
@@ -487,23 +487,23 @@ public class FileUtil {
 
 
     //从将old的值替换至新的值
-    private static void compareAndReplace(MappingNode oldMapping, MappingNode newMapping,List<InsertNode> insertNodes, List<ReplaceMarker> replaceMarkers){
+    private static void compareAndReplace(MappingNode oldMapping, MappingNode newMapping, List<InsertNode> insertNodes, List<ReplaceMarker> replaceMarkers) {
         List<NodeTuple> oldRootTuple = oldMapping.getValue();
         List<NodeTuple> newRootTuple = newMapping.getValue();
-        for (NodeTuple oldTuple : oldRootTuple){
-            Node oldKeyNode =  oldTuple.getKeyNode();
-            if (oldKeyNode instanceof ScalarNode){
+        for (NodeTuple oldTuple : oldRootTuple) {
+            Node oldKeyNode = oldTuple.getKeyNode();
+            if (oldKeyNode instanceof ScalarNode) {
                 ScalarNode scalarKeyNode = (ScalarNode) oldKeyNode;
                 Node oldValue = oldTuple.getValueNode();
-                if ( oldValue instanceof ScalarNode){
+                if (oldValue instanceof ScalarNode) {
                     ScalarNode oldValueScalar = (ScalarNode) oldValue;
                     InsertNode insertNode = new InsertNode();
-                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(),newRootTuple,insertNode);
+                    ScalarNode newValueNode = getKeyValue(scalarKeyNode.getValue(), newRootTuple, insertNode);
                     if (insertNode.getKey() != null) {
                         insertNode.setValue(oldValueScalar);
                         insertNodes.add(insertNode);
                     }
-                    if (newValueNode != null){
+                    if (newValueNode != null) {
                         if (!oldValueScalar.getValue().equals(newValueNode.getValue())) {
                             ReplaceMarker replaceMarker = new ReplaceMarker();
                             replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
@@ -520,16 +520,16 @@ public class FileUtil {
                             replaceMarkers.add(replaceMarker);
                         }
                     }
-                }else if(oldValue instanceof MappingNode) {
+                } else if (oldValue instanceof MappingNode) {
                     InsertNode insertNode = new InsertNode();
-                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(),newRootTuple, insertNode);
+                    MappingNode vaMappingNode = getKeyMapping(scalarKeyNode.getValue(), newRootTuple, insertNode);
                     if (insertNode.getKey() != null) {
                         insertNode.setValue(oldValue);
                         insertNodes.add(insertNode);
                     }
                     if (vaMappingNode != null) {
                         MappingNode oldMappingNode = (MappingNode) oldValue;
-                        compareAndReplace(oldMappingNode,vaMappingNode,insertNodes,replaceMarkers);
+                        compareAndReplace(oldMappingNode, vaMappingNode, insertNodes, replaceMarkers);
                     }
                 }
             }
@@ -539,28 +539,27 @@ public class FileUtil {
 
     private static int countLine(String insertString) {
         int count = 0;
-        for(int i=0;i<insertString.length();i++)
-        {
-            if(insertString.charAt(i) == '\n') {
+        for (int i = 0; i < insertString.length(); i++) {
+            if (insertString.charAt(i) == '\n') {
                 count++;
             }
         }
         return count;
     }
 
-    private static void compareAndSwap(int[] index, int[] values){
+    private static void compareAndSwap(int[] index, int[] values) {
         int tem;
         int tempIndex;
         int len = index.length;
-        for ( int  i = 0; i < len; i++ ) {
-            for (int j = len - 1 ;  j > i  ; j--) {
-                if (values[j] < values[j-1]) {
+        for (int i = 0; i < len; i++) {
+            for (int j = len - 1; j > i; j--) {
+                if (values[j] < values[j - 1]) {
                     tem = values[j];
-                    values[j] = values[j-1];
-                    values[j-1] = tem;
+                    values[j] = values[j - 1];
+                    values[j - 1] = tem;
 
-                    tempIndex = index[j-1];
-                    index[j-1] = index[j];
+                    tempIndex = index[j - 1];
+                    index[j - 1] = index[j];
                     index[j] = tempIndex;
 
 
@@ -570,15 +569,15 @@ public class FileUtil {
     }
 
     //检查同一层是否存在该key
-    private static MappingNode getKeyMapping(String key, List<NodeTuple> tuples, InsertNode insertNode){
-        for (NodeTuple nodeTuple : tuples){
-            Node keyNode  = nodeTuple.getKeyNode();
-            if (keyNode instanceof ScalarNode){
+    private static MappingNode getKeyMapping(String key, List<NodeTuple> tuples, InsertNode insertNode) {
+        for (NodeTuple nodeTuple : tuples) {
+            Node keyNode = nodeTuple.getKeyNode();
+            if (keyNode instanceof ScalarNode) {
                 ScalarNode scalarKeyNode = (ScalarNode) keyNode;
-                if (scalarKeyNode.getValue().equals(key)){
-                    if (nodeTuple.getValueNode() instanceof MappingNode){
+                if (scalarKeyNode.getValue().equals(key)) {
+                    if (nodeTuple.getValueNode() instanceof MappingNode) {
                         return (MappingNode) nodeTuple.getValueNode();
-                    }else {
+                    } else {
                         logger.info("found key but value is not mapping");
                         return null;
                     }
@@ -586,12 +585,12 @@ public class FileUtil {
             }
         }
         logger.info("not found key in tuple");
-        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size()-1));
+        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
             logger.info("get last scarlar index error");
             return null;
         }
-        insertNode.setStartColumn(tuples.get(tuples.size()-1).getKeyNode().getStartMark().getColumn());
+        insertNode.setStartColumn(tuples.get(tuples.size() - 1).getKeyNode().getStartMark().getColumn());
         insertNode.setLine(lastScalarNode.getEndMark().getLine());
         insertNode.setLastIndex(lastScalarNode.getEndMark().getIndex());
         insertNode.setKey(key);
@@ -599,15 +598,15 @@ public class FileUtil {
     }
 
     //检查同一层是否存在该key
-    private static ScalarNode getKeyValue(String key, List<NodeTuple> tuples, InsertNode insertNode){
-        for (NodeTuple nodeTuple : tuples){
-            Node keyNode  = nodeTuple.getKeyNode();
-            if (keyNode instanceof ScalarNode){
+    private static ScalarNode getKeyValue(String key, List<NodeTuple> tuples, InsertNode insertNode) {
+        for (NodeTuple nodeTuple : tuples) {
+            Node keyNode = nodeTuple.getKeyNode();
+            if (keyNode instanceof ScalarNode) {
                 ScalarNode scalarKeyNode = (ScalarNode) keyNode;
-                if (scalarKeyNode.getValue().equals(key)){
-                    if (nodeTuple.getValueNode() instanceof ScalarNode){
+                if (scalarKeyNode.getValue().equals(key)) {
+                    if (nodeTuple.getValueNode() instanceof ScalarNode) {
                         return (ScalarNode) nodeTuple.getValueNode();
-                    }else {
+                    } else {
                         logger.info("found key but value is not scalar");
                         return null;
                     }
@@ -616,12 +615,12 @@ public class FileUtil {
         }
 
         logger.info("not found key in tuple");
-        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size()-1));
+        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
             logger.info("get last scarlar index error");
             return null;
         }
-        insertNode.setStartColumn(tuples.get(tuples.size()-1).getKeyNode().getStartMark().getColumn());
+        insertNode.setStartColumn(tuples.get(tuples.size() - 1).getKeyNode().getStartMark().getColumn());
         insertNode.setLine(lastScalarNode.getEndMark().getLine());
         insertNode.setLastIndex(lastScalarNode.getEndMark().getIndex());
         insertNode.setKey(key);
@@ -633,25 +632,24 @@ public class FileUtil {
         Node node = nodeTuple.getValueNode();
         if (node instanceof ScalarNode) {
             return (ScalarNode) node;
-        }
-        else if (node instanceof MappingNode) {
+        } else if (node instanceof MappingNode) {
             MappingNode mappingNode = (MappingNode) node;
-            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size()-1);
+            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size() - 1);
             return getLastIndex(last);
         } else {
             return null;
         }
     }
 
-    private static String printNode (Node node, int startColumn) {
+    private static String printNode(Node node, int startColumn) {
         StringBuilder stringBuilder = new StringBuilder();
         if (node instanceof ScalarNode) {
-            appendValueNode((ScalarNode) node,stringBuilder);
-        }else if (node instanceof MappingNode) {
+            appendValueNode((ScalarNode) node, stringBuilder);
+        } else if (node instanceof MappingNode) {
             stringBuilder.append("\n");
-            startColumn = startColumn +2;
-            for (NodeTuple nodeTuple : ((MappingNode) node).getValue()){
-                printTuple(startColumn,nodeTuple,stringBuilder);
+            startColumn = startColumn + 2;
+            for (NodeTuple nodeTuple : ((MappingNode) node).getValue()) {
+                printTuple(startColumn, nodeTuple, stringBuilder);
             }
         }
         return stringBuilder.toString();
@@ -664,13 +662,13 @@ public class FileUtil {
     }
 
     private static void printTuple(int startColumn, NodeTuple nodeTuple, StringBuilder stringBuilder) {
-        String key = ((ScalarNode)nodeTuple.getKeyNode()).getValue();
-        printBlank(startColumn,stringBuilder);
+        String key = ((ScalarNode) nodeTuple.getKeyNode()).getValue();
+        printBlank(startColumn, stringBuilder);
         stringBuilder.append(key);
         stringBuilder.append(":");
         Node valueNode = nodeTuple.getValueNode();
         if (valueNode instanceof ScalarNode) {
-            appendValueNode((ScalarNode) valueNode,stringBuilder);
+            appendValueNode((ScalarNode) valueNode, stringBuilder);
         } else if (valueNode instanceof MappingNode) {
             startColumn = startColumn + 2;
             stringBuilder.append("\n");
@@ -681,7 +679,7 @@ public class FileUtil {
     }
 
     private static void printBlank(int count, StringBuilder stringBuilder) {
-        while (count > 0){
+        while (count > 0) {
             stringBuilder.append(" ");
             count--;
         }
@@ -1112,7 +1110,9 @@ public class FileUtil {
                 complex++;
                 complex = getdep((Map) val, complex, keys, primaryKeys, maps);
             } else {
-                maps.put(getKeyValue(complex, keys), val.toString());
+                if (val != null) {
+                    maps.put(getKeyValue(complex, keys), val.toString());
+                }
             }
         }
         keys.remove(keys.get(complex - 1));

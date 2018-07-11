@@ -27,4 +27,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         addUniqueConstraint(tableName: 'devops_application',
                 constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
     }
+
+    changeSet(author: 'younger', id: '2018-07-11-add-column') {
+        addColumn(tableName: 'devops_application') {
+            column(name: 'hook_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab webhook', afterColumn: 'gitlab_project_id')
+        }
+
+    }
 }

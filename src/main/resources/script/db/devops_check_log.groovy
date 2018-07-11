@@ -1,17 +1,15 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'dba/devops_app_webhook.groovy') {
-    changeSet(author: 'Younger', id: '2018-07-06-create-table') {
-        createTable(tableName: "devops_app_webhook", remarks: 'DevOps 用户表') {
+
+databaseChangeLog(logicalFilePath: 'dba/devops_check_log.groovy') {
+    changeSet(author: 'Younger', id: '2018-07-01-create-table') {
+        createTable(tableName: "devops_check_log", remarks: 'upgrade log') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用ID') {
-                constraints(unique: true)
-            }
-            column(name: 'hook_id', type: 'BIGINT UNSIGNED', remarks: 'webhook Id') {
-                constraints(unique: true)
-            }
+            column(name: 'begin_check_date', type: 'DATETIME', remarks: '开始处理时间')
+            column(name: 'end_check_date', type: 'DATETIME', remarks: '结束处理时间')
+            column(name: 'log', type: 'VARCHAR(5000)', remarks: '内容')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
