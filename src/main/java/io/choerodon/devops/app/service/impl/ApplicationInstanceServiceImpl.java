@@ -230,6 +230,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public ReplaceResult previewValues(String value, Long appVersionId) {
+        String versionValue = applicationVersionRepository.queryValue(appVersionId);
+        ReplaceResult replaceResult = FileUtil.replace(versionValue, FileUtil.getChangeYaml(versionValue, value));
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+        return replaceResult;
+    }
+
+    @Override
     public Boolean create(ApplicationDeployDTO applicationDeployDTO) {
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
         envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
