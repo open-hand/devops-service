@@ -31,8 +31,8 @@ public interface ApplicationRepository {
                                      String params);
 
     Page<ApplicationE> listCodeRepository(Long projectId,
-                                     PageRequest pageRequest,
-                                     String params);
+                                          PageRequest pageRequest,
+                                          String params);
 
     Boolean applicationExist(String uuid);
 
@@ -56,4 +56,5 @@ public interface ApplicationRepository {
     String checkSortIsEmpty(PageRequest pageRequest);
 
     ApplicationE getAppByGitLabId(Long gitLabProjectId);
+
 }

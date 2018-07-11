@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command_log.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'commandId', type: 'BIGINT UNSIGNED', remarks: '操作ID')
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '操作ID')
             column(name: 'log', type: 'TEXT', remarks: '资源日志')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")

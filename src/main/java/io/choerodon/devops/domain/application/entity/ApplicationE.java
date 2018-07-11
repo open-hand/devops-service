@@ -30,6 +30,7 @@ public class ApplicationE {
     private String description;
     private Date lastUpdateDate;
     private String sonarUrl;
+    private Long hookId;
 
     public ApplicationE() {
     }
@@ -212,5 +213,13 @@ public class ApplicationE {
 
     public void initSonarUrl(String sonarUrl) {
         this.sonarUrl = sonarUrl;
+    }
+
+    public Long getHookId() {
+        return hookId;
+    }
+
+    public void initHookId(Long hookId) {
+        this.hookId = hookId;
     }
 }

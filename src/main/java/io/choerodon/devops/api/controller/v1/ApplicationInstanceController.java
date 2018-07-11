@@ -145,21 +145,21 @@ public class ApplicationInstanceController {
     /**
      * 预览values
      *
-     * @param projectId    项目id
-     * @param value        部署value
+     * @param projectId     项目id
+     * @param replaceResult 部署value
      * @return ReplaceResult
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "查询预览value")
-    @GetMapping("/previewValue")
+    @PostMapping("/previewValue")
     public ResponseEntity<ReplaceResult> previewValues(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用ID", required = true)
-            @RequestParam String value,
+            @ApiParam(value = "replaceResult", required = true)
+            @RequestBody ReplaceResult replaceResult,
             @ApiParam(value = "版本ID", required = true)
             @RequestParam Long appVersionId) {
-        return Optional.ofNullable(applicationInstanceService.previewValues(value,appVersionId))
+        return Optional.ofNullable(applicationInstanceService.previewValues(replaceResult, appVersionId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.values.query"));
     }
