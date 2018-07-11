@@ -50,6 +50,8 @@ env:
     SERVICES_SONARQUBE_URL:
     SERVICES_GATEWAY_URL: http://api.example.com
     AGENT_VERSION: 0.5.0.RELEASE
+    SECURITY_BASIC_ENABLE: false
+    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     TEMPLATE_VERSION_MICROSERVICE: 0.7.0
