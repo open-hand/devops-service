@@ -47,4 +47,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_merge_request.groovy') {
             column(name: "target_branch")
         }
     }
+    changeSet(author: 'scp', id: '2018-07-11-create-unique') {
+        createIndex(indexName: "idx_project_request", tableName: "devops_merge_request","unique": true) {
+            column(name: "project_id",type: 'BIGINT UNSIGNED')
+            column(name: "gitlab_merge_request_id",type: 'BIGINT UNSIGNED')
+        }
+    }
 }
