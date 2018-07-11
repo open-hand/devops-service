@@ -167,11 +167,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Long issueId = t.getIssueId();
         if (userE != null) {
             createUserName = userE.getLoginName();
-            if (userE.getImageUrl() != null) {
-                createUserUrl = userE.getImageUrl();
-            } else {
-                createUserUrl = createUserName;
-            }
+            createUserUrl = userE.getImageUrl();
         }
         return new BranchDTO(
                 t,
