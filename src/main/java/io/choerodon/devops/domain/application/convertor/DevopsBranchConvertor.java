@@ -48,8 +48,8 @@ public class DevopsBranchConvertor implements ConvertorI<DevopsBranchE, DevopsBr
 
     @Override
     public DevopsBranchDTO doToDto(DevopsBranchDO dataObject) {
-        DevopsBranchDTO devopsBranchDTO=new DevopsBranchDTO();
-        BeanUtils.copyProperties(dataObject,devopsBranchDTO);
+        DevopsBranchDTO devopsBranchDTO = new DevopsBranchDTO();
+        BeanUtils.copyProperties(dataObject, devopsBranchDTO);
         return devopsBranchDTO;
     }
 }
