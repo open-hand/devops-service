@@ -16,9 +16,13 @@ public class DevopsMergeRequestConvertor implements ConvertorI<DevopsMergeReques
     @Override
     public DevopsMergeRequestDTO entityToDto(DevopsMergeRequestE entity) {
         DevopsMergeRequestDTO devopsMergeRequestDTO = new DevopsMergeRequestDTO();
+
+
         BeanUtils.copyProperties(entity, devopsMergeRequestDTO);
+
         return devopsMergeRequestDTO;
     }
+
 
     @Override
     public DevopsMergeRequestE dtoToEntity(DevopsMergeRequestDTO devopsMergeRequestDTO) {
@@ -36,9 +40,9 @@ public class DevopsMergeRequestConvertor implements ConvertorI<DevopsMergeReques
         devopsMergeRequestE.setState(state);
         String title = devopsMergeRequestDTO.getObjectAttributes().getTitle();
         devopsMergeRequestE.setTitle(title);
-        Date createTime=devopsMergeRequestDTO.getObjectAttributes().getCreatedAt();
+        Date createTime = devopsMergeRequestDTO.getObjectAttributes().getCreatedAt();
         devopsMergeRequestE.setCreatedAt(createTime);
-        Date updateTime=devopsMergeRequestDTO.getObjectAttributes().getUpdatedAt();
+        Date updateTime = devopsMergeRequestDTO.getObjectAttributes().getUpdatedAt();
         devopsMergeRequestE.setUpdatedAt(updateTime);
         return devopsMergeRequestE;
     }
@@ -48,5 +52,12 @@ public class DevopsMergeRequestConvertor implements ConvertorI<DevopsMergeReques
         DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO();
         BeanUtils.copyProperties(entity, devopsMergeRequestDO);
         return devopsMergeRequestDO;
+    }
+
+    @Override
+    public DevopsMergeRequestE doToEntity(DevopsMergeRequestDO dataObject) {
+        DevopsMergeRequestE devopsMergeRequestE = new DevopsMergeRequestE();
+        BeanUtils.copyProperties(dataObject, devopsMergeRequestE);
+        return devopsMergeRequestE;
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
-import io.choerodon.devops.domain.application.entity.gitlab.MergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
@@ -27,11 +26,12 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
     }
 
     @Override
-    public List<MergeRequestE> getBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
-        DevopsMergeRequestDO mergeRequestDO = new DevopsMergeRequestDO();
-        mergeRequestDO.setSourceBranch(sourceBranchName);
-        mergeRequestDO.setProjectId(gitLabProjectId);
-        return ConvertHelper.convertList(devopsMergeRequestMapper.select(mergeRequestDO), MergeRequestE.class);
+    public List<DevopsMergeRequestE> getBySourceBranch(String sourceBranchName, Long gitLabProjectId) {
+        DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO();
+        devopsMergeRequestDO.setSourceBranch(sourceBranchName);
+        devopsMergeRequestDO.setProjectId(gitLabProjectId);
+        return ConvertHelper.convertList(devopsMergeRequestMapper
+                .select(devopsMergeRequestDO), DevopsMergeRequestE.class);
     }
 
     @Override

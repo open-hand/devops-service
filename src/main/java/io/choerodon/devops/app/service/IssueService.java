@@ -3,8 +3,8 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.api.dto.CustomMergeRequestDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.MergeRequestDTO;
 
 public interface IssueService {
 
@@ -12,6 +12,6 @@ public interface IssueService {
 
     List<DevopsBranchDTO> getBranchsByIssueId(Long issueId);
 
-    List<MergeRequestDTO> getMergeRequestsByIssueId(Long issueId);
+    List<CustomMergeRequestDTO> getMergeRequestsByIssueId(Long issueId);
 
 }

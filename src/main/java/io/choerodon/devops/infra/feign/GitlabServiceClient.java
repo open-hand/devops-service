@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
@@ -133,7 +132,7 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/branch")
     ResponseEntity<List<CommitDO>> getCommits(@PathVariable("projectId") Integer projectId,
                                               @RequestParam("branchName") String branchName,
-                                              @RequestParam("since") Date since);
+                                              @RequestParam("since") String since);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}/jobs")
     ResponseEntity<List<JobDO>> listJobs(@PathVariable("projectId") Integer projectId,

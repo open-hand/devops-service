@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RestController;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.CustomMergeRequestDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.app.service.IssueService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -59,7 +59,7 @@ public class IssueController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest列表")
     @GetMapping("/merge_request/list")
-    public ResponseEntity<List<MergeRequestDTO>> getMergeRequestsByIssueId(
+    public ResponseEntity<List<CustomMergeRequestDTO>> getMergeRequestsByIssueId(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "issueID")
