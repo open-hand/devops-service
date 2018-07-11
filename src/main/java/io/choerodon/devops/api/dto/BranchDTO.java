@@ -3,7 +3,6 @@ package io.choerodon.devops.api.dto;
 import java.util.Date;
 
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 
 public class BranchDTO {
     private String name;
@@ -24,7 +23,10 @@ public class BranchDTO {
     public BranchDTO() {
     }
 
-    public BranchDTO(DevopsBranchDO branchDO,String lastCommitUrl, Date createDate,
+    /**
+     * construct
+     */
+    public BranchDTO(DevopsBranchDO branchDO, String lastCommitUrl, Date createDate,
                      String createUserUrl, Long issueId,
                      String issueCode, String issueName,
                      String commitUserUrl, String typeCode,

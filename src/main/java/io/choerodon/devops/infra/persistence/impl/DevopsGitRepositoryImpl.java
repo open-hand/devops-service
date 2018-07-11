@@ -212,11 +212,23 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public void updateBranch(Long appId, DevopsBranchE devopsBranchE) {
+    public void updateBranchIssue(Long appId, DevopsBranchE devopsBranchE) {
         DevopsBranchDO devopsBranchDO = devopsBranchMapper
                 .queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
         devopsBranchDO.setIssueId(devopsBranchE.getIssueId());
         devopsBranchMapper.updateByPrimaryKey(devopsBranchDO);
+    }
+
+    @Override
+    public void updateBranchLastCommit(DevopsBranchE devopsBranchE) {
+        DevopsBranchDO branchDO = devopsBranchMapper
+                .queryByAppAndBranchName(devopsBranchE.getApplicationE().getId(), devopsBranchE.getBranchName());
+        branchDO.setLastCommit(devopsBranchE.getLastCommit());
+        branchDO.setLastCommitDate(devopsBranchE.getLastCommitDate());
+        branchDO.setLastCommitMsg(devopsBranchE.getLastCommitMsg());
+        branchDO.setLastCommitUser(devopsBranchE.getLastCommitUser());
+        devopsBranchMapper.updateByPrimaryKey(branchDO);
+
     }
 
     @Override

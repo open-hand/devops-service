@@ -167,7 +167,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationES.getContent().parallelStream()
                 .forEach(t -> {
-                    if (t.getGitlabProjectE().getId() != null && devopsAppWebHookRepository.queryByAppId(t.getId()) == null) {
+                    if (t.getGitlabProjectE().getId() != null
+                            && devopsAppWebHookRepository.queryByAppId(t.getId()) == null) {
                         syncWebHook(t);
                     }
                     if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
@@ -175,12 +176,24 @@ public class ApplicationServiceImpl implements ApplicationService {
                                 + organization.getCode() + "-" + projectE.getCode() + "/"
                                 + t.getCode() + ".git");
                         if (!sonarqubeUrl.equals("")) {
-                            Integer result = HttpClientUtil.getSonar(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/" + "api/project_links/search?projectKey=" + organization.getCode() + "-" + projectE.getCode() + ":" + t.getCode());
+                            Integer result = HttpClientUtil.getSonar(
+                                    sonarqubeUrl.endsWith("/")
+                                            ? sonarqubeUrl
+                                            : String.format(
+                                                    "%s/api/project_links/search?projectKey=%s-%s:%s",
+                                            sonarqubeUrl,
+                                            organization.getCode(),
+                                            projectE.getCode(),
+                                            t.getCode()));
                             if (result.equals(HttpStatus.OK.value())) {
-                                t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
-                                        + "dashboard?id="
-                                        + organization.getCode() + "-" + projectE.getCode() + ":"
-                                        + t.getCode());
+                                t.initSonarUrl(sonarqubeUrl.endsWith("/")
+                                        ? sonarqubeUrl
+                                        : String.format(
+                                                "%s/dashboard?id=%s-%s:%s",
+                                        sonarqubeUrl,
+                                        organization.getCode(),
+                                        projectE.getCode(),
+                                        t.getCode()));
                             }
                         }
                     }
@@ -322,7 +335,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             uri += "devops/webhook";
             projectHook.setUrl(uri);
             DevopsAppWebHookE devopsAppWebHookE = new DevopsAppWebHookE();
-            devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook).getId());
+            devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(
+                    gitlabProjectEventDTO.getGitlabProjectId(),
+                    gitlabProjectEventDTO.getUserId(), projectHook).getId());
             devopsAppWebHookE.initApplicationE(applicationE.getId());
             devopsAppWebHookRepository.createHook(devopsAppWebHookE);
         } catch (Exception e) {
@@ -377,7 +392,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
 
     @Async
-    private void syncWebHook(ApplicationE applicationE) {
+    void syncWebHook(ApplicationE applicationE) {
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(applicationE.getGitlabProjectE().getId());
@@ -386,7 +401,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         uri += "devops/webhook";
         projectHook.setUrl(uri);
         DevopsAppWebHookE devopsAppWebHookE = new DevopsAppWebHookE();
-        devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(applicationE.getGitlabProjectE().getId(), ADMIN, projectHook).getId());
+        devopsAppWebHookE.initProjectHook(gitlabRepository.createWebHook(
+                applicationE.getGitlabProjectE().getId(), ADMIN, projectHook).getId());
         devopsAppWebHookE.initApplicationE(applicationE.getId());
         devopsAppWebHookRepository.createHook(devopsAppWebHookE);
     }

@@ -52,7 +52,9 @@ public interface DevopsGitRepository {
 
     DevopsBranchE queryByAppAndBranchName(Long appId, String branchName);
 
-    void updateBranch(Long appId, DevopsBranchE devopsBranchE);
+    void updateBranchIssue(Long appId, DevopsBranchE devopsBranchE);
+
+    void updateBranchLastCommit(DevopsBranchE devopsBranchE);
 
     List<DevopsBranchE> listDevopsBranchesByAppId(Long appId);
 

@@ -43,6 +43,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
+    private static final String REF_HEADS = "refs/heads/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
 
@@ -147,7 +148,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void updateBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
-        devopsGitRepository.updateBranch(applicationId, devopsBranchE);
+        devopsGitRepository.updateBranchIssue(applicationId, devopsBranchE);
     }
 
     @Override
@@ -233,7 +234,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void commitBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
         try {
-            String branchName = pushWebHookDTO.getRef().replaceFirst("refs/heads/", "");
+            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
             DevopsBranchE branchE = devopsGitRepository.queryByAppAndBranchName(appId, branchName);
             String lastCommit = pushWebHookDTO.getAfter();
             Optional<CommitDTO> lastCommitOptional
@@ -246,7 +247,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             branchE.setLastCommitDate(lastCommitDTO.getTimestamp());
             branchE.setLastCommitMsg(lastCommitDTO.getMessage());
             branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
-            devopsGitRepository.updateBranch(appId, branchE);
+            devopsGitRepository.updateBranchLastCommit(branchE);
         } catch (Exception e) {
             LOGGER.info("error.update.branch");
         }
@@ -255,7 +256,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void deleteBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
         try {
-            String branchName = pushWebHookDTO.getRef().replaceFirst("refs/heads/", "");
+            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
             devopsGitRepository.deleteDevopsBranch(appId, branchName);
         } catch (Exception e) {
             LOGGER.info("error.devops.branch.delete");
@@ -271,7 +272,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     pushWebHookDTO.getProjectId(),
                     lastCommit,
                     userId.intValue());
-            String branchName = pushWebHookDTO.getRef().replaceFirst("refs/heads/", "");
+            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
             Boolean branchExist = devopsGitRepository.queryByAppAndBranchName(appId, branchName) != null;
             if (!branchExist) {
                 DevopsBranchE devopsBranchE = new DevopsBranchE();
