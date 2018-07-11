@@ -177,18 +177,8 @@
                 WHERE
                     id = #{appVersionId}
             )
-        AND unix_timestamp(creation_date) > unix_timestamp(
-            (
-                SELECT
-                    creation_date
-                FROM
-                    devops_app_version
-                WHERE
-                    id = #{appVersionId}
-            )
-        )
-        ORDER BY
-            creation_date DESC
+        AND id > #{appVersionId}
+        ORDER BY id DESC
     </select>
     <select id="checkProIdAndVerId" resultType="java.lang.Integer">
         SELECT
