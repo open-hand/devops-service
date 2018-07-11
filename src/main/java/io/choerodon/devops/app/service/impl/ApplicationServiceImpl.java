@@ -21,6 +21,7 @@ import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
@@ -282,10 +283,23 @@ public class ApplicationServiceImpl implements ApplicationService {
                     gitlabUserE.getUsername(), accessToken, teamplateType);
             gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
+            CommitE commitE;
+            try {
+                commitE = devopsGitRepository.getCommit(
+                        gitlabProjectEventDTO.getGitlabProjectId(), MASTER, gitlabProjectEventDTO.getUserId());
+            } catch (Exception e) {
+                commitE = new CommitE();
+            }
             DevopsBranchE devopsBranchE = new DevopsBranchE();
             devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectEventDTO.getUserId()));
-            devopsBranchE.setApplicationE(new ApplicationE(applicationE.getId()));
+            devopsBranchE.setApplicationE(applicationE);
             devopsBranchE.setBranchName(MASTER);
+            devopsBranchE.setCheckoutCommit(commitE.getId());
+            devopsBranchE.setCheckoutDate(commitE.getTimestamp());
+            devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectEventDTO.getUserId()));
+            devopsBranchE.setLastCommitMsg(commitE.getMessage());
+            devopsBranchE.setLastCommitDate(commitE.getTimestamp());
+            devopsBranchE.setLastCommit(commitE.getId());
             devopsGitRepository.createDevopsBranch(devopsBranchE);
         }
         try {
