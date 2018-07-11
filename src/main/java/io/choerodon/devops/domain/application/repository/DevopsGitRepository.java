@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
+import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -27,13 +28,17 @@ public interface DevopsGitRepository {
 
     Integer getGitlabUserId();
 
+    Long getUserIdByGitlabUserId(Long gitLabUserId);
+
     String getGitlabUrl(Long projectId, Long appId);
 
     void createDevopsBranch(DevopsBranchE devopsBranchE);
 
     BranchDO createBranch(Integer projectId, String branchName, String baseBranch, Integer userId);
 
-    List<BranchDO> listBranches(Integer projectId, String path, Integer userId);
+    List<BranchDO> listGitLabBranches(Integer projectId, String path, Integer userId);
+
+    List<DevopsBranchDO> listBranches(Long appId);
 
     void deleteBranch(Integer projectId, String branchName, Integer userId);
 
@@ -47,7 +52,9 @@ public interface DevopsGitRepository {
 
     DevopsBranchE queryByAppAndBranchName(Long appId, String branchName);
 
-    void updateBranch(Long appId, DevopsBranchE devopsBranchE);
+    void updateBranchIssue(Long appId, DevopsBranchE devopsBranchE);
+
+    void updateBranchLastCommit(DevopsBranchE devopsBranchE);
 
     List<DevopsBranchE> listDevopsBranchesByAppId(Long appId);
 

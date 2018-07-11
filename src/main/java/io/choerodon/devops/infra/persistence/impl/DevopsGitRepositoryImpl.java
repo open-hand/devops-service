@@ -93,6 +93,15 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
+    public Long getUserIdByGitlabUserId(Long gitLabUserId) {
+        try {
+            return userAttrRepository.queryUserIdByGitlabUserId(gitLabUserId);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @Override
     public String getGitlabUrl(Long projectId, Long appId) {
         ApplicationE applicationE = applicationRepository.query(appId);
         if (applicationE.getGitlabProjectE() != null && applicationE.getGitlabProjectE().getId() != null) {
@@ -117,7 +126,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public List<BranchDO> listBranches(Integer projectId, String path, Integer userId) {
+    public List<BranchDO> listGitLabBranches(Integer projectId, String path, Integer userId) {
         ResponseEntity<List<BranchDO>> responseEntity = gitlabServiceClient.listBranches(projectId, userId);
         if (responseEntity.getStatusCode() != HttpStatus.OK) {
             throw new CommonException("error.branch.get");
@@ -126,6 +135,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         branches.forEach(t -> t.getCommit().setUrl(
                 String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId())));
         return branches;
+    }
+
+    @Override
+    public List<DevopsBranchDO> listBranches(Long appId) {
+        DevopsBranchDO branchDO = new DevopsBranchDO();
+        branchDO.setAppId(appId);
+        branchDO.setDeleted(false);
+        return devopsBranchMapper.select(branchDO);
     }
 
     @Override
@@ -195,11 +212,23 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public void updateBranch(Long appId, DevopsBranchE devopsBranchE) {
+    public void updateBranchIssue(Long appId, DevopsBranchE devopsBranchE) {
         DevopsBranchDO devopsBranchDO = devopsBranchMapper
                 .queryByAppAndBranchName(appId, devopsBranchE.getBranchName());
         devopsBranchDO.setIssueId(devopsBranchE.getIssueId());
         devopsBranchMapper.updateByPrimaryKey(devopsBranchDO);
+    }
+
+    @Override
+    public void updateBranchLastCommit(DevopsBranchE devopsBranchE) {
+        DevopsBranchDO branchDO = devopsBranchMapper
+                .queryByAppAndBranchName(devopsBranchE.getApplicationE().getId(), devopsBranchE.getBranchName());
+        branchDO.setLastCommit(devopsBranchE.getLastCommit());
+        branchDO.setLastCommitDate(devopsBranchE.getLastCommitDate());
+        branchDO.setLastCommitMsg(devopsBranchE.getLastCommitMsg());
+        branchDO.setLastCommitUser(devopsBranchE.getLastCommitUser());
+        devopsBranchMapper.updateByPrimaryKey(branchDO);
+
     }
 
     @Override

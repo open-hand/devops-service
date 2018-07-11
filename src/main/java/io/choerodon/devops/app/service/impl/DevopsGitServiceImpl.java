@@ -1,9 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -11,10 +15,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.BranchDTO;
-import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.api.dto.TagDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
@@ -28,6 +29,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -41,6 +43,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
+    private static final String REF_HEADS = "refs/heads/";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -93,9 +98,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO.getBranchName(),
                 devopsBranchDTO.getOriginBranch(),
                 getGitlabUserId());
-        devopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
-        devopsBranchE.setCheckoutCommit(branchDO.getCommit().getShortId());
-        devopsBranchE.setUserId(TypeUtil.objToLong(getGitlabUserId()));
+        CommitE commitE = branchDO.getCommit();
+        Date checkoutDate = commitE.getCommittedDate();
+        String checkoutSha = commitE.getId();
+        Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
+        devopsBranchE.setCheckoutDate(checkoutDate);
+        devopsBranchE.setCheckoutCommit(checkoutSha);
+        devopsBranchE.setUserId(gitLabUser);
+
+        devopsBranchE.setLastCommitDate(checkoutDate);
+        devopsBranchE.setLastCommit(checkoutSha);
+        devopsBranchE.setLastCommitMsg(commitE.getMessage());
+        devopsBranchE.setLastCommitUser(gitLabUser);
         devopsGitRepository.createDevopsBranch(devopsBranchE);
     }
 
@@ -107,36 +121,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
-        Integer gitLabId = devopsGitRepository.getGitLabId(applicationId);
-        List<BranchDO> branches =
-                devopsGitRepository.listBranches(gitLabId, path, getGitlabUserId());
-        return branches.stream().map(t -> {
-            if (!t.getName().equals("master")) {
-                DevopsBranchE devopsBranchE =
-                        devopsGitRepository.queryByBranchNameAndCommit(t.getName(), t.getCommit().getShortId());
-                if (devopsBranchE == null) {
-                    devopsGitRepository.createDevopsBranch(new DevopsBranchE(
-                            t.getCommit().getShortId(),
-                            t.getName(),
-                            new ApplicationE(applicationId),
-                            t.getCommit().getCommittedDate()));
-                }
-            }
-            DevopsBranchE devopsBranchE = devopsGitRepository.queryByAppAndBranchName(applicationId, t.getName());
-            UserE userE = null;
+        List<DevopsBranchDO> branches =
+                devopsGitRepository.listBranches(applicationId);
+        return branches.parallelStream().map(t -> {
             ProjectInfo projectInfo = null;
             Issue issue = null;
-            if (devopsBranchE != null) {
-                if (devopsBranchE.getIssueId() != null) {
-                    issue = agileRepository.queryIssue(projectId, devopsBranchE.getIssueId());
-                    projectInfo = agileRepository.queryProjectInfo(projectId);
-
-                }
-                userE = iamRepository.queryByProjectAndId(projectId, devopsBranchE.getUserId());
+            if (t.getIssueId() != null) {
+                issue = agileRepository.queryIssue(projectId, t.getIssueId());
+                projectInfo = agileRepository.queryProjectInfo(projectId);
             }
-            UserE commitUserE = iamRepository.queryByLoginName(t.getCommit()
-                    .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
-            return getBranchDTO(t, commitUserE, userE, devopsBranchE, projectInfo, issue);
+            UserE userE = iamRepository.queryByProjectAndId(
+                    projectId, devopsGitRepository.getUserIdByGitlabUserId(t.getUserId()));
+            UserE commitUserE = iamRepository.queryByProjectAndId(
+                    projectId, devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
+            String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
+            return getBranchDTO(t, commitUrl, commitUserE, userE, projectInfo, issue);
         }).collect(Collectors.toList());
     }
 
@@ -149,7 +148,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     public void updateBranch(Long projectId, Long applicationId, DevopsBranchDTO devopsBranchDTO) {
         DevopsBranchE devopsBranchE = ConvertHelper.convert(devopsBranchDTO, DevopsBranchE.class);
-        devopsGitRepository.updateBranch(applicationId, devopsBranchE);
+        devopsGitRepository.updateBranchIssue(applicationId, devopsBranchE);
     }
 
     @Override
@@ -160,13 +159,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private BranchDTO getBranchDTO(BranchDO t, UserE commitUserE, UserE userE,
-                                   DevopsBranchE devopsBranchE,
+    private BranchDTO getBranchDTO(DevopsBranchDO t, String lastCommitUrl, UserE commitUserE, UserE userE,
                                    ProjectInfo projectInfo,
                                    Issue issue) {
         String createUserUrl = null;
         String createUserName = null;
-        Long issueId = null;
+        Long issueId = t.getIssueId();
         if (userE != null) {
             createUserName = userE.getLoginName();
             if (userE.getImageUrl() != null) {
@@ -175,12 +173,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 createUserUrl = createUserName;
             }
         }
-        if (devopsBranchE != null && devopsBranchE.getIssueId() != null) {
-            issueId = devopsBranchE.getIssueId();
-        }
         return new BranchDTO(
                 t,
-                devopsBranchE == null ? null : devopsBranchE.getCreationDate(),
+                lastCommitUrl,
+                t.getCreationDate(),
                 createUserUrl,
                 issueId,
                 projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(),
@@ -231,42 +227,70 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             createBranchSync(pushWebHookDTO, applicationE.getId());
         } else if (NO_COMMIT_SHA.equals(pushWebHookDTO.getAfter())) {
             deleteBranchSync(pushWebHookDTO, applicationE.getId());
+        } else {
+            commitBranchSync(pushWebHookDTO, applicationE.getId());
         }
-        // commitBranchSync(pushWebHookDTO, applicationE.getId())
+    }
+
+    private void commitBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
+        try {
+            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
+            DevopsBranchE branchE = devopsGitRepository.queryByAppAndBranchName(appId, branchName);
+            String lastCommit = pushWebHookDTO.getAfter();
+            Optional<CommitDTO> lastCommitOptional
+                    = pushWebHookDTO.getCommits().stream().filter(t -> lastCommit.equals(t.getId())).findFirst();
+            CommitDTO lastCommitDTO = new CommitDTO();
+            if (lastCommitOptional.isPresent()) {
+                lastCommitDTO = lastCommitOptional.get();
+            }
+            branchE.setLastCommit(lastCommit);
+            branchE.setLastCommitDate(lastCommitDTO.getTimestamp());
+            branchE.setLastCommitMsg(lastCommitDTO.getMessage());
+            branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
+            devopsGitRepository.updateBranchLastCommit(branchE);
+        } catch (Exception e) {
+            LOGGER.info("error.update.branch");
+        }
+
     }
 
     private void deleteBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
         try {
-            String branchName = pushWebHookDTO.getRef().replaceFirst("refs/heads/", "");
+            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
             devopsGitRepository.deleteDevopsBranch(appId, branchName);
         } catch (Exception e) {
-            throw new CommonException("error.devops.branch.delete");
+            LOGGER.info("error.devops.branch.delete");
         }
     }
 
     private void createBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
-        String lastCommit = pushWebHookDTO.getAfter();
-        Long userId = pushWebHookDTO.getUserId().longValue();
-        CommitE commitE = devopsGitRepository.getCommit(
-                pushWebHookDTO.getProjectId(),
-                lastCommit,
-                userId.intValue());
-        String branchName = pushWebHookDTO.getRef().replaceFirst("refs/heads/", "");
-        Boolean branchExist;
         try {
-            branchExist = devopsGitRepository.queryByAppAndBranchName(appId, branchName) != null;
-        } catch (Exception e) {
-            branchExist = false;
-        }
-        if (!branchExist) {
-            DevopsBranchE devopsBranchE = new DevopsBranchE();
-            devopsBranchE.setUserId(userId);
-            devopsBranchE.initApplicationE(appId);
-            devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
-            devopsBranchE.setCheckoutCommit(lastCommit);
-            devopsBranchE.setBranchName(branchName);
+            String lastCommit = pushWebHookDTO.getAfter();
+            Long userId = pushWebHookDTO.getUserId().longValue();
 
-            devopsGitRepository.createDevopsBranch(devopsBranchE);
+            CommitE commitE = devopsGitRepository.getCommit(
+                    pushWebHookDTO.getProjectId(),
+                    lastCommit,
+                    userId.intValue());
+            String branchName = pushWebHookDTO.getRef().replaceFirst(REF_HEADS, "");
+            Boolean branchExist = devopsGitRepository.queryByAppAndBranchName(appId, branchName) != null;
+            if (!branchExist) {
+                DevopsBranchE devopsBranchE = new DevopsBranchE();
+                devopsBranchE.setUserId(userId);
+                devopsBranchE.initApplicationE(appId);
+                devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
+                devopsBranchE.setCheckoutCommit(lastCommit);
+                devopsBranchE.setBranchName(branchName);
+
+                devopsBranchE.setLastCommitUser(userId);
+                devopsBranchE.setLastCommit(lastCommit);
+                devopsBranchE.setLastCommitMsg(commitE.getMessage());
+                devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
+
+                devopsGitRepository.createDevopsBranch(devopsBranchE);
+            }
+        } catch (Exception e) {
+            LOGGER.info("error.create.branch");
         }
     }
 }
