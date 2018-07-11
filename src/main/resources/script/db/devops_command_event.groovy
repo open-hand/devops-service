@@ -7,7 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_command_event.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-            column(name: 'commandId', type: 'BIGINT UNSIGNED', remarks: 'command Id')
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command Id')
             column(name: 'type', type: 'VARCHAR(64)', remarks: '类型')
             column(name: 'name', type: 'VARCHAR(64)', remarks: 'name')
             column(name: 'message', type: 'VARCHAR(2000)', remarks: '信息')
