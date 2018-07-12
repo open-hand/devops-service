@@ -26,8 +26,7 @@ public class DevopsBranchRepositoryImpl implements DevopsBranchRepository {
     public List<DevopsBranchDO> getDevopsBranchsByIssueId(Long issueId) {
         DevopsBranchDO queryDevopsBranchDO = new DevopsBranchDO();
         queryDevopsBranchDO.setIssueId(issueId);
-        List<DevopsBranchDO> devopsBranchDOs = devopsBranchMapper.select(queryDevopsBranchDO);
-        return devopsBranchDOs;
+        return devopsBranchMapper.select(queryDevopsBranchDO);
     }
 
 }

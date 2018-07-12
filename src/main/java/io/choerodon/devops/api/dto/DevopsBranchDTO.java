@@ -10,6 +10,7 @@ public class DevopsBranchDTO {
     private Long issueId;
     private String branchName;
     private List<CommitDTO> commits;
+    private List<CustomMergeRequestDTO> mergeRequests;
 
     public String getOriginBranch() {
         return originBranch;
@@ -57,5 +58,13 @@ public class DevopsBranchDTO {
 
     public void setCommits(List<CommitDTO> commits) {
         this.commits = commits;
+    }
+
+    public List<CustomMergeRequestDTO> getMergeRequests() {
+        return mergeRequests;
+    }
+
+    public void setMergeRequests(List<CustomMergeRequestDTO> mergeRequests) {
+        this.mergeRequests = mergeRequests;
     }
 }
