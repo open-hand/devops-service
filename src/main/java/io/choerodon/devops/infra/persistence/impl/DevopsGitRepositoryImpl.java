@@ -17,6 +17,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.AuthorDTO;
+import io.choerodon.devops.api.dto.CommitDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.*;
@@ -29,6 +30,7 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagNodeDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -295,6 +297,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         mergeRequestDTO.setIid(devopsMergeRequestE.getGitlabMergeRequestId().intValue());
         Long authorUserId = devopsGitRepository
                 .getUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
+
+        Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
+        Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
+        List<CommitDO> commitDOS = gitlabServiceClient.listCommits(
+                devopsMergeRequestE.getProjectId().intValue(),
+                gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
+
+        mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS,CommitDTO.class));
         UserE authorUser = iamRepository.queryByProjectAndId(projectId, authorUserId);
         if (authorUser != null) {
             AuthorDTO authorDTO = new AuthorDTO();

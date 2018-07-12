@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
-import io.choerodon.devops.domain.application.entity.gitlab.MergeRequestE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsMergeRequestRepository {
