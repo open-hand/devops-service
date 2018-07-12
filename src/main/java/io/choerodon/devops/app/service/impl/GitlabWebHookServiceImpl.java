@@ -47,12 +47,20 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
     private void saveDevopsMergeRequest(DevopsMergeRequestDTO devopsMergeRequestDTO) {
         DevopsMergeRequestE devopsMergeRequestE = ConvertHelper.convert(devopsMergeRequestDTO,
                 DevopsMergeRequestE.class);
-        Integer index = devopsMergeRequestRepository.create(devopsMergeRequestE);
-        if (index == 0) {
-            Long projectId = devopsMergeRequestDTO.getProject().getId();
-            Long gitlabMergeRequestId = devopsMergeRequestDTO.getObjectAttributes().getIid();
-            if (devopsMergeRequestRepository.queryByAppIdAndGitlabId(projectId, gitlabMergeRequestId) == 0) {
+        Long projectId = devopsMergeRequestDTO.getProject().getId();
+        Long gitlabMergeRequestId = devopsMergeRequestDTO.getObjectAttributes().getIid();
+        Long mergeRequestId = devopsMergeRequestRepository
+                .queryByAppIdAndGitlabId(projectId, gitlabMergeRequestId).getId();
+        if (mergeRequestId == null) {
+            Integer index = devopsMergeRequestRepository.create(devopsMergeRequestE);
+            if (index == 0) {
                 throw new CommonException("error.save.merge.request");
+            }
+        } else {
+            devopsMergeRequestE.setId(mergeRequestId);
+            Integer temp = devopsMergeRequestRepository.update(devopsMergeRequestE);
+            if (temp == 0) {
+                throw new CommonException("error.update.merge.request");
             }
         }
     }
