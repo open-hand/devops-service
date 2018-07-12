@@ -35,8 +35,16 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
     }
 
     @Override
-    public Integer queryByAppIdAndGitlabId(Long applicationId, Long gitlabMergeRequestId) {
-        return devopsMergeRequestMapper.queryByAppIdAndGitlabId(applicationId, gitlabMergeRequestId);
+    public DevopsMergeRequestE queryByAppIdAndGitlabId(Long projectId, Long gitlabMergeRequestId) {
+        DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO();
+        devopsMergeRequestDO.setProjectId(projectId);
+        devopsMergeRequestDO.setGitlabMergeRequestId(gitlabMergeRequestId);
+        return ConvertHelper.convert(devopsMergeRequestMapper.selectOne(devopsMergeRequestDO),DevopsMergeRequestE.class);
     }
 
+    @Override
+    public Integer update(DevopsMergeRequestE devopsMergeRequestE) {
+        DevopsMergeRequestDO devopsMergeRequestDO = ConvertHelper.convert(devopsMergeRequestE,DevopsMergeRequestDO.class);
+        return devopsMergeRequestMapper.updateByPrimaryKey(devopsMergeRequestDO);
+    }
 }
