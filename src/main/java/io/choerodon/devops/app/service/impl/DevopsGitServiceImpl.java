@@ -196,7 +196,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (gitLabProjectId == null) {
             throw new CommonException("error.gitlabProjectId.not.exists");
         }
-        return devopsGitRepository.getMergeRequestList(gitLabProjectId, state, pageRequest);
+        return devopsGitRepository.getMergeRequestList(projectId, gitLabProjectId, state, pageRequest);
     }
 
     @Override

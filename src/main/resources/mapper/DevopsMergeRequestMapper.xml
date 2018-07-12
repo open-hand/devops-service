@@ -3,12 +3,24 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper">
     <select id="queryByAppIdAndGitlabId" resultType="java.lang.Integer">
-    SELECT
+        SELECT
         COUNT(1)
-    FROM
+        FROM
         devops_merge_request
-    WHERE
+        WHERE
         project_id = #{projectId}
-    AND gitlab_merge_request_id = #{gitlabMergeRequestId}
+        AND gitlab_merge_request_id = #{gitlabMergeRequestId}
     </select>
+    <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO">
+        SELECT
+        *
+        FROM
+        devops_merge_request
+        WHERE
+        project_id = #{projectId}
+        AND state = #{state}
+    </select>
+
 </mapper>
+
+
