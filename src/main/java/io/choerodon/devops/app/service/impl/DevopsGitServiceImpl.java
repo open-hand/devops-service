@@ -30,6 +30,7 @@ import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.AuthorDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -248,7 +249,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             branchE.setLastCommit(lastCommit);
             branchE.setLastCommitDate(lastCommitDTO.getCommittedDate());
             branchE.setLastCommitMsg(lastCommitDTO.getMessage());
-            branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
+            branchE.setLastCommitUser(lastCommitDTO.getAuthor().getId().longValue());
             devopsGitRepository.updateBranchLastCommit(branchE);
         } catch (Exception e) {
             LOGGER.info("error.update.branch");
@@ -284,7 +285,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setCheckoutCommit(lastCommit);
                 devopsBranchE.setBranchName(branchName);
 
-                devopsBranchE.setLastCommitUser(userId);
+                devopsBranchE.setLastCommitUser(commitE.getAuthor().getId().longValue());
                 devopsBranchE.setLastCommit(lastCommit);
                 devopsBranchE.setLastCommitMsg(commitE.getMessage());
                 devopsBranchE.setLastCommitDate(commitE.getCommittedDate());

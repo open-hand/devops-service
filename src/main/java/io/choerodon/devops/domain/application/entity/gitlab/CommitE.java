@@ -8,7 +8,7 @@ import java.util.List;
  */
 public class CommitE {
 
-    private AuthorE author;
+    private AbstractUserE author;
     private Date authoredDate;
     private String authorEmail;
     private String authorName;
@@ -26,11 +26,11 @@ public class CommitE {
     private String title;
     private String url;
 
-    public AuthorE getAuthor() {
+    public AbstractUserE getAuthor() {
         return author;
     }
 
-    public void setAuthor(AuthorE author) {
+    public void setAuthor(AbstractUserE author) {
         this.author = author;
     }
 
