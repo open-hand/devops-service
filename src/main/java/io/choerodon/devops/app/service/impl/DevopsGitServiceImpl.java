@@ -246,7 +246,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 lastCommitDTO = lastCommitOptional.get();
             }
             branchE.setLastCommit(lastCommit);
-            branchE.setLastCommitDate(lastCommitDTO.getTimestamp());
+            branchE.setLastCommitDate(lastCommitDTO.getCommittedDate());
             branchE.setLastCommitMsg(lastCommitDTO.getMessage());
             branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
             devopsGitRepository.updateBranchLastCommit(branchE);
