@@ -249,7 +249,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             branchE.setLastCommit(lastCommit);
             branchE.setLastCommitDate(lastCommitDTO.getCommittedDate());
             branchE.setLastCommitMsg(lastCommitDTO.getMessage());
-            branchE.setLastCommitUser(lastCommitDTO.getAuthor().getId().longValue());
+            branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
             devopsGitRepository.updateBranchLastCommit(branchE);
         } catch (Exception e) {
             LOGGER.info("error.update.branch");
@@ -285,7 +285,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setCheckoutCommit(lastCommit);
                 devopsBranchE.setBranchName(branchName);
 
-                devopsBranchE.setLastCommitUser(commitE.getAuthor().getId().longValue());
+                devopsBranchE.setLastCommitUser(userId);
                 devopsBranchE.setLastCommit(lastCommit);
                 devopsBranchE.setLastCommitMsg(commitE.getMessage());
                 devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
