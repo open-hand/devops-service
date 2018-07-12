@@ -1075,8 +1075,8 @@ public class FileUtil {
     }
 
 
-    public static String getChangeYaml(String oldyam1, String newYaml) {
-        Map<String, Object> map1 = (Map<String, Object>) yaml.load(oldyam1);
+    public static String getChangeYaml(String oldYam1, String newYaml) {
+        Map<String, Object> map1 = (Map<String, Object>) yaml.load(oldYam1);
         Map<String, Object> map2 = (Map<String, Object>) yaml.load(newYaml);
         List<String> primaryKeys = getPrimaryKey(map1);
         List<String> newprimaryKeys = getPrimaryKey(map2);
