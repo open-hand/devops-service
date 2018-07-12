@@ -15,6 +15,7 @@ public class BranchDTO {
     private String commitUserName;
     private String createUserUrl;
     private String createUserName;
+    private String createUserRealName;
     private Long issueId;
     private String issueCode;
     private String issueName;
@@ -30,7 +31,7 @@ public class BranchDTO {
                      String createUserUrl, Long issueId,
                      String issueCode, String issueName,
                      String commitUserUrl, String typeCode,
-                     String commitUserName, String createUserName) {
+                     String commitUserName, String createUserName, String realName) {
         this.name = branchDO.getBranchName();
         this.sha = branchDO.getLastCommit();
         this.commitContent = branchDO.getLastCommitMsg();
@@ -45,6 +46,7 @@ public class BranchDTO {
         this.typeCode = typeCode;
         this.commitUserName = commitUserName;
         this.createUserName = createUserName;
+        this.createUserRealName = realName;
     }
 
     public String getName() {
@@ -157,5 +159,13 @@ public class BranchDTO {
 
     public void setCommitDate(Date commitDate) {
         this.commitDate = commitDate;
+    }
+
+    public String getCreateUserRealName() {
+        return createUserRealName;
+    }
+
+    public void setCreateUserRealName(String createUserRealName) {
+        this.createUserRealName = createUserRealName;
     }
 }

@@ -164,10 +164,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                    Issue issue) {
         String createUserUrl = null;
         String createUserName = null;
+        String createUserRealName = null;
         Long issueId = t.getIssueId();
         if (userE != null) {
             createUserName = userE.getLoginName();
             createUserUrl = userE.getImageUrl();
+            createUserRealName = userE.getRealName();
         }
         if (commitUserE == null) {
             commitUserE = new UserE();
@@ -183,7 +185,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 commitUserE.getImageUrl(),
                 issue == null ? null : issue.getTypeCode(),
                 commitUserE.getLoginName(),
-                createUserName);
+                createUserName,
+                createUserRealName);
     }
 
     @Override
