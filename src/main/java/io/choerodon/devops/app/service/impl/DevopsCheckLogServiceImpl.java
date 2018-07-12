@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.DevopsCheckLogService;
@@ -26,6 +27,7 @@ import io.choerodon.devops.infra.mapper.ApplicationMapper;
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
+    private static final Integer ADMIN =1 ;
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
@@ -40,11 +42,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsCheckLogRepository devopsCheckLogRepository;
 
     @Override
+    @Async
     public void checkLog(String version) {
-        JSONArray jsonArray = new JSONArray();
         if (version.equals("0.7")) {
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            Long userId = userAttrE.getGitlabUserId();
             List<ApplicationDO> applications = applicationMapper.selectAll();
             DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
             devopsCheckLogE.setBeginCheckDate(new Date());
@@ -53,7 +53,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent("app: " + applicationDO.getName() + " create gitlab webhook");
                         try {
-                            syncWebHook(applicationDO, userId);
+                            syncWebHook(applicationDO);
                             checkLog.setResult("success");
                         } catch (Exception e) {
                             checkLog.setResult("failed: " + e.getMessage());
@@ -69,7 +69,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
 
-    private void syncWebHook(ApplicationDO applicationDO, Long userId) {
+    private void syncWebHook(ApplicationDO applicationDO) {
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(applicationDO.getGitlabProjectId());
@@ -77,7 +77,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
         uri += "devops/webhook";
         projectHook.setUrl(uri);
-        applicationDO.setHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(userId), projectHook).getId()));
+        applicationDO.setHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(applicationDO.getGitlabProjectId(), ADMIN, projectHook).getId()));
         applicationMapper.updateByPrimaryKey(applicationDO);
     }
 
