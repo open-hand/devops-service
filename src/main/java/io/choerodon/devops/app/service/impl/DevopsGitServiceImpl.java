@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
@@ -27,10 +24,10 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
+import io.choerodon.devops.infra.common.util.DateUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.AuthorDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -100,7 +97,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO.getOriginBranch(),
                 getGitlabUserId());
         CommitE commitE = branchDO.getCommit();
-        Date checkoutDate = commitE.getCommittedDate();
+        Date checkoutDate = DateUtil.changeTimeZone(
+                commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
         String checkoutSha = commitE.getId();
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchE.setCheckoutDate(checkoutDate);
@@ -247,7 +245,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 lastCommitDTO = lastCommitOptional.get();
             }
             branchE.setLastCommit(lastCommit);
-            branchE.setLastCommitDate(lastCommitDTO.getCommittedDate());
+            Date date = DateUtil.changeTimeZone(
+                    lastCommitDTO.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
+            branchE.setLastCommitDate(date);
             branchE.setLastCommitMsg(lastCommitDTO.getMessage());
             branchE.setLastCommitUser(pushWebHookDTO.getUserId().longValue());
             devopsGitRepository.updateBranchLastCommit(branchE);
@@ -288,8 +288,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setLastCommitUser(userId);
                 devopsBranchE.setLastCommit(lastCommit);
                 devopsBranchE.setLastCommitMsg(commitE.getMessage());
-                devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
-
+                Date date = DateUtil.changeTimeZone(
+                        commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
+                devopsBranchE.setLastCommitDate(date);
                 devopsGitRepository.createDevopsBranch(devopsBranchE);
             }
         } catch (Exception e) {
