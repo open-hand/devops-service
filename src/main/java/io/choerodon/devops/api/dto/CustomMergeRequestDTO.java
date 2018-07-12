@@ -8,6 +8,10 @@ public class CustomMergeRequestDTO {
 
     private Long projectId;
 
+    private Long applicationId;
+
+    private String imageUrl;
+
     private Long gitlabMergeRequestId;
 
     private Long authorId;
@@ -132,5 +136,21 @@ public class CustomMergeRequestDTO {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Long getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(Long applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

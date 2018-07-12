@@ -16,28 +16,25 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.CommitDTO;
+import io.choerodon.devops.api.dto.AuthorDTO;
 import io.choerodon.devops.api.dto.MergeRequestDTO;
 import io.choerodon.devops.api.dto.TagDTO;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsBranchE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
-import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagNodeDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
+import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.util.StringUtil;
 
@@ -65,6 +62,12 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     private ApplicationRepository applicationRepository;
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private DevopsGitRepository devopsGitRepository;
+    @Autowired
+    private DevopsMergeRequestMapper devopsMergeRequestMapper;
+    @Autowired
+    private DevopsMergeRequestRepository devopsMergeRequestRepository;
 
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId) {
@@ -238,49 +241,42 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Map<String, Object> getMergeRequestList(Integer gitLabProjectId,
+    public Map<String, Object> getMergeRequestList(Long projectId, Integer gitLabProjectId,
                                                    String state,
                                                    PageRequest pageRequest) {
-        List<MergeRequestDO> collect = gitlabServiceClient
-                .getMergeRequestList(gitLabProjectId)
-                .getBody();
+        List<DevopsMergeRequestE> allMergeRequest = devopsMergeRequestRepository
+                .getByGitlabProjectId(gitLabProjectId);
         final int[] count = {0, 0, 0};
-        collect.forEach(mergeRequestDO -> {
-            if ("merged".equals(mergeRequestDO.getState())) {
-                count[0]++;
-            } else if ("opened".equals(mergeRequestDO.getState())) {
-                count[1]++;
-            } else if ("closed".equals(mergeRequestDO.getState())) {
-                count[2]++;
-            }
-        });
-        List<MergeRequestDO> mergeRequestDOS = null;
+        if (allMergeRequest != null && !allMergeRequest.isEmpty()) {
+            allMergeRequest.forEach(devopsMergeRequestE -> {
+                if ("merged".equals(devopsMergeRequestE.getState())) {
+                    count[0]++;
+                } else if ("opened".equals(devopsMergeRequestE.getState())) {
+                    count[1]++;
+                } else if ("closed".equals(devopsMergeRequestE.getState())) {
+                    count[2]++;
+                }
+            });
+        }
+        Page<DevopsMergeRequestE> page = devopsMergeRequestRepository
+                .getByGitlabProjectId(gitLabProjectId, pageRequest);
         if (StringUtil.isNotEmpty(state)) {
-            mergeRequestDOS = collect.stream().filter(mergeRequestDO ->
-                    state.equals(mergeRequestDO.getState())
-            ).collect(Collectors.toList());
-        } else {
-            mergeRequestDOS = collect;
+            page = devopsMergeRequestRepository
+                    .getMergeRequestList(gitLabProjectId, state, pageRequest);
         }
-        int totalElments = mergeRequestDOS.size();
-        int size = pageRequest.getSize();
-        int page = pageRequest.getPage();
-        int totalPages = totalElments % size == 0 ? totalElments / size : totalElments / size + 1;
-        int tempPage = page == 0 ? 1 : page - 1;
-        int skipNumber = page * size > totalElments ? tempPage * size : page * size;
-        mergeRequestDOS = mergeRequestDOS.stream().skip(skipNumber).limit(size).collect(Collectors.toList());
-        if (mergeRequestDOS != null && !mergeRequestDOS.isEmpty()) {
-            mergeRequestDOS
-                    .forEach(mergeRequestDO ->
-                            getMergeRequestCommits(gitLabProjectId, mergeRequestDO));
+        List<MergeRequestDTO> pageContent = new ArrayList<>();
+        List<DevopsMergeRequestE> content = page.getContent();
+        if (content != null && !content.isEmpty()) {
+            content.forEach(devopsMergeRequestE -> {
+                MergeRequestDTO mergeRequestDTO = devopsMergeRequestToMergeRequest(projectId,
+                        devopsMergeRequestE);
+                pageContent.add(mergeRequestDTO);
+            });
         }
-        List<MergeRequestDTO> mergeRequestDTOS = ConvertHelper.convertList(mergeRequestDOS, MergeRequestDTO.class);
-        Page<MergeRequestDTO> pageResult = new Page<>();
-        pageResult.setTotalElements(totalElments);
-        pageResult.setTotalPages(totalPages);
-        pageResult.setSize(size);
-        pageResult.setContent(mergeRequestDTOS);
         int total = count[0] + count[1] + count[2];
+        Page<MergeRequestDTO> pageResult = new Page<>();
+        BeanUtils.copyProperties(page, pageResult);
+        pageResult.setContent(pageContent);
         Map<String, Object> result = new HashMap<>();
         result.put("mergeCount", count[0]);
         result.put("openCount", count[1]);
@@ -288,6 +284,27 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         result.put("totalCount", total);
         result.put("pageResult", pageResult);
         return result;
+    }
+
+    private MergeRequestDTO devopsMergeRequestToMergeRequest(Long projectId,
+                                                             DevopsMergeRequestE devopsMergeRequestE) {
+        MergeRequestDTO mergeRequestDTO = new MergeRequestDTO();
+        BeanUtils.copyProperties(devopsMergeRequestE, mergeRequestDTO);
+        mergeRequestDTO.setProjectId(devopsMergeRequestE.getProjectId().intValue());
+        mergeRequestDTO.setId(devopsMergeRequestE.getId().intValue());
+        mergeRequestDTO.setIid(devopsMergeRequestE.getGitlabMergeRequestId().intValue());
+        Long authorUserId = devopsGitRepository
+                .getUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
+        UserE authorUser = iamRepository.queryByProjectAndId(projectId, authorUserId);
+        if (authorUser != null) {
+            AuthorDTO authorDTO = new AuthorDTO();
+            authorDTO.setUsername(authorUser.getLoginName());
+            authorDTO.setName(authorUser.getRealName());
+            authorDTO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
+            authorDTO.setWebUrl(authorUser.getImageUrl());
+            mergeRequestDTO.setAuthor(authorDTO);
+        }
+        return mergeRequestDTO;
     }
 
     @Override
@@ -306,16 +323,6 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 commitE);
         return commitE;
     }
-
-    private void getMergeRequestCommits(Integer gitLabProjectId,
-                                        MergeRequestDO mergeRequestDO) {
-        List<CommitDO> commitDOs = gitlabServiceClient.listCommits(gitLabProjectId,
-                mergeRequestDO.getIid(),
-                getGitlabUserId()).getBody();
-        List<CommitDTO> commitDTOS = ConvertHelper.convertList(commitDOs, CommitDTO.class);
-        mergeRequestDO.setCommits(commitDTOS);
-    }
-
 
     @Override
     public List<DevopsBranchE> listDevopsBranchesByAppIdAndBranchName(Long appId, String branchName) {
