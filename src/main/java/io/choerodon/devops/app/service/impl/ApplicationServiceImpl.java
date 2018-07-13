@@ -2,9 +2,7 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -293,10 +291,12 @@ public class ApplicationServiceImpl implements ApplicationService {
             devopsBranchE.setApplicationE(applicationE);
             devopsBranchE.setBranchName(MASTER);
             devopsBranchE.setCheckoutCommit(commitE.getId());
-            devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
+            Date date = DateUtil.changeTimeZone(
+                    commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
+            devopsBranchE.setCheckoutDate(date);
             devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectEventDTO.getUserId()));
             devopsBranchE.setLastCommitMsg(commitE.getMessage());
-            devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
+            devopsBranchE.setLastCommitDate(date);
             devopsBranchE.setLastCommit(commitE.getId());
             devopsGitRepository.createDevopsBranch(devopsBranchE);
         }
