@@ -78,20 +78,21 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         if (newApplicationVersionE != null) {
             return;
         }
+        String destFilePath = DESTPATH + version;
         try {
-            FileUtil.unTarGZ(path, DESTPATH + version);
+            FileUtil.unTarGZ(path, destFilePath);
             applicationVersionValueE.setValue(
                     FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
-                            new File(DESTPATH + version), "values.yaml").getAbsolutePath())), null));
+                            new File(destFilePath), "values.yaml").getAbsolutePath())), null));
 
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());
         } catch (Exception e) {
             throw new CommonException("error.version.insert");
         }
-        applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(DESTPATH));
+        applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
         applicationVersionRepository.create(applicationVersionE);
-        FileUtil.deleteDirectory(new File(DESTPATH + version));
+        FileUtil.deleteDirectory(new File(destFilePath));
     }
 
     @Override
