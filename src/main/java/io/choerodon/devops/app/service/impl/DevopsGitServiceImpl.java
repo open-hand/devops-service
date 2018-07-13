@@ -97,8 +97,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO.getOriginBranch(),
                 getGitlabUserId());
         CommitE commitE = branchDO.getCommit();
-        Date checkoutDate = DateUtil.changeTimeZone(
-                commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
+        Date checkoutDate = commitE.getCommittedDate();
         String checkoutSha = commitE.getId();
         Long gitLabUser = TypeUtil.objToLong(getGitlabUserId());
         devopsBranchE.setCheckoutDate(checkoutDate);
