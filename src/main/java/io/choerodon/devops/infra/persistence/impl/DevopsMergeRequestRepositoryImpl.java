@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 
 @Service
@@ -34,8 +36,11 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
         DevopsMergeRequestDO devopsMergeRequestDO = new DevopsMergeRequestDO();
         devopsMergeRequestDO.setSourceBranch(sourceBranchName);
         devopsMergeRequestDO.setProjectId(gitLabProjectId);
-        return ConvertHelper.convertList(devopsMergeRequestMapper
-                .select(devopsMergeRequestDO), DevopsMergeRequestE.class);
+        List<Sort.Order> orders = new ArrayList<>();
+        orders.add(new Sort.Order(Sort.Direction.DESC, "id"));
+        Sort sort = new Sort(orders);
+        return ConvertHelper.convertList(PageHelper.doSort(sort, () ->
+                devopsMergeRequestMapper.select(devopsMergeRequestDO)), DevopsMergeRequestE.class);
     }
 
     @Override

@@ -21,7 +21,9 @@ import io.choerodon.devops.api.dto.DevopsBranchDTO;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -308,6 +310,7 @@ public class DevopsGitController {
             @ApiParam(value = "合并请求状态", required = false)
             @RequestParam(value = "state", required = false) String state,
             @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest) {
         return Optional.ofNullable(devopsGitService.getMergeRequestList(projectId, applicationId, state, pageRequest))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
