@@ -1,7 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
@@ -12,6 +14,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.CommitDTO;
 import io.choerodon.devops.api.dto.CustomMergeRequestDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
+import io.choerodon.devops.api.dto.IssueDTO;
 import io.choerodon.devops.app.service.IssueService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
@@ -56,7 +59,7 @@ public class IssueServiceImpl implements IssueService {
 
 
     @Override
-    public Map<String, Object> countCommitAndMergeRequest(Long issueId) {
+    public IssueDTO countCommitAndMergeRequest(Long issueId) {
         List<DevopsBranchDTO> devopsBranchDTOs = getBranchsByIssueId(issueId);
         List<CommitDTO> commitDTOS = new ArrayList<>();
         List<CustomMergeRequestDTO> customMergeRequestDTOS = new ArrayList<>();
@@ -71,26 +74,26 @@ public class IssueServiceImpl implements IssueService {
                 (CustomMergeRequestDTO o1, CustomMergeRequestDTO o2) ->
                         o1.getUpdatedAt().compareTo(o2.getUpdatedAt())
         );
-        Map<String, Object> result = new HashMap<>();
-        result.put("mergeRequestStatus", null);
-        result.put("mergeRequestUpdateTime", null);
-        result.put("commitUpdateTime", null);
+        IssueDTO issueDTO = new IssueDTO();
+        issueDTO.setMergeRequestStatus(null);
+        issueDTO.setMergeRequestUpdateTime(null);
+        issueDTO.setCommitUpdateTime(null);
         if (!customMergeRequestDTOS.isEmpty()) {
             for (CustomMergeRequestDTO mergeRequestTmp : customMergeRequestDTOS) {
                 if ("opened".equals(mergeRequestTmp.getState())) {
-                    result.put("mergeRequestStatus", "opened");
+                    issueDTO.setMergeRequestStatus("opened");
                     break;
                 }
             }
         }
-        result.put("branchCount", devopsBranchDTOs.size());
-        result.put("totalCommit", commitDTOS.size());
-        result.put("totalMergeRequest", customMergeRequestDTOS.size());
+        issueDTO.setBranchCount(devopsBranchDTOs.size());
+        issueDTO.setTotalCommit(commitDTOS.size());
+        issueDTO.setTotalMergeRequest(customMergeRequestDTOS.size());
         commitDTO.ifPresent(commitDTO1 ->
-                result.put("commitUpdateTime", commitDTO1.getCreatedAt()));
+                issueDTO.setCommitUpdateTime(commitDTO1.getCreatedAt()));
         customMergeRequestDTO.ifPresent(customMergeRequestDTO1 ->
-                result.put("mergeRequestUpdateTime", customMergeRequestDTO1.getUpdatedAt()));
-        return result;
+                issueDTO.setMergeRequestUpdateTime(customMergeRequestDTO1.getUpdatedAt()));
+        return issueDTO;
     }
 
     @Override
