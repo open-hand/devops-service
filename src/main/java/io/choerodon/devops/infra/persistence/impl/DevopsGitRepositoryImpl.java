@@ -164,7 +164,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Page<TagDTO> getTags(Long appId, String path, Integer page, Integer size, Integer userId) {
+    public Page<TagDTO> getTags(Long appId, String path, Integer page, String tagName, Integer size, Integer userId) {
         Integer projectId = getGitLabId(appId);
         List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
         Integer totalSize = tagTotalList.size();
@@ -174,6 +174,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         }
 
         List<TagDTO> tagList = tagTotalList.stream()
+                .filter(t -> t.getName().contains(tagName))
                 .sorted(this::sortTag)
                 .skip(page.longValue() * size).limit(size)
                 .map(TagDTO::new)

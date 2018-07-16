@@ -89,7 +89,7 @@ public class DevopsGitController {
     }
 
     /**
-     * 获取标签列表
+     * 根据标签名称获取标签
      *
      * @param projectId     项目ID
      * @param applicationId 应用ID
@@ -99,15 +99,18 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取标签分页列表")
     @GetMapping("/tags")
-    public ResponseEntity<Page<TagDTO>> getTag(
+    public ResponseEntity<Page<TagDTO>> getTagByName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
-
+            @ApiParam(value = "标记名称", required = false)
+            @RequestParam(value = "tag_name")String tagName,
             @RequestParam(value = "page", required = false, defaultValue = "0") Integer page,
             @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-        return Optional.ofNullable(devopsGitService.getTags(projectId, applicationId, page, size))
+
+        return Optional.ofNullable(devopsGitService.getTags(projectId, applicationId,tagName,
+                 page, size))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.tags.get"));
     }

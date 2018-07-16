@@ -198,14 +198,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Page<TagDTO> getTags(Long projectId, Long applicationId, Integer page, Integer size) {
+    public Page<TagDTO> getTags(Long projectId, Long applicationId, String tagName, Integer page, Integer size) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
-        return devopsGitRepository.getTags(applicationId, path, page, size, getGitlabUserId());
+        return devopsGitRepository.getTags(applicationId, path, page,tagName, size, getGitlabUserId());
     }
 
     @Override
