@@ -304,7 +304,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 devopsMergeRequestE.getProjectId().intValue(),
                 gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
 
-        mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS,CommitDTO.class));
+        mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS, CommitDTO.class));
         UserE authorUser = iamRepository.queryByProjectAndId(projectId, authorUserId);
         if (authorUser != null) {
             AuthorDTO authorDTO = new AuthorDTO();
