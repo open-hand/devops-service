@@ -3,12 +3,16 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO;
@@ -20,6 +24,8 @@ import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 @Service
 public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsMergeRequestRepositoryImpl.class);
 
     @Autowired
     DevopsMergeRequestMapper devopsMergeRequestMapper;
@@ -82,5 +88,28 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
         DevopsMergeRequestDO devopsMergeRequestDO = ConvertHelper
                 .convert(devopsMergeRequestE, DevopsMergeRequestDO.class);
         return devopsMergeRequestMapper.updateByPrimaryKey(devopsMergeRequestDO);
+    }
+
+    @Override
+    public void saveDevopsMergeRequest(DevopsMergeRequestDTO devopsMergeRequestDTO) {
+        DevopsMergeRequestE devopsMergeRequestE = ConvertHelper.convert(devopsMergeRequestDTO,
+                DevopsMergeRequestE.class);
+        Long projectId = devopsMergeRequestE.getProjectId();
+        Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
+        DevopsMergeRequestE mergeRequestETemp = queryByAppIdAndGitlabId(projectId, gitlabMergeRequestId);
+        Long mergeRequestId = mergeRequestETemp != null ? mergeRequestETemp.getId() : null;
+        if (mergeRequestId == null) {
+            try {
+                create(devopsMergeRequestE);
+            } catch (Exception e) {
+                LOGGER.info("error.save.merge.request");
+            }
+        } else {
+            devopsMergeRequestE.setId(mergeRequestId);
+            Integer temp = update(devopsMergeRequestE);
+            if (temp == 0) {
+                throw new CommonException("error.update.merge.request");
+            }
+        }
     }
 }
