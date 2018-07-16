@@ -83,6 +83,7 @@ public class IssueServiceImpl implements IssueService {
                 }
             }
         }
+        result.put("branchCount", devopsBranchDTOs.size());
         result.put("totalCommit", commitDTOS.size());
         result.put("totalMergeRequest", customMergeRequestDTOS.size());
         commitDTO.ifPresent(commitDTO1 ->
