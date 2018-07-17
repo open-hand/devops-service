@@ -69,7 +69,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
-        DevopsIngressValidator.checkAppVersion(devopsIngressDTO);
+        DevopsIngressValidator.checkAppVersion(devopsIngressDTO.getName());
         String name = devopsIngressDTO.getName();
         String domain = devopsIngressDTO.getDomain();
         Long envId = devopsIngressDTO.getEnvId();
@@ -85,7 +85,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             if (t.getPath() == null || t.getServiceId() == null) {
                 throw new CommonException(PATH_ERROR);
             }
-            DevopsIngressValidator.checkPath(t.getPath().substring(1));
+            DevopsIngressValidator.checkPath(t.getPath());
             if (pathCheckList.contains(t.getPath())) {
                 throw new CommonException(PATH_DUPLICATED);
             } else {
@@ -114,7 +114,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
-        DevopsIngressValidator.checkAppVersion(devopsIngressDTO);
+        DevopsIngressValidator.checkAppVersion(devopsIngressDTO.getName());
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
         if (!devopsIngressDTO.equals(ingressDTO)) {
             String name = devopsIngressDTO.getName();
@@ -136,6 +136,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 } else if (t.getServiceId() == null) {
                     throw new CommonException("error.service.id.get");
                 }
+                DevopsIngressValidator.checkPath(t.getPath());
                 if (pathCheckList.contains(t.getPath())) {
                     throw new CommonException(PATH_DUPLICATED);
                 } else {
