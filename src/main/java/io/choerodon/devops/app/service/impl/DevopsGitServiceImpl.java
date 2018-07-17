@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +28,6 @@ import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.common.util.DateUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -42,14 +40,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
-    private JSON json = new JSON();
-
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
-
     private static final String REF_HEADS = "refs/heads/";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-
+    private JSON json = new JSON();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
@@ -117,24 +111,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public List<BranchDTO> listBranches(Long projectId, Long applicationId,String params) {
-        String branchName="";
-        if (!StringUtils.isEmpty(params)) {
-            Map<String, Object> maps = json.deserialize(params, Map.class);
-            Object obj = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-            Map<String, ArrayList<String>> mapSearch = (Map<String, ArrayList<String>>)obj;
-            branchName=mapSearch.get("branchName").get(0);
-
-        }
+    public List<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
-        List<DevopsBranchDO> branches =
-                devopsGitRepository.listBranches(applicationId);
-        String finalBranchName = branchName;
+        Page<DevopsBranchE> branches =
+                devopsGitRepository.listBranches(applicationId, pageRequest, params);
         return branches.parallelStream().map(t -> {
             ProjectInfo projectInfo = null;
             Issue issue = null;
@@ -148,7 +133,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchDTO(t, commitUrl, commitUserE, userE, projectInfo, issue);
-        }).filter(t -> t.getName().contains(finalBranchName)).collect(Collectors.toList());
+        }).collect(Collectors.toList());
     }
 
     @Override
@@ -171,7 +156,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private BranchDTO getBranchDTO(DevopsBranchDO t, String lastCommitUrl, UserE commitUserE, UserE userE,
+    private BranchDTO getBranchDTO(DevopsBranchE t, String lastCommitUrl, UserE commitUserE, UserE userE,
                                    ProjectInfo projectInfo,
                                    Issue issue) {
         String createUserUrl = null;
@@ -219,7 +204,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
-        return devopsGitRepository.getTags(applicationId, path, page,params, size, getGitlabUserId());
+        return devopsGitRepository.getTags(applicationId, path, page, params, size, getGitlabUserId());
     }
 
     @Override

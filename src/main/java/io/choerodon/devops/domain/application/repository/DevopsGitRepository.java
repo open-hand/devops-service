@@ -7,7 +7,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -38,7 +37,7 @@ public interface DevopsGitRepository {
 
     List<BranchDO> listGitLabBranches(Integer projectId, String path, Integer userId);
 
-    List<DevopsBranchDO> listBranches(Long appId);
+    Page<DevopsBranchE> listBranches(Long appId, PageRequest pageRequest, String params);
 
     void deleteBranch(Integer projectId, String branchName, Integer userId);
 

@@ -1044,16 +1044,19 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     private void insertDevopsCommandEvent(Event event, String type) {
         DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryLatestJob(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceE.getApplicationInstanceE().getId());
-        DevopsCommandEventE devopsCommandEventE = new DevopsCommandEventE();
-        devopsCommandEventE.setEventCreationTime(event.getMetadata().getCreationTimestamp());
-        devopsCommandEventE.setMessage(event.getMessage());
-        devopsCommandEventE.setName(event.getInvolvedObject().getName());
-        devopsCommandEventE.initDevopsEnvCommandE(devopsEnvCommandE.getId());
-        devopsCommandEventE.setType(type);
-        devopsCommandEventRepository.create(devopsCommandEventE);
-
+        try {
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceE.getApplicationInstanceE().getId());
+            DevopsCommandEventE devopsCommandEventE = new DevopsCommandEventE();
+            devopsCommandEventE.setEventCreationTime(event.getMetadata().getCreationTimestamp());
+            devopsCommandEventE.setMessage(event.getMessage());
+            devopsCommandEventE.setName(event.getInvolvedObject().getName());
+            devopsCommandEventE.initDevopsEnvCommandE(devopsEnvCommandE.getId());
+            devopsCommandEventE.setType(type);
+            devopsCommandEventRepository.create(devopsCommandEventE);
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
     }
 
 }

@@ -16,9 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AuthorDTO;
+import io.choerodon.devops.api.dto.CommitDTO;
+import io.choerodon.devops.api.dto.MergeRequestDTO;
+import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -36,6 +40,7 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.DevopsBranchMapper;
 import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.util.StringUtil;
 
@@ -144,11 +149,27 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public List<DevopsBranchDO> listBranches(Long appId) {
-        DevopsBranchDO branchDO = new DevopsBranchDO();
-        branchDO.setAppId(appId);
-        branchDO.setDeleted(false);
-        return devopsBranchMapper.select(branchDO);
+    public Page<DevopsBranchE> listBranches(Long appId, PageRequest pageRequest, String params) {
+
+        Page<DevopsBranchDO> devopsBranchDOS;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> maps = json.deserialize(params, Map.class);
+            if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
+                devopsBranchDOS = PageHelper.doPageAndSort(
+                        pageRequest, () -> devopsBranchMapper.list(
+                                appId, null,
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+            } else {
+                devopsBranchDOS = PageHelper.doPageAndSort(
+                        pageRequest, () -> devopsBranchMapper.list(
+                                appId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+            }
+        } else {
+            devopsBranchDOS = PageHelper.doPageAndSort(
+                    pageRequest, () -> devopsBranchMapper.list(appId, null, null));
+        }
+        return ConvertPageHelper.convertPage(devopsBranchDOS, DevopsBranchE.class);
     }
 
     @Override
@@ -211,38 +232,38 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             }
             Object obj = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             if (obj != null) {
-                Map<String, ArrayList<String>> mapSearch = (Map<String, ArrayList<String>>)obj;
-                index = getTagName(index,tagDO,mapSearch);
-                index = getShortId(index,tagDO,mapSearch);
-                index = getCommitterName(index,tagDO,mapSearch);
-                index = getMessage(index,tagDO,mapSearch);
+                Map<String, ArrayList<String>> mapSearch = (Map<String, ArrayList<String>>) obj;
+                index = getTagName(index, tagDO, mapSearch);
+                index = getShortId(index, tagDO, mapSearch);
+                index = getCommitterName(index, tagDO, mapSearch);
+                index = getMessage(index, tagDO, mapSearch);
             }
         }
         return index >= 0;
     }
 
-    private Integer getTagName( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getTagName(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
         if (mapSearch.containsKey("tagName")) {
             index = tagDO.getName().contains(mapSearch.get("tagName").get(0)) ? 1 : -1;
         }
         return index;
     }
 
-    private Integer getShortId( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getShortId(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
         if (index >= 0 && mapSearch.containsKey("shortId"))
             index = tagDO.getCommit().getId()
                     .contains(mapSearch.get("shortId").get(0)) ? 1 : -1;
         return index;
     }
 
-    private Integer getCommitterName( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getCommitterName(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
         if (index >= 0 && mapSearch.containsKey("committerName"))
             index = tagDO.getCommit().getCommitterName()
                     .contains(mapSearch.get("committerName").get(0)) ? 1 : -1;
         return index;
     }
 
-    private Integer getMessage( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+    private Integer getMessage(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
         if (index >= 0 && mapSearch.containsKey("message"))
             index = tagDO.getCommit().getMessage().contains(mapSearch.get("message").get(0)) ? 1 : -1;
         return index;

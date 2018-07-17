@@ -39,10 +39,11 @@ public interface DevopsGitService {
      *
      * @param projectId     项目 ID
      * @param applicationId 应用ID
-     * @param branchName  分支名
+     * @param pageRequest   分页参数
+     * @param params
      * @return Branch 列表
      */
-    List<BranchDTO> listBranches(Long projectId, Long applicationId,String params);
+    List<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params);
 
     /**
      * 查询单个分支

@@ -2,7 +2,7 @@ package io.choerodon.devops.api.dto;
 
 import java.util.Date;
 
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
+import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 
 public class BranchDTO {
     private String name;
@@ -27,21 +27,21 @@ public class BranchDTO {
     /**
      * construct
      */
-    public BranchDTO(DevopsBranchDO branchDO, String lastCommitUrl, Date createDate,
+    public BranchDTO(DevopsBranchE branchE, String lastCommitUrl, Date createDate,
                      String createUserUrl, Long issueId,
                      String issueCode, String issueName,
                      String commitUserUrl, String typeCode,
                      String commitUserName, String createUserName, String realName) {
-        this.name = branchDO.getBranchName();
-        this.sha = branchDO.getLastCommit();
-        this.commitContent = branchDO.getLastCommitMsg();
+        this.name = branchE.getBranchName();
+        this.sha = branchE.getLastCommit();
+        this.commitContent = branchE.getLastCommitMsg();
         this.commitUserUrl = commitUserUrl;
         this.createDate = createDate;
         this.commitUrl = lastCommitUrl;
         this.issueId = issueId;
         this.issueCode = issueCode;
         this.issueName = issueName;
-        this.commitDate = branchDO.getLastCommitDate();
+        this.commitDate = branchE.getLastCommitDate();
         this.createUserUrl = createUserUrl;
         this.typeCode = typeCode;
         this.commitUserName = commitUserName;
