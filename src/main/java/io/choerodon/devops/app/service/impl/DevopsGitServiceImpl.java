@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,7 +42,10 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
+    private JSON json = new JSON();
+
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
+
     private static final String REF_HEADS = "refs/heads/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
@@ -113,6 +118,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public List<BranchDTO> listBranches(Long projectId, Long applicationId,String params) {
+        String branchName="";
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> maps = json.deserialize(params, Map.class);
+            Object obj = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            Map<String, ArrayList<String>> mapSearch = (Map<String, ArrayList<String>>)obj;
+            branchName=mapSearch.get("branchName").get(0);
+
+        }
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -121,6 +134,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
         List<DevopsBranchDO> branches =
                 devopsGitRepository.listBranches(applicationId);
+        String finalBranchName = branchName;
         return branches.parallelStream().map(t -> {
             ProjectInfo projectInfo = null;
             Issue issue = null;
@@ -134,7 +148,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchDTO(t, commitUrl, commitUserE, userE, projectInfo, issue);
-        }).collect(Collectors.toList());
+        }).filter(t -> t.getName().contains(finalBranchName)).collect(Collectors.toList());
     }
 
     @Override
