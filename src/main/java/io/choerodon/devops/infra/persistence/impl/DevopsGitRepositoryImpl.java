@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,10 +18,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.AuthorDTO;
-import io.choerodon.devops.api.dto.CommitDTO;
-import io.choerodon.devops.api.dto.MergeRequestDTO;
-import io.choerodon.devops.api.dto.TagDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -48,6 +47,8 @@ import io.choerodon.mybatis.util.StringUtil;
  */
 @Component
 public class DevopsGitRepositoryImpl implements DevopsGitRepository {
+
+    private JSON json = new JSON();
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -164,7 +165,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public Page<TagDTO> getTags(Long appId, String path, Integer page, Integer size, Integer userId) {
+    public Page<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
         Integer projectId = getGitLabId(appId);
         List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
         Integer totalSize = tagTotalList.size();
@@ -172,8 +173,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         if (page > totalPageSizes - 1 && page > 0) {
             page = totalPageSizes - 1;
         }
-
         List<TagDTO> tagList = tagTotalList.stream()
+                .filter(t -> filterTag(t, params))
                 .sorted(this::sortTag)
                 .skip(page.longValue() * size).limit(size)
                 .map(TagDTO::new)
@@ -193,6 +194,58 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         tagsPage.setNumber(page);
         tagsPage.setNumberOfElements(tagList.size());
         return tagsPage;
+    }
+
+    private Boolean filterTag(TagDO tagDO, String params) {
+        Integer index = 0;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> maps = json.deserialize(params, Map.class);
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM)).toString();
+            if (!param.equals("")) {
+                if (tagDO.getName().contains(param) || tagDO.getCommit().getShortId().contains(param)
+                        || tagDO.getCommit().getCommitterName().contains(param)
+                        || tagDO.getCommit().getMessage().contains(param))
+                    index = 1;
+                else
+                    return false;
+            }
+            Object obj = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            if (obj != null) {
+                Map<String, ArrayList<String>> mapSearch = (Map<String, ArrayList<String>>)obj;
+                index = getTagName(index,tagDO,mapSearch);
+                index = getShortId(index,tagDO,mapSearch);
+                index = getCommitterName(index,tagDO,mapSearch);
+                index = getMessage(index,tagDO,mapSearch);
+            }
+        }
+        return index >= 0;
+    }
+
+    private Integer getTagName( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+        if (mapSearch.containsKey("tagName")) {
+            index = tagDO.getName().contains(mapSearch.get("tagName").get(0)) ? 1 : -1;
+        }
+        return index;
+    }
+
+    private Integer getShortId( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+        if (index >= 0 && mapSearch.containsKey("shortId"))
+            index = tagDO.getCommit().getId()
+                    .contains(mapSearch.get("shortId").get(0)) ? 1 : -1;
+        return index;
+    }
+
+    private Integer getCommitterName( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+        if (index >= 0 && mapSearch.containsKey("committerName"))
+            index = tagDO.getCommit().getCommitterName()
+                    .contains(mapSearch.get("committerName").get(0)) ? 1 : -1;
+        return index;
+    }
+
+    private Integer getMessage( Integer index ,TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
+        if (index >= 0 && mapSearch.containsKey("message"))
+            index = tagDO.getCommit().getMessage().contains(mapSearch.get("message").get(0)) ? 1 : -1;
+        return index;
     }
 
     @Override

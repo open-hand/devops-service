@@ -44,7 +44,7 @@ public interface DevopsGitRepository {
 
     void deleteDevopsBranch(Long appId, String branchName);
 
-    Page<TagDTO> getTags(Long appId, String path, Integer page, Integer size, Integer userId);
+    Page<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId);
 
     List<TagDO> getTagList(Long appId, Integer userId);
 

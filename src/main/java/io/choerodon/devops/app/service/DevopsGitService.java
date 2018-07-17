@@ -39,9 +39,10 @@ public interface DevopsGitService {
      *
      * @param projectId     项目 ID
      * @param applicationId 应用ID
+     * @param branchName  分支名
      * @return Branch 列表
      */
-    List<BranchDTO> listBranches(Long projectId, Long applicationId);
+    List<BranchDTO> listBranches(Long projectId, Long applicationId,String params);
 
     /**
      * 查询单个分支
@@ -73,7 +74,7 @@ public interface DevopsGitService {
 
     Map<String, Object> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 
-    Page<TagDTO> getTags(Long projectId, Long applicationId, Integer page, Integer size);
+    Page<TagDTO> getTags(Long projectId, Long applicationId, String params, Integer page, Integer size);
 
     List<TagDO> getTags(Long projectId, Long applicationId);
 
