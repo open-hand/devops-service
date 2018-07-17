@@ -270,7 +270,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         List<DevopsMergeRequestE> content = page.getContent();
         if (content != null && !content.isEmpty()) {
             content.forEach(devopsMergeRequestE -> {
-                MergeRequestDTO mergeRequestDTO = devopsMergeRequestToMergeRequest(projectId,
+                MergeRequestDTO mergeRequestDTO = devopsMergeRequestToMergeRequest(
                         devopsMergeRequestE);
                 pageContent.add(mergeRequestDTO);
             });
@@ -288,8 +288,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         return result;
     }
 
-    private MergeRequestDTO devopsMergeRequestToMergeRequest(Long projectId,
-                                                             DevopsMergeRequestE devopsMergeRequestE) {
+    private MergeRequestDTO devopsMergeRequestToMergeRequest(DevopsMergeRequestE devopsMergeRequestE) {
         MergeRequestDTO mergeRequestDTO = new MergeRequestDTO();
         BeanUtils.copyProperties(devopsMergeRequestE, mergeRequestDTO);
         mergeRequestDTO.setProjectId(devopsMergeRequestE.getProjectId().intValue());
@@ -297,15 +296,13 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         mergeRequestDTO.setIid(devopsMergeRequestE.getGitlabMergeRequestId().intValue());
         Long authorUserId = devopsGitRepository
                 .getUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
-
         Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
         Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
         List<CommitDO> commitDOS = gitlabServiceClient.listCommits(
                 devopsMergeRequestE.getProjectId().intValue(),
                 gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
-
         mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS, CommitDTO.class));
-        UserE authorUser = iamRepository.queryByProjectAndId(projectId, authorUserId);
+        UserE authorUser = iamRepository.queryUserByUserId(authorUserId);
         if (authorUser != null) {
             AuthorDTO authorDTO = new AuthorDTO();
             authorDTO.setUsername(authorUser.getLoginName());

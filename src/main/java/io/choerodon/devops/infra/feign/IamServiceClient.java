@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.feign;
 
+import java.util.List;
 import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
@@ -43,4 +44,7 @@ public interface IamServiceClient {
 
     @GetMapping(value = "/v1/organizations/{id}/projects")
     ResponseEntity<Page<ProjectDO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size);
+
+    @PostMapping(value = "/v1/users/ids")
+    ResponseEntity<List<UserDO>> listUsersByIds(@RequestBody Long[] ids);
 }
