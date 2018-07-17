@@ -85,6 +85,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             if (t.getPath() == null || t.getServiceId() == null) {
                 throw new CommonException(PATH_ERROR);
             }
+            DevopsIngressValidator.checkPath(t.getPath().substring(1));
             if (pathCheckList.contains(t.getPath())) {
                 throw new CommonException(PATH_DUPLICATED);
             } else {
