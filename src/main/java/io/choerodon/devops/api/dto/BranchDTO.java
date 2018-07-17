@@ -5,7 +5,7 @@ import java.util.Date;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 
 public class BranchDTO {
-    private String name;
+    private String branchName;
     private String sha;
     private String commitContent;
     private String commitUrl;
@@ -32,7 +32,7 @@ public class BranchDTO {
                      String issueCode, String issueName,
                      String commitUserUrl, String typeCode,
                      String commitUserName, String createUserName, String realName) {
-        this.name = branchE.getBranchName();
+        this.branchName = branchE.getBranchName();
         this.sha = branchE.getLastCommit();
         this.commitContent = branchE.getLastCommitMsg();
         this.commitUserUrl = commitUserUrl;
@@ -49,12 +49,12 @@ public class BranchDTO {
         this.createUserRealName = realName;
     }
 
-    public String getName() {
-        return name;
+    public String getBranchName() {
+        return branchName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
     }
 
     public String getSha() {
