@@ -118,4 +118,30 @@ public class IamRepositoryImpl implements IamRepository {
             return null;
         }
     }
+
+    @Override
+    public List<UserE> listUsersByIds(List<Long> ids) {
+        List<UserE> userES = new ArrayList<>();
+        if (ids != null && !ids.isEmpty()) {
+            Long[] newIds = new Long[ids.size()];
+            try {
+                userES = ConvertHelper.convertList(iamServiceClient
+                        .listUsersByIds(ids.toArray(newIds)).getBody(), UserE.class);
+            } catch (Exception e) {
+                throw new CommonException("error.users.get");
+            }
+        }
+        return userES;
+    }
+
+    @Override
+    public UserE queryUserByUserId(Long id) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(id);
+        List<UserE> userES = this.listUsersByIds(ids);
+        if (userES != null && !userES.isEmpty()) {
+            return userES.get(0);
+        }
+        return null;
+    }
 }

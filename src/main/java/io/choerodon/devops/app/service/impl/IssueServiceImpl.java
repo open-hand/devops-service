@@ -134,14 +134,14 @@ public class IssueServiceImpl implements IssueService {
             CustomMergeRequestDTO customMergeRequestDTO = new CustomMergeRequestDTO();
             customMergeRequestDTO.setApplicationId(applicationId);
             if (authorId != null) {
-                UserE authorUser = iamRepository.queryByProjectAndId(projectId, devopsGitRepository
-                        .getUserIdByGitlabUserId(authorId));
+                UserE authorUser = iamRepository.queryUserByUserId(
+                        devopsGitRepository.getUserIdByGitlabUserId(authorId));
                 customMergeRequestDTO.setAuthorName(authorUser.getLoginName());
                 customMergeRequestDTO.setImageUrl(authorUser.getImageUrl());
             }
             if (assigneeId != null) {
-                UserE assigneeUser = iamRepository.queryByProjectAndId(projectId, devopsGitRepository
-                        .getUserIdByGitlabUserId(assigneeId));
+                UserE assigneeUser = iamRepository.queryUserByUserId(
+                        devopsGitRepository.getUserIdByGitlabUserId(assigneeId));
                 customMergeRequestDTO.setAssigneeName(assigneeUser.getLoginName());
             }
             BeanUtils.copyProperties(devopsMergeRequestE, customMergeRequestDTO);

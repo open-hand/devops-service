@@ -128,10 +128,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 issue = agileRepository.queryIssue(projectId, t.getIssueId());
                 projectInfo = agileRepository.queryProjectInfo(projectId);
             }
-            UserE userE = iamRepository.queryByProjectAndId(
-                    projectId, devopsGitRepository.getUserIdByGitlabUserId(t.getUserId()));
-            UserE commitUserE = iamRepository.queryByProjectAndId(
-                    projectId, devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
+            UserE userE = iamRepository.queryUserByUserId(
+                    devopsGitRepository.getUserIdByGitlabUserId(t.getUserId()));
+            UserE commitUserE = iamRepository.queryUserByUserId(
+                    devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchDTO(t, commitUrl, commitUserE, userE, projectInfo, issue);
         }).collect(Collectors.toList());
