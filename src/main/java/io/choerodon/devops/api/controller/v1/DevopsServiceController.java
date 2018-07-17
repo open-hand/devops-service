@@ -41,7 +41,7 @@ public class DevopsServiceController {
      * @param projectId 项目ID
      * @param envId     环境ID
      * @param name      网络名
-     * @return
+     * @return Boolean
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "检查网络唯一性")

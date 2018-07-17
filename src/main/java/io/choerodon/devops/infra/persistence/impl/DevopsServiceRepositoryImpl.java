@@ -39,10 +39,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
         int selectCount = devopsServiceMapper.selectCountByOptions(projectId, envId, name);
-        if (selectCount > 0) {
-            throw new CommonException("error.service.name.check");
-        }
-        return true;
+        return selectCount <= 0;
     }
 
     @Override
