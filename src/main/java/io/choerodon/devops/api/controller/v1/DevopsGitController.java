@@ -212,14 +212,14 @@ public class DevopsGitController {
      * @param projectId     项目 ID
      * @param applicationId 应用ID
      * @param params        查询参数
-     * @return List
+     * @return Page
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取工程下所有分支名")
     @CustomPageRequest
     @PostMapping("/branches")
-    public ResponseEntity<List<BranchDTO>> listByAppId(
+    public ResponseEntity<Page<BranchDTO>> listByAppId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)

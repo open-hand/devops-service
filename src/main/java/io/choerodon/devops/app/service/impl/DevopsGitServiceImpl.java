@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -111,7 +112,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public List<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
+    public Page<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -120,7 +121,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 gitlabUrl, urlSlash, organization.getCode(), projectE.getCode(), applicationE.getCode());
         Page<DevopsBranchE> branches =
                 devopsGitRepository.listBranches(applicationId, pageRequest, params);
-        return branches.parallelStream().map(t -> {
+        Page<BranchDTO> page = new Page<>();
+        BeanUtils.copyProperties(branches, page);
+        page.setContent(branches.parallelStream().map(t -> {
             ProjectInfo projectInfo = null;
             Issue issue = null;
             if (t.getIssueId() != null) {
@@ -133,7 +136,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
             return getBranchDTO(t, commitUrl, commitUserE, userE, projectInfo, issue);
-        }).collect(Collectors.toList());
+        }).collect(Collectors.toList()));
+        return page;
     }
 
     @Override
