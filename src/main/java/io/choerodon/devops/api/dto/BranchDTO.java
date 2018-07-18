@@ -10,7 +10,7 @@ public class BranchDTO {
     private String commitContent;
     private String commitUrl;
     private Date commitDate;
-    private Date createDate;
+    private Date creationDate;
     private String commitUserUrl;
     private String commitUserName;
     private String createUserUrl;
@@ -36,7 +36,7 @@ public class BranchDTO {
         this.sha = branchE.getLastCommit();
         this.commitContent = branchE.getLastCommitMsg();
         this.commitUserUrl = commitUserUrl;
-        this.createDate = createDate;
+        this.creationDate = createDate;
         this.commitUrl = lastCommitUrl;
         this.issueId = issueId;
         this.issueCode = issueCode;
@@ -73,12 +73,12 @@ public class BranchDTO {
         this.commitContent = commitContent;
     }
 
-    public Date getCreateDate() {
-        return createDate;
+    public Date getCreationDate() {
+        return creationDate;
     }
 
-    public void setCreateDate(Date createDate) {
-        this.createDate = createDate;
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 
     public Long getIssueId() {
