@@ -36,7 +36,7 @@ public class IssueController {
      * @param issueId issueID
      * @return commit列表
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的commit列表")
     @GetMapping("/commit/list")
     public ResponseEntity<List<DevopsBranchDTO>> getCommitsByIssueId(
@@ -56,7 +56,7 @@ public class IssueController {
      * @param issueId issueID
      * @return 返回mergerequest列表
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest列表")
     @GetMapping("/merge_request/list")
     public ResponseEntity<List<CustomMergeRequestDTO>> getMergeRequestsByIssueId(
@@ -76,7 +76,7 @@ public class IssueController {
      * @param issueId issueID
      * @return 返回mergerequest和commit数量
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据issueId获取issue关联的mergerequest和commit数量")
     @GetMapping("/commit_and_merge_request/count")
     public ResponseEntity<IssueDTO> countCommitAndMergeRequest(
