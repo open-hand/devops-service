@@ -17,4 +17,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_check_log.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'Younger', id: '2018-07-18-modify-column-type') {
+        modifyDataType(tableName: 'devops_check_log', columnName: 'log', newDataType: 'MEDIUMTEXT')
+
+    }
+
 }

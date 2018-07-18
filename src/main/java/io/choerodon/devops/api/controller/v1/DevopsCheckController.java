@@ -30,7 +30,7 @@ public class DevopsCheckController {
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "平滑升级")
     @GetMapping
-    public ResponseEntity pageByOptions(
+    public ResponseEntity checkLog(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "version")

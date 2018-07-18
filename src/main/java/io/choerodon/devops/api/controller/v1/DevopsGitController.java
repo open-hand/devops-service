@@ -100,7 +100,7 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取标签分页列表")
     @PostMapping("/tags_list_options")
-    public ResponseEntity<Page<TagDTO>> getTagByName(
+    public ResponseEntity<Page<TagDTO>> getTagByPage(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
