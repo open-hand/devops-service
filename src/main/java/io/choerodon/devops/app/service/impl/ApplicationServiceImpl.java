@@ -88,6 +88,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE.initActive(true);
         applicationE.initSynchro(false);
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        if (gitlabGroupE == null) {
+            throw new CommonException("error.group.not.sync");
+        }
         GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 gitlabGroupE.getId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));

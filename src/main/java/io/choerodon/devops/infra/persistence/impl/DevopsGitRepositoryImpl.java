@@ -189,13 +189,15 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public Page<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
         Integer projectId = getGitLabId(appId);
         List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
-        Integer totalSize = tagTotalList.size();
-        int totalPageSizes = totalSize / size + (totalSize % size == 0 ? 0 : 1);
+        Page<TagDTO> tagsPage = new Page<>();
+        List<TagDO> tagList = tagTotalList.stream()
+                .filter(t -> filterTag(t, params))
+                .collect(Collectors.toCollection(ArrayList::new));
+        int totalPageSizes = tagList.size() / size + (tagList.size() % size == 0 ? 0 : 1);
         if (page > totalPageSizes - 1 && page > 0) {
             page = totalPageSizes - 1;
         }
-        List<TagDTO> tagList = tagTotalList.stream()
-                .filter(t -> filterTag(t, params))
+        List<TagDTO> tagDTOS = tagList.stream()
                 .sorted(this::sortTag)
                 .skip(page.longValue() * size).limit(size)
                 .map(TagDTO::new)
@@ -207,13 +209,12 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                     t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
-        Page<TagDTO> tagsPage = new Page<>();
         tagsPage.setSize(size);
-        tagsPage.setTotalElements(totalSize);
+        tagsPage.setTotalElements(tagList.size());
         tagsPage.setTotalPages(totalPageSizes);
-        tagsPage.setContent(tagList);
+        tagsPage.setContent(tagDTOS);
         tagsPage.setNumber(page);
-        tagsPage.setNumberOfElements(tagList.size());
+        tagsPage.setNumberOfElements(tagDTOS.size());
         return tagsPage;
     }
 
