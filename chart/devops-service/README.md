@@ -79,8 +79,6 @@ env.open.EUREKA_CLIENT_SERVICEURL_DEFAULTZONE|注册服务地址
 env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS|kafka地址
 env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES|zookeeper地址
 env.open.SERVICES_GITLAB_URL|gitlab地址
-persistence.enabled|是否启用持久化存储
-persistence.existingClaim|绑定的pvc名称
 env.open.SPRING_REDIS_HOST|redis地址
 env.open.CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS|kafka bootstrap 地址
 env.open.SERVICES_GITLAB_URL|gitlab 地址
@@ -100,3 +98,5 @@ env.open.AGENT_REPOURL|agent仓库地址
 env.open.TEMPLATE_VERSION_MICROSERVICE|微服务模板版本
 env.open.TEMPLATE_VERSION_MICROSERVICEFRONT|前端服务模板版本
 env.open.TEMPLATE_VERSION_JAVALIB|javalib模板版本
+persistence.enabled|是否启用持久化存储
+persistence.existingClaim|绑定的pvc名称
