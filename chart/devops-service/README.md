@@ -63,6 +63,19 @@ choerodon.io/metrics-path: {{ .Values.metrics.path | quote }}
 同时，helm命令支持使用 `--set FOO_BAR=FOOBAR` 参数对values 文件中的变量进行赋值，可以进一步简化部署流程。
 
 
+## deployment.yaml
+
+    deployment一种更加简单的更新RC和Pod的机制,deployment集成了上线部署、滚动升级、创建副本、暂停上线任务，恢复上线任务，回滚到以前某一版本（成功/稳定）的Deployment等功能,一个deployment可以生成1个或多个Pod
+
+## pre-config-config.yaml
+
+    job对象，是想要运行一些容器执行某种特定的任务。执行完删除，该任务是初始化微服务的application.yaml到线上的配置中心服务
+
+## pre-config-db.yaml
+
+    job对象，是想要运行一些容器执行某种特定的任务。执行完删除，该任务是初始化微服务线上的数据库
+
+
 ## 参数对照表
 
 参数名 | 含义 
