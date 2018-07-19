@@ -124,18 +124,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Page<BranchDTO> page = new Page<>();
         BeanUtils.copyProperties(branches, page);
         page.setContent(branches.parallelStream().map(t -> {
-            ProjectInfo projectInfo = null;
             Issue issue = null;
             if (t.getIssueId() != null) {
                 issue = agileRepository.queryIssue(projectId, t.getIssueId());
-                projectInfo = agileRepository.queryProjectInfo(projectId);
             }
             UserE userE = iamRepository.queryUserByUserId(
                     devopsGitRepository.getUserIdByGitlabUserId(t.getUserId()));
             UserE commitUserE = iamRepository.queryUserByUserId(
                     devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchDTO(t, commitUrl, commitUserE, userE, projectInfo, issue);
+            return getBranchDTO(t, commitUrl, commitUserE, userE,  issue);
         }).collect(Collectors.toList()));
         return page;
     }
@@ -161,7 +159,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
     private BranchDTO getBranchDTO(DevopsBranchE t, String lastCommitUrl, UserE commitUserE, UserE userE,
-                                   ProjectInfo projectInfo,
                                    Issue issue) {
         String createUserUrl = null;
         String createUserName = null;
@@ -181,7 +178,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 t.getCreationDate(),
                 createUserUrl,
                 issueId,
-                projectInfo == null ? null : projectInfo.getProjectCode() + issue.getIssueNum(),
+                issue == null ? null : issue.getIssueNum(),
                 issue == null ? null : issue.getSummary(),
                 commitUserE.getImageUrl(),
                 issue == null ? null : issue.getTypeCode(),
