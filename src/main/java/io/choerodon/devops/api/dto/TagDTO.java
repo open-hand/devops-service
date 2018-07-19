@@ -17,7 +17,7 @@ public class TagDTO {
     private CommitDO commit;
     private String commitUserImage;
     private String message;
-    private String name;
+    private String tagName;
     private ReleaseDO release;
 
     public TagDTO() {
@@ -25,6 +25,7 @@ public class TagDTO {
 
     public TagDTO(TagDO t) {
         BeanUtils.copyProperties(t, this);
+        this.tagName = t.getName();
     }
 
     public String getCommitUserImage() {
@@ -51,12 +52,12 @@ public class TagDTO {
         this.message = message;
     }
 
-    public String getName() {
-        return name;
+    public String getTagName() {
+        return tagName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setTagName(String tagName) {
+        this.tagName = tagName;
     }
 
     public ReleaseDO getRelease() {

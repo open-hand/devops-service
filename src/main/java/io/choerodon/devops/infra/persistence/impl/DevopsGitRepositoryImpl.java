@@ -226,10 +226,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             if (!param.equals("")) {
                 if (tagDO.getName().contains(param) || tagDO.getCommit().getShortId().contains(param)
                         || tagDO.getCommit().getCommitterName().contains(param)
-                        || tagDO.getCommit().getMessage().contains(param))
+                        || tagDO.getCommit().getMessage().contains(param)) {
                     index = 1;
-                else
+                } else {
                     return false;
+                }
             }
             Object obj = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             if (obj != null) {
@@ -244,29 +245,48 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     private Integer getTagName(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
-        if (mapSearch.containsKey("tagName")) {
-            index = tagDO.getName().contains(mapSearch.get("tagName").get(0)) ? 1 : -1;
+        String tagName = "tagName";
+        if (mapSearch.containsKey(tagName)
+                && mapSearch.get(tagName) != null
+                && !mapSearch.get(tagName).isEmpty()
+                && mapSearch.get(tagName).get(0) != null) {
+            index = tagDO.getName().contains(mapSearch.get(tagName).get(0)) ? 1 : -1;
         }
         return index;
     }
 
     private Integer getShortId(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
-        if (index >= 0 && mapSearch.containsKey("shortId"))
+        String shortId = "shortId";
+        if (index >= 0 && mapSearch.containsKey(shortId)
+                && mapSearch.get(shortId) != null
+                && !mapSearch.get(shortId).isEmpty()
+                && mapSearch.get(shortId).get(0) != null) {
             index = tagDO.getCommit().getId()
-                    .contains(mapSearch.get("shortId").get(0)) ? 1 : -1;
+                    .contains(mapSearch.get(shortId).get(0)) ? 1 : -1;
+        }
         return index;
     }
 
     private Integer getCommitterName(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
-        if (index >= 0 && mapSearch.containsKey("committerName"))
+        String committerName = "committerName";
+        if (index >= 0 && mapSearch.containsKey(committerName)
+                && mapSearch.get(committerName) != null
+                && !mapSearch.get(committerName).isEmpty()
+                && mapSearch.get(committerName).get(0) != null) {
             index = tagDO.getCommit().getCommitterName()
-                    .contains(mapSearch.get("committerName").get(0)) ? 1 : -1;
+                    .contains(mapSearch.get(committerName).get(0)) ? 1 : -1;
+        }
         return index;
     }
 
     private Integer getMessage(Integer index, TagDO tagDO, Map<String, ArrayList<String>> mapSearch) {
-        if (index >= 0 && mapSearch.containsKey("message"))
-            index = tagDO.getCommit().getMessage().contains(mapSearch.get("message").get(0)) ? 1 : -1;
+        String msg = "message";
+        if (index >= 0 && mapSearch.containsKey(msg)
+                && mapSearch.get(msg) != null
+                && !mapSearch.get(msg).isEmpty()
+                && mapSearch.get(msg).get(0) != null) {
+            index = tagDO.getCommit().getMessage().contains(mapSearch.get(msg).get(0)) ? 1 : -1;
+        }
         return index;
     }
 
