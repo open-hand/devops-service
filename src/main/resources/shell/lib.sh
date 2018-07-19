@@ -22,7 +22,13 @@ if [ $GITLAB_CI ]; then
 fi
 
 # 默认Version
-export C7N_GITVERSION=$C7N_GIT_COMMIT_TIME-$C7N_GIT_BRANCH
+if [ $CI_COMMIT_TAG ]; then
+    export C7N_GITVERSION=$CI_COMMIT_TAG
+elif [ $CIRCLE_TAG ]; then
+    export C7N_GITVERSION=$CIRCLE_TAG
+else
+    export C7N_GITVERSION=$C7N_GIT_COMMIT_TIME-$C7N_GIT_BRANCH
+fi
 
 export CI_COMMIT_TAG=$C7N_GITVERSION
 
