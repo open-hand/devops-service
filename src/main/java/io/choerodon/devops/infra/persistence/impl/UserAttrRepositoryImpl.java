@@ -26,7 +26,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     }
 
     @Override
-    public UserAttrE  queryById(Long id) {
+    public UserAttrE queryById(Long id) {
         return ConvertHelper.convert(userAttrMapper.selectByPrimaryKey(id), UserAttrE.class);
     }
 
@@ -34,6 +34,9 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     public Long queryUserIdByGitlabUserId(Long gitLabUserId) {
         UserAttrDO userAttrDO = new UserAttrDO();
         userAttrDO.setGitlabUserId(gitLabUserId);
+        if (gitLabUserId == null) {
+            return null;
+        }
         return userAttrMapper.selectOne(userAttrDO).getId();
     }
 
