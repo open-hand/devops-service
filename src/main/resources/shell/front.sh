@@ -29,7 +29,7 @@ else
     export C7N_VERSION=$C7N_COMMIT_TIME-$C7N_BRANCH
 fi
 
-export CI_COMMIT_TAG=C7N_VERSION
+export CI_COMMIT_TAG=$C7N_VERSION
 
 function node_config(){
     npm config set registry ${NODE_REGISTRY:-"http://nexus3.deploy.saas.hand-china.com/repository/handnpm/"}

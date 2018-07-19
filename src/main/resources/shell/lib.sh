@@ -28,7 +28,7 @@ else
     export C7N_VERSION=$C7N_COMMIT_TIME-$C7N_BRANCH
 fi
 
-export CI_COMMIT_TAG=C7N_VERSION
+export CI_COMMIT_TAG=$C7N_VERSION
 
 function update_pom_version(){
     mvn versions:set -DnewVersion=${CI_COMMIT_TAG} || \

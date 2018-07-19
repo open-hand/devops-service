@@ -29,7 +29,7 @@ else
     export C7N_VERSION=$C7N_COMMIT_TIME-$C7N_BRANCH
 fi
 
-export CI_COMMIT_TAG=C7N_VERSION
+export CI_COMMIT_TAG=$C7N_VERSION
 
 function database_test(){
     while ! mysqlcheck --host=127.0.0.1 --user=root --password=${MYSQL_ROOT_PASSWORD} mysql; do sleep 1; done
