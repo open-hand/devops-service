@@ -2,12 +2,13 @@ export GROUP_NAME={{ GROUP_NAME }}
 export PROJECT_NAME={{ PROJECT_NAME }}
 
 
-C7N_COMMIT_YEAR=$(git log -1 --pretty=format:"%cd" --date=format:"%Y")
-C7N_COMMIT_MONTH=$(git log -1 --pretty=format:"%cd" --date=format:"%m" | sed s'/^0//')
-C7N_COMMIT_DAY=$(git log -1 --pretty=format:"%cd" --date=format:"%d" | sed s'/^0//')
-C7N_COMMIT_HOURS=$(git log -1 --pretty=format:"%cd" --date=format:"%H")
-C7N_COMMIT_MINUTES=$(git log -1 --pretty=format:"%cd" --date=format:"%M")
-C7N_COMMIT_SECONDS=$(git log -1 --pretty=format:"%cd" --date=format:"%S")
+C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
+C7N_COMMIT_YEAR=${C7N_COMMIT_TIMESTAMP:0:4}
+C7N_COMMIT_MONTH=$(echo ${C7N_COMMIT_TIMESTAMP:4:2} | sed s'/^0//')
+C7N_COMMIT_DAY=$(echo ${C7N_COMMIT_TIMESTAMP:6:2} | sed s'/^0//')
+C7N_COMMIT_HOURS=${C7N_COMMIT_TIMESTAMP:8:2}
+C7N_COMMIT_MINUTES=${C7N_COMMIT_TIMESTAMP:10:2}
+C7N_COMMIT_SECONDS=${C7N_COMMIT_TIMESTAMP:12:2}
 export C7N_COMMIT_TIME=$C7N_COMMIT_YEAR.$C7N_COMMIT_MONTH.$C7N_COMMIT_DAY-$C7N_COMMIT_HOURS$C7N_COMMIT_MINUTES$C7N_COMMIT_SECONDS
 
 # 8位sha值
