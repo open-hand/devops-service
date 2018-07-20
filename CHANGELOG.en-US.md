@@ -7,7 +7,7 @@ All notable changes to devops-service will be documented in this file.
 - Connect with `agile management` to achieve consistency in agile issue management and DevOps code management.
 - Integrated the webhook of push and merge request in `branch management`.
 - Job operation event message in `container`. 
-- Support to save additional key in `values`.
+- Only save delta `values` config in db and support to save additional key in `values`.
 - Code quality checking in CI pipeline.
 - Sonarqube link API in `application management`.
 - Achieve smooth upgrades by asking API when upgrading application version.
