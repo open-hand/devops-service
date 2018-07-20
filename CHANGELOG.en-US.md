@@ -9,12 +9,12 @@ All notable changes to devops-service will be documented in this file.
 - Job operation event message in `container`. 
 - Only save delta `values` config in db and support to save additional key in `values`.
 - Code quality checking in CI pipeline.
-- Sonarqube link API in `application management`.
-- Achieve smooth upgrades by asking API when upgrading application version.
+- Sonarqube link in `application management`.
+- Surport smooth upgrade from `0.7.0` to `0.8.0`.
 
 ### Changed
-- Simplified the naming rule of application version after running CI.
-- Only save metabolic parts in `values`.
+- Modify the naming rules for the version when running CI.
+- Only save modified parts in `values`.
 
 ### Removed
 - `Branch management` in `application management`.
