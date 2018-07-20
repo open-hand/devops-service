@@ -136,7 +136,7 @@ public class IssueServiceImpl implements IssueService {
             if (authorId != null) {
                 UserE authorUser = iamRepository.queryUserByUserId(
                         devopsGitRepository.getUserIdByGitlabUserId(authorId));
-                customMergeRequestDTO.setAuthorName(authorUser.getLoginName());
+                customMergeRequestDTO.setAuthorName(authorUser.getLoginName() + authorUser.getRealName());
                 customMergeRequestDTO.setImageUrl(authorUser.getImageUrl());
             }
             if (assigneeId != null) {
