@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dataobject;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -21,13 +22,25 @@ public class DevopsMergeRequestDO {
     @GeneratedValue
     private Long id;
 
-    private Long applicationId;
+    private Long projectId;
+
+    private Long gitlabMergeRequestId;
+
+    private Long authorId;
+
+    private Long assigneeId;
 
     private String sourceBranch;
 
     private String targetBranch;
 
-    private Long mergeRequestId;
+    private String state;
+
+    private String title;
+
+    private Date createdAt;
+
+    private Date updatedAt;
 
     public DevopsMergeRequestDO() {
     }
@@ -35,12 +48,12 @@ public class DevopsMergeRequestDO {
     /**
      * constructor a new merge request item
      *
-     * @param applicationId devops application ID
+     * @param projectId devops application ID
      * @param sourceBranch  source branch to merge
      * @param targetBranch  target merge branch
      */
-    public DevopsMergeRequestDO(Long applicationId, String sourceBranch, String targetBranch) {
-        this.applicationId = applicationId;
+    public DevopsMergeRequestDO(Long projectId, String sourceBranch, String targetBranch) {
+        this.projectId = projectId;
         this.sourceBranch = sourceBranch;
         this.targetBranch = targetBranch;
     }
@@ -53,12 +66,36 @@ public class DevopsMergeRequestDO {
         this.id = id;
     }
 
-    public Long getApplicationId() {
-        return applicationId;
+    public Long getProjectId() {
+        return projectId;
     }
 
-    public void setApplicationId(Long applicationId) {
-        this.applicationId = applicationId;
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getGitlabMergeRequestId() {
+        return gitlabMergeRequestId;
+    }
+
+    public void setGitlabMergeRequestId(Long gitlabMergeRequestId) {
+        this.gitlabMergeRequestId = gitlabMergeRequestId;
+    }
+
+    public Long getAuthorId() {
+        return authorId;
+    }
+
+    public void setAuthorId(Long authorId) {
+        this.authorId = authorId;
+    }
+
+    public Long getAssigneeId() {
+        return assigneeId;
+    }
+
+    public void setAssigneeId(Long assigneeId) {
+        this.assigneeId = assigneeId;
     }
 
     public String getSourceBranch() {
@@ -77,11 +114,35 @@ public class DevopsMergeRequestDO {
         this.targetBranch = targetBranch;
     }
 
-    public Long getMergeRequestId() {
-        return mergeRequestId;
+    public String getState() {
+        return state;
     }
 
-    public void setMergeRequestId(Long mergeRequestId) {
-        this.mergeRequestId = mergeRequestId;
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }

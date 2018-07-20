@@ -39,4 +39,16 @@ public class HttpClientUtil {
             throw new CommonException(e.getMessage());
         }
     }
+
+
+    public static Integer getSonar(String sonarUrl) {
+        try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
+            HttpGet httpGet = new HttpGet(sonarUrl);
+            CloseableHttpResponse response1 = httpclient.execute(httpGet);
+            return response1.getStatusLine().getStatusCode();
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
+
 }

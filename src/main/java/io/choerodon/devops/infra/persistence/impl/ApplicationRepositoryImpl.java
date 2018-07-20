@@ -1,9 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -15,7 +13,6 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -38,6 +35,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     public ApplicationRepositoryImpl(ApplicationMapper applicationMapper) {
         this.applicationMapper = applicationMapper;
+    }
+
+    @Override
+    public void checkApp(Long projectId, Long appId) {
+        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(appId);
+        if (applicationDO == null || !applicationDO.getProjectId().equals(projectId)) {
+            throw new CommonException("error.app.project.notMatch");
+        }
     }
 
     @Override
@@ -92,16 +97,40 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
                                 projectId, isActive, hasVersion, null,
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
             } else {
                 applicationES = PageHelper.doPageAndSort(
                         pageRequest, () -> applicationMapper.list(
                                 projectId, isActive, hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
+            }
+        } else {
+            applicationES = PageHelper.doPageAndSort(
+                    pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion,
+                            null, null, checkSortIsEmpty(pageRequest)));
+        }
+        return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
+    }
+
+    @Override
+    public Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
+        Page<ApplicationDO> applicationES;
+        if (!StringUtils.isEmpty(params)) {
+            Map<String, Object> maps = json.deserialize(params, Map.class);
+            if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
+                applicationES = PageHelper.doPageAndSort(
+                        pageRequest, () -> applicationMapper.listCodeRepository(
+                                projectId, null, TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+            } else {
+                applicationES = PageHelper.doPageAndSort(
+                        pageRequest, () -> applicationMapper.listCodeRepository(
+                                projectId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM))));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, null, null));
+                    pageRequest, () -> applicationMapper.listCodeRepository(projectId,
+                            null, null));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
@@ -177,5 +206,25 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public List<ApplicationE> listByCode(String code) {
         return ConvertHelper.convertList(applicationMapper.listByCode(code), ApplicationE.class);
+    }
+
+    @Override
+    public String checkSortIsEmpty(PageRequest pageRequest) {
+        String index = "";
+        if (pageRequest.getSort() == null) {
+            index = "true";
+        }
+        return index;
+    }
+
+    @Override
+    public ApplicationE getAppByGitLabId(Long gitLabProjectId) {
+        ApplicationDO applicationDO = new ApplicationDO();
+        applicationDO.setGitlabProjectId(gitLabProjectId.intValue());
+        try {
+            return ConvertHelper.convert(applicationMapper.selectOne(applicationDO), ApplicationE.class);
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

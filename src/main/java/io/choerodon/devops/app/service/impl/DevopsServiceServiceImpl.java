@@ -110,7 +110,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             throw new CommonException("error.env.query");
         }
 
-        devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName());
+        if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
+            throw new CommonException("error.service.name.check");
+        }
         checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
                 null, null);
 
@@ -146,7 +148,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         ApplicationE applicationE = getApplicationE(devopsServiceReqDTO.getAppId());
 
         if (!devopsServiceE.getName().equals(devopsServiceReqDTO.getName())) {
-            devopsServiceRepository.checkName(projectId, devopsServiceE.getEnvId(), devopsServiceReqDTO.getName());
+            if (!devopsServiceRepository.checkName(
+                    projectId, devopsServiceE.getEnvId(), devopsServiceReqDTO.getName())) {
+                throw new CommonException("error.service.name.check");
+            }
             checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
                     null, null);
             String oldServiceName = devopsServiceE.getName();

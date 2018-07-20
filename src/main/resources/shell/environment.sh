@@ -1,12 +1,3 @@
-if ! [ -x "$(command -v kubectl)" ]; then
-  echo 'Error: kubectl is not installed.' >&2
-  exit 1
-fi
-if ! [ -x "$(command -v helm)" ]; then
-  echo 'Error: helm is not installed.' >&2
-  exit 1
-fi
-kubectl create namespace {NAMESPACE}
 helm install --repo={REPOURL} \
     --namespace={NAMESPACE} \
     --name={NAMESPACE} \

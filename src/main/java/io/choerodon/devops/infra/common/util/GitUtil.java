@@ -23,8 +23,6 @@ import io.choerodon.core.exception.CommonException;
 @Component
 public class GitUtil {
 
-    private static final String APPLICATION = "application";
-    private static final String DEVELOP = "develop";
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPONAME = "devops-service-repo";
@@ -87,7 +85,7 @@ public class GitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String repoUrl, String userName, String accessToken, String type, Boolean  teamplateType) {
+    public void push(Git git, String name, String repoUrl, String userName, String accessToken,  Boolean  teamplateType) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
@@ -95,9 +93,6 @@ public class GitUtil {
             git.commit().setMessage("Render Variables[skip ci]").call();
             if(teamplateType) {
                 git.branchCreate().setName(MASTER).call();
-            }
-            if (type.equals(APPLICATION)) {
-                git.branchCreate().setName(DEVELOP).call();
             }
             List<Ref> refs = git.branchList().call();
             PushCommand pushCommand = git.push();

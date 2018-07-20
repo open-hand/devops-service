@@ -81,4 +81,9 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
                 devopsEnvResourceMapper.listByEnvAndType(envId, type), DevopsEnvResourceE.class);
     }
 
+    @Override
+    public DevopsEnvResourceE queryLatestJob(String kind, String name) {
+        return ConvertHelper.convert(devopsEnvResourceMapper.queryLatestJob(kind, name), DevopsEnvResourceE.class);
+    }
+
 }

@@ -144,7 +144,6 @@ public class ApplicationController {
             @ApiParam(value = "应用是否存在版本", required = false)
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
             @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
@@ -324,5 +323,34 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));
+    }
+
+
+    /**
+     * 项目下分页查询代码仓库
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      参数
+     * @return Page
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下分页查询代码仓库")
+    @CustomPageRequest
+    @PostMapping("/list_code_repository")
+    public ResponseEntity<Page<ApplicationRepDTO>> listCodeRepository(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(
+                applicationService.listCodeRepository(projectId, pageRequest, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
 }

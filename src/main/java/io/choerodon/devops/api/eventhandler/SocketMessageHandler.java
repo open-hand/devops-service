@@ -162,6 +162,13 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.resourceSync(
                         msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
+            case JOB_EVENT:
+                deployMsgHandlerService.jobEvent(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
+                break;
+            case RELEASE_POD_EVENT:
+                deployMsgHandlerService.releasePodEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
+                break;
             default:
                 break;
         }

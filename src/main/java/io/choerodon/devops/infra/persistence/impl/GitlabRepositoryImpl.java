@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
@@ -103,9 +105,17 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
 
     @Override
-
     public String updateProject(Integer projectId, Integer userId) {
         return gitlabServiceClient.updateProject(projectId, userId).getBody().getDefaultBranch();
+    }
+
+    @Override
+    public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
+        ResponseEntity<ProjectHook> projectHookResponseEntity = gitlabServiceClient.createProjectHook(projectId, userId, projectHook);
+        if (!projectHookResponseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+            throw new CommonException("error.projecthook.create");
+        }
+        return projectHookResponseEntity.getBody();
     }
 
 }

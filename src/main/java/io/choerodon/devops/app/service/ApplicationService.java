@@ -151,4 +151,16 @@ public interface ApplicationService {
      * @return list of ApplicationRepDTO
      */
     Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
+
+    /**
+     *  项目下分页查询代码仓库
+     *
+     * @param projectId    项目id
+     * @param pageRequest  分页参数
+     * @param params       查询参数
+     * @return page of ApplicationRepDTO
+     */
+    Page<ApplicationRepDTO> listCodeRepository(Long projectId,
+                                               PageRequest pageRequest,
+                                               String params);
 }

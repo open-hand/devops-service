@@ -20,6 +20,7 @@ public class DevopsEnvPodDTO {
     private String envCode;
     private String envName;
     private Long objectVersionNumber;
+    private Boolean isConnect;
 
     public Long getId() {
         return id;
@@ -147,5 +148,13 @@ public class DevopsEnvPodDTO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public Boolean getConnect() {
+        return isConnect;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnect = connect;
     }
 }

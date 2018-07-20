@@ -1,6 +1,51 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
- 
+
+## [0.8.0] - 2018-07-20
+### Added
+- `Repository`, `branch management`, `tag` and `merge request`, achieving more flexible branch management models.
+- Connect with `agile management` to achieve consistency in agile issue management and DevOps code management.
+- Integrated the webhook of push and merge request in `branch management`.
+- Job operation event message in `container`. 
+- Only save delta `values` config in db and support to save additional key in `values`.
+- Code quality checking in CI pipeline.
+- Sonarqube link in `application management`.
+- Surport smooth upgrade from `0.7.0` to `0.8.0`.
+
+### Changed
+- Modify the naming rules for the version when running CI.
+- Only save modified parts in `values`.
+
+### Removed
+- `Branch management` in `application management`.
+
+### Fixed
+- Problem with select-all in selection box.
+- Filter condition of the table component cannot be cleared when the parent component is refreshed.
+- Fixed switch version does not clear instances when modify the service in service management.
+- Fixed instance details, the log not changed while switch the stage.
+
+## [0.7.0] - 2018-06-29
+### Added
+- `Service management` instanseinstance availability verification.
+- `Service management` port legality verification.
+- `Ingress management` service availability verification.
+- `Ingress management` path address uniqueness verification.
+- Cancel button added to `application release` and `application deployment`.
+- Yaml configuration file check and error information display.
+- Chinese and English mode supported.
+
+### Changed
+- Chinese-English translation supported for backend error.
+- Two api name changed so as to conform to naming and authority check.
+- Optimized predefined application template acquisition for users, manual template creation no longer needed.
+
+### Fixed
+- Values replacement disorder in application deployment.
+- Inaccurate time in Continuous Integration (CI) pipeline.
+- Application detail README file unavailability in occasional circumstances.
+
+
 ## [0.6.0] - 2018-06-10
 ### Added
 - `Release management` section, including `application release` and `application market`. 

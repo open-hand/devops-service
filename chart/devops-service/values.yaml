@@ -47,11 +47,13 @@ env:
     SERVICES_HARBOR_BASEURL: https://registry.choerodon.com.cn
     SERVICES_HARBOR_USERNAME:  admin
     SERVICES_HARBOR_PASSWORD:
+    SERVICES_SONARQUBE_URL:
+    SERVICES_GATEWAY_URL: http://api.example.com
     AGENT_VERSION: 0.5.0.RELEASE
+    SECURITY_BASIC_ENABLE: false
+    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
-    SECURITY_BASIC_ENABLE: false
-    SECURITY_IGNORED: /ci,/v2/api-docs,/agent/**,/ws/**
     TEMPLATE_VERSION_MICROSERVICE: 0.7.0
     TEMPLATE_VERSION_MICROSERVICEFRONT: 0.7.0
     TEMPLATE_VERSION_JAVALIB: 0.7.0

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
@@ -104,6 +105,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<List<MergeRequestDO>> getMergeRequestList(Integer projectId) {
+        return new ResponseEntity("error.mergerequest.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<List<BranchDO>> listBranches(Integer projectId, Integer userId) {
         return new ResponseEntity("error.select.branch", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -111,6 +117,15 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<io.choerodon.devops.infra.dataobject.gitlab.CommitDO> getCommit(Integer projectId, String sha, Integer userId) {
         return new ResponseEntity("error.commit.select", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(Integer projectId, String sha, Integer userId) {
+        return new ResponseEntity("error.commitStatuse.select", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    public ResponseEntity<List<CommitDO>> getCommits(Integer projectId, String branchName, String since) {
+        return new ResponseEntity("error.commits.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -189,6 +204,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity deleteTag(Integer projectId, String name, Integer userId) {
+        return new ResponseEntity("error.tag.delete", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity deleteMergeRequest(Integer projectId, Integer mergeRequestId) {
         return new ResponseEntity("error.mergeRequest.delete", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -196,6 +216,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<Object> deleteBranch(Integer projectId, String branchName, Integer userId) {
         return new ResponseEntity("error.branch.delete", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<BranchDO> getBranch(Integer projectId, String branchName, Integer userId) {
+        return new ResponseEntity("error.branch.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -216,5 +241,10 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity disEnabledUserByUserId(Integer userId) {
         return new ResponseEntity("error.user.blockUser", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<ProjectHook> createProjectHook(Integer projectId, Integer userId, ProjectHook projectHook) {
+        return new ResponseEntity("error.projecthook.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

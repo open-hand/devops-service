@@ -127,4 +127,13 @@ public interface ApplicationInstanceService {
      * @return List
      */
     List<ErrorLineDTO> formatValue(ReplaceResult replaceResult);
+
+    /**
+     * 获取预览 Value
+     *
+     * @param replaceResult yaml
+     * @param appVersionId  版本Id
+     * @return ReplaceResult
+     */
+    ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
 }

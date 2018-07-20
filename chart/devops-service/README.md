@@ -63,6 +63,19 @@ choerodon.io/metrics-path: {{ .Values.metrics.path | quote }}
 同时，helm命令支持使用 `--set FOO_BAR=FOOBAR` 参数对values 文件中的变量进行赋值，可以进一步简化部署流程。
 
 
+## deployment.yaml
+
+    deployment一种更加简单的更新RC和Pod的机制,deployment集成了上线部署、滚动升级、创建副本、暂停上线任务，恢复上线任务，回滚到以前某一版本（成功/稳定）的Deployment等功能,一个deployment可以生成1个或多个Pod
+
+## pre-config-config.yaml
+
+    job对象，是想要运行一些容器执行某种特定的任务。执行完删除，该任务是初始化微服务的application.yaml到线上的配置中心服务
+
+## pre-config-db.yaml
+
+    job对象，是想要运行一些容器执行某种特定的任务。执行完删除，该任务是初始化微服务线上的数据库
+
+
 ## 参数对照表
 
 参数名 | 含义 
@@ -76,8 +89,27 @@ env.open.SPRING_DATASOURCE_PASSWORD|数据库密码
 env.open.SPRING_CLOUD_CONFIG_ENABLED|启用配置中心
 env.open.SPRING_CLOUD_CONFIG_URI|配置中心地址
 env.open.EUREKA_CLIENT_SERVICEURL_DEFAULTZONE|注册服务地址
-env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS|kafk地址
+env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS|kafka地址
 env.open.SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES|zookeeper地址
 env.open.SERVICES_GITLAB_URL|gitlab地址
+env.open.SPRING_REDIS_HOST|redis地址
+env.open.CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS|kafka bootstrap 地址
+env.open.SERVICES_GITLAB_URL|gitlab 地址
+env.open.SERVICES_GITLAB_PASSWORD|gitlab默认创建用户密码
+env.open.SERVICES_GITLAB_PROJECTLIMIT|gitlab用户可以创建项目限制
+env.open.SERVICES_HELM_URL|helm地址
+env.open.SERVICES_HARBOR_BASEURL|harbor地址
+env.open.SERVICES_HARBOR_USERNAME|harbor用户名
+env.open.SERVICES_HARBOR_PASSWORD|harbor密码
+env.open.SERVICES_SONARQUBE_URL|sonarqube地址
+env.open.SERVICES_GATEWAY_URL|gateway地址
+env.open.AGENT_VERSION|agengt版本
+env.open.SECURITY_BASIC_ENABLE|安全性验证
+env.open.SECURITY_IGNORED|安全性忽略
+env.open.AGENT_SERVICEURL|agent地址
+env.open.AGENT_REPOURL|agent仓库地址
+env.open.TEMPLATE_VERSION_MICROSERVICE|微服务模板版本
+env.open.TEMPLATE_VERSION_MICROSERVICEFRONT|前端服务模板版本
+env.open.TEMPLATE_VERSION_JAVALIB|javalib模板版本
 persistence.enabled|是否启用持久化存储
 persistence.existingClaim|绑定的pvc名称

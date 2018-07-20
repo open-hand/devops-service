@@ -19,10 +19,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -43,6 +40,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private IamRepository iamRepository;
     @Autowired
     private ApplicationVersionValueRepository applicationVersionValueRepository;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -79,20 +78,21 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         if (newApplicationVersionE != null) {
             return;
         }
+        String destFilePath = DESTPATH + version;
         try {
-            FileUtil.unTarGZ(path, DESTPATH);
+            FileUtil.unTarGZ(path, destFilePath);
             applicationVersionValueE.setValue(
                     FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
-                            new File(DESTPATH), "values.yaml").getAbsolutePath())), null));
+                            new File(destFilePath), "values.yaml").getAbsolutePath())), null));
 
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());
         } catch (Exception e) {
             throw new CommonException("error.version.insert");
         }
-        applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(DESTPATH));
+        applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
         applicationVersionRepository.create(applicationVersionE);
-        FileUtil.deleteDirectory(new File(DESTPATH));
+        FileUtil.deleteDirectory(new File(destFilePath));
     }
 
     @Override
@@ -119,5 +119,13 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         Page<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
                 projectId, appId, pageRequest, searchParam);
         return ConvertPageHelper.convertPage(applicationVersionEPage, ApplicationVersionRepDTO.class);
+    }
+
+    @Override
+    public List<ApplicationVersionRepDTO> getUpgradeAppVersion(Long projectId, Long appVersionId) {
+        applicationVersionRepository.checkProIdAndVerId(projectId, appVersionId);
+        return ConvertHelper.convertList(
+                applicationVersionRepository.selectUpgradeVersions(appVersionId),
+                ApplicationVersionRepDTO.class);
     }
 }

@@ -38,6 +38,10 @@ services:
     projectLimit: 100
   helm:
     url: "helm.example.com"
+  sonarqube:
+    url: "http://sonarqube.example.com"
+  gateway:
+    url: "http://api.example.com"
 template:
   version:
     MicroService: 0.7.0
@@ -73,7 +77,7 @@ eureka:
 security:
   basic:
       enabled: false
-  ignored: /ci,/v2/api-docs,/agent/**,/ws/**
+  ignored: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:
