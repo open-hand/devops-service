@@ -30,10 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.composer.Composer;
-import org.yaml.snakeyaml.nodes.MappingNode;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.NodeTuple;
-import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
 import org.yaml.snakeyaml.resolver.Resolver;
@@ -463,7 +460,12 @@ public class FileUtil {
             stringBuilder.append(":");
             stringBuilder.append(printNode(insertNode.getValue(), insertNode.getStartColumn()));
             String insertString = stringBuilder.toString();
-            temp = temp.substring(0, insertNode.getLastIndex() + 1) + insertString + temp.substring(insertNode.getLastIndex() + 1);
+            if ( insertNode.getLastIndex() >= temp.length() ){
+                insertString = "\n"+insertString;
+                temp = temp+insertString;
+            } else {
+                temp = temp.substring(0,insertNode.getLastIndex()+1)+insertString+temp.substring(insertNode.getLastIndex()+1);
+            }
             int insertLineCount = countLine(insertString);
             insertLineCounts[i] = insertLineCount;
             for (HighlightMarker highlightMarker : highlights) {
@@ -585,7 +587,7 @@ public class FileUtil {
             }
         }
         logger.info("not found key in tuple");
-        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
+        Node lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
             logger.info("get last scarlar index error");
             return null;
@@ -615,7 +617,7 @@ public class FileUtil {
         }
 
         logger.info("not found key in tuple");
-        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
+        Node lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
             logger.info("get last scarlar index error");
             return null;
@@ -628,14 +630,24 @@ public class FileUtil {
     }
 
 
-    private static ScalarNode getLastIndex(NodeTuple nodeTuple) {
+    private static Node getLastIndex(NodeTuple nodeTuple) {
         Node node = nodeTuple.getValueNode();
         if (node instanceof ScalarNode) {
-            return (ScalarNode) node;
-        } else if (node instanceof MappingNode) {
+            return node;
+        }
+        else if (node instanceof MappingNode) {
             MappingNode mappingNode = (MappingNode) node;
-            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size() - 1);
+            if (mappingNode.getValue().size() == 0){
+                return mappingNode;
+            }
+            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size()-1);
             return getLastIndex(last);
+        } else if (node instanceof SequenceNode) {
+            SequenceNode sequenceNode = (SequenceNode) node;
+            if (sequenceNode.getValue().size() == 0){
+                return sequenceNode;
+            }
+            return sequenceNode.getValue().get(sequenceNode.getValue().size()-1);
         } else {
             return null;
         }
