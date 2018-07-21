@@ -586,6 +586,9 @@ public class FileUtil {
                 }
             }
         }
+        if (tuples.isEmpty()) {
+            return null;
+        }
         logger.info("not found key in tuple");
         Node lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
@@ -615,7 +618,9 @@ public class FileUtil {
                 }
             }
         }
-
+        if (tuples.isEmpty()) {
+            return null;
+        }
         logger.info("not found key in tuple");
         Node lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
