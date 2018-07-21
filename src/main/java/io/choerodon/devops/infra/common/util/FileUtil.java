@@ -1106,6 +1106,9 @@ public class FileUtil {
                 keys.set(complex - 1, entry.getKey().toString());
             }
             Object val = entry.getValue();
+            if (val instanceof Map && ((Map) val).size() == 0) {
+                val = "{}";
+            }
             if (val instanceof Map) {
                 complex++;
                 complex = getdep((Map) val, complex, keys, primaryKeys, maps);
