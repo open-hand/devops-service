@@ -1095,8 +1095,8 @@ public class FileUtil {
     public static String getChangeYaml(String oldYam1, String newYaml) {
         Map<String, Object> map1 = (Map<String, Object>) yaml.load(oldYam1);
         Map<String, Object> map2 = (Map<String, Object>) yaml.load(newYaml);
-        List<String> primaryKeys = getPrimaryKey(map1);
-        List<String> newprimaryKeys = getPrimaryKey(map2);
+        List<Integer> primaryKeys = getPrimaryKey(map1);
+        List<Integer> newprimaryKeys = getPrimaryKey(map2);
         Map<String, String> oldProperties = new HashMap<>();
         Map<String, String> newProperties = new HashMap<>();
         List<String> keys = new ArrayList<>();
@@ -1109,11 +1109,11 @@ public class FileUtil {
     }
 
 
-    public static int getdep(Map map, int complex, List<String> keys, List<String> primaryKeys, Map<String, String> maps) {
+    public static int getdep(Map map, int complex, List<String> keys, List<Integer> primaryKeys, Map<String, String> maps) {
         Iterator it = map.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
-            if (primaryKeys.contains(entry.getKey().toString())) {
+            if (primaryKeys.contains(entry.hashCode())) {
                 complex = 1;
                 keys.clear();
             }
@@ -1163,12 +1163,12 @@ public class FileUtil {
         return properties;
     }
 
-    public static List<String> getPrimaryKey(Map<String, Object> map) {
-        List<String> primaryKeys = new ArrayList<>();
+    public static List<Integer> getPrimaryKey(Map<String, Object> map) {
+        List<Integer> primaryKeys = new ArrayList<>();
         Iterator iterator = map.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry entry = (Map.Entry) iterator.next();
-            primaryKeys.add(entry.getKey().toString());
+            primaryKeys.add(entry.hashCode());
         }
         return primaryKeys;
     }
