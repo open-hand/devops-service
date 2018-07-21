@@ -232,7 +232,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult previewValues(ReplaceResult previewReplaceResult, Long appVersionId) {
         String versionValue = applicationVersionRepository.queryValue(appVersionId);
-        ReplaceResult replaceResult = FileUtil.replace(versionValue, FileUtil.getChangeYaml(versionValue, previewReplaceResult.getYaml()));
+        ReplaceResult replaceResult = FileUtil.replace(versionValue, previewReplaceResult.getYaml());
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
     }
