@@ -30,10 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.composer.Composer;
-import org.yaml.snakeyaml.nodes.MappingNode;
-import org.yaml.snakeyaml.nodes.Node;
-import org.yaml.snakeyaml.nodes.NodeTuple;
-import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.nodes.*;
 import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
 import org.yaml.snakeyaml.resolver.Resolver;
@@ -463,7 +460,12 @@ public class FileUtil {
             stringBuilder.append(":");
             stringBuilder.append(printNode(insertNode.getValue(), insertNode.getStartColumn()));
             String insertString = stringBuilder.toString();
-            temp = temp.substring(0, insertNode.getLastIndex() + 1) + insertString + temp.substring(insertNode.getLastIndex() + 1);
+            if ( insertNode.getLastIndex() >= temp.length() ){
+                insertString = "\n"+insertString;
+                temp = temp+insertString;
+            } else {
+                temp = temp.substring(0,insertNode.getLastIndex()+1)+insertString+temp.substring(insertNode.getLastIndex()+1);
+            }
             int insertLineCount = countLine(insertString);
             insertLineCounts[i] = insertLineCount;
             for (HighlightMarker highlightMarker : highlights) {
@@ -584,8 +586,11 @@ public class FileUtil {
                 }
             }
         }
+        if (tuples.isEmpty()) {
+            return null;
+        }
         logger.info("not found key in tuple");
-        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
+        Node lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
             logger.info("get last scarlar index error");
             return null;
@@ -613,9 +618,11 @@ public class FileUtil {
                 }
             }
         }
-
+        if (tuples.isEmpty()) {
+            return null;
+        }
         logger.info("not found key in tuple");
-        ScalarNode lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
+        Node lastScalarNode = getLastIndex(tuples.get(tuples.size() - 1));
         if (lastScalarNode == null) {
             logger.info("get last scarlar index error");
             return null;
@@ -628,14 +635,24 @@ public class FileUtil {
     }
 
 
-    private static ScalarNode getLastIndex(NodeTuple nodeTuple) {
+    private static Node getLastIndex(NodeTuple nodeTuple) {
         Node node = nodeTuple.getValueNode();
         if (node instanceof ScalarNode) {
-            return (ScalarNode) node;
-        } else if (node instanceof MappingNode) {
+            return node;
+        }
+        else if (node instanceof MappingNode) {
             MappingNode mappingNode = (MappingNode) node;
-            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size() - 1);
+            if (mappingNode.getValue().size() == 0){
+                return mappingNode;
+            }
+            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size()-1);
             return getLastIndex(last);
+        } else if (node instanceof SequenceNode) {
+            SequenceNode sequenceNode = (SequenceNode) node;
+            if (sequenceNode.getValue().size() == 0){
+                return sequenceNode;
+            }
+            return sequenceNode.getValue().get(sequenceNode.getValue().size()-1);
         } else {
             return null;
         }
@@ -1078,8 +1095,8 @@ public class FileUtil {
     public static String getChangeYaml(String oldYam1, String newYaml) {
         Map<String, Object> map1 = (Map<String, Object>) yaml.load(oldYam1);
         Map<String, Object> map2 = (Map<String, Object>) yaml.load(newYaml);
-        List<String> primaryKeys = getPrimaryKey(map1);
-        List<String> newprimaryKeys = getPrimaryKey(map2);
+        List<Integer> primaryKeys = getPrimaryKey(map1);
+        List<Integer> newprimaryKeys = getPrimaryKey(map2);
         Map<String, String> oldProperties = new HashMap<>();
         Map<String, String> newProperties = new HashMap<>();
         List<String> keys = new ArrayList<>();
@@ -1092,11 +1109,11 @@ public class FileUtil {
     }
 
 
-    public static int getdep(Map map, int complex, List<String> keys, List<String> primaryKeys, Map<String, String> maps) {
+    public static int getdep(Map map, int complex, List<String> keys, List<Integer> primaryKeys, Map<String, String> maps) {
         Iterator it = map.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry entry = (Map.Entry) it.next();
-            if (primaryKeys.contains(entry.getKey().toString())) {
+            if (primaryKeys.contains(entry.hashCode())) {
                 complex = 1;
                 keys.clear();
             }
@@ -1146,12 +1163,12 @@ public class FileUtil {
         return properties;
     }
 
-    public static List<String> getPrimaryKey(Map<String, Object> map) {
-        List<String> primaryKeys = new ArrayList<>();
+    public static List<Integer> getPrimaryKey(Map<String, Object> map) {
+        List<Integer> primaryKeys = new ArrayList<>();
         Iterator iterator = map.entrySet().iterator();
         while (iterator.hasNext()) {
             Map.Entry entry = (Map.Entry) iterator.next();
-            primaryKeys.add(entry.getKey().toString());
+            primaryKeys.add(entry.hashCode());
         }
         return primaryKeys;
     }
