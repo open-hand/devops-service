@@ -292,37 +292,6 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 获取部署实例hook阶段
-     *
-     * @param projectId    项目id
-     * @param instanceId   实例id
-     * @param repoURL      仓库地址
-     * @param chartName    Chart 名称
-     * @param chartVersion Chart 版本
-     * @param values       配置信息
-     * @return responseEntity
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "实例更新")
-    @PutMapping(value = "/{instanceId}/upgrade")
-    public ResponseEntity upgrade(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "实例ID", required = true)
-            @PathVariable Long instanceId,
-            @ApiParam(value = "仓库地址", required = true)
-            @RequestParam String repoURL,
-            @ApiParam(value = "Chart 名称", required = true)
-            @RequestParam String chartName,
-            @ApiParam(value = "Chart 版本", required = true)
-            @RequestParam String chartVersion,
-            @ApiParam(value = "配置信息", required = true)
-            @RequestParam String values) {
-        applicationInstanceService.instanceUpgrade(instanceId, repoURL, chartName, chartVersion, values);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
-
-    /**
      * 实例停止
      *
      * @param projectId  项目id
