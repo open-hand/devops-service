@@ -95,4 +95,15 @@ public interface DevopsIngressService {
      * @return V1beta1HTTPIngressPath
      */
     V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId);
+
+
+    /**
+     * 环境总览域名查询
+     *
+     * @param projectId   项目Id
+     * @param pageRequest 分页参数
+     * @param params      模糊查询参数
+     * @return Page
+     */
+    Page<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 }

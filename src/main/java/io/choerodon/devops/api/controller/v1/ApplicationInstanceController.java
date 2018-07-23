@@ -39,11 +39,11 @@ public class ApplicationInstanceController {
      * 分页查询应用部署
      *
      * @param projectId   项目id
-     * @param pageRequest 项目id
+     * @param pageRequest 分页参数
      * @param envId       环境id
      * @param versionId   版本id
      * @param appId       应用id
-     * @param params      分页参数
+     * @param params      搜索参数
      * @return page of applicationInstanceDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
@@ -57,7 +57,8 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "分页参数")
+                    PageRequest pageRequest,
             @ApiParam(value = "环境ID")
             @RequestParam(required = false) Long envId,
             @ApiParam(value = "版本ID")
@@ -346,5 +347,32 @@ public class ApplicationInstanceController {
             @PathVariable Long instanceId) {
         applicationInstanceService.instanceDelete(instanceId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+
+    /**
+     * 环境总览实例查询
+     *
+     * @param projectId 项目id
+     * @param envId     环境Id
+     * @param params    搜索参数
+     * @return DevopsEnvPreviewDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "环境总览实例查询")
+    @PostMapping(value = "/{envId}/listByEnv")
+    public ResponseEntity<DevopsEnvPreviewDTO> listByEnv(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "envId", required = true)
+            @PathVariable(value = "envId") Long envId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(applicationInstanceService.listByEnv(projectId, envId, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appInstance.query"));
     }
 }

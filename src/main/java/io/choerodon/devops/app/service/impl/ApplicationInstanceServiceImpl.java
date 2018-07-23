@@ -1,8 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -15,6 +17,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -25,8 +28,10 @@ import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
+import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
@@ -73,6 +78,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private EnvUtil envUtil;
     @Autowired
     private UserAttrRepository userAttrRepository;
+    private ApplicationInstanceMapper applicationInstanceMapper;
+    @Autowired
+    private DevopsEnvPodRepository devopsEnvPodRepository;
+    @Autowired
+    private DevopsEnvResourceService devopsEnvResourceService;
+
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -236,6 +247,56 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ReplaceResult replaceResult = FileUtil.replace(versionValue, previewReplaceResult.getYaml());
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
+    }
+
+    @Override
+    public DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params) {
+        Map<String, Object> maps = gson.fromJson(params, Map.class);
+        Map<String, EnvSession> envs = envListener.connectedEnv();
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        List<ApplicationInstanceDO> applicationInstancesDOS = applicationInstanceMapper.listApplicationInstance(projectId, envId, null, null, searchParamMap, paramMap);
+        List<String> appNames = applicationInstancesDOS.parallelStream().map(ApplicationInstanceDO::getAppName).distinct().collect(Collectors.toList());
+        List<ApplicationInstanceE> applicationInstanceES = ConvertHelper.convertList(applicationInstancesDOS, ApplicationInstanceE.class);
+        for (ApplicationInstanceE applicationInstanceE : applicationInstanceES) {
+            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
+                EnvSession envSession = entry.getValue();
+                if (envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())
+                        && agentExpectVersion.compareTo(envSession.getVersion()) < 1) {
+                    applicationInstanceE.setConnect(true);
+                }
+            }
+        }
+        Map<String, List<ApplicationInstanceE>> resultMaps = new HashMap<>();
+        appNames.stream().forEach(appName -> {
+            resultMaps.put(appName, new ArrayList<>());
+            applicationInstanceES.parallelStream().filter(applicationInstanceE -> applicationInstanceE.getApplicationE().getName().equals(appName)).forEach(applicationInstanceE ->
+                    resultMaps.get(appName).add(applicationInstanceE));
+        });
+        DevopsEnvPreviewDTO devopsEnvPreviewDTO = new DevopsEnvPreviewDTO();
+        List<DevopsEnvPreviewAppDTO> devopsEnvPreviewAppDTOS = new ArrayList<>();
+        Iterator iterator = resultMaps.entrySet().iterator();
+        while (iterator.hasNext()) {
+            DevopsEnvPreviewAppDTO devopsEnvPreviewAppDTO = new DevopsEnvPreviewAppDTO();
+            Map.Entry entry = (Map.Entry) iterator.next();
+            devopsEnvPreviewAppDTO.setAppName(entry.getKey().toString());
+            List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper.convertList((List<ApplicationInstanceE>) entry.getValue(), ApplicationInstanceDTO.class);
+            List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();
+            applicationInstanceDTOS.parallelStream().forEach(applicationInstanceDTO -> {
+                DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
+                BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
+                List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper.convertList(devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()), DevopsEnvPodDTO.class);
+                DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(applicationInstanceDTO.getId());
+                devopsEnvPreviewInstanceDTO.setDevopsEnvPodDTOS(devopsEnvPodDTOS);
+                devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
+                devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
+                devopsEnvPreviewInstanceDTOS.add(devopsEnvPreviewInstanceDTO);
+            });
+            devopsEnvPreviewAppDTO.setDevopsEnvPreviewInstanceDTOS(devopsEnvPreviewInstanceDTOS);
+            devopsEnvPreviewAppDTOS.add(devopsEnvPreviewAppDTO);
+        }
+        devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
+        return devopsEnvPreviewDTO;
     }
 
     @Override

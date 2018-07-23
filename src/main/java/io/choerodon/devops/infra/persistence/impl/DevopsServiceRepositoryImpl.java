@@ -43,7 +43,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("name", "ds.`name`");
@@ -64,18 +64,18 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
-                    projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    projectId, envId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
             devopsServiceQueryDOList = PageHelper.doSort(
                     pageRequest.getSort(), () -> devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                            projectId, envId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size));
         } else {
             count = devopsServiceMapper
-                    .selectCountByName(projectId, null, null);
+                    .selectCountByName(projectId, envId, null, null);
             devopsServiceQueryDOList = PageHelper.doSort(pageRequest.getSort(), () ->
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, null, null, start, size));
+                            projectId, envId, null, null, start, size));
         }
 
         return ConvertPageHelper.convertPage(

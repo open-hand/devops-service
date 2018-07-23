@@ -34,6 +34,9 @@
         ds.app_id = da.id
         AND da.project_id = #{projectId}
         AND ds.`status` != 'deleted'
+        <if test="envId != null">
+            AND ds.env_id = #{envId}
+        </if>
         ) ds
         INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
         INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
@@ -87,6 +90,9 @@
         WHERE
         denv.project_id = #{projectId}
         AND devs.`status` != 'deleted'
+        <if test="envId != null">
+            AND devs.env_id = #{envId}
+        </if>
         <if test="start != null and  size != null">
             LIMIT #{start}, #{size}
         </if>

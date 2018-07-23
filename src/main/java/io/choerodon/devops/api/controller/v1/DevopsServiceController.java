@@ -188,4 +188,35 @@ public class DevopsServiceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.query"));
     }
+
+
+    /**
+     * 环境总览网络查询
+     *
+     * @param projectId   项目id
+     * @param envId       环境id
+     * @param pageRequest 分页参数
+     * @param searchParam 查询参数
+     * @return Page of DevopsServiceDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "环境总览网络查询")
+    @CustomPageRequest
+    @PostMapping(value = "/{envId}/listByEnv")
+    public ResponseEntity<Page<DevopsServiceDTO>> listByEnv(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "envId") Long envId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(devopsServiceService.listByEnv(projectId, envId, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
+                .orElseThrow(() -> new CommonException("error.app.k8s.service.query"));
+    }
 }

@@ -45,6 +45,9 @@
         decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
         LEFT JOIN devops_service ds on ds.id = dip.service_id
         WHERE di.project_id = #{projectId}
+        <if test="envId != null">
+            AND de.id = #{envId}
+        </if>
         <if test='searchParam != null'>
             <if test='searchParam.domain != null and searchParam.domain.size > 0'>
                 AND
