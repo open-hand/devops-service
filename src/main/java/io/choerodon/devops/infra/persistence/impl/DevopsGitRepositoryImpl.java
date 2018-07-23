@@ -19,10 +19,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.AuthorDTO;
-import io.choerodon.devops.api.dto.CommitDTO;
-import io.choerodon.devops.api.dto.MergeRequestDTO;
-import io.choerodon.devops.api.dto.TagDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -391,6 +388,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         mergeRequestDTO.setIid(devopsMergeRequestE.getGitlabMergeRequestId().intValue());
         Long authorUserId = devopsGitRepository
                 .getUserIdByGitlabUserId(devopsMergeRequestE.getAuthorId());
+        Long assigneeId = devopsGitRepository
+                .getUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
         Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
         Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
         List<CommitDO> commitDOS = gitlabServiceClient.listCommits(
@@ -405,6 +404,15 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             authorDTO.setId(authorUser.getId() == null ? null : authorUser.getId().intValue());
             authorDTO.setWebUrl(authorUser.getImageUrl());
             mergeRequestDTO.setAuthor(authorDTO);
+        }
+        UserE assigneeUser = iamRepository.queryUserByUserId(assigneeId);
+        if (assigneeUser != null) {
+            AssigneeDTO assigneeDTO = new AssigneeDTO();
+            assigneeDTO.setUsername(assigneeUser.getLoginName());
+            assigneeDTO.setName(assigneeUser.getRealName());
+            assigneeDTO.setId(assigneeId.intValue());
+            assigneeDTO.setWebUrl(assigneeUser.getImageUrl());
+            mergeRequestDTO.setAssignee(assigneeDTO);
         }
         return mergeRequestDTO;
     }
