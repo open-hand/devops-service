@@ -9,6 +9,7 @@ public class ServiceDTO {
     private String clusterIp;
     private String externalIp;
     private String port;
+    private String targetPort;
     private String age;
 
     public String getName() {
@@ -57,5 +58,13 @@ public class ServiceDTO {
 
     public void setAge(String age) {
         this.age = age;
+    }
+
+    public String getTargetPort() {
+        return targetPort;
+    }
+
+    public void setTargetPort(String targetPort) {
+        this.targetPort = targetPort;
     }
 }

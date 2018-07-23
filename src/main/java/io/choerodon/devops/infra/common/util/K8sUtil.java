@@ -162,11 +162,29 @@ public class K8sUtil {
     }
 
     /**
-     * 获取ip
+     * 获取目标网络端口
      *
-     * @param v1beta1IngressRules ingress对象
+     * @param servicePorts service端口
      * @return string
      */
+    public static String makeTargetPortString(List<V1ServicePort> servicePorts) {
+        List<String> results = new ArrayList<>();
+        for (V1ServicePort v1ServicePort : servicePorts) {
+            String result = v1ServicePort.getTargetPort() + "/" + v1ServicePort.getProtocol();
+            if (v1ServicePort.getNodePort() != null) {
+                result = v1ServicePort.getTargetPort() + ":"
+                        + v1ServicePort.getNodePort() + "/" + v1ServicePort.getProtocol();
+            }
+            results.add(result);
+        }
+        return String.join(",", results);
+    }
+        /**
+         * 获取ip
+         *
+         * @param v1beta1IngressRules ingress对象
+         * @return string
+         */
     public static String formatHosts(List<V1beta1IngressRule> v1beta1IngressRules) {
         List<String> results = new ArrayList<>();
         Integer max = 3;

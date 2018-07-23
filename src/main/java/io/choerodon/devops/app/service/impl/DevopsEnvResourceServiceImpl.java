@@ -249,7 +249,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         if (port.length() == 0) {
             port = "<none>";
         }
+        String targetPort = K8sUtil.makeTargetPortString(v1Service.getSpec().getPorts());
+        if (targetPort.length() == 0) {
+            port = "<none>";
+        }
         serviceDTO.setPort(port);
+        serviceDTO.setTargetPort(targetPort);
         serviceDTO.setAge(v1Service.getMetadata().getCreationTimestamp().toString());
         devopsEnvResourceDTO.getServiceDTOS().add(serviceDTO);
     }
