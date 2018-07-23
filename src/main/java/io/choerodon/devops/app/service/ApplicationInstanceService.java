@@ -136,4 +136,7 @@ public interface ApplicationInstanceService {
      * @return DevopsEnvPreviewDTO
      */
     DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
+
+
+    DevopsEnvPreviewInstanceDTO getDevopsEnvPreviewInstance(Long envId);
 }

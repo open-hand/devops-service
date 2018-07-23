@@ -375,4 +375,28 @@ public class ApplicationInstanceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appInstance.query"));
     }
+
+
+    /**
+     * 查询实例下容器,网络和域名
+     *
+     * @param projectId  项目id
+     * @param instanceId 实例id
+     * @return DevopsEnvPreviewDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "查询实例下容器,网络和域名")
+    @GetMapping(value = "/{instanceId}/InstanceResource")
+    public ResponseEntity<DevopsEnvPreviewInstanceDTO> getDevopsEnvPreviewInstance(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "instanceId", required = true)
+            @PathVariable(value = "instanceId") Long instanceId) {
+        return Optional.ofNullable(applicationInstanceService.getDevopsEnvPreviewInstance(instanceId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appInstance.query"));
+    }
 }

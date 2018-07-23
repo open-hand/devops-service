@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -281,18 +280,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             Map.Entry entry = (Map.Entry) iterator.next();
             devopsEnvPreviewAppDTO.setAppName(entry.getKey().toString());
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper.convertList((List<ApplicationInstanceE>) entry.getValue(), ApplicationInstanceDTO.class);
-            List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();
-            applicationInstanceDTOS.parallelStream().forEach(applicationInstanceDTO -> {
-                DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
-                BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
-                List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper.convertList(devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()), DevopsEnvPodDTO.class);
-                DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(applicationInstanceDTO.getId());
-                devopsEnvPreviewInstanceDTO.setDevopsEnvPodDTOS(devopsEnvPodDTOS);
-                devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
-                devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
-                devopsEnvPreviewInstanceDTOS.add(devopsEnvPreviewInstanceDTO);
-            });
-            devopsEnvPreviewAppDTO.setDevopsEnvPreviewInstanceDTOS(devopsEnvPreviewInstanceDTOS);
+            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(applicationInstanceDTOS);
             devopsEnvPreviewAppDTOS.add(devopsEnvPreviewAppDTO);
         }
         devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
@@ -300,7 +288,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops) {
+    public DevopsEnvPreviewInstanceDTO getDevopsEnvPreviewInstance(Long instanceId) {
+        DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
+        List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper.convertList(devopsEnvPodRepository.selectByInstanceId(instanceId), DevopsEnvPodDTO.class);
+        DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(instanceId);
+        devopsEnvPreviewInstanceDTO.setDevopsEnvPodDTOS(devopsEnvPodDTOS);
+        devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
+        devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
+        return devopsEnvPreviewInstanceDTO;
+    }
+
+
+    @Override
+        public ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops) {
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
         UserAttrE userAttrE = new UserAttrE();
         if (!gitops) {
