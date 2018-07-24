@@ -339,29 +339,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void instanceUpgrade(Long instanceId, String repoURL, String chartName, String chartVersion, String values) {
-        ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
-        String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
-        String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
-        devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
-        Map<String, String> upgradeMap = new HashMap<>();
-        upgradeMap.put(RELEASE_NAME, releaseName);
-        upgradeMap.put("RepoURL", repoURL);
-        upgradeMap.put("ChartName", chartName);
-        upgradeMap.put("ChartVersion", chartVersion);
-        upgradeMap.put("Values", values);
-        String payload = gson.toJson(upgradeMap);
-        Long envId = instanceE.getDevopsEnvironmentE().getId();
-        sentInstance(payload, releaseName, HelmType.HELM_RELEASE_PRE_UPGRADE.toValue(),
-                namespace, devopsEnvCommandE.getId(), envId);
-    }
-
-    @Override
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
@@ -372,7 +349,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandE.setCommandType(CommandType.STOP.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandE.setId(null);
+        devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
         String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
         String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
         Map<String, String> stopMap = new HashMap<>();
@@ -394,7 +372,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandE.setCommandType(CommandType.RESTART.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandE.setId(null);
+        devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
         String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
         String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
         Map<String, String> stopMap = new HashMap<>();
@@ -413,7 +392,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+        devopsEnvCommandE.setId(null);
+        devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
         String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
         String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
         Map<String, String> deleteMap = new HashMap<>();
@@ -459,7 +439,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         commandSender.sendMsg(msg);
     }
 
-    List<ErrorLineDTO> getErrorLine(String value) {
+    private List<ErrorLineDTO> getErrorLine(String value) {
         List<ErrorLineDTO> errorLines = new ArrayList<>();
         List<Long> lineNumbers = new ArrayList<>();
         String[] errorMsg = value.split("\\^");

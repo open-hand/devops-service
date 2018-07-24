@@ -1,5 +1,5 @@
 # DevOps Service
-`DevOps Service` is the core service of Choerodon.  
+`DevOps Service` is the core service of Choerodon. Current version: `0.9.0`
 
 Integrated several open source tools to automate the process of `planning`, `coding`, `building`, `testing`, and `deployment`, `operation`, `monitoring`.
  After a little simple configuration, then you'll get the most smoothest development experience.

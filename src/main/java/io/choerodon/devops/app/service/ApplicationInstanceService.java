@@ -73,17 +73,6 @@ public interface ApplicationInstanceService {
     List<AppInstanceCodeDTO> listByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
 
     /**
-     * 实例升级
-     *
-     * @param instanceId   实例id
-     * @param repoURL      仓库地址
-     * @param chartName    chart名
-     * @param chartVersion chart版本
-     * @param values       部署参数
-     */
-    void instanceUpgrade(Long instanceId, String repoURL, String chartName, String chartVersion, String values);
-
-    /**
      * 实例停止
      *
      * @param instanceId 实例id
