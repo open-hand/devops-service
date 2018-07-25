@@ -30,4 +30,12 @@ public class GitlabWebHookController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    @Permission(permissionPublic = true)
+    @ApiOperation(value = "gitops webhook转发")
+    @PostMapping(value = "/git_ops")
+    public ResponseEntity gitOpsWebHook(HttpServletRequest httpServletRequest, @RequestBody String body) {
+        gitlabWebHookService.gitOpsWebHook(body, httpServletRequest.getHeader("X-Gitlab-Token"));
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
 }
