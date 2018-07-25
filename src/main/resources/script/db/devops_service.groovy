@@ -26,8 +26,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
         createIndex(indexName: "idx_name", tableName: "devops_service") {
             column(name: "name")
         }
-        addUniqueConstraint(tableName: 'devops_service', constraintName: 'uk_namespace_name',
-                columnNames: 'namespace,name')
+//        addUniqueConstraint(tableName: 'devops_service', constraintName: 'uk_namespace_name',
+//                columnNames: 'namespace,name')
     }
 
     changeSet(author: 'runge', id: '2018-07-31-change-column') {

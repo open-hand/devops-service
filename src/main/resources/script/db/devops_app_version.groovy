@@ -22,8 +22,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
         }
         addUniqueConstraint(tableName: 'devops_app_version',
                 constraintName: 'uk_app_id_version', columnNames: 'app_id,version')
-        createIndex(indexName: "idx_app_id", tableName: "devops_app_version") {
-            column(name: "app_id")
-        }
+//        createIndex(indexName: "idx_app_id", tableName: "devops_app_version") {
+//            column(name: "app_id")
+//        }
     }
 }

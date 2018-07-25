@@ -20,3 +20,12 @@ data:
 eureka:
   client:
     enabled: false
+services:
+  harbor:
+    baseUrl: "https://registry.saas.hand-china.com"
+    username: "admin"
+    password: "Handhand123"
+choerodon:
+  event:
+    consumer:
+      enabled: false # 是否开启，不设置默认开启

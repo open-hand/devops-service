@@ -25,9 +25,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                 constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
         addUniqueConstraint(tableName: 'devops_env',
                 constraintName: 'uk_project_id_code', columnNames: 'project_id,code')
-        createIndex(indexName: "idx_project_id", tableName: "devops_env") {
-            column(name: "project_id")
-        }
+//        createIndex(indexName: "idx_project_id", tableName: "devops_env") {
+//            column(name: "project_id")
+//        }
     }
 
     changeSet(id: '2018-05-20-drop-constraint', author: 'younger') {
