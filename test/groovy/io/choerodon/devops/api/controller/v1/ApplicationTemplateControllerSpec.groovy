@@ -60,13 +60,9 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Qualifier("mockGitlabRepository")
     private GitlabRepository gitlabRepository
 
-//    @Autowired
-//    @Qualifier("mockEventProducerTemplate")
-//    private EventProducerTemplate eventProducerTemplate
-
-//    @Autowired
-//    private EventStoreClient eventStoreClient
-
+    @Autowired
+    @Qualifier("mockEventProducerTemplate")
+    private EventProducerTemplate eventProducerTemplate
 
     @Autowired
     private ApplicationTemplateRepository applicationTemplateRepository
