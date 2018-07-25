@@ -40,4 +40,14 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 break;
         }
     }
+
+    @Override
+    public void gitOpsWebHook(String body, String token) {
+        LOGGER.info(body);
+        JsonObject returnData = new JsonParser().parse(body).getAsJsonObject();
+        String kind = returnData.get("object_kind").getAsString();
+        if ("push".equals(kind)) {
+            // do sth
+        }
+    }
 }
