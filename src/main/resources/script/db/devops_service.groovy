@@ -58,6 +58,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
         }
         dropColumn(columnName: "port", tableName: "devops_service")
         dropColumn(columnName: "target_port", tableName: "devops_service")
+
     }
 
     changeSet(author: 'younger', id: '2018-09-03-modify-UniqueConstraint') {
