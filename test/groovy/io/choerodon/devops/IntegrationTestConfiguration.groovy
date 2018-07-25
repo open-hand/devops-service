@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.event.producer.execute.EventProducerTemplate
 import io.choerodon.event.producer.execute.EventRecord
 import io.choerodon.event.producer.execute.EventStoreClient
 import io.choerodon.liquibase.LiquibaseConfig
@@ -63,6 +64,7 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(IamRepository)
     }
 
+<<<<<<< HEAD
 
 //    @Bean("mockEventProducerTemplate")
 //    @Primary
@@ -75,9 +77,14 @@ class IntegrationTestConfiguration {
 //    EventStoreClient eventStoreClient(){
 //        detachedMockFactory.Mock(EventStoreClient)
 //    }
+=======
+    @Bean("mockEventProducerTemplate")
+    @Primary
+    EventProducerTemplate eventProducerTemplate() {
+        detachedMockFactory.Mock(EventProducerTemplate)
+    }
+>>>>>>> [ADD] ADD applicationTeamplate test
 
-//    @MockBean(name="MockEventStoreClient")
-//    private EventStoreClient eventStoreClient
 
 
     @PostConstruct

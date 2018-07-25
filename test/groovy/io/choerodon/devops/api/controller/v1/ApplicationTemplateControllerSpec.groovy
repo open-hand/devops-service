@@ -62,12 +62,14 @@ class ApplicationTemplateControllerSpec extends Specification {
 
 
 
+
 //    @Autowired
 //    @Qualifier("mockEventProducerTemplate")
 //    private EventProducerTemplate eventProducerTemplate
 
 //    @Autowired
 //    private EventStoreClient eventStoreClient
+
 
 
 
