@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.convertor;
 
+import java.io.File;
+
 import org.springframework.beans.BeanUtils;
 
 import io.choerodon.core.convertor.ConvertorI;
@@ -22,6 +24,7 @@ public class DevopsEnvFileResourceConvertor implements ConvertorI<DevopsEnvFileR
         DevopsEnvironmentE environmentE = new DevopsEnvironmentE();
         environmentE.setId(devopsEnvFileResourceDO.getId());
         devopsEnvFileResourceE.setEnvironment(environmentE);
+        devopsEnvFileResourceE.setFile(new File(devopsEnvFileResourceDO.getFilePath()));
         return devopsEnvFileResourceE;
     }
 
