@@ -26,6 +26,7 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO;
@@ -300,6 +301,14 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             throw new CommonException("error.tags.get");
         }
         return tagResponseEntity.getBody();
+    }
+
+    @Override
+    public String getLatestSerialTag(Long applicationId, Integer gitlabUserId) {
+        return getTagList(applicationId, gitlabUserId).stream()
+                .map(TagDO::getName)
+                .sorted(GitUtil::serialTagCompare)
+                .findFirst().orElse(null);
     }
 
     @Override

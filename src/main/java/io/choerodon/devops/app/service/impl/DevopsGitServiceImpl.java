@@ -25,9 +25,9 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.common.util.DateUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
@@ -133,7 +133,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             UserE commitUserE = iamRepository.queryUserByUserId(
                     devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchDTO(t, commitUrl, commitUserE, userE,  issue);
+            return getBranchDTO(t, commitUrl, commitUserE, userE, issue);
         }).collect(Collectors.toList()));
         return page;
     }

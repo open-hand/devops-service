@@ -144,7 +144,7 @@ public class GitUtil {
         }
     }
 
-    public Integer serialTagCompare(String tagA, String tagB) {
+    public static Integer serialTagCompare(String tagA, String tagB) {
         Integer tagNum1 = tagA.matches("\\d+") ? Integer.parseInt(tagA) : null;
         Integer tagNum2 = tagB.matches("\\d+") ? Integer.parseInt(tagB) : null;
         if (tagNum1 != null && tagNum2 != null) {

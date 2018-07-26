@@ -49,6 +49,8 @@ public interface DevopsGitRepository {
 
     List<TagDO> getGitLabTags(Integer projectId, Integer userId);
 
+    String getLatestSerialTag(Long applicationId, Integer gitlabUserId);
+
     DevopsBranchE queryByAppAndBranchName(Long appId, String branchName);
 
     void updateBranchIssue(Long appId, DevopsBranchE devopsBranchE);
