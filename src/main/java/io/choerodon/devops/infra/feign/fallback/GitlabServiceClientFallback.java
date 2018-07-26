@@ -159,8 +159,13 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<String> getReadme(Integer projectId, String commit) {
-        return new ResponseEntity("error.readme.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<String> getFile(Integer projectId, String commit, String filePath) {
+        return new ResponseEntity("error.file.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<String> getDiffs(Integer projectId, String from, String to) {
+        return new ResponseEntity("error.diffs.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
