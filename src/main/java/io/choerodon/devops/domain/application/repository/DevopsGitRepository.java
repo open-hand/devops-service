@@ -7,6 +7,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.TagDTO;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
+import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -48,6 +50,12 @@ public interface DevopsGitRepository {
     List<TagDO> getTagList(Long appId, Integer userId);
 
     List<TagDO> getGitLabTags(Integer projectId, Integer userId);
+
+    String getLatestSerialTag(Integer gitlabProjectId, Integer gitlabUserId);
+
+    BranchDO getBranch(Integer gitlabProjectId, String branch);
+
+    CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to);
 
     DevopsBranchE queryByAppAndBranchName(Long appId, String branchName);
 

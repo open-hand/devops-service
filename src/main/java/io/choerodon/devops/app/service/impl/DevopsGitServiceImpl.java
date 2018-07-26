@@ -21,11 +21,11 @@ import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
+import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.ProjectInfo;
 import io.choerodon.devops.infra.common.util.DateUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -133,7 +133,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             UserE commitUserE = iamRepository.queryUserByUserId(
                     devopsGitRepository.getUserIdByGitlabUserId(t.getLastCommitUser()));
             String commitUrl = String.format("%s/commit/%s?view=parallel", path, t.getLastCommit());
-            return getBranchDTO(t, commitUrl, commitUserE, userE,  issue);
+            return getBranchDTO(t, commitUrl, commitUserE, userE, issue);
         }).collect(Collectors.toList()));
         return page;
     }
@@ -230,6 +230,40 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } else {
             commitBranchSync(pushWebHookDTO, applicationE.getId());
         }
+    }
+
+    @Override
+    public void fileResourceSync(PushWebHookDTO pushWebHookDTO, String token) {
+        Integer gitLabProjectId = pushWebHookDTO.getProjectId();
+        Integer gitLabUserId = pushWebHookDTO.getUserId();
+        List<String> newFiles = new ArrayList<>();
+        List<String> modifyFiles = new ArrayList<>();
+        List<Map<String, String>> renamedFiles = new ArrayList<>();
+        List<String> deletedFiles = new ArrayList<>();
+        try {
+            BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
+            String masterSha = branch.getCommit().getId();
+            String latestTag = devopsGitRepository.getLatestSerialTag(gitLabProjectId, gitLabUserId);
+            CompareResultsE compareResultsE = devopsGitRepository
+                    .getCompareResults(gitLabProjectId, latestTag, masterSha);
+            compareResultsE.getDiffs().forEach(t -> {
+                if (t.getNewFile()) {
+                    newFiles.add(t.getNewPath());
+                } else if (t.getRenamedFile()) {
+                    Map<String, String> map = new HashMap<>();
+                    map.put(t.getOldPath(), t.getNewPath());
+                    renamedFiles.add(map);
+                } else if (t.getDeletedFile()) {
+                    deletedFiles.add(t.getNewPath());
+                } else {
+                    modifyFiles.add(t.getNewPath());
+                }
+            });
+        } catch (Exception e) {
+            LOGGER.info("File Resource Sync File Changes Fail!");
+        }
+
+        // do sth to files
     }
 
     private void commitBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {

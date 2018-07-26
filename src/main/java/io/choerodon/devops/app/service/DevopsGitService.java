@@ -82,4 +82,6 @@ public interface DevopsGitService {
     Boolean checkTag(Long projectId, Long applicationId, String tagName);
 
     void branchSync(PushWebHookDTO pushWebHookDTO, String token);
+
+    void fileResourceSync(PushWebHookDTO pushWebHookDTO, String token);
 }

@@ -8,6 +8,8 @@ import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -102,9 +104,9 @@ public interface GitlabServiceClient {
                                    @RequestParam(value = "file_path") String filePath);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/diffs")
-    ResponseEntity<String> getDiffs(@PathVariable("projectId") Integer projectId,
-                                   @RequestParam String from,
-                                   @RequestParam String to);
+    ResponseEntity<CompareResultsE> getCompareResults(@PathVariable("projectId") Integer projectId,
+                                                      @RequestParam("from") String from,
+                                                      @RequestParam("to") String to);
 
     @PostMapping(value = "/v1/projects/{projectId}/protected_branches")
     ResponseEntity<Map<String, Object>> createProtectedBranches(@PathVariable("projectId") Integer projectId,
@@ -286,8 +288,7 @@ public interface GitlabServiceClient {
     @GetMapping("/v1/projects/{projectId}/repository/branches/{branchName}")
     ResponseEntity<BranchDO> getBranch(
             @PathVariable("projectId") Integer projectId,
-            @PathVariable("branchName") String branchName,
-            @RequestParam("userId") Integer userId);
+            @PathVariable("branchName") String branchName);
 
 
     /**

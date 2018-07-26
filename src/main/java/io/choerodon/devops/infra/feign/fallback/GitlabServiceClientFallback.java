@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -17,7 +19,6 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
  */
 @Component
 public class GitlabServiceClientFallback implements GitlabServiceClient {
-
 
     @Override
     public ResponseEntity<UserDO> queryUserByUserId(Integer userId) {
@@ -164,7 +165,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<String> getDiffs(Integer projectId, String from, String to) {
+    public ResponseEntity<CompareResultsE> getCompareResults(Integer projectId, String from, String to) {
         return new ResponseEntity("error.diffs.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -224,7 +225,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<BranchDO> getBranch(Integer projectId, String branchName, Integer userId) {
+    public ResponseEntity<BranchDO> getBranch(Integer projectId, String branchName) {
         return new ResponseEntity("error.branch.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
