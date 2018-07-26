@@ -105,8 +105,8 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/diffs")
     ResponseEntity<CompareResultsE> getCompareResults(@PathVariable("projectId") Integer projectId,
-                                                      @RequestParam String from,
-                                                      @RequestParam String to);
+                                                      @RequestParam("from") String from,
+                                                      @RequestParam("to") String to);
 
     @PostMapping(value = "/v1/projects/{projectId}/protected_branches")
     ResponseEntity<Map<String, Object>> createProtectedBranches(@PathVariable("projectId") Integer projectId,
