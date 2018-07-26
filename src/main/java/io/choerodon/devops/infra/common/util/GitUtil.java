@@ -65,9 +65,9 @@ public class GitUtil {
             branch = microServiceFront;
         } else if (type.equals("MicroService")) {
             branch = microService;
-        } else if(type.equals("JavaLib")){
+        } else if (type.equals("JavaLib")) {
             branch = javaLib;
-        }else {
+        } else {
             branch = MASTER;
         }
         try {
@@ -85,13 +85,13 @@ public class GitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String repoUrl, String userName, String accessToken,  Boolean  teamplateType) {
+    public void push(Git git, String name, String repoUrl, String userName, String accessToken, Boolean teamplateType) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage("Render Variables[skip ci]").call();
-            if(teamplateType) {
+            if (teamplateType) {
                 git.branchCreate().setName(MASTER).call();
             }
             List<Ref> refs = git.branchList().call();
@@ -144,4 +144,17 @@ public class GitUtil {
         }
     }
 
+    public Integer serialTagCompare(String tagA, String tagB) {
+        Integer tagNum1 = tagA.matches("\\d+") ? Integer.parseInt(tagA) : null;
+        Integer tagNum2 = tagB.matches("\\d+") ? Integer.parseInt(tagB) : null;
+        if (tagNum1 != null && tagNum2 != null) {
+            return tagNum1.compareTo(tagNum2);
+        } else if (tagNum1 == null && tagNum2 != null) {
+            return -1;
+        } else if (tagNum1 != null) {
+            return 1;
+        } else {
+            return tagA.compareTo(tagB);
+        }
+    }
 }
