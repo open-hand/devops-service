@@ -22,6 +22,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
+import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
@@ -304,11 +305,30 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public String getLatestSerialTag(Long applicationId, Integer gitlabUserId) {
-        return getTagList(applicationId, gitlabUserId).stream()
+    public String getLatestSerialTag(Integer gitlabProjectId, Integer gitlabUserId) {
+        return getGitLabTags(gitlabProjectId, gitlabUserId).stream()
                 .map(TagDO::getName)
                 .sorted(GitUtil::serialTagCompare)
                 .findFirst().orElse(null);
+    }
+
+    @Override
+    public BranchDO getBranch(Integer gitlabProjectId, String branch) {
+        ResponseEntity<BranchDO> branchDOResponseEntity = gitlabServiceClient.getBranch(gitlabProjectId, branch);
+        if (branchDOResponseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new CommonException("error.branch.get");
+        }
+        return branchDOResponseEntity.getBody();
+    }
+
+    @Override
+    public CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to) {
+        ResponseEntity<CompareResultsE> compareResultsEResponseEntity
+                = gitlabServiceClient.getCompareResults(gitlabProjectId, from, to);
+        if (compareResultsEResponseEntity.getStatusCode() != HttpStatus.OK) {
+            throw new CommonException("error.diffs.get");
+        }
+        return compareResultsEResponseEntity.getBody();
     }
 
     @Override

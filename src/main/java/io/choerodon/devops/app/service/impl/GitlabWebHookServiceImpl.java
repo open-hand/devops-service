@@ -47,7 +47,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
         JsonObject returnData = new JsonParser().parse(body).getAsJsonObject();
         String kind = returnData.get("object_kind").getAsString();
         if ("push".equals(kind)) {
-            // do sth
+            devopsGitService.fileResourceSync(JSONArray.parseObject(body, PushWebHookDTO.class), token);
         }
     }
 }

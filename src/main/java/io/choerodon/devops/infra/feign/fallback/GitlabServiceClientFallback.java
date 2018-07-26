@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -164,7 +166,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<String> getDiffs(Integer projectId, String from, String to) {
+    public ResponseEntity<CompareResultsE> getCompareResults(Integer projectId, String from, String to) {
         return new ResponseEntity("error.diffs.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
