@@ -20,7 +20,6 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
 @Component
 public class GitlabServiceClientFallback implements GitlabServiceClient {
 
-
     @Override
     public ResponseEntity<UserDO> queryUserByUserId(Integer userId) {
         return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
@@ -226,7 +225,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<BranchDO> getBranch(Integer projectId, String branchName, Integer userId) {
+    public ResponseEntity<BranchDO> getBranch(Integer projectId, String branchName) {
         return new ResponseEntity("error.branch.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
