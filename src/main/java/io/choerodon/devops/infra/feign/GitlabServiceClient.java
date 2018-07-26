@@ -101,6 +101,11 @@ public interface GitlabServiceClient {
                                    @PathVariable("commit") String commit,
                                    @RequestParam(value = "file_path") String filePath);
 
+    @GetMapping(value = "/v1/projects/{projectId}/repository/diffs")
+    ResponseEntity<String> getDiffs(@PathVariable("projectId") Integer projectId,
+                                   @RequestParam String from,
+                                   @RequestParam String to);
+
     @PostMapping(value = "/v1/projects/{projectId}/protected_branches")
     ResponseEntity<Map<String, Object>> createProtectedBranches(@PathVariable("projectId") Integer projectId,
                                                                 @RequestParam("name") String name,

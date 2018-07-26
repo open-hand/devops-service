@@ -164,6 +164,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<String> getDiffs(Integer projectId, String from, String to) {
+        return new ResponseEntity("error.diffs.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<ImpersonationTokenDO> create(Integer userId) {
         return new ResponseEntity("error.access_token.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
