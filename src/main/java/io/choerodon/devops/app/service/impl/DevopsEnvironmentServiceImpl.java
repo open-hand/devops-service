@@ -8,13 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.asgard.saga.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.saga.Saga;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
@@ -23,6 +26,7 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.websocket.helper.EnvListener;
 
 
@@ -55,8 +59,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvironmentValidator devopsEnvironmentValidator;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private SagaClient sagaClient;
+
 
     @Override
+    @Saga(code = "asgard-create-env", description = "创建环境", inputSchema = "{}")
     public String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
         devopsEnvironmentE.initProjectE(projectId);
@@ -78,6 +86,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{ENVID}", devopsEnviromentRepository.create(devopsEnvironmentE)
                 .getId().toString());
+//        GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
+//        gitlabProjectPayload.setGroupId(gitlabGroupId);
+//        gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+//        gitlabProjectPayload.setPath(applicationTemplateDTO.getCode());
+//        gitlabProjectPayload.setOrganizationId(organization.getId());
+//        gitlabProjectPayload.setType(TEMPLATE);
         return FileUtil.replaceReturnString(inputStream, params);
     }
 

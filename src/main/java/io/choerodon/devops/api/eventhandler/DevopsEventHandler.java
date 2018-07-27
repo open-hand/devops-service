@@ -53,7 +53,7 @@ public class DevopsEventHandler {
     }
 
     /**
-     * 创建项目事件
+     * 创建项目saga
      */
     @EventListener(topic = IAM_SERVICE, businessType = "createProject")
     public void handleProjectCreateEvent(EventPayload<ProjectEvent> payload) {
