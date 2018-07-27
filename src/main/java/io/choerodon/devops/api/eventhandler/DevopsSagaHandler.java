@@ -1,6 +1,17 @@
 package io.choerodon.devops.api.eventhandler;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import io.choerodon.core.event.EventPayload;
+import io.choerodon.core.saga.SagaDefinition;
+import io.choerodon.core.saga.SagaTask;
+import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
+import io.choerodon.devops.domain.application.event.HarborPayload;
+import io.choerodon.event.consumer.annotation.EventListener;
 
 /**
  * Creator: Runge
@@ -10,4 +21,66 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DevopsSagaHandler {
+
+    private static final String DEVOPS_SERVICE = "devops-service";
+    private static final String IAM_SERVICE = "iam-service";
+    private static final String TEMPLATE = "template";
+    private static final String ORG_SERVICE = "organization-service";
+    private static final String APPLICATION = "application";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEventHandler.class);
+
+    @Autowired
+    private ProjectService projectService;
+    @Autowired
+    private ApplicationService applicationService;
+    @Autowired
+    private ApplicationTemplateService applicationTemplateService;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private GitlabGroupService gitlabGroupService;
+    @Autowired
+    private HarborService harborService;
+    @Autowired
+    private GitlabUserService gitlabUserService;
+    @Autowired
+    private OrganizationService organizationService;
+
+
+    private void loggerInfo(Object o) {
+        LOGGER.info("data: {}", o);
+    }
+
+
+    /**
+     * 创建组事件
+     */
+    @SagaTask(code = "devopsCreateGitLabGroup",
+            description = "devops 创建 GitLab Group",
+            sagaCode = "devops-create-gitlab-group",
+            concurrentLimitNum = 2,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
+            seq = 2)
+    public void handleGitlabGroupEvent(EventPayload<GitlabGroupPayload> payload) {
+        GitlabGroupPayload gitlabGroupPayload = payload.getData();
+        loggerInfo(gitlabGroupPayload);
+        gitlabGroupService.createGroup(gitlabGroupPayload, "");
+        gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
+    }
+
+    /**
+     * 创建harbor项目事件
+     */
+    @SagaTask(code = "devopsCreateHarbor",
+            description = "devops 创建 Harbor",
+            sagaCode = "devops-create-harbor-project",
+            concurrentLimitNum = 2,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
+            seq = 2)
+    public void handleHarborEvent(EventPayload<HarborPayload> payload) {
+        HarborPayload harborPayload = payload.getData();
+        loggerInfo(harborPayload);
+        harborService.createHarbor(harborPayload);
+    }
 }

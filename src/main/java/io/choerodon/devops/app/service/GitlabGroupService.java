@@ -10,5 +10,5 @@ import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
  * Description:
  */
 public interface GitlabGroupService {
-    void createGroup(GitlabGroupPayload gitlabGroupPayload);
+    void createGroup(GitlabGroupPayload gitlabGroupPayload, String groupCodeSuffix);
 }

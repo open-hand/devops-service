@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.api.eventhandler.SocketMessageHandler;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
@@ -39,22 +38,29 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
 
 
     @Override
-    public void createGroup(GitlabGroupPayload gitlabGroupPayload) {
+    public void createGroup(GitlabGroupPayload gitlabGroupPayload, String groupCodeSuffix) {
 
         //创建gitlab group
         GroupDO group = new GroupDO();
         // name: orgName-projectName
         group.setName(gitlabGroupPayload.getOrganizationName() + "-" + gitlabGroupPayload.getProjectName());
         // path: orgCode-projectCode
-        group.setPath(gitlabGroupPayload.getOrganizationCode() + "-" + gitlabGroupPayload.getProjectCode());
+        group.setPath(String.format("%s-%s%s",
+                gitlabGroupPayload.getOrganizationCode(),
+                gitlabGroupPayload.getProjectCode(),
+                groupCodeSuffix));
         UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
         ResponseEntity<GroupDO> responseEntity =
                 gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if(responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+        if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
             group = responseEntity.getBody();
-                DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
+            DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
+            if (groupCodeSuffix.isEmpty()) {
                 devopsProjectDO.setGitlabGroupId(group.getId());
-                devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+            } else if ("-gitops".equals(groupCodeSuffix)) {
+                // devopsProjectDO.setEnvGroupId(group.getId());
+            }
+            devopsProjectRepository.updateProjectAttr(devopsProjectDO);
         }
     }
 

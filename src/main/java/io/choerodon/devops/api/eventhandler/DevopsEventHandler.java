@@ -114,7 +114,7 @@ public class DevopsEventHandler {
     public void handleGitlabGroupEvent(EventPayload<GitlabGroupPayload> payload) {
         GitlabGroupPayload gitlabGroupPayload = payload.getData();
         loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.createGroup(gitlabGroupPayload);
+        gitlabGroupService.createGroup(gitlabGroupPayload,"");
     }
 
     /**
