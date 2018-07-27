@@ -85,18 +85,18 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 organization.getCode() + "_" + TEMPLATE,
                                 TypeUtil.objToInteger(gitlabUserE.getId()));
                     }
-                    if (gitlabGroupE.getId() == null) {
+                    if (gitlabGroupE.getGitlabGroupId() == null) {
                         LOGGER.error("error.gitlab.groupId.select");
                         return;
                     }
 
                     GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                            gitlabGroupE.getId(),
+                            gitlabGroupE.getEnvGroupId(),
                             gitlabUserE.getId());
 
                     if (grouoMemberE != null) {
                         gitlabGroupMemberRepository.deleteMember(
-                                gitlabGroupE.getId(),
+                                gitlabGroupE.getGitlabGroupId(),
                                 gitlabUserE.getId());
                     }
                 });
@@ -148,13 +148,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     organization.getCode() + "_" + TEMPLATE,
                     TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
-        if (gitlabGroupE.getId() == null) {
+        if (gitlabGroupE.getGitlabGroupId() == null) {
             LOGGER.error("error.gitlab.groupId.select");
             return;
         }
 
         GitlabGroupMemberE grouoMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                gitlabGroupE.getId(),
+                gitlabGroupE.getGitlabGroupId(),
                 (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
 
         // 增删改用户
@@ -162,7 +162,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             case NONE:
                 if (grouoMemberE != null) {
                     gitlabGroupMemberRepository.deleteMember(
-                            gitlabGroupE.getId(),
+                            gitlabGroupE.getGitlabGroupId(),
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                 }
                 break;
@@ -175,11 +175,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 requestMember.setExpiresAt("");
                 if (grouoMemberE == null) {
                     gitlabGroupMemberRepository.insertMember(
-                            gitlabGroupE.getId(),
+                            gitlabGroupE.getGitlabGroupId(),
                             requestMember);
                 } else {
                     gitlabGroupMemberRepository.updateMember(
-                            gitlabGroupE.getId(),
+                            gitlabGroupE.getGitlabGroupId(),
                             requestMember);
                 }
                 break;

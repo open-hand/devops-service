@@ -16,7 +16,8 @@ public class DevopsProjectConvertor implements ConvertorI<GitlabGroupE, DevopsPr
     @Override
     public GitlabGroupE doToEntity(DevopsProjectDO devopsProjectDO) {
         GitlabGroupE gitlabGroupE = new GitlabGroupE();
-        gitlabGroupE.initId(devopsProjectDO.getGitlabGroupId());
+        gitlabGroupE.initGitlabGroupId(devopsProjectDO.getGitlabGroupId());
+        gitlabGroupE.initEnvGroupId(devopsProjectDO.getEnvGroupId());
         gitlabGroupE.initProjectE(devopsProjectDO.getId());
         return gitlabGroupE;
     }
@@ -25,7 +26,8 @@ public class DevopsProjectConvertor implements ConvertorI<GitlabGroupE, DevopsPr
     public DevopsProjectDO entityToDo(GitlabGroupE gitlabGroupE) {
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
         devopsProjectDO.setId(gitlabGroupE.getProjectE().getId());
-        devopsProjectDO.setGitlabGroupId(TypeUtil.objToInteger(gitlabGroupE.getId()));
+        devopsProjectDO.setGitlabGroupId(TypeUtil.objToInteger(gitlabGroupE.getGitlabGroupId()));
+        devopsProjectDO.setEnvGroupId(TypeUtil.objToInteger(gitlabGroupE.getEnvGroupId()));
         return devopsProjectDO;
     }
 }

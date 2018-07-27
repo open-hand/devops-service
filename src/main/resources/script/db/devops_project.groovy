@@ -26,7 +26,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
     changeSet(author: 'younger', id: '2018-07-25-add-column')
             {
                 addColumn(tableName: 'devops_project') {
-                    column(name: 'type', type: 'VARCHAR(50)', remarks: 'gitlab project type', afterColumn: 'gitlab_group_id')
+                    column(name: 'env_group_id', type: 'BIGINT UNSIGNED', remarks: 'env gitlab group id', afterColumn: 'gitlab_group_id')
                 }
             }
 }

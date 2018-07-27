@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 
 /**
  * Created by younger on 2018/3/29.
@@ -31,5 +32,6 @@ public interface GitlabRepository {
 
     ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook);
 
+    GitlabProjectDO createProject(Integer groupId, String projectName, Integer userId, boolean visibility);
 
 }

@@ -18,6 +18,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.gson.Gson;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.KeyPair;
 import io.codearte.props2yaml.Props2YAML;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -460,11 +462,11 @@ public class FileUtil {
             stringBuilder.append(":");
             stringBuilder.append(printNode(insertNode.getValue(), insertNode.getStartColumn()));
             String insertString = stringBuilder.toString();
-            if ( insertNode.getLastIndex() >= temp.length() ){
-                insertString = "\n"+insertString;
-                temp = temp+insertString;
+            if (insertNode.getLastIndex() >= temp.length()) {
+                insertString = "\n" + insertString;
+                temp = temp + insertString;
             } else {
-                temp = temp.substring(0,insertNode.getLastIndex()+1)+insertString+temp.substring(insertNode.getLastIndex()+1);
+                temp = temp.substring(0, insertNode.getLastIndex() + 1) + insertString + temp.substring(insertNode.getLastIndex() + 1);
             }
             int insertLineCount = countLine(insertString);
             insertLineCounts[i] = insertLineCount;
@@ -639,20 +641,19 @@ public class FileUtil {
         Node node = nodeTuple.getValueNode();
         if (node instanceof ScalarNode) {
             return node;
-        }
-        else if (node instanceof MappingNode) {
+        } else if (node instanceof MappingNode) {
             MappingNode mappingNode = (MappingNode) node;
-            if (mappingNode.getValue().size() == 0){
+            if (mappingNode.getValue().size() == 0) {
                 return mappingNode;
             }
-            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size()-1);
+            NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size() - 1);
             return getLastIndex(last);
         } else if (node instanceof SequenceNode) {
             SequenceNode sequenceNode = (SequenceNode) node;
-            if (sequenceNode.getValue().size() == 0){
+            if (sequenceNode.getValue().size() == 0) {
                 return sequenceNode;
             }
-            return sequenceNode.getValue().get(sequenceNode.getValue().size()-1);
+            return sequenceNode.getValue().get(sequenceNode.getValue().size() - 1);
         } else {
             return null;
         }
@@ -1184,5 +1185,30 @@ public class FileUtil {
             res.append("\n");
         }
         return res.toString();
+    }
+
+
+    public static List<String> getSshKey(String path) {
+        List<String> sshkeys = new ArrayList<>();
+        int type = KeyPair.RSA;
+        String strPath = "id_rsa";
+        String comment = path;
+        JSch jsch = new JSch();
+        String passphrase = "";
+        try {
+            KeyPair kpair = KeyPair.genKeyPair(jsch, type);
+            kpair.setPassphrase(passphrase);
+            kpair.writePrivateKey(strPath);
+            kpair.writePublicKey(strPath + ".pub", comment);
+            kpair.dispose();
+            FileUtil.moveFiles("id_rsa", "ssh/" + path);
+            FileUtil.moveFiles("id_rsa.pub", "ssh/" + path);
+            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "id_rsa")));
+            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "id_rsa.pub")));
+            FileUtil.deleteDirectory(new File("ssh/" + path));
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+        }
+        return sshkeys;
     }
 }

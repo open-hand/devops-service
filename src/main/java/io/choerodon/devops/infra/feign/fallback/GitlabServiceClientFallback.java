@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -58,6 +57,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<GitlabProjectDO> updateProject(Integer projectId, Integer userId) {
         return new ResponseEntity("error.project.update", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<GitlabProjectDO> createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
+        return new ResponseEntity("error.project.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override

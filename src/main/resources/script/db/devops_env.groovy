@@ -53,6 +53,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
             {
                 addColumn(tableName: 'devops_env') {
                     column(name: 'gitlab_env_project_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab env project id', afterColumn: 'project_id')
+                    column(name: 'env_id_rsa', type: 'varchar(5000)', remarks: 'ssh id rsa ', afterColumn: 'token')
+                    column(name: 'env_id_rsa_pub', type: 'varchar(5000)', remarks: 'ssh id rsa pub', afterColumn: 'env_id_rsa')
                 }
+                column(name: 'hook_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab webhook', afterColumn: 'gitlab_env_project_id')
             }
 }

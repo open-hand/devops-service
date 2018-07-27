@@ -65,9 +65,9 @@ public class ProjectE {
         this.gitlabGroupE = gitlabGroupE;
     }
 
-    public void initGitlabGroupE(Long id) {
-        this.gitlabGroupE = new GitlabGroupE(id.intValue());
-    }
+//    public void initGitlabGroupE(Long id) {
+//        this.gitlabGroupE = new GitlabGroupE(id.intValue());
+//    }
 
     public void initOrganization(Long id) {
         this.organization = new Organization(id);

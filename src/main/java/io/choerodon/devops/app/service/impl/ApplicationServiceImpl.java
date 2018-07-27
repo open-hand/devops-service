@@ -92,7 +92,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.group.not.sync");
         }
         GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                gitlabGroupE.getId(),
+                gitlabGroupE.getGitlabGroupId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
             throw new CommonException("error.user.not.owner");
@@ -102,7 +102,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         gitlabProjectPayload.setPath(applicationDTO.getCode());
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        gitlabProjectPayload.setGroupId(gitlabGroupE.getId());
+        gitlabProjectPayload.setGroupId(gitlabGroupE.getGitlabGroupId());
         Exception exception = eventProducerTemplate.execute(
                 "CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
                 (String uuid) -> {

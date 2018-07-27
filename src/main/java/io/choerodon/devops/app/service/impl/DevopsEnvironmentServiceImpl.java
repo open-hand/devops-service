@@ -4,12 +4,16 @@ import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.asgard.saga.SagaClient;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.saga.Saga;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
@@ -17,16 +21,16 @@ import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.websocket.helper.EnvListener;
 
 
@@ -36,6 +40,9 @@ import io.choerodon.websocket.helper.EnvListener;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
+    private static final String ENV = "ENV";
+    private ObjectMapper objectMapper = new ObjectMapper();
+
     @Value("${agent.version}")
     private String agentExpectVersion;
 
@@ -44,6 +51,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
+
+    @Value("${services.gateway.url}")
+    private String gatewayUrl;
 
     @Autowired
     private IamRepository iamRepository;
@@ -61,6 +71,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private EnvUtil envUtil;
     @Autowired
     private SagaClient sagaClient;
+    @Autowired
+    private DevopsProjectRepository devopsProjectRepository;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
 
 
     @Override
@@ -74,9 +90,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentE.initConnect(false);
         devopsEnvironmentE.initToken(GenerateUUID.generateUUID());
         devopsEnvironmentE.initProjectE(projectId);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
         devopsEnvironmentE.initSequence(devopsEnvironmentES);
+        List<String> sshKeys = FileUtil.getSshKey(organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
+        devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
+        devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
@@ -86,13 +107,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{ENVID}", devopsEnviromentRepository.create(devopsEnvironmentE)
                 .getId().toString());
-//        GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
-//        gitlabProjectPayload.setGroupId(gitlabGroupId);
-//        gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-//        gitlabProjectPayload.setPath(applicationTemplateDTO.getCode());
-//        gitlabProjectPayload.setOrganizationId(organization.getId());
-//        gitlabProjectPayload.setType(TEMPLATE);
-        return FileUtil.replaceReturnString(inputStream, params);
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
+        gitlabProjectPayload.setGroupId(gitlabGroupE.getEnvGroupId());
+        gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
+        gitlabProjectPayload.setOrganizationId(null);
+        gitlabProjectPayload.setType(ENV);
+        String input = null;
+        try {
+            input = objectMapper.writeValueAsString(gitlabProjectPayload);
+            sagaClient.startSaga("asgard-create-env", new StartInstanceDTO(input, userAttrE.getGitlabUserId(), "", ""));
+            return FileUtil.replaceReturnString(inputStream, params);
+        } catch (JsonProcessingException e) {
+            throw new CommonException(e.getMessage());
+        }
     }
 
     @Override
@@ -266,4 +296,23 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 applicationInstanceRepository.selectByEnvId(t.getId()) > 0)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(), gitlabProjectPayload.getPath(), gitlabProjectPayload.getUserId(), false);
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
+                TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
+        devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
+        ProjectHook projectHook = ProjectHook.allHook();
+        projectHook.setEnableSslVerification(true);
+        projectHook.setProjectId(gitlabProjectDO.getId());
+        projectHook.setToken(devopsEnvironmentE.getToken());
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook/git_ops";
+        projectHook.setUrl(uri);
+        devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
+        devopsEnviromentRepository.update(devopsEnvironmentE);
+    }
+
 }

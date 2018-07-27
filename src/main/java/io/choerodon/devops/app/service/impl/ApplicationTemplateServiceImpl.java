@@ -81,9 +81,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             gitlabGroupENew.initPath(organization.getCode() + "_" + TEMPLATE);
             gitlabGroupENew.initVisibility(Visibility.PUBLIC);
             gitlabGroupId = gitlabRepository
-                    .createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getId();
+                    .createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getGitlabGroupId();
         } else {
-            gitlabGroupId = gitlabGroupE.getId();
+            gitlabGroupId = gitlabGroupE.getGitlabGroupId();
         }
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setGroupId(gitlabGroupId);

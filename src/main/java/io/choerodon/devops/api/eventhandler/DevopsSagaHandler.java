@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +13,8 @@ import io.choerodon.core.saga.SagaDefinition;
 import io.choerodon.core.saga.SagaTask;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.event.HarborPayload;
-import io.choerodon.event.consumer.annotation.EventListener;
 
 /**
  * Creator: Runge
@@ -30,6 +33,9 @@ public class DevopsSagaHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEventHandler.class);
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+
     @Autowired
     private ProjectService projectService;
     @Autowired
@@ -46,12 +52,12 @@ public class DevopsSagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private OrganizationService organizationService;
-
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     private void loggerInfo(Object o) {
         LOGGER.info("data: {}", o);
     }
-
 
     /**
      * 创建组事件
@@ -83,4 +89,21 @@ public class DevopsSagaHandler {
         loggerInfo(harborPayload);
         harborService.createHarbor(harborPayload);
     }
+
+    @SagaTask(code = "devopsCreateEnv",
+            description = "devops创建环境",
+            sagaCode = "asgard-create-env",
+            seq = 1)
+    public void devopsCreateUser(String data) {
+        GitlabProjectPayload gitlabProjectPayload = null;
+        try {
+            gitlabProjectPayload = objectMapper.readValue(data, GitlabProjectPayload.class);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
+        devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
+
+    }
+
+
 }

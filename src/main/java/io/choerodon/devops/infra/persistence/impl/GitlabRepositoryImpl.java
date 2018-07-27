@@ -14,6 +14,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.GitUtil;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -116,6 +117,15 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             throw new CommonException("error.projecthook.create");
         }
         return projectHookResponseEntity.getBody();
+    }
+
+    @Override
+    public GitlabProjectDO createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
+        ResponseEntity<GitlabProjectDO> responseEntity = gitlabServiceClient.createProject(groupId, projectName, userId, visibility);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.gitlab.project.create");
+        }
+        return responseEntity.getBody();
     }
 
 }

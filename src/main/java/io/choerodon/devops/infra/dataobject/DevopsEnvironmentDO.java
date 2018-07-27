@@ -18,6 +18,10 @@ public class DevopsEnvironmentDO {
     @GeneratedValue
     private Long id;
     private Long projectId;
+    private Long gitlabEnvProjectId;
+    private Long hookId;
+    private String envIdRsa;
+    private String envIdRsaPub;
     private String name;
     private String code;
     private String token;
@@ -106,5 +110,37 @@ public class DevopsEnvironmentDO {
 
     public void setSequence(Long sequence) {
         this.sequence = sequence;
+    }
+
+    public Long getGitlabEnvProjectId() {
+        return gitlabEnvProjectId;
+    }
+
+    public void setGitlabEnvProjectId(Long gitlabEnvProjectId) {
+        this.gitlabEnvProjectId = gitlabEnvProjectId;
+    }
+
+    public String getEnvIdRsa() {
+        return envIdRsa;
+    }
+
+    public void setEnvIdRsa(String envIdRsa) {
+        this.envIdRsa = envIdRsa;
+    }
+
+    public String getEnvIdRsaPub() {
+        return envIdRsaPub;
+    }
+
+    public void setEnvIdRsaPub(String envIdRsaPub) {
+        this.envIdRsaPub = envIdRsaPub;
+    }
+
+    public Long getHookId() {
+        return hookId;
+    }
+
+    public void setHookId(Long hookId) {
+        this.hookId = hookId;
     }
 }
