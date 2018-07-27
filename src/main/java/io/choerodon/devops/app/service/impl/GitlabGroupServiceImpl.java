@@ -58,7 +58,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             if (groupCodeSuffix.isEmpty()) {
                 devopsProjectDO.setGitlabGroupId(group.getId());
             } else if ("-gitops".equals(groupCodeSuffix)) {
-                // devopsProjectDO.setEnvGroupId(group.getId());
+                devopsProjectDO.setEnvGroupId(group.getId());
             }
             devopsProjectRepository.updateProjectAttr(devopsProjectDO);
         }
