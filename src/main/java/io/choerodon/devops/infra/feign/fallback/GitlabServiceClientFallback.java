@@ -65,6 +65,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity createDeploykey(Integer projectId, String title, String key, boolean canPush, Integer userId) {
+        return new ResponseEntity("error.deploykey.create", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<Map<String, Object>> addVariable(Integer projectId, String key, String value, Boolean protecteds, Integer userId) {
         return new ResponseEntity("error.variable.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }

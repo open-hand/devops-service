@@ -34,4 +34,6 @@ public interface GitlabRepository {
 
     GitlabProjectDO createProject(Integer groupId, String projectName, Integer userId, boolean visibility);
 
+    void createDeployKey(Integer projectId, String title, String key, boolean canPush, Integer userId);
+
 }

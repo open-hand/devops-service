@@ -128,4 +128,12 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         return responseEntity.getBody();
     }
 
+    @Override
+    public void createDeployKey(Integer projectId, String title, String key, boolean canPush, Integer userId) {
+        ResponseEntity responseEntity = gitlabServiceClient.createDeploykey(projectId, title, key, canPush, userId);
+        if (!responseEntity.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.deploykey.create");
+        }
+    }
+
 }

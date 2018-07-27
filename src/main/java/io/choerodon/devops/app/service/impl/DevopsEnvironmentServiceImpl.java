@@ -304,6 +304,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
         devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
+        gitlabRepository.createDeployKey(gitlabProjectDO.getId(), gitlabProjectPayload.getPath(), devopsEnvironmentE.getEnvIdRsaPub(), true, gitlabProjectPayload.getUserId());
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());

@@ -65,6 +65,13 @@ public interface GitlabServiceClient {
                                                   @RequestParam("userId") Integer userId,
                                                   @RequestParam("visibility") boolean visibility);
 
+    @PostMapping("/v1/projects/deploy_key")
+    ResponseEntity createDeploykey(@RequestParam("projectId") Integer projectId,
+                                   @RequestParam("title") String title,
+                                   @RequestParam("key") String key,
+                                   @RequestParam("canPush") boolean canPush,
+                                   @RequestParam("userId") Integer userId);
+
     @PostMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<Map<String, Object>> addVariable(@PathVariable("projectId") Integer projectId,
                                                     @RequestParam("key") String key,
