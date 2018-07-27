@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.event.EventPayload;
 import io.choerodon.core.saga.SagaDefinition;
 import io.choerodon.core.saga.SagaTask;
 import io.choerodon.devops.app.service.*;
@@ -68,8 +67,13 @@ public class DevopsSagaHandler {
             concurrentLimitNum = 2,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
             seq = 2)
-    public void handleGitlabGroupEvent(EventPayload<GitlabGroupPayload> payload) {
-        GitlabGroupPayload gitlabGroupPayload = payload.getData();
+    public void handleGitlabGroupEvent(String msg) {
+        GitlabGroupPayload gitlabGroupPayload = null;
+        try {
+            gitlabGroupPayload = objectMapper.readValue(msg, GitlabGroupPayload.class);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
         loggerInfo(gitlabGroupPayload);
         gitlabGroupService.createGroup(gitlabGroupPayload, "");
         gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
@@ -84,8 +88,13 @@ public class DevopsSagaHandler {
             concurrentLimitNum = 2,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
             seq = 2)
-    public void handleHarborEvent(EventPayload<HarborPayload> payload) {
-        HarborPayload harborPayload = payload.getData();
+    public void handleHarborEvent(String msg) {
+        HarborPayload harborPayload = null;
+        try {
+            harborPayload = objectMapper.readValue(msg, HarborPayload.class);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
         loggerInfo(harborPayload);
         harborService.createHarbor(harborPayload);
     }
