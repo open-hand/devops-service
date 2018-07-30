@@ -43,7 +43,10 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         //创建gitlab group
         GroupDO group = new GroupDO();
         // name: orgName-projectName
-        group.setName(gitlabGroupPayload.getOrganizationName() + "-" + gitlabGroupPayload.getProjectName());
+        group.setName(String.format("%s-%s%s",
+                gitlabGroupPayload.getOrganizationName(),
+                gitlabGroupPayload.getProjectName(),
+                groupCodeSuffix));
         // path: orgCode-projectCode
         group.setPath(String.format("%s-%s%s",
                 gitlabGroupPayload.getOrganizationCode(),
