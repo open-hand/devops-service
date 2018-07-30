@@ -1203,9 +1203,9 @@ public class FileUtil {
             kpair.dispose();
             FileUtil.moveFiles("id_rsa", "ssh/" + path);
             FileUtil.moveFiles("id_rsa.pub", "ssh/" + path);
-            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "id_rsa")));
-            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "id_rsa.pub")));
-            FileUtil.deleteDirectory(new File("ssh/" + path));
+            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "/id_rsa")));
+            sshkeys.add(FileUtil.getFileContent(new File("ssh/" + path + "/id_rsa.pub")));
+            FileUtil.deleteDirectory(new File("ssh"));
         } catch (Exception e) {
             logger.info(e.getMessage());
         }

@@ -300,7 +300,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
         GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(), gitlabProjectPayload.getPath(), gitlabProjectPayload.getUserId(), false);
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
         devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));

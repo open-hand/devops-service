@@ -21,4 +21,6 @@ public interface DevopsProjectRepository {
 
     Boolean checkMemberExist(String uuid);
 
+    GitlabGroupE queryByEnvGroupId(Integer envGroupId);
+
 }
