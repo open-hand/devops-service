@@ -88,7 +88,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                     gitlabUserE.getId());
                             deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
                         }
-                        if (userMemberRoleList.contains("project.gitlab.owner") || userMemberRoleList.contains("project.gitlab.develop")) {
+                        if (userMemberRoleList.contains("project.gitlab.owner") || userMemberRoleList.contains("project.gitlab.developer")) {
                             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                     gitlabGroupE.getGitlabGroupId(),
                                     gitlabUserE.getId());

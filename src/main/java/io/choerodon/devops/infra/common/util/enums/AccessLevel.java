@@ -55,7 +55,7 @@ public enum AccessLevel {
                 return AccessLevel.OWNER;
             case "GITLAB.MASTER":
                 return AccessLevel.MASTER;
-            case "PROJECT.GITLAB.DEVELOP":
+            case "PROJECT.GITLAB.DEVELOPER":
                 memberHelper.setProjectDevelopAccessLevel(AccessLevel.DEVELOPER);
                 return AccessLevel.DEVELOPER;
             case "PROJECT.DEPLOY.ADMIN":
