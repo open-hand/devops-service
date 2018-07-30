@@ -59,16 +59,9 @@ public class SagaHandler {
     @SagaTask(code = "devopsCreateProject",
             description = "devops创建项目",
             sagaCode = "iam-create-project",
-            concurrentLimitNum = 2,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
             seq = 2)
-    public void handleProjectCreateEvent(String msg) {
-        ProjectEvent projectEvent = null;
-        try {
-            projectEvent = objectMapper.readValue(msg, ProjectEvent.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
+    public void handleProjectCreateEvent(String msg) throws IOException {
+        ProjectEvent projectEvent = objectMapper.readValue(msg, ProjectEvent.class);
         loggerInfo(projectEvent);
         projectService.createProject(projectEvent);
     }

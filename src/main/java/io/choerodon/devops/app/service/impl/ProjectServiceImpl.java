@@ -34,6 +34,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     private final EventProducerTemplate eventProducerTemplate;
     private ObjectMapper objectMapper = new ObjectMapper();
+    @Autowired
     private SagaClient sagaClient;
 
     @Value("${spring.application.name}")
