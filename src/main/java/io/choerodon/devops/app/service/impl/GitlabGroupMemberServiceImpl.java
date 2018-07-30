@@ -81,19 +81,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     GitlabGroupMemberE groupMemberE;
                     if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
                         gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
-                        List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                        if (userMemberRoleList.contains("project.deploy.admin")) {
                             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                     gitlabGroupE.getEnvGroupId(),
                                     gitlabUserE.getId());
                             deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
-                        }
-                        if (userMemberRoleList.contains("project.gitlab.owner") || userMemberRoleList.contains("project.gitlab.developer")) {
                             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                     gitlabGroupE.getGitlabGroupId(),
                                     gitlabUserE.getId());
                             deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
-                        }
                     } else {
                         Organization organization =
                                 iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
