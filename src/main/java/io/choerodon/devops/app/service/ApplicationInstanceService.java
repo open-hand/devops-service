@@ -49,9 +49,9 @@ public interface ApplicationInstanceService {
      * 部署应用
      *
      * @param applicationDeployDTO 部署信息
-     * @return boolean
+     * @return ApplicationInstanceDTO
      */
-    Boolean create(ApplicationDeployDTO applicationDeployDTO);
+    ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO,boolean gitops);
 
     /**
      * 获取版本特性

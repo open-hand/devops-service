@@ -4,12 +4,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
-import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.transport.*;
+import org.eclipse.jgit.util.FS;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -28,6 +33,7 @@ public class GitUtil {
     private static final String REPONAME = "devops-service-repo";
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
     private String classPath;
+    private String sshKey;
 
     @Value("${template.version.MicroService}")
     private String microService;
@@ -51,6 +57,75 @@ public class GitUtil {
             throw new CommonException(io.getMessage());
         }
     }
+
+    public GitUtil(String sshKey) {
+        new GitUtil();
+        this.sshKey = sshKey;
+    }
+
+
+    public void cloneBySsh(String path, String url) {
+        SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+            @Override
+            protected void configure(OpenSshConfig.Host host, Session session) {
+                session.setConfig("StrictHostKeyChecking", "no");
+            }
+            @Override
+            protected JSch createDefaultJSch(FS fs) throws JSchException {
+                JSch defaultJSch = super.createDefaultJSch(fs);
+                defaultJSch.getIdentityRepository().add(sshKey.getBytes());
+                return defaultJSch;
+            }
+        };
+        CloneCommand cloneCommand = Git.cloneRepository();
+        cloneCommand.setURI(url);
+        cloneCommand.setBranch("master");
+        TransportConfigCallback transportConfigCallback = transport -> {
+            SshTransport sshTransport = (SshTransport) transport;
+            sshTransport.setSshSessionFactory(sshSessionFactory);
+        };
+        cloneCommand.setTransportConfigCallback(transportConfigCallback);
+        try {
+            cloneCommand.setDirectory(new File(path));
+            cloneCommand.call();
+        } catch (GitAPIException e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
+
+    public void pullBySsh(String path) {
+        SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+            @Override
+            protected void configure(OpenSshConfig.Host host, Session session) {
+                session.setConfig("StrictHostKeyChecking", "no");
+            }
+            @Override
+            protected JSch createDefaultJSch(FS fs) throws JSchException {
+                JSch defaultJSch = super.createDefaultJSch(fs);
+                defaultJSch.getIdentityRepository().add(sshKey.getBytes());
+                return defaultJSch;
+            }
+        };
+        File RepoGitDir = new File(path);
+        Repository repository = null;
+        try {
+            repository = new FileRepository(RepoGitDir.getAbsolutePath());
+            Git git = new Git(repository);
+            PullCommand pullCmd = git.pull();
+            TransportConfigCallback transportConfigCallback = transport -> {
+                SshTransport sshTransport = (SshTransport) transport;
+                sshTransport.setSshSessionFactory(sshSessionFactory);
+            };
+            pullCmd.setTransportConfigCallback(transportConfigCallback);
+            pullCmd.setRemoteBranchName("master");
+            pullCmd.call();
+            git.close();
+        } catch (Exception e) {
+
+        }
+    }
+
+
 
     /**
      * Git克隆
@@ -144,6 +219,7 @@ public class GitUtil {
         }
     }
 
+
     /**
      * 流水号 tag 大小比较
      */
@@ -160,4 +236,5 @@ public class GitUtil {
             return tagA.compareTo(tagB);
         }
     }
+
 }

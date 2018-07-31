@@ -99,14 +99,11 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public int selectByEnvId(Long envId) {
+    public List<ApplicationInstanceE> selectByEnvId(Long envId) {
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         applicationInstanceDO.setEnvId(envId);
         applicationInstanceDO.setStatus(InstanceStatus.RUNNING.getStatus());
-        if (applicationInstanceMapper.select(applicationInstanceDO) != null) {
-            return applicationInstanceMapper.select(applicationInstanceDO).size();
-        }
-        return 0;
+        return ConvertHelper.convertList(applicationInstanceMapper.select(applicationInstanceDO),ApplicationInstanceE.class);
     }
 
     @Override

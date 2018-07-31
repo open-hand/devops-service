@@ -186,18 +186,18 @@ public class ApplicationInstanceController {
      *
      * @param projectId            项目id
      * @param applicationDeployDTO 部署信息
-     * @return Boolean
+     * @return ApplicationInstanceDTO
      */
     @ApiOperation(value = "部署应用")
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @PostMapping
-    public ResponseEntity<Boolean> deploy(
+    public ResponseEntity<ApplicationInstanceDTO> deploy(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
             @RequestBody ApplicationDeployDTO applicationDeployDTO) {
-        return Optional.ofNullable(applicationInstanceService.create(applicationDeployDTO))
+        return Optional.ofNullable(applicationInstanceService.create(applicationDeployDTO,false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
     }

@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
@@ -14,6 +15,7 @@ import io.choerodon.devops.infra.mapper.DevopsEnvFileResourceMapper;
  * Time: 17:21
  * Description:
  */
+@Component
 public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourceRepository {
 
     @Autowired

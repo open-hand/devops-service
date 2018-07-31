@@ -44,11 +44,6 @@ public class DeployServiceImpl implements DeployService {
     @Override
     @Async
     public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, String type, Long userId) {
-        V1Service v1Service = new V1Service();
-        v1Service.setKind("ggg");
-        v1Service.setApiVersion("vvvv");
-        JSON json = new JSON();
-        json.serialize(v1Service);
         C7nHelmRelease C7nHelmRelease = new C7nHelmRelease();
         C7nHelmRelease.setApiVersion("choerodon.io:v1alpha1");
         C7nHelmRelease.setKind("C7NHelmRelease");

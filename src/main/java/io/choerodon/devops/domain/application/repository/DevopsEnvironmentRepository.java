@@ -27,4 +27,6 @@ public interface DevopsEnvironmentRepository {
 
     DevopsEnvironmentE queryByProjectIdAndCode(Long projectId, String code);
 
+    DevopsEnvironmentE queryByToken(String token);
+
 }

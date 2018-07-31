@@ -242,7 +242,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Boolean create(ApplicationDeployDTO applicationDeployDTO) {
+    public ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops) {
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 //        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
@@ -283,14 +283,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationDeployDTO.getValues()));
         devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository
                 .create(devopsEnvCommandValueE).getId());
-        deployService.deploy(
-                applicationE,
-                applicationVersionE,
-                applicationInstanceE,
-                devopsEnvironmentE,
-                applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
-                userAttrE.getGitlabUserId());
-        return true;
+        if(gitops) {
+            deployService.deploy(
+                    applicationE,
+                    applicationVersionE,
+                    applicationInstanceE,
+                    devopsEnvironmentE,
+                    applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
+                    userAttrE.getGitlabUserId());
+        }
+        return ConvertHelper.convert(applicationInstanceE,ApplicationInstanceDTO.class);
     }
 
     @Override

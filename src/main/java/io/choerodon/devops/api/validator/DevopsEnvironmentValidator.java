@@ -29,7 +29,7 @@ public class DevopsEnvironmentValidator {
      * @param envId 环境ID
      */
     public void checkEnvCanDisabled(Long envId) {
-        if (applicationInstanceRepository.selectByEnvId(envId) > 0) {
+        if (applicationInstanceRepository.selectByEnvId(envId).size() > 0) {
             throw new CommonException("error.env.stop.instanceExist");
         }
         if (devopsServiceRepository.checkEnvHasService(envId)) {

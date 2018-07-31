@@ -294,7 +294,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsEnviromentRepDTO> listByProjectId(Long projectId) {
         List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOList = listByProjectIdAndActive(projectId, true);
         return devopsEnviromentRepDTOList.stream().filter(t ->
-                applicationInstanceRepository.selectByEnvId(t.getId()) > 0)
+                applicationInstanceRepository.selectByEnvId(t.getId()).size() > 0)
                 .collect(Collectors.toList());
     }
 
