@@ -92,7 +92,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.group.not.sync");
         }
         GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                gitlabGroupE.getId(),
+                gitlabGroupE.getGitlabGroupId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
             throw new CommonException("error.user.not.owner");
@@ -102,7 +102,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         gitlabProjectPayload.setPath(applicationDTO.getCode());
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        gitlabProjectPayload.setGroupId(gitlabGroupE.getId());
+        gitlabProjectPayload.setGroupId(gitlabGroupE.getGitlabGroupId());
         Exception exception = eventProducerTemplate.execute(
                 "CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
                 (String uuid) -> {
@@ -171,7 +171,16 @@ public class ApplicationServiceImpl implements ApplicationService {
                         if (!sonarqubeUrl.equals("")) {
                             Integer result = 0;
                             try {
-                                result = HttpClientUtil.getSonar(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/" + "api/project_links/search?projectKey=" + organization.getCode() + "-" + projectE.getCode() + ":" + t.getCode());
+                                result = HttpClientUtil.getSonar(
+                                        sonarqubeUrl.endsWith("/")
+                                                ? sonarqubeUrl
+                                                : String.format(
+                                                        "%s/api/project_links/search?projectKey=%s-%s:%s",
+                                                        sonarqubeUrl,
+                                                        organization.getCode(),
+                                                        projectE.getCode(),
+                                                        t.getCode()
+                                        ));
                                 if (result.equals(HttpStatus.OK.value())) {
                                     t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
                                             + "dashboard?id="
@@ -319,7 +328,9 @@ public class ApplicationServiceImpl implements ApplicationService {
             String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
             uri += "devops/webhook";
             projectHook.setUrl(uri);
-            applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook).getId()));
+            applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
+                    gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook)
+                    .getId()));
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException("error.application.update");
             }

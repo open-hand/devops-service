@@ -1,15 +1,14 @@
 package io.choerodon.devops.infra.feign;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.entity.gitlab.DiffE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
@@ -59,6 +58,19 @@ public interface GitlabServiceClient {
     @PutMapping("/v1/projects/{projectId}")
     ResponseEntity<GitlabProjectDO> updateProject(@PathVariable("projectId") Integer projectId,
                                                   @RequestParam("userId") Integer userId);
+
+    @PostMapping("/v1/projects")
+    ResponseEntity<GitlabProjectDO> createProject(@RequestParam("groupId") Integer groupId,
+                                                  @RequestParam("projectName") String projectName,
+                                                  @RequestParam("userId") Integer userId,
+                                                  @RequestParam("visibility") boolean visibility);
+
+    @PostMapping("/v1/projects/deploy_key")
+    ResponseEntity createDeploykey(@RequestParam("projectId") Integer projectId,
+                                   @RequestParam("title") String title,
+                                   @RequestParam("key") String key,
+                                   @RequestParam("canPush") boolean canPush,
+                                   @RequestParam("userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<Map<String, Object>> addVariable(@PathVariable("projectId") Integer projectId,

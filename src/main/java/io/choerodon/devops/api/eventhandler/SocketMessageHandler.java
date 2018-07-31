@@ -167,7 +167,8 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case RELEASE_POD_EVENT:
-                deployMsgHandlerService.releasePodEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
+                deployMsgHandlerService.releasePodEvent(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             default:
                 break;

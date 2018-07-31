@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
 /**
  * Created by younger on 2018/4/9.
@@ -104,4 +105,11 @@ public interface DevopsEnvironmentService {
      * @return List
      */
     List<DevopsEnviromentRepDTO> listByProjectId(Long projectId);
+
+    /**
+     * 创建环境saga事件
+     *
+     * @param gitlabProjectPayload env saga payload
+     */
+    void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload);
 }

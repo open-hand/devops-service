@@ -15,6 +15,7 @@ public class DevopsProjectDO {
     @Id
     private Long id;
     private Integer gitlabGroupId;
+    private Integer envGroupId;
 
     private String gitlabUuid;
     private String harborUuid;
@@ -66,5 +67,13 @@ public class DevopsProjectDO {
 
     public void setMemberUuid(String memberUuid) {
         this.memberUuid = memberUuid;
+    }
+
+    public Integer getEnvGroupId() {
+        return envGroupId;
+    }
+
+    public void setEnvGroupId(Integer envGroupId) {
+        this.envGroupId = envGroupId;
     }
 }

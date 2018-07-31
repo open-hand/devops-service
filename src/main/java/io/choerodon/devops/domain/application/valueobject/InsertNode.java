@@ -7,8 +7,8 @@ import org.yaml.snakeyaml.nodes.Node;
  */
 public class InsertNode {
 
-    private int line ;
-    private  int startColumn;
+    private int line;
+    private int startColumn;
     private String key;
     private int lastIndex;
     private Node value;

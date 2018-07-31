@@ -11,6 +11,9 @@ import java.util.TimeZone;
  */
 public class DateUtil {
 
+    private DateUtil() {
+    }
+
     /**
      * 获取更改时区后的日期
      *

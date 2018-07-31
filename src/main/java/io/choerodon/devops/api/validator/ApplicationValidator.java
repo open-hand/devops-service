@@ -14,6 +14,7 @@ public class ApplicationValidator {
 
     private ApplicationValidator() {
     }
+
     /**
      * 检查应用的name和code是否符合标准
      */

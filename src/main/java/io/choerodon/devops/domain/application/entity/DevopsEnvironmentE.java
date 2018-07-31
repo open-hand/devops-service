@@ -15,6 +15,10 @@ import org.springframework.stereotype.Component;
 public class DevopsEnvironmentE {
     private Long id;
     private ProjectE projectE;
+    private Long gitlabEnvProjectId;
+    private Long hookId;
+    private String envIdRsa;
+    private String envIdRsaPub;
     private String name;
     private String code;
     private String token;
@@ -115,10 +119,6 @@ public class DevopsEnvironmentE {
         isActive = active;
     }
 
-    public Boolean getConnect() {
-        return isConnected;
-    }
-
     public void setConnect(Boolean connect) {
         isConnected = connect;
     }
@@ -171,6 +171,46 @@ public class DevopsEnvironmentE {
 
     public void initToken(String token) {
         this.token = token;
+    }
+
+    public Long getGitlabEnvProjectId() {
+        return gitlabEnvProjectId;
+    }
+
+    public void initGitlabEnvProjectId(Long gitlabEnvProjectId) {
+        this.gitlabEnvProjectId = gitlabEnvProjectId;
+    }
+
+    public String getEnvIdRsa() {
+        return envIdRsa;
+    }
+
+    public void setEnvIdRsa(String envIdRsa) {
+        this.envIdRsa = envIdRsa;
+    }
+
+    public String getEnvIdRsaPub() {
+        return envIdRsaPub;
+    }
+
+    public void setEnvIdRsaPub(String envIdRsaPub) {
+        this.envIdRsaPub = envIdRsaPub;
+    }
+
+    public Boolean getConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(Boolean connected) {
+        isConnected = connected;
+    }
+
+    public Long getHookId() {
+        return hookId;
+    }
+
+    public void initHookId(Long hookId) {
+        this.hookId = hookId;
     }
 
     /**

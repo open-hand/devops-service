@@ -21,4 +21,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+
+    changeSet(author: 'younger', id: '2018-07-25-add-column')
+            {
+                addColumn(tableName: 'devops_project') {
+                    column(name: 'env_group_id', type: 'BIGINT UNSIGNED', remarks: 'env gitlab group id', afterColumn: 'gitlab_group_id')
+                }
+            }
 }

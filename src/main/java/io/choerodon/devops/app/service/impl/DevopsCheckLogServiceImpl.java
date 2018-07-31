@@ -56,11 +56,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
             devopsCheckLogE.setBeginCheckDate(new Date());
             List<CheckLog> logs = new ArrayList<>();
-            applications.parallelStream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null).forEach(applicationDO -> {
+            applications.parallelStream()
+                    .filter(applicationDO ->
+                            applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
+                    .forEach(applicationDO -> {
                         syncWebHook(applicationDO, logs);
                         syncBranches(applicationDO, logs);
-                    }
-            );
+                    });
             devopsCheckLogE.setLog(JSON.toJSONString(logs));
             devopsCheckLogE.setEndCheckDate(new Date());
             devopsCheckLogRepository.create(devopsCheckLogE);
@@ -80,7 +82,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
             uri += "devops/webhook";
             projectHook.setUrl(uri);
-            applicationDO.setHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(applicationDO.getGitlabProjectId(), ADMIN, projectHook).getId()));
+            applicationDO.setHookId(TypeUtil.objToLong(
+                    gitlabRepository.createWebHook(applicationDO.getGitlabProjectId(), ADMIN, projectHook).getId()));
             applicationMapper.updateByPrimaryKey(applicationDO);
             checkLog.setResult("success");
         } catch (Exception e) {
@@ -94,25 +97,27 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         CheckLog checkLog = new CheckLog();
         checkLog.setContent("app: " + applicationDO.getName() + " sync branches");
         try {
-            Optional<List<BranchDO>> branchDOS = Optional.ofNullable(gitlabServiceClient.listBranches(applicationDO.getGitlabProjectId(), ADMIN).getBody());
+            Optional<List<BranchDO>> branchDOS = Optional.ofNullable(
+                    gitlabServiceClient.listBranches(applicationDO.getGitlabProjectId(), ADMIN).getBody());
             List<String> branchNames =
-                    devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).parallelStream().map(DevopsBranchE::getBranchName).collect(Collectors.toList());
-            if (branchDOS.isPresent()) {
-                branchDOS.get().parallelStream().filter(branchDO -> !branchNames.contains(branchDO.getName())).forEach(branchDO -> {
-                    DevopsBranchE newDevopsBranchE = new DevopsBranchE();
-                    newDevopsBranchE.initApplicationE(applicationDO.getId());
-                    newDevopsBranchE.setLastCommitDate(branchDO.getCommit().getCommittedDate());
-                    newDevopsBranchE.setLastCommit(branchDO.getCommit().getId());
-                    newDevopsBranchE.setBranchName(branchDO.getName());
-                    newDevopsBranchE.setCheckoutCommit(branchDO.getCommit().getId());
-                    newDevopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
-                    newDevopsBranchE.setLastCommitMsg(branchDO.getCommit().getMessage());
-                    UserE userE = iamRepository.queryByLoginName(branchDO.getCommit().getAuthorName());
-                    newDevopsBranchE.setLastCommitUser(userE.getId());
-                    devopsGitRepository.createDevopsBranch(newDevopsBranchE);
-                    checkLog.setResult("success");
-                });
-            }
+                    devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).parallelStream()
+                            .map(DevopsBranchE::getBranchName).collect(Collectors.toList());
+            branchDOS.ifPresent(branchDOS1 -> branchDOS1.parallelStream()
+                    .filter(branchDO -> !branchNames.contains(branchDO.getName()))
+                    .forEach(branchDO -> {
+                        DevopsBranchE newDevopsBranchE = new DevopsBranchE();
+                        newDevopsBranchE.initApplicationE(applicationDO.getId());
+                        newDevopsBranchE.setLastCommitDate(branchDO.getCommit().getCommittedDate());
+                        newDevopsBranchE.setLastCommit(branchDO.getCommit().getId());
+                        newDevopsBranchE.setBranchName(branchDO.getName());
+                        newDevopsBranchE.setCheckoutCommit(branchDO.getCommit().getId());
+                        newDevopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
+                        newDevopsBranchE.setLastCommitMsg(branchDO.getCommit().getMessage());
+                        UserE userE = iamRepository.queryByLoginName(branchDO.getCommit().getAuthorName());
+                        newDevopsBranchE.setLastCommitUser(userE.getId());
+                        devopsGitRepository.createDevopsBranch(newDevopsBranchE);
+                        checkLog.setResult("success");
+                    }));
         } catch (Exception e) {
             checkLog.setResult("failed: " + e.getMessage());
         }
