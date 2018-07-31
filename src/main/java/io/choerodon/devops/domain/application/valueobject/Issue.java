@@ -7,7 +7,6 @@ import java.math.BigDecimal;
 
 public class Issue {
 
-    /***/
     @Id
     @GeneratedValue
     private Long issueId;

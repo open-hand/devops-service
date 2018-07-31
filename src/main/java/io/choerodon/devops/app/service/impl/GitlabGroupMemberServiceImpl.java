@@ -81,14 +81,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     GitlabGroupMemberE groupMemberE;
                     if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
                         gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
-                            groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                    gitlabGroupE.getEnvGroupId(),
-                                    gitlabUserE.getId());
-                            deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
-                            groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                    gitlabGroupE.getGitlabGroupId(),
-                                    gitlabUserE.getId());
-                            deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
+                        groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                                gitlabGroupE.getEnvGroupId(),
+                                gitlabUserE.getId());
+                        deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
+                        groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                                gitlabGroupE.getGitlabGroupId(),
+                                gitlabUserE.getId());
+                        deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
                     } else {
                         Organization organization =
                                 iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
@@ -147,7 +147,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         UserAttrE userAttrE = userAttrRepository.queryById(userId);
         GitlabGroupE gitlabGroupE;
         GitlabGroupMemberE groupMemberE;
-        Integer[] roles = {memberHelper.getProjectDevelopAccessLevel().toValue(), memberHelper.getProjectOwnerAccessLevel().toValue()};
+        Integer[] roles = {
+                memberHelper.getProjectDevelopAccessLevel().toValue(),
+                memberHelper.getProjectOwnerAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         if (!memberHelper.isDeploy()) {
             if (resourceType.equals(PROJECT)) {
@@ -175,7 +177,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                     gitlabGroupE.getEnvGroupId(),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-            addOrUpdateGilabRole(memberHelper.getDeployAdminAccessLevel(), groupMemberE, gitlabGroupE.getEnvGroupId(), userAttrE);
+            addOrUpdateGilabRole(
+                    memberHelper.getDeployAdminAccessLevel(),
+                    groupMemberE,
+                    gitlabGroupE.getEnvGroupId(),
+                    userAttrE);
         }
     }
 

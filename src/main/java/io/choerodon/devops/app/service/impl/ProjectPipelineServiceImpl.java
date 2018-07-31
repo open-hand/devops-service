@@ -155,19 +155,23 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
 
             List<GitlabJobE> jobs =
                     gitlabProjectRepository.listJobs(gitlabProjectId, gitlabPipelineE.getId(), userId);
-            List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository.getCommitStatuse(gitlabProjectId, gitlabPipelineE.getSha(), userId);
-            commitStatuseDOS.stream().filter(commitStatuseDO -> commitStatuseDO.getRef().equals(pipelineResultV.getRef()) && commitStatuseDO.getName().equals(SONAR_QUBE)).forEach(commitStatuseDO -> {
-                GitlabJobE gitlabJobE = new GitlabJobE();
-                gitlabJobE.setName(commitStatuseDO.getName());
-                gitlabJobE.setStatus(JobStatus.SUCCESS);
-                gitlabJobE.setStage(commitStatuseDO.getName());
-                if (commitStatuseDO.getStatus().equals(JobStatus.FAILED.toString())) {
-                    gitlabJobE.setStatus(JobStatus.FAILED);
-                }
-                gitlabJobE.setDescription(commitStatuseDO.getDescription());
-                jobs.add(gitlabJobE);
-
-            });
+            List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository
+                    .getCommitStatuse(gitlabProjectId, gitlabPipelineE.getSha(), userId);
+            commitStatuseDOS.stream()
+                    .filter(commitStatuseDO ->
+                            commitStatuseDO.getRef().equals(pipelineResultV.getRef())
+                                    && commitStatuseDO.getName().equals(SONAR_QUBE))
+                    .forEach(commitStatuseDO -> {
+                        GitlabJobE gitlabJobE = new GitlabJobE();
+                        gitlabJobE.setName(commitStatuseDO.getName());
+                        gitlabJobE.setStatus(JobStatus.SUCCESS);
+                        gitlabJobE.setStage(commitStatuseDO.getName());
+                        if (commitStatuseDO.getStatus().equals(JobStatus.FAILED.toString())) {
+                            gitlabJobE.setStatus(JobStatus.FAILED);
+                        }
+                        gitlabJobE.setDescription(commitStatuseDO.getDescription());
+                        jobs.add(gitlabJobE);
+                    });
 
             if (!jobs.isEmpty()) {
                 List<GitlabJobE> realJobs = getRealJobs(jobs);
@@ -230,7 +234,8 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         }
         stages.stream().forEach(s -> {
 
-            List<GitlabJobE> gitlabJobEList = jobs.stream().filter(gitlabJobE -> gitlabJobE.getStage().equals(s)).collect(Collectors.toList());
+            List<GitlabJobE> gitlabJobEList = jobs.stream()
+                    .filter(gitlabJobE -> gitlabJobE.getStage().equals(s)).collect(Collectors.toList());
             if (!s.equals(SONAR_QUBE)) {
                 Date max = gitlabJobEList.get(0).getCreatedAt();
                 int index = 0;

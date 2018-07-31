@@ -17,7 +17,6 @@ import io.choerodon.devops.domain.application.event.HarborPayload;
 import io.choerodon.devops.domain.application.event.ProjectEvent;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
 
 /**
  * Created with IntelliJ IDEA.
@@ -28,24 +27,19 @@ import io.choerodon.event.producer.execute.EventProducerTemplate;
  */
 @Component
 public class ProjectServiceImpl implements ProjectService {
-    private static final String DEVOPS_SERVICE = "devops-service";
-    private static final String GROUP_EVENT = "GitlabGroup";
-    private static final String HARBOR_EVENT = "Harbor";
 
-    private final EventProducerTemplate eventProducerTemplate;
     private ObjectMapper objectMapper = new ObjectMapper();
-    @Autowired
-    private SagaClient sagaClient;
 
     @Value("${spring.application.name}")
     private String applicationName;
+
     private DevopsProjectRepository devopsProjectRepository;
+    private final SagaClient sagaClient;
 
     @Autowired
-    public ProjectServiceImpl(EventProducerTemplate eventProducerTemplate,
-                              DevopsProjectRepository devopsProjectRepository) {
-        this.eventProducerTemplate = eventProducerTemplate;
+    public ProjectServiceImpl(DevopsProjectRepository devopsProjectRepository, SagaClient sagaClient) {
         this.devopsProjectRepository = devopsProjectRepository;
+        this.sagaClient = sagaClient;
     }
 
     @Override
@@ -62,15 +56,6 @@ public class ProjectServiceImpl implements ProjectService {
     private void createGitlabGroupEvent(ProjectEvent projectEvent) {
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
         BeanUtils.copyProperties(projectEvent, gitlabGroupPayload);
-//        Exception exception = eventProducerTemplate.execute(GROUP_EVENT, DEVOPS_SERVICE, gitlabGroupPayload,
-//                (String uuid) -> {
-//                    DevopsProjectDO devopsProject = new DevopsProjectDO(projectEvent.getProjectId());
-//                    devopsProject.setGitlabUuid(uuid);
-//                    devopsProjectRepository.createProject(devopsProject);
-//                });
-//        if (exception != null) {
-//            throw new CommonException(exception.getMessage());
-//        }
 
         try {
             String input = objectMapper.writeValueAsString(gitlabGroupPayload);
@@ -88,15 +73,6 @@ public class ProjectServiceImpl implements ProjectService {
                 projectEvent.getProjectId(),
                 projectEvent.getOrganizationCode() + "-" + projectEvent.getProjectCode()
         );
-//        Exception exception = eventProducerTemplate.execute(HARBOR_EVENT, DEVOPS_SERVICE, harborPayload,
-//                (String uuid) -> {
-//                    DevopsProjectDO devopsProject = new DevopsProjectDO(projectEvent.getProjectId());
-//                    devopsProject.setHarborUuid(uuid);
-//                    devopsProjectRepository.updateProjectAttr(devopsProject);
-//                });
-//        if (exception != null) {
-//            throw new CommonException(exception.getMessage());
-//        }
         try {
             String input = objectMapper.writeValueAsString(harborPayload);
             sagaClient.startSaga(

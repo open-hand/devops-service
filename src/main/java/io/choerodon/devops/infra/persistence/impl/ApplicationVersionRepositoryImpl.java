@@ -236,7 +236,8 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
 
     @Override
     public List<ApplicationVersionE> selectUpgradeVersions(Long appVersionId) {
-        return ConvertHelper.convertList(applicationVersionMapper.selectUpgradeVersions(appVersionId),ApplicationVersionE.class);
+        return ConvertHelper.convertList(
+                applicationVersionMapper.selectUpgradeVersions(appVersionId), ApplicationVersionE.class);
     }
 
     @Override

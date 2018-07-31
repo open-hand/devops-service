@@ -14,11 +14,6 @@ public class GitlabGroupE {
     private Visibility visibility;
     private ProjectE projectE;
 
-    public GitlabGroupE() {
-
-    }
-
-
     public Integer getGitlabGroupId() {
         return gitlabGroupId;
     }

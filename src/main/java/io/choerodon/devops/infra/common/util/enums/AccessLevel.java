@@ -48,8 +48,6 @@ public enum AccessLevel {
     public static AccessLevel forString(String value, MemberHelper memberHelper) {
         switch (value) {
             case "ORGAINZATION.GITLAB.OWNER":
-                memberHelper.setProjectOwnerAccessLevel(AccessLevel.OWNER);
-                return AccessLevel.OWNER;
             case "PROJECT.GITLAB.OWNER":
                 memberHelper.setProjectOwnerAccessLevel(AccessLevel.OWNER);
                 return AccessLevel.OWNER;

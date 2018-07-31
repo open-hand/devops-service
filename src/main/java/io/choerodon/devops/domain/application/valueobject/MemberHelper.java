@@ -10,7 +10,7 @@ public class MemberHelper {
     private AccessLevel projectDevelopAccessLevel;
 
 
-    public MemberHelper(){
+    public MemberHelper() {
         this.projectDevelopAccessLevel = AccessLevel.NONE;
         this.projectOwnerAccessLevel = AccessLevel.NONE;
         this.deployAdminAccessLevel = AccessLevel.NONE;

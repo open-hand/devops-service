@@ -1,6 +1,5 @@
 package io.choerodon.devops.domain.application.entity;
 
-
 import java.util.Date;
 
 import org.springframework.context.annotation.Scope;

@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.saga.SagaDefinition;
 import io.choerodon.core.saga.SagaTask;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.GitlabGroupService;
+import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.event.HarborPayload;
@@ -24,33 +26,15 @@ import io.choerodon.devops.domain.application.event.HarborPayload;
 @Component
 public class DevopsSagaHandler {
 
-    private static final String DEVOPS_SERVICE = "devops-service";
-    private static final String IAM_SERVICE = "iam-service";
-    private static final String TEMPLATE = "template";
-    private static final String ORG_SERVICE = "organization-service";
-    private static final String APPLICATION = "application";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEventHandler.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
     @Autowired
-    private ProjectService projectService;
-    @Autowired
-    private ApplicationService applicationService;
-    @Autowired
-    private ApplicationTemplateService applicationTemplateService;
-    @Autowired
-    private GitlabGroupMemberService gitlabGroupMemberService;
-    @Autowired
     private GitlabGroupService gitlabGroupService;
     @Autowired
     private HarborService harborService;
-    @Autowired
-    private GitlabUserService gitlabUserService;
-    @Autowired
-    private OrganizationService organizationService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
 
@@ -99,6 +83,9 @@ public class DevopsSagaHandler {
         harborService.createHarbor(harborPayload);
     }
 
+    /**
+     * devops创建环境
+     */
     @SagaTask(code = "devopsCreateEnv",
             description = "devops创建环境",
             sagaCode = "asgard-create-env",

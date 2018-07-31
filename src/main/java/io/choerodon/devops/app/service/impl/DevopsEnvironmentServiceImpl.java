@@ -95,7 +95,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
         devopsEnvironmentE.initSequence(devopsEnvironmentES);
-        List<String> sshKeys = FileUtil.getSshKey(organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
+        List<String> sshKeys = FileUtil.getSshKey(
+                organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
@@ -299,12 +300,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(), gitlabProjectPayload.getPath(), gitlabProjectPayload.getUserId(), false);
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(
+                gitlabProjectPayload.getGroupId(),
+                gitlabProjectPayload.getPath(),
+                gitlabProjectPayload.getUserId(),
+                false);
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
+                .queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
         devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
-        gitlabRepository.createDeployKey(gitlabProjectDO.getId(), gitlabProjectPayload.getPath(), devopsEnvironmentE.getEnvIdRsaPub(), true, gitlabProjectPayload.getUserId());
+        gitlabRepository.createDeployKey(
+                gitlabProjectDO.getId(),
+                gitlabProjectPayload.getPath(),
+                devopsEnvironmentE.getEnvIdRsaPub(),
+                true,
+                gitlabProjectPayload.getUserId());
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());
@@ -312,7 +323,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
         uri += "devops/webhook/git_ops";
         projectHook.setUrl(uri);
-        devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
+        devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
+                gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
         devopsEnviromentRepository.update(devopsEnvironmentE);
     }
 

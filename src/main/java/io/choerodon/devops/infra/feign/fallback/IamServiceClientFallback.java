@@ -41,12 +41,12 @@ public class IamServiceClientFallback implements IamServiceClient {
 
     @Override
     public ResponseEntity<UserDO> queryByLoginName(String loginName) {
-        return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity("error.user.get.byLoginName", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
     public ResponseEntity<UserDO> queryById(Long id) {
-        return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity("error.user.get.byId", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -61,6 +61,6 @@ public class IamServiceClientFallback implements IamServiceClient {
 
     @Override
     public ResponseEntity<List<UserDO>> listUsersByIds(Long[] ids) {
-        return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity("error.user.get.byIds", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

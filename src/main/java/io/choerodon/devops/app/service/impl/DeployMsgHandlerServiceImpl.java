@@ -321,12 +321,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 if (devopsServiceE == null) {
                                     devopsServiceE = new DevopsServiceE();
                                     syncService(devopsServiceE, msg, applicationInstanceE);
-                                    DevopsEnvResourceE newdevopsInsResourceE =
+                                    DevopsEnvResourceE newDevopsInsResourceE =
                                             devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                                     applicationInstanceE.getId(),
                                                     KeyParseTool.getResourceType(key),
                                                     KeyParseTool.getResourceName(key));
-                                    saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
+                                    saveOrUpdateResource(devopsEnvResourceE, newDevopsInsResourceE,
                                             devopsEnvResourceDetailE, applicationInstanceE);
                                 }
                                 List<DevopsIngressPathE> devopsIngressPathEList =
@@ -846,7 +846,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         Event event = JSONArray.parseObject(msg, Event.class);
         if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
             event.getInvolvedObject().setKind(ResourceType.JOB.getType());
-            event.getInvolvedObject().setName(event.getInvolvedObject().getName().substring(0, event.getInvolvedObject().getName().lastIndexOf("-")));
+            event.getInvolvedObject().setName(
+                    event.getInvolvedObject().getName()
+                            .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
             insertDevopsCommandEvent(event, ResourceType.JOB.getType());
         }
     }
@@ -965,7 +967,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
         } else {
-            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
+            devopsEnvResourceRepository.deleteByKindAndName(
+                    ResourceType.SERVICE.getType(), v1Service.getMetadata().getName());
         }
     }
 
@@ -1038,12 +1041,14 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 }
             }
         } else {
-            devopsEnvResourceRepository.deleteByKindAndName(ResourceType.INGRESS.getType(), v1beta1Ingress.getMetadata().getName());
+            devopsEnvResourceRepository.deleteByKindAndName(
+                    ResourceType.INGRESS.getType(), v1beta1Ingress.getMetadata().getName());
         }
     }
 
     private void insertDevopsCommandEvent(Event event, String type) {
-        DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryLatestJob(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
+        DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository
+                .queryLatestJob(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
         try {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceE.getApplicationInstanceE().getId());

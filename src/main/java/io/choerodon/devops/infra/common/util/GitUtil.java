@@ -144,6 +144,9 @@ public class GitUtil {
         }
     }
 
+    /**
+     * 流水号 tag 大小比较
+     */
     public static Integer serialTagCompare(String tagA, String tagB) {
         Integer tagNum1 = tagA.matches("\\d+") ? Integer.parseInt(tagA) : null;
         Integer tagNum2 = tagB.matches("\\d+") ? Integer.parseInt(tagB) : null;

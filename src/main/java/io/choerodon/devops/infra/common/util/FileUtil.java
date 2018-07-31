@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.common.util;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -11,6 +10,7 @@ import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -402,7 +402,11 @@ public class FileUtil {
         return replaceResult;
     }
 
-    private static String replace(String yaml, List<ReplaceMarker> replaceMarkers, List<HighlightMarker> highlights, List<InsertNode> insertNodes, List<Integer> newLines) {
+    private static String replace(String yaml,
+                                  List<ReplaceMarker> replaceMarkers,
+                                  List<HighlightMarker> highlights,
+                                  List<InsertNode> insertNodes,
+                                  List<Integer> newLines) {
         String temp = yaml;
         if (highlights == null) {
             highlights = new ArrayList<>();
@@ -464,9 +468,11 @@ public class FileUtil {
             String insertString = stringBuilder.toString();
             if (insertNode.getLastIndex() >= temp.length()) {
                 insertString = "\n" + insertString;
-                temp = temp + insertString;
+                temp = String.format("%s%s", temp, insertString);
             } else {
-                temp = temp.substring(0, insertNode.getLastIndex() + 1) + insertString + temp.substring(insertNode.getLastIndex() + 1);
+                temp = temp.substring(0, insertNode.getLastIndex() + 1)
+                        + insertString
+                        + temp.substring(insertNode.getLastIndex() + 1);
             }
             int insertLineCount = countLine(insertString);
             insertLineCounts[i] = insertLineCount;
@@ -491,7 +497,10 @@ public class FileUtil {
 
 
     //从将old的值替换至新的值
-    private static void compareAndReplace(MappingNode oldMapping, MappingNode newMapping, List<InsertNode> insertNodes, List<ReplaceMarker> replaceMarkers) {
+    private static void compareAndReplace(MappingNode oldMapping,
+                                          MappingNode newMapping,
+                                          List<InsertNode> insertNodes,
+                                          List<ReplaceMarker> replaceMarkers) {
         List<NodeTuple> oldRootTuple = oldMapping.getValue();
         List<NodeTuple> newRootTuple = newMapping.getValue();
         for (NodeTuple oldTuple : oldRootTuple) {
@@ -507,22 +516,20 @@ public class FileUtil {
                         insertNode.setValue(oldValueScalar);
                         insertNodes.add(insertNode);
                     }
-                    if (newValueNode != null) {
-                        if (!oldValueScalar.getValue().equals(newValueNode.getValue())) {
-                            ReplaceMarker replaceMarker = new ReplaceMarker();
-                            replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
-                            replaceMarker.setEndIndex(newValueNode.getEndMark().getIndex());
-                            replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
-                            replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
-                            replaceMarker.setLine(newValueNode.getStartMark().getLine());
-                            if (newValueNode.getValue().isEmpty()) {
-                                replaceMarker.setToReplace(" " + oldValueScalar.getValue());
-                            } else {
-                                replaceMarker.setToReplace(oldValueScalar.getValue());
-                            }
-                            //记录相关并进行替换
-                            replaceMarkers.add(replaceMarker);
+                    if (newValueNode != null && !oldValueScalar.getValue().equals(newValueNode.getValue())) {
+                        ReplaceMarker replaceMarker = new ReplaceMarker();
+                        replaceMarker.setStartIndex(newValueNode.getStartMark().getIndex());
+                        replaceMarker.setEndIndex(newValueNode.getEndMark().getIndex());
+                        replaceMarker.setStartColumn(newValueNode.getStartMark().getColumn());
+                        replaceMarker.setEndColumn(newValueNode.getEndMark().getColumn());
+                        replaceMarker.setLine(newValueNode.getStartMark().getLine());
+                        if (newValueNode.getValue().isEmpty()) {
+                            replaceMarker.setToReplace(" " + oldValueScalar.getValue());
+                        } else {
+                            replaceMarker.setToReplace(oldValueScalar.getValue());
                         }
+                        //记录相关并进行替换
+                        replaceMarkers.add(replaceMarker);
                     }
                 } else if (oldValue instanceof MappingNode) {
                     InsertNode insertNode = new InsertNode();
@@ -636,6 +643,14 @@ public class FileUtil {
         return null;
     }
 
+    public static String getKeyValue(int complex, List<String> keys) {
+        String result = "";
+        for (int i = 0; i < complex; i++) {
+            result = result.equals("") ? result + keys.get(i) : result + "." + keys.get(i);
+        }
+        return result;
+    }
+
 
     private static Node getLastIndex(NodeTuple nodeTuple) {
         Node node = nodeTuple.getValueNode();
@@ -643,14 +658,14 @@ public class FileUtil {
             return node;
         } else if (node instanceof MappingNode) {
             MappingNode mappingNode = (MappingNode) node;
-            if (mappingNode.getValue().size() == 0) {
+            if (mappingNode.getValue().isEmpty()) {
                 return mappingNode;
             }
             NodeTuple last = mappingNode.getValue().get(mappingNode.getValue().size() - 1);
             return getLastIndex(last);
         } else if (node instanceof SequenceNode) {
             SequenceNode sequenceNode = (SequenceNode) node;
-            if (sequenceNode.getValue().size() == 0) {
+            if (sequenceNode.getValue().isEmpty()) {
                 return sequenceNode;
             }
             return sequenceNode.getValue().get(sequenceNode.getValue().size() - 1);
@@ -1092,7 +1107,6 @@ public class FileUtil {
 
     }
 
-
     public static String getChangeYaml(String oldYam1, String newYaml) {
         Map<String, Object> map1 = (Map<String, Object>) yaml.load(oldYam1);
         Map<String, Object> map2 = (Map<String, Object>) yaml.load(newYaml);
@@ -1140,14 +1154,6 @@ public class FileUtil {
         return complex - 1;
     }
 
-    public static String getKeyValue(int complex, List<String> keys) {
-        String result = "";
-        for (int i = 0; i < complex; i++) {
-            result = result.equals("") ? result + keys.get(i) : result + "." + keys.get(i);
-        }
-        return result;
-    }
-
     public static Map<String, String> getChangeProperties(Map<String, String> map, Map<String, String> newMap) {
         Map<String, String> properties = new HashMap<>();
         for (Map.Entry<String, String> entry : newMap.entrySet()) {
@@ -1192,14 +1198,13 @@ public class FileUtil {
         List<String> sshkeys = new ArrayList<>();
         int type = KeyPair.RSA;
         String strPath = "id_rsa";
-        String comment = path;
         JSch jsch = new JSch();
         String passphrase = "";
         try {
             KeyPair kpair = KeyPair.genKeyPair(jsch, type);
             kpair.setPassphrase(passphrase);
             kpair.writePrivateKey(strPath);
-            kpair.writePublicKey(strPath + ".pub", comment);
+            kpair.writePublicKey(strPath + ".pub", path);
             kpair.dispose();
             FileUtil.moveFiles("id_rsa", "ssh/" + path);
             FileUtil.moveFiles("id_rsa.pub", "ssh/" + path);

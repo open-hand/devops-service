@@ -119,10 +119,6 @@ public class DevopsEnvironmentE {
         isActive = active;
     }
 
-    public Boolean getConnect() {
-        return isConnected;
-    }
-
     public void setConnect(Boolean connect) {
         isConnected = connect;
     }

@@ -164,7 +164,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
 
     private void getDevopsCommandEvent(DevopsEnvCommandE devopsEnvCommandE, List<String> results) {
-        List<DevopsCommandEventE> devopsCommandEventES = devopsCommandEventRepository.listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
+        List<DevopsCommandEventE> devopsCommandEventES = devopsCommandEventRepository
+                .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
         devopsCommandEventES.sort(Comparator.comparing(DevopsCommandEventE::getId));
         LinkedHashMap<String, List<DevopsCommandEventE>> event = new LinkedHashMap<>();
         for (DevopsCommandEventE devopsCommandEventE : devopsCommandEventES) {

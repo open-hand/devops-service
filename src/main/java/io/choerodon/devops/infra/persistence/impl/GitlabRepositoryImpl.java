@@ -112,7 +112,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
-        ResponseEntity<ProjectHook> projectHookResponseEntity = gitlabServiceClient.createProjectHook(projectId, userId, projectHook);
+        ResponseEntity<ProjectHook> projectHookResponseEntity = gitlabServiceClient
+                .createProjectHook(projectId, userId, projectHook);
         if (!projectHookResponseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
             throw new CommonException("error.projecthook.create");
         }
@@ -121,7 +122,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public GitlabProjectDO createProject(Integer groupId, String projectName, Integer userId, boolean visibility) {
-        ResponseEntity<GitlabProjectDO> responseEntity = gitlabServiceClient.createProject(groupId, projectName, userId, visibility);
+        ResponseEntity<GitlabProjectDO> responseEntity = gitlabServiceClient
+                .createProject(groupId, projectName, userId, visibility);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.gitlab.project.create");
         }

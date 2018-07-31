@@ -27,6 +27,7 @@ public class DevopsCommandEventRepositoryImpl implements DevopsCommandEventRepos
         DevopsCommandEventDO devopsCommandEventDO = new DevopsCommandEventDO();
         devopsCommandEventDO.setCommandId(commandId);
         devopsCommandEventDO.setType(type);
-        return ConvertHelper.convertList(devopsCommandEventMapper.select(devopsCommandEventDO), DevopsCommandEventE.class);
+        return ConvertHelper.convertList(
+                devopsCommandEventMapper.select(devopsCommandEventDO), DevopsCommandEventE.class);
     }
 }

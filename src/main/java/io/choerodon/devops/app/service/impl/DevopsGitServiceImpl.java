@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -43,8 +42,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-    private JSON json = new JSON();
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 

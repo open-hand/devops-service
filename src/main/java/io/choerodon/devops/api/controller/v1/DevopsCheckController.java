@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
