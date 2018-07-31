@@ -253,7 +253,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-
     @Override
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         Integer gitLabProjectId = pushWebHookDTO.getProjectId();
@@ -262,28 +261,25 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<String> modifyFiles = new ArrayList<>();
         List<Map<String, String>> renamedFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();
-        try {
-            BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
-            String masterSha = branch.getCommit().getId();
-            String latestTag = devopsGitRepository.getLatestSerialTag(gitLabProjectId, gitLabUserId);
-            CompareResultsE compareResultsE = devopsGitRepository
-                    .getCompareResults(gitLabProjectId, latestTag, masterSha);
-            compareResultsE.getDiffs().forEach(t -> {
-                if (t.getNewFile()) {
-                    newFiles.add(t.getNewPath());
-                } else if (t.getRenamedFile()) {
-                    Map<String, String> map = new HashMap<>();
-                    map.put(t.getOldPath(), t.getNewPath());
-                    renamedFiles.add(map);
-                } else if (t.getDeletedFile()) {
-                    deletedFiles.add(t.getNewPath());
-                } else {
-                    modifyFiles.add(t.getNewPath());
-                }
-            });
-        } catch (Exception e) {
-            LOGGER.info("File Resource Sync File Changes Fail!");
-        }
+
+        BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
+        String masterSha = branch.getCommit().getId();
+        String latestTag = devopsGitRepository.getLatestSerialTag(gitLabProjectId, gitLabUserId);
+        CompareResultsE compareResultsE = devopsGitRepository
+                .getCompareResults(gitLabProjectId, latestTag, masterSha);
+        compareResultsE.getDiffs().forEach(t -> {
+            if (t.getNewFile()) {
+                newFiles.add(t.getNewPath());
+            } else if (t.getRenamedFile()) {
+                Map<String, String> map = new HashMap<>();
+                map.put(t.getOldPath(), t.getNewPath());
+                renamedFiles.add(map);
+            } else if (t.getDeletedFile()) {
+                deletedFiles.add(t.getNewPath());
+            } else {
+                modifyFiles.add(t.getNewPath());
+            }
+        });
 
         // do sth to files
     }

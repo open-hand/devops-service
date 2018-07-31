@@ -59,7 +59,9 @@ public class DevopsSagaHandler {
 
     }
 
-
+    /**
+     * GitOps 事件处理
+     */
     @SagaTask(code = "devopsGitOps",
             description = "gitops",
             sagaCode = "asgard-gitops",
