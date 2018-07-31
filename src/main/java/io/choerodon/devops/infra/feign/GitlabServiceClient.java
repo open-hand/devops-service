@@ -4,6 +4,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
+import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -107,7 +108,17 @@ public interface GitlabServiceClient {
     ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName, @RequestParam(value = "userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
-    ResponseEntity<Boolean> createFile(@PathVariable("projectId") Integer projectId,
+    ResponseEntity createFile(@PathVariable("projectId") Integer projectId,
+                                       @RequestParam("path") String path,
+                                       @RequestParam("content") String content,
+                                       @RequestParam("commitMessage") String commitMessage,
+                                       @RequestParam("userId") Integer userId);
+
+    @PutMapping(value = "/v1/projects/{projectId}/repository/file")
+    ResponseEntity updateFile(@PathVariable("projectId") Integer projectId,
+                                       @RequestParam("path") String path,
+                                       @RequestParam("content") String content,
+                                       @RequestParam("commitMessage") String commitMessage,
                                        @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")

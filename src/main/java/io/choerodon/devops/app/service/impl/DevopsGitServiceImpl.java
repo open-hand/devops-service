@@ -3,6 +3,8 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -10,9 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.asgard.saga.SagaClient;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.saga.Saga;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
@@ -43,6 +48,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
 
+    private ObjectMapper objectMapper = new ObjectMapper();
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
 
     @Value("${services.gitlab.url}")
@@ -59,6 +65,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private IamRepository iamRepository;
     @Autowired
     private AgileRepository agileRepository;
+    @Autowired
+    private SagaClient sagaClient;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -233,7 +241,21 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void fileResourceSync(PushWebHookDTO pushWebHookDTO, String token) {
+    @Saga(code = "asgard-gitops", description = "gitops", inputSchema = "{}")
+    public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
+        pushWebHookDTO.setToken(token);
+        String input;
+        try {
+            input = objectMapper.writeValueAsString(pushWebHookDTO);
+            sagaClient.startSaga("asgard-gitops", new StartInstanceDTO(input, null, "", ""));
+        } catch (JsonProcessingException e) {
+            throw new CommonException(e.getMessage());
+        }
+    }
+
+
+    @Override
+    public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         Integer gitLabUserId = pushWebHookDTO.getUserId();
         List<String> newFiles = new ArrayList<>();
@@ -265,6 +287,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         // do sth to files
     }
+
 
     private void commitBranchSync(PushWebHookDTO pushWebHookDTO, Long appId) {
         try {

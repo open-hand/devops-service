@@ -19,6 +19,7 @@ public class PushWebHookDTO {
     private Integer projectId;
     private List<CommitDTO> commits;
     private Integer totalCommitsCount;
+    private String token;
 
     public String getObjectKind() {
         return objectKind;
@@ -98,5 +99,13 @@ public class PushWebHookDTO {
 
     public void setTotalCommitsCount(Integer totalCommitsCount) {
         this.totalCommitsCount = totalCommitsCount;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }

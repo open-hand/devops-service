@@ -39,6 +39,20 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ApplicationTemplateServiceImpl implements ApplicationTemplateService {
 
+
+    private static final String README = "README.md";
+    private static final String README_CONTENT =
+            "# To customize a template\n"
+                    + "you need to push the template code to this git repository.\n"
+                    + "\n"
+                    + "Please make sure the following file exists.\n"
+                    + "+ **gitlab-ci.yml**. (Refer to [GitLab Documentation](https://docs.gitlab.com/ee/ci/yaml/))\n"
+                    + "+ **Dockerfile**. (Refer to [Dockerfile reference](https://docs.docker.com/engine/reference/builder/))\n"
+                    + "+ **Chart** setting directory. (Refer to [helm](https://github.com/kubernetes/helm))\n"
+                    + "\n"
+                    + "Finally, removing or re-editing this **README.md** file to make it useful.";
+
+
     private static final String TEMPLATE = "template";
     private static final String MASTER = "master";
     @Value("${spring.application.name}")
@@ -209,7 +223,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     accessToken,
                     teamplateType);
         } else {
-            gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
+            gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),README,README_CONTENT,"ADD README",
                     gitlabProjectEventDTO.getUserId());
         }
     }

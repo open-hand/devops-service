@@ -83,5 +83,7 @@ public interface DevopsGitService {
 
     void branchSync(PushWebHookDTO pushWebHookDTO, String token);
 
-    void fileResourceSync(PushWebHookDTO pushWebHookDTO, String token);
+    void fileResourceSync(PushWebHookDTO pushWebHookDTO);
+
+    void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token);
 }

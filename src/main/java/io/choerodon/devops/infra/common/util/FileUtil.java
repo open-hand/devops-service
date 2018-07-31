@@ -1108,16 +1108,24 @@ public class FileUtil {
     }
 
     public static String getChangeYaml(String oldYam1, String newYaml) {
-        Map<String, Object> map1 = (Map<String, Object>) yaml.load(oldYam1);
-        Map<String, Object> map2 = (Map<String, Object>) yaml.load(newYaml);
-        List<Integer> primaryKeys = getPrimaryKey(map1);
-        List<Integer> newprimaryKeys = getPrimaryKey(map2);
+        Map<String, Object> map1;
+        Map<String, Object> map2;
+        List<Integer> primaryKeys;
+        List<Integer> newprimaryKeys;
+        List<String> keys = new ArrayList<>();
         Map<String, String> oldProperties = new HashMap<>();
         Map<String, String> newProperties = new HashMap<>();
-        List<String> keys = new ArrayList<>();
-        getdep(map1, 1, keys, primaryKeys, oldProperties);
-        keys.clear();
-        getdep(map2, 1, keys, newprimaryKeys, newProperties);
+        if (oldYam1 != null) {
+            map1 = (Map<String, Object>) yaml.load(oldYam1);
+            primaryKeys = getPrimaryKey(map1);
+            getdep(map1, 1, keys, primaryKeys, oldProperties);
+            keys.clear();
+        }
+        if (newYaml != null) {
+            map2 = (Map<String, Object>) yaml.load(newYaml);
+            newprimaryKeys = getPrimaryKey(map2);
+            getdep(map2, 1, keys, newprimaryKeys, newProperties);
+        }
         Map<String, String> changeProperties = getChangeProperties(oldProperties, newProperties);
         return Props2YAML.fromContent(propertiesToString(changeProperties))
                 .convert();

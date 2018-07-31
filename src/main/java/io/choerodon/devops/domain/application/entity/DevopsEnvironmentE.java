@@ -181,6 +181,14 @@ public class DevopsEnvironmentE {
         this.gitlabEnvProjectId = gitlabEnvProjectId;
     }
 
+    public void setGitlabEnvProjectId(Long gitlabEnvProjectId) {
+        this.gitlabEnvProjectId = gitlabEnvProjectId;
+    }
+
+    public void setHookId(Long hookId) {
+        this.hookId = hookId;
+    }
+
     public String getEnvIdRsa() {
         return envIdRsa;
     }

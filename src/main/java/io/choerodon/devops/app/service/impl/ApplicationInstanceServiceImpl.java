@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 
 import com.google.gson.Gson;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -73,6 +74,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private EnvListener envListener;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -241,7 +244,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public Boolean create(ApplicationDeployDTO applicationDeployDTO) {
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
-        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+//        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
@@ -285,7 +289,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE,
                 devopsEnvironmentE,
                 applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
-                devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                userAttrE.getGitlabUserId());
         return true;
     }
 

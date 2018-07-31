@@ -1,12 +1,18 @@
 package io.choerodon.devops.domain.application.valueobject;
 
-public class C7NHelmRelease {
+public class C7nHelmRelease {
 
     private String apiVersion;
     private String kind;
     private Metadata metadata;
     private Spec spec;
 
+    public C7nHelmRelease(){
+        this.apiVersion = "choerodon.io/v1alpha1";
+        this.kind = "C7nHelmRelease";
+        this.metadata = new Metadata();
+        this.spec = new Spec();
+    }
 
     public String getApiVersion() {
         return apiVersion;

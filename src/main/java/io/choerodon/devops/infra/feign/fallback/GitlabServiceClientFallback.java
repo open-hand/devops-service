@@ -164,9 +164,15 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> createFile(Integer projectId, Integer userId) {
+    public ResponseEntity createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         return new ResponseEntity("error.file.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+        return new ResponseEntity("error.file.update", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
 
     @Override
     public ResponseEntity<String> getFile(Integer projectId, String commit, String filePath) {

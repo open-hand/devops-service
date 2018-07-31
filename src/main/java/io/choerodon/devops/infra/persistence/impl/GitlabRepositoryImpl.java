@@ -81,14 +81,20 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public Boolean createFile(Integer projectId, Integer userId) {
-        ResponseEntity<Boolean> result = gitlabServiceClient.createFile(projectId, userId);
-        if (result.getStatusCode().is2xxSuccessful()) {
-            return result.getBody();
-        } else {
+    public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+        ResponseEntity result = gitlabServiceClient.createFile(projectId,path,content,commitMessage, userId);
+        if (!result.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.file.create");
         }
     }
+
+    @Override
+    public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+            ResponseEntity result = gitlabServiceClient.updateFile(projectId,path,content,commitMessage, userId);
+            if (!result.getStatusCode().is2xxSuccessful()) {
+                throw new CommonException("error.file.update");
+            }
+        }
 
     @Override
     public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, Integer userId) {
