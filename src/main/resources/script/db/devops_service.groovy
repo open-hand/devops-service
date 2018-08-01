@@ -29,4 +29,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
         addUniqueConstraint(tableName: 'devops_service', constraintName: 'uk_namespace_name',
                 columnNames: 'namespace,name')
     }
+
+    changeSet(author: 'runge', id: '2018-07-31-change-column') {
+        modifyDataType(tableName: 'devops_service', columnName: 'external_ip', newDataType: 'VARCHAR(1000)')
+        addColumn(tableName: 'devops_service') {
+            column(name: 'ports', type: 'VARCHAR(1000)', remarks: '网络端口', afterColumn: 'status')
+        }
+    }
 }
