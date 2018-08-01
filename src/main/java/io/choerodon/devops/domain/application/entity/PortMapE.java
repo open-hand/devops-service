@@ -6,5 +6,23 @@ package io.choerodon.devops.domain.application.entity;
  * Time: 11:04
  * Description:
  */
-public class portMap {
+public class PortMapE {
+    private Long port;
+    private Long targetPort;
+
+    public Long getPort() {
+        return port;
+    }
+
+    public void setPort(Long port) {
+        this.port = port;
+    }
+
+    public Long getTargetPort() {
+        return targetPort;
+    }
+
+    public void setTargetPort(Long targetPort) {
+        this.targetPort = targetPort;
+    }
 }

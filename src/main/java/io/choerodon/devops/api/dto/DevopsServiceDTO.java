@@ -2,6 +2,8 @@ package io.choerodon.devops.api.dto;
 
 import java.util.List;
 
+import io.choerodon.devops.domain.application.entity.PortMapE;
+import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 import io.choerodon.devops.infra.dataobject.ServiceVersionDO;
 
 /**
@@ -11,7 +13,8 @@ public class DevopsServiceDTO {
 
     private Long id;
     private String name;
-    private String externalIp;
+    private List<String> externalIp;
+    private List<PortMapE> ports;
     private Long port;
     private Long targetPort;
     private String status;
@@ -24,7 +27,7 @@ public class DevopsServiceDTO {
     private String commandStatus;
     private String commandType;
     private String error;
-    private List<ServiceVersionDO> appVersion;
+    private List<ServiceInstanceDO> appInstance;
 
     public Long getId() {
         return id;
@@ -40,14 +43,6 @@ public class DevopsServiceDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getExternalIp() {
-        return externalIp;
-    }
-
-    public void setExternalIp(String externalIp) {
-        this.externalIp = externalIp;
     }
 
     public Long getPort() {
@@ -88,14 +83,6 @@ public class DevopsServiceDTO {
 
     public void setAppName(String appName) {
         this.appName = appName;
-    }
-
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
-    }
-
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
     }
 
     public String getStatus() {
@@ -152,5 +139,29 @@ public class DevopsServiceDTO {
 
     public void setAppProjectId(Long appProjectId) {
         this.appProjectId = appProjectId;
+    }
+
+    public List<String> getExternalIp() {
+        return externalIp;
+    }
+
+    public void setExternalIp(List<String> externalIp) {
+        this.externalIp = externalIp;
+    }
+
+    public List<PortMapE> getPorts() {
+        return ports;
+    }
+
+    public void setPorts(List<PortMapE> ports) {
+        this.ports = ports;
+    }
+
+    public List<ServiceInstanceDO> getAppInstance() {
+        return appInstance;
+    }
+
+    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+        this.appInstance = appInstance;
     }
 }

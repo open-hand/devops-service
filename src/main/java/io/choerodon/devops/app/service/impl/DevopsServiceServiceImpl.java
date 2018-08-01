@@ -2,7 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
 
-import io.kubernetes.client.JSON;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.gson.Gson;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +43,7 @@ import io.choerodon.websocket.helper.EnvListener;
 @Transactional(rollbackFor = RuntimeException.class)
 public class DevopsServiceServiceImpl implements DevopsServiceService {
 
-    protected static final JSON json = new JSON();
+    private Gson gson = new Gson();
 
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
@@ -111,7 +112,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
 
         if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
-            throw new CommonException("error.service.name.check");
+            throw new CommonException("error.service.name.exist");
         }
         checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
                 null, null);
@@ -120,7 +121,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
-        devopsServiceE.setTargetPort(devopsServiceReqDTO.getTargetPort());
+        devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
         DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
@@ -360,6 +361,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1ServiceSpec spec = new V1ServiceSpec();
         List<V1ServicePort> ports = new ArrayList<>();
         V1ServicePort v1ServicePort = new V1ServicePort();
+        // todo port
         v1ServicePort.setName("http");
         v1ServicePort.setPort(devopsServiceReqDTO.getPort().intValue());
         v1ServicePort.setTargetPort(new IntOrString(devopsServiceReqDTO.getTargetPort().intValue()));
@@ -367,9 +369,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         ports.add(v1ServicePort);
 
         if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())) {
-            List<String> externallIps = new ArrayList<>();
-            externallIps.add(devopsServiceReqDTO.getExternalIp());
-            spec.setExternalIPs(externallIps);
+            List<String> externalIps = new ArrayList<>(
+                    Arrays.asList(devopsServiceReqDTO.getExternalIp().split(",")));
+            spec.setExternalIPs(externalIps);
         }
 
         spec.setPorts(ports);
@@ -377,7 +379,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         spec.type("ClusterIP");
         service.setSpec(spec);
 
-        return json.serialize(service);
+        return gson.toJson(service);
     }
 
     /**
@@ -395,20 +397,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       Long envId,
                                       Long commandId) {
         String serviceInstances = getInstanceCode(devopsServiceReqDTO, devopsServiceE.getId());
-        Map<String, String> labels = new HashMap<>();
         Map<String, String> annotations = new HashMap<>();
-        labels.put("choerodon.io/application", appCode);
-        labels.put("choerodon.io/network", "service");
         annotations.put("choerodon.io/network-service-instances", serviceInstances);
 
         String serviceYaml = getServiceYaml(
                 devopsServiceReqDTO,
                 devopsServiceE.getNamespace(),
-                labels,
+                devopsServiceReqDTO.getLabel(),
                 annotations);
 
         DevopsServiceE appDeploy = devopsServiceRepository.query(devopsServiceE.getId());
-        appDeploy.setLabel(json.serialize(annotations));
+        appDeploy.setAnnotations(gson.toJson(annotations));
         appDeploy.setObjectVersionNumber(appDeploy.getObjectVersionNumber());
         appDeploy.setStatus(ServiceStatus.OPERATIING.getStatus());
         devopsServiceRepository.update(appDeploy);
