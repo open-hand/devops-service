@@ -31,6 +31,7 @@ public class GitUtil {
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPONAME = "devops-service-repo";
+    public static final String DEVOPS_GITOPS_TAG= "GitOps";
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
     private String classPath;
     private String sshKey;
@@ -219,22 +220,5 @@ public class GitUtil {
         }
     }
 
-
-    /**
-     * 流水号 tag 大小比较
-     */
-    public static Integer serialTagCompare(String tagA, String tagB) {
-        Integer tagNum1 = tagA.matches("\\d+") ? Integer.parseInt(tagA) : null;
-        Integer tagNum2 = tagB.matches("\\d+") ? Integer.parseInt(tagB) : null;
-        if (tagNum1 != null && tagNum2 != null) {
-            return tagNum1.compareTo(tagNum2);
-        } else if (tagNum1 == null && tagNum2 != null) {
-            return -1;
-        } else if (tagNum1 != null) {
-            return 1;
-        } else {
-            return tagA.compareTo(tagB);
-        }
-    }
 
 }

@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.*;
 
 import com.google.gson.Gson;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -244,8 +243,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops) {
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-//        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+        UserAttrE userAttrE = new UserAttrE();
+        if (!gitops) {
+            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        }
+        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
@@ -255,35 +257,24 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceE.initApplicationVersionEById(applicationDeployDTO.getAppVerisonId());
         applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
-        applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
         if (applicationDeployDTO.getType().equals("create")) {
-            applicationInstanceE.setCode(
-                    String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
-            devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
-            devopsEnvCommandE.setObjectId(applicationInstanceRepository.create(applicationInstanceE).getId());
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+            applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+            if(!gitops) {
+                applicationInstanceE.setCode(
+                        String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
+            }else{
+                applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
+            }
+            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
         }
         if (applicationDeployDTO.getType().equals("update")) {
             ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
                     applicationDeployDTO.getAppInstanceId());
             applicationInstanceE.setCode(newApplicationInstanceE.getCode());
-            devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
-            devopsEnvCommandE.setObjectId(applicationDeployDTO.getAppInstanceId());
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
             applicationInstanceE.setId(applicationDeployDTO.getAppInstanceId());
             applicationInstanceRepository.update(applicationInstanceE);
         }
-        DevopsEnvCommandValueE devopsEnvCommandValueE = DevopsEnvCommandValueFactory.createDevopsEnvCommandE();
-        applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId());
-        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
-                applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
-                applicationDeployDTO.getValues()));
-        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository
-                .create(devopsEnvCommandValueE).getId());
-        if(gitops) {
+        if (!gitops) {
             deployService.deploy(
                     applicationE,
                     applicationVersionE,
@@ -292,7 +283,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId());
         }
-        return ConvertHelper.convert(applicationInstanceE,ApplicationInstanceDTO.class);
+        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
 
     @Override
@@ -394,23 +385,26 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void instanceDelete(Long instanceId) {
+    public void instanceDelete(Long instanceId,boolean gitops) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        UserAttrE userAttrE = new UserAttrE();
+        if (!gitops) {
+            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        }
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         devopsEnvCommandE.setId(null);
-        devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
-        String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
-        String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-        Map<String, String> deleteMap = new HashMap<>();
-        deleteMap.put(RELEASE_NAME, releaseName);
-        String payload = gson.toJson(deleteMap);
-        Long envId = instanceE.getDevopsEnvironmentE().getId();
-        sentInstance(payload, releaseName, HelmType.HELM_RELEASE_DELETE.toValue(),
-                namespace, devopsEnvCommandE.getId(), envId);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        if(!gitops) {
+            deployService.delete(instanceE,devopsEnvironmentE,userAttrE.getGitlabUserId());
+        }
+
+
     }
 
     @Override

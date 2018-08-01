@@ -91,7 +91,7 @@ public interface ApplicationInstanceService {
      *
      * @param instanceId 实例id
      */
-    void instanceDelete(Long instanceId);
+    void instanceDelete(Long instanceId, boolean gitops);
 
     /**
      * 实例回滚

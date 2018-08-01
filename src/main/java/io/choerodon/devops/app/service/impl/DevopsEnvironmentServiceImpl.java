@@ -20,6 +20,7 @@ import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
@@ -30,6 +31,7 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -39,6 +41,11 @@ import io.choerodon.websocket.helper.EnvListener;
  */
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
+
+    private static final String README = "README.md";
+    private static final String README_CONTENT =
+            "# This is gitops env repository!";
+
 
     private static final String ENV = "ENV";
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -54,6 +61,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Value("${services.gateway.url}")
     private String gatewayUrl;
+
 
     @Autowired
     private IamRepository iamRepository;
@@ -77,7 +85,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private UserAttrRepository userAttrRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
-
+    @Autowired
+    private DevopsGitRepository devopsGitRepository;
 
     @Override
     @Saga(code = "asgard-create-env", description = "创建环境", inputSchema = "{}")
@@ -294,7 +303,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsEnviromentRepDTO> listByProjectId(Long projectId) {
         List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOList = listByProjectIdAndActive(projectId, true);
         return devopsEnviromentRepDTOList.stream().filter(t ->
-                applicationInstanceRepository.selectByEnvId(t.getId()).size() > 0)
+                applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream().filter(applicationInstanceE -> applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())).collect(Collectors.toList()).size() > 0)
                 .collect(Collectors.toList());
     }
 
@@ -316,6 +325,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvironmentE.getEnvIdRsaPub(),
                 true,
                 gitlabProjectPayload.getUserId());
+        gitlabRepository.createFile(gitlabProjectDO.getId(),README,README_CONTENT,"ADD README",gitlabProjectPayload.getUserId());
+        devopsGitRepository.createTag(gitlabProjectDO.getId(),GitUtil.DEVOPS_GITOPS_TAG,"master",gitlabProjectPayload.getUserId());
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());

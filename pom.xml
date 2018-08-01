@@ -237,7 +237,7 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-websocket-helper</artifactId>
-            <version>${choerodon.starters.version}</version>
+            <version>0.5.4.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -285,11 +285,6 @@
             <artifactId>spock-spring</artifactId>
             <version>1.1-groovy-2.4-rc-3</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.github.sanjusoftware</groupId>
-            <artifactId>yamlbeans</artifactId>
-            <version>1.11</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/cglib/cglib-nodep -->
         <dependency>

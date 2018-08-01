@@ -25,6 +25,7 @@ public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourc
     public DevopsEnvFileResourceE createFileResource(DevopsEnvFileResourceE devopsEnvFileResourceE) {
         DevopsEnvFileResourceDO devopsEnvFileResourceDO =
                 ConvertHelper.convert(devopsEnvFileResourceE, DevopsEnvFileResourceDO.class);
+        devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO);
         return ConvertHelper.convert(devopsEnvFileResourceDO, DevopsEnvFileResourceE.class);
     }
 
@@ -37,8 +38,8 @@ public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourc
 
     @Override
     public DevopsEnvFileResourceE updateFileResource(DevopsEnvFileResourceE devopsEnvFileResourceE) {
-        DevopsEnvFileResourceDO devopsEnvFileResourceDO =
-                ConvertHelper.convert(devopsEnvFileResourceE, DevopsEnvFileResourceDO.class);
+        DevopsEnvFileResourceDO devopsEnvFileResourceDO = devopsEnvFileResourceMapper.selectByPrimaryKey(devopsEnvFileResourceE.getId());
+        devopsEnvFileResourceDO.setFilePath(devopsEnvFileResourceE.getFilePath());
         devopsEnvFileResourceMapper.updateByPrimaryKeySelective(devopsEnvFileResourceDO);
         return devopsEnvFileResourceE;
     }
@@ -46,5 +47,31 @@ public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourc
     @Override
     public void deleteFileResource(Long fileResourceId) {
         devopsEnvFileResourceMapper.deleteByPrimaryKey(fileResourceId);
+    }
+
+    @Override
+    public DevopsEnvFileResourceE queryByEnvIdAndResource(Long envId, Long resourceId, String resourceType) {
+        DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO();
+        devopsEnvFileResourceDO.setEnvId(envId);
+        devopsEnvFileResourceDO.setResourceId(resourceId);
+        devopsEnvFileResourceDO.setResourceType(resourceType);
+        return ConvertHelper.convert(devopsEnvFileResourceMapper.selectOne(devopsEnvFileResourceDO),DevopsEnvFileResourceE.class);
+    }
+
+    @Override
+    public DevopsEnvFileResourceE queryByEnvIdAndPath(Long envId, String path) {
+        DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO();
+        devopsEnvFileResourceDO.setEnvId(envId);
+        devopsEnvFileResourceDO.setFilePath(path);
+        return ConvertHelper.convert(devopsEnvFileResourceMapper.selectOne(devopsEnvFileResourceDO),DevopsEnvFileResourceE.class);
+    }
+
+    @Override
+    public void deleteByEnvIdAndResource(Long envId, Long resourceId, String resourceType) {
+        DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO();
+        devopsEnvFileResourceDO.setEnvId(envId);
+        devopsEnvFileResourceDO.setResourceId(resourceId);
+        devopsEnvFileResourceDO.setResourceType(resourceType);
+        devopsEnvFileResourceMapper.delete(devopsEnvFileResourceDO);
     }
 }

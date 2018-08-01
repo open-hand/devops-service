@@ -26,6 +26,8 @@ public interface GitlabRepository {
 
     void updateFile(Integer projectId,String path,String content,String commitMessage, Integer userId);
 
+    void deleteFile(Integer projectId,String path,String commitMessage, Integer userId);
+
     void createProtectBranch(Integer projectId, String name, String mergeAccessLevel,
                              String pushAccessLevel, Integer userId);
 

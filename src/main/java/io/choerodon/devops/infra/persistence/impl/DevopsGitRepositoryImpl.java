@@ -304,13 +304,6 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         return tagResponseEntity.getBody();
     }
 
-    @Override
-    public String getLatestSerialTag(Integer gitlabProjectId, Integer gitlabUserId) {
-        return getGitLabTags(gitlabProjectId, gitlabUserId).stream()
-                .map(TagDO::getName)
-                .sorted(GitUtil::serialTagCompare)
-                .findFirst().orElse(null);
-    }
 
     @Override
     public BranchDO getBranch(Integer gitlabProjectId, String branch) {

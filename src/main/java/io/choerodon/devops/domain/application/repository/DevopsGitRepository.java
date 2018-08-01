@@ -50,8 +50,6 @@ public interface DevopsGitRepository {
 
     List<TagDO> getGitLabTags(Integer projectId, Integer userId);
 
-    String getLatestSerialTag(Integer gitlabProjectId, Integer gitlabUserId);
-
     BranchDO getBranch(Integer gitlabProjectId, String branch);
 
     CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to);

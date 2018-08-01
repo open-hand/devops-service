@@ -97,6 +97,14 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         }
 
     @Override
+    public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
+        ResponseEntity result = gitlabServiceClient.deleteFile(projectId,path,commitMessage, userId);
+        if (!result.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.file.delete");
+        }
+    }
+
+    @Override
     public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, Integer userId) {
         ResponseEntity<Map<String, Object>> branch = gitlabServiceClient.createProtectedBranches(
                 projectId, name, mergeAccessLevel, pushAccessLevel, userId);

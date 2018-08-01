@@ -121,12 +121,18 @@ public interface GitlabServiceClient {
                                        @RequestParam("commitMessage") String commitMessage,
                                        @RequestParam("userId") Integer userId);
 
+    @DeleteMapping(value = "/v1/projects/{projectId}/repository/file")
+    ResponseEntity deleteFile(@PathVariable("projectId") Integer projectId,
+                              @RequestParam("path") String path,
+                              @RequestParam("commitMessage") String commitMessage,
+                              @RequestParam("userId") Integer userId);
+
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
     ResponseEntity<String> getFile(@PathVariable("projectId") Integer projectId,
                                    @PathVariable("commit") String commit,
                                    @RequestParam(value = "file_path") String filePath);
 
-    @GetMapping(value = "/v1/projects/{projectId}/repository/diffs")
+    @GetMapping(value = "/v1/projects/{projectId}/repository/file/diffs")
     ResponseEntity<CompareResultsE> getCompareResults(@PathVariable("projectId") Integer projectId,
                                                       @RequestParam("from") String from,
                                                       @RequestParam("to") String to);

@@ -21,4 +21,9 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file_resource.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(id: '2018-08-01-drop-constraint', author: 'runge') {
+        dropUniqueConstraint(tableName: 'devops_env_file_resource',
+                constraintName: 'env_id')
+    }
 }

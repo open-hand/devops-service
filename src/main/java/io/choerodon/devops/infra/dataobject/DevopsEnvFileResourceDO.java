@@ -2,6 +2,10 @@ package io.choerodon.devops.infra.dataobject;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Table;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
 
 /**
  * Creator: Runge
@@ -9,6 +13,9 @@ import javax.persistence.Id;
  * Time: 15:34
  * Description:
  */
+@ModifyAudit
+@Table(name = "devops_env_file_resource")
+@VersionAudit
 public class DevopsEnvFileResourceDO {
     @Id
     @GeneratedValue
@@ -17,6 +24,7 @@ public class DevopsEnvFileResourceDO {
     private String filePath;
     private String resourceType;
     private Long resourceId;
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -56,5 +64,13 @@ public class DevopsEnvFileResourceDO {
 
     public void setResourceId(Long resourceId) {
         this.resourceId = resourceId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

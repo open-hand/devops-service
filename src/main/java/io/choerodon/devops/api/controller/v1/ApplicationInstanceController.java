@@ -344,7 +344,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
-        applicationInstanceService.instanceDelete(instanceId);
+        applicationInstanceService.instanceDelete(instanceId,false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

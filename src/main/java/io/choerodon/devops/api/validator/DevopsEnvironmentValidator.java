@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.validator;
 
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -7,6 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
+import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 
 /**
  * Creator: Runge
@@ -29,7 +32,7 @@ public class DevopsEnvironmentValidator {
      * @param envId 环境ID
      */
     public void checkEnvCanDisabled(Long envId) {
-        if (applicationInstanceRepository.selectByEnvId(envId).size() > 0) {
+        if (applicationInstanceRepository.selectByEnvId(envId).parallelStream().filter(applicationInstanceE -> applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())).collect(Collectors.toList()).size() > 0) {
             throw new CommonException("error.env.stop.instanceExist");
         }
         if (devopsServiceRepository.checkEnvHasService(envId)) {
