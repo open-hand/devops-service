@@ -13,7 +13,7 @@ public class DevopsServiceDTO {
 
     private Long id;
     private String name;
-    private List<String> externalIp;
+    private List<String> externalIps;
     private List<PortMapE> ports;
     private Long port;
     private Long targetPort;
@@ -141,12 +141,12 @@ public class DevopsServiceDTO {
         this.appProjectId = appProjectId;
     }
 
-    public List<String> getExternalIp() {
-        return externalIp;
+    public List<String> getExternalIps() {
+        return externalIps;
     }
 
-    public void setExternalIp(List<String> externalIp) {
-        this.externalIp = externalIp;
+    public void setExternalIps(List<String> externalIp) {
+        this.externalIps = externalIp;
     }
 
     public List<PortMapE> getPorts() {

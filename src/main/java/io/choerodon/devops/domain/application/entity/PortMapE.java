@@ -10,6 +10,15 @@ public class PortMapE {
     private Long port;
     private Long targetPort;
 
+    public PortMapE() {
+    }
+
+    public PortMapE(String portMap) {
+        String[] map = portMap.split(":");
+        this.port = Long.valueOf(map[0]);
+        this.targetPort = Long.valueOf(map[1]);
+    }
+
     public Long getPort() {
         return port;
     }
