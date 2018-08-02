@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -18,16 +20,12 @@ import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
  */
 @Component
 public class DevopsServiceListConvertor implements ConvertorI<DevopsServiceV, DevopsServiceQueryDO, DevopsServiceDTO> {
+    private Gson gson = new Gson();
 
     @Override
     public DevopsServiceDTO entityToDto(DevopsServiceV entity) {
         DevopsServiceDTO devopsServiceDTO = new DevopsServiceDTO();
         BeanUtils.copyProperties(entity, devopsServiceDTO);
-        if (entity.getPorts() != null) {
-            devopsServiceDTO.setPorts(
-                    Arrays.stream(entity.getPorts().split(","))
-                            .map(PortMapE::new).collect(Collectors.toList()));
-        }
         if (entity.getExternalIp() != null) {
             devopsServiceDTO.setExternalIps(new ArrayList<>(
                     Arrays.asList(entity.getExternalIp().split(","))));
@@ -39,6 +37,8 @@ public class DevopsServiceListConvertor implements ConvertorI<DevopsServiceV, De
     public DevopsServiceV doToEntity(DevopsServiceQueryDO dataObject) {
         DevopsServiceV devopsServiceV = new DevopsServiceV();
         BeanUtils.copyProperties(dataObject, devopsServiceV);
+        devopsServiceV.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapE>>() {
+        }.getType()));
         return devopsServiceV;
     }
 }

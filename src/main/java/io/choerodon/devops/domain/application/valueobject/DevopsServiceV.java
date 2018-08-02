@@ -2,6 +2,7 @@ package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
 
+import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.choerodon.devops.infra.dataobject.ServiceVersionDO;
 
 /**
@@ -12,7 +13,7 @@ public class DevopsServiceV {
     private Long id;
     private String name;
     private String externalIp;
-    private String ports;
+    private List<PortMapE> ports;
     private String status;
     private Long envId;
     private String envName;
@@ -138,11 +139,11 @@ public class DevopsServiceV {
         this.error = error;
     }
 
-    public String getPorts() {
+    public List<PortMapE> getPorts() {
         return ports;
     }
 
-    public void setPorts(String ports) {
+    public void setPorts(List<PortMapE> ports) {
         this.ports = ports;
     }
 

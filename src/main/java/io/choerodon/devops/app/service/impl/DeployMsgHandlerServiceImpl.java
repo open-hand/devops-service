@@ -1,14 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -48,10 +47,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private static final String METADATA = "metadata";
     private static final String PUBLIC = "public";
     private static final Logger logger = LoggerFactory.getLogger(DeployMsgHandlerServiceImpl.class);
-    private static final String RESOURCEVERSION = "resourceVersion";
+    private static final String RESOURCE_VERSION = "resourceVersion";
+
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
     private ObjectMapper mapper = new ObjectMapper();
+    private Gson gson = new Gson();
+
     @Value("${services.helm.url}")
     private String helmUrl;
 
@@ -295,7 +297,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     KeyParseTool.getResourceName(key));
             devopsEnvResourceE.setReversion(
                     TypeUtil.objToLong(
-                            ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCEVERSION).toString()));
+                            ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCE_VERSION).toString()));
             String releaseName = null;
             DevopsEnvResourceE newdevopsEnvResourceE = null;
             ApplicationInstanceE applicationInstanceE = null;
@@ -924,7 +926,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 JSONObject jsonResult = JSONObject.parseObject(JSONObject.parseObject(resource.getObject())
                         .get(METADATA).toString());
                 devopsEnvResourceE.setReversion(
-                        TypeUtil.objToLong(jsonResult.get(RESOURCEVERSION).toString()));
+                        TypeUtil.objToLong(jsonResult.get(RESOURCE_VERSION).toString()));
                 saveOrUpdateResource(
                         devopsEnvResourceE,
                         newdevopsEnvResourceE,
@@ -960,11 +962,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsServiceE.setName(v1Service.getMetadata().getName());
                 devopsServiceE.setNamespace(v1Service.getMetadata().getNamespace());
                 devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
-                devopsServiceE.setPorts(
-                        v1Service.getSpec().getPorts().stream()
-                                .map(t -> t.getPort() + ":" + t.getTargetPort())
-                                .collect(Collectors.joining(",")));
-                devopsServiceE.setTargetPort(null);
+                devopsServiceE.setPorts(gson.fromJson(
+                        gson.toJson(v1Service.getSpec().getPorts()),
+                        new TypeToken<ArrayList<PortMapE>>() {
+                        }.getType()));
                 if (v1Service.getSpec().getExternalIPs() != null) {
                     devopsServiceE.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
                 }

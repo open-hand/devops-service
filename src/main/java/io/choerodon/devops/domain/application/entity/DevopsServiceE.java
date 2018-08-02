@@ -13,10 +13,7 @@ public class DevopsServiceE {
     private String name;
     private String namespace;
     private String status;
-    private List<PortMapE> portMaps;
-    private String ports;
-    private Long port;
-    private Long targetPort;
+    private List<PortMapE> ports;
     private List<String> externalIps;
     private String externalIp;
     private String labels;
@@ -71,22 +68,6 @@ public class DevopsServiceE {
         this.status = status;
     }
 
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
-    }
-
     public String getExternalIp() {
         return externalIp;
     }
@@ -119,19 +100,11 @@ public class DevopsServiceE {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public List<PortMapE> getPortMaps() {
-        return portMaps;
-    }
-
-    public void setPortMaps(List<PortMapE> portMaps) {
-        this.portMaps = portMaps;
-    }
-
-    public String getPorts() {
+    public List<PortMapE> getPorts() {
         return ports;
     }
 
-    public void setPorts(String ports) {
+    public void setPorts(List<PortMapE> ports) {
         this.ports = ports;
     }
 
