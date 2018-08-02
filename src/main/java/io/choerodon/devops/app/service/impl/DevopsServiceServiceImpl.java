@@ -295,11 +295,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1ServiceSpec spec = new V1ServiceSpec();
         List<V1ServicePort> ports = new ArrayList<>();
         V1ServicePort v1ServicePort = new V1ServicePort();
-        // todo port
-        v1ServicePort.setName("http");
-        v1ServicePort.setPort(devopsServiceReqDTO.getPort().intValue());
-        v1ServicePort.setTargetPort(new IntOrString(devopsServiceReqDTO.getTargetPort().intValue()));
-        v1ServicePort.setProtocol("TCP");
+//        // todo port
+//        v1ServicePort.setName("http");
+//        v1ServicePort.setPort(devopsServiceReqDTO.getPort().intValue());
+//        v1ServicePort.setTargetPort(new IntOrString(devopsServiceReqDTO.getTargetPort().intValue()));
+//        v1ServicePort.setProtocol("TCP");
         ports.add(v1ServicePort);
 
         if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())) {

@@ -15,8 +15,6 @@ public class DevopsServiceDTO {
     private String name;
     private List<String> externalIps;
     private List<PortMapE> ports;
-    private Long port;
-    private Long targetPort;
     private String status;
     private Long envId;
     private String envName;
@@ -43,14 +41,6 @@ public class DevopsServiceDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
     }
 
     public Long getEnvId() {
@@ -123,14 +113,6 @@ public class DevopsServiceDTO {
 
     public void setError(String error) {
         this.error = error;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 
     public Long getAppProjectId() {

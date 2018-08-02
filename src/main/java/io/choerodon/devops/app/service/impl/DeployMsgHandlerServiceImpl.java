@@ -946,7 +946,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 if (v1Service.getSpec().getExternalIPs() != null) {
                     devopsServiceE.setExternalIp(v1Service.getSpec().getExternalIPs().get(0));
                 }
-                devopsServiceE.setLabel(json.serialize(v1Service.getMetadata().getLabels()));
+                devopsServiceE.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
                 devopsServiceE.setId(devopsServiceRepository.insert(devopsServiceE).getId());
 
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = devopsServiceInstanceRepository
