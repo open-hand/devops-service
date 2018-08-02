@@ -113,10 +113,10 @@
 
     <select id="checkEnvHasIngress" resultType="java.lang.Boolean">
         SELECT
-            COUNT( 1 ) > 0 exist
+        COUNT( 1 ) > 0 exist
         FROM
-            devops_ingress
+        devops_ingress
         WHERE
-            env_id = #{envId};
+        env_id = #{envId};
     </select>
 </mapper>

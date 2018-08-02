@@ -1,9 +1,9 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 
@@ -48,9 +48,9 @@ public class DevopsMergeRequestDO {
     /**
      * constructor a new merge request item
      *
-     * @param projectId devops application ID
-     * @param sourceBranch  source branch to merge
-     * @param targetBranch  target merge branch
+     * @param projectId    devops application ID
+     * @param sourceBranch source branch to merge
+     * @param targetBranch target merge branch
      */
     public DevopsMergeRequestDO(Long projectId, String sourceBranch, String targetBranch) {
         this.projectId = projectId;

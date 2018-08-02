@@ -30,10 +30,10 @@ public class DevopsBranchE {
     /**
      * Construct
      *
-     * @param checkoutCommit       提交
-     * @param branchName   分支名
-     * @param applicationE 应用
-     * @param checkoutDate 最新提交时间
+     * @param checkoutCommit 提交
+     * @param branchName     分支名
+     * @param applicationE   应用
+     * @param checkoutDate   最新提交时间
      */
     public DevopsBranchE(String checkoutCommit, String branchName, ApplicationE applicationE, Date checkoutDate) {
         this.checkoutCommit = checkoutCommit;

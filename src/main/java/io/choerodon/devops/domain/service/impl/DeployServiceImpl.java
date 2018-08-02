@@ -1,13 +1,7 @@
 package io.choerodon.devops.domain.service.impl;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.File;
 import java.util.Date;
 
-import com.esotericsoftware.yamlbeans.YamlWriter;
-import io.kubernetes.client.JSON;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -17,7 +11,6 @@ import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
@@ -52,7 +45,7 @@ public class DeployServiceImpl implements DeployService {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
         c7nHelmRelease.getMetadata().setCreationTimestamp(new Date());
-        c7nHelmRelease.getSpec().setRepoUrl(helmUrl+applicationVersionE.getRepository());
+        c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
         c7nHelmRelease.getSpec().setValues(FileUtil.jsonToYaml(FileUtil.yamlStringtoJson(values)));
@@ -60,22 +53,22 @@ public class DeployServiceImpl implements DeployService {
         representer.addClassTag(C7nHelmRelease.class, new Tag("!C7NHelmRelease"));
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        Yaml yaml = new Yaml(representer,options);
+        Yaml yaml = new Yaml(representer, options);
         String content = yaml.dump(c7nHelmRelease);
-        String path = applicationInstanceE.getCode()+".yaml";
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            if(type.equals("create")) {
-                gitlabRepository.createFile(projectId,path,content,"ADD FILE",TypeUtil.objToInteger(userId));
-            }else {
-                gitlabRepository.updateFile(projectId,path,content,"UPDATE FILE",TypeUtil.objToInteger(userId));
-            }
+        String path = applicationInstanceE.getCode() + ".yaml";
+        Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+        if (type.equals("create")) {
+            gitlabRepository.createFile(projectId, path, content, "ADD FILE", TypeUtil.objToInteger(userId));
+        } else {
+            gitlabRepository.updateFile(projectId, path, content, "UPDATE FILE", TypeUtil.objToInteger(userId));
+        }
 
     }
 
     @Override
-    public void delete(ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE,Long userId) {
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(devopsEnvironmentE.getId(),applicationInstanceE.getId(),"C7NHelmRelease");
-        gitlabRepository.deleteFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),devopsEnvFileResourceE.getFilePath(),"DELETE FILE",TypeUtil.objToInteger(userId));
+    public void delete(ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, Long userId) {
+        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(devopsEnvironmentE.getId(), applicationInstanceE.getId(), "C7NHelmRelease");
+        gitlabRepository.deleteFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), devopsEnvFileResourceE.getFilePath(), "DELETE FILE", TypeUtil.objToInteger(userId));
     }
 
 

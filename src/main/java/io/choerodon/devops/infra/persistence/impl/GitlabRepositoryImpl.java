@@ -82,7 +82,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity result = gitlabServiceClient.createFile(projectId,path,content,commitMessage, userId);
+        ResponseEntity result = gitlabServiceClient.createFile(projectId, path, content, commitMessage, userId);
         if (!result.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.file.create");
         }
@@ -90,15 +90,15 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-            ResponseEntity result = gitlabServiceClient.updateFile(projectId,path,content,commitMessage, userId);
-            if (!result.getStatusCode().is2xxSuccessful()) {
-                throw new CommonException("error.file.update");
-            }
+        ResponseEntity result = gitlabServiceClient.updateFile(projectId, path, content, commitMessage, userId);
+        if (!result.getStatusCode().is2xxSuccessful()) {
+            throw new CommonException("error.file.update");
         }
+    }
 
     @Override
     public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
-        ResponseEntity result = gitlabServiceClient.deleteFile(projectId,path,commitMessage, userId);
+        ResponseEntity result = gitlabServiceClient.deleteFile(projectId, path, commitMessage, userId);
         if (!result.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.file.delete");
         }

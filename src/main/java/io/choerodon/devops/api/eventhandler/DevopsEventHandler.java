@@ -13,7 +13,10 @@ import io.choerodon.devops.api.dto.GitlabProjectEventDTO;
 import io.choerodon.devops.api.dto.GitlabUserDTO;
 import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.event.*;
+import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
+import io.choerodon.devops.domain.application.event.HarborPayload;
+import io.choerodon.devops.domain.application.event.OrganizationEventPayload;
+import io.choerodon.devops.domain.application.event.ProjectEvent;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.event.consumer.annotation.EventListener;
 
@@ -114,7 +117,7 @@ public class DevopsEventHandler {
     public void handleGitlabGroupEvent(EventPayload<GitlabGroupPayload> payload) {
         GitlabGroupPayload gitlabGroupPayload = payload.getData();
         loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.createGroup(gitlabGroupPayload,"");
+        gitlabGroupService.createGroup(gitlabGroupPayload, "");
     }
 
     /**

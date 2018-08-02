@@ -19,8 +19,6 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory;
-import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
-import io.choerodon.devops.domain.application.factory.DevopsEnvCommandValueFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
@@ -259,10 +257,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
         if (applicationDeployDTO.getType().equals("create")) {
             applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-            if(!gitops) {
+            if (!gitops) {
                 applicationInstanceE.setCode(
                         String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
-            }else{
+            } else {
                 applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
             }
             applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
@@ -385,7 +383,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void instanceDelete(Long instanceId,boolean gitops) {
+    public void instanceDelete(Long instanceId, boolean gitops) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         UserAttrE userAttrE = new UserAttrE();
         if (!gitops) {
@@ -400,8 +398,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandRepository.create(devopsEnvCommandE);
         updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
-        if(!gitops) {
-            deployService.delete(instanceE,devopsEnvironmentE,userAttrE.getGitlabUserId());
+        if (!gitops) {
+            deployService.delete(instanceE, devopsEnvironmentE, userAttrE.getGitlabUserId());
         }
 
 

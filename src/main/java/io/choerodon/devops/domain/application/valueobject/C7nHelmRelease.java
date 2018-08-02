@@ -7,7 +7,7 @@ public class C7nHelmRelease {
     private Metadata metadata;
     private Spec spec;
 
-    public C7nHelmRelease(){
+    public C7nHelmRelease() {
         this.apiVersion = "choerodon.io/v1alpha1";
         this.kind = "C7NHelmRelease";
         this.metadata = new Metadata();

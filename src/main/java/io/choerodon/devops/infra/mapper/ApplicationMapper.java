@@ -20,8 +20,8 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
                              @Param("index") String index);
 
     List<ApplicationDO> listCodeRepository(@Param("projectId") Long projectId,
-                             @Param("searchParam") Map<String, Object> searchParam,
-                             @Param("param") String param);
+                                           @Param("searchParam") Map<String, Object> searchParam,
+                                           @Param("param") String param);
 
     List<ApplicationDO> listByEnvId(@Param("projectId") Long projectId,
                                     @Param("envId") Long envId,

@@ -20,7 +20,6 @@ import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
@@ -325,8 +324,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvironmentE.getEnvIdRsaPub(),
                 true,
                 gitlabProjectPayload.getUserId());
-        gitlabRepository.createFile(gitlabProjectDO.getId(),README,README_CONTENT,"ADD README",gitlabProjectPayload.getUserId());
-        devopsGitRepository.createTag(gitlabProjectDO.getId(),GitUtil.DEVOPS_GITOPS_TAG,"master",gitlabProjectPayload.getUserId());
+        gitlabRepository.createFile(gitlabProjectDO.getId(), README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
+        devopsGitRepository.createTag(gitlabProjectDO.getId(), GitUtil.DEVOPS_GITOPS_TAG, "master", gitlabProjectPayload.getUserId());
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());

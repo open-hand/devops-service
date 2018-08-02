@@ -6,6 +6,7 @@ import io.choerodon.devops.api.dto.ErrorLineDTO;
 
 /**
  * yaml 转换结果
+ *
  * @author crockitwood
  */
 public class ReplaceResult {

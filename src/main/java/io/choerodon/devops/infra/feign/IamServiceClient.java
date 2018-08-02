@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
 import javax.validation.Valid;
+import java.util.List;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;

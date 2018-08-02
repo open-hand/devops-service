@@ -197,7 +197,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署信息", required = true)
             @RequestBody ApplicationDeployDTO applicationDeployDTO) {
-        return Optional.ofNullable(applicationInstanceService.create(applicationDeployDTO,false))
+        return Optional.ofNullable(applicationInstanceService.create(applicationDeployDTO, false))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
     }
@@ -344,7 +344,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
-        applicationInstanceService.instanceDelete(instanceId,false);
+        applicationInstanceService.instanceDelete(instanceId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

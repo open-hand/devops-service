@@ -83,6 +83,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private ApplicationVersionRepository applicationVersionRepository;
     @Autowired
     private DeployService deployService;
+    @Autowired
+    private DevopsEnvFileLogRepository devopsEnvFileLogRepository;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -281,30 +283,40 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String path = "gitops/" + organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnvironmentE.getCode();
         String url = "git@" + gitlabUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
-        handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa());
         try {
             BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
             String masterSha = branch.getCommit().getId();
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), masterSha);
             CompareResultsE compareResultsE = devopsGitRepository
                     .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha);
             compareResultsE.getDiffs().forEach(t -> {
                 if (t.getDeletedFile()) {
-                    deletedFiles.add(t.getNewPath());
+                    if(t.getNewPath().contains("yaml")||t.getNewPath().contains("yml")) {
+                        deletedFiles.add(t.getNewPath());
+                    }
                 } else {
-                    operationFiles.add(t.getNewPath());
+                    if(t.getNewPath().contains("yaml")||t.getNewPath().contains("yml")) {
+                        operationFiles.add(t.getNewPath());
+                    }
                 }
             });
-            if(operationFiles.isEmpty()&&deletedFiles.isEmpty()) {
+            if (operationFiles.isEmpty() && deletedFiles.isEmpty()) {
                 return;
             }
             List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
             List<V1Service> v1Services = new ArrayList<>();
             List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();
             Map<String, String> objectPath = new HashMap<>();
-            handleFilesToObject(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses, objectPath);
+            DevopsEnvFileLogE devopsEnvFileLogE = new DevopsEnvFileLogE();
+            devopsEnvFileLogE.setCommitSha(masterSha);
+            devopsEnvFileLogE.setEnvId(devopsEnvironmentE.getId());
+            handleFilesToObject(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses, objectPath, devopsEnvFileLogE);
+            if (devopsEnvFileLogE.getMessage() != null) {
+                devopsEnvFileLogRepository.create(devopsEnvFileLogE);
+            }
             handlerObJectReleations(objectPath, deletedFiles, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvironmentE.getId(), devopsEnvironmentE.getProjectE().getId());
             devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
-            devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, "master", gitLabUserId);
+            devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha, gitLabUserId);
             deployService.sendCommand(devopsEnvironmentE);
         } catch (Exception e) {
             LOGGER.info("File Resource Sync File Changes Fail!");
@@ -377,22 +389,25 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa) {
+    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
         GitUtil gitUtil = new GitUtil(envIdRsa);
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
+            gitUtil.checkout(path + "/.git", commit);
         } else {
+            gitUtil.checkout(path + "./git", "master");
             gitUtil.pullBySsh(path + "/.git");
+            gitUtil.checkout(path + "./git", commit);
         }
     }
 
-    private void handleFilesToObject(List<String> files, String path, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, Map<String, String> objectPath) {
+    private void handleFilesToObject(List<String> files, String path, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, Map<String, String> objectPath, DevopsEnvFileLogE devopsEnvFileLogE) {
         files.parallelStream().forEach(filePath -> {
             File file = new File(path + "/" + filePath);
             SerializableChain serializableChain = new SerializableChain();
             serializableChain.createChain();
-            serializableChain.handler(file, filePath, objectPath, c7nHelmReleases, v1Services, v1beta1Ingresses);
+            serializableChain.handler(file, filePath, objectPath, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
         });
     }
 
@@ -446,10 +461,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(c7nHelmRelease, projectId, envId, "update");
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, applicationInstanceDTO.getId(), c7nHelmRelease.getKind());
-            if(devopsEnvFileResourceE!=null) {
+            if (devopsEnvFileResourceE != null) {
                 devopsEnvFileResourceE.setFilePath(objectPath.get(c7nHelmRelease.hashCode()));
                 devopsEnvFileResourceRepository.updateFileResource(devopsEnvFileResourceE);
-            }else {
+            } else {
                 devopsEnvFileResourceE = new DevopsEnvFileResourceE();
                 devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
                 devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
@@ -459,7 +474,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
         deleteC7n.parallelStream().filter(applicationInstanceE -> !c7nNames.contains(applicationInstanceE.getCode())).forEach(applicationInstanceE -> {
-            applicationInstanceService.instanceDelete(applicationInstanceE.getId(),true);
+            applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
         });
 

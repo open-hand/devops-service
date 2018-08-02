@@ -28,10 +28,10 @@ import io.choerodon.core.exception.CommonException;
 @Component
 public class GitUtil {
 
+    public static final String DEVOPS_GITOPS_TAG = "GitOps";
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPONAME = "devops-service-repo";
-    public static final String DEVOPS_GITOPS_TAG= "GitOps";
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
     private String classPath;
     private String sshKey;
@@ -71,6 +71,7 @@ public class GitUtil {
             protected void configure(OpenSshConfig.Host host, Session session) {
                 session.setConfig("StrictHostKeyChecking", "no");
             }
+
             @Override
             protected JSch createDefaultJSch(FS fs) throws JSchException {
                 JSch defaultJSch = super.createDefaultJSch(fs);
@@ -94,12 +95,29 @@ public class GitUtil {
         }
     }
 
+    public void checkout(String path, String commit) {
+
+        File RepoGitDir = new File(path);
+        Repository repository = null;
+        try {
+            repository = new FileRepository(RepoGitDir.getAbsolutePath());
+            Git git = new Git(repository);
+            CheckoutCommand checkoutCommand = git.checkout();
+            checkoutCommand.setName(commit);
+            checkoutCommand.call();
+            git.close();
+        } catch (Exception e) {
+
+        }
+    }
+
     public void pullBySsh(String path) {
         SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
             @Override
             protected void configure(OpenSshConfig.Host host, Session session) {
                 session.setConfig("StrictHostKeyChecking", "no");
             }
+
             @Override
             protected JSch createDefaultJSch(FS fs) throws JSchException {
                 JSch defaultJSch = super.createDefaultJSch(fs);

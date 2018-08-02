@@ -53,16 +53,16 @@ public class MergeRequestDO {
 
     private List<CommitDTO> commits;
 
+    public static Boolean isValid(MergeRequestDO mergeRequest) {
+        return (mergeRequest != null && mergeRequest.getId() != null);
+    }
+
     public List<CommitDTO> getCommits() {
         return commits;
     }
 
     public void setCommits(List<CommitDTO> commits) {
         this.commits = commits;
-    }
-
-    public static Boolean isValid(MergeRequestDO mergeRequest) {
-        return (mergeRequest != null && mergeRequest.getId() != null);
     }
 
     public Integer getApprovalsBeforeMerge() {

@@ -235,7 +235,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
 
     @Override
-    public void handlerPreInstall(String msg, Long envId ,String type) {
+    public void handlerPreInstall(String msg, Long envId, String type) {
         if (msg.equals("null")) {
             return;
         }
@@ -245,9 +245,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         try {
             for (Job job : jobs) {
-                 applicationInstanceE = applicationInstanceRepository
+                applicationInstanceE = applicationInstanceRepository
                         .selectByCode(job.getReleaseName(), envId);
-                if(type.equals("update")) {
+                if (type.equals("update")) {
                     applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
                     applicationInstanceRepository.update(applicationInstanceE);
                     devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());

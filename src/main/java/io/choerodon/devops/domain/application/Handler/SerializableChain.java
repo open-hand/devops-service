@@ -7,6 +7,7 @@ import java.util.Map;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 
+import io.choerodon.devops.domain.application.entity.DevopsEnvFileLogE;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 
 public class SerializableChain {
@@ -21,7 +22,7 @@ public class SerializableChain {
         v1ServiceHandler.setNext(ingressHandler);
     }
 
-    public void handler(File file, String filePath, Map<String,String> objectPath, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses) {
-         c7NHelmReleaseHandler.handle(file, filePath ,objectPath,c7nHelmReleases,v1Services,v1beta1Ingresses);
+    public void handler(File file, String filePath, Map<String, String> objectPath, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, DevopsEnvFileLogE devopsEnvFileLogE) {
+        c7NHelmReleaseHandler.handle(file, filePath, objectPath, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
     }
 }

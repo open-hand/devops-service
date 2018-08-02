@@ -18,10 +18,10 @@ public interface DevopsEnvFileResourceRepository {
 
     void deleteFileResource(Long fileResourceId);
 
-    DevopsEnvFileResourceE queryByEnvIdAndResource(Long envId,Long resourceId,String resourceType);
+    DevopsEnvFileResourceE queryByEnvIdAndResource(Long envId, Long resourceId, String resourceType);
 
-    DevopsEnvFileResourceE queryByEnvIdAndPath(Long envId,String path);
+    DevopsEnvFileResourceE queryByEnvIdAndPath(Long envId, String path);
 
-    void deleteByEnvIdAndResource(Long envId,Long resourceId, String resourceType);
+    void deleteByEnvIdAndResource(Long envId, Long resourceId, String resourceType);
 
 }

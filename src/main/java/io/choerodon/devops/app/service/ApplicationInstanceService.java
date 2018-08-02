@@ -51,7 +51,7 @@ public interface ApplicationInstanceService {
      * @param applicationDeployDTO 部署信息
      * @return ApplicationInstanceDTO
      */
-    ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO,boolean gitops);
+    ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops);
 
     /**
      * 获取版本特性

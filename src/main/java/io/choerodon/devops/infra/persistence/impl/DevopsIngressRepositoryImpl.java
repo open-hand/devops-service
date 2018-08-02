@@ -159,7 +159,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
                 EnvSession envSession = entry.getValue();
                 if (envSession.getEnvId().equals(t.getEnvId())
                         && agentExpectVersion.compareTo(
-                                envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
+                        envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }

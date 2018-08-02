@@ -13,7 +13,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
@@ -102,7 +101,7 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     public List<ApplicationInstanceE> selectByEnvId(Long envId) {
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         applicationInstanceDO.setEnvId(envId);
-        return ConvertHelper.convertList(applicationInstanceMapper.select(applicationInstanceDO),ApplicationInstanceE.class);
+        return ConvertHelper.convertList(applicationInstanceMapper.select(applicationInstanceDO), ApplicationInstanceE.class);
     }
 
     @Override

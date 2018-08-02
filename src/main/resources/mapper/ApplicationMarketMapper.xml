@@ -170,41 +170,41 @@
 
     <select id="getMarketApplication" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
         SELECT
-            dam.id,
-            dam.app_id,
-            da.`name`,
-            da.`code`,
-            dam.last_update_date marketUpdatedDate,
-            dam.contributor,
-            dam.description,
-            dam.category,
-            dam.img_url,
-            dam.publish_level,
-            EXISTS (
+        dam.id,
+        dam.app_id,
+        da.`name`,
+        da.`code`,
+        dam.last_update_date marketUpdatedDate,
+        dam.contributor,
+        dam.description,
+        dam.category,
+        dam.img_url,
+        dam.publish_level,
+        EXISTS (
         SELECT
-            1
+        1
         FROM
-            devops_app_instance dai
-            JOIN devops_env de ON  dai.env_id =de.id
+        devops_app_instance dai
+        JOIN devops_env de ON dai.env_id =de.id
         WHERE
-            dai.app_id = dam.app_id
-            AND de.project_id != da.project_id
-            <if test='projectIds != null'>
-                AND (de.project_id NOT IN
-                <foreach collection="projectIds" item="project" open="(" separator="," close=")">
-                    #{project}
-                </foreach>)
-            </if>
-            ) is_deployed
+        dai.app_id = dam.app_id
+        AND de.project_id != da.project_id
+        <if test='projectIds != null'>
+            AND (de.project_id NOT IN
+            <foreach collection="projectIds" item="project" open="(" separator="," close=")">
+                #{project}
+            </foreach>)
+        </if>
+        ) is_deployed
         FROM
-            devops_application da
-            JOIN devops_app_market dam ON da.id = dam.app_id
-            AND dam.is_active = 1
+        devops_application da
+        JOIN devops_app_market dam ON da.id = dam.app_id
+        AND dam.is_active = 1
         WHERE
-            dam.id =  #{appMarketId}
-            <if test='projectId != null'>
-                AND da.project_id = #{projectId}
-            </if>
+        dam.id = #{appMarketId}
+        <if test='projectId != null'>
+            AND da.project_id = #{projectId}
+        </if>
     </select>
 
     <select id="selectCountByAppId" resultType="java.lang.Integer">
@@ -228,86 +228,86 @@
 
     <select id="checkProject" resultType="java.lang.Integer">
         SELECT
-            count( 1 )
+        count( 1 )
         FROM
-            devops_app_market dam
-            JOIN devops_application da ON da.id = dam.app_id
+        devops_app_market dam
+        JOIN devops_application da ON da.id = dam.app_id
         WHERE
-            dam.id = #{appMarketId}
-            AND da.project_id = #{projectId}
+        dam.id = #{appMarketId}
+        AND da.project_id = #{projectId}
     </select>
     <select id="checkDeployed" resultType="java.lang.Integer">
         SELECT
-            count( 1 )
+        count( 1 )
         FROM
-            devops_app_market dam
-            JOIN devops_app_instance dai ON dai.app_id = dam.app_id
-            JOIN devops_application da ON da.id = dam.app_id
-            JOIN devops_env de ON de.id = dai.env_id
+        devops_app_market dam
+        JOIN devops_app_instance dai ON dai.app_id = dam.app_id
+        JOIN devops_application da ON da.id = dam.app_id
+        JOIN devops_env de ON de.id = dai.env_id
         WHERE
-            dam.id = #{appMarketId}
-            <if test='versionId != null'>
-                AND dai.app_version_id = #{versionId}
-            </if>
-            <if test='projectIds != null'>
-                AND da.project_id NOT IN
-                <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
-                    #{projectId}
-                </foreach>
-            </if>
-            AND da.project_id != de.project_id
-            AND da.project_id = #{projectId}
+        dam.id = #{appMarketId}
+        <if test='versionId != null'>
+            AND dai.app_version_id = #{versionId}
+        </if>
+        <if test='projectIds != null'>
+            AND da.project_id NOT IN
+            <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
+        </if>
+        AND da.project_id != de.project_id
+        AND da.project_id = #{projectId}
     </select>
 
-    <update id="changeApplicationVersions" parameterType = "io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
+    <update id="changeApplicationVersions" parameterType="io.choerodon.devops.infra.dataobject.DevopsAppMarketDO">
         UPDATE devops_app_version dav
         SET dav.is_publish = #{isPublish}
         WHERE
-            dav.app_id IN ( SELECT dam.app_id FROM devops_app_market dam WHERE dam.id = #{appMarketId} )
-            <if test='versionId != null'>
-                AND dav.id = #{versionId}
-            </if>
+        dav.app_id IN ( SELECT dam.app_id FROM devops_app_market dam WHERE dam.id = #{appMarketId} )
+        <if test='versionId != null'>
+            AND dav.id = #{versionId}
+        </if>
     </update>
 
     <select id="listAppVersions" resultType="io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO">
         SELECT
-            dav.id,
-            dav.version,
-	        dav.creation_date,
-            dav.last_update_date updatedDate,
-            dav.is_publish,
-            EXISTS (
+        dav.id,
+        dav.version,
+        dav.creation_date,
+        dav.last_update_date updatedDate,
+        dav.is_publish,
+        EXISTS (
         SELECT
-            1
+        1
         FROM
-            devops_app_instance dai
-            JOIN devops_env de ON dai.env_id = de.id
+        devops_app_instance dai
+        JOIN devops_env de ON dai.env_id = de.id
         WHERE
-            dai.app_version_id = dav.id
-            AND de.project_id != da.project_id
-            ) is_deployed
+        dai.app_version_id = dav.id
+        AND de.project_id != da.project_id
+        ) is_deployed
         FROM
-            devops_app_version dav
-            JOIN devops_app_market dam ON dam.app_id = dav.app_id
-            JOIN devops_application da ON da.id = dam.app_id
+        devops_app_version dav
+        JOIN devops_app_market dam ON dam.app_id = dav.app_id
+        JOIN devops_application da ON da.id = dam.app_id
         WHERE
-            dam.id =  #{appMarketId}
-            <if test='projectIds != null'>
-                AND ( dam.publish_level = 'public'
-                OR ( dam.publish_level = 'organization' AND da.project_id IN
-                <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
-                    #{projectId}
-                </foreach>
-                ) )
+        dam.id = #{appMarketId}
+        <if test='projectIds != null'>
+            AND ( dam.publish_level = 'public'
+            OR ( dam.publish_level = 'organization' AND da.project_id IN
+            <foreach collection="projectIds" item="projectId" open="(" separator="," close=")">
+                #{projectId}
+            </foreach>
+            ) )
+        </if>
+        <if test="isPublish != null">
+            <if test="isPublish == true">
+                AND dav.is_publish = TRUE
             </if>
-            <if test="isPublish != null">
-                <if test="isPublish == true">
-                    AND dav.is_publish = TRUE
-                </if>
-                <if test="isPublish != true">
-                    AND ( is_publish != TRUE OR is_publish IS NULL )
-                </if>
+            <if test="isPublish != true">
+                AND ( is_publish != TRUE OR is_publish IS NULL )
             </if>
+        </if>
 
         <if test='searchParam != null'>
             <if test='searchParam.version != null and searchParam.version.size > 0'>
@@ -332,13 +332,13 @@
 
     <select id="checkVersion" resultType="java.lang.Boolean">
         SELECT
-            count( 0 ) = 1 exist
+        count( 0 ) = 1 exist
         FROM
-            devops_app_market dam
-            JOIN devops_app_version dav ON dav.app_id = dam.app_id
+        devops_app_market dam
+        JOIN devops_app_version dav ON dav.app_id = dam.app_id
         WHERE
-            dav.id = #{versionId}
-            AND dam.id = #{appMarketId}
-            AND dav.is_publish = TRUE
+        dav.id = #{versionId}
+        AND dam.id = #{appMarketId}
+        AND dav.is_publish = TRUE
     </select>
 </mapper>
