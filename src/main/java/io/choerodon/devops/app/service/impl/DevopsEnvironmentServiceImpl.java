@@ -119,7 +119,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         String input = null;
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
-            sagaClient.startSaga("asgard-create-env", new StartInstanceDTO(input, userAttrE.getGitlabUserId(), "", ""));
+            sagaClient.startSaga("asgard-create-env", new StartInstanceDTO(input, "", ""));
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage());
