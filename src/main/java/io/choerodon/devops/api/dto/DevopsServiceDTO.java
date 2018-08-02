@@ -2,6 +2,8 @@ package io.choerodon.devops.api.dto;
 
 import java.util.List;
 
+import io.choerodon.devops.domain.application.entity.PortMapE;
+import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 import io.choerodon.devops.infra.dataobject.ServiceVersionDO;
 
 /**
@@ -11,9 +13,8 @@ public class DevopsServiceDTO {
 
     private Long id;
     private String name;
-    private String externalIp;
-    private Long port;
-    private Long targetPort;
+    private List<String> externalIps;
+    private List<PortMapE> ports;
     private String status;
     private Long envId;
     private String envName;
@@ -24,7 +25,7 @@ public class DevopsServiceDTO {
     private String commandStatus;
     private String commandType;
     private String error;
-    private List<ServiceVersionDO> appVersion;
+    private List<ServiceInstanceDO> appInstance;
 
     public Long getId() {
         return id;
@@ -40,22 +41,6 @@ public class DevopsServiceDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getExternalIp() {
-        return externalIp;
-    }
-
-    public void setExternalIp(String externalIp) {
-        this.externalIp = externalIp;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
     }
 
     public Long getEnvId() {
@@ -88,14 +73,6 @@ public class DevopsServiceDTO {
 
     public void setAppName(String appName) {
         this.appName = appName;
-    }
-
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
-    }
-
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
     }
 
     public String getStatus() {
@@ -138,19 +115,35 @@ public class DevopsServiceDTO {
         this.error = error;
     }
 
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
-    }
-
     public Long getAppProjectId() {
         return appProjectId;
     }
 
     public void setAppProjectId(Long appProjectId) {
         this.appProjectId = appProjectId;
+    }
+
+    public List<String> getExternalIps() {
+        return externalIps;
+    }
+
+    public void setExternalIps(List<String> externalIp) {
+        this.externalIps = externalIp;
+    }
+
+    public List<PortMapE> getPorts() {
+        return ports;
+    }
+
+    public void setPorts(List<PortMapE> ports) {
+        this.ports = ports;
+    }
+
+    public List<ServiceInstanceDO> getAppInstance() {
+        return appInstance;
+    }
+
+    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+        this.appInstance = appInstance;
     }
 }

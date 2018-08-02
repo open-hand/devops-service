@@ -1,8 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
-import io.kubernetes.client.JSON;
+import com.google.gson.Gson;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
@@ -42,7 +43,7 @@ import io.choerodon.websocket.helper.EnvListener;
 @Transactional(rollbackFor = RuntimeException.class)
 public class DevopsServiceServiceImpl implements DevopsServiceService {
 
-    protected static final JSON json = new JSON();
+    private Gson gson = new Gson();
 
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
@@ -111,7 +112,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
 
         if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
-            throw new CommonException("error.service.name.check");
+            throw new CommonException("error.service.name.exist");
         }
         checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
                 null, null);
@@ -120,7 +121,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
-        devopsServiceE.setTargetPort(devopsServiceReqDTO.getTargetPort());
+        devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
         DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
@@ -143,89 +144,50 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         if (!devopsServiceE.getEnvId().equals(devopsServiceReqDTO.getEnvId())) {
-            throw new CommonException("error.env.equal");
+            throw new CommonException("error.env.notEqual");
         }
         ApplicationE applicationE = getApplicationE(devopsServiceReqDTO.getAppId());
-
-        if (!devopsServiceE.getName().equals(devopsServiceReqDTO.getName())) {
+        String serviceName = devopsServiceReqDTO.getName();
+        if (!devopsServiceE.getName().equals(serviceName)) {
             if (!devopsServiceRepository.checkName(
-                    projectId, devopsServiceE.getEnvId(), devopsServiceReqDTO.getName())) {
+                    projectId, devopsServiceE.getEnvId(), serviceName)) {
                 throw new CommonException("error.service.name.check");
             }
-            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                    null, null);
+            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(), null, null);
             String oldServiceName = devopsServiceE.getName();
 
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.SERVICE.getType(), id);
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
+            updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
+            Long commandId = devopsEnvCommandE.getId();
 
-            updateService(devopsServiceE, devopsServiceReqDTO, applicationE.getCode(), true, devopsEnvCommandE.getId());
+            updateService(devopsServiceE, devopsServiceReqDTO, applicationE.getCode(), true, commandId);
             idevopsServiceService.delete(oldServiceName,
                     devopsServiceE.getNamespace(),
                     devopsServiceReqDTO.getEnvId(),
-                    devopsEnvCommandE.getId());
+                    commandId);
 
             //更新域名
             List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceId(
                     devopsServiceE.getEnvId(), devopsServiceE.getId());
-            for (DevopsIngressPathE dd : devopsIngressPathEList) {
-
-                DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
-                        .queryByObject(ObjectType.INGRESS.getType(), dd.getDevopsIngressE().getId());
-                newdevopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-                newdevopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-                devopsEnvCommandRepository.update(newdevopsEnvCommandE);
-
-                dd.setServiceName(devopsServiceReqDTO.getName());
-                devopsIngressRepository.updateIngressPath(dd);
-                DevopsIngressDO devopsIngressDO = devopsIngressRepository
-                        .getIngress(dd.getDevopsIngressE().getId());
-                DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
-                        .queryById(devopsIngressDO.getEnvId());
-                V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
-                        devopsIngressDO.getName(), devopsEnvironmentE.getCode());
-                List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
-                        .selectByIngressId(devopsIngressDO.getId());
-                for (DevopsIngressPathE ddTemp : devopsIngressPathEListTemp) {
-                    v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
-                            devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId()));
-                }
-                idevopsIngressService.createIngress(json.serialize(v1beta1Ingress),
-                        devopsIngressDO.getName(),
-                        devopsEnvironmentE.getCode(), devopsServiceReqDTO.getEnvId(), newdevopsEnvCommandE.getId());
-            }
+            devopsIngressPathEList.forEach((DevopsIngressPathE dd) ->
+                    updateIngressPath(dd, serviceName, devopsServiceReqDTO.getEnvId()));
         } else {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.SERVICE.getType(), id);
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
-            Long oldPort = devopsServiceE.getPort();
+            updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
+            String oldPort = devopsServiceE.getPorts();
             if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 //查询网络对应的实例
-                Boolean isUpdate = false;
-                List<DevopsServiceAppInstanceE> devopsServiceInstanceEList;
-                int intances = devopsServiceReqDTO.getAppInstance().size();
-                final int[] instanceFlag = {0};
-                devopsServiceInstanceEList = devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-                devopsServiceInstanceEList.forEach(p -> {
-                            Long count = devopsServiceReqDTO.getAppInstance().stream()
-                                    .filter(d -> p.getAppInstanceId().equals(d)).count();
-                            instanceFlag[0] += count;
-                        }
-                );
-                if ((instanceFlag[0] != devopsServiceInstanceEList.size()
-                        || (instanceFlag[0] != intances))) {
-                    isUpdate = true;
-                }
+                List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
+                        devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+                Boolean isUpdate = !devopsServiceReqDTO.getAppInstance()
+                        .retainAll(
+                                devopsServiceInstanceEList.stream()
+                                        .map(DevopsServiceAppInstanceE::getAppInstanceId)
+                                        .collect(Collectors.toList()));
 
-
-                if (!isUpdate && devopsServiceE.getPort().equals(devopsServiceReqDTO.getPort())
-                        && devopsServiceE.getTargetPort() != null
-                        && devopsServiceE.getTargetPort().equals(devopsServiceReqDTO.getTargetPort())
+                if (!isUpdate && oldPort.equals(devopsServiceReqDTO.getPorts())
                         && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
                     throw new CommonException("no change!");
                 }
@@ -239,33 +201,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     false, devopsEnvCommandE.getId());
 
             //更新域名
-            if (!oldPort.equals(devopsServiceReqDTO.getPort())) {
+            if (!oldPort.equals(devopsServiceReqDTO.getPorts())) {
                 List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceId(
                         devopsServiceE.getEnvId(), devopsServiceE.getId());
-                for (DevopsIngressPathE dd : devopsIngressPathEList) {
-                    DevopsIngressDO devopsIngressDO = devopsIngressRepository
-                            .getIngress(dd.getDevopsIngressE().getId());
-
-                    DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository.queryByObject(
-                            ObjectType.INGRESS.getType(), devopsIngressDO.getId());
-                    newdevopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-                    newdevopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-                    devopsEnvCommandRepository.update(newdevopsEnvCommandE);
-
-                    DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
-                            .queryById(devopsIngressDO.getEnvId());
-                    V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
-                            devopsIngressDO.getName(), devopsEnvironmentE.getCode());
-                    List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
-                            .selectByIngressId(devopsIngressDO.getId());
-                    for (DevopsIngressPathE ddTemp : devopsIngressPathEListTemp) {
-                        v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
-                                devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId()));
-                    }
-                    idevopsIngressService.createIngress(json.serialize(v1beta1Ingress),
-                            devopsIngressDO.getName(),
-                            devopsEnvironmentE.getCode(), devopsServiceReqDTO.getEnvId(), newdevopsEnvCommandE.getId());
-                }
+                devopsIngressPathEList.forEach(t -> updateIngressPath(t, null, devopsServiceReqDTO.getEnvId()));
             }
         }
         return true;
@@ -297,32 +236,28 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      * @param serviceId           网络id
      * @return String
      */
-    public String getInstanceCode(DevopsServiceReqDTO devopsServiceReqDTO,
-                                  Long serviceId) {
+    private String updateServiceInstanceAndGetCode(DevopsServiceReqDTO devopsServiceReqDTO,
+                                                   Long serviceId) {
         StringBuilder stringBuffer = new StringBuilder();
-        Set<Long> appInstances = devopsServiceReqDTO.getAppInstance();
+        List<Long> appInstances = devopsServiceReqDTO.getAppInstance();
         if (appInstances.isEmpty()) {
             throw new CommonException("error.param.get");
-        } else {
-            for (Long appInstance : appInstances) {
-                checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                        null, appInstance);
-
-                ApplicationInstanceE applicationInstanceE =
-                        applicationInstanceRepository.selectById(appInstance);
-
-                if (applicationInstanceE == null) {
-                    throw new CommonException("error.instance.query");
-                }
-
-                DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
-                devopsServiceAppInstanceE.setServiceId(serviceId);
-                devopsServiceAppInstanceE.setAppInstanceId(appInstance);
-                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
-                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
-                stringBuffer.append(applicationInstanceE.getCode()).append("+");
-            }
         }
+        appInstances.forEach(appInstance -> {
+            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
+                    null, appInstance);
+            ApplicationInstanceE applicationInstanceE =
+                    applicationInstanceRepository.selectById(appInstance);
+            if (applicationInstanceE == null) {
+                throw new CommonException("error.instance.query");
+            }
+            DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
+            devopsServiceAppInstanceE.setServiceId(serviceId);
+            devopsServiceAppInstanceE.setAppInstanceId(appInstance);
+            devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
+            devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+            stringBuffer.append(applicationInstanceE.getCode()).append("+");
+        });
 
         return stringBuffer.toString().substring(0, stringBuffer.toString().lastIndexOf('+'));
     }
@@ -360,16 +295,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1ServiceSpec spec = new V1ServiceSpec();
         List<V1ServicePort> ports = new ArrayList<>();
         V1ServicePort v1ServicePort = new V1ServicePort();
-        v1ServicePort.setName("http");
-        v1ServicePort.setPort(devopsServiceReqDTO.getPort().intValue());
-        v1ServicePort.setTargetPort(new IntOrString(devopsServiceReqDTO.getTargetPort().intValue()));
-        v1ServicePort.setProtocol("TCP");
+//        // todo port
+//        v1ServicePort.setName("http");
+//        v1ServicePort.setPort(devopsServiceReqDTO.getPort().intValue());
+//        v1ServicePort.setTargetPort(new IntOrString(devopsServiceReqDTO.getTargetPort().intValue()));
+//        v1ServicePort.setProtocol("TCP");
         ports.add(v1ServicePort);
 
         if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())) {
-            List<String> externallIps = new ArrayList<>();
-            externallIps.add(devopsServiceReqDTO.getExternalIp());
-            spec.setExternalIPs(externallIps);
+            List<String> externalIps = new ArrayList<>(
+                    Arrays.asList(devopsServiceReqDTO.getExternalIp().split(",")));
+            spec.setExternalIPs(externalIps);
         }
 
         spec.setPorts(ports);
@@ -377,7 +313,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         spec.type("ClusterIP");
         service.setSpec(spec);
 
-        return json.serialize(service);
+        return gson.toJson(service);
     }
 
     /**
@@ -394,21 +330,18 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       String appCode,
                                       Long envId,
                                       Long commandId) {
-        String serviceInstances = getInstanceCode(devopsServiceReqDTO, devopsServiceE.getId());
-        Map<String, String> labels = new HashMap<>();
+        String serviceInstances = updateServiceInstanceAndGetCode(devopsServiceReqDTO, devopsServiceE.getId());
         Map<String, String> annotations = new HashMap<>();
-        labels.put("choerodon.io/application", appCode);
-        labels.put("choerodon.io/network", "service");
         annotations.put("choerodon.io/network-service-instances", serviceInstances);
 
         String serviceYaml = getServiceYaml(
                 devopsServiceReqDTO,
                 devopsServiceE.getNamespace(),
-                labels,
+                devopsServiceReqDTO.getLabel(),
                 annotations);
 
         DevopsServiceE appDeploy = devopsServiceRepository.query(devopsServiceE.getId());
-        appDeploy.setLabel(json.serialize(annotations));
+        appDeploy.setAnnotations(gson.toJson(annotations));
         appDeploy.setObjectVersionNumber(appDeploy.getObjectVersionNumber());
         appDeploy.setStatus(ServiceStatus.OPERATIING.getStatus());
         devopsServiceRepository.update(appDeploy);
@@ -435,8 +368,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceE.setName(devopsServiceReqDTO.getName());
         }
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
-        devopsServiceE.setPort(devopsServiceReqDTO.getPort());
-        devopsServiceE.setTargetPort(devopsServiceReqDTO.getTargetPort());
+        devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        devopsServiceE.setPorts(devopsServiceReqDTO.getPorts());
         devopsServiceE.setExternalIp(devopsServiceReqDTO.getExternalIp());
         devopsServiceRepository.update(devopsServiceE);
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceEList = devopsServiceInstanceRepository
@@ -452,7 +385,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     /**
      * 判断外部ip是否更新
      */
-    public Boolean isUpdateExternalIp(DevopsServiceReqDTO devopsServiceReqDTO, DevopsServiceE devopsServiceE) {
+    private Boolean isUpdateExternalIp(DevopsServiceReqDTO devopsServiceReqDTO, DevopsServiceE devopsServiceE) {
         return !((StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
                 && StringUtils.isEmpty(devopsServiceE.getExternalIp()))
                 || (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
@@ -463,7 +396,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     /**
      * 查询网络信息
      */
-    public DevopsServiceE getDevopsServiceE(Long id) {
+    private DevopsServiceE getDevopsServiceE(Long id) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
         if (devopsServiceE == null) {
             throw new CommonException("error.service.query");
@@ -475,7 +408,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      * 查询应用
      *
      * @param id 应用id
-     * @return
+     * @return app
      */
     public ApplicationE getApplicationE(long id) {
         ApplicationE applicationE = applicationRepository.query(id);
@@ -483,6 +416,39 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             throw new CommonException("error.application.query");
         }
         return applicationE;
+    }
+
+    private void updateCommand(DevopsEnvCommandE devopsEnvCommandE, String type, String status) {
+        devopsEnvCommandE.setCommandType(type);
+        devopsEnvCommandE.setStatus(status);
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
+    }
+
+    private void updateIngressPath(DevopsIngressPathE devopsIngressPathE, String serviceName, Long envId) {
+        DevopsIngressDO devopsIngressDO = devopsIngressRepository
+                .getIngress(devopsIngressPathE.getDevopsIngressE().getId());
+
+        DevopsEnvCommandE newDevopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressDO.getId());
+        updateCommand(newDevopsEnvCommandE, CommandType.CREATE.getType(), CommandStatus.DOING.getStatus());
+
+        if (serviceName != null) {
+            devopsIngressPathE.setServiceName(serviceName);
+            devopsIngressRepository.updateIngressPath(devopsIngressPathE);
+        }
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
+                .queryById(devopsIngressDO.getEnvId());
+        V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
+                devopsIngressDO.getName(), devopsEnvironmentE.getCode());
+        List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
+                .selectByIngressId(devopsIngressDO.getId());
+        devopsIngressPathEListTemp.forEach(ddTemp ->
+                v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
+                        devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId())));
+        idevopsIngressService.createIngress(gson.toJson(v1beta1Ingress),
+                devopsIngressDO.getName(),
+                devopsEnvironmentE.getCode(), envId, newDevopsEnvCommandE.getId());
     }
 
 }

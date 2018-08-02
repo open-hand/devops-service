@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.List;
+
 /**
  * Created by Zenger on 2018/4/18.
  */
@@ -11,10 +13,14 @@ public class DevopsServiceE {
     private String name;
     private String namespace;
     private String status;
+    private List<PortMapE> portMaps;
+    private String ports;
     private Long port;
     private Long targetPort;
+    private List<String> externalIps;
     private String externalIp;
-    private String label;
+    private String labels;
+    private String annotations;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -89,12 +95,20 @@ public class DevopsServiceE {
         this.externalIp = externalIp;
     }
 
-    public String getLabel() {
-        return label;
+    public String getLabels() {
+        return labels;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setLabels(String labels) {
+        this.labels = labels;
+    }
+
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
     }
 
     public Long getObjectVersionNumber() {
@@ -103,5 +117,29 @@ public class DevopsServiceE {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public List<PortMapE> getPortMaps() {
+        return portMaps;
+    }
+
+    public void setPortMaps(List<PortMapE> portMaps) {
+        this.portMaps = portMaps;
+    }
+
+    public String getPorts() {
+        return ports;
+    }
+
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
+
+    public List<String> getExternalIps() {
+        return externalIps;
+    }
+
+    public void setExternalIps(List<String> externalIps) {
+        this.externalIps = externalIps;
     }
 }

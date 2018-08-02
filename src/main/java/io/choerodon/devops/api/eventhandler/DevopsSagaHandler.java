@@ -30,57 +30,11 @@ public class DevopsSagaHandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-
-    @Autowired
-    private GitlabGroupService gitlabGroupService;
-    @Autowired
-    private HarborService harborService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
 
     private void loggerInfo(Object o) {
         LOGGER.info("data: {}", o);
-    }
-
-    /**
-     * 创建组事件
-     */
-    @SagaTask(code = "devopsCreateGitLabGroup",
-            description = "devops 创建 GitLab Group",
-            sagaCode = "devops-create-gitlab-group",
-            concurrentLimitNum = 2,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
-            seq = 2)
-    public void handleGitlabGroupEvent(String msg) {
-        GitlabGroupPayload gitlabGroupPayload = null;
-        try {
-            gitlabGroupPayload = objectMapper.readValue(msg, GitlabGroupPayload.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-        loggerInfo(gitlabGroupPayload);
-        gitlabGroupService.createGroup(gitlabGroupPayload, "");
-        gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
-    }
-
-    /**
-     * 创建harbor项目事件
-     */
-    @SagaTask(code = "devopsCreateHarbor",
-            description = "devops 创建 Harbor",
-            sagaCode = "devops-create-harbor-project",
-            concurrentLimitNum = 2,
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE,
-            seq = 2)
-    public void handleHarborEvent(String msg) {
-        HarborPayload harborPayload = null;
-        try {
-            harborPayload = objectMapper.readValue(msg, HarborPayload.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
-        loggerInfo(harborPayload);
-        harborService.createHarbor(harborPayload);
     }
 
     /**

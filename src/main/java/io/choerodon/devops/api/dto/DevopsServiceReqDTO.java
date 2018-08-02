@@ -2,6 +2,8 @@ package io.choerodon.devops.api.dto;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -18,10 +20,10 @@ public class DevopsServiceReqDTO {
     private String name;
     private String externalIp;
     @NotNull
-    private Long port;
-    private Long targetPort;
+    private String ports;
     @NotNull
-    private Set<Long> appInstance;
+    private List<Long> appInstance;
+    private Map<String,String> label;
 
     public Long getEnvId() {
         return envId;
@@ -55,27 +57,27 @@ public class DevopsServiceReqDTO {
         this.externalIp = externalIp;
     }
 
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
-    }
-
-    public Set<Long> getAppInstance() {
+    public List<Long> getAppInstance() {
         return appInstance;
     }
 
-    public void setAppInstance(Set<Long> appInstance) {
+    public void setAppInstance(List<Long> appInstance) {
         this.appInstance = appInstance;
     }
 
-    public Long getTargetPort() {
-        return targetPort;
+    public String getPorts() {
+        return ports;
     }
 
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
+
+    public Map<String, String> getLabel() {
+        return label;
+    }
+
+    public void setLabel(Map<String, String> labels) {
+        this.label = labels;
     }
 }

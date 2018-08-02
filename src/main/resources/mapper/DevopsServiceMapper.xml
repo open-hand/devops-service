@@ -61,8 +61,7 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
-        ds.port,
-        ds.target_port,
+        ds.ports,
         ds.`status`,
         da.id AS app_id,
         da.`name` AS app_name,
@@ -109,8 +108,7 @@
         ds.`name`,
         ds.external_ip,
         da.project_id appProjectId,
-        ds. port,
-        ds.target_port,
+        ds. ports,
         ds.`status`,
         da.id AS app_id,
         da.`name` AS app_name,
@@ -146,8 +144,7 @@
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="externalIp" column="external_ip"/>
-        <result property="port" column="port"/>
-        <result property="targetPort" column="target_port"/>
+        <result property="ports" column="ports"/>
         <result property="status" column="status"/>
         <result property="appId" column="app_id"/>
         <result property="appName" column="app_name"/>

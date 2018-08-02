@@ -941,12 +941,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsServiceE.setName(v1Service.getMetadata().getName());
                 devopsServiceE.setNamespace(v1Service.getMetadata().getNamespace());
                 devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
-                devopsServiceE.setPort(TypeUtil.objToLong(v1Service.getSpec().getPorts().get(0).getPort()));
+                devopsServiceE.setPorts(
+                        v1Service.getSpec().getPorts().stream()
+                                .map(t -> t.getPort() + ":" + t.getTargetPort())
+                                .collect(Collectors.joining(",")));
                 devopsServiceE.setTargetPort(null);
                 if (v1Service.getSpec().getExternalIPs() != null) {
-                    devopsServiceE.setExternalIp(v1Service.getSpec().getExternalIPs().get(0));
+                    devopsServiceE.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
                 }
-                devopsServiceE.setLabel(json.serialize(v1Service.getMetadata().getLabels()));
+                devopsServiceE.setLabels(json.serialize(v1Service.getMetadata().getLabels()));
+                devopsServiceE.setAnnotations(json.serialize(v1Service.getMetadata().getAnnotations()));
                 devopsServiceE.setId(devopsServiceRepository.insert(devopsServiceE).getId());
 
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = devopsServiceInstanceRepository
