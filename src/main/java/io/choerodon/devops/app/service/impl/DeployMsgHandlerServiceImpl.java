@@ -228,7 +228,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
                 applicationVersionRepository.queryValue(applicationInstanceE.getApplicationVersionE().getId()),
                 releasePayload.getConfig()));
-        devopsEnvCommandE.initDevopsEnvCommandValueE(devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+        devopsEnvCommandE.initDevopsEnvCommandValueE(
+                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
         installResource(resources, applicationInstanceE);
     }

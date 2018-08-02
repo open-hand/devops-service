@@ -38,7 +38,8 @@ public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourc
 
     @Override
     public DevopsEnvFileResourceE updateFileResource(DevopsEnvFileResourceE devopsEnvFileResourceE) {
-        DevopsEnvFileResourceDO devopsEnvFileResourceDO = devopsEnvFileResourceMapper.selectByPrimaryKey(devopsEnvFileResourceE.getId());
+        DevopsEnvFileResourceDO devopsEnvFileResourceDO = devopsEnvFileResourceMapper
+                .selectByPrimaryKey(devopsEnvFileResourceE.getId());
         devopsEnvFileResourceDO.setFilePath(devopsEnvFileResourceE.getFilePath());
         devopsEnvFileResourceMapper.updateByPrimaryKeySelective(devopsEnvFileResourceDO);
         return devopsEnvFileResourceE;
@@ -55,7 +56,8 @@ public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourc
         devopsEnvFileResourceDO.setEnvId(envId);
         devopsEnvFileResourceDO.setResourceId(resourceId);
         devopsEnvFileResourceDO.setResourceType(resourceType);
-        return ConvertHelper.convert(devopsEnvFileResourceMapper.selectOne(devopsEnvFileResourceDO), DevopsEnvFileResourceE.class);
+        return ConvertHelper.convert(
+                devopsEnvFileResourceMapper.selectOne(devopsEnvFileResourceDO), DevopsEnvFileResourceE.class);
     }
 
     @Override
@@ -63,7 +65,8 @@ public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourc
         DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO();
         devopsEnvFileResourceDO.setEnvId(envId);
         devopsEnvFileResourceDO.setFilePath(path);
-        return ConvertHelper.convert(devopsEnvFileResourceMapper.selectOne(devopsEnvFileResourceDO), DevopsEnvFileResourceE.class);
+        return ConvertHelper.convert(
+                devopsEnvFileResourceMapper.selectOne(devopsEnvFileResourceDO), DevopsEnvFileResourceE.class);
     }
 
     @Override

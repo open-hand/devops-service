@@ -1,4 +1,4 @@
-package io.choerodon.devops.domain.application.Handler;
+package io.choerodon.devops.domain.application.handler;
 
 import java.io.File;
 import java.util.List;
@@ -22,7 +22,13 @@ public class SerializableChain {
         v1ServiceHandler.setNext(ingressHandler);
     }
 
-    public void handler(File file, String filePath, Map<String, String> objectPath, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, DevopsEnvFileLogE devopsEnvFileLogE) {
-        c7NHelmReleaseHandler.handle(file, filePath, objectPath, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
+    public void handler(File file, String filePath,
+                        Map<String, String> objectPath,
+                        List<C7nHelmRelease> c7nHelmReleases,
+                        List<V1Service> v1Services,
+                        List<V1beta1Ingress> v1beta1Ingresses,
+                        DevopsEnvFileLogE devopsEnvFileLogE) {
+        c7NHelmReleaseHandler.handle(file, filePath, objectPath,
+                c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
     }
 }

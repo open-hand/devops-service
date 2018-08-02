@@ -8,16 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.saga.SagaDefinition;
 import io.choerodon.core.saga.SagaTask;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.app.service.GitlabGroupService;
-import io.choerodon.devops.app.service.HarborService;
-import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.event.HarborPayload;
 
 /**
  * Creator: Runge
@@ -36,10 +31,6 @@ public class DevopsSagaHandler {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsGitService devopsGitService;
-
-    private void loggerInfo(Object o) {
-        LOGGER.info("data: {}", o);
-    }
 
     /**
      * devops创建环境

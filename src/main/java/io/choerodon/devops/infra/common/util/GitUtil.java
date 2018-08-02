@@ -81,7 +81,7 @@ public class GitUtil {
         };
         CloneCommand cloneCommand = Git.cloneRepository();
         cloneCommand.setURI(url);
-        cloneCommand.setBranch("master");
+        cloneCommand.setBranch(MASTER);
         TransportConfigCallback transportConfigCallback = transport -> {
             SshTransport sshTransport = (SshTransport) transport;
             sshTransport.setSshSessionFactory(sshSessionFactory);
@@ -97,10 +97,10 @@ public class GitUtil {
 
     public void checkout(String path, String commit) {
 
-        File RepoGitDir = new File(path);
+        File repoGitDir = new File(path);
         Repository repository = null;
         try {
-            repository = new FileRepository(RepoGitDir.getAbsolutePath());
+            repository = new FileRepository(repoGitDir.getAbsolutePath());
             Git git = new Git(repository);
             CheckoutCommand checkoutCommand = git.checkout();
             checkoutCommand.setName(commit);
@@ -125,10 +125,10 @@ public class GitUtil {
                 return defaultJSch;
             }
         };
-        File RepoGitDir = new File(path);
+        File repoGitDir = new File(path);
         Repository repository = null;
         try {
-            repository = new FileRepository(RepoGitDir.getAbsolutePath());
+            repository = new FileRepository(repoGitDir.getAbsolutePath());
             Git git = new Git(repository);
             PullCommand pullCmd = git.pull();
             TransportConfigCallback transportConfigCallback = transport -> {

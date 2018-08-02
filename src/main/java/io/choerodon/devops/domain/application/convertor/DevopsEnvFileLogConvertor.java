@@ -1,6 +1,5 @@
 package io.choerodon.devops.domain.application.convertor;
 
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 

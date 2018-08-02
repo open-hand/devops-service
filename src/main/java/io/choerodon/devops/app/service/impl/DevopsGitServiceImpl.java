@@ -24,7 +24,7 @@ import io.choerodon.core.saga.Saga;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.domain.application.Handler.SerializableChain;
+import io.choerodon.devops.domain.application.handler.SerializableChain;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
@@ -265,7 +265,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String input;
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
-            sagaClient.startSaga("asgard-gitops", new StartInstanceDTO(input, null, "", ""));
+            sagaClient.startSaga("asgard-gitops", new StartInstanceDTO(input, "", ""));
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage());
         }
@@ -281,7 +281,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String path = "gitops/" + organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnvironmentE.getCode();
+        String path = String.format("gitops/%s/%s/%s",
+                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         String url = "git@" + gitlabUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
         try {
             BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
@@ -291,11 +292,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha);
             compareResultsE.getDiffs().forEach(t -> {
                 if (t.getDeletedFile()) {
-                    if(t.getNewPath().contains("yaml")||t.getNewPath().contains("yml")) {
+                    if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                         deletedFiles.add(t.getNewPath());
                     }
                 } else {
-                    if(t.getNewPath().contains("yaml")||t.getNewPath().contains("yml")) {
+                    if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                         operationFiles.add(t.getNewPath());
                     }
                 }
@@ -310,11 +311,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             DevopsEnvFileLogE devopsEnvFileLogE = new DevopsEnvFileLogE();
             devopsEnvFileLogE.setCommitSha(masterSha);
             devopsEnvFileLogE.setEnvId(devopsEnvironmentE.getId());
-            handleFilesToObject(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses, objectPath, devopsEnvFileLogE);
+            handleFilesToObject(operationFiles, path, c7nHelmReleases,
+                    v1Services, v1beta1Ingresses,
+                    objectPath, devopsEnvFileLogE);
             if (devopsEnvFileLogE.getMessage() != null) {
                 devopsEnvFileLogRepository.create(devopsEnvFileLogE);
             }
-            handlerObJectReleations(objectPath, deletedFiles, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvironmentE.getId(), devopsEnvironmentE.getProjectE().getId());
+            handlerObJectReleations(objectPath, deletedFiles, c7nHelmReleases,
+                    v1Services, v1beta1Ingresses, devopsEnvironmentE.getId(),
+                    devopsEnvironmentE.getProjectE().getId());
             devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
             devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha, gitLabUserId);
             deployService.sendCommand(devopsEnvironmentE);
@@ -402,22 +407,38 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    private void handleFilesToObject(List<String> files, String path, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, Map<String, String> objectPath, DevopsEnvFileLogE devopsEnvFileLogE) {
+    private void handleFilesToObject(List<String> files,
+                                     String path,
+                                     List<C7nHelmRelease> c7nHelmReleases,
+                                     List<V1Service> v1Services,
+                                     List<V1beta1Ingress> v1beta1Ingresses,
+                                     Map<String, String> objectPath,
+                                     DevopsEnvFileLogE devopsEnvFileLogE) {
         files.parallelStream().forEach(filePath -> {
-            File file = new File(path + "/" + filePath);
+            File file = new File(String.format("%s/%s", path, filePath));
             SerializableChain serializableChain = new SerializableChain();
             serializableChain.createChain();
-            serializableChain.handler(file, filePath, objectPath, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
+            serializableChain.handler(file, filePath, objectPath, c7nHelmReleases,
+                    v1Services, v1beta1Ingresses, devopsEnvFileLogE);
         });
     }
 
-    private void handlerObJectReleations(Map<String, String> objectPath, List<String> deleteFiles, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, Long envId, Long projectId) {
+    private void handlerObJectReleations(Map<String, String> objectPath,
+                                         List<String> deleteFiles,
+                                         List<C7nHelmRelease> c7nHelmReleases,
+                                         List<V1Service> v1Services,
+                                         List<V1beta1Ingress> v1beta1Ingresses,
+                                         Long envId,
+                                         Long projectId) {
         handlerC7nReleasetReleations(objectPath, deleteFiles, c7nHelmReleases, envId, projectId);
     }
 
-    public ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease, Long projectId, Long envId, String type) {
-        ApplicationE applicationE = applicationRepository.queryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
+    private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
+                                                         Long projectId, Long envId, String type) {
+        ApplicationE applicationE = applicationRepository
+                .queryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository
+                .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
         applicationDeployDTO.setEnvironmentId(envId);
         applicationDeployDTO.setType(type);
@@ -426,57 +447,78 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         applicationDeployDTO.setAppVerisonId(applicationVersionE.getId());
         applicationDeployDTO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals("update")) {
-            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
+            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                    .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
         }
         return applicationDeployDTO;
     }
 
-    public void handlerC7nReleasetReleations(Map<String, String> objectPath, List<String> deleteFiles, List<C7nHelmRelease> c7nHelmReleases, Long envId, Long projectId) {
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = deleteFiles.parallelStream().map(filePath -> {
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(envId, filePath);
-            return devopsEnvFileResourceE;
-        }).collect(Collectors.toList());
-        List<ApplicationInstanceE> deleteC7n = devopsEnvFileResourceES.parallelStream().filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("C7NHelmRelease")).map(devopsEnvFileResourceE -> {
-            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsEnvFileResourceE.getResourceId());
-            return applicationInstanceE;
-        }).collect(Collectors.toList());
+    private void handlerC7nReleasetReleations(Map<String, String> objectPath,
+                                              List<String> deleteFiles,
+                                              List<C7nHelmRelease> c7nHelmReleases,
+                                              Long envId, Long projectId) {
+        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = deleteFiles.parallelStream()
+                .map(filePath -> devopsEnvFileResourceRepository.queryByEnvIdAndPath(envId, filePath))
+                .collect(Collectors.toList());
+        List<ApplicationInstanceE> deleteC7n = devopsEnvFileResourceES.parallelStream()
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("C7NHelmRelease"))
+                .map(devopsEnvFileResourceE ->
+                        applicationInstanceRepository.selectById(devopsEnvFileResourceE.getResourceId()))
+                .collect(Collectors.toList());
 
-        List<String> instanceNames = applicationInstanceRepository.selectByEnvId(envId).parallelStream().filter(applicationInstanceE -> !applicationInstanceE.getStatus().equals(InstanceStatus.DELETED.getStatus())).map(ApplicationInstanceE::getCode).collect(Collectors.toList());
+        List<String> instanceNames = applicationInstanceRepository.selectByEnvId(envId).parallelStream()
+                .filter(applicationInstanceE ->
+                        !applicationInstanceE.getStatus().equals(InstanceStatus.DELETED.getStatus()))
+                .map(ApplicationInstanceE::getCode)
+                .collect(Collectors.toList());
         List<String> c7nNames = new ArrayList<>();
-        c7nHelmReleases.parallelStream().filter(c7nHelmRelease -> !instanceNames.contains(c7nHelmRelease.getMetadata().getName())).forEach(c7nHelmRelease -> {
-            c7nNames.add(c7nHelmRelease.getMetadata().getName());
-            //todo error
-            ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(c7nHelmRelease, projectId, envId, "create");
-            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
-            DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-            devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-            devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-            devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
-            devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
-            devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-        });
-        c7nHelmReleases.parallelStream().filter(c7nHelmRelease -> instanceNames.contains(c7nHelmRelease.getMetadata().getName())).forEach(c7nHelmRelease -> {
-            c7nNames.add(c7nHelmRelease.getMetadata().getName());
-            ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(c7nHelmRelease, projectId, envId, "update");
-            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, applicationInstanceDTO.getId(), c7nHelmRelease.getKind());
-            if (devopsEnvFileResourceE != null) {
-                devopsEnvFileResourceE.setFilePath(objectPath.get(c7nHelmRelease.hashCode()));
-                devopsEnvFileResourceRepository.updateFileResource(devopsEnvFileResourceE);
-            } else {
-                devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-                devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
-                devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
-                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-            }
-        });
-        deleteC7n.parallelStream().filter(applicationInstanceE -> !c7nNames.contains(applicationInstanceE.getCode())).forEach(applicationInstanceE -> {
-            applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
-        });
+        c7nHelmReleases.parallelStream()
+                .filter(c7nHelmRelease -> !instanceNames.contains(c7nHelmRelease.getMetadata().getName()))
+                .forEach(c7nHelmRelease -> {
+                    c7nNames.add(c7nHelmRelease.getMetadata().getName());
+                    //todo error
+                    ApplicationDeployDTO applicationDeployDTO =
+                            getApplicationDeployDTO(c7nHelmRelease, projectId, envId, "create");
+                    ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
+                            .create(applicationDeployDTO, true);
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                    devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                    devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
+                    devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
+                    devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
+                    devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                });
+        c7nHelmReleases.parallelStream()
+                .filter(c7nHelmRelease -> instanceNames.contains(c7nHelmRelease.getMetadata().getName()))
+                .forEach(c7nHelmRelease -> {
+                    c7nNames.add(c7nHelmRelease.getMetadata().getName());
+                    ApplicationDeployDTO applicationDeployDTO =
+                            getApplicationDeployDTO(c7nHelmRelease, projectId, envId, "update");
+                    ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
+                            .create(applicationDeployDTO, true);
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                            .queryByEnvIdAndResource(envId, applicationInstanceDTO.getId(), c7nHelmRelease.getKind());
+                    if (devopsEnvFileResourceE != null) {
+                        devopsEnvFileResourceE.setFilePath(objectPath.get(c7nHelmRelease.hashCode()));
+                        devopsEnvFileResourceRepository.updateFileResource(devopsEnvFileResourceE);
+                    } else {
+                        devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                        devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                        devopsEnvFileResourceE.setFilePath(objectPath.get(
+                                TypeUtil.objToString(c7nHelmRelease.hashCode())));
+                        devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
+                        devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
+                        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                    }
+                });
+        deleteC7n.parallelStream()
+                .filter(applicationInstanceE -> !c7nNames.contains(applicationInstanceE.getCode()))
+                .forEach(applicationInstanceE -> {
+                    applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
+                    devopsEnvFileResourceRepository
+                            .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
+                });
 
     }
 }

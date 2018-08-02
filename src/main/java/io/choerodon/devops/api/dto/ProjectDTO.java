@@ -2,13 +2,13 @@ package io.choerodon.devops.api.dto;
 
 public class ProjectDTO {
 
-    private Long Id;
+    private Long id;
 
     public Long getId() {
-        return Id;
+        return id;
     }
 
     public void setId(Long id) {
-        Id = id;
+        this.id = id;
     }
 }

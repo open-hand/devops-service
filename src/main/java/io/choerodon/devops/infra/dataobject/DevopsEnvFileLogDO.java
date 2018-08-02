@@ -1,13 +1,11 @@
 package io.choerodon.devops.infra.dataobject;
 
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
-
 
 @ModifyAudit
 @Table(name = "devops_env_file_log")

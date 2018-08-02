@@ -295,14 +295,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryById(devopsEnvironmentUpdateDTO.getId());
-        return devopsEnvironmentE.getName().equals(devopsEnvironmentUpdateDTO.getName()) ? false : true;
+        return !devopsEnvironmentE.getName().equals(devopsEnvironmentUpdateDTO.getName());
     }
 
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectId(Long projectId) {
         List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOList = listByProjectIdAndActive(projectId, true);
         return devopsEnviromentRepDTOList.stream().filter(t ->
-                applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream().filter(applicationInstanceE -> applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())).collect(Collectors.toList()).size() > 0)
+                applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream()
+                        .anyMatch(applicationInstanceE ->
+                                applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
                 .collect(Collectors.toList());
     }
 
@@ -324,8 +326,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvironmentE.getEnvIdRsaPub(),
                 true,
                 gitlabProjectPayload.getUserId());
-        gitlabRepository.createFile(gitlabProjectDO.getId(), README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
-        devopsGitRepository.createTag(gitlabProjectDO.getId(), GitUtil.DEVOPS_GITOPS_TAG, "master", gitlabProjectPayload.getUserId());
+        gitlabRepository.createFile(gitlabProjectDO.getId(),
+                README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
+        devopsGitRepository.createTag(gitlabProjectDO.getId(),
+                GitUtil.DEVOPS_GITOPS_TAG, "master", gitlabProjectPayload.getUserId());
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());

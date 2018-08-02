@@ -67,8 +67,13 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void delete(ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, Long userId) {
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(devopsEnvironmentE.getId(), applicationInstanceE.getId(), "C7NHelmRelease");
-        gitlabRepository.deleteFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), devopsEnvFileResourceE.getFilePath(), "DELETE FILE", TypeUtil.objToInteger(userId));
+        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), applicationInstanceE.getId(), "C7NHelmRelease");
+        gitlabRepository.deleteFile(
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                devopsEnvFileResourceE.getFilePath(),
+                "DELETE FILE",
+                TypeUtil.objToInteger(userId));
     }
 
 

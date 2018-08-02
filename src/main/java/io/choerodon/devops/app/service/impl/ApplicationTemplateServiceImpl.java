@@ -223,7 +223,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     accessToken,
                     teamplateType);
         } else {
-            gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(), README, README_CONTENT, "ADD README",
+            gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
+                    README, README_CONTENT, "ADD README",
                     gitlabProjectEventDTO.getUserId());
         }
     }

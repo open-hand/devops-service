@@ -397,7 +397,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setId(null);
         devopsEnvCommandRepository.create(devopsEnvCommandE);
         updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(instanceE.getDevopsEnvironmentE().getId());
         if (!gitops) {
             deployService.delete(instanceE, devopsEnvironmentE, userAttrE.getGitlabUserId());
         }
