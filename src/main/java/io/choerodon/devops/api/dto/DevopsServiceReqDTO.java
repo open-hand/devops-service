@@ -1,10 +1,9 @@
 package io.choerodon.devops.api.dto;
 
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -23,7 +22,7 @@ public class DevopsServiceReqDTO {
     private String ports;
     @NotNull
     private List<Long> appInstance;
-    private Map<String,String> label;
+    private Map<String, String> label;
 
     public Long getEnvId() {
         return envId;

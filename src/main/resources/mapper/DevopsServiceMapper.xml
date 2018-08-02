@@ -85,7 +85,7 @@
         devops_service devs
         INNER JOIN devops_env denv ON devs.env_id = denv.id
         WHERE
-         denv.project_id = #{projectId}
+        denv.project_id = #{projectId}
         AND devs.`status` != 'deleted'
         <if test="start != null and  size != null">
             LIMIT #{start}, #{size}

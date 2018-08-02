@@ -29,7 +29,7 @@ public interface ApplicationInstanceRepository {
 
     void update(ApplicationInstanceE applicationInstanceE);
 
-    int selectByEnvId(Long envId);
+    List<ApplicationInstanceE> selectByEnvId(Long envId);
 
     List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId);
 }

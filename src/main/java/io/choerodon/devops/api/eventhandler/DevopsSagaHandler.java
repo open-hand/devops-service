@@ -8,14 +8,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.saga.SagaDefinition;
 import io.choerodon.core.saga.SagaTask;
+import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.GitlabGroupService;
-import io.choerodon.devops.app.service.HarborService;
-import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
+import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.event.HarborPayload;
 
 /**
  * Creator: Runge
@@ -32,10 +29,8 @@ public class DevopsSagaHandler {
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-
-    private void loggerInfo(Object o) {
-        LOGGER.info("data: {}", o);
-    }
+    @Autowired
+    private DevopsGitService devopsGitService;
 
     /**
      * devops创建环境
@@ -55,5 +50,22 @@ public class DevopsSagaHandler {
 
     }
 
+    /**
+     * GitOps 事件处理
+     */
+    @SagaTask(code = "devopsGitOps",
+            description = "gitops",
+            sagaCode = "asgard-gitops",
+            seq = 1)
+    public void gitops(String data) {
+        PushWebHookDTO pushWebHookDTO = null;
+        try {
+            pushWebHookDTO = objectMapper.readValue(data, PushWebHookDTO.class);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
+        devopsGitService.fileResourceSync(pushWebHookDTO);
+
+    }
 
 }

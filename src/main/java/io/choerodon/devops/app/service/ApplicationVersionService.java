@@ -79,5 +79,5 @@ public interface ApplicationVersionService {
     /**
      * 根据应用id查询需要升级的应用版本
      */
-    List<ApplicationVersionRepDTO> getUpgradeAppVersion(Long projectId,Long appVersionId);
+    List<ApplicationVersionRepDTO> getUpgradeAppVersion(Long projectId, Long appVersionId);
 }

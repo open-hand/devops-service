@@ -17,7 +17,7 @@ public class MergeRequestConvertor implements ConvertorI<MergeRequestE, MergeReq
     public MergeRequestDTO doToDto(MergeRequestDO dataObject) {
         MergeRequestDTO mergeRequestDTO = new MergeRequestDTO();
         BeanUtils.copyProperties(dataObject, mergeRequestDTO);
-        mergeRequestDTO.setAuthor(ConvertHelper.convert(dataObject.getAuthor(),AuthorDTO.class));
+        mergeRequestDTO.setAuthor(ConvertHelper.convert(dataObject.getAuthor(), AuthorDTO.class));
         return mergeRequestDTO;
     }
 }

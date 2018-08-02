@@ -16,4 +16,8 @@ public interface DeployService {
                 String values,
                 String type,
                 Long commandId);
+
+    void delete(ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, Long userId);
+
+    void sendCommand(DevopsEnvironmentE devopsEnvironmentE);
 }

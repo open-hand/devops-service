@@ -21,7 +21,12 @@ public interface GitlabRepository {
 
     GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId);
 
-    Boolean createFile(Integer projectId, Integer userId);
+    void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId);
+
+
+    void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId);
+
+    void deleteFile(Integer projectId, String path, String commitMessage, Integer userId);
 
     void createProtectBranch(Integer projectId, String name, String mergeAccessLevel,
                              String pushAccessLevel, Integer userId);

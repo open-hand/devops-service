@@ -7,6 +7,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
+import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 
 /**
  * Creator: Runge
@@ -29,7 +30,9 @@ public class DevopsEnvironmentValidator {
      * @param envId 环境ID
      */
     public void checkEnvCanDisabled(Long envId) {
-        if (applicationInstanceRepository.selectByEnvId(envId) > 0) {
+        if (applicationInstanceRepository.selectByEnvId(envId).parallelStream()
+                .anyMatch(applicationInstanceE ->
+                        InstanceStatus.RUNNING.getStatus().equals(applicationInstanceE.getStatus()))) {
             throw new CommonException("error.env.stop.instanceExist");
         }
         if (devopsServiceRepository.checkEnvHasService(envId)) {

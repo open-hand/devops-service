@@ -7,7 +7,7 @@ public interface DeployMsgHandlerService {
 
     void handlerReleaseInstall(String msg, Long envId);
 
-    void handlerPreInstall(String msg, Long envId);
+    void handlerPreInstall(String msg, Long envId, String type);
 
     void resourceUpdate(String key, Long envId, String msg);
 
@@ -19,7 +19,7 @@ public interface DeployMsgHandlerService {
 
     void handlerDomainCreateMessage(String key, String msg, Long envId);
 
-    void helmReleasePreUpgrade(String msg, Long envId);
+    void helmReleasePreUpgrade(String msg, Long envId, String type);
 
     void handlerReleaseUpgrade(String msg, Long envId);
 

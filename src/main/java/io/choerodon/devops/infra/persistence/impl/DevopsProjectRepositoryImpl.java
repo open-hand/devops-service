@@ -63,7 +63,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     public GitlabGroupE queryByEnvGroupId(Integer envGroupId) {
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
         devopsProjectDO.setEnvGroupId(envGroupId);
-        return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO),GitlabGroupE.class);
+        return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), GitlabGroupE.class);
     }
 
     @Override

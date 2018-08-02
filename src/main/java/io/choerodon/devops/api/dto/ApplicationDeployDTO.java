@@ -7,6 +7,7 @@ public class ApplicationDeployDTO {
     private Long appId;
     private String type;
     private Long appInstanceId;
+    private String instanceName;
 
     public Long getAppVerisonId() {
         return appVerisonId;
@@ -54,5 +55,13 @@ public class ApplicationDeployDTO {
 
     public void setAppInstanceId(Long appInstanceId) {
         this.appInstanceId = appInstanceId;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 }

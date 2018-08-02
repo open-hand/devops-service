@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.convertor;
 import java.io.File;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
@@ -15,6 +16,7 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvFileResourceDO;
  * Time: 17:09
  * Description:
  */
+@Component
 public class DevopsEnvFileResourceConvertor implements ConvertorI<DevopsEnvFileResourceE, DevopsEnvFileResourceDO, Object> {
 
     @Override

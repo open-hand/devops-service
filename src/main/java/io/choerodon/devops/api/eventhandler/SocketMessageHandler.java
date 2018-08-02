@@ -46,7 +46,8 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
         }
         switch (helmType) {
             case HELM_RELEASE_PRE_INSTALL:
-                deployMsgHandlerService.handlerPreInstall(msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
+                deployMsgHandlerService.handlerPreInstall(
+                        msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()), "create");
                 break;
             case HELM_INSTALL_RELEASE:
                 deployMsgHandlerService.handlerReleaseInstall(msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
@@ -87,7 +88,8 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                         "");
                 break;
             case HELM_RELEASE_PRE_UPGRADE:
-                deployMsgHandlerService.helmReleasePreUpgrade(msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
+                deployMsgHandlerService.helmReleasePreUpgrade(
+                        msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()), "update");
                 break;
             case NETWORK_SERVICE:
                 serviceMsgHandlerService.handlerServiceCreateMessage(

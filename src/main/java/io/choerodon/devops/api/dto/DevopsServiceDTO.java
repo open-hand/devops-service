@@ -4,7 +4,6 @@ import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
-import io.choerodon.devops.infra.dataobject.ServiceVersionDO;
 
 /**
  * Created by Zenger on 2018/4/19.

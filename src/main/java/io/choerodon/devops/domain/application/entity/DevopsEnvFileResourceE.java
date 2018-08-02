@@ -44,6 +44,11 @@ public class DevopsEnvFileResourceE {
         return file;
     }
 
+    public void setFile(File file) {
+        this.file = file;
+
+    }
+
     public String getResourceType() {
         return resourceType;
     }
@@ -58,10 +63,5 @@ public class DevopsEnvFileResourceE {
 
     public void setResourceId(Long resourceId) {
         this.resourceId = resourceId;
-    }
-
-    public void setFile(File file) {
-        this.file = file;
-
     }
 }

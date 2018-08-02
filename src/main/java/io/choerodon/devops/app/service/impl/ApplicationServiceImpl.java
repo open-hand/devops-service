@@ -175,11 +175,11 @@ public class ApplicationServiceImpl implements ApplicationService {
                                         sonarqubeUrl.endsWith("/")
                                                 ? sonarqubeUrl
                                                 : String.format(
-                                                        "%s/api/project_links/search?projectKey=%s-%s:%s",
-                                                        sonarqubeUrl,
-                                                        organization.getCode(),
-                                                        projectE.getCode(),
-                                                        t.getCode()
+                                                "%s/api/project_links/search?projectKey=%s-%s:%s",
+                                                sonarqubeUrl,
+                                                organization.getCode(),
+                                                projectE.getCode(),
+                                                t.getCode()
                                         ));
                                 if (result.equals(HttpStatus.OK.value())) {
                                     t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"

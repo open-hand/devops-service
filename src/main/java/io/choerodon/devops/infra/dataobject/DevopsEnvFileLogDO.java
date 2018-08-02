@@ -7,24 +7,19 @@ import javax.persistence.Table;
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 
-/**
- * Creator: Runge
- * Date: 2018/7/25
- * Time: 15:34
- * Description:
- */
 @ModifyAudit
-@Table(name = "devops_env_file_resource")
+@Table(name = "devops_env_file_log")
 @VersionAudit
-public class DevopsEnvFileResourceDO {
+public class DevopsEnvFileLogDO {
+
     @Id
     @GeneratedValue
     private Long id;
     private Long envId;
     private String filePath;
-    private String resourceType;
-    private Long resourceId;
-    private Long objectVersionNumber;
+    private String commitSha;
+    private String message;
+
 
     public Long getId() {
         return id;
@@ -50,27 +45,19 @@ public class DevopsEnvFileResourceDO {
         this.filePath = filePath;
     }
 
-    public String getResourceType() {
-        return resourceType;
+    public String getCommitSha() {
+        return commitSha;
     }
 
-    public void setResourceType(String resourceType) {
-        this.resourceType = resourceType;
+    public void setCommitSha(String commitSha) {
+        this.commitSha = commitSha;
     }
 
-    public Long getResourceId() {
-        return resourceId;
+    public String getMessage() {
+        return message;
     }
 
-    public void setResourceId(Long resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
