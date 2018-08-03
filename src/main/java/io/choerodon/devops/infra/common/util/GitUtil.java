@@ -15,12 +15,15 @@ import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.util.FS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 
 /**
  * Created by younger on 2018/3/29.
@@ -35,6 +38,8 @@ public class GitUtil {
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
     private String classPath;
     private String sshKey;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
 
     @Value("${template.version.MicroService}")
     private String microService;
@@ -91,6 +96,7 @@ public class GitUtil {
             cloneCommand.setDirectory(new File(path));
             cloneCommand.call();
         } catch (GitAPIException e) {
+            LOGGER.info(e.getMessage());
             throw new CommonException(e.getMessage());
         }
     }
