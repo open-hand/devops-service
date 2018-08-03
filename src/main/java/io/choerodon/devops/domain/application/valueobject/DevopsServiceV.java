@@ -26,7 +26,7 @@ public class DevopsServiceV {
     private String commandStatus;
     private String commandType;
     private String error;
-    private Map<String ,String> labels;
+    private Map<String, String> labels;
     private List<ServiceInstanceDO> appInstance;
 
     public Long getId() {

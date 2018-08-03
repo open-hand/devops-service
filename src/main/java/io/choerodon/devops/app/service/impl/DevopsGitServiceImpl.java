@@ -307,17 +307,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha);
             List<DevopsEnvFileResourceE> beforeSync = new ArrayList<>();
             compareResultsE.getDiffs().forEach(t -> {
-                if (t.getDeletedFile()) {
-                    if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
+                if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
+                    if (t.getDeletedFile()) {
                         deletedFiles.add(t.getNewPath());
-                    }
-                } else {
-                    if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
+                    } else {
                         operationFiles.add(t.getNewPath());
-
                     }
                 }
-                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getNewPath());
+                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                        .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getNewPath());
                 if (devopsEnvFileResourceE != null) {
                     beforeSync.add(devopsEnvFileResourceE);
                 }
@@ -340,7 +338,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsEnvFileLogRepository.create(devopsEnvFileLogE);
                 return;
             }
-            handlerObJectReleations(objectPath, beforeSync, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvironmentE.getId(), devopsEnvironmentE.getProjectE().getId(), devopsEnvFileLogE);
+            handlerObJectReleations(
+                    objectPath,
+                    beforeSync,
+                    c7nHelmReleases,
+                    v1Services,
+                    v1beta1Ingresses,
+                    devopsEnvironmentE.getId(),
+                    devopsEnvironmentE.getProjectE().getId(),
+                    devopsEnvFileLogE);
             if (devopsEnvFileLogE.getMessage() != null) {
                 devopsEnvFileLogRepository.create(devopsEnvFileLogE);
                 return;
@@ -441,7 +447,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                      DevopsEnvFileLogE devopsEnvFileLogE) {
         files.parallelStream().forEach(filePath -> {
             File file = new File(String.format("%s/%s", path, filePath));
-            io.choerodon.devops.domain.application.handler.SerializableChain serializableChain = new SerializableChain();
+            SerializableChain serializableChain = new SerializableChain();
             serializableChain.createChain();
             serializableChain.handler(file, filePath, objectPath, c7nHelmReleases,
                     v1Services, v1beta1Ingresses, devopsEnvFileLogE);
@@ -449,14 +455,25 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private void handlerObJectReleations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, Long envId, Long projectId, DevopsEnvFileLogE devopsEnvFileLogE) {
+    private void handlerObJectReleations(Map<String, String> objectPath,
+                                         List<DevopsEnvFileResourceE> beforeSync,
+                                         List<C7nHelmRelease> c7nHelmReleases,
+                                         List<V1Service> v1Services,
+                                         List<V1beta1Ingress> v1beta1Ingresses,
+                                         Long envId, Long projectId,
+                                         DevopsEnvFileLogE devopsEnvFileLogE) {
         handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId, devopsEnvFileLogE);
         handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId, devopsEnvFileLogE);
     }
 
-    public ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease, Long projectId, Long envId, String type, DevopsEnvFileLogE devopsEnvFileLogE, String filePath) {
-        ApplicationE applicationE = applicationRepository.queryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
+    private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
+                                                         Long projectId, Long envId, String type,
+                                                         DevopsEnvFileLogE devopsEnvFileLogE,
+                                                         String filePath) {
+        ApplicationE applicationE = applicationRepository
+                .queryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository
+                .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
         if (applicationVersionE == null) {
             devopsEnvFileLogE.setMessage("release version not exist!");
             devopsEnvFileLogE.setFilePath(filePath);
@@ -479,117 +496,164 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    public void handlerC7nReleaseRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, Long envId, Long projectId, DevopsEnvFileLogE devopsEnvFileLogE) {
-        List<String> beforeC7nRelease = beforeSync.parallelStream().filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("C7NHelmRelease")).map(devopsEnvFileResourceE -> {
-            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsEnvFileResourceE.getResourceId());
-            return applicationInstanceE.getCode();
-        }).collect(Collectors.toList());
-        c7nHelmReleases.parallelStream().filter(c7nHelmRelease -> !beforeC7nRelease.contains(c7nHelmRelease.getMetadata().getName())).forEach(c7nHelmRelease -> {
-            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
-            ApplicationDeployDTO applicationDeployDTO;
-            ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
-            if (applicationInstanceE == null) {
-                applicationDeployDTO = getApplicationDeployDTO(c7nHelmRelease, projectId, envId, "create", devopsEnvFileLogE, objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-                if (devopsEnvFileLogE.getMessage() != null) {
-                    return;
-                }
-                applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
-            } else {
-                applicationInstanceDTO.setId(applicationInstanceE.getId());
-            }
-            DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-            devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-            devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-            devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
-            devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
-            devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-        });
-        c7nHelmReleases.parallelStream().filter(c7nHelmRelease -> beforeC7nRelease.contains(c7nHelmRelease.getMetadata().getName())).forEach(c7nHelmRelease -> {
-            beforeC7nRelease.remove(c7nHelmRelease.getMetadata().getName());
-            ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(c7nHelmRelease, projectId, envId, "update", devopsEnvFileLogE, objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-            if (devopsEnvFileLogE.getMessage() != null) {
-                return;
-            }
-            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, applicationInstanceDTO.getId(), c7nHelmRelease.getKind());
-            if (devopsEnvFileResourceE != null) {
-                devopsEnvFileResourceE.setFilePath(objectPath.get(c7nHelmRelease.hashCode()));
-                devopsEnvFileResourceRepository.updateFileResource(devopsEnvFileResourceE);
-            } else {
-                devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-                devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
-                devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
-                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-            }
-        });
+    private void handlerC7nReleaseRelations(Map<String, String> objectPath,
+                                            List<DevopsEnvFileResourceE> beforeSync,
+                                            List<C7nHelmRelease> c7nHelmReleases,
+                                            Long envId, Long projectId,
+                                            DevopsEnvFileLogE devopsEnvFileLogE) {
+        List<String> beforeC7nRelease = beforeSync.parallelStream()
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("C7NHelmRelease"))
+                .map(devopsEnvFileResourceE -> {
+                    ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                            .selectById(devopsEnvFileResourceE.getResourceId());
+                    return applicationInstanceE.getCode();
+                }).collect(Collectors.toList());
+        c7nHelmReleases.parallelStream()
+                .filter(c7nHelmRelease -> !beforeC7nRelease.contains(c7nHelmRelease.getMetadata().getName()))
+                .forEach(c7nHelmRelease -> {
+                    ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                            .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
+                    ApplicationDeployDTO applicationDeployDTO;
+                    ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+                    if (applicationInstanceE == null) {
+                        applicationDeployDTO = getApplicationDeployDTO(
+                                c7nHelmRelease,
+                                projectId,
+                                envId,
+                                "create",
+                                devopsEnvFileLogE,
+                                objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
+                        if (devopsEnvFileLogE.getMessage() != null) {
+                            return;
+                        }
+                        applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
+                    } else {
+                        applicationInstanceDTO.setId(applicationInstanceE.getId());
+                    }
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                    devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                    devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
+                    devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
+                    devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
+                    devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                });
+        c7nHelmReleases.parallelStream()
+                .filter(c7nHelmRelease -> beforeC7nRelease.contains(c7nHelmRelease.getMetadata().getName()))
+                .forEach(c7nHelmRelease -> {
+                    beforeC7nRelease.remove(c7nHelmRelease.getMetadata().getName());
+                    ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(
+                            c7nHelmRelease,
+                            projectId,
+                            envId,
+                            "update",
+                            devopsEnvFileLogE,
+                            objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
+                    if (devopsEnvFileLogE.getMessage() != null) {
+                        return;
+                    }
+                    ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
+                            .create(applicationDeployDTO, true);
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                            .queryByEnvIdAndResource(envId, applicationInstanceDTO.getId(), c7nHelmRelease.getKind());
+                    updateOrCreateFileResource(objectPath, envId,
+                            devopsEnvFileResourceE,
+                            c7nHelmRelease.hashCode(), applicationInstanceDTO.getId(),
+                            c7nHelmRelease.getKind());
+                });
         beforeC7nRelease.parallelStream().forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
             applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
+            devopsEnvFileResourceRepository
+                    .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
         });
     }
 
-
-    public void handlerIngressRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, Long envId, Long projectId, DevopsEnvFileLogE devopsEnvFileLogE) {
-        List<String> beforeIngress = beforeSync.parallelStream().filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("Ingress")).map(devopsEnvFileResourceE -> {
-            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsEnvFileResourceE.getResourceId());
-            return devopsIngressDO.getName();
-        }).collect(Collectors.toList());
-        v1beta1Ingresses.parallelStream().filter(v1beta1Ingress -> !beforeIngress.contains(v1beta1Ingress.getMetadata().getName())).forEach(v1beta1Ingress -> {
-            try {
-                DevopsIngressValidator.checkAppVersion(v1beta1Ingress.getMetadata().getName());
-            } catch (Exception e) {
-                devopsEnvFileLogE.setMessage(e.getMessage());
-                devopsEnvFileLogE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                return;
-            }
-            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-            DevopsIngressDTO devopsIngressDTO;
-            if (devopsIngressE == null) {
-                devopsIngressDTO = getDevopsIngressDTO(v1beta1Ingress, envId, devopsEnvFileLogE, objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                if (devopsEnvFileLogE.getMessage() != null) {
-                    return;
-                }
-                devopsIngressService.addIngress(devopsIngressDTO, projectId, true);
-                devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-            }
-            DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+    private void updateOrCreateFileResource(Map<String, String> objectPath,
+                                            Long envId,
+                                            DevopsEnvFileResourceE devopsEnvFileResourceE,
+                                            Integer i, Long id, String kind) {
+        if (devopsEnvFileResourceE != null) {
+            devopsEnvFileResourceE.setFilePath(objectPath.get(
+                    TypeUtil.objToString(i)));
+            devopsEnvFileResourceRepository.updateFileResource(devopsEnvFileResourceE);
+        } else {
+            devopsEnvFileResourceE = new DevopsEnvFileResourceE();
             devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-            devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-            devopsEnvFileResourceE.setResourceId(devopsIngressE.getId());
-            devopsEnvFileResourceE.setResourceType(v1beta1Ingress.getKind());
+            devopsEnvFileResourceE.setFilePath(objectPath.get(
+                    TypeUtil.objToString(i)));
+            devopsEnvFileResourceE.setResourceId(id);
+            devopsEnvFileResourceE.setResourceType(kind);
             devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-        });
-        v1beta1Ingresses.parallelStream().filter(v1beta1Ingress -> beforeIngress.contains(v1beta1Ingress.getMetadata().getName())).forEach(v1beta1Ingress -> {
-            beforeIngress.remove(v1beta1Ingress.getMetadata().getName());
-            try {
-                DevopsIngressValidator.checkAppVersion(v1beta1Ingress.getMetadata().getName());
-            } catch (Exception e) {
-                devopsEnvFileLogE.setMessage(e.getMessage());
-                devopsEnvFileLogE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                return;
-            }
-            DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(v1beta1Ingress, envId, devopsEnvFileLogE, objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-            if (devopsEnvFileLogE.getMessage() != null) {
-                return;
-            }
-            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-            devopsIngressService.updateIngress(devopsIngressE.getId(), devopsIngressDTO, projectId, true);
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
-            if (devopsEnvFileResourceE != null) {
-                devopsEnvFileResourceE.setFilePath(objectPath.get(v1beta1Ingress.hashCode()));
-                devopsEnvFileResourceRepository.updateFileResource(devopsEnvFileResourceE);
-            } else {
-                devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                devopsEnvFileResourceE.setResourceId(devopsIngressE.getId());
-                devopsEnvFileResourceE.setResourceType(v1beta1Ingress.getKind());
-                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-            }
-        });
+        }
+    }
+
+
+    private void handlerIngressRelations(Map<String, String> objectPath,
+                                         List<DevopsEnvFileResourceE> beforeSync,
+                                         List<V1beta1Ingress> v1beta1Ingresses,
+                                         Long envId, Long projectId,
+                                         DevopsEnvFileLogE devopsEnvFileLogE) {
+        List<String> beforeIngress = beforeSync.parallelStream()
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("Ingress"))
+                .map(devopsEnvFileResourceE -> {
+                    DevopsIngressDO devopsIngressDO = devopsIngressRepository
+                            .getIngress(devopsEnvFileResourceE.getResourceId());
+                    return devopsIngressDO.getName();
+                }).collect(Collectors.toList());
+        v1beta1Ingresses.parallelStream()
+                .filter(v1beta1Ingress -> !beforeIngress.contains(v1beta1Ingress.getMetadata().getName()))
+                .forEach(v1beta1Ingress -> {
+                    if (checkIngressAppVersion(objectPath, devopsEnvFileLogE, v1beta1Ingress)) {
+                        return;
+                    }
+                    DevopsIngressE devopsIngressE = devopsIngressRepository
+                            .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                    DevopsIngressDTO devopsIngressDTO;
+                    if (devopsIngressE == null) {
+                        devopsIngressDTO = getDevopsIngressDTO(
+                                v1beta1Ingress,
+                                envId,
+                                devopsEnvFileLogE,
+                                objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
+                        if (devopsEnvFileLogE.getMessage() != null) {
+                            return;
+                        }
+                        devopsIngressService.addIngress(devopsIngressDTO, projectId, true);
+                        devopsIngressE = devopsIngressRepository
+                                .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                    }
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                    devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                    devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
+                    devopsEnvFileResourceE.setResourceId(devopsIngressE.getId());
+                    devopsEnvFileResourceE.setResourceType(v1beta1Ingress.getKind());
+                    devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                });
+        v1beta1Ingresses.parallelStream()
+                .filter(v1beta1Ingress -> beforeIngress.contains(v1beta1Ingress.getMetadata().getName()))
+                .forEach(v1beta1Ingress -> {
+                    beforeIngress.remove(v1beta1Ingress.getMetadata().getName());
+                    if (checkIngressAppVersion(objectPath, devopsEnvFileLogE, v1beta1Ingress)) {
+                        return;
+                    }
+                    DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(
+                            v1beta1Ingress,
+                            envId,
+                            devopsEnvFileLogE,
+                            objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
+                    if (devopsEnvFileLogE.getMessage() != null) {
+                        return;
+                    }
+                    DevopsIngressE devopsIngressE = devopsIngressRepository
+                            .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                    devopsIngressService.updateIngress(devopsIngressE.getId(), devopsIngressDTO, projectId, true);
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                            .queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
+                    updateOrCreateFileResource(objectPath,
+                            envId,
+                            devopsEnvFileResourceE,
+                            v1beta1Ingress.hashCode(), devopsIngressE.getId(), v1beta1Ingress.getKind());
+                });
         beforeIngress.parallelStream().forEach(ingressName -> {
             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, ingressName);
             devopsIngressService.deleteIngress(devopsIngressE.getId(), true);
@@ -598,8 +662,24 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     }
 
+    private boolean checkIngressAppVersion(Map<String, String> objectPath,
+                                           DevopsEnvFileLogE devopsEnvFileLogE,
+                                           V1beta1Ingress v1beta1Ingress) {
+        try {
+            DevopsIngressValidator.checkAppVersion(v1beta1Ingress.getMetadata().getName());
+        } catch (Exception e) {
+            devopsEnvFileLogE.setMessage(e.getMessage());
+            devopsEnvFileLogE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
+            return true;
+        }
+        return false;
+    }
 
-    public DevopsIngressDTO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress, Long envId, DevopsEnvFileLogE devopsEnvFileLogE, String filePath) {
+
+    private DevopsIngressDTO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress,
+                                                 Long envId,
+                                                 DevopsEnvFileLogE devopsEnvFileLogE,
+                                                 String filePath) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
         );
@@ -607,7 +687,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsIngressDTO.setEnvId(envId);
         List<String> pathCheckList = new ArrayList<>();
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = new ArrayList<>();
-        for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths()) {
+        List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
+        for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
             try {
                 DevopsIngressValidator.checkPath(v1beta1HTTPIngressPath.getPath());
                 if (pathCheckList.contains(v1beta1HTTPIngressPath.getPath())) {
@@ -621,7 +702,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 return null;
             }
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-            DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(v1beta1HTTPIngressPath.getBackend().getServiceName(), devopsEnvironmentE.getCode());
+            DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
+                    v1beta1HTTPIngressPath.getBackend().getServiceName(), devopsEnvironmentE.getCode());
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
             devopsIngressPathDTO.setPath(v1beta1HTTPIngressPath.getPath());
 

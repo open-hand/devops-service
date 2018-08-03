@@ -179,8 +179,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
+    public DevopsIngressDTO getIngress(Long projectId, Long ingressId) {
+        return devopsIngressRepository.getIngress(projectId, ingressId);
+    }
+
+    @Override
     public Page<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository.getIngress(projectId, envId, pageRequest, params);
+        Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
+                .getIngress(projectId, envId, pageRequest, params);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsIngressDTOS.parallelStream().forEach(devopsIngressDTO -> {
@@ -190,12 +196,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             }
         });
         return devopsIngressDTOS;
-    }
-
-
-    @Override
-    public DevopsIngressDTO getIngress(Long projectId, Long ingressId) {
-        return devopsIngressRepository.getIngress(projectId, ingressId);
     }
 
     @Override

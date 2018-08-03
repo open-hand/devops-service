@@ -49,8 +49,13 @@ public class IDevopsIngressServiceImpl implements IDevopsIngressService {
 
     @Override
     public void deleteIngress(Long ingressId, DevopsEnvironmentE devopsEnvironmentE, Long userId) {
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
-        gitlabRepository.deleteFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), devopsEnvFileResourceE.getFilePath(), "DELETE FILE", TypeUtil.objToInteger(userId));
+        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
+        gitlabRepository.deleteFile(
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                devopsEnvFileResourceE.getFilePath(),
+                "DELETE FILE",
+                TypeUtil.objToInteger(userId));
     }
 
 

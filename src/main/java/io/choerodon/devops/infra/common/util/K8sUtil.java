@@ -179,12 +179,13 @@ public class K8sUtil {
         }
         return String.join(",", results);
     }
-        /**
-         * 获取ip
-         *
-         * @param v1beta1IngressRules ingress对象
-         * @return string
-         */
+
+    /**
+     * 获取ip
+     *
+     * @param v1beta1IngressRules ingress对象
+     * @return string
+     */
     public static String formatHosts(List<V1beta1IngressRule> v1beta1IngressRules) {
         List<String> results = new ArrayList<>();
         Integer max = 3;

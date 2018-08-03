@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.common.util;
 
-
 import io.kubernetes.client.custom.IntOrString;
 import org.yaml.snakeyaml.introspector.Property;
 import org.yaml.snakeyaml.nodes.NodeTuple;
