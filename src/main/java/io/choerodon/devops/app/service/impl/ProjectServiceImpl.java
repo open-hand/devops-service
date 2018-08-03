@@ -36,18 +36,4 @@ public class ProjectServiceImpl implements ProjectService {
         devopsProjectRepository.createProject(devopsProject);
     }
 
-    @Override
-    public Boolean groupExist(String uuid) {
-        return devopsProjectRepository.checkGroupExist(uuid);
-    }
-
-    @Override
-    public Boolean harborExist(String uuid) {
-        return devopsProjectRepository.checkHarborExist(uuid);
-    }
-
-    @Override
-    public Boolean memberExist(String uuid) {
-        return devopsProjectRepository.checkMemberExist(uuid);
-    }
 }

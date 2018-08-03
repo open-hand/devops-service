@@ -427,12 +427,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsIngressRepository.deleteIngress(devopsIngressE.getId());
                     devopsIngressRepository.deleteIngressPath(devopsIngressE.getId());
                 }
-                DevopsIngressDO domainDO = devopsIngressMapper
-                        .select(new DevopsIngressDO(KeyParseTool.getResourceName(msg))).get(0);
-                DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
-                        .queryByObject(ObjectType.INGRESS.getType(), domainDO.getId());
-                newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-                devopsEnvCommandRepository.update(newdevopsEnvCommandE);
+//                DevopsIngressDO domainDO = devopsIngressMapper
+//                        .select(new DevopsIngressDO(KeyParseTool.getResourceName(msg))).get(0);
+//                DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
+//                        .queryByObject(ObjectType.INGRESS.getType(), domainDO.getId());
+//                newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+//                devopsEnvCommandRepository.update(newdevopsEnvCommandE);
             }
 
             devopsEnvResourceRepository.deleteByKindAndName(
@@ -485,11 +485,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         saveOrUpdateResource(devopsEnvResourceE, newDevopsEnvResourceE, devopsEnvResourceDetailE, null);
         String ingressName = ingress.getMetadata().getName();
         devopsIngressRepository.setUsable(ingressName);
-        Long ingressId = devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
-        DevopsEnvCommandE commandE =
-                devopsEnvCommandRepository.queryByObject(ObjectType.INGRESS.getType(), ingressId);
-        commandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(commandE);
+        devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
+//        Long ingressId = devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
+//        DevopsEnvCommandE commandE =
+//                devopsEnvCommandRepository.queryByObject(ObjectType.INGRESS.getType(), ingressId);
+//        commandE.setStatus(CommandStatus.SUCCESS.getStatus());
+//        devopsEnvCommandRepository.update(commandE);
     }
 
     @Override
@@ -661,11 +662,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 envId, KeyParseTool.getValue(key, "Ingress"));
         devopsIngressE.setStatus(IngressStatus.FAILED.getStatus());
         devopsIngressRepository.updateIngress(ConvertHelper.convert(devopsIngressE, DevopsIngressDO.class));
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressE.getId());
-        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
-        devopsEnvCommandE.setError(msg);
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+//        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+//                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressE.getId());
+//        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
+//        devopsEnvCommandE.setError(msg);
+//        devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 
     @Override
@@ -686,11 +687,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
                 envId, KeyParseTool.getValue(key, "Ingress"));
         devopsIngressRepository.deleteIngress(devopsIngressE.getId());
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressE.getId());
-        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
-        devopsEnvCommandE.setError(msg);
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
+//        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+//                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressE.getId());
+//        devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
+//        devopsEnvCommandE.setError(msg);
+//        devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 
     @Override

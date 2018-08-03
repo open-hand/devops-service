@@ -4,7 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -457,9 +456,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsIngressPathEListTemp.forEach(ddTemp ->
                 v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
                         devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId())));
-        idevopsIngressService.createIngress(gson.toJson(v1beta1Ingress),
-                devopsIngressDO.getName(),
-                devopsEnvironmentE.getCode(), envId, newDevopsEnvCommandE.getId());
+//        idevopsIngressService.createIngress(gson.toJson(v1beta1Ingress),
+//                devopsIngressDO.getName(),
+//                devopsEnvironmentE.getCode(), envId, newDevopsEnvCommandE.getId());
     }
 
 }

@@ -39,27 +39,6 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     }
 
     @Override
-    public Boolean checkGroupExist(String uuid) {
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setGitlabUuid(uuid);
-        return devopsProjectMapper.selectCount(devopsProjectDO) > 0;
-    }
-
-    @Override
-    public Boolean checkHarborExist(String uuid) {
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setHarborUuid(uuid);
-        return devopsProjectMapper.selectCount(devopsProjectDO) > 0;
-    }
-
-    @Override
-    public Boolean checkMemberExist(String uuid) {
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setMemberUuid(uuid);
-        return devopsProjectMapper.selectCount(devopsProjectDO) > 0;
-    }
-
-    @Override
     public GitlabGroupE queryByEnvGroupId(Integer envGroupId) {
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
         devopsProjectDO.setEnvGroupId(envGroupId);

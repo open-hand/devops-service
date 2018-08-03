@@ -15,12 +15,6 @@ public interface DevopsProjectRepository {
 
     GitlabGroupE queryByGitlabGroupId(Integer gitlabGroupId);
 
-    Boolean checkGroupExist(String uuid);
-
-    Boolean checkHarborExist(String uuid);
-
-    Boolean checkMemberExist(String uuid);
-
     GitlabGroupE queryByEnvGroupId(Integer envGroupId);
 
 }

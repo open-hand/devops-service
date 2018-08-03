@@ -1,4 +1,4 @@
-package io.choerodon.devops.domain.application.handler;
+package io.choerodon.devops.domain.application.Handler;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,21 +13,18 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvFileLogE;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 
-public class IngressHandler extends SerializableHandler {
+public class C7NHelmReleaseHandler extends SerializableHandler {
 
     @Override
     public void handle(File file, String filePath, Map<String, String> objectPath, List<C7nHelmRelease> c7nHelmReleases, List<V1Service> v1Services, List<V1beta1Ingress> v1beta1Ingresses, DevopsEnvFileLogE devopsEnvFileLogE) {
         Yaml yaml = new Yaml();
-        V1beta1Ingress ingress = null;
+        C7nHelmRelease c7nHelmRelease = null;
         try {
-            ingress = yaml.loadAs(new FileInputStream(file), V1beta1Ingress.class);
+            c7nHelmRelease = yaml.loadAs(new FileInputStream(file), C7nHelmRelease.class);
         } catch (Exception e) {
-            devopsEnvFileLogE.setMessage(e.getMessage());
-            devopsEnvFileLogE.setFilePath(filePath);
+            getNext().handle(file, filePath, objectPath, c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
         }
-        if (ingress != null) {
-            objectPath.put(TypeUtil.objToString(ingress.hashCode()), filePath);
-            v1beta1Ingresses.add(ingress);
-        }
+        objectPath.put(TypeUtil.objToString(c7nHelmRelease.hashCode()), filePath);
+        c7nHelmReleases.add(c7nHelmRelease);
     }
 }
