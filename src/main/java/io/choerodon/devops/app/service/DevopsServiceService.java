@@ -73,4 +73,18 @@ public interface DevopsServiceService {
      * @return DevopsServiceDTO
      */
     DevopsServiceDTO query(Long id);
+
+    /**
+     * /**
+     * 环境总览网络查询
+     *
+     * @param projectId   项目id
+     * @param envId       环境id
+     * @param pageRequest 分页参数
+     * @param searchParam 查询参数
+     * @return Page of DevopsServiceDTO
+     */
+    Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+
+
 }

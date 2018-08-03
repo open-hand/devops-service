@@ -150,10 +150,10 @@
                     dai.`code` LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    da.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
+                    da.`name` LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.version != null and searchParam.version.size > 0'>

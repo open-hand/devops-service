@@ -193,4 +193,35 @@ public class DevopsIngressController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.domain.name.check"));
     }
+
+
+    /**
+     * 环境总览域名查询
+     *
+     * @param projectId   项目id
+     * @param envId       环境Id
+     * @param pageRequest 分页参数
+     * @param params      搜索参数
+     * @return Page
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @CustomPageRequest
+    @ApiOperation(value = "环境总览域名查询")
+    @PostMapping(value = "/{envId}/listByEnv")
+    public ResponseEntity<Page<DevopsIngressDTO>> listByEnv(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiIgnore
+            @ApiParam(value = "分页参数") PageRequest pageRequest,
+            @ApiParam(value = "envId", required = true)
+            @PathVariable(value = "envId") Long envId,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(devopsIngressService.listByEnv(projectId, envId, pageRequest, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appInstance.query"));
+    }
 }

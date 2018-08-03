@@ -23,7 +23,7 @@ public interface DevopsIngressRepository {
 
     void updateIngress(DevopsIngressDO devopsIngressDO);
 
-    Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params);
+    Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     DevopsIngressDTO getIngress(Long projectId, Long ingressId);
 

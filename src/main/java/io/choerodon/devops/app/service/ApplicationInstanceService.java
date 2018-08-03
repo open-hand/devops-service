@@ -125,4 +125,18 @@ public interface ApplicationInstanceService {
      * @return ReplaceResult
      */
     ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
+
+
+    /**
+     * 环境总览实例查询
+     *
+     * @param projectId 项目id
+     * @param envId     环境Id
+     * @param params    搜索参数
+     * @return DevopsEnvPreviewDTO
+     */
+    DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
+
+
+    DevopsEnvPreviewInstanceDTO getDevopsEnvPreviewInstance(Long envId);
 }

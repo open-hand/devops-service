@@ -77,8 +77,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public Page<DevopsServiceDTO> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam) {
+        return listByEnv(projectId, null, pageRequest, searchParam);
+    }
+
+    @Override
+    public Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
         Page<DevopsServiceV> devopsServiceByPage = devopsServiceRepository.listDevopsServiceByPage(
-                projectId, pageRequest, searchParam);
+                projectId, envId, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsServiceByPage.parallelStream().forEach(devopsServiceV -> {
@@ -90,6 +95,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return ConvertPageHelper.convertPage(devopsServiceByPage, DevopsServiceDTO.class);
     }
 
+
     @Override
     public List<DevopsServiceDTO> listDevopsService(Long envId) {
         return ConvertHelper.convertList(
@@ -100,6 +106,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public DevopsServiceDTO query(Long id) {
         return ConvertHelper.convert(devopsServiceRepository.selectById(id), DevopsServiceDTO.class);
     }
+
 
     @Override
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
