@@ -41,7 +41,6 @@
         INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
         INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         INNER JOIN devops_application da ON da.id = dai.app_id
-        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
         INNER JOIN devops_env de ON ds.env_id = de.id
         <include refid="sqlparam"/>
         ) t
@@ -66,14 +65,13 @@
         ds.external_ip,
         ds.ports,
         ds.`status`,
+        ds.labels,
         da.id AS app_id,
         da.`name` AS app_name,
         de.id AS env_id,
         de.`name` AS env_name,
         de.`code` AS namespace,
         da.project_id AS appProjectId,
-        dav.id AS app_version_id,
-        dav.version AS version,
         dsai.app_instance_id AS app_instance_id,
         dsai.`code` AS code,
         dai.`status` AS intance_status,
@@ -100,7 +98,6 @@
         INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
         INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         INNER JOIN devops_application da ON da.id = dai.app_id
-        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
         INNER JOIN devops_env de ON ds.env_id = de.id
         JOIN devops_env_command cmd ON cmd.object_id = ds.id
         JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "service" GROUP BY
@@ -113,6 +110,7 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
+        ds.labels,
         da.project_id appProjectId,
         ds. ports,
         ds.`status`,
@@ -120,8 +118,6 @@
         da.`name` AS app_name,
         de.id AS env_id,
         de.`name` AS env_name,
-        dav.id AS app_version_id,
-        dav.version AS version,
         dsai.app_instance_id AS app_instance_id,
         dsai.`code` AS code,
         dai.`status` AS intance_status
@@ -130,7 +126,6 @@
         INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
         INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         INNER JOIN devops_application da ON da.id = dai.app_id
-        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
         INNER JOIN devops_env de ON ds.env_id = de.id
         WHERE
         ds.id = #{id}
@@ -161,14 +156,11 @@
         <result property="commandStatus" column="commandStatus"/>
         <result property="commandType" column="commandType"/>
         <result property="error" column="error"/>
-        <collection property="appVersion" ofType="io.choerodon.devops.infra.dataobject.ServiceVersionDO">
-            <result column="app_version_id" property="id" jdbcType="VARCHAR"/>
-            <result column="version" property="version" jdbcType="VARCHAR"/>
-            <collection property="appInstance" ofType="io.choerodon.devops.infra.dataobject.ServiceInstanceDO">
-                <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
-                <result column="code" property="code" jdbcType="VARCHAR"/>
-                <result column="intance_status" property="intanceStatus" jdbcType="VARCHAR"/>
-            </collection>
+        <result property="labels" column="labels"/>
+        <collection property="appInstance" ofType="io.choerodon.devops.infra.dataobject.ServiceInstanceDO">
+            <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
+            <result column="code" property="code" jdbcType="VARCHAR"/>
+            <result column="instance_status" property="instanceStatus" jdbcType="VARCHAR"/>
         </collection>
     </resultMap>
 
@@ -210,12 +202,6 @@
                     ds.target_port LIKE CONCAT(CONCAT('%', #{targetPort, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.version != null and searchParam.version.size > 0'>
-                AND
-                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
             <if test='searchParam.code != null and searchParam.code.size > 0'>
                 AND
                 <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
@@ -230,7 +216,6 @@
             OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR ds.target_port LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dsai.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </sql>

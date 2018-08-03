@@ -18,7 +18,8 @@ public class DevopsServiceQueryDO {
     private String namespace;
     private Long appId;
     private String appName;
-    private List<ServiceVersionDO> appVersion;
+    private String labels;
+    private List<ServiceInstanceDO> appInstance;
 
     @Transient
     private String commandStatus;
@@ -85,12 +86,12 @@ public class DevopsServiceQueryDO {
         this.appName = appName;
     }
 
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
+    public List<ServiceInstanceDO> getAppInstance() {
+        return appInstance;
     }
 
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
+    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+        this.appInstance = appInstance;
     }
 
     public String getStatus() {
@@ -147,5 +148,13 @@ public class DevopsServiceQueryDO {
 
     public void setAppProjectId(Long appProjectId) {
         this.appProjectId = appProjectId;
+    }
+
+    public String getLabels() {
+        return labels;
+    }
+
+    public void setLabels(String labels) {
+        this.labels = labels;
     }
 }

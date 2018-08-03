@@ -1,10 +1,5 @@
 package io.choerodon.devops.api.dto;
 
-import java.util.List;
-
-import io.choerodon.devops.domain.application.entity.PortMapE;
-import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
-
 /**
  * Created by Zenger on 2018/4/19.
  */
@@ -12,8 +7,6 @@ public class DevopsServiceDTO {
 
     private Long id;
     private String name;
-    private List<String> externalIps;
-    private List<PortMapE> ports;
     private String status;
     private Long envId;
     private String envName;
@@ -24,7 +17,8 @@ public class DevopsServiceDTO {
     private String commandStatus;
     private String commandType;
     private String error;
-    private List<ServiceInstanceDO> appInstance;
+    private DevopsServiceTargetDTO target;
+    private DevopsServiceConfigDTO config;
 
     public Long getId() {
         return id;
@@ -122,27 +116,19 @@ public class DevopsServiceDTO {
         this.appProjectId = appProjectId;
     }
 
-    public List<String> getExternalIps() {
-        return externalIps;
+    public DevopsServiceTargetDTO getTarget() {
+        return target;
     }
 
-    public void setExternalIps(List<String> externalIp) {
-        this.externalIps = externalIp;
+    public void setTarget(DevopsServiceTargetDTO target) {
+        this.target = target;
     }
 
-    public List<PortMapE> getPorts() {
-        return ports;
+    public DevopsServiceConfigDTO getConfig() {
+        return config;
     }
 
-    public void setPorts(List<PortMapE> ports) {
-        this.ports = ports;
-    }
-
-    public List<ServiceInstanceDO> getAppInstance() {
-        return appInstance;
-    }
-
-    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
-        this.appInstance = appInstance;
+    public void setConfig(DevopsServiceConfigDTO config) {
+        this.config = config;
     }
 }
