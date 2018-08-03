@@ -1,12 +1,12 @@
 package io.choerodon.devops.api.validator;
 
-import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
+import io.choerodon.devops.domain.application.entity.PortMapE;
 
 /**
  * Created by Zenger on 2018/4/26.
@@ -21,12 +21,6 @@ public class DevopsServiceValidator {
     // ip,ip,ip ...
     private static final String EXTERNAL_IP_PATTERN = String.format("(%s,)*%s", IP_PATTERN, IP_PATTERN);
 
-    // positive integer
-    // port:targetPort
-    private static final String PORT_MAP_PATTERN = "[1-9]\\d*:[1-9]\\d*";
-    // port:targetPort,port:targetPort ...
-    private static final String PORTS_MAP_PATTERN = String.format("(%s,)*%s", PORT_MAP_PATTERN, PORT_MAP_PATTERN);
-
     //service name
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
 
@@ -37,11 +31,7 @@ public class DevopsServiceValidator {
      * 参数校验
      */
     public static void checkService(DevopsServiceReqDTO devopsServiceReqDTO) {
-        String ports = devopsServiceReqDTO.getPorts();
-        if (!ports.matches(PORTS_MAP_PATTERN)) {
-            throw new CommonException("error.ports.illegal");
-        }
-        Arrays.stream(ports.split(",")).forEach(DevopsServiceValidator::checkPorts);
+        devopsServiceReqDTO.getPorts().forEach(DevopsServiceValidator::checkPorts);
 
         if (!Pattern.matches(NAME_PATTERN, devopsServiceReqDTO.getName())) {
             throw new CommonException("error.network.name.notMatch");
@@ -54,18 +44,15 @@ public class DevopsServiceValidator {
         }
     }
 
-    private static void checkPorts(String ports) {
-        if (!ports.matches(PORT_MAP_PATTERN)) {
-            throw new CommonException("error.portMap.illegal");
-        }
-        String[] portMap = ports.split(":");
-        Long port = Long.parseLong(portMap[0]);
-        Long targetPort = Long.parseLong(portMap[1]);
-        if (!checkPort(targetPort)) {
+    private static void checkPorts(PortMapE port) {
+        if (!checkPort(port.getTargetPort())) {
             throw new CommonException("error.targetPort.illegal");
         }
-        if (!checkPort(port)) {
+        if (!checkPort(port.getPort())) {
             throw new CommonException("error.port.illegal");
+        }
+        if (port.getNodePort() != null && !checkPort(port.getNodePort())) {
+            throw new CommonException("error.nodePort.illegal");
         }
 
     }

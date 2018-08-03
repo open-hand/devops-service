@@ -176,18 +176,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.SERVICE.getType(), id);
             updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
-            String oldPort = devopsServiceE.getPorts();
+            List<PortMapE> oldPort = devopsServiceE.getPorts();
             if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 //查询网络对应的实例
                 List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                         devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
                 Boolean isUpdate = !devopsServiceReqDTO.getAppInstance()
-                        .retainAll(
-                                devopsServiceInstanceEList.stream()
-                                        .map(DevopsServiceAppInstanceE::getAppInstanceId)
-                                        .collect(Collectors.toList()));
+                        .retainAll(devopsServiceInstanceEList.stream()
+                                .map(DevopsServiceAppInstanceE::getAppInstanceId)
+                                .collect(Collectors.toList()));
 
-                if (!isUpdate && oldPort.equals(devopsServiceReqDTO.getPorts())
+                if (!isUpdate && oldPort.retainAll(devopsServiceReqDTO.getPorts())
                         && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
                     throw new CommonException("no change!");
                 }
@@ -279,9 +278,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     /**
      * 获取k8s service的yaml格式
      */
-    public String getServiceYaml(DevopsServiceReqDTO devopsServiceReqDTO, String namespace,
-                                 Map<String, String> labels,
-                                 Map<String, String> annotations) {
+    private String getServiceYaml(DevopsServiceReqDTO devopsServiceReqDTO, String namespace,
+                                  Map<String, String> labels,
+                                  Map<String, String> annotations) {
         V1Service service = new V1Service();
         service.setKind("Service");
         service.setApiVersion("v1");
@@ -293,14 +292,19 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         service.setMetadata(metadata);
 
         V1ServiceSpec spec = new V1ServiceSpec();
-        List<V1ServicePort> ports = new ArrayList<>();
-        V1ServicePort v1ServicePort = new V1ServicePort();
-//        // todo port
-//        v1ServicePort.setName("http");
-//        v1ServicePort.setPort(devopsServiceReqDTO.getPort().intValue());
-//        v1ServicePort.setTargetPort(new IntOrString(devopsServiceReqDTO.getTargetPort().intValue()));
-//        v1ServicePort.setProtocol("TCP");
-        ports.add(v1ServicePort);
+        List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().parallelStream()
+                .map(t -> {
+                    V1ServicePort v1ServicePort = new V1ServicePort();
+                    BeanUtils.copyProperties(t, v1ServicePort);
+                    v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
+                    if (t.getName() == null) {
+                        v1ServicePort.setName("http" + System.currentTimeMillis());
+                    }
+                    if (t.getProtocol() == null) {
+                        v1ServicePort.setProtocol("TCP");
+                    }
+                    return v1ServicePort;
+                }).collect(Collectors.toList());
 
         if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())) {
             List<String> externalIps = new ArrayList<>(

@@ -5,6 +5,8 @@ import java.util.Map;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
+import io.choerodon.devops.domain.application.entity.PortMapE;
+
 /**
  * Created by Zenger on 2018/4/13.
  */
@@ -19,7 +21,7 @@ public class DevopsServiceReqDTO {
     private String name;
     private String externalIp;
     @NotNull
-    private String ports;
+    private List<PortMapE> ports;
     @NotNull
     private List<Long> appInstance;
     private Map<String, String> label;
@@ -64,11 +66,11 @@ public class DevopsServiceReqDTO {
         this.appInstance = appInstance;
     }
 
-    public String getPorts() {
+    public List<PortMapE> getPorts() {
         return ports;
     }
 
-    public void setPorts(String ports) {
+    public void setPorts(List<PortMapE> ports) {
         this.ports = ports;
     }
 

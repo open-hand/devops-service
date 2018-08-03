@@ -201,12 +201,8 @@ public class DevopsEnvironmentE {
         this.envIdRsaPub = envIdRsaPub;
     }
 
-    public Boolean getConnected() {
+    public Boolean getConnect() {
         return isConnected;
-    }
-
-    public void setConnected(Boolean connected) {
-        isConnected = connected;
     }
 
     public Long getHookId() {
