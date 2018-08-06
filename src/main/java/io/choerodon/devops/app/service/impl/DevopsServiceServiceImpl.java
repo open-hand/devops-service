@@ -242,24 +242,23 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                                    Long serviceId) {
         StringBuilder stringBuffer = new StringBuilder();
         List<Long> appInstances = devopsServiceReqDTO.getAppInstance();
-        if (appInstances.isEmpty()) {
-            throw new CommonException("error.param.get");
+        if (appInstances != null) {
+            appInstances.forEach(appInstance -> {
+                checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
+                        null, appInstance);
+                ApplicationInstanceE applicationInstanceE =
+                        applicationInstanceRepository.selectById(appInstance);
+                if (applicationInstanceE == null) {
+                    throw new CommonException("error.instance.query");
+                }
+                DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
+                devopsServiceAppInstanceE.setServiceId(serviceId);
+                devopsServiceAppInstanceE.setAppInstanceId(appInstance);
+                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
+                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+                stringBuffer.append(applicationInstanceE.getCode()).append("+");
+            });
         }
-        appInstances.forEach(appInstance -> {
-            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                    null, appInstance);
-            ApplicationInstanceE applicationInstanceE =
-                    applicationInstanceRepository.selectById(appInstance);
-            if (applicationInstanceE == null) {
-                throw new CommonException("error.instance.query");
-            }
-            DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
-            devopsServiceAppInstanceE.setServiceId(serviceId);
-            devopsServiceAppInstanceE.setAppInstanceId(appInstance);
-            devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
-            devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
-            stringBuffer.append(applicationInstanceE.getCode()).append("+");
-        });
 
         return stringBuffer.toString().substring(0, stringBuffer.toString().lastIndexOf('+'));
     }
@@ -337,7 +336,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                        Long commandId) {
         String serviceInstances = updateServiceInstanceAndGetCode(devopsServiceReqDTO, devopsServiceE.getId());
         Map<String, String> annotations = new HashMap<>();
-        annotations.put("choerodon.io/network-service-instances", serviceInstances);
+        if (!serviceInstances.isEmpty()) {
+            annotations.put("choerodon.io/network-service-instances", serviceInstances);
+        }
 
         String serviceYaml = getServiceYaml(
                 devopsServiceReqDTO,
