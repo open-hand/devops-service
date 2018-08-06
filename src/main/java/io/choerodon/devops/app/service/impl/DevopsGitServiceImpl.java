@@ -297,7 +297,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        String url = "git@" + gitlabUrl + ":" + organization.getCode() + "-" + projectE.getCode() + "-gitops" + "/" + devopsEnvironmentE.getCode() + ".git";
+        String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         LOGGER.info(url);
         try {
             BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");

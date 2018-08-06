@@ -322,9 +322,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
         if (!gitops) {
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-            objectOperation.setT(getC7NHelmRelease(applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
+            objectOperation.setType(getC7NHelmRelease(
+                    applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.oprerationEnvGitlabFile(applicationInstanceE.getCode(), projectId, applicationDeployDTO.getType(), userAttrE.getGitlabUserId());
+            objectOperation.operationEnvGitlabFile(
+                    applicationInstanceE.getCode(),
+                    projectId,
+                    applicationDeployDTO.getType(),
+                    userAttrE.getGitlabUserId());
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
@@ -525,14 +530,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE, ApplicationVersionE applicationVersionE, ApplicationDeployDTO applicationDeployDTO, ApplicationE applicationE) {
+    private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE,
+                                             ApplicationVersionE applicationVersionE,
+                                             ApplicationDeployDTO applicationDeployDTO,
+                                             ApplicationE applicationE) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
         c7nHelmRelease.getMetadata().setCreationTimestamp(new Date());
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(FileUtil.jsonToYaml(FileUtil.yamlStringtoJson(applicationDeployDTO.getValues())));
+        c7nHelmRelease.getSpec().setValues(
+                FileUtil.jsonToYaml(FileUtil.yamlStringtoJson(applicationDeployDTO.getValues())));
         return c7nHelmRelease;
 
     }

@@ -23,10 +23,12 @@ import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
+import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
-import io.choerodon.devops.domain.service.IDevopsServiceService;
 import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
@@ -53,8 +55,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private ApplicationRepository applicationRepository;
     @Autowired
-    private IDevopsServiceService idevopsServiceService;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
@@ -66,6 +66,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private EnvListener envListener;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
@@ -136,7 +138,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
-                applicationE.getCode(),
                 devopsServiceReqDTO.getEnvId(),
                 devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         return true;
@@ -165,11 +166,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
             Long commandId = devopsEnvCommandE.getId();
 
-            updateService(devopsServiceE, devopsServiceReqDTO, applicationE.getCode(), true, commandId);
-            idevopsServiceService.delete(oldServiceName,
-                    devopsServiceE.getNamespace(),
-                    devopsServiceReqDTO.getEnvId(),
-                    commandId);
+            updateService(devopsServiceE, devopsServiceReqDTO, true, commandId);
+//            idevopsServiceService.delete(oldServiceName,
+//                    devopsServiceE.getNamespace(),
+//                    devopsServiceReqDTO.getEnvId(),
+//                    commandId);
 
             //更新域名
             List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceId(
@@ -200,7 +201,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
             updateService(devopsServiceE,
                     devopsServiceReqDTO,
-                    applicationE.getCode(),
                     false, devopsEnvCommandE.getId());
 
             //更新域名
@@ -225,11 +225,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsEnvCommandRepository.update(newdevopsEnvCommandE);
         devopsServiceRepository.update(devopsServiceE);
         //删除service
-        idevopsServiceService.delete(
-                devopsServiceE.getName(),
-                devopsServiceE.getNamespace(),
-                devopsServiceE.getEnvId(),
-                newdevopsEnvCommandE.getId());
+//        idevopsServiceService.delete(
+//                devopsServiceE.getName(),
+//                devopsServiceE.getNamespace(),
+//                devopsServiceE.getEnvId(),
+//                newdevopsEnvCommandE.getId());
     }
 
     /**
@@ -331,13 +331,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      * @param devopsServiceE      网络实例
      * @param envId               环境Id
      * @param commandId           commandId
-     * @param appCode             应用code
      */
-    public void insertOrUpdateService(DevopsServiceReqDTO devopsServiceReqDTO,
-                                      DevopsServiceE devopsServiceE,
-                                      String appCode,
-                                      Long envId,
-                                      Long commandId) {
+    private void insertOrUpdateService(DevopsServiceReqDTO devopsServiceReqDTO,
+                                       DevopsServiceE devopsServiceE,
+                                       Long envId,
+                                       Long commandId) {
         String serviceInstances = updateServiceInstanceAndGetCode(devopsServiceReqDTO, devopsServiceE.getId());
         Map<String, String> annotations = new HashMap<>();
         annotations.put("choerodon.io/network-service-instances", serviceInstances);
@@ -353,12 +351,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         appDeploy.setObjectVersionNumber(appDeploy.getObjectVersionNumber());
         appDeploy.setStatus(ServiceStatus.OPERATIING.getStatus());
         devopsServiceRepository.update(appDeploy);
-        idevopsServiceService.deploy(
-                serviceYaml,
-                devopsServiceReqDTO.getName(),
-                appDeploy.getNamespace(),
-                envId,
-                commandId);
+//        idevopsServiceService.deploy(
+//                serviceYaml,
+//                devopsServiceReqDTO.getName(),
+//                appDeploy.getNamespace(),
+//                envId,
+//                commandId);
     }
 
     /**
@@ -366,12 +364,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      *
      * @param devopsServiceE      网络实例
      * @param devopsServiceReqDTO 网络参数
-     * @param appCode             应用code
      * @param commandId           commandId
      * @param flag                标记
      */
     private void updateService(DevopsServiceE devopsServiceE, DevopsServiceReqDTO devopsServiceReqDTO,
-                               String appCode, Boolean flag, Long commandId) {
+                               Boolean flag, Long commandId) {
         if (flag) {
             devopsServiceE.setName(devopsServiceReqDTO.getName());
         }
@@ -387,7 +384,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
-                appCode, devopsServiceReqDTO.getEnvId(), commandId);
+                devopsServiceReqDTO.getEnvId(), commandId);
     }
 
     /**
@@ -454,9 +451,18 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsIngressPathEListTemp.forEach(ddTemp ->
                 v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
                         devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId())));
-//        idevopsIngressService.createIngress(gson.toJson(v1beta1Ingress),
-//                devopsIngressDO.getName(),
-//                devopsEnvironmentE.getCode(), envId, newDevopsEnvCommandE.getId());
     }
 
+    private void operateEnvGitLabFile(String serviceName,
+                                      Boolean gitOps,
+                                      Integer gitLabEnvProjectId,
+                                      V1Service service) {
+        if (!gitOps) {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+            objectOperation.setType(service);
+            objectOperation.operationEnvGitlabFile(serviceName, gitLabEnvProjectId, "update",
+                    userAttrE.getGitlabUserId());
+        }
+    }
 }

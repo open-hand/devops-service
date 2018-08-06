@@ -18,17 +18,12 @@ import io.choerodon.websocket.helper.CommandSender;
 @Service
 public class DeployServiceImpl implements DeployService {
 
-    @Autowired
-    private GitlabRepository gitlabRepository;
-    @Autowired
-    private UserAttrRepository userAttrRepository;
-    @Autowired
-    private CommandSender commandSender;
-    @Autowired
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private final CommandSender commandSender;
 
-    @Value("${services.helm.url}")
-    private String helmUrl;
+    @Autowired
+    public DeployServiceImpl(CommandSender commandSender) {
+        this.commandSender = commandSender;
+    }
 
     @Override
     public void sendCommand(DevopsEnvironmentE devopsEnvironmentE) {

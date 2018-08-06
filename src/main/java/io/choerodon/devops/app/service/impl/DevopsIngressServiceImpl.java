@@ -68,10 +68,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
-        UserAttrE userAttrE = new UserAttrE();
-        if (!gitOps) {
-            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        }
         DevopsIngressValidator.checkAppVersion(devopsIngressDTO.getName());
         String name = devopsIngressDTO.getName();
         String domain = devopsIngressDTO.getDomain();
@@ -102,27 +98,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         });
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
         devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
-//        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-//        devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
-//        devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
-//        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-//        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-//        devopsEnvCommandRepository.create(devopsEnvCommandE);
-        if (!gitOps) {
-            Integer envGitlabprojectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
-            objectOperation.setT(ingress);
-            objectOperation.oprerationEnvGitlabFile(devopsIngressDTO.getName(), envGitlabprojectId, "update", userAttrE.getGitlabUserId());
-        }
+        operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress);
     }
 
     @Override
     public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
-        UserAttrE userAttrE = new UserAttrE();
-        if (!gitOps) {
-            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        }
         DevopsIngressValidator.checkAppVersion(devopsIngressDTO.getName());
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
         if (!devopsIngressDTO.equals(ingressDTO)) {
@@ -159,19 +141,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 ingress.getSpec().getRules().get(0).getHttp()
                         .addPathsItem(createPath(t.getPath(), t.getServiceId()));
             });
-//            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-//                    .queryByObject(ObjectType.INGRESS.getType(), id);
-//            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-//            devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-//            devopsEnvCommandRepository.update(devopsEnvCommandE);
             devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
             devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
-            if (!gitOps) {
-                Integer envGitlabprojectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
-                objectOperation.setT(ingress);
-                objectOperation.oprerationEnvGitlabFile(ingressDTO.getName(), envGitlabprojectId, "update", userAttrE.getGitlabUserId());
-            }
+            operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress);
 
         }
     }
@@ -204,13 +177,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void deleteIngress(Long ingressId, boolean gitOps) {
         envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
-        UserAttrE userAttrE = new UserAttrE();
-        if (!gitOps) {
-            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        }
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
         if (!gitOps) {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
             gitlabRepository.deleteFile(
@@ -279,7 +249,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     /**
      * 获取服务
      */
-    public DevopsServiceE getDevopsService(Long id) {
+    private DevopsServiceE getDevopsService(Long id) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
         if (devopsServiceE == null) {
             throw new CommonException("error.service.select");
@@ -287,4 +257,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsServiceE;
     }
 
+    private void operateEnvGitLabFile(String ingressName,
+                                      Boolean gitOps,
+                                      Integer envGitLabProjectId,
+                                      V1beta1Ingress ingress) {
+        if (!gitOps) {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+            objectOperation.setType(ingress);
+            objectOperation.operationEnvGitlabFile(ingressName, envGitLabProjectId, "update",
+                    userAttrE.getGitlabUserId());
+        }
+    }
 }
