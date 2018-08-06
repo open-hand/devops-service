@@ -123,7 +123,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
                 null, null);
 
-        ApplicationE applicationE = getApplicationE(devopsServiceReqDTO.getAppId());
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());

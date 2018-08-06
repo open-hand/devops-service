@@ -22,7 +22,6 @@ public class DevopsServiceReqDTO {
     private String externalIp;
     @NotNull
     private List<PortMapE> ports;
-    @NotNull
     private List<Long> appInstance;
     private Map<String, String> label;
 

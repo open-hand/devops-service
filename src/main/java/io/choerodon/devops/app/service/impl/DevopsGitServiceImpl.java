@@ -339,7 +339,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsEnvFileLogRepository.create(devopsEnvFileLogE);
                 return;
             }
-            handlerObJectReleations(
+            handlerObjectReleations(
                     objectPath,
                     beforeSync,
                     c7nHelmReleases,
@@ -429,13 +429,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
         GitUtil gitUtil = new GitUtil(envIdRsa);
+        final String gitSuffix = "/.git";
+        final String repoPath = path + gitSuffix;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
-            gitUtil.checkout(path + "/.git", commit);
+            gitUtil.checkout(repoPath, commit);
         } else {
-            gitUtil.checkout(path + "/.git", "master");
-            gitUtil.pullBySsh(path + "/.git");
-            gitUtil.checkout(path + "/.git", commit);
+            gitUtil.checkout(repoPath, "master");
+            gitUtil.pullBySsh(repoPath);
+            gitUtil.checkout(repoPath, commit);
         }
     }
 
@@ -456,7 +458,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private void handlerObJectReleations(Map<String, String> objectPath,
+    private void handlerObjectReleations(Map<String, String> objectPath,
                                          List<DevopsEnvFileResourceE> beforeSync,
                                          List<C7nHelmRelease> c7nHelmReleases,
                                          List<V1Service> v1Services,
@@ -465,6 +467,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                          DevopsEnvFileLogE devopsEnvFileLogE) {
         handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId, devopsEnvFileLogE);
         handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId, devopsEnvFileLogE);
+//        handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId, devopsEnvFileLogE);
     }
 
     private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
