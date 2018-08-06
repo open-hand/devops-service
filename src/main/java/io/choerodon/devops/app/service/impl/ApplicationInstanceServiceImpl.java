@@ -21,7 +21,9 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory;
+import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
@@ -46,10 +48,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String RELEASE_NAME = "ReleaseName";
 
     private static Gson gson = new Gson();
-
+    @Autowired
+    DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Value("${agent.version}")
     private String agentExpectVersion;
-
+    @Value("${services.helm.url}")
+    private String helmUrl;
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
@@ -81,7 +85,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvPodRepository devopsEnvPodRepository;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
-
+    @Autowired
+    private GitlabRepository gitlabRepository;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -316,13 +321,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationInstanceRepository.update(applicationInstanceE);
         }
         if (!gitops) {
-            deployService.deploy(
-                    applicationE,
-                    applicationVersionE,
-                    applicationInstanceE,
-                    devopsEnvironmentE,
-                    applicationDeployDTO.getValues(), applicationDeployDTO.getType(),
-                    userAttrE.getGitlabUserId());
+            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+            objectOperation.setT(getC7NHelmRelease(applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
+            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+            objectOperation.oprerationEnvGitlabFile(applicationInstanceE.getCode(), projectId, applicationDeployDTO.getType(), userAttrE.getGitlabUserId());
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
@@ -443,7 +445,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
         if (!gitops) {
-            deployService.delete(instanceE, devopsEnvironmentE, userAttrE.getGitlabUserId());
+            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                    .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, "C7NHelmRelease");
+            gitlabRepository.deleteFile(
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                    devopsEnvFileResourceE.getFilePath(),
+                    "DELETE FILE",
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
 
 
@@ -514,5 +522,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                             return envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())
                                     && agentExpectVersion.compareTo(envSession.getVersion()) < 1;
                         })));
+    }
+
+
+    private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE, ApplicationVersionE applicationVersionE, ApplicationDeployDTO applicationDeployDTO, ApplicationE applicationE) {
+        C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
+        c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
+        c7nHelmRelease.getMetadata().setCreationTimestamp(new Date());
+        c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
+        c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
+        c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
+        c7nHelmRelease.getSpec().setValues(FileUtil.jsonToYaml(FileUtil.yamlStringtoJson(applicationDeployDTO.getValues())));
+        return c7nHelmRelease;
+
     }
 }

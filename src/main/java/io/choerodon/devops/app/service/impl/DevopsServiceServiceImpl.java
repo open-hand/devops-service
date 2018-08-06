@@ -25,7 +25,6 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
-import io.choerodon.devops.domain.service.IDevopsIngressService;
 import io.choerodon.devops.domain.service.IDevopsServiceService;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
@@ -63,8 +62,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsIngressRepository devopsIngressRepository;
     @Autowired
     private DevopsIngressService devopsIngressService;
-    @Autowired
-    private IDevopsIngressService idevopsIngressService;
     @Autowired
     private EnvListener envListener;
     @Autowired
