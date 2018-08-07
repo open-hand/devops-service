@@ -873,15 +873,17 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         Map<String, String> fileError = new HashMap<>();
         List<DevopsEnvFileE> errorDevopsFiles = new ArrayList<>();
-        gitOpsSync.getMetadata().getErrors().parallelStream().forEach(error -> {
-            List<DevopsEnvFileE> devopsFiles = devopsEnvFileRepository.listByEnvIdAndPath(envId, error.getPath());
-            if (fileError.containsKey(error.getPath())) {
-                fileError.put(error.getPath(), fileError.get(error.getPath()) + ":" + error.getError());
-            } else {
-                fileError.put(error.getPath(), error.getError());
-            }
-            errorDevopsFiles.addAll(devopsFiles);
-        });
+        if(gitOpsSync.getMetadata().getErrors()!=null) {
+            gitOpsSync.getMetadata().getErrors().parallelStream().forEach(error -> {
+                List<DevopsEnvFileE> devopsFiles = devopsEnvFileRepository.listByEnvIdAndPath(envId, error.getPath());
+                if (fileError.containsKey(error.getPath())) {
+                    fileError.put(error.getPath(), fileError.get(error.getPath()) + ":" + error.getError());
+                } else {
+                    fileError.put(error.getPath(), error.getError());
+                }
+                errorDevopsFiles.addAll(devopsFiles);
+            });
+        }
         gitOpsSync.getResourceIDs().parallelStream().forEach(object -> {
                     String[] objects = object.split("\\/");
                     if (objects[0].equals("c7nhelmrelease")) {
