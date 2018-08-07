@@ -1,12 +1,15 @@
 package io.choerodon.devops.domain.application.entity;
 
-public class DevopsEnvFileLogE {
+import java.util.Date;
+
+public class DevopsEnvCommitE {
+
 
     private Long id;
     private Long envId;
-    private String filePath;
     private String commitSha;
-    private String message;
+    private Long commitUser;
+    private Date commitDate;
 
 
     public Long getId() {
@@ -25,14 +28,6 @@ public class DevopsEnvFileLogE {
         this.envId = envId;
     }
 
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
     public String getCommitSha() {
         return commitSha;
     }
@@ -41,11 +36,19 @@ public class DevopsEnvFileLogE {
         this.commitSha = commitSha;
     }
 
-    public String getMessage() {
-        return message;
+    public Long getCommitUser() {
+        return commitUser;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setCommitUser(Long commitUser) {
+        this.commitUser = commitUser;
+    }
+
+    public Date getCommitDate() {
+        return commitDate;
+    }
+
+    public void setCommitDate(Date commitDate) {
+        this.commitDate = commitDate;
     }
 }

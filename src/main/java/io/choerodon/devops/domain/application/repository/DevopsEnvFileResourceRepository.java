@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
 
 /**
@@ -20,7 +22,7 @@ public interface DevopsEnvFileResourceRepository {
 
     DevopsEnvFileResourceE queryByEnvIdAndResource(Long envId, Long resourceId, String resourceType);
 
-    DevopsEnvFileResourceE queryByEnvIdAndPath(Long envId, String path);
+    List<DevopsEnvFileResourceE> queryByEnvIdAndPath(Long envId, String path);
 
     void deleteByEnvIdAndResource(Long envId, Long resourceId, String resourceType);
 

@@ -225,13 +225,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setId(devopsEnvCommandE.getId());
-        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
-                applicationVersionRepository.queryValue(applicationInstanceE.getApplicationVersionE().getId()),
-                releasePayload.getConfig()));
-        devopsEnvCommandE.initDevopsEnvCommandValueE(
-                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
         installResource(resources, applicationInstanceE);
     }
@@ -243,18 +236,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             return;
         }
         List<Job> jobs = JSONArray.parseArray(msg, Job.class);
-        ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+        ApplicationInstanceE applicationInstanceE;
         try {
             for (Job job : jobs) {
                 applicationInstanceE = applicationInstanceRepository
                         .selectByCode(job.getReleaseName(), envId);
-                if (type.equals("update")) {
-                    applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-                    applicationInstanceRepository.update(applicationInstanceE);
-                    devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-                }
                 DevopsEnvResourceE newdevopsEnvResourceE =
                         devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                 applicationInstanceE.getId(),
@@ -275,10 +261,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         devopsEnvResourceDetailE,
                         applicationInstanceE);
             }
-            devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
-            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
         } catch (Exception e) {
             throw new CommonException("error.resource.insert");
         }

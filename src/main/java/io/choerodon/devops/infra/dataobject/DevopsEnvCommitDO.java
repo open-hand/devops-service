@@ -1,24 +1,26 @@
 package io.choerodon.devops.infra.dataobject;
 
+
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 
 @ModifyAudit
-@Table(name = "devops_env_file_log")
+@Table(name = "devops_env_commit")
 @VersionAudit
-public class DevopsEnvFileLogDO {
+public class DevopsEnvCommitDO {
 
     @Id
     @GeneratedValue
     private Long id;
     private Long envId;
-    private String filePath;
     private String commitSha;
-    private String message;
+    private Long commitUser;
+    private Date commitDate;
 
 
     public Long getId() {
@@ -37,14 +39,6 @@ public class DevopsEnvFileLogDO {
         this.envId = envId;
     }
 
-    public String getFilePath() {
-        return filePath;
-    }
-
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
-
     public String getCommitSha() {
         return commitSha;
     }
@@ -53,11 +47,19 @@ public class DevopsEnvFileLogDO {
         this.commitSha = commitSha;
     }
 
-    public String getMessage() {
-        return message;
+    public Long getCommitUser() {
+        return commitUser;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setCommitUser(Long commitUser) {
+        this.commitUser = commitUser;
+    }
+
+    public Date getCommitDate() {
+        return commitDate;
+    }
+
+    public void setCommitDate(Date commitDate) {
+        this.commitDate = commitDate;
     }
 }

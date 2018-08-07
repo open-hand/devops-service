@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -61,12 +63,12 @@ public class DevopsEnvFileResourceRepositoryImpl implements DevopsEnvFileResourc
     }
 
     @Override
-    public DevopsEnvFileResourceE queryByEnvIdAndPath(Long envId, String path) {
+    public List<DevopsEnvFileResourceE> queryByEnvIdAndPath(Long envId, String path) {
         DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO();
         devopsEnvFileResourceDO.setEnvId(envId);
         devopsEnvFileResourceDO.setFilePath(path);
-        return ConvertHelper.convert(
-                devopsEnvFileResourceMapper.selectOne(devopsEnvFileResourceDO), DevopsEnvFileResourceE.class);
+        return ConvertHelper.convertList(
+                devopsEnvFileResourceMapper.select(devopsEnvFileResourceDO), DevopsEnvFileResourceE.class);
     }
 
     @Override

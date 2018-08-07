@@ -303,8 +303,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceE.initApplicationVersionEById(applicationDeployDTO.getAppVerisonId());
         applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
+        applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         if (applicationDeployDTO.getType().equals("create")) {
-            applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
             if (!gitops) {
                 applicationInstanceE.setCode(
                         String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
@@ -314,18 +316,29 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
         }
         if (applicationDeployDTO.getType().equals("update")) {
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
             ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
                     applicationDeployDTO.getAppInstanceId());
             applicationInstanceE.setCode(newApplicationInstanceE.getCode());
             applicationInstanceE.setId(applicationDeployDTO.getAppInstanceId());
             applicationInstanceRepository.update(applicationInstanceE);
         }
+        devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
+        devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
+        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
+                applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                applicationDeployDTO.getValues()));
+        devopsEnvCommandE.initDevopsEnvCommandValueE(
+                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
         if (!gitops) {
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
                     applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
+            objectOperation.oprerationEnvGitlabFile(
                     applicationInstanceE.getCode(),
                     projectId,
                     applicationDeployDTO.getType(),
@@ -520,12 +533,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                                              ApplicationE applicationE) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
-        c7nHelmRelease.getMetadata().setCreationTimestamp(new Date());
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(
-                FileUtil.jsonToYaml(FileUtil.yamlStringtoJson(applicationDeployDTO.getValues())));
+        c7nHelmRelease.getSpec().setValues(FileUtil.getChangeYaml(
+                applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                applicationDeployDTO.getValues()));
         return c7nHelmRelease;
 
     }

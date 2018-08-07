@@ -1,12 +1,26 @@
-package io.choerodon.devops.api.dto;
+package io.choerodon.devops.infra.dataobject;
 
-public class DevopsEnvFileLogDTO {
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Table;
 
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+
+@ModifyAudit
+@Table(name = "devops_env_file")
+@VersionAudit
+public class DevopsEnvFileDO {
+
+    @Id
+    @GeneratedValue
     private Long id;
     private Long envId;
     private String filePath;
     private String commitSha;
     private String message;
+    private boolean isSync;
+
 
     public Long getId() {
         return id;
@@ -46,5 +60,13 @@ public class DevopsEnvFileLogDTO {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public boolean isSync() {
+        return isSync;
+    }
+
+    public void setSync(boolean sync) {
+        isSync = sync;
     }
 }

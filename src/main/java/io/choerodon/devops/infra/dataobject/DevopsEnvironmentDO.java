@@ -29,6 +29,9 @@ public class DevopsEnvironmentDO {
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
+    private Long gitCommit;
+    private Long devopsSyncCommit;
+    private Long agentSyncCommit;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -142,5 +145,29 @@ public class DevopsEnvironmentDO {
 
     public void setHookId(Long hookId) {
         this.hookId = hookId;
+    }
+
+    public Long getGitCommit() {
+        return gitCommit;
+    }
+
+    public void setGitCommit(Long gitCommit) {
+        this.gitCommit = gitCommit;
+    }
+
+    public Long getDevopsSyncCommit() {
+        return devopsSyncCommit;
+    }
+
+    public void setDevopsSyncCommit(Long devopsSyncCommit) {
+        this.devopsSyncCommit = devopsSyncCommit;
+    }
+
+    public Long getAgentSyncCommit() {
+        return agentSyncCommit;
+    }
+
+    public void setAgentSyncCommit(Long agentSyncCommit) {
+        this.agentSyncCommit = agentSyncCommit;
     }
 }
