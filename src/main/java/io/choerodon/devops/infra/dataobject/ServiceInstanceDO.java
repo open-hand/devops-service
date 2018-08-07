@@ -7,7 +7,7 @@ public class ServiceInstanceDO {
 
     private String id;
     private String code;
-    private String intanceStatus;
+    private String instanceStatus;
 
     public String getId() {
         return id;
@@ -25,11 +25,11 @@ public class ServiceInstanceDO {
         this.code = code;
     }
 
-    public String getIntanceStatus() {
-        return intanceStatus;
+    public String getInstanceStatus() {
+        return instanceStatus;
     }
 
-    public void setIntanceStatus(String intanceStatus) {
-        this.intanceStatus = intanceStatus;
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
     }
 }

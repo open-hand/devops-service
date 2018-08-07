@@ -21,7 +21,7 @@ public interface DevopsIngressService {
      * @param devopsIngressDTO 域名参数
      * @param projectId        项目Id
      */
-    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitops);
 
     /**
      * 项目下更新域名
@@ -30,7 +30,7 @@ public interface DevopsIngressService {
      * @param devopsIngressDTO 域名参数
      * @param projectId        项目Id
      */
-    void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitops);
 
     /**
      * 项目下查询域
@@ -56,7 +56,7 @@ public interface DevopsIngressService {
      *
      * @param ingressId 域名Id
      */
-    void deleteIngress(Long ingressId);
+    void deleteIngress(Long ingressId, boolean gitops);
 
     /**
      * 检查域名唯一性

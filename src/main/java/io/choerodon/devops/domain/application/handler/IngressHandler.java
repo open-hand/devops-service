@@ -9,7 +9,6 @@ import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.yaml.snakeyaml.Yaml;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileLogE;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -25,10 +24,10 @@ public class IngressHandler extends SerializableHandler {
         } catch (Exception e) {
             devopsEnvFileLogE.setMessage(e.getMessage());
             devopsEnvFileLogE.setFilePath(filePath);
-            throw new CommonException("error.file.serializable");
         }
-        objectPath.put(TypeUtil.objToString(v1beta1Ingresses.hashCode()), filePath);
-        v1beta1Ingresses.add(ingress);
-
+        if (ingress != null) {
+            objectPath.put(TypeUtil.objToString(ingress.hashCode()), filePath);
+            v1beta1Ingresses.add(ingress);
+        }
     }
 }

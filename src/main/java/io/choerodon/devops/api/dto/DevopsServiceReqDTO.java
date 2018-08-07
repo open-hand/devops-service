@@ -14,7 +14,6 @@ public class DevopsServiceReqDTO {
 
     @NotNull
     private Long envId;
-    @NotNull
     private Long appId;
     @NotNull
     @Size(min = 1, max = 64, message = "error.name.size")
@@ -22,7 +21,6 @@ public class DevopsServiceReqDTO {
     private String externalIp;
     @NotNull
     private List<PortMapE> ports;
-    @NotNull
     private List<Long> appInstance;
     private Map<String, String> label;
 

@@ -18,14 +18,9 @@ public class DevopsServiceQueryDO {
     private String namespace;
     private Long appId;
     private String appName;
-    private List<ServiceVersionDO> appVersion;
+    private String labels;
+    private List<ServiceInstanceDO> appInstance;
 
-    @Transient
-    private String commandStatus;
-    @Transient
-    private String commandType;
-    @Transient
-    private String error;
     @Transient
     private Long appProjectId;
 
@@ -85,12 +80,12 @@ public class DevopsServiceQueryDO {
         this.appName = appName;
     }
 
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
+    public List<ServiceInstanceDO> getAppInstance() {
+        return appInstance;
     }
 
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
+    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+        this.appInstance = appInstance;
     }
 
     public String getStatus() {
@@ -109,30 +104,6 @@ public class DevopsServiceQueryDO {
         this.namespace = namespace;
     }
 
-    public String getCommandStatus() {
-        return commandStatus;
-    }
-
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
-    }
-
-    public String getCommandType() {
-        return commandType;
-    }
-
-    public void setCommandType(String commandType) {
-        this.commandType = commandType;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-
     public String getPorts() {
         return ports;
     }
@@ -147,5 +118,13 @@ public class DevopsServiceQueryDO {
 
     public void setAppProjectId(Long appProjectId) {
         this.appProjectId = appProjectId;
+    }
+
+    public String getLabels() {
+        return labels;
+    }
+
+    public void setLabels(String labels) {
+        this.labels = labels;
     }
 }

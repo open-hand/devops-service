@@ -17,10 +17,6 @@ public class DevopsProjectDO {
     private Integer gitlabGroupId;
     private Integer envGroupId;
 
-    private String gitlabUuid;
-    private String harborUuid;
-    private String memberUuid;
-
     public DevopsProjectDO() {
 
     }
@@ -43,30 +39,6 @@ public class DevopsProjectDO {
 
     public void setGitlabGroupId(Integer gitlabGroupId) {
         this.gitlabGroupId = gitlabGroupId;
-    }
-
-    public String getGitlabUuid() {
-        return gitlabUuid;
-    }
-
-    public void setGitlabUuid(String gitlabUuid) {
-        this.gitlabUuid = gitlabUuid;
-    }
-
-    public String getHarborUuid() {
-        return harborUuid;
-    }
-
-    public void setHarborUuid(String harborUuid) {
-        this.harborUuid = harborUuid;
-    }
-
-    public String getMemberUuid() {
-        return memberUuid;
-    }
-
-    public void setMemberUuid(String memberUuid) {
-        this.memberUuid = memberUuid;
     }
 
     public Integer getEnvGroupId() {

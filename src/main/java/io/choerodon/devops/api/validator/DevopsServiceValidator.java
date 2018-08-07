@@ -32,15 +32,17 @@ public class DevopsServiceValidator {
      */
     public static void checkService(DevopsServiceReqDTO devopsServiceReqDTO) {
         devopsServiceReqDTO.getPorts().forEach(DevopsServiceValidator::checkPorts);
-
-        if (!Pattern.matches(NAME_PATTERN, devopsServiceReqDTO.getName())) {
-            throw new CommonException("error.network.name.notMatch");
-        }
-
+        checkName(devopsServiceReqDTO.getName());
         if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
                 && !Pattern.matches(EXTERNAL_IP_PATTERN, devopsServiceReqDTO.getExternalIp())) {
             throw new CommonException("error.externalIp.notMatch");
 
+        }
+    }
+
+    public static void checkName(String name) {
+        if (!Pattern.matches(NAME_PATTERN, name)) {
+            throw new CommonException("error.network.name.notMatch");
         }
     }
 

@@ -16,20 +16,16 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.DevopsServiceE;
-import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.domain.service.IDevopsIngressService;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.handler.ObjectOperation;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.IngressStatus;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -50,9 +46,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     private static JSON json = new JSON();
 
-
-    @Autowired
-    private IDevopsIngressService idevopsIngressService;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
     @Autowired
@@ -65,11 +58,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private EnvListener envListener;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
 
     @Override
-    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
+    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
-        DevopsIngressValidator.checkAppVersion(devopsIngressDTO.getName());
+        DevopsIngressValidator.checkIngressName(devopsIngressDTO.getName());
         String name = devopsIngressDTO.getName();
         String domain = devopsIngressDTO.getDomain();
         Long envId = devopsIngressDTO.getEnvId();
@@ -99,22 +98,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         });
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
         devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
-        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-        devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
-        devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
-        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        idevopsIngressService.createIngress(json.serialize(ingress),
-                name,
-                devopsEnvironmentE.getCode(),
-                devopsIngressDTO.getEnvId(),
-                devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, true);
     }
 
     @Override
-    public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
+    public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
-        DevopsIngressValidator.checkAppVersion(devopsIngressDTO.getName());
+        DevopsIngressValidator.checkIngressName(devopsIngressDTO.getName());
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
         if (!devopsIngressDTO.equals(ingressDTO)) {
             String name = devopsIngressDTO.getName();
@@ -150,23 +141,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 ingress.getSpec().getRules().get(0).getHttp()
                         .addPathsItem(createPath(t.getPath(), t.getServiceId()));
             });
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INGRESS.getType(), id);
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-            devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-            devopsEnvCommandRepository.update(devopsEnvCommandE);
-            if (!ingressDTO.getName().equals(name)) {
-                idevopsIngressService.deleteIngress(
-                        ingressDTO.getName(),
-                        devopsEnvironmentE.getCode(),
-                        devopsEnvironmentE.getId(),
-                        devopsEnvCommandE.getId());
-            }
             devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
             devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
-            idevopsIngressService.createIngress(json.serialize(ingress),
-                    name, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvCommandE.getId());
-
+            operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, false);
         }
     }
 
@@ -176,8 +154,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
+    public DevopsIngressDTO getIngress(Long projectId, Long ingressId) {
+        return devopsIngressRepository.getIngress(projectId, ingressId);
+    }
+
+    @Override
     public Page<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
-        Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository.getIngress(projectId, envId, pageRequest, params);
+        Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
+                .getIngress(projectId, envId, pageRequest, params);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsIngressDTOS.parallelStream().forEach(devopsIngressDTO -> {
@@ -189,27 +173,21 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsIngressDTOS;
     }
 
-
     @Override
-    public DevopsIngressDTO getIngress(Long projectId, Long ingressId) {
-        return devopsIngressRepository.getIngress(projectId, ingressId);
-    }
-
-    @Override
-    public void deleteIngress(Long ingressId) {
+    public void deleteIngress(Long ingressId, boolean gitOps) {
         envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getType(), ingressId);
-        devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
-        idevopsIngressService.deleteIngress(
-                ingressDO.getName(),
-                devopsEnvironmentE.getCode(),
-                devopsEnvironmentE.getId(),
-                devopsEnvCommandE.getId());
+        if (!gitOps) {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                    .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
+            gitlabRepository.deleteFile(
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                    devopsEnvFileResourceE.getFilePath(),
+                    "DELETE FILE",
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        }
     }
 
     @Override
@@ -228,7 +206,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         V1beta1HTTPIngressPath path = new V1beta1HTTPIngressPath();
         V1beta1IngressBackend backend = new V1beta1IngressBackend();
         backend.setServiceName(devopsServiceE.getName().toLowerCase());
-        backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort().intValue()));
+        if (devopsServiceE.getPorts() == null) {
+            backend.setServicePort(new IntOrString(""));
+        } else {
+            backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort().intValue()));
+        }
         path.setBackend(backend);
         path.setPath(hostPath);
         return path;
@@ -266,7 +248,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     /**
      * 获取服务
      */
-    public DevopsServiceE getDevopsService(Long id) {
+    private DevopsServiceE getDevopsService(Long id) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
         if (devopsServiceE == null) {
             throw new CommonException("error.service.select");
@@ -274,4 +256,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsServiceE;
     }
 
+    private void operateEnvGitLabFile(String ingressName,
+                                      Boolean gitOps,
+                                      Integer envGitLabProjectId,
+                                      V1beta1Ingress ingress,
+                                      Boolean isCreate) {
+        if (!gitOps) {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+            objectOperation.setType(ingress);
+            objectOperation.operationEnvGitlabFile(ingressName, envGitLabProjectId, isCreate ?"create":"update",
+                    userAttrE.getGitlabUserId());
+        }
+    }
 }

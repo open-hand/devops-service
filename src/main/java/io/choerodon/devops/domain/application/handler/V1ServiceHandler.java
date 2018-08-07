@@ -29,7 +29,9 @@ public class V1ServiceHandler extends SerializableHandler {
             getNext().handle(file, filePath, objectPath,
                     c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
         }
-        objectPath.put(TypeUtil.objToString(v1Service.hashCode()), filePath);
-        v1Services.add(v1Service);
+        if (v1Service != null) {
+            objectPath.put(TypeUtil.objToString(v1Service.hashCode()), filePath);
+            v1Services.add(v1Service);
+        }
     }
 }

@@ -1,9 +1,10 @@
 package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.domain.application.entity.PortMapE;
-import io.choerodon.devops.infra.dataobject.ServiceVersionDO;
+import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -22,10 +23,8 @@ public class DevopsServiceV {
     private Long appId;
     private Long appProjectId;
     private String appName;
-    private String commandStatus;
-    private String commandType;
-    private String error;
-    private List<ServiceVersionDO> appVersion;
+    private Map<String, String> labels;
+    private List<ServiceInstanceDO> appInstance;
 
     public Long getId() {
         return id;
@@ -83,12 +82,12 @@ public class DevopsServiceV {
         this.appName = appName;
     }
 
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
+    public List<ServiceInstanceDO> getAppInstance() {
+        return appInstance;
     }
 
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
+    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+        this.appInstance = appInstance;
     }
 
     public String getStatus() {
@@ -115,30 +114,6 @@ public class DevopsServiceV {
         this.namespace = namespace;
     }
 
-    public String getCommandStatus() {
-        return commandStatus;
-    }
-
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
-    }
-
-    public String getCommandType() {
-        return commandType;
-    }
-
-    public void setCommandType(String commandType) {
-        this.commandType = commandType;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-
     public List<PortMapE> getPorts() {
         return ports;
     }
@@ -153,5 +128,13 @@ public class DevopsServiceV {
 
     public void setAppProjectId(Long appProjectId) {
         this.appProjectId = appProjectId;
+    }
+
+    public Map<String, String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
     }
 }

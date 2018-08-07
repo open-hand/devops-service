@@ -20,7 +20,7 @@ public class DevopsIngressValidator {
     /**
      * 参数校验
      */
-    public static void checkAppVersion(String name) {
+    public static void checkIngressName(String name) {
         if (!Pattern.matches(NAME_PATTERN, name)) {
             throw new CommonException("error.ingress.name.notMatch");
         }

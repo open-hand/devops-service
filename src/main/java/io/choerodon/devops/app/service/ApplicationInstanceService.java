@@ -94,14 +94,6 @@ public interface ApplicationInstanceService {
     void instanceDelete(Long instanceId, boolean gitops);
 
     /**
-     * 实例回滚
-     *
-     * @param version    版本
-     * @param instanceId 实例id
-     */
-    void instanceRollback(Integer version, Long instanceId);
-
-    /**
      * 获取部署 Value
      *
      * @param instanceId 实例id

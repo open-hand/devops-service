@@ -30,7 +30,9 @@ public class C7NHelmReleaseHandler extends SerializableHandler {
             getNext().handle(file, filePath, objectPath,
                     c7nHelmReleases, v1Services, v1beta1Ingresses, devopsEnvFileLogE);
         }
-        objectPath.put(TypeUtil.objToString(c7nHelmRelease.hashCode()), filePath);
-        c7nHelmReleases.add(c7nHelmRelease);
+        if (c7nHelmRelease != null) {
+            objectPath.put(TypeUtil.objToString(c7nHelmRelease.hashCode()), filePath);
+            c7nHelmReleases.add(c7nHelmRelease);
+        }
     }
 }
