@@ -175,7 +175,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceId(
                     devopsServiceE.getEnvId(), devopsServiceE.getId());
             devopsIngressPathEList.forEach((DevopsIngressPathE dd) ->
-                    updateIngressPath(dd, serviceName, devopsServiceReqDTO.getEnvId()));
+                    updateIngressPath(dd, serviceName));
         } else {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.SERVICE.getType(), id);
@@ -206,7 +206,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             if (!oldPort.equals(devopsServiceReqDTO.getPorts())) {
                 List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceId(
                         devopsServiceE.getEnvId(), devopsServiceE.getId());
-                devopsIngressPathEList.forEach(t -> updateIngressPath(t, null, devopsServiceReqDTO.getEnvId()));
+                devopsIngressPathEList.forEach(t -> updateIngressPath(t, null));
             }
         }
         return true;
@@ -267,7 +267,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         String instancesCode = stringBuffer.toString();
         if (instancesCode.endsWith("+")) {
-            instancesCode.substring(0, stringBuffer.toString().lastIndexOf('+'));
+            return instancesCode.substring(0, stringBuffer.toString().lastIndexOf('+'));
         }
         return instancesCode;
     }
@@ -305,9 +305,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().parallelStream()
                 .map(t -> {
                     V1ServicePort v1ServicePort = new V1ServicePort();
-                    v1ServicePort.setNodePort(t.getNodePort().intValue());
-                    v1ServicePort.setPort(t.getPort().intValue());
-                    v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
+                    if (t.getNodePort() != null) {
+                        v1ServicePort.setNodePort(t.getNodePort().intValue());
+                    }
+                    if (t.getPort() != null) {
+                        v1ServicePort.setPort(t.getPort().intValue());
+                    }
+                    if (t.getTargetPort() != null) {
+                        v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
+                    }
                     v1ServicePort.setName(t.getName() == null ? "http" + System.currentTimeMillis() : t.getName());
                     v1ServicePort.setProtocol(t.getProtocol() == null ? "TCP" : t.getProtocol());
                     return v1ServicePort;
@@ -428,7 +434,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 
-    private void updateIngressPath(DevopsIngressPathE devopsIngressPathE, String serviceName, Long envId) {
+    private void updateIngressPath(DevopsIngressPathE devopsIngressPathE, String serviceName) {
         DevopsIngressDO devopsIngressDO = devopsIngressRepository
                 .getIngress(devopsIngressPathE.getDevopsIngressE().getId());
 
