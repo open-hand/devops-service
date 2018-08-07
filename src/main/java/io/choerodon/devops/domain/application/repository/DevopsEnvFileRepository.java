@@ -10,9 +10,16 @@ public interface DevopsEnvFileRepository {
 
     List<DevopsEnvFileE> listByEnvId(Long envId);
 
-    DevopsEnvFileE queryByEnvAndPath(Long envId, String path);
+    DevopsEnvFileE queryByEnvAndPathAndCommit(Long envId, String path, String commit);
+
+    DevopsEnvFileE queryByEnvAndPathAndCommits(Long envId, String path, List<String> commits);
+
+    DevopsEnvFileE queryLatestByEnvAndPath(Long envId, String path);
 
     void update(DevopsEnvFileE devopsEnvFileE);
 
     void delete(DevopsEnvFileE devopsEnvFileE);
+
+    List<DevopsEnvFileE> listByEnvIdAndPath(Long envId, String path);
+
 }

@@ -7,10 +7,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file.groovy') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }
-
-            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境 ID ') {
-                constraints(unique: true)
-            }
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境 ID ')
             column(name: 'file_path', type: 'VARCHAR(512)', remarks: '文件路径')
             column(name: 'commit_sha', type: 'VARCHAR(100)', remarks: '提交')
             column(name: 'message', type: 'VARCHAR(2000)', remarks: '报错信息')

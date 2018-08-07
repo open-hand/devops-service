@@ -1,6 +1,9 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -9,6 +12,8 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvCommitReposito
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommitDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommitMapper;
 
+
+@Component
 public class DevopsEnvCommitRepositoryImpl implements DevopsEnvCommitRepository {
 
     @Autowired
@@ -23,4 +28,26 @@ public class DevopsEnvCommitRepositoryImpl implements DevopsEnvCommitRepository 
         }
         return ConvertHelper.convert(devopsEnvCommitDO, DevopsEnvCommitE.class);
     }
+
+
+    @Override
+    public DevopsEnvCommitE queryByEnvIdAndCommit(Long envId, String commit) {
+        DevopsEnvCommitDO devopsEnvCommitDO = new DevopsEnvCommitDO();
+        devopsEnvCommitDO.setEnvId(envId);
+        devopsEnvCommitDO.setCommitSha(commit);
+        return ConvertHelper.convert(devopsEnvCommitMapper.selectOne(devopsEnvCommitDO), DevopsEnvCommitE.class);
+    }
+
+    @Override
+    public DevopsEnvCommitE query(Long id) {
+        return ConvertHelper.convert(devopsEnvCommitMapper.selectByPrimaryKey(id), DevopsEnvCommitE.class);
+    }
+
+    @Override
+    public List<DevopsEnvCommitE> listByEnvId(Long envId) {
+        DevopsEnvCommitDO devopsEnvCommitDO = new DevopsEnvCommitDO();
+        devopsEnvCommitDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsEnvCommitMapper.select(devopsEnvCommitDO), DevopsEnvCommitE.class);
+    }
+
 }

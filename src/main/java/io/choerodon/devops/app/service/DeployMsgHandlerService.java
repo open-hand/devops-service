@@ -54,4 +54,6 @@ public interface DeployMsgHandlerService {
     void jobEvent(String key, String msg, Long envId);
 
     void releasePodEvent(String key, String msg, Long envId);
+
+    void gitOpsSyncEvent(Long envId, String msg);
 }

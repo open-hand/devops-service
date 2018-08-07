@@ -306,7 +306,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         if (applicationDeployDTO.getType().equals("create")) {
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
             if (!gitops) {
                 applicationInstanceE.setCode(
                         String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
@@ -316,13 +315,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
         }
         if (applicationDeployDTO.getType().equals("update")) {
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
             ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
                     applicationDeployDTO.getAppInstanceId());
             applicationInstanceE.setCode(newApplicationInstanceE.getCode());
             applicationInstanceE.setId(applicationDeployDTO.getAppInstanceId());
             applicationInstanceRepository.update(applicationInstanceE);
         }
+        devopsEnvCommandE.setCommandType(CommandType.SYNC.getType());
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());

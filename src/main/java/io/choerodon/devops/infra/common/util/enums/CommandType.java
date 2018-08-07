@@ -6,7 +6,8 @@ public enum CommandType {
     STOP("stop"),
     RESTART("restart"),
     DELETE("delete"),
-    UPDATE("update");
+    UPDATE("update"),
+    SYNC("sync");
 
     private String type;
 

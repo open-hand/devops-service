@@ -172,6 +172,9 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.releasePodEvent(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
                 break;
+            case GIT_OPS_SYNC_EVENT:
+                deployMsgHandlerService.gitOpsSyncEvent(TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+                break;
             default:
                 break;
         }

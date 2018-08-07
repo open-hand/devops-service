@@ -43,7 +43,8 @@ public enum HelmType {
     NETWORK_INGRESS_DELETE_FAILED("network_ingress_delete_failed"),
     RESOURCE_SYNC("resource_sync"),
     JOB_EVENT("job_event"),
-    RELEASE_POD_EVENT("release_pod_event");
+    RELEASE_POD_EVENT("release_pod_event"),
+    GIT_OPS_SYNC_EVENT("git_ops_sync_event");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
 
@@ -144,6 +145,8 @@ public enum HelmType {
                 return HelmType.JOB_EVENT;
             case "release_pod_event":
                 return HelmType.RELEASE_POD_EVENT;
+            case "git_ops_sync_event":
+                return HelmType.GIT_OPS_SYNC_EVENT;
             default:
                 break;
         }

@@ -36,18 +36,29 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
     }
 
     @Override
-    public DevopsEnvFileE queryByEnvAndPath(Long envId, String path) {
+    public DevopsEnvFileE queryLatestByEnvAndPath(Long envId, String path) {
+        return ConvertHelper.convert(devopsEnvFileMapper.queryLatestByEnvAndPath(envId, path), DevopsEnvFileE.class);
+    }
+
+    @Override
+    public DevopsEnvFileE queryByEnvAndPathAndCommit(Long envId, String path, String commit) {
         DevopsEnvFileDO devopsEnvFileDO = new DevopsEnvFileDO();
         devopsEnvFileDO.setEnvId(envId);
         devopsEnvFileDO.setFilePath(path);
+        devopsEnvFileDO.setCommitSha(commit);
         return ConvertHelper.convert(devopsEnvFileMapper.selectOne(devopsEnvFileDO), DevopsEnvFileE.class);
+    }
+
+    @Override
+    public DevopsEnvFileE queryByEnvAndPathAndCommits(Long envId, String path, List<String> commits) {
+        return ConvertHelper.convert(devopsEnvFileMapper.queryByEnvAndPathAndCommits(envId, path, commits), DevopsEnvFileE.class);
     }
 
     @Override
     public void update(DevopsEnvFileE devopsEnvFileE) {
         DevopsEnvFileDO devopsEnvFileDO = devopsEnvFileMapper.selectByPrimaryKey(devopsEnvFileE.getId());
-        devopsEnvFileDO.setCommitSha(devopsEnvFileE.getCommitSha());
-        devopsEnvFileDO.setSync(false);
+        devopsEnvFileDO.setSync(devopsEnvFileE.isSync());
+        devopsEnvFileDO.setMessage(devopsEnvFileE.getMessage());
         devopsEnvFileMapper.updateByPrimaryKeySelective(devopsEnvFileDO);
     }
 
@@ -55,6 +66,14 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
     public void delete(DevopsEnvFileE devopsEnvFileE) {
         DevopsEnvFileDO devopsEnvFileDO = ConvertHelper.convert(devopsEnvFileE, DevopsEnvFileDO.class);
         devopsEnvFileMapper.delete(devopsEnvFileDO);
+    }
+
+    @Override
+    public List<DevopsEnvFileE> listByEnvIdAndPath(Long envId, String path) {
+        DevopsEnvFileDO devopsEnvFileDO = new DevopsEnvFileDO();
+        devopsEnvFileDO.setEnvId(envId);
+        devopsEnvFileDO.setFilePath(path);
+        return ConvertHelper.convertList(devopsEnvFileMapper.select(devopsEnvFileDO), DevopsEnvFileE.class);
     }
 
 

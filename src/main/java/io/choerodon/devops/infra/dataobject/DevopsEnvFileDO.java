@@ -20,6 +20,7 @@ public class DevopsEnvFileDO {
     private String commitSha;
     private String message;
     private boolean isSync;
+    private Long objectVersionNumber;
 
 
     public Long getId() {
@@ -68,5 +69,13 @@ public class DevopsEnvFileDO {
 
     public void setSync(boolean sync) {
         isSync = sync;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
