@@ -280,7 +280,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      * @param appVersionId  应用版本id
      * @param appInstanceId 应用实例id
      */
-    public void checkOptions(Long envId, Long appId, Long appVersionId, Long appInstanceId) {
+    private void checkOptions(Long envId, Long appId, Long appVersionId, Long appInstanceId) {
         if (applicationInstanceRepository.checkOptions(envId, appId, appVersionId, appInstanceId) == 0) {
             throw new CommonException("error.instance.query");
         }

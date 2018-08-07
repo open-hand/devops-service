@@ -10,11 +10,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.asgard.saga.SagaClient;
+import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.saga.Saga;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
@@ -119,8 +119,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{ENVID}", devopsEnviromentRepository.create(devopsEnvironmentE)
                 .getId().toString());
-        params.put("{RSA}",sshKeys.get(0));
-        params.put("{GITREPOURL}",repoUrl);
+        params.put("{RSA}", sshKeys.get(0));
+        params.put("{GITREPOURL}", repoUrl);
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
@@ -274,8 +274,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         params.put("{TOKEN}", devopsEnvironmentE.getToken());
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{ENVID}", devopsEnvironmentE.getId().toString());
-        params.put("{RSA}",devopsEnvironmentE.getEnvIdRsa());
-        params.put("{GITREPOURL}",repoUrl);
+        params.put("{RSA}", devopsEnvironmentE.getEnvIdRsa());
+        params.put("{GITREPOURL}", repoUrl);
         return FileUtil.replaceReturnString(inputStream, params);
     }
 
