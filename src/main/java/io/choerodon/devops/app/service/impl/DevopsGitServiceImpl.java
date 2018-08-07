@@ -301,6 +301,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
+        //TODO 此处收到webhook之后应该
+
         //TODO 在解释的第一步应该拉去最新提交，然后判断最新提交是否和tag一致，否则不进行之后操作
         Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         Integer gitLabUserId = pushWebHookDTO.getUserId();
@@ -340,7 +342,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         });
 
 
-        //TODO 对于修改的和新增的文件，插入或者新增文件表 此处位置不对？？？应该放到拉去最新的tag
         files.forEach((file, commit) -> {
             DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), file);
             if (devopsEnvFileE == null) {
