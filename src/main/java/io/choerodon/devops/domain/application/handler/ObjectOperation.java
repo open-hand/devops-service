@@ -11,15 +11,15 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 
 public class ObjectOperation<T> {
 
-    private T t;
+    private T type;
 
 
     public T getType() {
-        return t;
+        return type;
     }
 
     public void setType(T type) {
-        this.t = type;
+        this.type = type;
     }
     /**
      * operate files in GitLab
@@ -29,15 +29,15 @@ public class ObjectOperation<T> {
      * @param operationType      operation type
      * @param userId             GitLab user ID
      */
-    public void oprerationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId) {
+    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
         SkipNullRepresenterUtil skipNullRepresenter = new SkipNullRepresenterUtil();
-        Tag tag = new Tag(t.getClass().toString());
-        skipNullRepresenter.addClassTag(t.getClass(), tag);
+        Tag tag = new Tag(type.getClass().toString());
+        skipNullRepresenter.addClassTag(type.getClass(), tag);
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
         Yaml yaml = new Yaml(skipNullRepresenter, options);
-        String content = yaml.dump(t).replace("!<" + tag.getValue() + ">", "---");
+        String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
         String path = fileCode + ".yaml";
         if (operationType.equals("create")) {
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,

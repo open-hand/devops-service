@@ -337,7 +337,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             objectOperation.setType(getC7NHelmRelease(
                     applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.oprerationEnvGitlabFile(
+            objectOperation.operationEnvGitlabFile(
                     applicationInstanceE.getCode(),
                     projectId,
                     applicationDeployDTO.getType(),
