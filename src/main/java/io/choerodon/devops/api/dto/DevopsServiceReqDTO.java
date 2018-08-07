@@ -14,7 +14,6 @@ public class DevopsServiceReqDTO {
 
     @NotNull
     private Long envId;
-    @NotNull
     private Long appId;
     @NotNull
     @Size(min = 1, max = 64, message = "error.name.size")
