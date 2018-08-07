@@ -109,7 +109,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-        String repoUrl = "git@" + gitlabUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
+        String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());

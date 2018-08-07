@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.core.saga.SagaTask;
+import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;

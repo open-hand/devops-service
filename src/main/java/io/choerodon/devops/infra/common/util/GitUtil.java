@@ -31,7 +31,7 @@ import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 @Component
 public class GitUtil {
 
-    public static final String DEVOPS_GITOPS_TAG = "GitOps";
+    public static final String DEVOPS_GITOPS_TAG = "devops-sync";
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPONAME = "devops-service-repo";

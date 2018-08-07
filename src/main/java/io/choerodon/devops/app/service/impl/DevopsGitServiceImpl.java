@@ -291,10 +291,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         pushWebHookDTO.setToken(token);
         String input;
         //TODO 在收到环境库webhook 之后应该在env commit 记录表中插入提交记录，并且更新对应环境中git库最新提交字段
-        pushWebHookDTO.getCommits().parallelStream().forEach(commitDTO -> {
-
-
-        });
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
             sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "", ""));
@@ -305,7 +301,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
-        //TODO 此处收到webhook之后应该
 
         //TODO 在解释的第一步应该拉去最新提交，然后判断最新提交是否和tag一致，否则不进行之后操作
         Integer gitLabProjectId = pushWebHookDTO.getProjectId();
@@ -333,7 +328,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
             for (String operationFile : fileNames) {
-                files.put(operationFile, commitDTO.getShortId());
+                files.put(operationFile, commitDTO.getId());
             }
 
             for (String deleteFile : commitDTO.getRemoved()) {
@@ -429,7 +424,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             Map<String, String> objectPath = new HashMap<>();
 
             //从文件中读出对象
-            if (!handleFilesToObject(operationFiles, path, c7nHelmReleases,
+            if (handleFilesToObject(operationFiles, path, c7nHelmReleases,
                     v1Services, v1beta1Ingresses,
                     objectPath, devopsEnvironmentE.getId())) {
                 //此处不应该return
@@ -590,7 +585,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 LOGGER.info(e.getMessage());
             }
         });
-        return devopsEnvFileES.parallelStream().anyMatch(devopsEnvFileE -> devopsEnvFileE.getMessage() != null ? false : true);
+        return devopsEnvFileES.parallelStream().anyMatch(devopsEnvFileE -> devopsEnvFileE.getMessage() != null);
     }
 
 
