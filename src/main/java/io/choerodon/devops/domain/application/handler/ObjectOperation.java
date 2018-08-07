@@ -6,15 +6,12 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
 
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 
-@Component
 public class ObjectOperation<T> {
-
-    @Autowired
-    private GitlabRepository gitlabRepository;
 
     private T type;
 
@@ -35,6 +32,7 @@ public class ObjectOperation<T> {
      * @param userId             GitLab user ID
      */
     public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId) {
+        GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
         SkipNullRepresenterUtil skipNullRepresenter = new SkipNullRepresenterUtil();
         String[] className = this.type.getClass().toString().split("\\.");
         skipNullRepresenter.addClassTag(this.type.getClass(), new Tag(className[className.length - 1]));
