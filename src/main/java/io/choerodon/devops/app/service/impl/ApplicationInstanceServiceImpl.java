@@ -458,23 +458,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     "DELETE FILE",
                     TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
-
-
     }
-
-    @Override
-    public void instanceRollback(Integer version, Long instanceId) {
-        ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
-        String releaseName = updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-        Map<String, Object> rollbackMap = new HashMap<>();
-        rollbackMap.put(RELEASE_NAME, releaseName);
-        rollbackMap.put("Version", version);
-        String payload = gson.toJson(rollbackMap);
-        Long envId = instanceE.getDevopsEnvironmentE().getId();
-        sentInstance(payload, releaseName, HelmType.HELM_RELEASE_ROLLBACK.toValue(), namespace, null, envId);
-    }
-
 
     private String getNameSpace(Long envId) {
         return devopsEnvironmentRepository.queryById(envId).getCode();

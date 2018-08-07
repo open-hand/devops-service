@@ -138,6 +138,14 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
+    public DevopsServiceE selectByNameAndEnvId(String name, Long envId) {
+        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
+        devopsServiceDO.setName(name);
+        devopsServiceDO.setEnvId(envId);
+        return ConvertHelper.convert(devopsServiceMapper.selectOne(devopsServiceDO), DevopsServiceE.class);
+    }
+
+    @Override
     public Boolean checkEnvHasService(Long envId) {
         return devopsServiceMapper.checkEnvHasService(envId);
     }

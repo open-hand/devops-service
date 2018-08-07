@@ -24,6 +24,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.saga.Saga;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
+import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsIngressService;
@@ -57,8 +58,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private static final String PATH_DUPLICATED = "error.path.duplicated";
+    private static final String INSTANCE_APP_ID_NOT_SAME = "The instance is not belong to the same application! \n";
+    private static final String INSTANCE_NOT_FOUND = "The instances not found: ";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private ObjectMapper objectMapper = new ObjectMapper();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -467,7 +471,95 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                          DevopsEnvFileLogE devopsEnvFileLogE) {
         handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId, devopsEnvFileLogE);
         handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId, devopsEnvFileLogE);
-//        handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId, devopsEnvFileLogE);
+        handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId, devopsEnvFileLogE);
+    }
+
+    private void handlerServiceRelations(Map<String, String> objectPath,
+                                         List<DevopsEnvFileResourceE> beforeSync,
+                                         List<V1Service> v1Services,
+                                         Long envId, Long projectId,
+                                         DevopsEnvFileLogE devopsEnvFileLogE) {
+        List<String> beforeService = beforeSync.parallelStream()
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("Service"))
+                .map(devopsEnvFileResourceE -> {
+                    DevopsServiceE devopsServiceE = devopsServiceRepository
+                            .query(devopsEnvFileResourceE.getResourceId());
+                    return devopsServiceE.getName();
+                }).collect(Collectors.toList());
+
+        v1Services.parallelStream()
+                .filter(v1Service -> !beforeService.contains(v1Service.getMetadata().getName()))
+                .forEach(v1Service -> {
+                    if (checkServiceName(objectPath, devopsEnvFileLogE, v1Service)) {
+                        return;
+                    }
+                    DevopsServiceE devopsServiceE = devopsServiceRepository
+                            .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+                    DevopsServiceReqDTO devopsServiceReqDTO;
+                    if (devopsServiceE == null) {
+                        devopsServiceReqDTO = getDevopsServiceDTO(
+                                v1Service,
+                                envId,
+                                devopsEnvFileLogE,
+                                objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
+                        if (devopsEnvFileLogE.getMessage() != null) {
+                            return;
+                        }
+                        devopsServiceService.insertDevopsService(projectId, devopsServiceReqDTO, true);
+                        devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                                devopsServiceReqDTO.getName(), envId);
+                    }
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                    devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                    devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
+                    devopsEnvFileResourceE.setResourceId(devopsServiceE.getId());
+                    devopsEnvFileResourceE.setResourceType(v1Service.getKind());
+                    devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                });
+        v1Services.parallelStream()
+                .filter(v1Service -> beforeService.contains(v1Service.getMetadata().getName()))
+                .forEach(v1Service -> {
+                    beforeService.remove(v1Service.getMetadata().getName());
+                    if (checkServiceName(objectPath, devopsEnvFileLogE, v1Service)) {
+                        return;
+                    }
+                    DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
+                            v1Service,
+                            envId,
+                            devopsEnvFileLogE,
+                            objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
+                    if (devopsEnvFileLogE.getMessage() != null) {
+                        return;
+                    }
+                    DevopsServiceE devopsServiceE = devopsServiceRepository
+                            .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+                    devopsServiceService.updateDevopsService(
+                            projectId, devopsServiceE.getId(), devopsServiceReqDTO, true);
+                    DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                            .queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
+                    updateOrCreateFileResource(objectPath,
+                            envId,
+                            devopsEnvFileResourceE,
+                            v1Service.hashCode(), devopsServiceE.getId(), v1Service.getKind());
+                });
+        beforeService.parallelStream().forEach(serviceName -> {
+            DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
+            devopsServiceService.deleteDevopsService(devopsServiceE.getId(), true);
+            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
+        });
+    }
+
+    private boolean checkServiceName(Map<String, String> objectPath,
+                                     DevopsEnvFileLogE devopsEnvFileLogE,
+                                     V1Service v1Service) {
+        try {
+            DevopsServiceValidator.checkName(v1Service.getMetadata().getName());
+        } catch (Exception e) {
+            devopsEnvFileLogE.setMessage(e.getMessage());
+            devopsEnvFileLogE.setFilePath(objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
+            return true;
+        }
+        return false;
     }
 
     private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
@@ -670,7 +762,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                            DevopsEnvFileLogE devopsEnvFileLogE,
                                            V1beta1Ingress v1beta1Ingress) {
         try {
-            DevopsIngressValidator.checkAppVersion(v1beta1Ingress.getMetadata().getName());
+            DevopsIngressValidator.checkIngressName(v1beta1Ingress.getMetadata().getName());
         } catch (Exception e) {
             devopsEnvFileLogE.setMessage(e.getMessage());
             devopsEnvFileLogE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
@@ -716,5 +808,70 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
         devopsIngressDTO.setPathList(devopsIngressPathDTOS);
         return devopsIngressDTO;
+    }
+
+
+    private DevopsServiceReqDTO getDevopsServiceDTO(V1Service v1Service,
+                                                    Long envId,
+                                                    DevopsEnvFileLogE devopsEnvFileLogE,
+                                                    String filePath) {
+        DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO();
+        devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+        devopsServiceReqDTO.setName(v1Service.getMetadata().getName());
+        devopsServiceReqDTO.setEnvId(envId);
+        devopsServiceReqDTO.setLabel(v1Service.getMetadata().getLabels());
+
+        List<PortMapE> portMapList = v1Service.getSpec().getPorts().parallelStream()
+                .map(t -> {
+                    PortMapE portMap = new PortMapE();
+                    portMap.setName(t.getName());
+                    portMap.setNodePort(t.getNodePort().longValue());
+                    portMap.setPort(t.getPort().longValue());
+                    portMap.setProtocol(t.getProtocol());
+                    portMap.setTargetPort(t.getTargetPort().getIntValue().longValue());
+                    return portMap;
+                }).collect(Collectors.toList());
+        devopsServiceReqDTO.setPorts(portMapList);
+
+        String instancesCode = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
+        if (!instancesCode.isEmpty()) {
+            List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
+                    .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, devopsEnvFileLogE, filePath))
+                    .collect(Collectors.toList());
+            devopsServiceReqDTO.setAppInstance(instanceIdList);
+        }
+        return devopsServiceReqDTO;
+    }
+
+    private Long getInstanceId(String instanceCode, Long envId, DevopsServiceReqDTO devopsServiceReqDTO,
+                               DevopsEnvFileLogE devopsEnvFileLogE, String filePath) {
+        try {
+            ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(instanceCode, envId);
+            if (devopsServiceReqDTO.getAppId() == null) {
+                devopsServiceReqDTO.setAppId(instanceE.getApplicationE().getId());
+            }
+            String logMsg = devopsEnvFileLogE.getMessage();
+            if (!devopsServiceReqDTO.getAppId().equals(instanceE.getApplicationE().getId())
+                    && (logMsg == null || !logMsg.contains(INSTANCE_APP_ID_NOT_SAME))) {
+                if (logMsg == null) {
+                    devopsEnvFileLogE.setMessage(INSTANCE_APP_ID_NOT_SAME);
+                } else {
+                    devopsEnvFileLogE.setMessage(INSTANCE_APP_ID_NOT_SAME + logMsg);
+                }
+                devopsEnvFileLogE.setFilePath(filePath);
+            }
+            return instanceE.getId();
+        } catch (Exception e) {
+            String logMsg = devopsEnvFileLogE.getMessage();
+            if (logMsg == null) {
+                devopsEnvFileLogE.setMessage(INSTANCE_NOT_FOUND + instanceCode);
+            } else if (!logMsg.contains(INSTANCE_NOT_FOUND)) {
+                devopsEnvFileLogE.setMessage(logMsg + INSTANCE_NOT_FOUND + instanceCode);
+            } else {
+                devopsEnvFileLogE.setMessage(logMsg + ", " + instanceCode);
+            }
+            devopsEnvFileLogE.setFilePath(filePath);
+            return null;
+        }
     }
 }
