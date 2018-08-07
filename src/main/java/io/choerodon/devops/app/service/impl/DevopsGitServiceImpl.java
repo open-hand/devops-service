@@ -290,6 +290,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
         pushWebHookDTO.setToken(token);
         String input;
+        //TODO 在收到环境库webhook 之后应该在env commit 记录表中插入提交记录，并且更新对应环境中git库最新提交字段
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
             sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "", ""));
@@ -300,26 +301,46 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
+        //TODO 在解释的第一步应该拉去最新提交，然后判断最新提交是否和tag一致，否则不进行之后操作
         Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         Integer gitLabUserId = pushWebHookDTO.getUserId();
+
+
         List<String> operationFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();
+
+
+        //根据token查出环境
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
+
+        //文件和hash值map映射关系
         Map<String, String> files = new HashMap<>();
+
+
         pushWebHookDTO.getCommits().parallelStream().forEach(commitDTO -> {
+
             Set<String> fileNames = new HashSet<>();
+
+            //新增和修改的文件
             fileNames.addAll(commitDTO.getAdded());
             fileNames.addAll(commitDTO.getModified());
+
+
             for (String operationFile : fileNames) {
                 files.put(operationFile, commitDTO.getShortId());
             }
+
             for (String deleteFile : commitDTO.getRemoved()) {
+                //删除数据库中本次hook中删除的文件
                 DevopsEnvFileE devopsEnvFileE = new DevopsEnvFileE();
                 devopsEnvFileE.setEnvId(devopsEnvironmentE.getId());
                 devopsEnvFileE.setFilePath(deleteFile);
                 devopsEnvFileRepository.delete(devopsEnvFileE);
             }
         });
+
+
+        //TODO 对于修改的和新增的文件，插入或者新增文件表 此处位置不对？？？应该放到拉去最新的tag
         files.forEach((file, commit) -> {
             DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), file);
             if (devopsEnvFileE == null) {
@@ -333,28 +354,48 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsEnvFileRepository.update(devopsEnvFileE);
             }
         });
+
+        //从iam服务中查出项目和组织code
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        //生成环境git仓库ssh地址
         String url = String.format("git@%s:%s-%s-gitops/%s.git",
                 gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         LOGGER.info(url);
+
         try {
+            //从git库中查出环境最新提交
             BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
             String masterSha = branch.getCommit().getId();
+
             DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
             devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
             devopsEnvCommitE.setCommitSha(masterSha);
+            //此处是gitlab user
             devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookDTO.getUserId()));
             devopsEnvCommitE.setCommitDate(branch.getCommit().getCommittedDate());
             devopsEnvCommitE = devopsEnvCommitRepository.create(devopsEnvCommitE);
             devopsEnvironmentE.setGitCommit(devopsEnvCommitE.getId());
+
+            //更新gitlab中的最新提交
+            //TODO 此处不应该更新环境gitlab最新提交，环境git最新提交应该在收到webhook的时候更新，而不是在解释的时候更新，/解释完的时候会更新环境表中解释的conmit
             devopsEnvironmentRepository.update(devopsEnvironmentE);
+
+            //更新本地库到最新提交
             handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), masterSha);
+
+
+            //获取将此次最新提交与tag作比价得到diff
             CompareResultsE compareResultsE = devopsGitRepository
                     .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha);
+
             List<DevopsEnvFileResourceE> beforeSync = new ArrayList<>();
+
+
             compareResultsE.getDiffs().forEach(t -> {
                 if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                     if (t.getDeletedFile()) {
@@ -363,24 +404,37 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         operationFiles.add(t.getNewPath());
                     }
                 }
+
+                //TODO new path？
                 List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                         .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getNewPath());
                 if (!devopsEnvFileResourceES.isEmpty()) {
                     beforeSync.addAll(devopsEnvFileResourceES);
                 }
             });
+
+            //如果没有涉及到到yml文件的修改则跳过本次解释
             if (operationFiles.isEmpty() && deletedFiles.isEmpty()) {
                 return;
             }
+
+
             List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
             List<V1Service> v1Services = new ArrayList<>();
             List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();
+
             Map<String, String> objectPath = new HashMap<>();
+
+            //从文件中读出对象
             if (!handleFilesToObject(operationFiles, path, c7nHelmReleases,
                     v1Services, v1beta1Ingresses,
                     objectPath, devopsEnvironmentE.getId(), masterSha)) {
+                //此处不应该return
                 return;
             }
+
+            //处理对象关系
+
             handlerObjectReleations(
                     objectPath,
                     beforeSync,
@@ -390,10 +444,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     devopsEnvironmentE.getId(),
                     devopsEnvironmentE.getProjectE().getId()
             );
+
+            //TODO 此时请求应考虑请求失败情况，还有删除成功了创建没有成功
+            //删除tag
             devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
+            //创建新tag
             devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha, gitLabUserId);
+
+            //向agent发送同步指令
             deployService.sendCommand(devopsEnvironmentE);
             devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
+            //更新环境 解释commit
             devopsEnvironmentRepository.update(devopsEnvironmentE);
         } catch (Exception e) {
             LOGGER.info("File Resource Sync File Changes Fail!");
@@ -493,6 +554,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         files.parallelStream().forEach(filePath -> {
             File file = new File(String.format("%s/%s", path, filePath));
             try {
+                //从数据库中查出
                 DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(envId, filePath);
                 for (Object data : yaml.loadAll(new FileInputStream(file))) {
                     JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
@@ -516,6 +578,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             break;
                     }
                 }
+                //为什么
                 if (devopsEnvFileE.getMessage() != null) {
                     devopsEnvFileRepository.update(devopsEnvFileE);
                 }
@@ -525,6 +588,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
         if (devopsEnvFileES.parallelStream().anyMatch(devopsEnvFileE -> devopsEnvFileE.getMessage() != null)) {
+            //如果有文件有错返回false
             return false;
         }
         return true;
