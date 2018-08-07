@@ -157,7 +157,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (!devopsServiceE.getEnvId().equals(devopsServiceReqDTO.getEnvId())) {
             throw new CommonException("error.env.notEqual");
         }
-        ApplicationE applicationE = getApplicationE(devopsServiceReqDTO.getAppId());
         String serviceName = devopsServiceReqDTO.getName();
         if (!devopsServiceE.getName().equals(serviceName)) {
             if (!devopsServiceRepository.checkName(
@@ -165,18 +164,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 throw new CommonException("error.service.name.check");
             }
             checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(), null, null);
-            String oldServiceName = devopsServiceE.getName();
 
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.SERVICE.getType(), id);
             updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
-            Long commandId = devopsEnvCommandE.getId();
 
             updateService(devopsServiceE, devopsServiceReqDTO, true, isGitOps);
-//            idevopsServiceService.delete(oldServiceName,
-//                    devopsServiceE.getNamespace(),
-//                    devopsServiceReqDTO.getEnvId(),
-//                    commandId);
 
             //更新域名
             List<DevopsIngressPathE> devopsIngressPathEList = devopsIngressRepository.selectByEnvIdAndServiceId(

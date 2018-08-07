@@ -93,10 +93,13 @@
         FROM
         devops_app_instance dai
         WHERE
-        1 = 1
-        AND dai.app_id = #{appId}
-        AND dai.env_id = #{envId}
-        AND dai.status = 'running'
+        dai.status = 'running'
+        <if test="envId != null">
+            AND dai.env_id = #{envId}
+        </if>
+        <if test="appId != null">
+            AND dai.app_id = #{appId}
+        </if>
         <if test="appVersionId != null">
             AND dai.app_version_id = #{appVersionId}
         </if>
