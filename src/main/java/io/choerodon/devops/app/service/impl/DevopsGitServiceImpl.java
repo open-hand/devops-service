@@ -291,6 +291,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         pushWebHookDTO.setToken(token);
         String input;
         //TODO 在收到环境库webhook 之后应该在env commit 记录表中插入提交记录，并且更新对应环境中git库最新提交字段
+        pushWebHookDTO.getCommits().parallelStream().forEach(commitDTO -> {
+
+
+        });
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
             sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "", ""));
@@ -407,7 +411,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
                 //TODO new path？
                 List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                        .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getNewPath());
+                        .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getOldPath());
                 if (!devopsEnvFileResourceES.isEmpty()) {
                     beforeSync.addAll(devopsEnvFileResourceES);
                 }

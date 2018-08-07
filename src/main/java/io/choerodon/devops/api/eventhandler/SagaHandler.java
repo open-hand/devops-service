@@ -9,7 +9,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.core.saga.SagaTask;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.app.service.ProjectService;

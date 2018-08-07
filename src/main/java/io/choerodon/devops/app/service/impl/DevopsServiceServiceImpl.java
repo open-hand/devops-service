@@ -466,7 +466,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
             objectOperation.setType(service);
-            objectOperation.operationEnvGitlabFile(serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
+            objectOperation.oprerationEnvGitlabFile(serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
                     userAttrE.getGitlabUserId());
         }
     }
