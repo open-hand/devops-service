@@ -265,7 +265,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
             objectOperation.setType(ingress);
-            objectOperation.oprerationEnvGitlabFile(ingressName, envGitLabProjectId, isCreate ? "create" : "update",
+            objectOperation.operationEnvGitlabFile(ingressName, envGitLabProjectId, isCreate ? "create" : "update",
                     userAttrE.getGitlabUserId());
         }
     }
