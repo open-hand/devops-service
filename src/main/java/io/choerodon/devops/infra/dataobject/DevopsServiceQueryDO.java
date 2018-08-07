@@ -22,12 +22,6 @@ public class DevopsServiceQueryDO {
     private List<ServiceInstanceDO> appInstance;
 
     @Transient
-    private String commandStatus;
-    @Transient
-    private String commandType;
-    @Transient
-    private String error;
-    @Transient
     private Long appProjectId;
 
     public Long getId() {
@@ -108,30 +102,6 @@ public class DevopsServiceQueryDO {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
-    }
-
-    public String getCommandStatus() {
-        return commandStatus;
-    }
-
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
-    }
-
-    public String getCommandType() {
-        return commandType;
-    }
-
-    public void setCommandType(String commandType) {
-        this.commandType = commandType;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
     }
 
     public String getPorts() {
