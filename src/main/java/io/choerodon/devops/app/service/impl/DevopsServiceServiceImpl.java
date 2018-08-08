@@ -111,7 +111,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Boolean isGitOps) {
-        devopsServiceReqDTO.addLabel(SERVICE_LABLE, SERVICE);
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
         DevopsEnvironmentE devopsEnvironmentE =
@@ -143,7 +142,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO,
                                        Boolean isGitOps) {
-        devopsServiceReqDTO.addLabel(SERVICE_LABLE, SERVICE);
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
@@ -279,7 +277,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         metadata.setName(devopsServiceReqDTO.getName());
         metadata.setNamespace(namespace);
         metadata.setAnnotations(annotations);
-        metadata.setLabels(devopsServiceReqDTO.getLabel());
+        Map<String, String> label = new HashMap<>();
+        label.put(SERVICE_LABLE, SERVICE);
+        metadata.setLabels(label);
         service.setMetadata(metadata);
 
         V1ServiceSpec spec = new V1ServiceSpec();
