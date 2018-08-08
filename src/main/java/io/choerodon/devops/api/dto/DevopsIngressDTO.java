@@ -19,9 +19,6 @@ public class DevopsIngressDTO {
     private String envName;
     private Boolean envStatus;
     private Boolean isUsable;
-    private String commandStatus;
-    private String commandType;
-    private String error;
     private String status;
     private List<DevopsIngressPathDTO> pathList;
 
@@ -40,24 +37,6 @@ public class DevopsIngressDTO {
         this.pathList = new ArrayList<>();
         this.isUsable = isUsable;
         this.envName = envName;
-    }
-
-    /**
-     * 构造函数
-     */
-    public DevopsIngressDTO(Long id, String domain, String name,
-                            Long envId, Boolean isUsable, String envName,
-                            String commandStatus, String commandType, String error) {
-        this.envId = envId;
-        this.id = id;
-        this.name = name;
-        this.domain = domain;
-        this.pathList = new ArrayList<>();
-        this.isUsable = isUsable;
-        this.envName = envName;
-        this.commandStatus = commandStatus;
-        this.commandType = commandType;
-        this.error = error;
     }
 
     public Long getId() {
@@ -131,30 +110,6 @@ public class DevopsIngressDTO {
 
     public void setUsable(Boolean usable) {
         isUsable = usable;
-    }
-
-    public String getCommandStatus() {
-        return commandStatus;
-    }
-
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
-    }
-
-    public String getCommandType() {
-        return commandType;
-    }
-
-    public void setCommandType(String commandType) {
-        this.commandType = commandType;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
     }
 
     public String getStatus() {
