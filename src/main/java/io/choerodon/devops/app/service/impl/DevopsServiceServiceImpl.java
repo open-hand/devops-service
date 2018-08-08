@@ -304,6 +304,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         V1ServiceSpec spec = new V1ServiceSpec();
         spec.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
+        spec.setSelector(devopsServiceReqDTO.getLabel());
         List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().parallelStream()
                 .map(t -> {
                     V1ServicePort v1ServicePort = new V1ServicePort();
@@ -329,7 +330,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         spec.setPorts(ports);
         spec.setSessionAffinity("None");
-        spec.type("ClusterIP");
         service.setSpec(spec);
 
         return service;
