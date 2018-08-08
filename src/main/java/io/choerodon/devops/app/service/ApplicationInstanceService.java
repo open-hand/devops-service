@@ -131,4 +131,6 @@ public interface ApplicationInstanceService {
 
 
     DevopsEnvPreviewInstanceDTO getDevopsEnvPreviewInstance(Long envId);
+
+    List<DevopsEnvFileDTO> getEnvFile(Long envId);
 }

@@ -5,7 +5,7 @@ import java.util.List;
 public class DevopsEnvPreviewAppDTO {
 
     private String appName;
-    private List<ApplicationInstanceDTO> applicationInstanceDTOS;
+    private List<DevopsEnvPreviewInstanceDTO> applicationInstanceDTOS;
 
     public String getAppName() {
         return appName;
@@ -15,11 +15,11 @@ public class DevopsEnvPreviewAppDTO {
         this.appName = appName;
     }
 
-    public List<ApplicationInstanceDTO> getApplicationInstanceDTOS() {
+    public List<DevopsEnvPreviewInstanceDTO> getApplicationInstanceDTOS() {
         return applicationInstanceDTOS;
     }
 
-    public void setApplicationInstanceDTOS(List<ApplicationInstanceDTO> applicationInstanceDTOS) {
+    public void setApplicationInstanceDTOS(List<DevopsEnvPreviewInstanceDTO> applicationInstanceDTOS) {
         this.applicationInstanceDTOS = applicationInstanceDTOS;
     }
 }

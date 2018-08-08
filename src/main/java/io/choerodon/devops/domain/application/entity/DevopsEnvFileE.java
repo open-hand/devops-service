@@ -7,7 +7,7 @@ public class DevopsEnvFileE {
     private String filePath;
     private String commitSha;
     private String message;
-    private boolean isSync;
+    private Boolean isSync;
 
     public Long getId() {
         return id;

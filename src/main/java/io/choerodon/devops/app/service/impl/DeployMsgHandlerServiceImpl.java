@@ -861,11 +861,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Override
     public void gitOpsSyncEvent(Long envId, String msg) {
         GitOpsSync gitOpsSync = JSONArray.parseObject(msg, GitOpsSync.class);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvCommitE agentSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit());
+        if (agentSyncCommit.getCommitSha().equals(gitOpsSync.getMetadata().getCommit())) {
+            return;
+        }
+        devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
+        devopsEnvironmentRepository.update(devopsEnvironmentE);
         if (gitOpsSync.getResourceIDs().isEmpty()) {
             return;
         }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        DevopsEnvCommitE agentSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit());
         List<String> commits;
         if (agentSyncCommit == null) {
             commits = devopsEnvCommitRepository.listByEnvId(envId).parallelStream()
@@ -915,8 +920,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     .selectByEnvAndName(envId, objects[1]);
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
-                            updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(),
-                                    commits, errorDevopsFiles, fileError);
+                            if (updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(),
+                                    commits, errorDevopsFiles, fileError)) {
+                                devopsIngressE.setStatus(ServiceStatus.FAILED.getStatus());
+                            } else {
+                                devopsIngressE.setStatus(ServiceStatus.RUNNING.getStatus());
+                            }
                             break;
                         }
                         case "service": {
@@ -937,11 +946,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             break;
                     }
                 });
-        DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
-        devopsEnvCommitE.setEnvId(envId);
-        devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository
-                .queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
-        devopsEnvironmentRepository.update(devopsEnvironmentE);
     }
 
     private void saveOrUpdateResource(DevopsEnvResourceE devopsEnvResourceE,

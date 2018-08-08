@@ -794,7 +794,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 });
         beforeC7nRelease.parallelStream().forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-            applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE)) {
+                applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
+            }
             devopsEnvFileResourceRepository
                     .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
         });

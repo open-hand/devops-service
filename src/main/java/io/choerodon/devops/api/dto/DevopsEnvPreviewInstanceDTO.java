@@ -2,7 +2,7 @@ package io.choerodon.devops.api.dto;
 
 import java.util.List;
 
-public class DevopsEnvPreviewInstanceDTO {
+public class DevopsEnvPreviewInstanceDTO extends ApplicationInstanceDTO {
 
     private List<DevopsEnvPodDTO> devopsEnvPodDTOS;
     private List<ServiceDTO> serviceDTOS;

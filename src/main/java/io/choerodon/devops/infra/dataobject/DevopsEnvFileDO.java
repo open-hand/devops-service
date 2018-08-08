@@ -19,7 +19,7 @@ public class DevopsEnvFileDO {
     private String filePath;
     private String commitSha;
     private String message;
-    private boolean isSync;
+    private Boolean isSync;
     private Long objectVersionNumber;
 
 

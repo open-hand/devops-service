@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -80,6 +81,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private EnvUtil envUtil;
     @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper;
     @Autowired
     private DevopsEnvPodRepository devopsEnvPodRepository;
@@ -87,6 +89,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvResourceService devopsEnvResourceService;
     @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
+    private DevopsEnvFileRepository devopsEnvFileRepository;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -266,7 +270,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvPreviewAppDTO.setAppName(key);
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
-            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(applicationInstanceDTOS);
+            List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();
+            applicationInstanceDTOS.parallelStream().forEach(applicationInstanceDTO -> {
+                DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
+                BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
+                List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
+                        .convertList(devopsEnvPodRepository.selectByInstanceId(devopsEnvPreviewInstanceDTO.getId()), DevopsEnvPodDTO.class);
+                DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(devopsEnvPreviewInstanceDTO.getId());
+                devopsEnvPreviewInstanceDTO.setDevopsEnvPodDTOS(devopsEnvPodDTOS);
+                devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
+                devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
+                devopsEnvPreviewInstanceDTOS.add(devopsEnvPreviewInstanceDTO);
+            });
+            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(devopsEnvPreviewInstanceDTOS);
             devopsEnvPreviewAppDTOS.add(devopsEnvPreviewAppDTO);
         });
         devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
@@ -283,6 +299,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
         devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
         return devopsEnvPreviewInstanceDTO;
+    }
+
+    @Override
+    public List<DevopsEnvFileDTO> getEnvFile(Long envId) {
+        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFileRepository.listByEnvId(envId).parallelStream().filter(devopsEnvFileE -> devopsEnvFileE.isSync() == true && devopsEnvFileE.getMessage() != null).collect(Collectors.toList());
+        return ConvertHelper.convertList(devopsEnvFileES, DevopsEnvFileDTO.class);
     }
 
 
