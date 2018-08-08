@@ -22,16 +22,12 @@ import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -54,8 +50,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
-    @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
     @Autowired
@@ -136,12 +130,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
-        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-        devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-        devopsEnvCommandE.setObjectId(devopsServiceE.getId());
-        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
                 devopsServiceReqDTO.getEnvId(), isGitOps, true);
@@ -166,10 +154,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             }
             checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(), null, null);
 
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.SERVICE.getType(), id);
-            updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
-
             updateService(devopsServiceE, devopsServiceReqDTO, true, isGitOps);
 
             //更新域名
@@ -178,9 +162,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsIngressPathEList.forEach((DevopsIngressPathE dd) ->
                     updateIngressPath(dd, serviceName));
         } else {
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.SERVICE.getType(), id);
-            updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
             List<PortMapE> oldPort = devopsServiceE.getPorts();
             if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 //查询网络对应的实例
@@ -218,11 +199,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        DevopsEnvCommandE newDevopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.SERVICE.getType(), id);
-        newDevopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-        newDevopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandRepository.update(newDevopsEnvCommandE);
         devopsServiceRepository.update(devopsServiceE);
 
         if (!isGitOps) {
@@ -431,19 +407,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return applicationE;
     }
 
-    private void updateCommand(DevopsEnvCommandE devopsEnvCommandE, String type, String status) {
-        devopsEnvCommandE.setCommandType(type);
-        devopsEnvCommandE.setStatus(status);
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
-    }
-
     private void updateIngressPath(DevopsIngressPathE devopsIngressPathE, String serviceName) {
         DevopsIngressDO devopsIngressDO = devopsIngressRepository
                 .getIngress(devopsIngressPathE.getDevopsIngressE().getId());
-
-        DevopsEnvCommandE newDevopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressDO.getId());
-        updateCommand(newDevopsEnvCommandE, CommandType.CREATE.getType(), CommandStatus.DOING.getStatus());
 
         if (serviceName != null) {
             devopsIngressPathE.setServiceName(serviceName);
