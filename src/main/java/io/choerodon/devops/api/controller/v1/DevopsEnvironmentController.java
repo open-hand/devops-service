@@ -15,6 +15,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
+import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -252,5 +253,29 @@ public class DevopsEnvironmentController {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.running.get"));
+    }
+
+
+    /**
+     * 查询环境同步状态
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return EnvSyncStatusDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "查询环境同步状态")
+    @GetMapping(value = "/{envId}/status")
+    public ResponseEntity<EnvSyncStatusDTO> queryEnvSyncStatus(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "envId") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.queryEnvSyncStatus(projectId, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.sync.get"));
     }
 }

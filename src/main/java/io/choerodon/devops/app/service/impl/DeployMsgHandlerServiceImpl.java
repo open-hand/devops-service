@@ -863,8 +863,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         GitOpsSync gitOpsSync = JSONArray.parseObject(msg, GitOpsSync.class);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         DevopsEnvCommitE agentSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit());
-        if (agentSyncCommit.getCommitSha().equals(gitOpsSync.getMetadata().getCommit())) {
-            return;
+        if (agentSyncCommit != null) {
+            if (agentSyncCommit.getCommitSha().equals(gitOpsSync.getMetadata().getCommit())) {
+                return;
+            }
         }
         devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
         devopsEnvironmentRepository.update(devopsEnvironmentE);

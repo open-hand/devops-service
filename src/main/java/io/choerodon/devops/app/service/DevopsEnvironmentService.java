@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
+import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
 /**
@@ -112,4 +113,7 @@ public interface DevopsEnvironmentService {
      * @param gitlabProjectPayload env saga payload
      */
     void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload);
+
+
+    EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId);
 }

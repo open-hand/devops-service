@@ -413,13 +413,14 @@ public class ApplicationInstanceController {
                     InitRoleCode.PROJECT_MEMBER,
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "部署文件日志")
+    @CustomPageRequest
     @GetMapping(value = "/{envId}/envFiles")
-    public ResponseEntity<List<DevopsEnvFileDTO>> getDevopsEnvPreviewInstance(
+    public ResponseEntity<Page<DevopsEnvFileDTO>> listEnvFiles(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "envId", required = true)
             @PathVariable(value = "envId") Long envId) {
-        return Optional.ofNullable(applicationInstanceService.getEnvFile(envId))
+        return Optional.ofNullable(applicationInstanceService.getEnvFile(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.file.query"));
     }

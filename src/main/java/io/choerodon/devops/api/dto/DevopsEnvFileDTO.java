@@ -8,6 +8,7 @@ public class DevopsEnvFileDTO {
     private String commitSha;
     private String message;
     private Boolean isSync;
+    private String commitUrl;
 
     public Long getId() {
         return id;
@@ -55,5 +56,13 @@ public class DevopsEnvFileDTO {
 
     public void setSync(boolean sync) {
         isSync = sync;
+    }
+
+    public String getCommitUrl() {
+        return commitUrl;
+    }
+
+    public void setCommitUrl(String commitUrl) {
+        this.commitUrl = commitUrl;
     }
 }

@@ -25,6 +25,7 @@ import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
@@ -55,6 +56,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private String agentExpectVersion;
     @Value("${services.helm.url}")
     private String helmUrl;
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
+
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
@@ -302,9 +306,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public List<DevopsEnvFileDTO> getEnvFile(Long envId) {
-        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFileRepository.listByEnvId(envId).parallelStream().filter(devopsEnvFileE -> devopsEnvFileE.isSync() == true && devopsEnvFileE.getMessage() != null).collect(Collectors.toList());
-        return ConvertHelper.convertList(devopsEnvFileES, DevopsEnvFileDTO.class);
+    public Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFileRepository.listByEnvId(envId).parallelStream().filter(devopsEnvFileE -> devopsEnvFileE.isSync() == true && devopsEnvFileE.getMessage() != null).sorted(Comparator.comparing(DevopsEnvFileE::getId)).map(devopsEnvFileE -> {
+            devopsEnvFileE.setCommitUrl(String.format("git@%s:%s-%s-gitops/%s/commit/%s",
+                    gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(), devopsEnvFileE.getCommitSha()));
+            return devopsEnvFileE;
+        }).collect(Collectors.toList());
+        Page<DevopsEnvFileE> pages = new Page<>();
+        pages.setContent(devopsEnvFileES);
+        return ConvertPageHelper.convertPage(pages, DevopsEnvFileDTO.class);
     }
 
 
