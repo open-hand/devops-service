@@ -298,7 +298,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsServiceReqDTO.getName());
         metadata.setNamespace(namespace);
-        metadata.setLabels(devopsServiceReqDTO.getLabel());
         metadata.setAnnotations(annotations);
         service.setMetadata(metadata);
 
