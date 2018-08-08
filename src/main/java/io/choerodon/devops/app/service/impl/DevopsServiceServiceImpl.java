@@ -131,7 +131,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
-        devopsServiceE.setType(devopsServiceReqDTO.getType());
+        devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
@@ -303,7 +303,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         service.setMetadata(metadata);
 
         V1ServiceSpec spec = new V1ServiceSpec();
-        spec.setType(devopsServiceReqDTO.getType());
+        spec.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().parallelStream()
                 .map(t -> {
                     V1ServicePort v1ServicePort = new V1ServicePort();
@@ -383,7 +383,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         devopsServiceE.setPorts(devopsServiceReqDTO.getPorts());
-        devopsServiceE.setType(devopsServiceReqDTO.getType());
+        devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setExternalIp(devopsServiceReqDTO.getExternalIp());
         devopsServiceRepository.update(devopsServiceE);
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceEList = devopsServiceInstanceRepository
