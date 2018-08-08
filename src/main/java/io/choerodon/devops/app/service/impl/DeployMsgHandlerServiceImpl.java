@@ -331,34 +331,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     for (String release : releases) {
                         applicationInstanceE = applicationInstanceRepository
                                 .selectByCode(release, envId);
-
-                        String namespace = v1Service.getMetadata().getNamespace();
-                        if (flag) {
-                            DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                                    v1Service.getMetadata().getName(), namespace);
-                            if (applicationInstanceE != null) {
-                                if (devopsServiceE == null) {
-                                    devopsServiceE = new DevopsServiceE();
-                                    syncService(devopsServiceE, msg, applicationInstanceE);
-                                    DevopsEnvResourceE newDevopsInsResourceE =
-                                            devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                                    applicationInstanceE.getId(),
-                                                    KeyParseTool.getResourceType(key),
-                                                    KeyParseTool.getResourceName(key));
-                                    saveOrUpdateResource(devopsEnvResourceE, newDevopsInsResourceE,
-                                            devopsEnvResourceDetailE, applicationInstanceE);
-                                }
-                                List<DevopsIngressPathE> devopsIngressPathEList =
-                                        devopsIngressRepository.selectByEnvIdAndServiceName(
-                                                devopsServiceE.getEnvId(), devopsServiceE.getName());
-                                for (DevopsIngressPathE dd : devopsIngressPathEList) {
-                                    if (dd.getServiceId() == null) {
-                                        dd.setServiceId(devopsServiceE.getId());
-                                        devopsIngressRepository.updateIngressPath(dd);
-                                    }
-                                }
-                            }
-                        }
                         DevopsEnvResourceE newdevopsInsResourceE =
                                 devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                         applicationInstanceE.getId(),

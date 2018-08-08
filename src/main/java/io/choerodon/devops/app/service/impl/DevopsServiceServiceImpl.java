@@ -40,6 +40,8 @@ import io.choerodon.websocket.helper.EnvListener;
 @Transactional(rollbackFor = RuntimeException.class)
 public class DevopsServiceServiceImpl implements DevopsServiceService {
 
+    private static final String SERVICE_LABLE = "choerodon.io/network";
+    private static final String SERVICE = "service";
     private Gson gson = new Gson();
 
     @Autowired
@@ -109,6 +111,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Boolean isGitOps) {
+        devopsServiceReqDTO.addLabel(SERVICE_LABLE, SERVICE);
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
         DevopsEnvironmentE devopsEnvironmentE =
@@ -140,6 +143,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO,
                                        Boolean isGitOps) {
+        devopsServiceReqDTO.addLabel(SERVICE_LABLE, SERVICE);
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
@@ -275,6 +279,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         metadata.setName(devopsServiceReqDTO.getName());
         metadata.setNamespace(namespace);
         metadata.setAnnotations(annotations);
+        metadata.setLabels(devopsServiceReqDTO.getLabel());
         service.setMetadata(metadata);
 
         V1ServiceSpec spec = new V1ServiceSpec();

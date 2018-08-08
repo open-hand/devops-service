@@ -265,7 +265,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<ApplicationInstanceE> applicationInstanceES = ConvertHelper
                 .convertList(applicationInstancesDOS, ApplicationInstanceE.class);
         setInstanceConnect(applicationInstanceES, envs);
-        Map<String, List<ApplicationInstanceE>> resultMaps = applicationInstanceES.parallelStream()
+        Map<String, List<ApplicationInstanceE>> resultMaps = applicationInstanceES.stream()
                 .collect(Collectors.groupingBy(t -> t.getApplicationE().getName()));
         DevopsEnvPreviewDTO devopsEnvPreviewDTO = new DevopsEnvPreviewDTO();
         List<DevopsEnvPreviewAppDTO> devopsEnvPreviewAppDTOS = new ArrayList<>();
@@ -275,7 +275,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
             List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();
-            applicationInstanceDTOS.parallelStream().forEach(applicationInstanceDTO -> {
+            applicationInstanceDTOS.stream().forEach(applicationInstanceDTO -> {
                 DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
                 BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
                 List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
@@ -311,7 +311,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFileRepository.listByEnvId(envId).parallelStream().filter(devopsEnvFileE -> devopsEnvFileE.isSync() == true && devopsEnvFileE.getMessage() != null).sorted(Comparator.comparing(DevopsEnvFileE::getId)).map(devopsEnvFileE -> {
-            devopsEnvFileE.setCommitUrl(String.format("git@%s:%s-%s-gitops/%s/commit/%s",
+            devopsEnvFileE.setCommitUrl(String.format("%s:%s-%s-gitops/%s/commit/%s",
                     gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(), devopsEnvFileE.getCommitSha()));
             return devopsEnvFileE;
         }).collect(Collectors.toList());

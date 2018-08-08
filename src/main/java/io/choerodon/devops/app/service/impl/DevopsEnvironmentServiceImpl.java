@@ -368,7 +368,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
         envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
         envSyncStatusDTO.setGitCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit()).getCommitSha());
-        envSyncStatusDTO.setCommitUrl(String.format("git@%s:%s-%s-gitops/%s/commit/",
+        envSyncStatusDTO.setCommitUrl(String.format("%s:%s-%s-gitops/%s/commit/",
                 gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
         return envSyncStatusDTO;
     }

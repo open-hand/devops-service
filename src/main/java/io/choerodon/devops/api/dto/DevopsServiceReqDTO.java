@@ -1,9 +1,10 @@
 package io.choerodon.devops.api.dto;
 
-import java.util.List;
-import java.util.Map;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.domain.application.entity.PortMapE;
 
@@ -88,5 +89,12 @@ public class DevopsServiceReqDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public void addLabel(String key, String value) {
+        label = new HashMap<>();
+        if (!label.containsKey(key)) {
+            label.put(key, value);
+        }
     }
 }
