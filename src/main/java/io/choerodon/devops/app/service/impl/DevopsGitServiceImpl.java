@@ -610,8 +610,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                         List<V1beta1Ingress> v1beta1Ingresses,
                                         Long envId, Long projectId) {
         handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId);
-        handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId);
         handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId);
+        handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId);
     }
 
     private void handlerServiceRelations(Map<String, String> objectPath,
