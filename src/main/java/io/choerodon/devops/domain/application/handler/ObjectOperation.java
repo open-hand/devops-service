@@ -13,7 +13,6 @@ public class ObjectOperation<T> {
 
     private T type;
 
-
     public T getType() {
         return type;
     }
@@ -21,6 +20,7 @@ public class ObjectOperation<T> {
     public void setType(T type) {
         this.type = type;
     }
+
     /**
      * operate files in GitLab
      *

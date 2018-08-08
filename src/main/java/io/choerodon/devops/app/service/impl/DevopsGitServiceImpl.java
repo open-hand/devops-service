@@ -350,7 +350,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
 
         files.forEach((file, commit) -> {
-            DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPathAndCommit(devopsEnvironmentE.getId(), file, commit);
+            DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository
+                    .queryByEnvAndPathAndCommit(devopsEnvironmentE.getId(), file, commit);
             if (devopsEnvFileE == null) {
                 devopsEnvFileE = new DevopsEnvFileE();
                 devopsEnvFileE.setCommitSha(commit);
@@ -433,7 +434,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             //处理对象关系
 
-            handlerObjectReleations(
+            handlerObjectRelations(
                     objectPath,
                     beforeSync,
                     c7nHelmReleases,
@@ -560,17 +561,27 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     switch (type) {
                         case "C7NHelmRelease":
                             C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
-                            SerializableOperation<C7nHelmRelease> c7nHelmReleaseSerializableOperation = new SerializableOperation<>();
+                            SerializableOperation<C7nHelmRelease> c7nHelmReleaseSerializableOperation
+                                    = new SerializableOperation<>();
                             c7nHelmReleaseSerializableOperation.setT(c7nHelmRelease);
-                            c7nHelmReleases.add(c7nHelmReleaseSerializableOperation.serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileE));
+                            c7nHelmReleases.add(c7nHelmReleaseSerializableOperation
+                                    .serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileE));
                             break;
                         case "Ingress":
                             V1beta1Ingress v1beta1Ingress = new V1beta1Ingress();
-                            SerializableOperation<V1beta1Ingress> v1beta1IngressSerializableOperation = new SerializableOperation<>();
+                            SerializableOperation<V1beta1Ingress> v1beta1IngressSerializableOperation
+                                    = new SerializableOperation<>();
                             v1beta1IngressSerializableOperation.setT(v1beta1Ingress);
-                            v1beta1Ingresses.add(v1beta1IngressSerializableOperation.serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileE));
+                            v1beta1Ingresses.add(v1beta1IngressSerializableOperation
+                                    .serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileE));
                             break;
                         case "Service":
+                            V1Service v1Service = new V1Service();
+                            SerializableOperation<V1Service> v1ServiceSerializableOperation =
+                                    new SerializableOperation<>();
+                            v1ServiceSerializableOperation.setT(v1Service);
+                            v1Services.add(v1ServiceSerializableOperation
+                                    .serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileE));
                             break;
                         default:
                             break;
@@ -589,12 +600,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private void handlerObjectReleations(Map<String, String> objectPath,
-                                         List<DevopsEnvFileResourceE> beforeSync,
-                                         List<C7nHelmRelease> c7nHelmReleases,
-                                         List<V1Service> v1Services,
-                                         List<V1beta1Ingress> v1beta1Ingresses,
-                                         Long envId, Long projectId) {
+    private void handlerObjectRelations(Map<String, String> objectPath,
+                                        List<DevopsEnvFileResourceE> beforeSync,
+                                        List<C7nHelmRelease> c7nHelmReleases,
+                                        List<V1Service> v1Services,
+                                        List<V1beta1Ingress> v1beta1Ingresses,
+                                        Long envId, Long projectId) {
         handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId);
         handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId);
         handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId);
@@ -615,7 +626,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         v1Services.parallelStream()
                 .filter(v1Service -> !beforeService.contains(v1Service.getMetadata().getName()))
                 .forEach(v1Service -> {
-                    DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryLatestByEnvAndPath(envId, objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
+                    DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository
+                            .queryLatestByEnvAndPath(envId, objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
                     if (checkServiceName(objectPath, devopsEnvFileE, v1Service)) {
                         return;
                     }
@@ -645,7 +657,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         v1Services.parallelStream()
                 .filter(v1Service -> beforeService.contains(v1Service.getMetadata().getName()))
                 .forEach(v1Service -> {
-                    DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryLatestByEnvAndPath(envId, objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
+                    DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository
+                            .queryLatestByEnvAndPath(envId, objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
                     beforeService.remove(v1Service.getMetadata().getName());
                     if (checkServiceName(objectPath, devopsEnvFileE, v1Service)) {
                         return;

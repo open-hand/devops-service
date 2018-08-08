@@ -267,7 +267,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         devopsEnvResourceDetailE,
                         applicationInstanceE);
             }
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
             if (type.equals("update")) {
                 devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
@@ -867,13 +868,18 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsEnvCommitE agentSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit());
         List<String> commits;
         if (agentSyncCommit == null) {
-            commits = devopsEnvCommitRepository.listByEnvId(envId).parallelStream().map(DevopsEnvCommitE::getCommitSha).collect(Collectors.toList());
+            commits = devopsEnvCommitRepository.listByEnvId(envId).parallelStream()
+                    .map(DevopsEnvCommitE::getCommitSha).collect(Collectors.toList());
         } else {
-            commits = devopsEnvCommitRepository.listByEnvId(envId).parallelStream().filter(devopsEnvCommitE -> devopsEnvCommitE.getCommitDate().compareTo(agentSyncCommit.getCommitDate()) == 1).map(DevopsEnvCommitE::getCommitSha).collect(Collectors.toList());
+            commits = devopsEnvCommitRepository.listByEnvId(envId).parallelStream()
+                    .filter(devopsEnvCommitE ->
+                            devopsEnvCommitE.getCommitDate().compareTo(agentSyncCommit.getCommitDate()) == 1)
+                    .map(DevopsEnvCommitE::getCommitSha)
+                    .collect(Collectors.toList());
         }
         Map<String, String> fileError = new HashMap<>();
         List<DevopsEnvFileE> errorDevopsFiles = new ArrayList<>();
-        if(gitOpsSync.getMetadata().getErrors()!=null) {
+        if (gitOpsSync.getMetadata().getErrors() != null) {
             gitOpsSync.getMetadata().getErrors().parallelStream().forEach(error -> {
                 List<DevopsEnvFileE> devopsFiles = devopsEnvFileRepository.listByEnvIdAndPath(envId, error.getPath());
                 if (fileError.containsKey(error.getPath())) {
@@ -884,32 +890,57 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 errorDevopsFiles.addAll(devopsFiles);
             });
         }
-        gitOpsSync.getResourceIDs().parallelStream().forEach(object -> {
-                    String[] objects = object.split("\\/");
-                    if (objects[0].equals("c7nhelmrelease")) {
-                        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(objects[1], envId);
-                        applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
-                        applicationInstanceRepository.update(applicationInstanceE);
-                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
-                        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-                        devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
-                        updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(), commits, errorDevopsFiles, fileError);
-                    } else if (objects[0].equals("ingress")) {
-                        DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, objects[1]);
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
-                        updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(), commits, errorDevopsFiles, fileError);
-                    } else {
-                        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(objects[1], devopsEnvironmentE.getName());
-                        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
-                        updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(), commits, errorDevopsFiles, fileError);
-
+        gitOpsSync.getResourceIDs()
+                .parallelStream()
+                .forEach(object -> {
+                    String[] objects = object.split("/");
+                    switch (objects[0]) {
+                        case "c7nhelmrelease": {
+                            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                                    .selectByCode(objects[1], envId);
+                            applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
+                            applicationInstanceRepository.update(applicationInstanceE);
+                            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                                    .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+                            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                            devopsEnvCommandRepository.update(devopsEnvCommandE);
+                            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                    .queryByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
+                            updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(),
+                                    commits, errorDevopsFiles, fileError);
+                            break;
+                        }
+                        case "ingress": {
+                            DevopsIngressE devopsIngressE = devopsIngressRepository
+                                    .selectByEnvAndName(envId, objects[1]);
+                            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                    .queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
+                            updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(),
+                                    commits, errorDevopsFiles, fileError);
+                            break;
+                        }
+                        case "service": {
+                            DevopsServiceE devopsServiceE = devopsServiceRepository
+                                    .selectByNameAndNamespace(objects[1], devopsEnvironmentE.getName());
+                            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                    .queryByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
+                            if (updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(),
+                                    commits, errorDevopsFiles, fileError)) {
+                                devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
+                            } else {
+                                devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
+                            }
+                            devopsServiceRepository.update(devopsServiceE);
+                            break;
+                        }
+                        default:
+                            break;
                     }
-                }
-        );
+                });
         DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
         devopsEnvCommitE.setEnvId(envId);
-        devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
+        devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository
+                .queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
         devopsEnvironmentRepository.update(devopsEnvironmentE);
     }
 
@@ -1122,14 +1153,21 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
 
-    public void updateDevopsFile(Long envId, String filePath, List<String> commits, List<DevopsEnvFileE> errorDevopsFiles, Map<String, String> fileError) {
+    private Boolean updateDevopsFile(Long envId,
+                                     String filePath,
+                                     List<String> commits,
+                                     List<DevopsEnvFileE> errorDevopsFiles,
+                                     Map<String, String> fileError) {
+        Boolean hasError = false;
         DevopsEnvFileE devopEnvFileE = devopsEnvFileRepository.queryByEnvAndPathAndCommits(envId, filePath, commits);
         devopEnvFileE.setSync(true);
-        if (errorDevopsFiles.parallelStream().anyMatch(errorDevopsEnvFileE -> errorDevopsEnvFileE.getId().equals(devopEnvFileE.getId()))) {
+        if (errorDevopsFiles.parallelStream()
+                .anyMatch(errorDevopsEnvFileE -> errorDevopsEnvFileE.getId().equals(devopEnvFileE.getId()))) {
             devopEnvFileE.setMessage(fileError.get(devopEnvFileE.getFilePath()));
+            hasError = true;
         }
         devopsEnvFileRepository.update(devopEnvFileE);
-
+        return hasError;
     }
 }
 
