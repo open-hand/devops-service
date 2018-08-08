@@ -73,6 +73,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
+
 
     @Autowired
     private DevopsGitRepository devopsGitRepository;
@@ -371,7 +374,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         //生成环境git仓库ssh地址
         String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         LOGGER.info(url);
 
         try {

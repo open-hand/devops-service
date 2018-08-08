@@ -61,8 +61,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Value("${services.gateway.url}")
     private String gatewayUrl;
 
-    @Value("${services.gitlab.url}")
-    private String gitlabUrl;
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
 
     @Autowired
     private IamRepository iamRepository;
@@ -110,7 +110,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
         String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
@@ -268,7 +268,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         }
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        String repoUrl = "git@" + gitlabUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
+        String repoUrl = "git@" + gitlabSshUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
         params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
