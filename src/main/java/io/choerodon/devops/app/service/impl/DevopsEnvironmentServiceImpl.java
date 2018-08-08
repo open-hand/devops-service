@@ -65,6 +65,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
 
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
+
     @Autowired
     private IamRepository iamRepository;
     @Autowired
