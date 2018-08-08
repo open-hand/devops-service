@@ -23,6 +23,7 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvironmentReposi
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
@@ -201,18 +202,14 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public void setUsable(String name) {
-        DevopsIngressDO devopsIngressDO = devopsIngressMapper.select(new DevopsIngressDO(name)).get(0);
-        devopsIngressDO.setUsable(true);
-        devopsIngressMapper.updateByPrimaryKey(devopsIngressDO);
-    }
-
-    @Override
     public Long setStatus(Long envId, String name, String status) {
         DevopsIngressDO ingressDO = new DevopsIngressDO(name);
         ingressDO.setEnvId(envId);
         DevopsIngressDO ingress = devopsIngressMapper.selectOne(ingressDO);
         ingress.setStatus(status);
+        if (status.equals(IngressStatus.RUNNING.getStatus())) {
+            ingress.setUsable(true);
+        }
         devopsIngressMapper.updateByPrimaryKey(ingress);
         return ingress.getId();
     }

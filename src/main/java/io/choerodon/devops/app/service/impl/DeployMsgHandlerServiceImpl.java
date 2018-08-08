@@ -476,7 +476,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         saveOrUpdateResource(devopsEnvResourceE, newDevopsEnvResourceE, devopsEnvResourceDetailE, null);
         String ingressName = ingress.getMetadata().getName();
-        devopsIngressRepository.setUsable(ingressName);
         devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
     }
 
@@ -924,9 +923,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     .queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
                             if (updateDevopsFile(envId, devopsEnvFileResourceE.getFilePath(),
                                     commits, errorDevopsFiles, fileError)) {
-                                devopsIngressE.setStatus(ServiceStatus.FAILED.getStatus());
+                                devopsIngressRepository.setStatus(
+                                        envId, devopsIngressE.getName(), IngressStatus.FAILED.getStatus());
                             } else {
-                                devopsIngressE.setStatus(ServiceStatus.RUNNING.getStatus());
+                                devopsIngressRepository.setStatus(
+                                        envId, devopsIngressE.getName(), IngressStatus.RUNNING.getStatus());
                             }
                             break;
                         }
