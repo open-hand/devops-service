@@ -16,6 +16,7 @@ public class DevopsServiceE {
     private List<PortMapE> ports;
     private List<String> externalIps;
     private String externalIp;
+    private String type;
     private String labels;
     private String annotations;
     private Long objectVersionNumber;
@@ -114,5 +115,13 @@ public class DevopsServiceE {
 
     public void setExternalIps(List<String> externalIps) {
         this.externalIps = externalIps;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

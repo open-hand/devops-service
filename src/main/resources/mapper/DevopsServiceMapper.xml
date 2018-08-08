@@ -65,6 +65,7 @@
         ds.external_ip,
         ds.ports,
         ds.`status`,
+        ds.`type`,
         ds.labels,
         da.id AS app_id,
         da.`name` AS app_name,
@@ -108,6 +109,7 @@
         da.project_id appProjectId,
         ds. ports,
         ds.`status`,
+        ds.`type`,
         da.id AS app_id,
         da.`name` AS app_name,
         de.id AS env_id,
@@ -143,6 +145,7 @@
         <result property="status" column="status"/>
         <result property="appId" column="app_id"/>
         <result property="appName" column="app_name"/>
+        <result property="type" column="type"/>
         <result property="envId" column="env_id"/>
         <result property="appProjectId" column="appProjectId"/>
         <result property="envName" column="env_name"/>

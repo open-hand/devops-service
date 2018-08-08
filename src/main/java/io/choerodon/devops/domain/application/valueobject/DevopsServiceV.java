@@ -17,6 +17,7 @@ public class DevopsServiceV {
     private List<PortMapE> ports;
     private String status;
     private Long envId;
+    private String type;
     private String envName;
     private Boolean envStatus;
     private String namespace;
@@ -136,5 +137,13 @@ public class DevopsServiceV {
 
     public void setLabels(Map<String, String> labels) {
         this.labels = labels;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

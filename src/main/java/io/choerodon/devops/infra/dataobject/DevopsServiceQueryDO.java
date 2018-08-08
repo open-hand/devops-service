@@ -14,6 +14,7 @@ public class DevopsServiceQueryDO {
     private String ports;
     private String status;
     private Long envId;
+    private String type;
     private String envName;
     private String namespace;
     private Long appId;
@@ -126,5 +127,13 @@ public class DevopsServiceQueryDO {
 
     public void setLabels(String labels) {
         this.labels = labels;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

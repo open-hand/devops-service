@@ -20,6 +20,8 @@ public class DevopsServiceReqDTO {
     private String name;
     private String externalIp;
     @NotNull
+    private String type;
+    @NotNull
     private List<PortMapE> ports;
     private List<Long> appInstance;
     private Map<String, String> label;
@@ -78,5 +80,13 @@ public class DevopsServiceReqDTO {
 
     public void setLabel(Map<String, String> labels) {
         this.label = labels;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
