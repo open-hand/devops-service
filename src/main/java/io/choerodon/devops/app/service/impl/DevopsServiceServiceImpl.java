@@ -305,6 +305,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1ServiceSpec spec = new V1ServiceSpec();
         spec.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         spec.setSelector(devopsServiceReqDTO.getLabel());
+        final Integer[] serialNumber = {0};
         List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().parallelStream()
                 .map(t -> {
                     V1ServicePort v1ServicePort = new V1ServicePort();
@@ -317,7 +318,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     if (t.getTargetPort() != null) {
                         v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
                     }
-                    v1ServicePort.setName(t.getName() == null ? "http" + System.currentTimeMillis() : t.getName());
+                    v1ServicePort.setName(t.getName() == null ? "http" + serialNumber[0]++ : t.getName());
                     v1ServicePort.setProtocol(t.getProtocol() == null ? "TCP" : t.getProtocol());
                     return v1ServicePort;
                 }).collect(Collectors.toList());
