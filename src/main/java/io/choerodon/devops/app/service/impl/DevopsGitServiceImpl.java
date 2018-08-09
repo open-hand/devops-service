@@ -294,14 +294,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    @Saga(code = "devops-sync-gitops", description = "gitops", inputSchema = "{}")
+    @Saga(code = "devops-sync-gitops", description = "gitops", inputSchemaClass = PushWebHookDTO.class)
     public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
         pushWebHookDTO.setToken(token);
         String input;
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
         //TODO 在收到环境库webhook 之后应该在env commit 记录表中插入提交记录，并且更新对应环境中git库最新提交字段
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
-            sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "", ""));
+            sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString()));
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage());
         }
