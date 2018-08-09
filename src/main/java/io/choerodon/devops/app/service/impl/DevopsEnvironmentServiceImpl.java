@@ -367,9 +367,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
         EnvSyncStatusDTO envSyncStatusDTO = new EnvSyncStatusDTO();
-        envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
-        envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
-        envSyncStatusDTO.setGitCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit()).getCommitSha());
+        if (devopsEnvironmentE.getAgentSyncCommit() != null) {
+            envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
+        }
+        if (devopsEnvironmentE.getDevopsSyncCommit() != null) {
+            envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
+        }
+        if (devopsEnvironmentE.getGitCommit() != null) {
+            envSyncStatusDTO.setGitCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit()).getCommitSha());
+        }
         envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
                 gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
         return envSyncStatusDTO;
