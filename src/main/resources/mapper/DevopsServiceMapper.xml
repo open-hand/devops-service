@@ -37,6 +37,7 @@
             AND ds.env_id = #{envId}
         </if>
         ) ds
+        JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_application da ON da.id = ds.app_id
         LEFT JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
