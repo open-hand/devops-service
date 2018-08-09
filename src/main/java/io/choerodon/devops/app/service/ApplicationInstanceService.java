@@ -133,5 +133,5 @@ public interface ApplicationInstanceService {
     DevopsEnvPreviewInstanceDTO getDevopsEnvPreviewInstance(Long envId);
 
 
-    Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId);
+    Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId, PageRequest pageRequest);
 }

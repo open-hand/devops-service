@@ -472,32 +472,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         .queryById(envId);
                 ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
                 Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-                ApplicationE applicationE = applicationRepository
-                        .queryByCode(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId());
-                if (applicationE == null) {
-                    List<ApplicationE> applicationES = applicationRepository.listByCode(releasePayload.getChartName());
-                    List<ApplicationE> applicationList = applicationES.parallelStream()
-                            .filter(newApplicationE ->
-                                    iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
-                                            .getOrganization().getId().equals(organization.getId()))
-                            .collect(Collectors.toList());
-                    if (!applicationList.isEmpty()) {
-                        applicationE = applicationList.get(0);
-                        if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) == 0) {
-                            applicationE = null;
-                        }
-                    } else {
-                        applicationE = applicationES.isEmpty() ? null : applicationES.get(0);
-                        if (applicationE != null) {
-                            ApplicationMarketE applicationMarketE =
-                                    applicationMarketRepository.queryByAppId(applicationE.getId());
-                            if (applicationMarketE == null
-                                    || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
-                                applicationE = null;
-                            }
-                        }
-                    }
-                }
+                getApplication(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId(), organization.getId());
+                ApplicationE applicationE = getApplication(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId(), organization.getId());
                 if (applicationE == null) {
                     throw new CommonException("error.application.query");
                 }
@@ -1147,6 +1123,37 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         devopsEnvFileRepository.update(devopEnvFileE);
         return hasError;
+    }
+
+    @Override
+    public ApplicationE getApplication(String appName, Long projectId, Long orgId) {
+        ApplicationE applicationE = applicationRepository
+                .queryByCode(appName, projectId);
+        if (applicationE == null) {
+            List<ApplicationE> applicationES = applicationRepository.listByCode(appName);
+            List<ApplicationE> applicationList = applicationES.parallelStream()
+                    .filter(newApplicationE ->
+                            iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
+                                    .getOrganization().getId().equals(orgId))
+                    .collect(Collectors.toList());
+            if (!applicationList.isEmpty()) {
+                applicationE = applicationList.get(0);
+                if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) == 0) {
+                    applicationE = null;
+                }
+            } else {
+                applicationE = applicationES.isEmpty() ? null : applicationES.get(0);
+                if (applicationE != null) {
+                    ApplicationMarketE applicationMarketE =
+                            applicationMarketRepository.queryByAppId(applicationE.getId());
+                    if (applicationMarketE == null
+                            || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
+                        applicationE = null;
+                    }
+                }
+            }
+        }
+        return applicationE;
     }
 }
 

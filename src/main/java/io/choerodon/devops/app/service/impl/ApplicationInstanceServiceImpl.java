@@ -306,16 +306,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId) {
+    public Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId, PageRequest pageRequest) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFileRepository.listByEnvId(envId).parallelStream().filter(devopsEnvFileE -> devopsEnvFileE.isSync() == true && devopsEnvFileE.getMessage() != null).sorted(Comparator.comparing(DevopsEnvFileE::getId)).map(devopsEnvFileE -> {
-            devopsEnvFileE.setCommitUrl(String.format("%s:%s-%s-gitops/%s/commit/%s",
+        Page<DevopsEnvFileE> devopsEnvFilePages = devopsEnvFileRepository.pageByEnvId(envId, pageRequest);
+        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFilePages.parallelStream().map(devopsEnvFileE -> {
+            devopsEnvFileE.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/%s",
                     gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(), devopsEnvFileE.getCommitSha()));
             return devopsEnvFileE;
         }).collect(Collectors.toList());
         Page<DevopsEnvFileE> pages = new Page<>();
+        BeanUtils.copyProperties(devopsEnvFilePages, pages);
         pages.setContent(devopsEnvFileES);
         return ConvertPageHelper.convertPage(pages, DevopsEnvFileDTO.class);
     }

@@ -26,4 +26,17 @@
             #{commit}
         </foreach>
     </select>
+
+
+    <select id="pageByEnvId" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvFileDO">
+        SELECT
+        d.*
+        FROM
+        devops_env_file d
+        WHERE
+        d.env_id = #{envId} and d.is_sync is true and d.message is not null
+        order by id desc
+    </select>
+
+
 </mapper>

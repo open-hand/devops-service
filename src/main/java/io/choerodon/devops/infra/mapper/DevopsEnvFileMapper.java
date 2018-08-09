@@ -12,4 +12,6 @@ public interface DevopsEnvFileMapper extends BaseMapper<DevopsEnvFileDO> {
     DevopsEnvFileDO queryLatestByEnvAndPath(@Param("envId") Long envId, @Param("filePath") String filePath);
 
     DevopsEnvFileDO queryByEnvAndPathAndCommits(@Param("envId") Long envId, @Param("filePath") String filePath, @Param("commits") List<String> commits);
+
+    List<DevopsEnvFileDO> pageByEnvId(@Param("envId") Long envId);
 }

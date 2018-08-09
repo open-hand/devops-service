@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+
 /**
  * Created by Zenger on 2018/4/17.
  */
@@ -56,4 +58,6 @@ public interface DeployMsgHandlerService {
     void releasePodEvent(String key, String msg, Long envId);
 
     void gitOpsSyncEvent(Long envId, String msg);
+
+    ApplicationE getApplication(String appName, Long projectId, Long orgId);
 }
