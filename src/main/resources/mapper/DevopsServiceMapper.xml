@@ -97,6 +97,7 @@
         LEFT JOIN devops_application da ON da.id = ds.app_id
         LEFT JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        WHERE 1
         <include refid="sqlparam"/>
     </select>
 
