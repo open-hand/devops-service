@@ -275,7 +275,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         }
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        String repoUrl = "git@" + gitlabSshUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
         params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
