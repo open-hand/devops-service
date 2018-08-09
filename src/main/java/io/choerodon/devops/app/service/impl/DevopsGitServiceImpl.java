@@ -950,7 +950,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                     DevopsEnvFileE devopsEnvFileE,
                                                     String filePath) {
         DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO();
-        devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+        if(v1Service.getSpec().getExternalIPs()!=null) {
+            devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+        }
         devopsServiceReqDTO.setName(v1Service.getMetadata().getName());
         devopsServiceReqDTO.setEnvId(envId);
         devopsServiceReqDTO.setLabel(v1Service.getMetadata().getLabels());
@@ -959,10 +961,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .map(t -> {
                     PortMapE portMap = new PortMapE();
                     portMap.setName(t.getName());
-                    portMap.setNodePort(t.getNodePort().longValue());
+                    if(t.getNodePort()!=null) {
+                        portMap.setNodePort(t.getNodePort().longValue());
+                    }
                     portMap.setPort(t.getPort().longValue());
                     portMap.setProtocol(t.getProtocol());
-                    portMap.setTargetPort(t.getTargetPort().getIntValue().longValue());
+                    portMap.setTargetPort(TypeUtil.objToLong(t.getTargetPort()));
                     return portMap;
                 }).collect(Collectors.toList());
         devopsServiceReqDTO.setPorts(portMapList);
