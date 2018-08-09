@@ -119,10 +119,10 @@
         dai.`status` AS intance_status
         FROM
         devops_service ds
-        INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
-        INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
-        INNER JOIN devops_application da ON da.id = dai.app_id
         INNER JOIN devops_env de ON ds.env_id = de.id
+        LEFT JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
+        LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        LEFT JOIN devops_application da ON da.id = dai.app_id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'
