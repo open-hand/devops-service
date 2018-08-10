@@ -24,6 +24,9 @@ public class CommitDTO {
     private Date timestamp;
     private String title;
     private String url;
+    private List<String> added;
+    private List<String> modified;
+    private List<String> removed;
 
     public AuthorDO getAuthor() {
         return author;
@@ -159,5 +162,29 @@ public class CommitDTO {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public List<String> getAdded() {
+        return added;
+    }
+
+    public void setAdded(List<String> added) {
+        this.added = added;
+    }
+
+    public List<String> getModified() {
+        return modified;
+    }
+
+    public void setModified(List<String> modified) {
+        this.modified = modified;
+    }
+
+    public List<String> getRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(List<String> removed) {
+        this.removed = removed;
     }
 }

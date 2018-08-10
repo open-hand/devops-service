@@ -101,6 +101,14 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private ApplicationMarketRepository applicationMarketRepository;
     @Autowired
     private DevopsCommandEventRepository devopsCommandEventRepository;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private DevopsEnvFileRepository devopsEnvFileRepository;
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
+    @Autowired
+    private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository;
 
     /**
      * pod 更新
@@ -225,13 +233,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setId(devopsEnvCommandE.getId());
-        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
-                applicationVersionRepository.queryValue(applicationInstanceE.getApplicationVersionE().getId()),
-                releasePayload.getConfig()));
-        devopsEnvCommandE.initDevopsEnvCommandValueE(
-                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
         installResource(resources, applicationInstanceE);
     }
@@ -244,17 +245,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         List<Job> jobs = JSONArray.parseArray(msg, Job.class);
         ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         try {
             for (Job job : jobs) {
                 applicationInstanceE = applicationInstanceRepository
                         .selectByCode(job.getReleaseName(), envId);
-                if (type.equals("update")) {
-                    applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-                    applicationInstanceRepository.update(applicationInstanceE);
-                    devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-                }
                 DevopsEnvResourceE newdevopsEnvResourceE =
                         devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                 applicationInstanceE.getId(),
@@ -275,10 +269,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         devopsEnvResourceDetailE,
                         applicationInstanceE);
             }
-            devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
-            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+            if (type.equals("update")) {
+                devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+            }
+            applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+            applicationInstanceRepository.update(applicationInstanceE);
             devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
+            devopsEnvCommandRepository.update(devopsEnvCommandE);
         } catch (Exception e) {
             throw new CommonException("error.resource.insert");
         }
@@ -333,34 +333,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     for (String release : releases) {
                         applicationInstanceE = applicationInstanceRepository
                                 .selectByCode(release, envId);
-
-                        String namespace = v1Service.getMetadata().getNamespace();
-                        if (flag) {
-                            DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                                    v1Service.getMetadata().getName(), namespace);
-                            if (applicationInstanceE != null) {
-                                if (devopsServiceE == null) {
-                                    devopsServiceE = new DevopsServiceE();
-                                    syncService(devopsServiceE, msg, applicationInstanceE);
-                                    DevopsEnvResourceE newDevopsInsResourceE =
-                                            devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                                    applicationInstanceE.getId(),
-                                                    KeyParseTool.getResourceType(key),
-                                                    KeyParseTool.getResourceName(key));
-                                    saveOrUpdateResource(devopsEnvResourceE, newDevopsInsResourceE,
-                                            devopsEnvResourceDetailE, applicationInstanceE);
-                                }
-                                List<DevopsIngressPathE> devopsIngressPathEList =
-                                        devopsIngressRepository.selectByEnvIdAndServiceName(
-                                                devopsServiceE.getEnvId(), devopsServiceE.getName());
-                                for (DevopsIngressPathE dd : devopsIngressPathEList) {
-                                    if (dd.getServiceId() == null) {
-                                        dd.setServiceId(devopsServiceE.getId());
-                                        devopsIngressRepository.updateIngressPath(dd);
-                                    }
-                                }
-                            }
-                        }
                         DevopsEnvResourceE newdevopsInsResourceE =
                                 devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                         applicationInstanceE.getId(),
@@ -478,7 +450,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         saveOrUpdateResource(devopsEnvResourceE, newDevopsEnvResourceE, devopsEnvResourceDetailE, null);
         String ingressName = ingress.getMetadata().getName();
-        devopsIngressRepository.setUsable(ingressName);
         devopsIngressRepository.setStatus(envId, ingressName, IngressStatus.RUNNING.getStatus());
     }
 
@@ -503,32 +474,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         .queryById(envId);
                 ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
                 Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-                ApplicationE applicationE = applicationRepository
-                        .queryByCode(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId());
-                if (applicationE == null) {
-                    List<ApplicationE> applicationES = applicationRepository.listByCode(releasePayload.getChartName());
-                    List<ApplicationE> applicationList = applicationES.parallelStream()
-                            .filter(newApplicationE ->
-                                    iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
-                                            .getOrganization().getId().equals(organization.getId()))
-                            .collect(Collectors.toList());
-                    if (!applicationList.isEmpty()) {
-                        applicationE = applicationList.get(0);
-                        if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) == 0) {
-                            applicationE = null;
-                        }
-                    } else {
-                        applicationE = applicationES.isEmpty() ? null : applicationES.get(0);
-                        if (applicationE != null) {
-                            ApplicationMarketE applicationMarketE =
-                                    applicationMarketRepository.queryByAppId(applicationE.getId());
-                            if (applicationMarketE == null
-                                    || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
-                                applicationE = null;
-                            }
-                        }
-                    }
-                }
+                getApplication(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId(), organization.getId());
+                ApplicationE applicationE = getApplication(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId(), organization.getId());
                 if (applicationE == null) {
                     throw new CommonException("error.application.query");
                 }
@@ -594,7 +541,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void helmReleaseStartFail(String key, String msg, Long envId) {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
-                InstanceStatus.STOPED.getStatus(),
+                InstanceStatus.STOPPED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
     }
@@ -860,6 +807,95 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         insertDevopsCommandEvent(event, ResourceType.POD.getType());
     }
 
+    @Override
+    public void gitOpsSyncEvent(Long envId, String msg) {
+        GitOpsSync gitOpsSync = JSONArray.parseObject(msg, GitOpsSync.class);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvCommitE agentSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit());
+        if (agentSyncCommit != null) {
+            if (agentSyncCommit.getCommitSha().equals(gitOpsSync.getMetadata().getCommit())) {
+                return;
+            }
+        }
+        devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
+        devopsEnvironmentRepository.update(devopsEnvironmentE);
+        if (gitOpsSync.getResourceIDs().isEmpty()) {
+            return;
+        }
+        List<DevopsEnvFileErrorE> errorDevopsFiles = new ArrayList<>();
+        if (gitOpsSync.getMetadata().getErrors() != null) {
+            gitOpsSync.getMetadata().getErrors().parallelStream().forEach(error -> {
+                DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.queryByEnvIdAndFilePath(envId, error.getPath());
+                if (devopsEnvFileErrorE == null) {
+                    devopsEnvFileErrorE = new DevopsEnvFileErrorE();
+                    devopsEnvFileErrorE.setCommit(error.getCommit());
+                    devopsEnvFileErrorE.setError(error.getError());
+                    devopsEnvFileErrorE.setFilePath(error.getPath());
+                    devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
+                    devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                } else {
+                    devopsEnvFileErrorE.setError(devopsEnvFileErrorE.getError() + error.getError());
+                    devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                }
+                errorDevopsFiles.add(devopsEnvFileErrorE);
+            });
+        }
+        gitOpsSync.getMetadata().getFilesCommit().parallelStream().forEach(fileCommit -> {
+            DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), fileCommit.getFile());
+            devopsEnvFileE.setAgentCommit(fileCommit.getCommit());
+            devopsEnvFileRepository.update(devopsEnvFileE);
+        });
+        gitOpsSync.getResourceIDs()
+                .parallelStream()
+                .forEach(object -> {
+                    String[] objects = object.split("/");
+                    switch (objects[0]) {
+                        case "c7nhelmrelease": {
+                            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                                    .selectByCode(objects[1], envId);
+                            applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
+                            applicationInstanceRepository.update(applicationInstanceE);
+                            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                                    .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+                            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                            devopsEnvCommandRepository.update(devopsEnvCommandE);
+                            break;
+                        }
+                        case "ingress": {
+                            DevopsIngressE devopsIngressE = devopsIngressRepository
+                                    .selectByEnvAndName(envId, objects[1]);
+                            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                    .queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
+                            if (isFileError(envId, devopsEnvFileResourceE.getFilePath(),
+                                    errorDevopsFiles)) {
+                                devopsIngressRepository.setStatus(
+                                        envId, devopsIngressE.getName(), IngressStatus.FAILED.getStatus());
+                            } else {
+                                devopsIngressRepository.setStatus(
+                                        envId, devopsIngressE.getName(), IngressStatus.RUNNING.getStatus());
+                            }
+                            break;
+                        }
+                        case "service": {
+                            DevopsServiceE devopsServiceE = devopsServiceRepository
+                                    .selectByNameAndNamespace(objects[1], devopsEnvironmentE.getName());
+                            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                    .queryByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
+                            if (isFileError(envId, devopsEnvFileResourceE.getFilePath(),
+                                    errorDevopsFiles)) {
+                                devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
+                            } else {
+                                devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
+                            }
+                            devopsServiceRepository.update(devopsServiceE);
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+                });
+    }
+
     private void saveOrUpdateResource(DevopsEnvResourceE devopsEnvResourceE,
                                       DevopsEnvResourceE newdevopsEnvResourceE,
                                       DevopsEnvResourceDetailE devopsEnvResourceDetailE,
@@ -1068,5 +1104,48 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
     }
 
+
+    private Boolean isFileError(Long envId,
+                                String filePath,
+                                List<DevopsEnvFileErrorE> envFileErrorES) {
+        Boolean hasError = false;
+        DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.queryByEnvIdAndFilePath(envId, filePath);
+        if (envFileErrorES.parallelStream()
+                .anyMatch(errorDevopsEnvFileE -> errorDevopsEnvFileE.getId().equals(devopsEnvFileErrorE.getId()))) {
+            hasError = true;
+        }
+        return hasError;
+    }
+
+    @Override
+    public ApplicationE getApplication(String appName, Long projectId, Long orgId) {
+        ApplicationE applicationE = applicationRepository
+                .queryByCode(appName, projectId);
+        if (applicationE == null) {
+            List<ApplicationE> applicationES = applicationRepository.listByCode(appName);
+            List<ApplicationE> applicationList = applicationES.parallelStream()
+                    .filter(newApplicationE ->
+                            iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
+                                    .getOrganization().getId().equals(orgId))
+                    .collect(Collectors.toList());
+            if (!applicationList.isEmpty()) {
+                applicationE = applicationList.get(0);
+                if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) == 0) {
+                    applicationE = null;
+                }
+            } else {
+                applicationE = applicationES.isEmpty() ? null : applicationES.get(0);
+                if (applicationE != null) {
+                    ApplicationMarketE applicationMarketE =
+                            applicationMarketRepository.queryByAppId(applicationE.getId());
+                    if (applicationMarketE == null
+                            || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
+                        applicationE = null;
+                    }
+                }
+            }
+        }
+        return applicationE;
+    }
 }
 

@@ -25,6 +25,7 @@ public class DevopsServiceDO extends AuditDomain {
     private String namespace;
     private String status;
     private String ports;
+    private String type;
     private Long port;
     private Long targetPort;
     private String externalIp;
@@ -127,21 +128,11 @@ public class DevopsServiceDO extends AuditDomain {
         this.ports = ports;
     }
 
-    public String addPorts(String port) {
-        if (this.ports != null) {
-            this.ports += "," + port;
-        } else {
-            this.ports = port;
-        }
-        return this.ports;
+    public String getType() {
+        return type;
     }
 
-    public String addExternalIp(String externalIp) {
-        if (this.externalIp != null) {
-            this.externalIp += "," + externalIp;
-        } else {
-            this.externalIp = externalIp;
-        }
-        return this.externalIp;
+    public void setType(String type) {
+        this.type = type;
     }
 }

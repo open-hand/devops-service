@@ -13,6 +13,7 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
@@ -31,16 +32,14 @@ import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 @Component
 public class GitUtil {
 
-    public static final String DEVOPS_GITOPS_TAG = "GitOps";
+    public static final String DEVOPS_GITOPS_TAG = "devops-sync";
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPONAME = "devops-service-repo";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
     private String classPath;
     private String sshKey;
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-
     @Value("${template.version.MicroService}")
     private String microService;
     @Value("${template.version.MicroServiceFront}")
@@ -69,6 +68,22 @@ public class GitUtil {
         this.sshKey = sshKey;
     }
 
+    public static String getLog(String repoPath, String fileName) {
+        String latestCommit = "";
+        File file = new File("gitops/operation/crockpro0803/yl3/.git");
+        try (Repository repository = new FileRepository(file.getAbsolutePath())) {
+            try (Git git = new Git(repository)) {
+                Iterable<RevCommit> logs = git.log().addPath(fileName).call();
+                for (RevCommit revCommit : logs) {
+                    latestCommit = revCommit.name();
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.info(e.getMessage());
+        }
+        return latestCommit;
+    }
 
     public void cloneBySsh(String path, String url) {
         SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
@@ -104,14 +119,12 @@ public class GitUtil {
     public void checkout(String path, String commit) {
 
         File repoGitDir = new File(path);
-        Repository repository = null;
-        try {
-            repository = new FileRepository(repoGitDir.getAbsolutePath());
-            Git git = new Git(repository);
-            CheckoutCommand checkoutCommand = git.checkout();
-            checkoutCommand.setName(commit);
-            checkoutCommand.call();
-            git.close();
+        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
+            try (Git git = new Git(repository)) {
+                CheckoutCommand checkoutCommand = git.checkout();
+                checkoutCommand.setName(commit);
+                checkoutCommand.call();
+            }
         } catch (Exception e) {
 
         }
@@ -132,24 +145,21 @@ public class GitUtil {
             }
         };
         File repoGitDir = new File(path);
-        Repository repository = null;
-        try {
-            repository = new FileRepository(repoGitDir.getAbsolutePath());
-            Git git = new Git(repository);
-            PullCommand pullCmd = git.pull();
-            TransportConfigCallback transportConfigCallback = transport -> {
-                SshTransport sshTransport = (SshTransport) transport;
-                sshTransport.setSshSessionFactory(sshSessionFactory);
-            };
-            pullCmd.setTransportConfigCallback(transportConfigCallback);
-            pullCmd.setRemoteBranchName("master");
-            pullCmd.call();
-            git.close();
+        try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
+            try (Git git = new Git(repository)) {
+                PullCommand pullCmd = git.pull();
+                TransportConfigCallback transportConfigCallback = transport -> {
+                    SshTransport sshTransport = (SshTransport) transport;
+                    sshTransport.setSshSessionFactory(sshSessionFactory);
+                };
+                pullCmd.setTransportConfigCallback(transportConfigCallback);
+                pullCmd.setRemoteBranchName("master");
+                pullCmd.call();
+            }
         } catch (Exception e) {
 
         }
     }
-
 
 
     /**

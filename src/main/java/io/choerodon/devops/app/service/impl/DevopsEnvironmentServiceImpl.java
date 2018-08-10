@@ -18,6 +18,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
+import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
@@ -61,6 +62,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Value("${services.gateway.url}")
     private String gatewayUrl;
 
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
@@ -88,6 +92,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private GitlabRepository gitlabRepository;
     @Autowired
     private DevopsGitRepository devopsGitRepository;
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
+
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -109,7 +116,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-        String repoUrl = "git@" + gitlabUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
+        String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
@@ -267,7 +275,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         }
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        String repoUrl = "git@" + gitlabUrl + ":" + projectE.getCode() + "/" + devopsEnvironmentE.getCode() + ".git";
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
         params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
@@ -349,6 +359,26 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                 gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
         devopsEnviromentRepository.update(devopsEnvironmentE);
+    }
+
+    @Override
+    public EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
+        EnvSyncStatusDTO envSyncStatusDTO = new EnvSyncStatusDTO();
+        if (devopsEnvironmentE.getAgentSyncCommit() != null) {
+            envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
+        }
+        if (devopsEnvironmentE.getDevopsSyncCommit() != null) {
+            envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
+        }
+        if (devopsEnvironmentE.getGitCommit() != null) {
+            envSyncStatusDTO.setGitCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit()).getCommitSha());
+        }
+        envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
+                gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
+        return envSyncStatusDTO;
     }
 
 }

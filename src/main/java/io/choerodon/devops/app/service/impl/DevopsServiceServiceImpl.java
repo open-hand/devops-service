@@ -22,16 +22,12 @@ import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.factory.DevopsEnvCommandFactory;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CommandStatus;
-import io.choerodon.devops.infra.common.util.enums.CommandType;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -44,6 +40,8 @@ import io.choerodon.websocket.helper.EnvListener;
 @Transactional(rollbackFor = RuntimeException.class)
 public class DevopsServiceServiceImpl implements DevopsServiceService {
 
+    private static final String SERVICE_LABLE = "choerodon.io/network";
+    private static final String SERVICE = "service";
     private Gson gson = new Gson();
 
     @Autowired
@@ -54,8 +52,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
-    @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
     @Autowired
@@ -126,20 +122,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
             throw new CommonException("error.service.name.exist");
         }
-        checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                null, null);
+        if (devopsServiceReqDTO.getAppId() != null) {
+            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
+                    null, null);
+        }
 
         DevopsServiceE devopsServiceE = new DevopsServiceE();
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
+        devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
-
-        DevopsEnvCommandE devopsEnvCommandE = DevopsEnvCommandFactory.createDevopsEnvCommandE();
-        devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-        devopsEnvCommandE.setObjectId(devopsServiceE.getId());
-        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
 
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
@@ -165,10 +158,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             }
             checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(), null, null);
 
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.SERVICE.getType(), id);
-            updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
-
             updateService(devopsServiceE, devopsServiceReqDTO, true, isGitOps);
 
             //更新域名
@@ -177,9 +166,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsIngressPathEList.forEach((DevopsIngressPathE dd) ->
                     updateIngressPath(dd, serviceName));
         } else {
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.SERVICE.getType(), id);
-            updateCommand(devopsEnvCommandE, CommandType.UPDATE.getType(), CommandStatus.DOING.getStatus());
             List<PortMapE> oldPort = devopsServiceE.getPorts();
             if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 //查询网络对应的实例
@@ -217,11 +203,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        DevopsEnvCommandE newDevopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.SERVICE.getType(), id);
-        newDevopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-        newDevopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandRepository.update(newDevopsEnvCommandE);
         devopsServiceRepository.update(devopsServiceE);
 
         if (!isGitOps) {
@@ -282,26 +263,29 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      */
     private void checkOptions(Long envId, Long appId, Long appVersionId, Long appInstanceId) {
         if (applicationInstanceRepository.checkOptions(envId, appId, appVersionId, appInstanceId) == 0) {
-            throw new CommonException("error.instance.query");
+            throw new CommonException("error.instances.query");
         }
     }
 
     /**
      * 获取k8s service的yaml格式
      */
-    private V1Service getService(DevopsServiceReqDTO devopsServiceReqDTO, String namespace,
-                                 Map<String, String> annotations) {
+    private V1Service getService(DevopsServiceReqDTO devopsServiceReqDTO, Map<String, String> annotations) {
         V1Service service = new V1Service();
         service.setKind("Service");
         service.setApiVersion("v1");
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsServiceReqDTO.getName());
-        metadata.setNamespace(namespace);
-        metadata.setLabels(devopsServiceReqDTO.getLabel());
         metadata.setAnnotations(annotations);
+        Map<String, String> label = new HashMap<>();
+        label.put(SERVICE_LABLE, SERVICE);
+        metadata.setLabels(label);
         service.setMetadata(metadata);
 
         V1ServiceSpec spec = new V1ServiceSpec();
+        spec.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
+        spec.setSelector(devopsServiceReqDTO.getLabel());
+        final Integer[] serialNumber = {0};
         List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().parallelStream()
                 .map(t -> {
                     V1ServicePort v1ServicePort = new V1ServicePort();
@@ -314,7 +298,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     if (t.getTargetPort() != null) {
                         v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
                     }
-                    v1ServicePort.setName(t.getName() == null ? "http" + System.currentTimeMillis() : t.getName());
+                    v1ServicePort.setName(t.getName() == null ? "http" + serialNumber[0]++ : t.getName());
                     v1ServicePort.setProtocol(t.getProtocol() == null ? "TCP" : t.getProtocol());
                     return v1ServicePort;
                 }).collect(Collectors.toList());
@@ -327,7 +311,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         spec.setPorts(ports);
         spec.setSessionAffinity("None");
-        spec.type("ClusterIP");
         service.setSpec(spec);
 
         return service;
@@ -353,7 +336,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         V1Service service = getService(
                 devopsServiceReqDTO,
-                devopsServiceE.getNamespace(),
                 annotations);
 
         DevopsServiceE appDeploy = devopsServiceRepository.query(devopsServiceE.getId());
@@ -381,6 +363,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         devopsServiceE.setPorts(devopsServiceReqDTO.getPorts());
+        devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setExternalIp(devopsServiceReqDTO.getExternalIp());
         devopsServiceRepository.update(devopsServiceE);
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceEList = devopsServiceInstanceRepository
@@ -428,19 +411,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return applicationE;
     }
 
-    private void updateCommand(DevopsEnvCommandE devopsEnvCommandE, String type, String status) {
-        devopsEnvCommandE.setCommandType(type);
-        devopsEnvCommandE.setStatus(status);
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
-    }
-
     private void updateIngressPath(DevopsIngressPathE devopsIngressPathE, String serviceName) {
         DevopsIngressDO devopsIngressDO = devopsIngressRepository
                 .getIngress(devopsIngressPathE.getDevopsIngressE().getId());
-
-        DevopsEnvCommandE newDevopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INGRESS.getType(), devopsIngressDO.getId());
-        updateCommand(newDevopsEnvCommandE, CommandType.CREATE.getType(), CommandStatus.DOING.getStatus());
 
         if (serviceName != null) {
             devopsIngressPathE.setServiceName(serviceName);
@@ -450,7 +423,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryById(devopsIngressDO.getEnvId());
         V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
-                devopsIngressDO.getName(), devopsEnvironmentE.getCode());
+                devopsIngressDO.getName());
         List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
                 .selectByIngressId(devopsIngressDO.getId());
         devopsIngressPathEListTemp.forEach(ddTemp ->

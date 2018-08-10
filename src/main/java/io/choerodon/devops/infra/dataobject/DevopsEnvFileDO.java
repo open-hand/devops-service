@@ -8,17 +8,18 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 
 @ModifyAudit
-@Table(name = "devops_env_file_log")
+@Table(name = "devops_env_file")
 @VersionAudit
-public class DevopsEnvFileLogDO {
+public class DevopsEnvFileDO {
 
     @Id
     @GeneratedValue
     private Long id;
     private Long envId;
     private String filePath;
-    private String commitSha;
-    private String message;
+    private String devopsCommit;
+    private String agentCommit;
+    private Long objectVersionNumber;
 
 
     public Long getId() {
@@ -45,19 +46,27 @@ public class DevopsEnvFileLogDO {
         this.filePath = filePath;
     }
 
-    public String getCommitSha() {
-        return commitSha;
+    public String getDevopsCommit() {
+        return devopsCommit;
     }
 
-    public void setCommitSha(String commitSha) {
-        this.commitSha = commitSha;
+    public void setDevopsCommit(String devopsCommit) {
+        this.devopsCommit = devopsCommit;
     }
 
-    public String getMessage() {
-        return message;
+    public String getAgentCommit() {
+        return agentCommit;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setAgentCommit(String agentCommit) {
+        this.agentCommit = agentCommit;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

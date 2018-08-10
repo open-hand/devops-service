@@ -10,7 +10,7 @@ public enum InstanceStatus {
     OPERATIING("operating"),
     RUNNING("running"),
     FAILED("failed"),
-    STOPED("stoped"),
+    STOPPED("stopped"),
     DELETED("deleted");
 
 

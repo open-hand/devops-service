@@ -10,6 +10,7 @@ public class DevopsServiceDTO {
     private String status;
     private Long envId;
     private String envName;
+    private String type;
     private Boolean envStatus;
     private Long appId;
     private Long appProjectId;
@@ -103,5 +104,13 @@ public class DevopsServiceDTO {
 
     public void setConfig(DevopsServiceConfigDTO config) {
         this.config = config;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

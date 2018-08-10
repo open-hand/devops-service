@@ -75,7 +75,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getEnvId()),
-                        InstanceStatus.STOPED.getStatus(),
+                        InstanceStatus.STOPPED.getStatus(),
                         CommandStatus.SUCCESS.getStatus(),
                         "");
                 break;
@@ -171,6 +171,9 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case RELEASE_POD_EVENT:
                 deployMsgHandlerService.releasePodEvent(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
+                break;
+            case GIT_OPS_SYNC_EVENT:
+                deployMsgHandlerService.gitOpsSyncEvent(TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             default:
                 break;

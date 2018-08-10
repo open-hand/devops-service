@@ -31,8 +31,6 @@ public interface DevopsIngressRepository {
 
     void deleteIngress(Long ingressId);
 
-    void setUsable(String name);
-
     Long setStatus(Long envId, String name, String status);
 
     List<String> queryIngressNameByServiceId(Long serviceId);

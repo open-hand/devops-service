@@ -184,6 +184,7 @@
         <dependency>
             <groupId>org.eclipse.jgit</groupId>
             <artifactId>org.eclipse.jgit</artifactId>
+            <version>4.7.0.201704051617-r</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

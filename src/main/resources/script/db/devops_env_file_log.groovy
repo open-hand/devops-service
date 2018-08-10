@@ -22,4 +22,9 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file_log.groovy') {
         }
     }
 
+    changeSet(author: 'Younger', id: '2018-08-01-delete-table') {
+        dropTable(tableName: "devops_env_file_log")
+    }
+
+
 }

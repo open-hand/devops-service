@@ -29,6 +29,10 @@ public class DevopsEnvironmentE {
     private Boolean isUpdate;
     private String updateMessage;
 
+    private Long devopsSyncCommit;
+    private Long agentSyncCommit;
+    private Long gitCommit;
+
     /**
      * 重写构造方法
      *
@@ -119,10 +123,6 @@ public class DevopsEnvironmentE {
         isActive = active;
     }
 
-    public void setConnect(Boolean connect) {
-        isConnected = connect;
-    }
-
     public ProjectE getProjectE() {
         return projectE;
     }
@@ -134,7 +134,6 @@ public class DevopsEnvironmentE {
     public void initProjectE(Long id) {
         this.projectE = new ProjectE(id);
     }
-
 
     public void initActive(Boolean active) {
         this.isActive = active;
@@ -205,6 +204,10 @@ public class DevopsEnvironmentE {
         return isConnected;
     }
 
+    public void setConnect(Boolean connect) {
+        isConnected = connect;
+    }
+
     public Long getHookId() {
         return hookId;
     }
@@ -215,6 +218,31 @@ public class DevopsEnvironmentE {
 
     public void initHookId(Long hookId) {
         this.hookId = hookId;
+    }
+
+    public Long getDevopsSyncCommit() {
+        return devopsSyncCommit;
+    }
+
+    public void setDevopsSyncCommit(Long devopsSyncCommit) {
+        this.devopsSyncCommit = devopsSyncCommit;
+    }
+
+    public Long getAgentSyncCommit() {
+        return agentSyncCommit;
+    }
+
+    public void setAgentSyncCommit(Long agentSyncCommit) {
+        this.agentSyncCommit = agentSyncCommit;
+    }
+
+
+    public Long getGitCommit() {
+        return gitCommit;
+    }
+
+    public void setGitCommit(Long gitCommit) {
+        this.gitCommit = gitCommit;
     }
 
     /**

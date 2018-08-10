@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -56,6 +57,8 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsGitOps",
             description = "gitops",
             sagaCode = "devops-sync-gitops",
+            concurrentLimitNum = 1,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public void gitops(String data) {
         PushWebHookDTO pushWebHookDTO = null;

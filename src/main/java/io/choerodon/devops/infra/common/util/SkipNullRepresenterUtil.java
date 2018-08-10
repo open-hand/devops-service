@@ -27,4 +27,5 @@ public class SkipNullRepresenterUtil extends Representer {
                     .representJavaBeanProperty(javaBean, property, propertyValue, customTag);
         }
     }
+
 }

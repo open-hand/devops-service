@@ -39,4 +39,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
             column(name: 'labels', type: 'VARCHAR(1000)', remarks: '网络标签', afterColumn: 'external_ip')
         }
     }
+
+    changeSet(author: 'runge', id: '2018-08-08-add-column') {
+        addColumn(tableName: 'devops_service') {
+            column(name: 'type', type: 'VARCHAR(30)', remarks: '网络类型', afterColumn: 'status')
+        }
+    }
 }

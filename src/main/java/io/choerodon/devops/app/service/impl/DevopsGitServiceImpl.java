@@ -1,9 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.models.V1Service;
@@ -15,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.yaml.snakeyaml.Yaml;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -25,15 +28,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.handler.SerializableChain;
+import io.choerodon.devops.domain.application.handler.SerializableOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.Issue;
@@ -43,6 +43,9 @@ import io.choerodon.devops.infra.common.util.DateUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
@@ -63,9 +66,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String INSTANCE_NOT_FOUND = "The instances not found: ";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
+    private Yaml yaml = new Yaml();
     private ObjectMapper objectMapper = new ObjectMapper();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
 
 
     @Autowired
@@ -93,7 +100,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private DeployService deployService;
     @Autowired
-    private DevopsEnvFileLogRepository devopsEnvFileLogRepository;
+    private DevopsEnvFileRepository devopsEnvFileRepository;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
     @Autowired
@@ -102,7 +109,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private DevopsIngressService devopsIngressService;
     @Autowired
     private DevopsServiceService devopsServiceService;
-
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
+    @Autowired
+    private ApplicationVersionValueRepository applicationVersionValueRepository;
+    @Autowired
+    private HarborConfigurationProperties harborConfigurationProperties;
+    @Autowired
+    private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -277,13 +295,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    @Saga(code = "devops-sync-gitops", description = "gitops", inputSchema = "{}")
+    @Saga(code = "devops-sync-gitops", description = "gitops", inputSchemaClass = PushWebHookDTO.class)
     public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
         pushWebHookDTO.setToken(token);
         String input;
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
+        //TODO 在收到环境库webhook 之后应该在env commit 记录表中插入提交记录，并且更新对应环境中git库最新提交字段
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
-            sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "", ""));
+            sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString()));
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage());
         }
@@ -291,40 +311,85 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
+
+        //TODO 在解释的第一步应该拉去最新提交，然后判断最新提交是否和tag一致，否则不进行之后操作
         Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         Integer gitLabUserId = pushWebHookDTO.getUserId();
+
+
         List<String> operationFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();
 
+
+        //根据token查出环境
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
+
+
+        pushWebHookDTO.getCommits().parallelStream().forEach(commitDTO -> {
+            DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
+            devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
+            devopsEnvCommitE.setCommitSha(commitDTO.getId());
+            devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookDTO.getUserId()));
+            devopsEnvCommitE.setCommitDate(commitDTO.getTimestamp());
+            if (devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), commitDTO.getId()) == null) {
+                devopsEnvCommitRepository.create(devopsEnvCommitE);
+            }
+        });
+
+        //从iam服务中查出项目和组织code
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        //生成环境git仓库ssh地址
         String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         LOGGER.info(url);
+
         try {
+            //从git库中查出环境最新提交
             BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
             String masterSha = branch.getCommit().getId();
+
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), masterSha);
+            devopsEnvironmentE.setGitCommit(devopsEnvCommitE.getId());
+
+            //更新gitlab中的最新提交
+            //TODO 此处不应该更新环境gitlab最新提交，环境git最新提交应该在收到webhook的时候更新，而不是在解释的时候更新，/解释完的时候会更新环境表中解释的conmit
+            devopsEnvironmentRepository.update(devopsEnvironmentE);
+
+            //更新本地库到最新提交
             handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), masterSha);
+
+
+            //获取将此次最新提交与tag作比价得到diff
             CompareResultsE compareResultsE = devopsGitRepository
                     .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha);
+
             List<DevopsEnvFileResourceE> beforeSync = new ArrayList<>();
+
+
             compareResultsE.getDiffs().forEach(t -> {
                 if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                     if (t.getDeletedFile()) {
                         deletedFiles.add(t.getNewPath());
+                    } else if (t.getRenamedFile()) {
+                        deletedFiles.add(t.getOldPath());
+                        operationFiles.add(t.getNewPath());
                     } else {
                         operationFiles.add(t.getNewPath());
                     }
                 }
-                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                        .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getNewPath());
-                if (devopsEnvFileResourceE != null) {
-                    beforeSync.add(devopsEnvFileResourceE);
+                List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                        .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getOldPath());
+                if (!devopsEnvFileResourceES.isEmpty()) {
+                    beforeSync.addAll(devopsEnvFileResourceES);
                 }
             });
+
+            //如果没有涉及到到yml文件的修改则跳过本次解释
             if (operationFiles.isEmpty() && deletedFiles.isEmpty()) {
                 return;
             }
@@ -332,18 +397,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
             List<V1Service> v1Services = new ArrayList<>();
             List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();
+
             Map<String, String> objectPath = new HashMap<>();
-            DevopsEnvFileLogE devopsEnvFileLogE = new DevopsEnvFileLogE();
-            devopsEnvFileLogE.setCommitSha(masterSha);
-            devopsEnvFileLogE.setEnvId(devopsEnvironmentE.getId());
+
+            //从文件中读出对象
             handleFilesToObject(operationFiles, path, c7nHelmReleases,
                     v1Services, v1beta1Ingresses,
-                    objectPath, devopsEnvFileLogE);
-            if (devopsEnvFileLogE.getMessage() != null) {
-                devopsEnvFileLogRepository.create(devopsEnvFileLogE);
-                return;
-            }
-            handlerObjectReleations(
+                    objectPath, devopsEnvironmentE.getId());
+
+            //处理对象关系
+
+            handlerObjectRelations(
                     objectPath,
                     beforeSync,
                     c7nHelmReleases,
@@ -351,16 +415,46 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     v1beta1Ingresses,
                     devopsEnvironmentE.getId(),
                     devopsEnvironmentE.getProjectE().getId(),
-                    devopsEnvFileLogE);
-            if (devopsEnvFileLogE.getMessage() != null) {
-                devopsEnvFileLogRepository.create(devopsEnvFileLogE);
-                return;
+                    path
+            );
+
+            //新增解释文件记录，并删除文件错误记录
+            for (String filePath : operationFiles) {
+                DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), filePath);
+                if (devopsEnvFileE == null) {
+                    devopsEnvFileE = new DevopsEnvFileE();
+                    devopsEnvFileE.setDevopsCommit(getFileLatestCommit(path, filePath));
+                    devopsEnvFileE.setFilePath(filePath);
+                    devopsEnvFileE.setEnvId(devopsEnvCommitE.getEnvId());
+                    devopsEnvFileRepository.create(devopsEnvFileE);
+                } else {
+                    devopsEnvFileE.setDevopsCommit(getFileLatestCommit(path, filePath));
+                    devopsEnvFileRepository.update(devopsEnvFileE);
+                }
+                DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
+                devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
+                devopsEnvFileErrorE.setFilePath(filePath);
+                devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE);
             }
+            for (String filePath : deletedFiles) {
+                DevopsEnvFileE devopsEnvFileE = new DevopsEnvFileE();
+                devopsEnvFileE.setEnvId(devopsEnvironmentE.getId());
+                devopsEnvFileE.setFilePath(filePath);
+                devopsEnvFileRepository.delete(devopsEnvFileE);
+            }
+            //TODO 此时请求应考虑请求失败情况，还有删除成功了创建没有成功
+            //删除tag
             devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
+            //创建新tag
             devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha, gitLabUserId);
+
+            //向agent发送同步指令
             deployService.sendCommand(devopsEnvironmentE);
+            devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
+            //更新环境 解释commit
+            devopsEnvironmentRepository.update(devopsEnvironmentE);
         } catch (Exception e) {
-            LOGGER.info("File Resource Sync File Changes Fail!");
+            throw new CommonException(e.getMessage());
         }
 
         // do sth to files
@@ -451,34 +545,70 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                      List<V1Service> v1Services,
                                      List<V1beta1Ingress> v1beta1Ingresses,
                                      Map<String, String> objectPath,
-                                     DevopsEnvFileLogE devopsEnvFileLogE) {
+                                     Long envId) {
         files.parallelStream().forEach(filePath -> {
             File file = new File(String.format("%s/%s", path, filePath));
-            SerializableChain serializableChain = new SerializableChain();
-            serializableChain.createChain();
-            serializableChain.handler(file, filePath, objectPath, c7nHelmReleases,
-                    v1Services, v1beta1Ingresses, devopsEnvFileLogE);
+            DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, filePath, path);
+            try {
+                //从数据库中查出
+                for (Object data : yaml.loadAll(new FileInputStream(file))) {
+                    JSONObject jsonObject = new JSONObject((Map<String, Object>) data);
+                    String type = jsonObject.get("kind").toString();
+                    switch (type) {
+                        case "C7NHelmRelease":
+                            C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
+                            SerializableOperation<C7nHelmRelease> c7nHelmReleaseSerializableOperation
+                                    = new SerializableOperation<>();
+                            c7nHelmReleaseSerializableOperation.setT(c7nHelmRelease);
+                            c7nHelmReleases.add(c7nHelmReleaseSerializableOperation
+                                    .serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileErrorE));
+                            break;
+                        case "Ingress":
+                            V1beta1Ingress v1beta1Ingress = new V1beta1Ingress();
+                            SerializableOperation<V1beta1Ingress> v1beta1IngressSerializableOperation
+                                    = new SerializableOperation<>();
+                            v1beta1IngressSerializableOperation.setT(v1beta1Ingress);
+                            v1beta1Ingresses.add(v1beta1IngressSerializableOperation
+                                    .serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileErrorE));
+                            break;
+                        case "Service":
+                            V1Service v1Service = new V1Service();
+                            SerializableOperation<V1Service> v1ServiceSerializableOperation =
+                                    new SerializableOperation<>();
+                            v1ServiceSerializableOperation.setT(v1Service);
+                            v1Services.add(v1ServiceSerializableOperation
+                                    .serializable(jsonObject.toJSONString(), filePath, objectPath, devopsEnvFileErrorE));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                if (devopsEnvFileErrorE.getError() != null) {
+                    devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                    throw new CommonException(devopsEnvFileErrorE.getError());
+                }
+            } catch (Exception e) {
+                throw new CommonException(e.getMessage());
+            }
         });
     }
 
 
-    private void handlerObjectReleations(Map<String, String> objectPath,
-                                         List<DevopsEnvFileResourceE> beforeSync,
-                                         List<C7nHelmRelease> c7nHelmReleases,
-                                         List<V1Service> v1Services,
-                                         List<V1beta1Ingress> v1beta1Ingresses,
-                                         Long envId, Long projectId,
-                                         DevopsEnvFileLogE devopsEnvFileLogE) {
-        handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId, devopsEnvFileLogE);
-        handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId, devopsEnvFileLogE);
-        handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId, devopsEnvFileLogE);
+    private void handlerObjectRelations(Map<String, String> objectPath,
+                                        List<DevopsEnvFileResourceE> beforeSync,
+                                        List<C7nHelmRelease> c7nHelmReleases,
+                                        List<V1Service> v1Services,
+                                        List<V1beta1Ingress> v1beta1Ingresses,
+                                        Long envId, Long projectId, String path) {
+        handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId);
+        handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId, path);
+        handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId, path);
     }
 
     private void handlerServiceRelations(Map<String, String> objectPath,
                                          List<DevopsEnvFileResourceE> beforeSync,
                                          List<V1Service> v1Services,
-                                         Long envId, Long projectId,
-                                         DevopsEnvFileLogE devopsEnvFileLogE) {
+                                         Long envId, Long projectId, String path) {
         List<String> beforeService = beforeSync.parallelStream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("Service"))
                 .map(devopsEnvFileResourceE -> {
@@ -490,9 +620,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         v1Services.parallelStream()
                 .filter(v1Service -> !beforeService.contains(v1Service.getMetadata().getName()))
                 .forEach(v1Service -> {
-                    if (checkServiceName(objectPath, devopsEnvFileLogE, v1Service)) {
-                        return;
-                    }
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(v1Service.hashCode())), path);
+                    checkServiceName(devopsEnvFileErrorE, v1Service);
                     DevopsServiceE devopsServiceE = devopsServiceRepository
                             .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                     DevopsServiceReqDTO devopsServiceReqDTO;
@@ -500,10 +629,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         devopsServiceReqDTO = getDevopsServiceDTO(
                                 v1Service,
                                 envId,
-                                devopsEnvFileLogE,
-                                objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
-                        if (devopsEnvFileLogE.getMessage() != null) {
-                            return;
+                                devopsEnvFileErrorE);
+                        if (devopsEnvFileErrorE.getError() != null) {
+                            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                            throw new CommonException(devopsEnvFileErrorE.getError());
                         }
                         devopsServiceService.insertDevopsService(projectId, devopsServiceReqDTO, true);
                         devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
@@ -519,17 +648,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         v1Services.parallelStream()
                 .filter(v1Service -> beforeService.contains(v1Service.getMetadata().getName()))
                 .forEach(v1Service -> {
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(v1Service.hashCode())), path);
                     beforeService.remove(v1Service.getMetadata().getName());
-                    if (checkServiceName(objectPath, devopsEnvFileLogE, v1Service)) {
-                        return;
-                    }
+                    checkServiceName(devopsEnvFileErrorE, v1Service);
                     DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
                             v1Service,
                             envId,
-                            devopsEnvFileLogE,
-                            objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
-                    if (devopsEnvFileLogE.getMessage() != null) {
-                        return;
+                            devopsEnvFileErrorE);
+                    if (devopsEnvFileErrorE.getError() != null) {
+                        devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                        throw new CommonException(devopsEnvFileErrorE.getError());
                     }
                     DevopsServiceE devopsServiceE = devopsServiceRepository
                             .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
@@ -549,31 +677,30 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         });
     }
 
-    private boolean checkServiceName(Map<String, String> objectPath,
-                                     DevopsEnvFileLogE devopsEnvFileLogE,
-                                     V1Service v1Service) {
+    private void checkServiceName(
+            DevopsEnvFileErrorE devopsEnvFileErrorE,
+            V1Service v1Service) {
         try {
             DevopsServiceValidator.checkName(v1Service.getMetadata().getName());
         } catch (Exception e) {
-            devopsEnvFileLogE.setMessage(e.getMessage());
-            devopsEnvFileLogE.setFilePath(objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
-            return true;
+            devopsEnvFileErrorE.setError(e.getMessage());
+            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+            throw new CommonException(e.getMessage());
         }
-        return false;
     }
 
     private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
-                                                         Long projectId, Long envId, String type,
-                                                         DevopsEnvFileLogE devopsEnvFileLogE,
-                                                         String filePath) {
-        ApplicationE applicationE = applicationRepository
-                .queryByCode(c7nHelmRelease.getSpec().getChartName(), projectId);
+                                                         Long projectId, Long envId, String type) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ApplicationE applicationE = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
+        if (applicationE == null) {
+            return null;
+        }
         ApplicationVersionE applicationVersionE = applicationVersionRepository
                 .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
         if (applicationVersionE == null) {
-            devopsEnvFileLogE.setMessage("release version not exist!");
-            devopsEnvFileLogE.setFilePath(filePath);
-            return null;
+            applicationVersionE = getApplicationVersion(applicationE.getId(), applicationE.getCode(), organization.getCode(), projectE.getCode(), c7nHelmRelease.getSpec().getChartVersion(), c7nHelmRelease.getSpec().getValues());
         }
 
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
@@ -595,8 +722,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private void handlerC7nReleaseRelations(Map<String, String> objectPath,
                                             List<DevopsEnvFileResourceE> beforeSync,
                                             List<C7nHelmRelease> c7nHelmReleases,
-                                            Long envId, Long projectId,
-                                            DevopsEnvFileLogE devopsEnvFileLogE) {
+                                            Long envId, Long projectId) {
         List<String> beforeC7nRelease = beforeSync.parallelStream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("C7NHelmRelease"))
                 .map(devopsEnvFileResourceE -> {
@@ -616,10 +742,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                 c7nHelmRelease,
                                 projectId,
                                 envId,
-                                "create",
-                                devopsEnvFileLogE,
-                                objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-                        if (devopsEnvFileLogE.getMessage() != null) {
+                                "create");
+                        if (applicationDeployDTO == null) {
                             return;
                         }
                         applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
@@ -641,24 +765,29 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             c7nHelmRelease,
                             projectId,
                             envId,
-                            "update",
-                            devopsEnvFileLogE,
-                            objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
-                    if (devopsEnvFileLogE.getMessage() != null) {
+                            "update");
+                    if (applicationDeployDTO == null) {
                         return;
                     }
-                    ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
-                            .create(applicationDeployDTO, true);
+                    DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationDeployDTO.getAppInstanceId());
+
+                    if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType())) {
+                        applicationInstanceService
+                                .create(applicationDeployDTO, true);
+                    }
                     DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                            .queryByEnvIdAndResource(envId, applicationInstanceDTO.getId(), c7nHelmRelease.getKind());
+                            .queryByEnvIdAndResource(envId, applicationDeployDTO.getAppInstanceId(), c7nHelmRelease.getKind());
                     updateOrCreateFileResource(objectPath, envId,
                             devopsEnvFileResourceE,
-                            c7nHelmRelease.hashCode(), applicationInstanceDTO.getId(),
+                            c7nHelmRelease.hashCode(), applicationDeployDTO.getAppInstanceId(),
                             c7nHelmRelease.getKind());
                 });
         beforeC7nRelease.parallelStream().forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-            applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE)) {
+                applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
+            }
             devopsEnvFileResourceRepository
                     .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
         });
@@ -687,8 +816,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private void handlerIngressRelations(Map<String, String> objectPath,
                                          List<DevopsEnvFileResourceE> beforeSync,
                                          List<V1beta1Ingress> v1beta1Ingresses,
-                                         Long envId, Long projectId,
-                                         DevopsEnvFileLogE devopsEnvFileLogE) {
+                                         Long envId, Long projectId, String path) {
         List<String> beforeIngress = beforeSync.parallelStream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals("Ingress"))
                 .map(devopsEnvFileResourceE -> {
@@ -699,9 +827,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         v1beta1Ingresses.parallelStream()
                 .filter(v1beta1Ingress -> !beforeIngress.contains(v1beta1Ingress.getMetadata().getName()))
                 .forEach(v1beta1Ingress -> {
-                    if (checkIngressAppVersion(objectPath, devopsEnvFileLogE, v1beta1Ingress)) {
-                        return;
-                    }
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())), path);
+                    checkIngressAppVersion(devopsEnvFileErrorE, v1beta1Ingress);
                     DevopsIngressE devopsIngressE = devopsIngressRepository
                             .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                     DevopsIngressDTO devopsIngressDTO;
@@ -709,10 +836,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         devopsIngressDTO = getDevopsIngressDTO(
                                 v1beta1Ingress,
                                 envId,
-                                devopsEnvFileLogE,
-                                objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                        if (devopsEnvFileLogE.getMessage() != null) {
-                            return;
+                                devopsEnvFileErrorE);
+                        if (devopsEnvFileErrorE.getError() != null) {
+                            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                            throw new CommonException(devopsEnvFileErrorE.getError());
                         }
                         devopsIngressService.addIngress(devopsIngressDTO, projectId, true);
                         devopsIngressE = devopsIngressRepository
@@ -729,16 +856,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .filter(v1beta1Ingress -> beforeIngress.contains(v1beta1Ingress.getMetadata().getName()))
                 .forEach(v1beta1Ingress -> {
                     beforeIngress.remove(v1beta1Ingress.getMetadata().getName());
-                    if (checkIngressAppVersion(objectPath, devopsEnvFileLogE, v1beta1Ingress)) {
-                        return;
-                    }
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())), path);
+                    checkIngressAppVersion(devopsEnvFileErrorE, v1beta1Ingress);
                     DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(
                             v1beta1Ingress,
                             envId,
-                            devopsEnvFileLogE,
-                            objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                    if (devopsEnvFileLogE.getMessage() != null) {
-                        return;
+                            devopsEnvFileErrorE);
+                    if (devopsEnvFileErrorE.getError() != null) {
+                        devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                        throw new CommonException(devopsEnvFileErrorE.getError());
                     }
                     DevopsIngressE devopsIngressE = devopsIngressRepository
                             .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
@@ -758,24 +884,23 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     }
 
-    private boolean checkIngressAppVersion(Map<String, String> objectPath,
-                                           DevopsEnvFileLogE devopsEnvFileLogE,
-                                           V1beta1Ingress v1beta1Ingress) {
+
+    private void checkIngressAppVersion(
+            DevopsEnvFileErrorE devopsEnvFileErrorE,
+            V1beta1Ingress v1beta1Ingress) {
         try {
             DevopsIngressValidator.checkIngressName(v1beta1Ingress.getMetadata().getName());
         } catch (Exception e) {
-            devopsEnvFileLogE.setMessage(e.getMessage());
-            devopsEnvFileLogE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-            return true;
+            devopsEnvFileErrorE.setError(e.getMessage());
+            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+            throw new CommonException(e.getMessage());
         }
-        return false;
     }
 
 
     private DevopsIngressDTO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress,
                                                  Long envId,
-                                                 DevopsEnvFileLogE devopsEnvFileLogE,
-                                                 String filePath) {
+                                                 DevopsEnvFileErrorE devopsEnvFileErrorE) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
         );
@@ -788,14 +913,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             try {
                 DevopsIngressValidator.checkPath(v1beta1HTTPIngressPath.getPath());
                 if (pathCheckList.contains(v1beta1HTTPIngressPath.getPath())) {
-                    throw new CommonException(PATH_DUPLICATED);
+                    devopsEnvFileErrorE.setError(PATH_DUPLICATED);
                 } else {
                     pathCheckList.add(v1beta1HTTPIngressPath.getPath());
                 }
             } catch (Exception e) {
-                devopsEnvFileLogE.setMessage(e.getMessage());
-                devopsEnvFileLogE.setFilePath(filePath);
-                return null;
+                devopsEnvFileErrorE.setError(e.getMessage());
             }
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
@@ -813,10 +936,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private DevopsServiceReqDTO getDevopsServiceDTO(V1Service v1Service,
                                                     Long envId,
-                                                    DevopsEnvFileLogE devopsEnvFileLogE,
-                                                    String filePath) {
+                                                    DevopsEnvFileErrorE devopsEnvFileErrorE) {
         DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO();
-        devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+        if (v1Service.getSpec().getExternalIPs() != null) {
+            devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
+        }
         devopsServiceReqDTO.setName(v1Service.getMetadata().getName());
         devopsServiceReqDTO.setEnvId(envId);
         devopsServiceReqDTO.setLabel(v1Service.getMetadata().getLabels());
@@ -825,10 +949,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .map(t -> {
                     PortMapE portMap = new PortMapE();
                     portMap.setName(t.getName());
-                    portMap.setNodePort(t.getNodePort().longValue());
+                    if (t.getNodePort() != null) {
+                        portMap.setNodePort(t.getNodePort().longValue());
+                    }
                     portMap.setPort(t.getPort().longValue());
                     portMap.setProtocol(t.getProtocol());
-                    portMap.setTargetPort(t.getTargetPort().getIntValue().longValue());
+                    portMap.setTargetPort(TypeUtil.objToLong(t.getTargetPort()));
                     return portMap;
                 }).collect(Collectors.toList());
         devopsServiceReqDTO.setPorts(portMapList);
@@ -836,7 +962,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         String instancesCode = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
         if (!instancesCode.isEmpty()) {
             List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
-                    .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, devopsEnvFileLogE, filePath))
+                    .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, devopsEnvFileErrorE))
                     .collect(Collectors.toList());
             devopsServiceReqDTO.setAppInstance(instanceIdList);
         }
@@ -844,34 +970,74 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private Long getInstanceId(String instanceCode, Long envId, DevopsServiceReqDTO devopsServiceReqDTO,
-                               DevopsEnvFileLogE devopsEnvFileLogE, String filePath) {
+                               DevopsEnvFileErrorE devopsEnvFileErrorE) {
         try {
             ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(instanceCode, envId);
             if (devopsServiceReqDTO.getAppId() == null) {
                 devopsServiceReqDTO.setAppId(instanceE.getApplicationE().getId());
             }
-            String logMsg = devopsEnvFileLogE.getMessage();
+            String logMsg = devopsEnvFileErrorE.getError();
             if (!devopsServiceReqDTO.getAppId().equals(instanceE.getApplicationE().getId())
                     && (logMsg == null || !logMsg.contains(INSTANCE_APP_ID_NOT_SAME))) {
                 if (logMsg == null) {
-                    devopsEnvFileLogE.setMessage(INSTANCE_APP_ID_NOT_SAME);
+                    devopsEnvFileErrorE.setError(INSTANCE_APP_ID_NOT_SAME);
                 } else {
-                    devopsEnvFileLogE.setMessage(INSTANCE_APP_ID_NOT_SAME + logMsg);
+                    devopsEnvFileErrorE.setError(INSTANCE_APP_ID_NOT_SAME + logMsg);
                 }
-                devopsEnvFileLogE.setFilePath(filePath);
             }
             return instanceE.getId();
         } catch (Exception e) {
-            String logMsg = devopsEnvFileLogE.getMessage();
+            String logMsg = devopsEnvFileErrorE.getError();
             if (logMsg == null) {
-                devopsEnvFileLogE.setMessage(INSTANCE_NOT_FOUND + instanceCode);
+                devopsEnvFileErrorE.setError(INSTANCE_NOT_FOUND + instanceCode);
             } else if (!logMsg.contains(INSTANCE_NOT_FOUND)) {
-                devopsEnvFileLogE.setMessage(logMsg + INSTANCE_NOT_FOUND + instanceCode);
+                devopsEnvFileErrorE.setError(logMsg + INSTANCE_NOT_FOUND + instanceCode);
             } else {
-                devopsEnvFileLogE.setMessage(logMsg + ", " + instanceCode);
+                devopsEnvFileErrorE.setError(logMsg + ", " + instanceCode);
             }
-            devopsEnvFileLogE.setFilePath(filePath);
             return null;
         }
+    }
+
+
+    public ApplicationVersionE getApplicationVersion(Long appId, String appCode, String orgCode, String projectCode, String version, String values) {
+        ApplicationVersionE applicationVersionE = new ApplicationVersionE();
+        ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
+        applicationVersionE.initApplicationEById(appId);
+        String image = String.format("%s%s%s%s%s%s%s%s%s", harborConfigurationProperties.getBaseUrl(),
+                System.getProperty("file.separator"),
+                orgCode,
+                "-",
+                projectCode,
+                System.getProperty("file.separator"),
+                appCode,
+                ":",
+                version
+        );
+        applicationVersionE.setImage(image);
+        applicationVersionE.setVersion(version);
+        applicationVersionE
+                .setRepository("/" + orgCode + "/" + projectCode + "/");
+        applicationVersionValueE.setValue(values);
+        applicationVersionE.initApplicationVersionValueE(
+                applicationVersionValueRepository.create(applicationVersionValueE).getId());
+        return applicationVersionRepository.create(applicationVersionE);
+
+    }
+
+    public String getFileLatestCommit(String path, String filePath) {
+        String[] fileName = filePath.split("/");
+        return GitUtil.getLog(path, fileName[fileName.length - 1]);
+    }
+
+    public DevopsEnvFileErrorE getDevopsFileError(Long envId, String filePath, String path) {
+        DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.queryByEnvIdAndFilePath(envId, filePath);
+        if (devopsEnvFileErrorE == null) {
+            devopsEnvFileErrorE = new DevopsEnvFileErrorE();
+            devopsEnvFileErrorE.setFilePath(filePath);
+            devopsEnvFileErrorE.setEnvId(envId);
+            devopsEnvFileErrorE.setCommit(getFileLatestCommit(path, filePath));
+        }
+        return devopsEnvFileErrorE;
     }
 }
