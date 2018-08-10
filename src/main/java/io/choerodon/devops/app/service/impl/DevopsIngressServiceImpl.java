@@ -75,7 +75,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(envId);
         DevopsIngressDO devopsIngressDO = new DevopsIngressDO(projectId, envId, domain, name);
         List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
-        V1beta1Ingress ingress = createIngress(domain, name, devopsEnvironmentE.getCode());
+        V1beta1Ingress ingress = createIngress(domain, name);
         if (devopsIngressDTO.getPathList().isEmpty()) {
             throw new CommonException(PATH_ERROR);
         }
@@ -116,7 +116,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             if (devopsIngressDTO.getPathList().isEmpty()) {
                 throw new CommonException(PATH_ERROR);
             }
-            V1beta1Ingress ingress = createIngress(domain, name, devopsEnvironmentE.getCode());
+            V1beta1Ingress ingress = createIngress(domain, name);
             DevopsIngressDO devopsIngressDO = new DevopsIngressDO(
                     id, projectId, domainEnvId, domain, name);
             List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
@@ -217,13 +217,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public V1beta1Ingress createIngress(String host, String name, String namspace) {
+    public V1beta1Ingress createIngress(String host, String name) {
         V1beta1Ingress ingress = new V1beta1Ingress();
         ingress.setKind("Ingress");
         ingress.setApiVersion("extensions/v1beta1");
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(name);
-        metadata.setNamespace(namspace);
         Map<String, String> labels = new HashMap<>();
         labels.put("choerodon.io/network", "ingress");
 

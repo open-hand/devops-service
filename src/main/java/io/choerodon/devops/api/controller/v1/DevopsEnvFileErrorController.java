@@ -76,7 +76,7 @@ public class DevopsEnvFileErrorController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "环境 ID", required = true)
             @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvFileService.pageByEnvId(envId, pageRequest))

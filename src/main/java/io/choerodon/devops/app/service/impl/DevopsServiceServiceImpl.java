@@ -270,14 +270,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     /**
      * 获取k8s service的yaml格式
      */
-    private V1Service getService(DevopsServiceReqDTO devopsServiceReqDTO, String namespace,
-                                 Map<String, String> annotations) {
+    private V1Service getService(DevopsServiceReqDTO devopsServiceReqDTO, Map<String, String> annotations) {
         V1Service service = new V1Service();
         service.setKind("Service");
         service.setApiVersion("v1");
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsServiceReqDTO.getName());
-        metadata.setNamespace(namespace);
         metadata.setAnnotations(annotations);
         Map<String, String> label = new HashMap<>();
         label.put(SERVICE_LABLE, SERVICE);
@@ -338,7 +336,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         V1Service service = getService(
                 devopsServiceReqDTO,
-                devopsServiceE.getNamespace(),
                 annotations);
 
         DevopsServiceE appDeploy = devopsServiceRepository.query(devopsServiceE.getId());
@@ -426,7 +423,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryById(devopsIngressDO.getEnvId());
         V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
-                devopsIngressDO.getName(), devopsEnvironmentE.getCode());
+                devopsIngressDO.getName());
         List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
                 .selectByIngressId(devopsIngressDO.getId());
         devopsIngressPathEListTemp.forEach(ddTemp ->
