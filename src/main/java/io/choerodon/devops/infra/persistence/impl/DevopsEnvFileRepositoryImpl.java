@@ -69,6 +69,7 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
     @Override
     public void update(DevopsEnvFileE devopsEnvFileE) {
         DevopsEnvFileDO devopsEnvFileDO = devopsEnvFileMapper.selectByPrimaryKey(devopsEnvFileE.getId());
+        devopsEnvFileDO.setDevopsCommit(devopsEnvFileE.getDevopsCommit());
         devopsEnvFileDO.setAgentCommit(devopsEnvFileE.getAgentCommit());
         devopsEnvFileMapper.updateByPrimaryKeySelective(devopsEnvFileDO);
     }
