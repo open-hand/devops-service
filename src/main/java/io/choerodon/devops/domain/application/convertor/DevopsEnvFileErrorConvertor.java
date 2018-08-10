@@ -16,6 +16,7 @@ public class DevopsEnvFileErrorConvertor implements ConvertorI<DevopsEnvFileErro
     public DevopsEnvFileErrorE doToEntity(DevopsEnvFileErrorDO devopsEnvFileErrorDO) {
         DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
         BeanUtils.copyProperties(devopsEnvFileErrorDO, devopsEnvFileErrorE);
+        devopsEnvFileErrorE.setErrorTime(devopsEnvFileErrorDO.getCreationDate());
         return devopsEnvFileErrorE;
     }
 
@@ -23,6 +24,9 @@ public class DevopsEnvFileErrorConvertor implements ConvertorI<DevopsEnvFileErro
     public DevopsEnvFileErrorDO entityToDo(DevopsEnvFileErrorE devopsEnvFileErrorE) {
         DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
         BeanUtils.copyProperties(devopsEnvFileErrorE, devopsEnvFileErrorDO);
+        if (devopsEnvFileErrorE.getErrorTime() != null) {
+            devopsEnvFileErrorDO.setCreationDate(devopsEnvFileErrorE.getErrorTime());
+        }
         return devopsEnvFileErrorDO;
     }
 
