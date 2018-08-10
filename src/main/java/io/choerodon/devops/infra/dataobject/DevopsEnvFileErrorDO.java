@@ -50,8 +50,8 @@ public class DevopsEnvFileErrorDO {
         return commit;
     }
 
-    public void setCommit(String commitSha) {
-        this.commit = commitSha;
+    public void setCommit(String commit) {
+        this.commit = commit;
     }
 
     public String getError() {

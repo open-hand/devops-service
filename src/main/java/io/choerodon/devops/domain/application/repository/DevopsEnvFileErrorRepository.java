@@ -22,4 +22,6 @@ public interface DevopsEnvFileErrorRepository {
 
     void delete(DevopsEnvFileErrorE DevopsEnvFileErrorE);
 
+    DevopsEnvFileErrorE queryByEnvIdAndFilePath(Long envId, String filePath);
+
 }

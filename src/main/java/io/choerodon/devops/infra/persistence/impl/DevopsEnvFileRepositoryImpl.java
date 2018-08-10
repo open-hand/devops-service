@@ -45,8 +45,11 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
     }
 
     @Override
-    public DevopsEnvFileE queryLatestByEnvAndPath(Long envId, String path) {
-        return ConvertHelper.convert(devopsEnvFileMapper.queryLatestByEnvAndPath(envId, path), DevopsEnvFileE.class);
+    public DevopsEnvFileE queryByEnvAndPath(Long envId, String path) {
+        DevopsEnvFileDO devopsEnvFileDO = new DevopsEnvFileDO();
+        devopsEnvFileDO.setEnvId(envId);
+        devopsEnvFileDO.setFilePath(path);
+        return ConvertHelper.convert(devopsEnvFileMapper.selectOne(devopsEnvFileDO), DevopsEnvFileE.class);
     }
 
     @Override
@@ -54,7 +57,7 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
         DevopsEnvFileDO devopsEnvFileDO = new DevopsEnvFileDO();
         devopsEnvFileDO.setEnvId(envId);
         devopsEnvFileDO.setFilePath(path);
-        devopsEnvFileDO.setCommitSha(commit);
+        devopsEnvFileDO.setDevopsCommit(commit);
         return ConvertHelper.convert(devopsEnvFileMapper.selectOne(devopsEnvFileDO), DevopsEnvFileE.class);
     }
 
@@ -66,8 +69,7 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
     @Override
     public void update(DevopsEnvFileE devopsEnvFileE) {
         DevopsEnvFileDO devopsEnvFileDO = devopsEnvFileMapper.selectByPrimaryKey(devopsEnvFileE.getId());
-        devopsEnvFileDO.setSync(devopsEnvFileE.isSync());
-        devopsEnvFileDO.setMessage(devopsEnvFileE.getMessage());
+        devopsEnvFileDO.setAgentCommit(devopsEnvFileE.getAgentCommit());
         devopsEnvFileMapper.updateByPrimaryKeySelective(devopsEnvFileDO);
     }
 

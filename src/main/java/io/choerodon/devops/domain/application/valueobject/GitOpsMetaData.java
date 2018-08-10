@@ -5,6 +5,7 @@ import java.util.List;
 public class GitOpsMetaData {
     private String commit;
     private List<Error> errors;
+    private List<FileCommit> filesCommit;
 
     public String getCommit() {
         return commit;
@@ -20,5 +21,13 @@ public class GitOpsMetaData {
 
     public void setErrors(List<Error> errors) {
         this.errors = errors;
+    }
+
+    public List<FileCommit> getFilesCommit() {
+        return filesCommit;
+    }
+
+    public void setFilesCommit(List<FileCommit> filesCommit) {
+        this.filesCommit = filesCommit;
     }
 }

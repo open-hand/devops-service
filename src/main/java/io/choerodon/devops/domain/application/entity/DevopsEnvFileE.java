@@ -5,10 +5,10 @@ public class DevopsEnvFileE {
     private Long id;
     private Long envId;
     private String filePath;
-    private String commitSha;
-    private String message;
-    private Boolean isSync;
+    private String devopsCommit;
+    private String agentCommit;
     private String commitUrl;
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -34,28 +34,12 @@ public class DevopsEnvFileE {
         this.filePath = filePath;
     }
 
-    public String getCommitSha() {
-        return commitSha;
+    public String getDevopsCommit() {
+        return devopsCommit;
     }
 
-    public void setCommitSha(String commitSha) {
-        this.commitSha = commitSha;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public boolean isSync() {
-        return isSync;
-    }
-
-    public void setSync(boolean sync) {
-        isSync = sync;
+    public void setDevopsCommit(String devopsCommit) {
+        this.devopsCommit = devopsCommit;
     }
 
     public String getCommitUrl() {
@@ -64,5 +48,21 @@ public class DevopsEnvFileE {
 
     public void setCommitUrl(String commitUrl) {
         this.commitUrl = commitUrl;
+    }
+
+    public String getAgentCommit() {
+        return agentCommit;
+    }
+
+    public void setAgentCommit(String agentCommit) {
+        this.agentCommit = agentCommit;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

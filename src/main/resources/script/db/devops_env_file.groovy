@@ -21,4 +21,12 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file.groovy') {
         }
     }
 
+    changeSet(id: '2018-08-09-drop-column', author: 'younger') {
+        dropColumn(columnName: "message", tableName: "devops_env_file")
+        dropColumn(columnName: "is_sync",tableName: "devops_env_file")
+        renameColumn(columnDataType: 'VARCHAR(100)', newColumnName: 'devops_commit', oldColumnName: 'commit_sha', remarks: 'devops sync commit', tableName: 'devops_env_file')
+        addColumn(tableName: 'devops_env_file') {
+            column(name: 'agent_commit', type: 'VARCHAR(512)', remarks: 'agent sync commit', afterColumn: 'devops_commit')
+        }
+    }
 }

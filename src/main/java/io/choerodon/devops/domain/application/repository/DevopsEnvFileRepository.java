@@ -18,7 +18,7 @@ public interface DevopsEnvFileRepository {
 
     DevopsEnvFileE queryByEnvAndPathAndCommits(Long envId, String path, List<String> commits);
 
-    DevopsEnvFileE queryLatestByEnvAndPath(Long envId, String path);
+    DevopsEnvFileE queryByEnvAndPath(Long envId, String path);
 
     void update(DevopsEnvFileE devopsEnvFileE);
 

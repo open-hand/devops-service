@@ -25,10 +25,19 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
 
     @Override
     public DevopsEnvFileErrorE create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
-        DevopsEnvFileErrorDO devopsEnvFileErrorDO = ConvertHelper
+        DevopsEnvFileErrorDO newDevopsEnvFileErrorDO = ConvertHelper
                 .convert(devopsEnvFileErrorE, DevopsEnvFileErrorDO.class);
-        if (devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO) != 1) {
-            throw new CommonException("error.env.file.create");
+        DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
+        devopsEnvFileErrorDO.setEnvId(devopsEnvFileErrorE.getEnvId());
+        devopsEnvFileErrorDO.setFilePath(devopsEnvFileErrorE.getFilePath());
+        if (devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDO) != null) {
+            if (devopsEnvFileErrorMapper.updateByPrimaryKeySelective(newDevopsEnvFileErrorDO) != 1) {
+                throw new CommonException("error.env.error.file.create");
+            }
+        } else {
+            if (devopsEnvFileErrorMapper.insert(newDevopsEnvFileErrorDO) != 1) {
+                throw new CommonException("error.env.error.file.update");
+            }
         }
         return ConvertHelper.convert(devopsEnvFileErrorDO, DevopsEnvFileErrorE.class);
     }
@@ -56,6 +65,14 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
         DevopsEnvFileErrorDO devopsEnvFileErrorDO = ConvertHelper
                 .convert(devopsEnvFileErrorE, DevopsEnvFileErrorDO.class);
         devopsEnvFileErrorMapper.delete(devopsEnvFileErrorDO);
+    }
+
+    @Override
+    public DevopsEnvFileErrorE queryByEnvIdAndFilePath(Long envId, String filePath) {
+        DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
+        devopsEnvFileErrorDO.setEnvId(envId);
+        devopsEnvFileErrorDO.setFilePath(filePath);
+        return ConvertHelper.convert(devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDO), DevopsEnvFileErrorE.class);
     }
 
 

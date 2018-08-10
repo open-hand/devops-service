@@ -313,7 +313,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Page<DevopsEnvFileE> devopsEnvFilePages = devopsEnvFileRepository.pageByEnvId(envId, pageRequest);
         List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFilePages.parallelStream().map(devopsEnvFileE -> {
             devopsEnvFileE.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/%s",
-                    gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(), devopsEnvFileE.getCommitSha()));
+                    gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(), devopsEnvFileE.getDevopsCommit()));
             return devopsEnvFileE;
         }).collect(Collectors.toList());
         Page<DevopsEnvFileE> pages = new Page<>();

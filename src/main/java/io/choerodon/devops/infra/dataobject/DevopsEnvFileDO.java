@@ -17,9 +17,8 @@ public class DevopsEnvFileDO {
     private Long id;
     private Long envId;
     private String filePath;
-    private String commitSha;
-    private String message;
-    private Boolean isSync;
+    private String devopsCommit;
+    private String agentCommit;
     private Long objectVersionNumber;
 
 
@@ -47,28 +46,20 @@ public class DevopsEnvFileDO {
         this.filePath = filePath;
     }
 
-    public String getCommitSha() {
-        return commitSha;
+    public String getDevopsCommit() {
+        return devopsCommit;
     }
 
-    public void setCommitSha(String commitSha) {
-        this.commitSha = commitSha;
+    public void setDevopsCommit(String devopsCommit) {
+        this.devopsCommit = devopsCommit;
     }
 
-    public String getMessage() {
-        return message;
+    public String getAgentCommit() {
+        return agentCommit;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public boolean isSync() {
-        return isSync;
-    }
-
-    public void setSync(boolean sync) {
-        isSync = sync;
+    public void setAgentCommit(String agentCommit) {
+        this.agentCommit = agentCommit;
     }
 
     public Long getObjectVersionNumber() {
