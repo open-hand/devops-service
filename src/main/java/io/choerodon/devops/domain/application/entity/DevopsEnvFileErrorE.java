@@ -5,7 +5,7 @@ public class DevopsEnvFileErrorE {
     private Long id;
     private Long envId;
     private String filePath;
-    private String commitSha;
+    private String commit;
     private String error;
     private String commitUrl;
 
@@ -33,12 +33,12 @@ public class DevopsEnvFileErrorE {
         this.filePath = filePath;
     }
 
-    public String getCommitSha() {
-        return commitSha;
+    public String getCommit() {
+        return commit;
     }
 
-    public void setCommitSha(String commitSha) {
-        this.commitSha = commitSha;
+    public void setCommit(String commitSha) {
+        this.commit = commitSha;
     }
 
     public String getError() {

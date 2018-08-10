@@ -17,7 +17,7 @@ public class DevopsEnvFileErrorDO {
     private Long id;
     private Long envId;
     private String filePath;
-    private String commitSha;
+    private String commit;
     private String error;
     private Long objectVersionNumber;
 
@@ -46,12 +46,12 @@ public class DevopsEnvFileErrorDO {
         this.filePath = filePath;
     }
 
-    public String getCommitSha() {
-        return commitSha;
+    public String getCommit() {
+        return commit;
     }
 
-    public void setCommitSha(String commitSha) {
-        this.commitSha = commitSha;
+    public void setCommit(String commitSha) {
+        this.commit = commitSha;
     }
 
     public String getError() {

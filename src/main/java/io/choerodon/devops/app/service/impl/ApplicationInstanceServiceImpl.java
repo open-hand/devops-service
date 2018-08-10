@@ -462,7 +462,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
-        if (!instanceE.getStatus().equals(InstanceStatus.STOPED.getStatus())) {
+        if (!instanceE.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
             throw new CommonException("error.instance.notStop");
         }
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository

@@ -539,7 +539,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void helmReleaseStartFail(String key, String msg, Long envId) {
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
-                InstanceStatus.STOPED.getStatus(),
+                InstanceStatus.STOPPED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
     }
