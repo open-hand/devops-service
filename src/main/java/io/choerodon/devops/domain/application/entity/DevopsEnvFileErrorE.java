@@ -7,6 +7,7 @@ public class DevopsEnvFileErrorE {
     private Long id;
     private Long envId;
     private String filePath;
+    private String fileUrl;
     private String commit;
     private String error;
     private String commitUrl;
@@ -52,19 +53,27 @@ public class DevopsEnvFileErrorE {
         this.error = error;
     }
 
-    public String getCommitUrl() {
-        return commitUrl;
-    }
-
-    public void setCommitUrl(String commitUrl) {
-        this.commitUrl = commitUrl;
-    }
-
     public Date getErrorTime() {
         return errorTime;
     }
 
     public void setErrorTime(Date errorTime) {
         this.errorTime = errorTime;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+
+    public String getCommitUrl() {
+        return commitUrl;
+    }
+
+    public void setCommitUrl(String commitUrl) {
+        this.commitUrl = commitUrl;
     }
 }
