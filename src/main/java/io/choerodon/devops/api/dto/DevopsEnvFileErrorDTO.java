@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.Date;
+
 /**
  * Creator: Runge
  * Date: 2018/8/9
@@ -10,9 +12,11 @@ public class DevopsEnvFileErrorDTO {
     private Long id;
     private Long envId;
     private String filePath;
+    private String fileUrl;
     private String commit;
     private String error;
     private String commitUrl;
+    private Date errorTime;
 
     public Long getId() {
         return id;
@@ -60,5 +64,21 @@ public class DevopsEnvFileErrorDTO {
 
     public void setCommitUrl(String commitUrl) {
         this.commitUrl = commitUrl;
+    }
+
+    public Date getErrorTime() {
+        return errorTime;
+    }
+
+    public void setErrorTime(Date errorTime) {
+        this.errorTime = errorTime;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 }

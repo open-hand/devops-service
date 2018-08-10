@@ -1,13 +1,17 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 public class DevopsEnvFileErrorE {
 
     private Long id;
     private Long envId;
     private String filePath;
+    private String fileUrl;
     private String commit;
     private String error;
     private String commitUrl;
+    private Date errorTime;
 
     public Long getId() {
         return id;
@@ -47,6 +51,22 @@ public class DevopsEnvFileErrorE {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Date getErrorTime() {
+        return errorTime;
+    }
+
+    public void setErrorTime(Date errorTime) {
+        this.errorTime = errorTime;
+    }
+
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 
     public String getCommitUrl() {

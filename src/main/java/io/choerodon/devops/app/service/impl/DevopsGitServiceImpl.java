@@ -300,6 +300,20 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         pushWebHookDTO.setToken(token);
         String input;
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
+        pushWebHookDTO.getCommits().forEach(commitDTO -> {
+            DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
+            devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
+            devopsEnvCommitE.setCommitSha(commitDTO.getId());
+            devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookDTO.getUserId()));
+            devopsEnvCommitE.setCommitDate(commitDTO.getTimestamp());
+            if (devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), commitDTO.getId()) == null) {
+                 devopsEnvCommitRepository.create(devopsEnvCommitE);
+            }
+
+        });
+        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
+        devopsEnvironmentE.setGitCommit(devopsEnvCommitE.getId());
+        devopsEnvironmentRepository.update(devopsEnvironmentE);
         //TODO 在收到环境库webhook 之后应该在env commit 记录表中插入提交记录，并且更新对应环境中git库最新提交字段
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
@@ -325,17 +339,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
 
 
-        pushWebHookDTO.getCommits().parallelStream().forEach(commitDTO -> {
-            DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE();
-            devopsEnvCommitE.setEnvId(devopsEnvironmentE.getId());
-            devopsEnvCommitE.setCommitSha(commitDTO.getId());
-            devopsEnvCommitE.setCommitUser(TypeUtil.objToLong(pushWebHookDTO.getUserId()));
-            devopsEnvCommitE.setCommitDate(commitDTO.getTimestamp());
-            if (devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), commitDTO.getId()) == null) {
-                devopsEnvCommitRepository.create(devopsEnvCommitE);
-            }
-        });
-
         //从iam服务中查出项目和组织code
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -349,27 +352,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         LOGGER.info(url);
 
         try {
-            //从git库中查出环境最新提交
-            BranchDO branch = devopsGitRepository.getBranch(gitLabProjectId, "master");
-            String masterSha = branch.getCommit().getId();
 
-            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), masterSha);
+
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
             devopsEnvironmentE.setGitCommit(devopsEnvCommitE.getId());
 
-            //更新gitlab中的最新提交
-            //TODO 此处不应该更新环境gitlab最新提交，环境git最新提交应该在收到webhook的时候更新，而不是在解释的时候更新，/解释完的时候会更新环境表中解释的conmit
-            devopsEnvironmentRepository.update(devopsEnvironmentE);
-
             //更新本地库到最新提交
-            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), masterSha);
-
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
 
             //获取将此次最新提交与tag作比价得到diff
             CompareResultsE compareResultsE = devopsGitRepository
-                    .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha);
+                    .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha());
 
             List<DevopsEnvFileResourceE> beforeSync = new ArrayList<>();
-
 
             compareResultsE.getDiffs().forEach(t -> {
                 if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
@@ -431,6 +426,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     devopsEnvFileE.setDevopsCommit(getFileLatestCommit(path, filePath));
                     devopsEnvFileRepository.update(devopsEnvFileE);
                 }
+                //清楚历史错误记录
                 DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
                 devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
                 devopsEnvFileErrorE.setFilePath(filePath);
@@ -446,7 +442,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //删除tag
             devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
             //创建新tag
-            devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, masterSha, gitLabUserId);
+            devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
 
             //向agent发送同步指令
             deployService.sendCommand(devopsEnvironmentE);

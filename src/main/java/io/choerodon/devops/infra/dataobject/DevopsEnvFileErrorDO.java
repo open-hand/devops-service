@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dataobject;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -20,6 +21,7 @@ public class DevopsEnvFileErrorDO {
     private String commit;
     private String error;
     private Long objectVersionNumber;
+    private Date creationDate;
 
 
     public Long getId() {
@@ -68,5 +70,13 @@ public class DevopsEnvFileErrorDO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 }

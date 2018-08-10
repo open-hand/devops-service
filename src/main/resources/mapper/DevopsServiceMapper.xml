@@ -90,7 +90,10 @@
         <if test="envId != null">
             AND devs.env_id = #{envId}
         </if>
-        <if test="start != null and  size != null">
+        <if test="sort != null and !sort.isEmpty()">
+            ORDER BY ${sort}
+        </if>
+        <if test="start != null and size != null">
             LIMIT #{start}, #{size}
         </if>
         ) ds

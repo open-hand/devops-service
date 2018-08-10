@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
@@ -11,11 +12,11 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
 @Component
 public class DevopsEnvFileErrorConvertor implements ConvertorI<DevopsEnvFileErrorE, DevopsEnvFileErrorDO, DevopsEnvFileErrorDTO> {
 
-
     @Override
     public DevopsEnvFileErrorE doToEntity(DevopsEnvFileErrorDO devopsEnvFileErrorDO) {
         DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
         BeanUtils.copyProperties(devopsEnvFileErrorDO, devopsEnvFileErrorE);
+        devopsEnvFileErrorE.setErrorTime(devopsEnvFileErrorDO.getCreationDate());
         return devopsEnvFileErrorE;
     }
 
@@ -23,6 +24,9 @@ public class DevopsEnvFileErrorConvertor implements ConvertorI<DevopsEnvFileErro
     public DevopsEnvFileErrorDO entityToDo(DevopsEnvFileErrorE devopsEnvFileErrorE) {
         DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
         BeanUtils.copyProperties(devopsEnvFileErrorE, devopsEnvFileErrorDO);
+        if (devopsEnvFileErrorE.getErrorTime() != null) {
+            devopsEnvFileErrorDO.setCreationDate(devopsEnvFileErrorE.getErrorTime());
+        }
         return devopsEnvFileErrorDO;
     }
 
