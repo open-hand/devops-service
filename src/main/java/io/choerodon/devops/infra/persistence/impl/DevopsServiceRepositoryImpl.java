@@ -3,7 +3,9 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -44,6 +46,10 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
 
     @Override
     public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
+        String sort = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                .filter(t -> checkServiceParam(t.getProperty()))
+                .map(t -> t.getProperty() + " " + t.getDirection())
+                .collect(Collectors.joining(","));
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("name", "ds.`name`");
@@ -69,17 +75,21 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
             devopsServiceQueryDOList = PageHelper.doSort(
                     pageRequest.getSort(), () -> devopsServiceMapper.listDevopsServiceByPage(
                             projectId, envId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size));
+                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sort));
         } else {
             count = devopsServiceMapper
                     .selectCountByName(projectId, envId, null, null);
             devopsServiceQueryDOList = PageHelper.doSort(pageRequest.getSort(), () ->
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, envId, null, null, start, size));
+                            projectId, envId, null, null, start, size, sort));
         }
 
         return ConvertPageHelper.convertPage(
                 new Page<>(devopsServiceQueryDOList, pageInfo, count), DevopsServiceV.class);
+    }
+
+    private Boolean checkServiceParam(String key) {
+        return key.equals("id") || key.equals("name") || key.equals("status");
     }
 
     @Override
