@@ -17,6 +17,7 @@ public class GitlabGroupConvertor implements ConvertorI<GitlabGroupE, GroupDO, O
     public GitlabGroupE doToEntity(GroupDO groupDO) {
         GitlabGroupE gitlabGroupE = new GitlabGroupE();
         BeanUtils.copyProperties(groupDO, gitlabGroupE);
+        gitlabGroupE.setGitlabGroupId(groupDO.getId());
         return gitlabGroupE;
     }
 

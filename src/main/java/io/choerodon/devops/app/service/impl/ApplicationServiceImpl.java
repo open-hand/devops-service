@@ -4,12 +4,16 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.*;
 
+import com.google.gson.Gson;
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -30,7 +34,7 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.config.CiYamlConfig;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -41,6 +45,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
+
+    private Gson gson = new Gson();
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Value("${spring.application.name}")
@@ -61,8 +68,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private DevopsProjectRepository devopsProjectRepository;
     @Autowired
-    private EventProducerTemplate eventProducerTemplate;
-    @Autowired
     private GitUtil gitUtil;
     @Autowired
     private CiYamlConfig ciYamlConfig;
@@ -74,8 +79,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     @Autowired
     private DevopsGitRepository devopsGitRepository;
+    @Autowired
+    private SagaClient sagaClient;
 
     @Override
+    @Saga(code = "devops-create-gitlab-project",
+            description = "devops create GitLab project", inputSchema = "{}")
     public ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationDTO);
@@ -103,17 +112,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         gitlabProjectPayload.setGroupId(gitlabGroupE.getGitlabGroupId());
-        Exception exception = eventProducerTemplate.execute(
-                "CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
-                (String uuid) -> {
-                    applicationE.initUuid(uuid);
-                    if (applicationRepository.create(applicationE).getId() == null) {
-                        throw new CommonException("error.application.create.insert");
-                    }
-                });
-        if (exception != null) {
-            throw new CommonException(exception.getMessage());
+
+        if (applicationRepository.create(applicationE).getId() == null) {
+            throw new CommonException("error.application.create.insert");
         }
+        String input = gson.toJson(gitlabProjectPayload);
+        sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", ""));
+
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
                 applicationE.getProjectE().getId()), ApplicationRepDTO.class);
     }
@@ -237,10 +242,15 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void operationApplication(GitlabProjectEventDTO gitlabProjectEventDTO) {
+    public void operationApplication(GitlabProjectPayload gitlabProjectPayload) {
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
+                gitlabProjectPayload.getPath(),
+                gitlabProjectPayload.getUserId(), false);
+        gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
+
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
-                TypeUtil.objToInteger(gitlabProjectEventDTO.getGroupId()));
-        ApplicationE applicationE = applicationRepository.queryByCode(gitlabProjectEventDTO.getPath(),
+                TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
+        ApplicationE applicationE = applicationRepository.queryByCode(gitlabProjectPayload.getPath(),
                 gitlabGroupE.getProjectE().getId());
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -273,12 +283,12 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new CommonException(e.getMessage());
             }
 
-            List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
-                    applicationDir, gitlabProjectEventDTO.getUserId());
+            List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
+                    applicationDir, gitlabProjectPayload.getUserId());
             String accessToken = "";
             if (tokens.isEmpty()) {
-                accessToken = gitlabRepository.createToken(gitlabProjectEventDTO.getGitlabProjectId(),
-                        applicationDir, gitlabProjectEventDTO.getUserId());
+                accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
+                        applicationDir, gitlabProjectPayload.getUserId());
             } else {
                 accessToken = tokens.get(tokens.size() - 1);
             }
@@ -286,27 +296,27 @@ public class ApplicationServiceImpl implements ApplicationService {
             applicationE.initGitlabProjectEByUrl(repoUrl
                     + organization.getCode() + "-" + projectE.getCode() + "/"
                     + applicationE.getCode() + ".git");
-            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
+            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                     gitlabUserE.getUsername(), accessToken, teamplateType);
-            gitlabRepository.createProtectBranch(gitlabProjectEventDTO.getGitlabProjectId(), MASTER,
-                    AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectEventDTO.getUserId());
+            gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
+                    AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
             CommitE commitE;
             try {
                 commitE = devopsGitRepository.getCommit(
-                        gitlabProjectEventDTO.getGitlabProjectId(), MASTER, gitlabProjectEventDTO.getUserId());
+                        gitlabProjectPayload.getGitlabProjectId(), MASTER, gitlabProjectPayload.getUserId());
             } catch (Exception e) {
                 commitE = new CommitE();
             }
             DevopsBranchE devopsBranchE = new DevopsBranchE();
-            devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectEventDTO.getUserId()));
+            devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
             devopsBranchE.setApplicationE(applicationE);
             devopsBranchE.setBranchName(MASTER);
             devopsBranchE.setCheckoutCommit(commitE.getId());
             Date date = DateUtil.changeTimeZone(
                     commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
             devopsBranchE.setCheckoutDate(date);
-            devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectEventDTO.getUserId()));
+            devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
             devopsBranchE.setLastCommitMsg(commitE.getMessage());
             devopsBranchE.setLastCommitDate(date);
             devopsBranchE.setLastCommit(commitE.getId());
@@ -314,22 +324,22 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         try {
             String token = GenerateUUID.generateUUID();
-            gitlabRepository.addVariable(gitlabProjectEventDTO.getGitlabProjectId(), "Token",
+            gitlabRepository.addVariable(gitlabProjectPayload.getGitlabProjectId(), "Token",
                     token,
-                    false, gitlabProjectEventDTO.getUserId());
+                    false, gitlabProjectPayload.getUserId());
             applicationE.setToken(token);
             applicationE.initGitlabProjectE(
-                    TypeUtil.objToInteger(gitlabProjectEventDTO.getGitlabProjectId()));
+                    TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
             applicationE.initSynchro(true);
             ProjectHook projectHook = ProjectHook.allHook();
             projectHook.setEnableSslVerification(true);
-            projectHook.setProjectId(gitlabProjectEventDTO.getGitlabProjectId());
+            projectHook.setProjectId(gitlabProjectPayload.getGitlabProjectId());
             projectHook.setToken(token);
             String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
             uri += "devops/webhook";
             projectHook.setUrl(uri);
             applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
-                    gitlabProjectEventDTO.getGitlabProjectId(), gitlabProjectEventDTO.getUserId(), projectHook)
+                    gitlabProjectPayload.getGitlabProjectId(), gitlabProjectPayload.getUserId(), projectHook)
                     .getId()));
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException("error.application.update");

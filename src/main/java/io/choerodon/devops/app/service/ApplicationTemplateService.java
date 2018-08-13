@@ -6,7 +6,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
-import io.choerodon.devops.api.dto.GitlabProjectEventDTO;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -62,7 +62,7 @@ public interface ApplicationTemplateService {
      *
      * @param gitlabProjectEventDTO 模板信息
      */
-    void operationApplicationTemplate(GitlabProjectEventDTO gitlabProjectEventDTO);
+    void operationApplicationTemplate(GitlabProjectPayload gitlabProjectEventDTO);
 
     /**
      * 组织下查询应用模板

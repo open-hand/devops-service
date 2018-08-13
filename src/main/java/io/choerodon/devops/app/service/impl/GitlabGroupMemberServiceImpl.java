@@ -71,8 +71,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         gitlabGroupMemberDTOList.stream()
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
+                    UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupMemberDTO.getUserId());
+                    Integer userId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
                     GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(
-                            TypeUtil.objToInteger(gitlabGroupMemberDTO.getUserId()));
+                            TypeUtil.objToInteger(userId));
                     if (gitlabUserE == null) {
                         LOGGER.error("error.gitlab.username.select");
                         return;
@@ -83,26 +85,26 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                 gitlabGroupE.getEnvGroupId(),
-                                gitlabUserE.getId());
-                        deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
+                                userId);
+                        deleteGilabRole(groupMemberE, gitlabGroupE, userId, true);
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                 gitlabGroupE.getGitlabGroupId(),
-                                gitlabUserE.getId());
-                        deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
+                                userId);
+                        deleteGilabRole(groupMemberE, gitlabGroupE, userId, false);
                     } else {
                         Organization organization =
                                 iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
                         gitlabGroupE = gitlabRepository.queryGroupByName(
                                 organization.getCode() + "_" + TEMPLATE,
-                                TypeUtil.objToInteger(gitlabUserE.getId()));
+                                TypeUtil.objToInteger(userId));
                         if (gitlabGroupE == null) {
                             LOGGER.error("error.gitlab.groupId.select");
                             return;
                         }
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                 gitlabGroupE.getGitlabGroupId(),
-                                gitlabUserE.getId());
-                        deleteGilabRole(groupMemberE, gitlabGroupE, gitlabUserE);
+                                userId);
+                        deleteGilabRole(groupMemberE, gitlabGroupE, userId, false);
                     }
                 });
     }
@@ -220,11 +222,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     }
 
 
-    public void deleteGilabRole(GitlabGroupMemberE groupMemberE, GitlabGroupE gitlabGroupE, GitlabUserE gitlabUserE) {
+    public void deleteGilabRole(GitlabGroupMemberE groupMemberE, GitlabGroupE gitlabGroupE,
+                                Integer userId, Boolean isEnvDelete) {
         if (groupMemberE != null) {
             gitlabGroupMemberRepository.deleteMember(
-                    gitlabGroupE.getEnvGroupId(),
-                    gitlabUserE.getId());
+                    isEnvDelete ? gitlabGroupE.getEnvGroupId() : gitlabGroupE.getGitlabGroupId(),
+                    userId);
         }
     }
 }
