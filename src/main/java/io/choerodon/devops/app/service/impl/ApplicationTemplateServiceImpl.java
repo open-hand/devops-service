@@ -2,11 +2,15 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import com.google.gson.Gson;
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -14,7 +18,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
-import io.choerodon.devops.api.dto.GitlabProjectEventDTO;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
@@ -29,7 +32,7 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.Visibility;
-import io.choerodon.event.producer.execute.EventProducerTemplate;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -51,10 +54,11 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     + "+ **Chart** setting directory. (Refer to [helm](https://github.com/kubernetes/helm))\n"
                     + "\n"
                     + "Finally, removing or re-editing this **README.md** file to make it useful.";
-
-
     private static final String TEMPLATE = "template";
     private static final String MASTER = "master";
+
+    private Gson gson = new Gson();
+
     @Value("${spring.application.name}")
     private String applicationName;
     @Value("${services.gitlab.url}")
@@ -65,8 +69,6 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
-    private EventProducerTemplate eventProducerTemplate;
-    @Autowired
     private ApplicationTemplateRepository applicationTemplateRepository;
     @Autowired
     private GitUtil gitUtil;
@@ -74,9 +76,13 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     private UserAttrRepository userAttrRepository;
     @Autowired
     private GitlabUserRepository gitlabUserRepository;
+    @Autowired
+    private SagaClient sagaClient;
 
 
     @Override
+    @Saga(code = "devops-create-gitlab-template-project",
+            description = "devops create GitLab template project", inputSchema = "{}")
     public ApplicationTemplateRepDTO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId) {
         ApplicationTemplateValidator.checkApplicationTemplate(applicationTemplateDTO);
         ApplicationTemplateE applicationTemplateE = ConvertHelper.convert(
@@ -105,17 +111,13 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         gitlabProjectPayload.setPath(applicationTemplateDTO.getCode());
         gitlabProjectPayload.setOrganizationId(organization.getId());
         gitlabProjectPayload.setType(TEMPLATE);
-        Exception exception = eventProducerTemplate
-                .execute("CreateGitlabProject", "gitlab-service", gitlabProjectPayload,
-                        (String uuid) -> {
-                            applicationTemplateE.initUuid(uuid);
-                            if (applicationTemplateRepository.create(applicationTemplateE) == null) {
-                                throw new CommonException("error.applicationTemplate.insert");
-                            }
-                        });
-        if (exception != null) {
-            throw new CommonException(exception.getMessage());
+
+        if (applicationTemplateRepository.create(applicationTemplateE) == null) {
+            throw new CommonException("error.applicationTemplate.insert");
         }
+        String input = gson.toJson(gitlabProjectPayload);
+        sagaClient.startSaga("devops-create-gitlab-template-project", new StartInstanceDTO(input, "", ""));
+
         return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organization.getId(),
                 applicationTemplateDTO.getCode()), ApplicationTemplateRepDTO.class);
     }
@@ -182,14 +184,20 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
 
     @Override
-    public void operationApplicationTemplate(GitlabProjectEventDTO gitlabProjectEventDTO) {
+    public void operationApplicationTemplate(GitlabProjectPayload gitlabProjectPayload) {
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
+                gitlabProjectPayload.getPath(),
+                gitlabProjectPayload.getUserId(), false);
+        gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
+
+
         ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(
-                gitlabProjectEventDTO.getOrganizationId(), gitlabProjectEventDTO.getPath());
+                gitlabProjectPayload.getOrganizationId(), gitlabProjectPayload.getPath());
 
         applicationTemplateE.initGitlabProjectE(
-                TypeUtil.objToInteger(gitlabProjectEventDTO.getGitlabProjectId()));
+                TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
         applicationTemplateRepository.update(applicationTemplateE);
-        String applicationDir = gitlabProjectEventDTO.getType() + System.currentTimeMillis();
+        String applicationDir = gitlabProjectPayload.getType() + System.currentTimeMillis();
         if (applicationTemplateE.getCopyFrom() != null) {
             ApplicationTemplateRepDTO templateRepDTO = ConvertHelper.convert(applicationTemplateRepository
                     .query(applicationTemplateE.getCopyFrom()), ApplicationTemplateRepDTO.class);
@@ -207,12 +215,12 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     applicationDir,
                     type,
                     repoUrl);
-            List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectEventDTO.getGitlabProjectId(),
-                    applicationDir, gitlabProjectEventDTO.getUserId());
+            List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
+                    applicationDir, gitlabProjectPayload.getUserId());
             String accessToken = "";
-            accessToken = tokens.isEmpty() ? gitlabRepository.createToken(gitlabProjectEventDTO.getGitlabProjectId(),
-                    applicationDir, gitlabProjectEventDTO.getUserId()) : tokens.get(tokens.size() - 1);
-            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectEventDTO.getUserId());
+            accessToken = tokens.isEmpty() ? gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
+                    applicationDir, gitlabProjectPayload.getUserId()) : tokens.get(tokens.size() - 1);
+            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
             repoUrl = applicationTemplateE.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
             gitUtil.push(
@@ -223,9 +231,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     accessToken,
                     teamplateType);
         } else {
-            gitlabRepository.createFile(gitlabProjectEventDTO.getGitlabProjectId(),
+            gitlabRepository.createFile(gitlabProjectPayload.getGitlabProjectId(),
                     README, README_CONTENT, "ADD README",
-                    gitlabProjectEventDTO.getUserId());
+                    gitlabProjectPayload.getUserId());
         }
     }
 

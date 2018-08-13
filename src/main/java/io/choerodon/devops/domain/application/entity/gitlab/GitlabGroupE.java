@@ -50,6 +50,18 @@ public class GitlabGroupE {
         return projectE;
     }
 
+    public void setGitlabGroupId(Integer gitlabGroupId) {
+        this.gitlabGroupId = gitlabGroupId;
+    }
+
+    public void setEnvGroupId(Integer envGroupId) {
+        this.envGroupId = envGroupId;
+    }
+
+    public void setProjectE(ProjectE projectE) {
+        this.projectE = projectE;
+    }
+
     public Visibility getVisibility() {
         return visibility;
     }

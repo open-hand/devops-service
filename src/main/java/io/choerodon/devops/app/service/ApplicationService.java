@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -70,7 +71,7 @@ public interface ApplicationService {
      *
      * @param gitlabProjectEventDTO 应用信息
      */
-    void operationApplication(GitlabProjectEventDTO gitlabProjectEventDTO);
+    void operationApplication(GitlabProjectPayload gitlabProjectEventDTO);
 
     Boolean applicationExist(String uuid);
 

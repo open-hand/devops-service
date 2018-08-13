@@ -1,16 +1,14 @@
 package io.choerodon.devops.api.eventhandler;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
@@ -23,15 +21,19 @@ import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
  */
 @Component
 public class DevopsSagaHandler {
+    private static final String TEMPLATE = "template";
+    private static final String APPLICATION = "application";
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEventHandler.class);
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final Gson gson = new Gson();
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsGitService devopsGitService;
+    @Autowired
+    private ApplicationTemplateService applicationTemplateService;
+    @Autowired
+    private ApplicationService applicationService;
 
     /**
      * devops创建环境
@@ -40,15 +42,10 @@ public class DevopsSagaHandler {
             description = "devops创建环境",
             sagaCode = "devops-create-env",
             seq = 1)
-    public void devopsCreateUser(String data) {
-        GitlabProjectPayload gitlabProjectPayload = null;
-        try {
-            gitlabProjectPayload = objectMapper.readValue(data, GitlabProjectPayload.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
+    public String devopsCreateUser(String data) {
+        GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
         devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
-
+        return data;
     }
 
     /**
@@ -60,15 +57,40 @@ public class DevopsSagaHandler {
             concurrentLimitNum = 1,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
-    public void gitops(String data) {
-        PushWebHookDTO pushWebHookDTO = null;
-        try {
-            pushWebHookDTO = objectMapper.readValue(data, PushWebHookDTO.class);
-        } catch (IOException e) {
-            LOGGER.info(e.getMessage());
-        }
+    public String gitops(String data) {
+        PushWebHookDTO pushWebHookDTO = gson.fromJson(data, PushWebHookDTO.class);
         devopsGitService.fileResourceSync(pushWebHookDTO);
+        return data;
+    }
 
+    /**
+     * GitOps 事件处理
+     */
+    @SagaTask(code = "devopsOperationGitlabProject",
+            description = "devops create GitLab project",
+            sagaCode = "devops-create-gitlab-project",
+            seq = 1)
+    public String createApp(String data) {
+        GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);
+        if (gitlabProjectEventDTO.getType().equals(APPLICATION)) {
+            applicationService.operationApplication(gitlabProjectEventDTO);
+        }
+        return data;
+    }
+
+    /**
+     * GitOps 模板事件处理
+     */
+    @SagaTask(code = "devopsOperationGitlabTemplateProject",
+            description = "devops create GitLab template project",
+            sagaCode = "devops-create-gitlab-template-project",
+            seq = 1)
+    public String createTemplate(String data) {
+        GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);
+        if (gitlabProjectEventDTO.getType().equals(TEMPLATE)) {
+            applicationTemplateService.operationApplicationTemplate(gitlabProjectEventDTO);
+        }
+        return data;
     }
 
 }
