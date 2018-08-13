@@ -1,6 +1,11 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,8 +28,10 @@ import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 public class DevopsSagaHandler {
     private static final String TEMPLATE = "template";
     private static final String APPLICATION = "application";
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
     private final Gson gson = new Gson();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -57,10 +64,14 @@ public class DevopsSagaHandler {
             concurrentLimitNum = 1,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
-    public String gitops(String data) {
-        PushWebHookDTO pushWebHookDTO = gson.fromJson(data, PushWebHookDTO.class);
+    public void gitops(String data) {
+        PushWebHookDTO pushWebHookDTO = null;
+        try {
+            pushWebHookDTO = objectMapper.readValue(data, PushWebHookDTO.class);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
         devopsGitService.fileResourceSync(pushWebHookDTO);
-        return data;
     }
 
     /**
