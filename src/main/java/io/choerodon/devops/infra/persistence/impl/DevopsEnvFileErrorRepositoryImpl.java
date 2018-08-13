@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -24,19 +26,19 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
 
 
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public DevopsEnvFileErrorE create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
-        DevopsEnvFileErrorDO newDevopsEnvFileErrorDO = ConvertHelper
-                .convert(devopsEnvFileErrorE, DevopsEnvFileErrorDO.class);
-        DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
-        devopsEnvFileErrorDO.setEnvId(devopsEnvFileErrorE.getEnvId());
-        devopsEnvFileErrorDO.setFilePath(devopsEnvFileErrorE.getFilePath());
-        if (devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDO) != null) {
+        DevopsEnvFileErrorDO devopsEnvFileErrorDO = ConvertHelper.convert(devopsEnvFileErrorE, DevopsEnvFileErrorDO.class);
+        DevopsEnvFileErrorDO newDevopsEnvFileErrorDO = devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDO);
+        if (newDevopsEnvFileErrorDO != null) {
+            newDevopsEnvFileErrorDO.setError(devopsEnvFileErrorE.getError());
             if (devopsEnvFileErrorMapper.updateByPrimaryKeySelective(newDevopsEnvFileErrorDO) != 1) {
-                throw new CommonException("error.env.error.file.create");
-            }
-        } else {
-            if (devopsEnvFileErrorMapper.insert(newDevopsEnvFileErrorDO) != 1) {
                 throw new CommonException("error.env.error.file.update");
+            }
+            devopsEnvFileErrorDO = newDevopsEnvFileErrorDO;
+        } else {
+            if (devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO) != 1) {
+                throw new CommonException("error.env.error.file.create");
             }
         }
         return ConvertHelper.convert(devopsEnvFileErrorDO, DevopsEnvFileErrorE.class);
