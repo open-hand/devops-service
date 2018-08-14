@@ -873,7 +873,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         }
                         case "service": {
                             DevopsServiceE devopsServiceE = devopsServiceRepository
-                                    .selectByNameAndNamespace(objects[1], devopsEnvironmentE.getName());
+                                    .selectByNameAndNamespace(objects[1], devopsEnvironmentE.getCode());
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
                             if (isFileError(envId, devopsEnvFileResourceE.getFilePath(),
