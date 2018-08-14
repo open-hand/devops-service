@@ -14,7 +14,6 @@ public class DevopsServiceE {
     private String namespace;
     private String status;
     private List<PortMapE> ports;
-    private List<String> externalIps;
     private String externalIp;
     private String type;
     private String labels;
@@ -110,15 +109,6 @@ public class DevopsServiceE {
     public void setPorts(List<PortMapE> ports) {
         this.ports = ports;
     }
-
-    public List<String> getExternalIps() {
-        return externalIps;
-    }
-
-    public void setExternalIps(List<String> externalIps) {
-        this.externalIps = externalIps;
-    }
-
 
     public String getType() {
         return type;
