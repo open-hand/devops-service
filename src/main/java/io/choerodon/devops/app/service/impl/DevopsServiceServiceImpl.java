@@ -124,7 +124,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         if (devopsServiceReqDTO.getAppId() != null) {
             checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                    null, null);
+                    null);
         }
 
         DevopsServiceE devopsServiceE = new DevopsServiceE();
@@ -156,7 +156,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     projectId, devopsServiceE.getEnvId(), serviceName)) {
                 throw new CommonException("error.service.name.check");
             }
-            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(), null, null);
+            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(), null);
 
             updateService(devopsServiceE, devopsServiceReqDTO, true, isGitOps);
 
@@ -181,7 +181,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     throw new CommonException("no change!");
                 }
             } else {
-                checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null, null);
+                checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
 
             updateService(devopsServiceE,
@@ -232,7 +232,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (appInstances != null) {
             appInstances.forEach(appInstance -> {
                 checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                        null, appInstance);
+                        appInstance);
                 ApplicationInstanceE applicationInstanceE =
                         applicationInstanceRepository.selectById(appInstance);
                 if (applicationInstanceE == null) {
@@ -255,14 +255,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     /**
      * 校验参数
-     *
-     * @param envId         环境id
+     *  @param envId         环境id
      * @param appId         应用id
-     * @param appVersionId  应用版本id
      * @param appInstanceId 应用实例id
      */
-    private void checkOptions(Long envId, Long appId, Long appVersionId, Long appInstanceId) {
-        if (applicationInstanceRepository.checkOptions(envId, appId, appVersionId, appInstanceId) == 0) {
+    private void checkOptions(Long envId, Long appId, Long appInstanceId) {
+        if (applicationInstanceRepository.checkOptions(envId, appId, appInstanceId) == 0) {
             throw new CommonException("error.instances.query");
         }
     }

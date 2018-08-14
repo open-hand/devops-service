@@ -29,7 +29,6 @@ public interface ApplicationInstanceMapper extends BaseMapper<ApplicationInstanc
 
     int checkOptions(@Param("envId") Long envId,
                      @Param("appId") Long appId,
-                     @Param("appVersionId") Long appVersionId,
                      @Param("appInstanceId") Long appInstanceId);
 
     String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appId") Long appId);
