@@ -225,30 +225,36 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private void syncObjects() {
         List<ApplicationInstanceE> applicationInstanceES = applicationInstanceRepository.list();
-        applicationInstanceES.parallelStream().filter(applicationInstanceE -> !applicationInstanceE.getStatus().equals(InstanceStatus.DELETED.getStatus())).forEach(applicationInstanceE -> {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
-            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
-                    "release-" + applicationInstanceE.getCode(),
-                    projectId,
-                    CREATE,
-                    TypeUtil.objToLong(ADMIN));
-        });
+        applicationInstanceES.parallelStream()
+                .filter(t -> !InstanceStatus.DELETED.getStatus().equals(t.getStatus()))
+                .forEach(applicationInstanceE -> {
+                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                            .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+                    ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+                    objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
+                    Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                    objectOperation.operationEnvGitlabFile(
+                            "release-" + applicationInstanceE.getCode(),
+                            projectId,
+                            CREATE,
+                            TypeUtil.objToLong(ADMIN));
+                });
         List<DevopsServiceE> devopsServiceES = devopsServiceRepository.list();
-        devopsServiceES.parallelStream().filter(devopsServiceE -> !devopsServiceE.getStatus().equals(ServiceStatus.DELETED)).forEach(devopsServiceE -> {
-            getService(devopsServiceE);
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsServiceE.getEnvId());
-            ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(getService(devopsServiceE));
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
-                    "svc-" + devopsServiceE.getName(),
-                    projectId,
-                    CREATE,
-                    TypeUtil.objToLong(ADMIN));
-        });
+        devopsServiceES.parallelStream()
+                .filter(t -> !ServiceStatus.DELETED.getStatus().equals(t.getStatus()))
+                .forEach(devopsServiceE -> {
+                    V1Service service = getService(devopsServiceE);
+                    DevopsEnvironmentE devopsEnvironmentE =
+                            devopsEnvironmentRepository.queryById(devopsServiceE.getEnvId());
+                    ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+                    objectOperation.setType(service);
+                    Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                    objectOperation.operationEnvGitlabFile(
+                            "svc-" + devopsServiceE.getName(),
+                            projectId,
+                            CREATE,
+                            TypeUtil.objToLong(ADMIN));
+                });
     }
 
     private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE) {
@@ -264,38 +270,66 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
     private V1Service getService(DevopsServiceE devopsServiceE) {
-        Map<String, String> annotations = gson.fromJson(devopsServiceE.getAnnotations(), new TypeToken<Map<String, String>>() {
-        }.getType());
         V1Service service = new V1Service();
         service.setKind("Service");
         service.setApiVersion("v1");
+
+        // metadata
+        V1ObjectMeta metadata = new V1ObjectMeta();
+        metadata.setName(devopsServiceE.getName());
+        // metadata / labels
         Map<String, String> label = new HashMap<>();
         label.put(SERVICE_LABLE, SERVICE);
-        V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setLabels(label);
-        metadata.setName(devopsServiceE.getName());
-        metadata.setAnnotations(annotations);
+        // metadata / annotations
+        if (devopsServiceE.getAnnotations() != null) {
+            Map<String, String> annotations = gson.fromJson(
+                    devopsServiceE.getAnnotations(), new TypeToken<Map<String, String>>() {
+                    }.getType());
+            metadata.setAnnotations(annotations);
+        }
+        // set metadata
         service.setMetadata(metadata);
 
         V1ServiceSpec spec = new V1ServiceSpec();
-        List<V1ServicePort> ports = new ArrayList<>();
-        V1ServicePort v1ServicePort = new V1ServicePort();
-        v1ServicePort.setName("http");
-        v1ServicePort.setPort(devopsServiceE.getPort().intValue());
-        v1ServicePort.setTargetPort(new IntOrString(devopsServiceE.getPort().intValue()));
-        v1ServicePort.setProtocol("TCP");
-        ports.add(v1ServicePort);
+        // spec / ports
+        final Integer[] serialNumber = {0};
+        List<V1ServicePort> ports = devopsServiceE.getPorts().parallelStream()
+                .map(t -> {
+                    V1ServicePort v1ServicePort = new V1ServicePort();
+                    if (t.getNodePort() != null) {
+                        v1ServicePort.setNodePort(t.getNodePort().intValue());
+                    }
+                    if (t.getPort() != null) {
+                        v1ServicePort.setPort(t.getPort().intValue());
+                    }
+                    if (t.getTargetPort() != null) {
+                        v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
+                    }
+                    v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
+                    v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
+                    return v1ServicePort;
+                }).collect(Collectors.toList());
+        spec.setPorts(ports);
 
-        if (!StringUtils.isEmpty(devopsServiceE.getExternalIp())) {
-            List<String> externallIps = new ArrayList<>();
-            externallIps.add(devopsServiceE.getExternalIp());
-            spec.setExternalIPs(externallIps);
+        // spec / selector
+        if (devopsServiceE.getLabels() != null) {
+            Map<String, String> selector = gson.fromJson(
+                    devopsServiceE.getLabels(), new TypeToken<Map<String, String>>() {
+                    }.getType());
+            spec.setSelector(selector);
         }
 
-        spec.setPorts(ports);
+        // spec / externalIps
+        if (!StringUtils.isEmpty(devopsServiceE.getExternalIp())) {
+            List<String> externalIps = new ArrayList<>(Arrays.asList(devopsServiceE.getExternalIp().split(",")));
+            spec.setExternalIPs(externalIps);
+        }
+
         spec.setSessionAffinity("None");
         spec.type("ClusterIP");
         service.setSpec(spec);
+        
         return service;
     }
 }
