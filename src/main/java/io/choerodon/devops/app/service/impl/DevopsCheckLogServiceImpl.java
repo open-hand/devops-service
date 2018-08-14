@@ -55,6 +55,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private IamRepository iamRepository;
     @Autowired
     private DevopsProjectRepository devopsProjectRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     @Override
     @Async
@@ -138,6 +140,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         logs.add(checkLog);
     }
 
+
     private void syncNonEnvGroupProject() {
         List<DevopsProjectDO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
         final String groupCodeSuffix = "gitops";
@@ -163,4 +166,5 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     }
                 });
     }
+
 }

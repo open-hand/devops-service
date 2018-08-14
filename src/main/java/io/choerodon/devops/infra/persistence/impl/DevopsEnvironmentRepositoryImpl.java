@@ -114,4 +114,9 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         devopsEnvironmentMapper.selectOne(devopsEnvironmentDO);
         return ConvertHelper.convert(devopsEnvironmentMapper.selectOne(devopsEnvironmentDO), DevopsEnvironmentE.class);
     }
+
+    @Override
+    public List<DevopsEnvironmentE> list() {
+        return ConvertHelper.convertList(devopsEnvironmentMapper.selectAll(), DevopsEnvironmentE.class);
+    }
 }
