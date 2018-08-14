@@ -109,4 +109,9 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     public List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId) {
         return applicationInstanceMapper.listApplicationInstances(projectId, appId);
     }
+
+    @Override
+    public List<ApplicationInstanceE> list() {
+        return ConvertHelper.convertList(applicationInstanceMapper.selectAll(), ApplicationInstanceE.class);
+    }
 }
