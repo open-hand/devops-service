@@ -17,8 +17,6 @@ public class DevopsServiceE {
     private String externalIp;
     private String type;
     private String labels;
-    private Long port;
-    private Long targetPort;
     private String annotations;
     private Long objectVersionNumber;
 
@@ -116,21 +114,5 @@ public class DevopsServiceE {
 
     public void setType(String type) {
         this.type = type;
-
-    }
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 }

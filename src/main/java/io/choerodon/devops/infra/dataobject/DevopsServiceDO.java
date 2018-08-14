@@ -26,8 +26,6 @@ public class DevopsServiceDO extends AuditDomain {
     private String status;
     private String ports;
     private String type;
-    private Long port;
-    private Long targetPort;
     private String externalIp;
     private String labels;
     private String annotations;
@@ -70,22 +68,6 @@ public class DevopsServiceDO extends AuditDomain {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 
     public String getExternalIp() {
