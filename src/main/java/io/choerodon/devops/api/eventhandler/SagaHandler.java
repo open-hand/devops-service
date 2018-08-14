@@ -163,20 +163,22 @@ public class SagaHandler {
     @SagaTask(code = "createUser", description = "用户创建事件",
             sagaCode = "iam-create-user", seq = 1)
     public String handleCreateUserEvent(String payload) {
-        GitlabUserDTO gitlabUserDTO = gson.fromJson(payload, GitlabUserDTO.class);
+        List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserRequestDTO>>() {
+        }.getType());
         loggerInfo(gitlabUserDTO);
+        gitlabUserDTO.parallelStream().forEach(t -> {
+            GitlabUserRequestDTO gitlabUserReqDTO = new GitlabUserRequestDTO();
+            gitlabUserReqDTO.setProvider("oauth2_generic");
+            gitlabUserReqDTO.setExternUid(t.getId());
+            gitlabUserReqDTO.setSkipConfirmation(true);
+            gitlabUserReqDTO.setUsername(t.getUsername());
+            gitlabUserReqDTO.setEmail(t.getEmail());
+            gitlabUserReqDTO.setName(t.getName());
+            gitlabUserReqDTO.setCanCreateGroup(true);
+            gitlabUserReqDTO.setProjectsLimit(100);
 
-        GitlabUserRequestDTO gitlabUserReqDTO = new GitlabUserRequestDTO();
-        gitlabUserReqDTO.setProvider("oauth2_generic");
-        gitlabUserReqDTO.setExternUid(gitlabUserDTO.getId());
-        gitlabUserReqDTO.setSkipConfirmation(true);
-        gitlabUserReqDTO.setUsername(gitlabUserDTO.getUsername());
-        gitlabUserReqDTO.setEmail(gitlabUserDTO.getEmail());
-        gitlabUserReqDTO.setName(gitlabUserDTO.getName());
-        gitlabUserReqDTO.setCanCreateGroup(true);
-        gitlabUserReqDTO.setProjectsLimit(100);
-
-        gitlabUserService.createGitlabUser(gitlabUserReqDTO);
+            gitlabUserService.createGitlabUser(gitlabUserReqDTO);
+        });
         return payload;
     }
 
