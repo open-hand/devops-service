@@ -305,6 +305,11 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         return devopsIngressMapper.checkEnvHasIngress(envId);
     }
 
+    @Override
+    public List<DevopsIngressE> list() {
+        return ConvertHelper.convertList(devopsIngressMapper.selectAll(), DevopsIngressE.class);
+    }
+
     private void getDevopsIngressDTO(DevopsIngressDTO devopsIngressDTO, DevopsIngressPathDO e) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(e.getServiceId());
         if (devopsServiceE == null) {

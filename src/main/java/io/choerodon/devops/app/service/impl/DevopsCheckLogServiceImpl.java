@@ -7,10 +7,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1ServicePort;
-import io.kubernetes.client.models.V1ServiceSpec;
+import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +19,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -89,16 +87,18 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsServiceRepository devopsServiceRepository;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
+    @Autowired
+    private DevopsIngressService devopsIngressService;
 
     @Override
     @Async
     public void checkLog(String version) {
+        DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
+        List<CheckLog> logs = new ArrayList<>();
+        devopsCheckLogE.setBeginCheckDate(new Date());
         switch (version) {
             case "0.8":
                 List<ApplicationDO> applications = applicationMapper.selectAll();
-                DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
-                devopsCheckLogE.setBeginCheckDate(new Date());
-                List<CheckLog> logs = new ArrayList<>();
                 applications.parallelStream()
                         .filter(applicationDO ->
                                 applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
@@ -106,17 +106,18 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             syncWebHook(applicationDO, logs);
                             syncBranches(applicationDO, logs);
                         });
-                devopsCheckLogE.setLog(JSON.toJSONString(logs));
-                devopsCheckLogE.setEndCheckDate(new Date());
-                devopsCheckLogRepository.create(devopsCheckLogE);
                 break;
             case "0.9":
-                syncNonEnvGroupProject();
-                syncEnvProject();
+                syncNonEnvGroupProject(logs);
+                syncEnvProject(logs);
+                syncObjects(logs);
                 break;
             default:
                 break;
         }
+        devopsCheckLogE.setLog(JSON.toJSONString(logs));
+        devopsCheckLogE.setEndCheckDate(new Date());
+        devopsCheckLogRepository.create(devopsCheckLogE);
     }
 
 
@@ -174,87 +175,141 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
 
-    private void syncNonEnvGroupProject() {
+    private void syncNonEnvGroupProject(List<CheckLog> logs) {
         List<DevopsProjectDO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
         final String groupCodeSuffix = "gitops";
         projectDOList.parallelStream()
                 .forEach(t -> {
-                    Long projectId = t.getId();
-                    ProjectE projectE = iamRepository.queryIamProject(projectId);
-                    Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-                    //创建gitlab group
-                    GroupDO group = new GroupDO();
-                    // name: orgName-projectName
-                    group.setName(String.format("%s-%s-%s",
-                            organization.getName(), projectE.getName(), groupCodeSuffix));
-                    // path: orgCode-projectCode
-                    group.setPath(String.format("%s-%s-%s",
-                            organization.getCode(), projectE.getCode(), groupCodeSuffix));
-                    ResponseEntity<GroupDO> responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
-                    if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
-                        group = responseEntity.getBody();
-                        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
-                        devopsProjectDO.setEnvGroupId(group.getId());
-                        devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+                    CheckLog checkLog = new CheckLog();
+                    try {
+                        Long projectId = t.getId();
+                        ProjectE projectE = iamRepository.queryIamProject(projectId);
+                        checkLog.setContent("project: " + projectE.getName() + " create gitops group");
+                        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+                        //创建gitlab group
+                        GroupDO group = new GroupDO();
+                        // name: orgName-projectName
+                        group.setName(String.format("%s-%s-%s",
+                                organization.getName(), projectE.getName(), groupCodeSuffix));
+                        // path: orgCode-projectCode
+                        group.setPath(String.format("%s-%s-%s",
+                                organization.getCode(), projectE.getCode(), groupCodeSuffix));
+                        ResponseEntity<GroupDO> responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
+                        if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                            group = responseEntity.getBody();
+                            DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
+                            devopsProjectDO.setEnvGroupId(group.getId());
+                            devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+                        }
+                        checkLog.setResult("success");
+                    } catch (Exception e) {
+                        checkLog.setResult("failed: " + e.getMessage());
                     }
+                    logs.add(checkLog);
                 });
+
     }
 
 
-    private void syncEnvProject() {
+    private void syncEnvProject(List<CheckLog> logs) {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
         devopsEnvironmentES.parallelStream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() == null).forEach(devopsEnvironmentE -> {
-            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            List<String> sshKeys = FileUtil.getSshKey(
-                    organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnvironmentE.getCode());
-            devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
-            devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-            devopsEnvironmentRepository.update(devopsEnvironmentE);
-            GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
-            GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectE.getId());
-            gitlabProjectPayload.setGroupId(gitlabGroupE.getEnvGroupId());
-            gitlabProjectPayload.setUserId(ADMIN);
-            gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());
-            gitlabProjectPayload.setOrganizationId(null);
-            gitlabProjectPayload.setType(ENV);
-            devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
+            CheckLog checkLog = new CheckLog();
+            try {
+                checkLog.setContent("env: " + devopsEnvironmentE.getName() + " create gitops project");
+                ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+                Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+                List<String> sshKeys = FileUtil.getSshKey(
+                        organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnvironmentE.getCode());
+                devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
+                devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
+                devopsEnvironmentRepository.update(devopsEnvironmentE);
+                GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
+                GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectE.getId());
+                gitlabProjectPayload.setGroupId(gitlabGroupE.getEnvGroupId());
+                gitlabProjectPayload.setUserId(ADMIN);
+                gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());
+                gitlabProjectPayload.setOrganizationId(null);
+                gitlabProjectPayload.setType(ENV);
+                devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
+                checkLog.setResult("success");
+            } catch (Exception e) {
+                checkLog.setResult("failed: " + e.getMessage());
+            }
+            logs.add(checkLog);
         });
     }
 
 
-    private void syncObjects() {
+    private void syncObjects(List<CheckLog> logs) {
         List<ApplicationInstanceE> applicationInstanceES = applicationInstanceRepository.list();
         applicationInstanceES.parallelStream()
                 .filter(t -> !InstanceStatus.DELETED.getStatus().equals(t.getStatus()))
                 .forEach(applicationInstanceE -> {
-                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                            .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
-                    ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-                    objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
-                    Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                    objectOperation.operationEnvGitlabFile(
-                            "release-" + applicationInstanceE.getCode(),
-                            projectId,
-                            CREATE,
-                            TypeUtil.objToLong(ADMIN));
+                    CheckLog checkLog = new CheckLog();
+                    try {
+                        checkLog.setContent("instance: " + applicationInstanceE.getCode() + " serializable to yaml");
+                        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                                .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+                        ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+                        objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
+                        Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                        objectOperation.operationEnvGitlabFile(
+                                "release-" + applicationInstanceE.getCode(),
+                                projectId,
+                                CREATE,
+                                TypeUtil.objToLong(ADMIN));
+                        checkLog.setResult("success");
+                    } catch (Exception e) {
+                        checkLog.setResult("failed: " + e.getMessage());
+                    }
+                    logs.add(checkLog);
                 });
         List<DevopsServiceE> devopsServiceES = devopsServiceRepository.list();
         devopsServiceES.parallelStream()
                 .filter(t -> !ServiceStatus.DELETED.getStatus().equals(t.getStatus()))
                 .forEach(devopsServiceE -> {
-                    V1Service service = getService(devopsServiceE);
-                    DevopsEnvironmentE devopsEnvironmentE =
-                            devopsEnvironmentRepository.queryById(devopsServiceE.getEnvId());
-                    ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
-                    objectOperation.setType(service);
-                    Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                    objectOperation.operationEnvGitlabFile(
-                            "svc-" + devopsServiceE.getName(),
-                            projectId,
-                            CREATE,
-                            TypeUtil.objToLong(ADMIN));
+                    CheckLog checkLog = new CheckLog();
+                    try {
+                        checkLog.setContent("service: " + devopsServiceE.getName() + " serializable to yaml");
+                        V1Service service = getService(devopsServiceE);
+                        DevopsEnvironmentE devopsEnvironmentE =
+                                devopsEnvironmentRepository.queryById(devopsServiceE.getEnvId());
+                        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+                        objectOperation.setType(service);
+                        Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                        objectOperation.operationEnvGitlabFile(
+                                "svc-" + devopsServiceE.getName(),
+                                projectId,
+                                CREATE,
+                                TypeUtil.objToLong(ADMIN));
+                        checkLog.setResult("success");
+                    } catch (Exception e) {
+                        checkLog.setResult("failed: " + e.getMessage());
+                    }
+                    logs.add(checkLog);
                 });
+        List<DevopsIngressE> devopsIngressES = devopsIngressRepository.list();
+        devopsIngressES.parallelStream().forEach(devopsIngressE -> {
+            CheckLog checkLog = new CheckLog();
+            try {
+                checkLog.setContent("ingress: " + devopsIngressE.getName() + " serializable to yaml");
+                DevopsEnvironmentE devopsEnvironmentE =
+                        devopsEnvironmentRepository.queryById(devopsIngressE.getEnvId());
+                ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+                objectOperation.setType(getV1beta1Ingress(devopsIngressE));
+                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                objectOperation.operationEnvGitlabFile(
+                        "ing-" + devopsIngressE.getName(),
+                        projectId,
+                        CREATE,
+                        TypeUtil.objToLong(ADMIN));
+                checkLog.setResult("success");
+            } catch (Exception e) {
+                checkLog.setResult("failed: " + e.getMessage());
+            }
+            logs.add(checkLog);
+        });
     }
 
     private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE) {
@@ -329,7 +384,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         spec.setSessionAffinity("None");
         spec.type("ClusterIP");
         service.setSpec(spec);
-        
+
         return service;
+    }
+
+    private V1beta1Ingress getV1beta1Ingress(DevopsIngressE devopsIngressE) {
+        V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressE.getDomain(), devopsIngressE.getName());
+        List<DevopsIngressPathE> devopsIngressPathES = devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
+        devopsIngressPathES.parallelStream().forEach(devopsIngressPathE ->
+                v1beta1Ingress.getSpec().getRules().get(0).getHttp()
+                        .addPathsItem(devopsIngressService.createPath(devopsIngressPathE.getPath(), devopsIngressPathE.getServiceId())));
+
+        return v1beta1Ingress;
     }
 }

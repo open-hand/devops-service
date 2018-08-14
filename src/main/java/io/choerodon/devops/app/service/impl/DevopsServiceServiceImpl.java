@@ -255,7 +255,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     /**
      * 校验参数
-     *  @param envId         环境id
+     *
+     * @param envId         环境id
      * @param appId         应用id
      * @param appInstanceId 应用实例id
      */
@@ -437,7 +438,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
             objectOperation.setType(service);
-            objectOperation.operationEnvGitlabFile("svc" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
+            objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
                     userAttrE.getGitlabUserId());
         }
     }

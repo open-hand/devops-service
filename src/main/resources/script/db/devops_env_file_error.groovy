@@ -25,4 +25,8 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file_error.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(id: '2018-08-09-modify-column', author: 'younger') {
+        modifyDataType(tableName: 'devops_env_file_error', columnName: 'error', newDataType: 'VARCHAR(5000)')
+    }
 }
