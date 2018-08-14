@@ -9,19 +9,25 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
 import io.choerodon.devops.domain.application.entity.DevopsCheckLogE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.CheckLog;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 
@@ -47,27 +53,35 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsGitRepository devopsGitRepository;
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private DevopsProjectRepository devopsProjectRepository;
 
     @Override
     @Async
     public void checkLog(String version) {
-        if (version.equals("0.8")) {
-            List<ApplicationDO> applications = applicationMapper.selectAll();
-            DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
-            devopsCheckLogE.setBeginCheckDate(new Date());
-            List<CheckLog> logs = new ArrayList<>();
-            applications.parallelStream()
-                    .filter(applicationDO ->
-                            applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
-                    .forEach(applicationDO -> {
-                        syncWebHook(applicationDO, logs);
-                        syncBranches(applicationDO, logs);
-                    });
-            devopsCheckLogE.setLog(JSON.toJSONString(logs));
-            devopsCheckLogE.setEndCheckDate(new Date());
-            devopsCheckLogRepository.create(devopsCheckLogE);
+        switch (version) {
+            case "0.8":
+                List<ApplicationDO> applications = applicationMapper.selectAll();
+                DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
+                devopsCheckLogE.setBeginCheckDate(new Date());
+                List<CheckLog> logs = new ArrayList<>();
+                applications.parallelStream()
+                        .filter(applicationDO ->
+                                applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
+                        .forEach(applicationDO -> {
+                            syncWebHook(applicationDO, logs);
+                            syncBranches(applicationDO, logs);
+                        });
+                devopsCheckLogE.setLog(JSON.toJSONString(logs));
+                devopsCheckLogE.setEndCheckDate(new Date());
+                devopsCheckLogRepository.create(devopsCheckLogE);
+                break;
+            case "0.9":
+                syncNonEnvGroupProject();
+                break;
+            default:
+                break;
         }
-
     }
 
 
@@ -122,5 +136,31 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             checkLog.setResult("failed: " + e.getMessage());
         }
         logs.add(checkLog);
+    }
+
+    private void syncNonEnvGroupProject() {
+        List<DevopsProjectDO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
+        final String groupCodeSuffix = "gitops";
+        projectDOList.parallelStream()
+                .forEach(t -> {
+                    Long projectId = t.getId();
+                    ProjectE projectE = iamRepository.queryIamProject(projectId);
+                    Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+                    //创建gitlab group
+                    GroupDO group = new GroupDO();
+                    // name: orgName-projectName
+                    group.setName(String.format("%s-%s-%s",
+                            organization.getName(), projectE.getName(), groupCodeSuffix));
+                    // path: orgCode-projectCode
+                    group.setPath(String.format("%s-%s-%s",
+                            organization.getCode(), projectE.getCode(), groupCodeSuffix));
+                    ResponseEntity<GroupDO> responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
+                    if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                        group = responseEntity.getBody();
+                        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
+                        devopsProjectDO.setEnvGroupId(group.getId());
+                        devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+                    }
+                });
     }
 }
