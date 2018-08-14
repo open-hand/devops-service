@@ -375,7 +375,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             objectOperation.operationEnvGitlabFile(
-                    applicationInstanceE.getCode(),
+                    "release-" + applicationInstanceE.getCode(),
                     projectId,
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId());

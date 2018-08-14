@@ -384,11 +384,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 if (devopsServiceE != null) {
                     devopsServiceE.setStatus(ServiceStatus.DELETED.getStatus());
                     devopsServiceRepository.update(devopsServiceE);
-
-                    DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
-                            .queryByObject(ObjectType.SERVICE.getType(), devopsServiceE.getId());
-                    newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-                    devopsEnvCommandRepository.update(newdevopsEnvCommandE);
                 }
             }
             if (KeyParseTool.getResourceType(msg).equals(ResourceType.INGRESS.getType())) {

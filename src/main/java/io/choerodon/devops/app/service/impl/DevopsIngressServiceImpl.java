@@ -188,6 +188,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     "DELETE FILE",
                     TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         }
+        devopsIngressRepository.deleteIngress(ingressId);
     }
 
     @Override
@@ -264,7 +265,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
             objectOperation.setType(ingress);
-            objectOperation.operationEnvGitlabFile(ingressName, envGitLabProjectId, isCreate ? "create" : "update",
+            objectOperation.operationEnvGitlabFile("ing-" + ingressName, envGitLabProjectId, isCreate ? "create" : "update",
                     userAttrE.getGitlabUserId());
         }
     }

@@ -70,7 +70,7 @@ public class GitUtil {
 
     public static String getLog(String repoPath, String fileName) {
         String latestCommit = "";
-        File file = new File("gitops/operation/crockpro0803/yl3/.git");
+        File file = new File(repoPath);
         try (Repository repository = new FileRepository(file.getAbsolutePath())) {
             try (Git git = new Git(repository)) {
                 Iterable<RevCommit> logs = git.log().addPath(fileName).call();
