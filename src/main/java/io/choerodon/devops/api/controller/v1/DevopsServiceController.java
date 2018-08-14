@@ -145,7 +145,7 @@ public class DevopsServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.listDevopsServiceByPage(projectId, pageRequest, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.query"));
     }
 
@@ -168,7 +168,7 @@ public class DevopsServiceController {
             @ApiParam(value = "环境ID", required = true)
             @RequestParam Long envId) {
         return Optional.ofNullable(devopsServiceService.listDevopsService(envId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.env.query"));
     }
 
@@ -219,7 +219,7 @@ public class DevopsServiceController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.listByEnv(projectId, envId, pageRequest, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.query"));
     }
 }
