@@ -430,12 +430,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     devopsEnvFileE.setDevopsCommit(getFileLatestCommit(path + gitSuffix, filePath));
                     devopsEnvFileRepository.update(devopsEnvFileE);
                 }
-                //清楚历史错误记录
-                DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
-                devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
-                devopsEnvFileErrorE.setFilePath(filePath);
-                devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE);
             }
+
+            //清楚历史错误记录
+            DevopsEnvFileErrorE devopsEnvFileErrorE = new DevopsEnvFileErrorE();
+            devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
+            devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE);
+
             for (String filePath : deletedFiles) {
                 DevopsEnvFileE devopsEnvFileE = new DevopsEnvFileE();
                 devopsEnvFileE.setEnvId(devopsEnvironmentE.getId());
