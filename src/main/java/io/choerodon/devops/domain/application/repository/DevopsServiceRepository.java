@@ -36,4 +36,6 @@ public interface DevopsServiceRepository {
     DevopsServiceE selectByNameAndEnvId(String name, Long envId);
 
     Boolean checkEnvHasService(Long envId);
+
+    List<DevopsServiceE> list();
 }

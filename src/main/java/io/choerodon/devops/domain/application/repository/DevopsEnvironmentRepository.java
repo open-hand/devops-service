@@ -29,4 +29,6 @@ public interface DevopsEnvironmentRepository {
 
     DevopsEnvironmentE queryByToken(String token);
 
+    List<DevopsEnvironmentE> list();
+
 }

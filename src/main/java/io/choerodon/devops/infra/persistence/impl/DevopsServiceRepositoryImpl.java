@@ -159,4 +159,9 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     public Boolean checkEnvHasService(Long envId) {
         return devopsServiceMapper.checkEnvHasService(envId);
     }
+
+    @Override
+    public List<DevopsServiceE> list() {
+        return ConvertHelper.convertList(devopsServiceMapper.selectAll(), DevopsServiceE.class);
+    }
 }

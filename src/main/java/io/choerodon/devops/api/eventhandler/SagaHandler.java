@@ -163,7 +163,7 @@ public class SagaHandler {
     @SagaTask(code = "createUser", description = "用户创建事件",
             sagaCode = "iam-create-user", seq = 1)
     public String handleCreateUserEvent(String payload) {
-        List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserRequestDTO>>() {
+        List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
         }.getType());
         loggerInfo(gitlabUserDTO);
         gitlabUserDTO.parallelStream().forEach(t -> {

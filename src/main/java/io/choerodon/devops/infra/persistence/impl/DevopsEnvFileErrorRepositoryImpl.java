@@ -27,21 +27,22 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public DevopsEnvFileErrorE create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
-        DevopsEnvFileErrorDO devopsEnvFileErrorDO = ConvertHelper.convert(devopsEnvFileErrorE, DevopsEnvFileErrorDO.class);
+    public void create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
+        DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
+        devopsEnvFileErrorDO.setFilePath(devopsEnvFileErrorE.getFilePath());
+        devopsEnvFileErrorDO.setEnvId(devopsEnvFileErrorE.getEnvId());
         DevopsEnvFileErrorDO newDevopsEnvFileErrorDO = devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDO);
         if (newDevopsEnvFileErrorDO != null) {
+            newDevopsEnvFileErrorDO.setCommit(devopsEnvFileErrorE.getCommit());
             newDevopsEnvFileErrorDO.setError(devopsEnvFileErrorE.getError());
             if (devopsEnvFileErrorMapper.updateByPrimaryKeySelective(newDevopsEnvFileErrorDO) != 1) {
                 throw new CommonException("error.env.error.file.update");
             }
-            devopsEnvFileErrorDO = newDevopsEnvFileErrorDO;
         } else {
-            if (devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO) != 1) {
+            if (devopsEnvFileErrorMapper.insert(ConvertHelper.convert(devopsEnvFileErrorE, DevopsEnvFileErrorDO.class)) != 1) {
                 throw new CommonException("error.env.error.file.create");
             }
         }
-        return ConvertHelper.convert(devopsEnvFileErrorDO, DevopsEnvFileErrorE.class);
     }
 
     @Override

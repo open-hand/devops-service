@@ -99,9 +99,6 @@
         <if test="appId != null">
             AND dai.app_id = #{appId}
         </if>
-        <if test="appVersionId != null">
-            AND dai.app_version_id = #{appVersionId}
-        </if>
         <if test="appInstanceId != null">
             AND dai.id = #{appInstanceId}
         </if>

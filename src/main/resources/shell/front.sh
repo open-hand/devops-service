@@ -16,9 +16,9 @@ export C7N_COMMIT_SHA=$(git log -1 --pretty=format:"%H" | awk '{print substr($1,
 
 # 分支名
 if [ $CIRCLECI ]; then
-  export C7N_BRANCH=$CIRCLE_BRANCH
+  export C7N_BRANCH=$(echo $CIRCLE_BRANCH | tr '[A-Z]' '[a-z]' | tr '[:punct:]' '-')
 elif [ $GITLAB_CI ]; then
-  export C7N_BRANCH=$CI_COMMIT_REF_NAME
+  export C7N_BRANCH=$CI_COMMIT_REF_SLUG
 fi
 
 # 默认Version
