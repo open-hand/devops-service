@@ -515,7 +515,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return instanceE.getCode();
     }
 
-    @Async
+
     void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".envId:" + envId + ".release:" + name);
