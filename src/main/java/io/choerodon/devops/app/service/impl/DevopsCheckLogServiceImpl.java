@@ -16,6 +16,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -89,6 +93,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsIngressRepository devopsIngressRepository;
     @Autowired
     private DevopsIngressService devopsIngressService;
+    @Autowired
+    private SagaClient sagaClient;
 
     @Override
     @Async
@@ -109,6 +115,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 break;
             case "0.9":
                 syncNonEnvGroupProject(logs);
+                gitOpsUserAccess();
                 syncEnvProject(logs);
                 syncObjects(logs);
                 break;
@@ -405,5 +412,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         .addPathsItem(devopsIngressService.createPath(devopsIngressPathE.getPath(), devopsIngressPathE.getServiceId())));
 
         return v1beta1Ingress;
+    }
+
+    @Saga(code = "devops-upgrade-0.8-0.9",
+            description = "devops smooth upgrade from 0.8 to 0.9", inputSchema = "{}")
+    private void gitOpsUserAccess() {
+        sagaClient.startSaga("devops-upgrade-0.8-0.9", new StartInstanceDTO("", "", ""));
     }
 }
