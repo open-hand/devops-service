@@ -215,7 +215,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId));
         replaceResult.setYaml(versionValue);
         if (deployValue != null) {
-            replaceResult = FileUtil.replace(versionValue, deployValue);
+            replaceResult = getReplaceResult(versionValue, deployValue);
         }
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
@@ -224,15 +224,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult queryValue(Long instanceId) {
-        ReplaceResult replaceResult;
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(
                 applicationInstanceE.getDevopsEnvironmentE().getId(), applicationInstanceE.getApplicationE().getId()));
         String versionValue = applicationVersionRepository
                 .queryValue(applicationInstanceE.getApplicationVersionE().getId());
-        replaceResult = FileUtil.replace(versionValue, yaml);
-        replaceResult.setTotalLine(FileUtil.getFileTotalLine(yaml) + 1);
-        return replaceResult;
+        return getReplaceResult(versionValue, yaml);
     }
 
     @Override
@@ -248,7 +245,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult previewValues(ReplaceResult previewReplaceResult, Long appVersionId) {
         String versionValue = applicationVersionRepository.queryValue(appVersionId);
-        ReplaceResult replaceResult = FileUtil.replace(versionValue, previewReplaceResult.getYaml());
+        ReplaceResult replaceResult = getReplaceResult(versionValue, previewReplaceResult.getYaml());
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
     }
@@ -363,9 +360,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
-                applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
-                applicationDeployDTO.getValues()));
+        devopsEnvCommandValueE.setValue(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml());
         devopsEnvCommandE.initDevopsEnvCommandValueE(
                 devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
         devopsEnvCommandRepository.create(devopsEnvCommandE);
@@ -572,10 +567,23 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(FileUtil.getChangeYaml(
-                applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
-                applicationDeployDTO.getValues()));
+        c7nHelmRelease.getSpec().setValues(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml());
         return c7nHelmRelease;
 
+    }
+
+    private ReplaceResult getReplaceResult(String versionValue, String deployValue) {
+        String fileName = GenerateUUID.generateUUID() + ".yaml";
+        String path = "deployfile";
+        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
+        ReplaceResult replaceResult;
+        try {
+            replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage());
+        }
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+        FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
+        return replaceResult;
     }
 }

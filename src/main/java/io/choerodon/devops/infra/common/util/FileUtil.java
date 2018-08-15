@@ -49,7 +49,8 @@ import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 public class FileUtil {
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-    private static final String EXEC_PATH = "/Users/crcokitwood/PythonProject/python-example/dist/values_yaml/values_yaml";
+    private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
+
     private FileUtil() {
     }
 
@@ -376,6 +377,7 @@ public class FileUtil {
 
     /**
      * 指定values文件路径
+     *
      * @param path 路径
      * @return 返回替换结果
      */
@@ -384,7 +386,7 @@ public class FileUtil {
         BufferedReader stdError = null;
         ReplaceResult replaceResult = null;
         try {
-            String command = EXEC_PATH+" "+path;
+            String command = EXEC_PATH + " " + path;
             Process p = Runtime.getRuntime().exec(command);
 
             stdInput = new BufferedReader(new
@@ -402,11 +404,11 @@ public class FileUtil {
             String err = null;
             replaceResult = loadResult(result);
             while ((err = stdError.readLine()) != null) {
-                err+=err;
+                err += err;
             }
         } catch (IOException e) {
             throw new CommonException(e);
-        }finally {
+        } finally {
             try {
                 if (stdError != null) {
                     stdError.close();
@@ -418,20 +420,20 @@ public class FileUtil {
                 e.printStackTrace();
             }
         }
-        return  replaceResult;
+        return replaceResult;
     }
 
     private static ReplaceResult loadResult(String yml) {
         String[] strings = yml.split("---");
         Yaml yaml = new Yaml();
-        Object map  = yaml.load(strings[2]);
-        ReplaceResult replaceResult =  replaceNew(strings[0], (Map) map);
+        Object map = yaml.load(strings[2]);
+        ReplaceResult replaceResult = replaceNew(strings[0], (Map) map);
         replaceResult.setDeltaYaml(strings[1]);
         return replaceResult;
     }
 
     private static ReplaceResult replaceNew(String yaml, Map map) {
-        Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)),new Resolver());
+        Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
         MappingNode mappingNode = (MappingNode) composer.getSingleNode();
         List<Integer> addLines = new ArrayList<>();
 
@@ -439,8 +441,8 @@ public class FileUtil {
         ArrayList addLists = (ArrayList) map.get("add");
         for (Object add : addLists) {
             ArrayList<String> addList = (ArrayList<String>) add;
-            Node node = getKeysNode(addList,mappingNode);
-            appendLine(node.getStartMark().getLine(),node.getEndMark().getLine(),addLines);
+            Node node = getKeysNode(addList, mappingNode);
+            appendLine(node.getStartMark().getLine(), node.getEndMark().getLine(), addLines);
         }
 
         List<HighlightMarker> highlightMarkers = new ArrayList<>();
@@ -449,7 +451,7 @@ public class FileUtil {
         ArrayList updateList = (ArrayList) map.get("update");
         for (Object add : updateList) {
             ArrayList<String> addList = (ArrayList<String>) add;
-            Node node = getKeysNode(addList,mappingNode);
+            Node node = getKeysNode(addList, mappingNode);
             HighlightMarker highlightMarker = new HighlightMarker();
             highlightMarker.setLine(node.getStartMark().getLine());
             highlightMarker.setEndLine(node.getEndMark().getLine());
@@ -467,7 +469,7 @@ public class FileUtil {
     }
 
     private static void appendLine(int start, int end, List<Integer> adds) {
-        for (int i = start; i <= end ; i++) {
+        for (int i = start; i <= end; i++) {
             adds.add(i);
         }
     }
@@ -479,12 +481,12 @@ public class FileUtil {
 
     private static Node getKeysNode(List<String> keys, MappingNode mappingNode) {
         Node value = null;
-        for (int i = 0; i< keys.size(); i++ ) {
-            List<NodeTuple> nodeTuples =  mappingNode.getValue();
+        for (int i = 0; i < keys.size(); i++) {
+            List<NodeTuple> nodeTuples = mappingNode.getValue();
             for (NodeTuple nodeTuple : nodeTuples) {
-                if ( nodeTuple.getKeyNode() instanceof ScalarNode && ((ScalarNode) nodeTuple.getKeyNode()).getValue().equals(keys.get(i))) {
-                    if (i == keys.size()-1) {
-                        value =  nodeTuple.getValueNode();
+                if (nodeTuple.getKeyNode() instanceof ScalarNode && ((ScalarNode) nodeTuple.getKeyNode()).getValue().equals(keys.get(i))) {
+                    if (i == keys.size() - 1) {
+                        value = nodeTuple.getValueNode();
                     } else {
                         mappingNode = (MappingNode) nodeTuple.getValueNode();
 
