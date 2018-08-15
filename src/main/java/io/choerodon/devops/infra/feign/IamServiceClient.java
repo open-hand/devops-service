@@ -12,12 +12,13 @@ import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
+import io.choerodon.devops.infra.feign.fallback.IamServiceClientFallback;
 
 /**
  * Created by younger on 2018/3/29.
  */
 
-@FeignClient(value = "iam-service")
+@FeignClient(value = "iam-service", fallback = IamServiceClientFallback.class)
 public interface IamServiceClient {
 
     @GetMapping(value = "/v1/projects/{projectId}")

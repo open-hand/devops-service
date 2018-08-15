@@ -179,9 +179,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     }
 
-
     @Override
     public ResponseEntity<String> getFile(Integer projectId, String commit, String filePath) {
+        System.out.print("123");
         return new ResponseEntity("error.file.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

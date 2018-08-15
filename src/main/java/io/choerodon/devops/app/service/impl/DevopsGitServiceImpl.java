@@ -393,11 +393,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }
             });
 
-            //如果没有涉及到到yml文件的修改则跳过本次解释
-            if (operationFiles.isEmpty() && deletedFiles.isEmpty()) {
-                return;
-            }
-
             List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
             List<V1Service> v1Services = new ArrayList<>();
             List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();

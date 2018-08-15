@@ -104,6 +104,14 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         }
     }
 
+    public Boolean getFile(Integer projectId, String branch, String filePath) {
+        ResponseEntity<String> result = gitlabServiceClient.getFile(projectId, branch, filePath);
+        if (!result.getBody().equals(filePath)) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, Integer userId) {
         ResponseEntity<Map<String, Object>> branch = gitlabServiceClient.createProtectedBranches(

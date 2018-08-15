@@ -254,12 +254,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
                         objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
                         Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                        objectOperation.operationEnvGitlabFile(
-                                "release-" + applicationInstanceE.getCode(),
-                                projectId,
-                                CREATE,
-                                TypeUtil.objToLong(ADMIN));
-                        checkLog.setResult("success");
+                        String filePath = "release-" + applicationInstanceE.getCode();
+                        if (!gitlabRepository.getFile(projectId, "master", filePath + ".yaml")) {
+                            objectOperation.operationEnvGitlabFile(
+                                    filePath,
+                                    projectId,
+                                    CREATE,
+                                    TypeUtil.objToLong(ADMIN));
+                            checkLog.setResult("success");
+                        }
                     } catch (Exception e) {
                         checkLog.setResult("failed: " + e.getMessage());
                     }
@@ -278,12 +281,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
                         objectOperation.setType(service);
                         Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                        objectOperation.operationEnvGitlabFile(
-                                "svc-" + devopsServiceE.getName(),
-                                projectId,
-                                CREATE,
-                                TypeUtil.objToLong(ADMIN));
-                        checkLog.setResult("success");
+                        String filePath = "svc-" + devopsServiceE.getName();
+                        if (!gitlabRepository.getFile(projectId, "master", filePath + ".yaml")) {
+                            objectOperation.operationEnvGitlabFile(
+                                    filePath,
+                                    projectId,
+                                    CREATE,
+                                    TypeUtil.objToLong(ADMIN));
+                            checkLog.setResult("success");
+                        }
                     } catch (Exception e) {
                         checkLog.setResult("failed: " + e.getMessage());
                     }
@@ -299,12 +305,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
                 objectOperation.setType(getV1beta1Ingress(devopsIngressE));
                 Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                objectOperation.operationEnvGitlabFile(
-                        "ing-" + devopsIngressE.getName(),
-                        projectId,
-                        CREATE,
-                        TypeUtil.objToLong(ADMIN));
-                checkLog.setResult("success");
+                String filePath = "ing-" + devopsIngressE.getName();
+                if (!gitlabRepository.getFile(projectId, "master", filePath + ".yaml")) {
+                    objectOperation.operationEnvGitlabFile(
+                            filePath,
+                            projectId,
+                            CREATE,
+                            TypeUtil.objToLong(ADMIN));
+                    checkLog.setResult("success");
+                }
             } catch (Exception e) {
                 checkLog.setResult("failed: " + e.getMessage());
             }

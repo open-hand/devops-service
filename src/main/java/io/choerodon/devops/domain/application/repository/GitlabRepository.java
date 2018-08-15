@@ -41,4 +41,6 @@ public interface GitlabRepository {
 
     void createDeployKey(Integer projectId, String title, String key, boolean canPush, Integer userId);
 
+    Boolean getFile(Integer projectId, String branch, String filePath);
+
 }
