@@ -7,10 +7,19 @@ package io.choerodon.devops.domain.application.valueobject;
  */
 public class HighlightMarker {
     private int line;
+    private int endLine;
     private int startIndex;
     private int endIndex;
     private int startColumn;
     private int endColumn;
+
+    public int getEndLine() {
+        return endLine;
+    }
+
+    public void setEndLine(int endLine) {
+        this.endLine = endLine;
+    }
 
     public int getLine() {
         return line;
@@ -54,12 +63,12 @@ public class HighlightMarker {
 
     @Override
     public String toString() {
-        return "HighlightMarker{"
-                + "line=" + line
-                + ", startIndex=" + startIndex
-                + ", endIndex=" + endIndex
-                + ", startColumn=" + startColumn
-                + ", endColumn=" + endColumn
-                + '}';
+        return "HighlightMarker{" +
+                "line=" + line +
+                ", startIndex=" + startIndex +
+                ", endIndex=" + endIndex +
+                ", startColumn=" + startColumn +
+                ", endColumn=" + endColumn +
+                '}';
     }
 }

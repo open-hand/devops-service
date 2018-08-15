@@ -16,6 +16,7 @@ public class ReplaceResult {
     private String errorMsg;
     private List<ErrorLineDTO> errorLines;
     private List<Integer> newLines;
+    private String deltaYaml;
 
     public String getYaml() {
         return yaml;
@@ -63,5 +64,13 @@ public class ReplaceResult {
 
     public void setNewLines(List<Integer> newLines) {
         this.newLines = newLines;
+    }
+
+    public String getDeltaYaml() {
+        return deltaYaml;
+    }
+
+    public void setDeltaYaml(String deltaYaml) {
+        this.deltaYaml = deltaYaml;
     }
 }
