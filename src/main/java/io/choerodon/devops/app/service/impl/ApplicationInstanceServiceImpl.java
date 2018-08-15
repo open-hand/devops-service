@@ -360,7 +360,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setValue(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml());
+        devopsEnvCommandValueE.setValue(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml().trim());
         devopsEnvCommandE.initDevopsEnvCommandValueE(
                 devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
         devopsEnvCommandRepository.create(devopsEnvCommandE);
@@ -567,7 +567,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml());
+        c7nHelmRelease.getSpec().setValues(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return c7nHelmRelease;
 
     }
