@@ -14,7 +14,9 @@ import org.yaml.snakeyaml.nodes.Tag;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
@@ -45,8 +47,9 @@ public class ObjectOperation<T> {
      * @param operationType      operation type
      * @param userId             GitLab user ID
      */
-    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId, Long objectId, String objectType, Long envId, String filePath) {
+    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId, Long objectId, String objectType, Long envId, String filePath, DevopsEnvCommandE devopsEnvCommandE) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
+        DevopsEnvCommandRepository devopsEnvCommandRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvCommandRepository.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
@@ -54,11 +57,15 @@ public class ObjectOperation<T> {
         if (operationType.equals("create")) {
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,
                     "ADD FILE", TypeUtil.objToInteger(userId));
+
         } else {
             DevopsEnvFileResourceRepository devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, objectId, objectType);
-            gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
+            gitlabRepository.updateFile(gitlabEnvProjectId, "haha", getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
+        }
+        if (devopsEnvCommandE != null) {
+            devopsEnvCommandRepository.create(devopsEnvCommandE);
         }
     }
 

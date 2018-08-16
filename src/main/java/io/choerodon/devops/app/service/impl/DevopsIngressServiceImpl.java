@@ -103,9 +103,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             ingress.getSpec().getRules().get(0).getHttp().addPathsItem(createPath(t.getPath(), t.getServiceId()));
         });
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
-        devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+        if (gitOps) {
+            devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+        }
         operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, true, null, devopsEnvironmentE.getId(), path);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, true, null, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
     }
 
     @Override
@@ -152,9 +154,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     .addPathsItem(createPath(t.getPath(), t.getServiceId()));
         });
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
-        devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
+        if (gitOps) {
+            devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
+        }
         operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, false, id, devopsEnvironmentE.getId(), path);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, false, id, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
 
     }
 
@@ -218,10 +222,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         projectId,
                         "delete",
                         userAttrE.getGitlabUserId(),
-                        ingressDO.getId(), "Ingress", devopsEnvironmentE.getId(), path);
+                        ingressDO.getId(), "Ingress", devopsEnvironmentE.getId(), path, null);
             }
         }
-        if(gitOps) {
+        if (gitOps) {
             devopsIngressRepository.deleteIngress(ingressId);
         }
     }
@@ -296,13 +300,20 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       Boolean isCreate,
                                       Long objectId,
                                       Long envId,
-                                      String path) {
+                                      String path,
+                                      DevopsIngressDO devopsIngressDO,
+                                      List<DevopsIngressPathDO> devopsIngressPathDOS) {
         if (!gitOps) {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
             objectOperation.setType(ingress);
             objectOperation.operationEnvGitlabFile("ing-" + ingressName, envGitLabProjectId, isCreate ? "create" : "update",
-                    userAttrE.getGitlabUserId(), objectId, "Ingress", envId, path);
+                    userAttrE.getGitlabUserId(), objectId, "Ingress", envId, path, null);
+            if (isCreate) {
+                devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+            } else {
+                devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
+            }
         }
     }
 }

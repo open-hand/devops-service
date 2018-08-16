@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 
@@ -107,18 +108,18 @@ public interface GitlabServiceClient {
     ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName, @RequestParam(value = "userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
-    ResponseEntity createFile(@PathVariable("projectId") Integer projectId,
-                              @RequestParam("path") String path,
-                              @RequestParam("content") String content,
-                              @RequestParam("commitMessage") String commitMessage,
-                              @RequestParam("userId") Integer userId);
+    ResponseEntity<RepositoryFile> createFile(@PathVariable("projectId") Integer projectId,
+                                              @RequestParam("path") String path,
+                                              @RequestParam("content") String content,
+                                              @RequestParam("commitMessage") String commitMessage,
+                                              @RequestParam("userId") Integer userId);
 
     @PutMapping(value = "/v1/projects/{projectId}/repository/file")
-    ResponseEntity updateFile(@PathVariable("projectId") Integer projectId,
-                              @RequestParam("path") String path,
-                              @RequestParam("content") String content,
-                              @RequestParam("commitMessage") String commitMessage,
-                              @RequestParam("userId") Integer userId);
+    ResponseEntity<RepositoryFile> updateFile(@PathVariable("projectId") Integer projectId,
+                                              @RequestParam("path") String path,
+                                              @RequestParam("content") String content,
+                                              @RequestParam("commitMessage") String commitMessage,
+                                              @RequestParam("userId") Integer userId);
 
     @DeleteMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity deleteFile(@PathVariable("projectId") Integer projectId,
@@ -127,9 +128,9 @@ public interface GitlabServiceClient {
                               @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/{commit}/file")
-    ResponseEntity<String> getFile(@PathVariable("projectId") Integer projectId,
-                                   @PathVariable("commit") String commit,
-                                   @RequestParam(value = "file_path") String filePath);
+    ResponseEntity<RepositoryFile> getFile(@PathVariable("projectId") Integer projectId,
+                                           @PathVariable("commit") String commit,
+                                           @RequestParam(value = "file_path") String filePath);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/file/diffs")
     ResponseEntity<CompareResultsE> getCompareResults(@PathVariable("projectId") Integer projectId,

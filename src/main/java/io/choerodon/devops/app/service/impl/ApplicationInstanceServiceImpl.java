@@ -326,7 +326,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         }
-        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+//        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
@@ -368,7 +368,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandValueE.setValue(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml().trim());
         devopsEnvCommandE.initDevopsEnvCommandValueE(
                 devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        if (gitops) {
+            devopsEnvCommandRepository.create(devopsEnvCommandE);
+        }
         if (!gitops) {
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
@@ -379,7 +381,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     projectId,
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
-                    applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
+                    applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path, devopsEnvCommandE);
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
@@ -496,7 +498,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         devopsEnvCommandE.setId(null);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        if (gitops) {
+            devopsEnvCommandRepository.create(devopsEnvCommandE);
+        }
         updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
@@ -529,7 +533,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         projectId,
                         "delete",
                         userAttrE.getGitlabUserId(),
-                        instanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
+                        instanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path, devopsEnvCommandE);
             }
         }
     }

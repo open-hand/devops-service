@@ -135,7 +135,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
-        devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
+
+//        devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
@@ -206,7 +207,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceRepository.update(devopsServiceE);
+        if (isGitOps) {
+            devopsServiceRepository.update(devopsServiceE);
+        }
         if (!isGitOps) {
             DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
             ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
@@ -237,8 +240,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         projectId,
                         "delete",
                         userAttrE.getGitlabUserId(),
-                        devopsServiceE.getId(), "Service", devopsEnvironmentE.getId(), path);
+                        devopsServiceE.getId(), "Service", devopsEnvironmentE.getId(), path, null);
             }
+            devopsServiceRepository.update(devopsServiceE);
         }
     }
 
@@ -365,14 +369,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1Service service = getService(
                 devopsServiceReqDTO,
                 annotations);
-
-        DevopsServiceE appDeploy = devopsServiceRepository.query(devopsServiceE.getId());
-        appDeploy.setAnnotations(gson.toJson(annotations));
-        appDeploy.setObjectVersionNumber(appDeploy.getObjectVersionNumber());
-        appDeploy.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceRepository.update(appDeploy);
+        devopsServiceE.setAnnotations(gson.toJson(annotations));
+        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
+        if (isGitOps) {
+            if (isCreate) {
+                devopsServiceRepository.insert(devopsServiceE);
+            } else {
+                devopsServiceRepository.update(devopsServiceE);
+            }
+        }
         operateEnvGitLabFile(devopsServiceReqDTO.getName(), isGitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path, devopsServiceE);
     }
 
     /**
@@ -462,13 +469,18 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private void operateEnvGitLabFile(String serviceName,
                                       Boolean gitOps,
                                       Integer gitLabEnvProjectId,
-                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path) {
+                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path, DevopsServiceE devopsServiceE) {
         if (!gitOps) {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
             objectOperation.setType(service);
             objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
-                    userAttrE.getGitlabUserId(), objectId, "Service", envId, path);
+                    userAttrE.getGitlabUserId(), objectId, "Service", envId, path, null);
+            if (isCreate) {
+                devopsServiceRepository.insert(devopsServiceE);
+            } else {
+                devopsServiceRepository.update(devopsServiceE);
+            }
         }
     }
 }
