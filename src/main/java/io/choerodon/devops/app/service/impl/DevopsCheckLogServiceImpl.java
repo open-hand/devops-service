@@ -430,9 +430,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         return v1beta1Ingress;
     }
 
-    @Saga(code = "devops-upgrade-0.8-0.9",
-            description = "devops smooth upgrade from 0.8 to 0.9", inputSchema = "{}")
+    @Saga(code = "devops-upgrade-0.9",
+            description = "devops smooth upgrade to 0.9", inputSchema = "{}")
     private void gitOpsUserAccess() {
-        sagaClient.startSaga("devops-upgrade-0.8-0.9", new StartInstanceDTO("", "", ""));
+        sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("", "", ""));
     }
 }
