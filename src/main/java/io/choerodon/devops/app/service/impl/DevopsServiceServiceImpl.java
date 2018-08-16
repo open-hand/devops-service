@@ -250,11 +250,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      * 获取实例
      *
      * @param devopsServiceReqDTO 网络参数
-     * @param serviceId           网络id
      * @return String
      */
     private String updateServiceInstanceAndGetCode(DevopsServiceReqDTO devopsServiceReqDTO,
-                                                   Long serviceId) {
+                                                   List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES) {
         StringBuilder stringBuffer = new StringBuilder();
         List<Long> appInstances = devopsServiceReqDTO.getAppInstance();
         if (appInstances != null) {
@@ -267,10 +266,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     throw new CommonException("error.instance.query");
                 }
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
-                devopsServiceAppInstanceE.setServiceId(serviceId);
                 devopsServiceAppInstanceE.setAppInstanceId(appInstance);
                 devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
-                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+                devopsServiceAppInstanceES.add(devopsServiceAppInstanceE);
                 stringBuffer.append(applicationInstanceE.getCode()).append("+");
             });
         }
@@ -354,7 +352,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                        DevopsServiceE devopsServiceE,
                                        Long envId,
                                        Boolean isGitOps, Boolean isCreate) {
-        String serviceInstances = updateServiceInstanceAndGetCode(devopsServiceReqDTO, devopsServiceE.getId());
+        List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
+        String serviceInstances = updateServiceInstanceAndGetCode(devopsServiceReqDTO, devopsServiceAppInstanceES);
         Map<String, String> annotations = new HashMap<>();
         if (!serviceInstances.isEmpty()) {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
@@ -377,9 +376,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             } else {
                 devopsServiceRepository.update(devopsServiceE);
             }
+            devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
+                devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
+                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+            });
         }
         operateEnvGitLabFile(devopsServiceReqDTO.getName(), isGitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path, devopsServiceE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path, devopsServiceE, devopsServiceAppInstanceES);
     }
 
     /**
@@ -469,7 +472,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private void operateEnvGitLabFile(String serviceName,
                                       Boolean gitOps,
                                       Integer gitLabEnvProjectId,
-                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path, DevopsServiceE devopsServiceE) {
+                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path, DevopsServiceE devopsServiceE, List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES) {
         if (!gitOps) {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
@@ -481,6 +484,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             } else {
                 devopsServiceRepository.update(devopsServiceE);
             }
+            devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
+                devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
+                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+            });
         }
     }
 }
