@@ -136,8 +136,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
 
-//        devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
-
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
                 devopsServiceReqDTO.getEnvId(), isGitOps, true);
@@ -372,12 +370,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
         if (isGitOps) {
             if (isCreate) {
-                devopsServiceRepository.insert(devopsServiceE);
+                devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
             } else {
                 devopsServiceRepository.update(devopsServiceE);
             }
+            Long serviceEId = devopsServiceE.getId();
             devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
-                devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
+                devopsServiceAppInstanceE.setServiceId(serviceEId);
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
         }
@@ -480,12 +479,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
                     userAttrE.getGitlabUserId(), objectId, "Service", envId, path);
             if (isCreate) {
-                devopsServiceRepository.insert(devopsServiceE);
+               devopsServiceE =  devopsServiceRepository.insert(devopsServiceE);
             } else {
                 devopsServiceRepository.update(devopsServiceE);
             }
+            Long serviceId = devopsServiceE.getId();
             devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
-                devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
+                devopsServiceAppInstanceE.setServiceId(serviceId);
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
         }
