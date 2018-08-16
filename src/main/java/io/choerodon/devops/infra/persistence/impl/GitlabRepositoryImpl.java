@@ -99,8 +99,9 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
-        ResponseEntity result = gitlabServiceClient.deleteFile(projectId, path, commitMessage, userId);
-        if (!result.getStatusCode().is2xxSuccessful()) {
+        try {
+            gitlabServiceClient.deleteFile(projectId, path, commitMessage, userId);
+        } catch (Exception e) {
             throw new CommonException("error.file.delete");
         }
     }

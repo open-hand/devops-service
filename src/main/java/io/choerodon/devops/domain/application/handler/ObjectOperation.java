@@ -14,7 +14,6 @@ import org.yaml.snakeyaml.nodes.Tag;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
@@ -47,7 +46,7 @@ public class ObjectOperation<T> {
      * @param operationType      operation type
      * @param userId             GitLab user ID
      */
-    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId, Long objectId, String objectType, Long envId, String filePath, DevopsEnvCommandE devopsEnvCommandE) {
+    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId, Long objectId, String objectType, Long envId, String filePath) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
         DevopsEnvCommandRepository devopsEnvCommandRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvCommandRepository.class);
         Tag tag = new Tag(type.getClass().toString());
@@ -63,9 +62,6 @@ public class ObjectOperation<T> {
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, objectId, objectType);
             gitlabRepository.updateFile(gitlabEnvProjectId, "haha", getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
-        }
-        if (devopsEnvCommandE != null) {
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
         }
     }
 

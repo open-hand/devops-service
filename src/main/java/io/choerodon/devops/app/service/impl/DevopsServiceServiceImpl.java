@@ -240,7 +240,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                         projectId,
                         "delete",
                         userAttrE.getGitlabUserId(),
-                        devopsServiceE.getId(), "Service", devopsEnvironmentE.getId(), path, null);
+                        devopsServiceE.getId(), "Service", devopsEnvironmentE.getId(), path);
             }
             devopsServiceRepository.update(devopsServiceE);
         }
@@ -475,7 +475,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
             objectOperation.setType(service);
             objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
-                    userAttrE.getGitlabUserId(), objectId, "Service", envId, path, null);
+                    userAttrE.getGitlabUserId(), objectId, "Service", envId, path);
             if (isCreate) {
                 devopsServiceRepository.insert(devopsServiceE);
             } else {

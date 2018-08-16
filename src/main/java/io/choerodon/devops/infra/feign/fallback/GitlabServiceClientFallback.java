@@ -177,7 +177,6 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
         return new ResponseEntity("error.file.delete", HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
     @Override

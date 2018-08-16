@@ -381,7 +381,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     projectId,
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
-                    applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path, devopsEnvCommandE);
+                    applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
+            devopsEnvCommandRepository.create(devopsEnvCommandE);
+
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
@@ -517,7 +519,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             if (devopsEnvFileResourceES.size() == 1) {
                 gitlabRepository.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceE.getFilePath(),
+                        "haha",
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             } else {
@@ -533,8 +535,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         projectId,
                         "delete",
                         userAttrE.getGitlabUserId(),
-                        instanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path, devopsEnvCommandE);
+                        instanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
             }
+            devopsEnvCommandRepository.create(devopsEnvCommandE);
         }
     }
 

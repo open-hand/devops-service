@@ -222,7 +222,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         projectId,
                         "delete",
                         userAttrE.getGitlabUserId(),
-                        ingressDO.getId(), "Ingress", devopsEnvironmentE.getId(), path, null);
+                        ingressDO.getId(), "Ingress", devopsEnvironmentE.getId(), path);
             }
         }
         if (gitOps) {
@@ -308,7 +308,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
             objectOperation.setType(ingress);
             objectOperation.operationEnvGitlabFile("ing-" + ingressName, envGitLabProjectId, isCreate ? "create" : "update",
-                    userAttrE.getGitlabUserId(), objectId, "Ingress", envId, path, null);
+                    userAttrE.getGitlabUserId(), objectId, "Ingress", envId, path);
             if (isCreate) {
                 devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
             } else {
