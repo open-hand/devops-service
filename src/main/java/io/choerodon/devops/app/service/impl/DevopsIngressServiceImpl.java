@@ -224,6 +224,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         userAttrE.getGitlabUserId(),
                         ingressDO.getId(), "Ingress", devopsEnvironmentE.getId(), path);
             }
+            ingressDO.setStatus(IngressStatus.OPERATING.getStatus());
+            devopsIngressRepository.updateIngress(ingressDO);
         }
         if (gitOps) {
             devopsIngressRepository.deleteIngress(ingressId);

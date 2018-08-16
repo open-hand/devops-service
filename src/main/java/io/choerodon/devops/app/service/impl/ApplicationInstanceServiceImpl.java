@@ -519,7 +519,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             if (devopsEnvFileResourceES.size() == 1) {
                 gitlabRepository.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        "haha",
+                        devopsEnvFileResourceE.getFilePath(),
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             } else {

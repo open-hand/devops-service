@@ -48,7 +48,6 @@ public class ObjectOperation<T> {
      */
     public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId, Long objectId, String objectType, Long envId, String filePath) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
-        DevopsEnvCommandRepository devopsEnvCommandRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvCommandRepository.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
@@ -60,7 +59,7 @@ public class ObjectOperation<T> {
         } else {
             DevopsEnvFileResourceRepository devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, objectId, objectType);
-            gitlabRepository.updateFile(gitlabEnvProjectId, "haha", getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
+            gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
         }
     }
