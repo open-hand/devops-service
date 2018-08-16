@@ -207,7 +207,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         } catch (Exception e) {
             replaceResult.setYaml(versionValue);
             replaceResult.setErrorMsg(e.getMessage());
-            replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+            replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
             replaceResult.setErrorLines(getErrorLine(e.getMessage()));
             return replaceResult;
         }
@@ -217,7 +217,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (deployValue != null) {
             replaceResult = getReplaceResult(versionValue, deployValue);
         }
-        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
     }
 
@@ -582,7 +581,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         } catch (Exception e) {
             throw new CommonException(e.getMessage());
         }
-        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
         FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
         return replaceResult;
     }
