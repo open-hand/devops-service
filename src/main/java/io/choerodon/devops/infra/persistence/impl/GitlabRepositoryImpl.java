@@ -84,7 +84,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         ResponseEntity<RepositoryFile> result = gitlabServiceClient.createFile(projectId, path, content, commitMessage, userId);
-        if (result.getBody().getFileName() == null) {
+        if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.create");
         }
     }
@@ -92,7 +92,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     @Override
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         ResponseEntity<RepositoryFile> result = gitlabServiceClient.updateFile(projectId, path, content, commitMessage, userId);
-        if (result.getBody().getFileName() == null) {
+        if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.update");
         }
     }
@@ -108,7 +108,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     public Boolean getFile(Integer projectId, String branch, String filePath) {
         ResponseEntity<RepositoryFile> result = gitlabServiceClient.getFile(projectId, branch, filePath);
-        if (result.getBody().getFileName() == null) {
+        if (result.getBody().getFilePath() == null) {
             return false;
         }
         return true;
