@@ -418,6 +418,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     path
             );
         } catch (Exception e) {
+            LOGGER.info(e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return;
         }

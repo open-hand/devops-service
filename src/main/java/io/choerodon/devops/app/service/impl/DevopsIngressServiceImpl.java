@@ -221,7 +221,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         ingressDO.getId(), "Ingress", devopsEnvironmentE.getId(), path);
             }
         }
-        devopsIngressRepository.deleteIngress(ingressId);
+        if(gitOps) {
+            devopsIngressRepository.deleteIngress(ingressId);
+        }
     }
 
     @Override
