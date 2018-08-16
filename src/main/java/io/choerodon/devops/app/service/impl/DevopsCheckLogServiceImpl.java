@@ -276,7 +276,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     filePath,
                                     projectId,
                                     CREATE,
-                                    TypeUtil.objToLong(ADMIN));
+                                    TypeUtil.objToLong(ADMIN), null, null, null, null);
                             checkLog.setResult(SUCCESS);
                         }
                     } catch (Exception e) {
@@ -303,7 +303,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     filePath,
                                     projectId,
                                     CREATE,
-                                    TypeUtil.objToLong(ADMIN));
+                                    TypeUtil.objToLong(ADMIN), null, null, null, null);
                             checkLog.setResult(SUCCESS);
                         }
                     } catch (Exception e) {
@@ -327,7 +327,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             filePath,
                             projectId,
                             CREATE,
-                            TypeUtil.objToLong(ADMIN));
+                            TypeUtil.objToLong(ADMIN), null, null, null, null);
                     checkLog.setResult(SUCCESS);
                 }
             } catch (Exception e) {

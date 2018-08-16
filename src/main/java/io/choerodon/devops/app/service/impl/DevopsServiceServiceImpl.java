@@ -25,6 +25,7 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -70,6 +71,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
+    private IamRepository iamRepository;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
@@ -204,17 +207,38 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
         devopsServiceRepository.update(devopsServiceE);
-
         if (!isGitOps) {
             DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
+            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            //本地路径
+            String path = String.format("gitops/%s/%s/%s",
+                    organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, "Service");
-            gitlabRepository.deleteFile(
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+            if (devopsEnvFileResourceES.size() == 1) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            } else {
+                ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+                V1Service v1Service = new V1Service();
+                V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+                v1ObjectMeta.setName(devopsServiceE.getName());
+                v1Service.setMetadata(v1ObjectMeta);
+                objectOperation.setType(v1Service);
+                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                objectOperation.operationEnvGitlabFile(
+                        "release-" + devopsServiceE.getName(),
+                        projectId,
+                        "delete",
+                        userAttrE.getGitlabUserId(),
+                        devopsServiceE.getId(), "Service", devopsEnvironmentE.getId(), path);
+            }
         }
     }
 
@@ -332,7 +356,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
         }
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(envId);
+        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
+        //本地路径
+        String path = String.format("gitops/%s/%s/%s",
+                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         V1Service service = getService(
                 devopsServiceReqDTO,
                 annotations);
@@ -343,7 +372,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         appDeploy.setStatus(ServiceStatus.OPERATIING.getStatus());
         devopsServiceRepository.update(appDeploy);
         operateEnvGitLabFile(devopsServiceReqDTO.getName(), isGitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path);
     }
 
     /**
@@ -433,13 +462,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private void operateEnvGitLabFile(String serviceName,
                                       Boolean gitOps,
                                       Integer gitLabEnvProjectId,
-                                      V1Service service, Boolean isCreate) {
+                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path) {
         if (!gitOps) {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
             objectOperation.setType(service);
             objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
-                    userAttrE.getGitlabUserId());
+                    userAttrE.getGitlabUserId(), objectId, "Service", envId, path);
         }
     }
 }
