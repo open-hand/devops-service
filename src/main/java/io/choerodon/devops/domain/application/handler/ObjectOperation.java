@@ -55,7 +55,9 @@ public class ObjectOperation<T> {
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,
                     "ADD FILE", TypeUtil.objToInteger(userId));
         } else {
-            gitlabRepository.updateFile(gitlabEnvProjectId, path, getUpdateContent(type, envId, objectId, objectType, filePath, operationType),
+            DevopsEnvFileResourceRepository devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
+            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, objectId, objectType);
+            gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
         }
     }
@@ -70,12 +72,10 @@ public class ObjectOperation<T> {
     }
 
 
-    private String getUpdateContent(T t, Long envId, Long objectId, String objectType, String filepath, String operationType) {
-        DevopsEnvFileResourceRepository devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
-        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, objectId, objectType);
+    private String getUpdateContent(T t, String filePath, String objectType, String path, String operationType) {
         Yaml yaml = new Yaml();
         String result = "";
-        File file = new File(filepath + "/" + devopsEnvFileResourceE.getFilePath());
+        File file = new File(path + "/" + filePath);
         try {
             for (Object data : yaml.loadAll(new FileInputStream(file))) {
                 JSONObject jsonObject = new JSONObject((Map<String, Object>) data);

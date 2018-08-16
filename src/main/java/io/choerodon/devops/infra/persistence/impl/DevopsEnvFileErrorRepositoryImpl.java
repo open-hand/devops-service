@@ -27,7 +27,7 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
+    public DevopsEnvFileErrorE create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
         DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
         devopsEnvFileErrorDO.setFilePath(devopsEnvFileErrorE.getFilePath());
         devopsEnvFileErrorDO.setEnvId(devopsEnvFileErrorE.getEnvId());
@@ -43,6 +43,7 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
                 throw new CommonException("error.env.error.file.create");
             }
         }
+        return ConvertHelper.convert(devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDO), DevopsEnvFileErrorE.class);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.common.util;
 
+import java.util.regex.Pattern;
+
 import io.kubernetes.client.custom.IntOrString;
 import org.yaml.snakeyaml.introspector.Property;
 import org.yaml.snakeyaml.nodes.NodeTuple;
@@ -7,6 +9,8 @@ import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 
 public class SkipNullRepresenterUtil extends Representer {
+
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
 
     @Override
     protected NodeTuple representJavaBeanProperty(Object javaBean, Property property,
@@ -18,7 +22,11 @@ public class SkipNullRepresenterUtil extends Representer {
             if (((IntOrString) propertyValue).isInteger()) {
                 propertyValue = TypeUtil.objToInteger(propertyValue);
             } else {
-                propertyValue = TypeUtil.objToString(propertyValue);
+                if (pattern.matcher(TypeUtil.objToString(propertyValue)).matches()) {
+                    propertyValue = TypeUtil.objToInteger(propertyValue);
+                } else {
+                    propertyValue = TypeUtil.objToString(propertyValue);
+                }
             }
             return super
                     .representJavaBeanProperty(javaBean, property, propertyValue, customTag);

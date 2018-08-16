@@ -17,6 +17,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
@@ -92,6 +93,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private GitlabRepository gitlabRepository;
     @Autowired
     private DevopsEnvFileRepository devopsEnvFileRepository;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
