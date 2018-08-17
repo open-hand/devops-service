@@ -49,7 +49,7 @@ import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 public class FileUtil {
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-    private static final Yaml yaml = new Yaml();
+    private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
 
     private FileUtil() {
     }
@@ -176,6 +176,7 @@ public class FileUtil {
      * @throws IOException ioexception
      */
     public static String yamltoJson(String path) throws IOException {
+        Yaml yaml = new Yaml();
         Gson gs = new Gson();
         Map<String, Object> loaded = null;
         InputStream inputStream = new FileInputStream(new File(path));
@@ -190,6 +191,7 @@ public class FileUtil {
      * @return string
      */
     public static String yamlStringtoJson(String yamlString) {
+        Yaml yaml = new Yaml();
         Gson gs = new Gson();
         ByteArrayInputStream stream = new ByteArrayInputStream(yamlString.getBytes());
         Map<String, Object> loaded = (Map<String, Object>) yaml.load(stream);
@@ -370,6 +372,129 @@ public class FileUtil {
         jsonThree.putAll(jsonOne);
         jsonThree.putAll(jsonTwo);
         return jsonThree.toJSONString();
+    }
+
+
+    /**
+     * 指定values文件路径
+     *
+     * @param path 路径
+     * @return 返回替换结果
+     */
+    public static ReplaceResult replaceNew(String path) {
+        BufferedReader stdInput = null;
+        BufferedReader stdError = null;
+        ReplaceResult replaceResult = null;
+        try {
+            String command = EXEC_PATH + " " + path;
+            Process p = Runtime.getRuntime().exec(command);
+
+            stdInput = new BufferedReader(new
+                    InputStreamReader(p.getInputStream()));
+
+            stdError = new BufferedReader(new
+                    InputStreamReader(p.getErrorStream()));
+
+            StringBuilder stringBuilder = new StringBuilder();
+            String s = null;
+            while ((s = stdInput.readLine()) != null) {
+                stringBuilder.append(s).append("\n");
+            }
+            String result = stringBuilder.toString();
+            String err = null;
+            replaceResult = loadResult(result);
+            while ((err = stdError.readLine()) != null) {
+                err += err;
+            }
+        } catch (IOException e) {
+            throw new CommonException(e);
+        } finally {
+            try {
+                if (stdError != null) {
+                    stdError.close();
+                }
+                if (stdInput != null) {
+                    stdInput.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return replaceResult;
+    }
+
+    private static ReplaceResult loadResult(String yml) {
+        String[] strings = yml.split("---");
+        Yaml yaml = new Yaml();
+        Object map = yaml.load(strings[2]);
+        ReplaceResult replaceResult = replaceNew(strings[0], (Map) map);
+        replaceResult.setDeltaYaml(strings[1]);
+        return replaceResult;
+    }
+
+    private static ReplaceResult replaceNew(String yaml, Map map) {
+        Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
+        MappingNode mappingNode = (MappingNode) composer.getSingleNode();
+        List<Integer> addLines = new ArrayList<>();
+
+        //处理新增
+        ArrayList addLists = (ArrayList) map.get("add");
+        for (Object add : addLists) {
+            ArrayList<String> addList = (ArrayList<String>) add;
+            Node node = getKeysNode(addList, mappingNode);
+            appendLine(node.getStartMark().getLine(), node.getEndMark().getLine(), addLines);
+        }
+
+        List<HighlightMarker> highlightMarkers = new ArrayList<>();
+
+        //处理修改
+        ArrayList updateList = (ArrayList) map.get("update");
+        for (Object add : updateList) {
+            ArrayList<String> addList = (ArrayList<String>) add;
+            Node node = getKeysNode(addList, mappingNode);
+            HighlightMarker highlightMarker = new HighlightMarker();
+            highlightMarker.setLine(node.getStartMark().getLine());
+            highlightMarker.setEndLine(node.getEndMark().getLine());
+            highlightMarker.setStartColumn(node.getStartMark().getColumn());
+            highlightMarker.setEndColumn(node.getEndMark().getColumn());
+            highlightMarkers.add(highlightMarker);
+        }
+
+        ReplaceResult replaceResult = new ReplaceResult();
+        replaceResult.setNewLines(addLines);
+        replaceResult.setHighlightMarkers(highlightMarkers);
+        replaceResult.setYaml(yaml);
+        return replaceResult;
+
+    }
+
+    private static void appendLine(int start, int end, List<Integer> adds) {
+        for (int i = start; i <= end; i++) {
+            adds.add(i);
+        }
+    }
+
+    public static void main(String[] args) {
+        ReplaceResult replaceResult = replaceNew("/Users/crcokitwood/PythonProject/python-example/test.yml");
+        System.out.println(replaceResult);
+    }
+
+    private static Node getKeysNode(List<String> keys, MappingNode mappingNode) {
+        Node value = null;
+        for (int i = 0; i < keys.size(); i++) {
+            List<NodeTuple> nodeTuples = mappingNode.getValue();
+            for (NodeTuple nodeTuple : nodeTuples) {
+                if (nodeTuple.getKeyNode() instanceof ScalarNode && ((ScalarNode) nodeTuple.getKeyNode()).getValue().equals(keys.get(i))) {
+                    if (i == keys.size() - 1) {
+                        value = nodeTuple.getValueNode();
+                    } else {
+                        mappingNode = (MappingNode) nodeTuple.getValueNode();
+
+                    }
+                }
+            }
+        }
+        return value;
     }
 
 
@@ -1108,6 +1233,7 @@ public class FileUtil {
     }
 
     public static String getChangeYaml(String oldYam1, String newYaml) {
+        Yaml yaml = new Yaml();
         Map<String, Object> map1;
         Map<String, Object> map2;
         List<Integer> primaryKeys;
