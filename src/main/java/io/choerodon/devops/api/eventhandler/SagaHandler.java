@@ -117,7 +117,7 @@ public class SagaHandler {
     /**
      * 创建组织事件
      */
-    @SagaTask(code = "createOrganizationToDevops",
+    @SagaTask(code = "devopsCreateOrganization",
             description = "创建组织事件",
             sagaCode = "org-create-organization",
             seq = 1)
@@ -132,37 +132,37 @@ public class SagaHandler {
     /**
      * 角色同步事件
      */
-    @SagaTask(code = "updateMemberRole", description = "角色同步事件",
+    @SagaTask(code = "devopsUpdateMemberRole", description = "角色同步事件",
             sagaCode = "iam-update-memberRole", seq = 1)
-    public String handleGitlabGroupMemberEvent(String payload) {
+    public List<GitlabGroupMemberDTO> handleGitlabGroupMemberEvent(String payload) {
         List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberDTO>>() {
                 }.getType());
         loggerInfo(gitlabGroupMemberDTOList);
         gitlabGroupMemberService.createGitlabGroupMemberRole(gitlabGroupMemberDTOList);
-        return payload;
+        return gitlabGroupMemberDTOList;
     }
 
     /**
      * 删除角色同步事件
      */
-    @SagaTask(code = "deleteMemberRole", description = "删除角色同步事件",
+    @SagaTask(code = "devopsDeleteMemberRole", description = "删除角色同步事件",
             sagaCode = "iam-delete-memberRole", seq = 1)
-    public String handleDeleteMemberRoleEvent(String payload) {
+    public List<GitlabGroupMemberDTO> handleDeleteMemberRoleEvent(String payload) {
         List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList = gson.fromJson(payload,
                 new TypeToken<List<GitlabGroupMemberDTO>>() {
                 }.getType());
         loggerInfo(gitlabGroupMemberDTOList);
         gitlabGroupMemberService.deleteGitlabGroupMemberRole(gitlabGroupMemberDTOList);
-        return payload;
+        return gitlabGroupMemberDTOList;
     }
 
     /**
      * 用户创建事件
      */
-    @SagaTask(code = "createUser", description = "用户创建事件",
+    @SagaTask(code = "devopsCreateUser", description = "用户创建事件",
             sagaCode = "iam-create-user", seq = 1)
-    public String handleCreateUserEvent(String payload) {
+    public List<GitlabUserDTO> handleCreateUserEvent(String payload) {
         List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
         }.getType());
         loggerInfo(gitlabUserDTO);
@@ -179,13 +179,13 @@ public class SagaHandler {
 
             gitlabUserService.createGitlabUser(gitlabUserReqDTO);
         });
-        return payload;
+        return gitlabUserDTO;
     }
 
     /**
      * 用户更新事件
      */
-    @SagaTask(code = "updateUser", description = "用户更新事件",
+    @SagaTask(code = "devopsUpdateUser", description = "用户更新事件",
             sagaCode = "iam-update-user", seq = 1)
     public String handleUpdateUserEvent(String payload) {
         GitlabUserDTO gitlabUserDTO = gson.fromJson(payload, GitlabUserDTO.class);
@@ -208,7 +208,7 @@ public class SagaHandler {
     /**
      * 用户启用事件
      */
-    @SagaTask(code = "enableUser", description = "用户启用事件",
+    @SagaTask(code = "devopsEnableUser", description = "用户启用事件",
             sagaCode = "iam-enable-user", seq = 1)
     public String handleIsEnabledUserEvent(String payload) {
         GitlabUserDTO gitlabUserDTO = gson.fromJson(payload, GitlabUserDTO.class);
@@ -221,7 +221,7 @@ public class SagaHandler {
     /**
      * 用户禁用事件
      */
-    @SagaTask(code = "disableUser", description = "用户禁用事件",
+    @SagaTask(code = "devopsDisableUser", description = "用户禁用事件",
             sagaCode = "iam-disable-user", seq = 1)
     public String handleDisEnabledUserEvent(String payload) {
         GitlabUserDTO gitlabUserDTO = gson.fromJson(payload, GitlabUserDTO.class);

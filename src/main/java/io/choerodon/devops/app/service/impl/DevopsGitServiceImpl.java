@@ -418,6 +418,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     path
             );
         } catch (Exception e) {
+            LOGGER.info(e.getMessage());
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return;
         }
@@ -884,6 +885,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             v1beta1Ingress,
                             envId,
                             devopsEnvFileErrorE);
+                    if (!devopsIngressDTO.getPathList().stream()
+                            .allMatch(t ->
+                                    devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
+                        devopsEnvFileErrorE.setError(PATH_EXIST);
+                        devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                        throw new CommonException(PATH_EXIST);
+                    }
                     devopsIngressService.updateIngress(devopsIngressE.getId(), devopsIngressDTO, projectId, true);
                     DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                             .queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
@@ -909,6 +917,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                 v1beta1Ingress,
                                 envId,
                                 devopsEnvFileErrorE);
+                        if (!devopsIngressDTO.getPathList().stream()
+                                .allMatch(t ->
+                                        devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
+                            devopsEnvFileErrorE.setError(PATH_EXIST);
+                            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                            throw new CommonException(PATH_EXIST);
+                        }
                         devopsIngressService.addIngress(devopsIngressDTO, projectId, true);
                         devopsIngressE = devopsIngressRepository
                                 .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
@@ -980,13 +995,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             devopsIngressPathDTO.setServiceId(devopsServiceE.getId());
             devopsIngressPathDTOS.add(devopsIngressPathDTO);
-        }
-        if (!devopsIngressPathDTOS.stream()
-                .allMatch(t ->
-                        devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
-            devopsEnvFileErrorE.setError(PATH_EXIST);
-            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
-            throw new CommonException(PATH_EXIST);
         }
         devopsIngressDTO.setPathList(devopsIngressPathDTOS);
         return devopsIngressDTO;

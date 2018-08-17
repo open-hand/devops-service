@@ -127,12 +127,14 @@ public class K8sUtil {
         String result = "";
         List<V1LoadBalancerIngress> v1LoadBalancerIngresses = v1LoadBalancerStatus.getIngress();
         List<String> list = new ArrayList<>();
-        for (V1LoadBalancerIngress v1LoadBalancerIngress : v1LoadBalancerIngresses) {
-            if (v1LoadBalancerIngress.getIp() != "") {
-                list.add(v1LoadBalancerIngress.getIp());
-            }
-            if (v1LoadBalancerIngress.getHostname() != "") {
-                list.add(v1LoadBalancerIngress.getHostname());
+        if (v1LoadBalancerIngresses != null) {
+            for (V1LoadBalancerIngress v1LoadBalancerIngress : v1LoadBalancerIngresses) {
+                if (v1LoadBalancerIngress.getIp() != "") {
+                    list.add(v1LoadBalancerIngress.getIp());
+                }
+                if (v1LoadBalancerIngress.getHostname() != "") {
+                    list.add(v1LoadBalancerIngress.getHostname());
+                }
             }
         }
         result = String.join(",", list);

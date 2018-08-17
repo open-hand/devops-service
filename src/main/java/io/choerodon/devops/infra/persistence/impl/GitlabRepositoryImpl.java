@@ -13,6 +13,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
@@ -82,31 +83,32 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity result = gitlabServiceClient.createFile(projectId, path, content, commitMessage, userId);
-        if (!result.getStatusCode().is2xxSuccessful()) {
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient.createFile(projectId, path, content, commitMessage, userId);
+        if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.create");
         }
     }
 
     @Override
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity result = gitlabServiceClient.updateFile(projectId, path, content, commitMessage, userId);
-        if (!result.getStatusCode().is2xxSuccessful()) {
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient.updateFile(projectId, path, content, commitMessage, userId);
+        if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.update");
         }
     }
 
     @Override
     public void deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
-        ResponseEntity result = gitlabServiceClient.deleteFile(projectId, path, commitMessage, userId);
-        if (!result.getStatusCode().is2xxSuccessful()) {
+        try {
+            gitlabServiceClient.deleteFile(projectId, path, commitMessage, userId);
+        } catch (Exception e) {
             throw new CommonException("error.file.delete");
         }
     }
 
     public Boolean getFile(Integer projectId, String branch, String filePath) {
-        ResponseEntity<String> result = gitlabServiceClient.getFile(projectId, branch, filePath);
-        if (!result.getBody().equals(filePath)) {
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient.getFile(projectId, branch, filePath);
+        if (result.getBody().getFilePath() == null) {
             return false;
         }
         return true;

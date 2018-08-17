@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
@@ -164,24 +165,22 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         return new ResponseEntity("error.file.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+    public ResponseEntity<RepositoryFile> updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         return new ResponseEntity("error.file.update", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
     public ResponseEntity deleteFile(Integer projectId, String path, String commitMessage, Integer userId) {
         return new ResponseEntity("error.file.delete", HttpStatus.INTERNAL_SERVER_ERROR);
-
     }
 
     @Override
-    public ResponseEntity<String> getFile(Integer projectId, String commit, String filePath) {
-        System.out.print("123");
+    public ResponseEntity<RepositoryFile> getFile(Integer projectId, String commit, String filePath) {
         return new ResponseEntity("error.file.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,7 @@ import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +21,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -27,6 +30,7 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
@@ -42,7 +46,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE = "service";
+    private static final String gitSuffix = "/.git";
     private Gson gson = new Gson();
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
 
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
@@ -70,6 +77,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
+    @Autowired
+    private ApplicationInstanceService applicationInstanceService;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
@@ -132,7 +145,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
-        devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
@@ -171,12 +183,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 //查询网络对应的实例
                 List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                         devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-                Boolean isUpdate = !devopsServiceReqDTO.getAppInstance()
+                Boolean isUpdate = devopsServiceReqDTO.getAppInstance()
                         .retainAll(devopsServiceInstanceEList.stream()
                                 .map(DevopsServiceAppInstanceE::getAppInstanceId)
                                 .collect(Collectors.toList()));
 
-                if (!isUpdate && oldPort.retainAll(devopsServiceReqDTO.getPorts())
+                if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+                        .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
                         && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
                     throw new CommonException("no change!");
                 }
@@ -203,18 +216,39 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceRepository.update(devopsServiceE);
-
+        if (isGitOps) {
+            devopsServiceRepository.update(devopsServiceE);
+        }
         if (!isGitOps) {
             DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
+            String path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            applicationInstanceService.checkEnvProject(devopsEnvironmentE, userAttrE);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, "Service");
-            gitlabRepository.deleteFile(
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+            if (devopsEnvFileResourceES.size() == 1) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            } else {
+                ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+                V1Service v1Service = new V1Service();
+                V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+                v1ObjectMeta.setName(devopsServiceE.getName());
+                v1Service.setMetadata(v1ObjectMeta);
+                objectOperation.setType(v1Service);
+                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                objectOperation.operationEnvGitlabFile(
+                        "release-" + devopsServiceE.getName(),
+                        projectId,
+                        "delete",
+                        userAttrE.getGitlabUserId(),
+                        devopsServiceE.getId(), "Service", devopsEnvironmentE.getId(), path);
+            }
+            devopsServiceRepository.update(devopsServiceE);
         }
     }
 
@@ -222,11 +256,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
      * 获取实例
      *
      * @param devopsServiceReqDTO 网络参数
-     * @param serviceId           网络id
      * @return String
      */
     private String updateServiceInstanceAndGetCode(DevopsServiceReqDTO devopsServiceReqDTO,
-                                                   Long serviceId) {
+                                                   List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES) {
         StringBuilder stringBuffer = new StringBuilder();
         List<Long> appInstances = devopsServiceReqDTO.getAppInstance();
         if (appInstances != null) {
@@ -239,10 +272,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     throw new CommonException("error.instance.query");
                 }
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
-                devopsServiceAppInstanceE.setServiceId(serviceId);
                 devopsServiceAppInstanceE.setAppInstanceId(appInstance);
                 devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
-                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+                devopsServiceAppInstanceES.add(devopsServiceAppInstanceE);
                 stringBuffer.append(applicationInstanceE.getCode()).append("+");
             });
         }
@@ -326,24 +358,36 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                        DevopsServiceE devopsServiceE,
                                        Long envId,
                                        Boolean isGitOps, Boolean isCreate) {
-        String serviceInstances = updateServiceInstanceAndGetCode(devopsServiceReqDTO, devopsServiceE.getId());
+        List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
+        String serviceInstances = updateServiceInstanceAndGetCode(devopsServiceReqDTO, devopsServiceAppInstanceES);
         Map<String, String> annotations = new HashMap<>();
         if (!serviceInstances.isEmpty()) {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
         }
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(envId);
-
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        applicationInstanceService.checkEnvProject(devopsEnvironmentE, userAttrE);
         V1Service service = getService(
                 devopsServiceReqDTO,
                 annotations);
-
-        DevopsServiceE appDeploy = devopsServiceRepository.query(devopsServiceE.getId());
-        appDeploy.setAnnotations(gson.toJson(annotations));
-        appDeploy.setObjectVersionNumber(appDeploy.getObjectVersionNumber());
-        appDeploy.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceRepository.update(appDeploy);
-        operateEnvGitLabFile(devopsServiceReqDTO.getName(), isGitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate);
+        devopsServiceE.setAnnotations(gson.toJson(annotations));
+        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
+        if (isGitOps) {
+            if (isCreate) {
+                devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
+            } else {
+                devopsServiceRepository.update(devopsServiceE);
+            }
+            Long serviceEId = devopsServiceE.getId();
+            devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
+                devopsServiceAppInstanceE.setServiceId(serviceEId);
+                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+            });
+        } else {
+            String path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
+            operateEnvGitLabFile(devopsServiceReqDTO.getName(),
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path, devopsServiceE, devopsServiceAppInstanceES, userAttrE);
+        }
     }
 
     /**
@@ -419,8 +463,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsIngressRepository.updateIngressPath(devopsIngressPathE);
         }
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
-                .queryById(devopsIngressDO.getEnvId());
         V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
                 devopsIngressDO.getName());
         List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
@@ -431,15 +473,34 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     private void operateEnvGitLabFile(String serviceName,
-                                      Boolean gitOps,
                                       Integer gitLabEnvProjectId,
-                                      V1Service service, Boolean isCreate) {
-        if (!gitOps) {
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(service);
-            objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
-                    userAttrE.getGitlabUserId());
+                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path,
+                                      DevopsServiceE devopsServiceE,
+                                      List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES, UserAttrE userAttrE) {
+        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+        objectOperation.setType(service);
+        objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
+                userAttrE.getGitlabUserId(), objectId, "Service", envId, path);
+        if (isCreate) {
+            devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
+        } else {
+            devopsServiceRepository.update(devopsServiceE);
+        }
+        Long serviceId = devopsServiceE.getId();
+        devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
+            devopsServiceAppInstanceE.setServiceId(serviceId);
+            devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+        });
+
+    }
+
+    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
+        File file = new File(path);
+        GitUtil gitUtil = new GitUtil(envIdRsa);
+        final String repoPath = path + gitSuffix;
+        if (!file.exists()) {
+            gitUtil.cloneBySsh(path, url);
+            gitUtil.checkout(repoPath, commit);
         }
     }
 }

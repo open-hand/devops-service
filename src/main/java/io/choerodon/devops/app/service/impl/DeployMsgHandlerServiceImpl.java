@@ -819,7 +819,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         List<DevopsEnvFileErrorE> errorDevopsFiles = new ArrayList<>();
         if (gitOpsSync.getMetadata().getErrors() != null) {
-            gitOpsSync.getMetadata().getErrors().parallelStream().forEach(error -> {
+            gitOpsSync.getMetadata().getErrors().stream().forEach(error -> {
                 DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.queryByEnvIdAndFilePath(envId, error.getPath());
                 if (devopsEnvFileErrorE == null) {
                     devopsEnvFileErrorE = new DevopsEnvFileErrorE();
@@ -827,10 +827,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsEnvFileErrorE.setError(error.getError());
                     devopsEnvFileErrorE.setFilePath(error.getPath());
                     devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
-                    devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                    devopsEnvFileErrorE = devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
                 } else {
                     devopsEnvFileErrorE.setError(devopsEnvFileErrorE.getError() + error.getError());
-                    devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                    devopsEnvFileErrorE = devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
                 }
                 errorDevopsFiles.add(devopsEnvFileErrorE);
             });

@@ -14,7 +14,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsEnvFileErrorRepository {
 
-    void create(DevopsEnvFileErrorE DevopsEnvFileErrorE);
+    DevopsEnvFileErrorE create(DevopsEnvFileErrorE DevopsEnvFileErrorE);
 
     List<DevopsEnvFileErrorE> listByEnvId(Long envId);
 
