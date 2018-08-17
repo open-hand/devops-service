@@ -365,8 +365,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
         }
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(envId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        applicationInstanceService.checkEnvProject(devopsEnvironmentE, userAttrE);
         V1Service service = getService(
                 devopsServiceReqDTO,
                 annotations);
@@ -384,6 +382,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
         } else {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            applicationInstanceService.checkEnvProject(devopsEnvironmentE, userAttrE);
             String path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
             operateEnvGitLabFile(devopsServiceReqDTO.getName(),
                     TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path, devopsServiceE, devopsServiceAppInstanceES, userAttrE);
