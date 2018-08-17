@@ -199,11 +199,13 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         podDTO.setDesire(TypeUtil.objToLong(v1Pod.getSpec().getContainers().size()));
         Long ready = 0L;
         Long restart = 0L;
-        for (V1ContainerStatus v1ContainerStatus : v1Pod.getStatus().getContainerStatuses()) {
-            if (v1ContainerStatus.isReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
-                ready = ready + 1;
+        if (v1Pod.getStatus().getContainerStatuses() != null) {
+            for (V1ContainerStatus v1ContainerStatus : v1Pod.getStatus().getContainerStatuses()) {
+                if (v1ContainerStatus.isReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
+                    ready = ready + 1;
+                }
+                restart = restart + v1ContainerStatus.getRestartCount();
             }
-            restart = restart + v1ContainerStatus.getRestartCount();
         }
         podDTO.setReady(ready);
         podDTO.setStatus(K8sUtil.changePodStatus(v1Pod));
