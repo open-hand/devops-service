@@ -333,19 +333,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         }
-//        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        //生成环境git仓库ssh地址
-        String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
         ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
@@ -354,46 +346,53 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
         applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        if (applicationDeployDTO.getType().equals("create")) {
-            if (!gitops) {
-                applicationInstanceE.setCode(
-                        String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5)));
-            } else {
-                applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
-            }
-            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-        }
         if (applicationDeployDTO.getType().equals("update")) {
             ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
                     applicationDeployDTO.getAppInstanceId());
             applicationInstanceE.setCode(newApplicationInstanceE.getCode());
             applicationInstanceE.setId(applicationDeployDTO.getAppInstanceId());
-            applicationInstanceRepository.update(applicationInstanceE);
         }
         devopsEnvCommandE.setCommandType(CommandType.SYNC.getType());
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
-        devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setValue(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml().trim());
-        devopsEnvCommandE.initDevopsEnvCommandValueE(
-                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
+                applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                applicationDeployDTO.getValues()));
         if (gitops) {
+            if (applicationDeployDTO.getType().equals("create")) {
+                applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
+                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+            } else {
+                applicationInstanceRepository.update(applicationInstanceE);
+            }
+            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+            devopsEnvCommandE.initDevopsEnvCommandValueE(
+                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             devopsEnvCommandRepository.create(devopsEnvCommandE);
-        }
-        if (!gitops) {
-            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
-            handDevopsEnvGitRepository(path,url,devopsEnvironmentE.getEnvIdRsa(),devopsEnvCommitE.getCommitSha());
+        } else {
+            String path = handDevopsEnvGitRepository(devopsEnvironmentE);
+            handDevopsEnvGitRepository(devopsEnvironmentE);
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
                     applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+            String code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             objectOperation.operationEnvGitlabFile(
-                    "release-" + applicationInstanceE.getCode(),
+                    "release-" + code,
                     projectId,
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
                     applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
+            if (applicationDeployDTO.getType().equals("create")) {
+                applicationInstanceE.setCode(code);
+                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+            } else {
+                applicationInstanceRepository.update(applicationInstanceE);
+            }
+            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+            devopsEnvCommandE.initDevopsEnvCommandValueE(
+                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             devopsEnvCommandRepository.create(devopsEnvCommandE);
 
         }
@@ -505,7 +504,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         }
-//        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
 
@@ -514,21 +513,17 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setId(null);
         if (gitops) {
             devopsEnvCommandRepository.create(devopsEnvCommandE);
+            updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+
         }
-        updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         if (!gitops) {
-            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
-            handDevopsEnvGitRepository(path,url,devopsEnvironmentE.getEnvIdRsa(),devopsEnvCommitE.getCommitSha());
+            String path = handDevopsEnvGitRepository(devopsEnvironmentE);
+            handDevopsEnvGitRepository(devopsEnvironmentE);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, "C7NHelmRelease");
             List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
@@ -554,6 +549,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         instanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
             }
             devopsEnvCommandRepository.create(devopsEnvCommandE);
+            updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
         }
     }
 
@@ -641,14 +637,24 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return replaceResult;
     }
 
-    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
+    @Override
+    public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
+        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+        //本地路径
+        String path = String.format("gitops/%s/%s/%s",
+                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        //生成环境git仓库ssh地址
+        String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         File file = new File(path);
-        GitUtil gitUtil = new GitUtil(envIdRsa);
+        GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
         final String repoPath = path + gitSuffix;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
-            gitUtil.checkout(repoPath, commit);
+            gitUtil.checkout(repoPath, devopsEnvCommitE.getCommitSha());
         }
-
+        return path;
     }
 }

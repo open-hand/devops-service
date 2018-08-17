@@ -17,6 +17,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
@@ -71,6 +72,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private IamRepository iamRepository;
     @Autowired
     private DevopsEnvCommitRepository devopsEnvCommitRepository;
+    @Autowired
+    private ApplicationInstanceService applicationInstanceService;
 
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
@@ -84,8 +87,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        String path = "";
         DevopsIngressDO devopsIngressDO = new DevopsIngressDO(projectId, envId, domain, name);
         List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
         V1beta1Ingress ingress = createIngress(domain, name);
@@ -113,13 +115,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         if (gitOps) {
             devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
         } else {
-            String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
-            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
+            path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
+            operateEnvGitLabFile(devopsIngressDTO.getName(),
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, true, null, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
         }
-        operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, true, null, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
     }
 
     @Override
@@ -135,8 +134,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        String path = "";
         if (devopsIngressDTO.getPathList().isEmpty()) {
             throw new CommonException(PATH_ERROR);
         }
@@ -169,13 +167,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         if (gitOps) {
             devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
         } else {
-            String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
-            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
+            path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
+            operateEnvGitLabFile(devopsIngressDTO.getName(),
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, false, id, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
         }
-        operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, false, id, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
 
     }
 
@@ -209,17 +204,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-
-        //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         if (!gitOps) {
-            String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
-            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
+            String path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
@@ -317,7 +303,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     private void operateEnvGitLabFile(String ingressName,
-                                      Boolean gitOps,
                                       Integer envGitLabProjectId,
                                       V1beta1Ingress ingress,
                                       Boolean isCreate,
@@ -326,17 +311,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       String path,
                                       DevopsIngressDO devopsIngressDO,
                                       List<DevopsIngressPathDO> devopsIngressPathDOS) {
-        if (!gitOps) {
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(ingress);
-            objectOperation.operationEnvGitlabFile("ing-" + ingressName, envGitLabProjectId, isCreate ? "create" : "update",
-                    userAttrE.getGitlabUserId(), objectId, "Ingress", envId, path);
-            if (isCreate) {
-                devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
-            } else {
-                devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
-            }
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+        objectOperation.setType(ingress);
+        objectOperation.operationEnvGitlabFile("ing-" + ingressName, envGitLabProjectId, isCreate ? "create" : "update",
+                userAttrE.getGitlabUserId(), objectId, "Ingress", envId, path);
+        if (isCreate) {
+            devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+        } else {
+            devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
         }
     }
 
