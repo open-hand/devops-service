@@ -346,9 +346,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(
-                applicationInstanceRepository.queryValueByEnvIdAndAppId(
-                        applicationInstanceE.getDevopsEnvironmentE().getId(), applicationE.getId()));
+        c7nHelmRelease.getSpec().setValues(applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationVersionE.getId()),applicationInstanceRepository.queryValueByEnvIdAndAppId(
+                applicationInstanceE.getDevopsEnvironmentE().getId(), applicationE.getId())).getDeltaYaml().trim());
         return c7nHelmRelease;
     }
 

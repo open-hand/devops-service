@@ -633,8 +633,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     }
 
-
-    private ReplaceResult getReplaceResult(String versionValue, String deployValue) {
+    @Override
+    public ReplaceResult getReplaceResult(String versionValue, String deployValue) {
         String fileName = GenerateUUID.generateUUID() + ".yaml";
         String path = "deployfile";
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
