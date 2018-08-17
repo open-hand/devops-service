@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,7 @@ import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,7 @@ import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
@@ -44,6 +47,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE = "service";
     private Gson gson = new Gson();
+    private static final String gitSuffix = "/.git";
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
 
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
@@ -73,6 +79,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private GitlabRepository gitlabRepository;
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
@@ -216,6 +224,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             String path = String.format("gitops/%s/%s/%s",
                     organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, "Service");
             List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
@@ -379,6 +391,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsServiceAppInstanceE.setServiceId(serviceEId);
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
+        }else {
+            String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
         }
         operateEnvGitLabFile(devopsServiceReqDTO.getName(), isGitOps,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path, devopsServiceE, devopsServiceAppInstanceES);
@@ -488,6 +505,15 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsServiceAppInstanceE.setServiceId(serviceId);
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
+        }
+    }
+    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
+        File file = new File(path);
+        GitUtil gitUtil = new GitUtil(envIdRsa);
+        final String repoPath = path + gitSuffix;
+        if (!file.exists()) {
+            gitUtil.cloneBySsh(path, url);
+            gitUtil.checkout(repoPath, commit);
         }
     }
 }

@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +10,7 @@ import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
@@ -22,6 +24,7 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
@@ -40,9 +43,11 @@ import io.choerodon.websocket.helper.EnvListener;
 public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String PATH_ERROR = "error.path.empty";
     private static final String PATH_DUPLICATED = "error.path.duplicated";
-
-
+    private static final String gitSuffix = "/.git";
     private static JSON json = new JSON();
+
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
 
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
@@ -64,6 +69,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private GitlabRepository gitlabRepository;
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
 
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
@@ -105,6 +112,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
         if (gitOps) {
             devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+        } else {
+            String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
         }
         operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, true, null, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
@@ -156,6 +168,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
         if (gitOps) {
             devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
+        } else {
+            String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
         }
         operateEnvGitLabFile(devopsIngressDTO.getName(), gitOps,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, false, id, devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS);
@@ -199,6 +216,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         if (!gitOps) {
+            String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                    gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+            handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
@@ -316,6 +337,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             } else {
                 devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
             }
+        }
+    }
+
+
+    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
+        File file = new File(path);
+        GitUtil gitUtil = new GitUtil(envIdRsa);
+        final String repoPath = path + gitSuffix;
+        if (!file.exists()) {
+            gitUtil.cloneBySsh(path, url);
+            gitUtil.checkout(repoPath, commit);
         }
     }
 }

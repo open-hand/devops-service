@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,7 @@ import io.choerodon.websocket.helper.EnvSession;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
     private static final String RELEASE_NAME = "ReleaseName";
+    private static final String gitSuffix = "/.git";
 
     private static Gson gson = new Gson();
     @Autowired
@@ -56,6 +58,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private String helmUrl;
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
+
 
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
@@ -95,6 +100,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvFileRepository devopsEnvFileRepository;
     @Autowired
     private DeployMsgHandlerService deployMsgHandlerService;
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -336,6 +343,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        //生成环境git仓库ssh地址
+        String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
         ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
@@ -372,6 +382,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandRepository.create(devopsEnvCommandE);
         }
         if (!gitops) {
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+            handDevopsEnvGitRepository(path,url,devopsEnvironmentE.getEnvIdRsa(),devopsEnvCommitE.getCommitSha());
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
                     applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
@@ -493,7 +505,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         }
-        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+//        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
 
@@ -512,7 +524,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        String url = String.format("git@%s:%s-%s-gitops/%s.git",
+                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         if (!gitops) {
+            DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+            handDevopsEnvGitRepository(path,url,devopsEnvironmentE.getEnvIdRsa(),devopsEnvCommitE.getCommitSha());
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, "C7NHelmRelease");
             List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
@@ -609,6 +625,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     }
 
+
     private ReplaceResult getReplaceResult(String versionValue, String deployValue) {
         String fileName = GenerateUUID.generateUUID() + ".yaml";
         String path = "deployfile";
@@ -622,5 +639,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
         FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
         return replaceResult;
+    }
+
+    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
+        File file = new File(path);
+        GitUtil gitUtil = new GitUtil(envIdRsa);
+        final String repoPath = path + gitSuffix;
+        if (!file.exists()) {
+            gitUtil.cloneBySsh(path, url);
+            gitUtil.checkout(repoPath, commit);
+        }
+
     }
 }
