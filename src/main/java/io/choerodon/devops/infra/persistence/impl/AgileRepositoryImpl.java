@@ -16,7 +16,11 @@ public class AgileRepositoryImpl implements AgileRepository {
 
     @Override
     public Issue queryIssue(Long projectId, Long issueId) {
-        return agileServiceClient.queryIssue(projectId, issueId).getBody();
+        try {
+            return agileServiceClient.queryIssue(projectId, issueId).getBody();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     @Override
