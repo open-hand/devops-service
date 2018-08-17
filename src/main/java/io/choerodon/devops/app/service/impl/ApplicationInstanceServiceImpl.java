@@ -335,14 +335,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops) {
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
         UserAttrE userAttrE = new UserAttrE();
+        DevopsEnvironmentE devopsEnvironmentE =
+                devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            checkEnvProject(devopsEnvironmentE, userAttrE);
         }
         envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
-        DevopsEnvironmentE devopsEnvironmentE =
-                devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
-        checkEnvProject(devopsEnvironmentE, userAttrE);
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
         ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
@@ -379,9 +379,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             String path = handDevopsEnvGitRepository(devopsEnvironmentE);
             String code = "";
             handDevopsEnvGitRepository(devopsEnvironmentE);
-            if(applicationDeployDTO.getType().equals("create")) {
+            if (applicationDeployDTO.getType().equals("create")) {
                 code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
-            }else {
+            } else {
                 code = applicationInstanceE.getCode();
             }
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
@@ -515,8 +515,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         UserAttrE userAttrE = new UserAttrE();
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            checkEnvProject(devopsEnvironmentE, userAttrE);
         }
-        checkEnvProject(devopsEnvironmentE, userAttrE);
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
@@ -651,7 +651,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
@@ -660,10 +659,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         File file = new File(path);
         GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
-        final String repoPath = path + gitSuffix;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
-            gitUtil.checkout(repoPath, devopsEnvCommitE.getCommitSha());
         }
         return path;
     }
