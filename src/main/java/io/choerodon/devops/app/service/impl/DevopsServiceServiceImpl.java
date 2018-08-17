@@ -183,12 +183,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 //查询网络对应的实例
                 List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                         devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-                Boolean isUpdate = !devopsServiceReqDTO.getAppInstance()
+                Boolean isUpdate = devopsServiceReqDTO.getAppInstance()
                         .retainAll(devopsServiceInstanceEList.stream()
                                 .map(DevopsServiceAppInstanceE::getAppInstanceId)
                                 .collect(Collectors.toList()));
 
-                if (!isUpdate && oldPort.retainAll(devopsServiceReqDTO.getPorts())
+                if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+                        .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
                         && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
                     throw new CommonException("no change!");
                 }
@@ -462,8 +463,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsIngressRepository.updateIngressPath(devopsIngressPathE);
         }
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
-                .queryById(devopsIngressDO.getEnvId());
         V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
                 devopsIngressDO.getName());
         List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
@@ -475,7 +474,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private void operateEnvGitLabFile(String serviceName,
                                       Integer gitLabEnvProjectId,
-                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path, DevopsServiceE devopsServiceE, List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES, UserAttrE userAttrE) {
+                                      V1Service service, Boolean isCreate, Long objectId, Long envId, String path,
+                                      DevopsServiceE devopsServiceE,
+                                      List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES, UserAttrE userAttrE) {
         ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
         objectOperation.setType(service);
         objectOperation.operationEnvGitlabFile("svc-" + serviceName, gitLabEnvProjectId, isCreate ? "create" : "update",
