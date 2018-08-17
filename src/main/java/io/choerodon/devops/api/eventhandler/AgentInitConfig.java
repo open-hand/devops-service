@@ -44,8 +44,8 @@ public class AgentInitConfig implements AgentConfigurer {
         @Override
         public void onConnected(Session session) {
             try {
-                String envId  =  KeyParseTool.parseKey(session.getRegisterKey()).get("envId");
-                DevopsEnvironmentE env =  devopsEnvironmentRepository.queryById(Long.valueOf(envId));
+                String envId = KeyParseTool.parseKey(session.getRegisterKey()).get("envId");
+                DevopsEnvironmentE env = devopsEnvironmentRepository.queryById(Long.valueOf(envId));
 
                 ProjectE projectE = iamRepository.queryIamProject(env.getProjectE().getId());
                 Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -60,8 +60,8 @@ public class AgentInitConfig implements AgentConfigurer {
                 msg.setType(INIT_AGENT);
                 msg.setKey(session.getRegisterKey());
                 commandSender.sendMsg(msg);
-            } catch (Exception e){
-                throw new CommonException(e,"read envId from agent session failed");
+            } catch (Exception e) {
+                throw new CommonException(e, "read envId from agent session failed");
             }
         }
 

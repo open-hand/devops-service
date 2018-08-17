@@ -267,25 +267,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             update = false;
         }
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
-        InputStream inputStream = null;
+        InputStream inputStream;
         Map<String, String> params = new HashMap<>();
         if (update) {
             inputStream = this.getClass().getResourceAsStream("/shell/environment-upgrade.sh");
         } else {
             inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
         }
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
         params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsEnvironmentE.getToken());
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{ENVID}", devopsEnvironmentE.getId().toString());
-        params.put("{RSA}", devopsEnvironmentE.getEnvIdRsa());
-        params.put("{GITREPOURL}", repoUrl);
         return FileUtil.replaceReturnString(inputStream, params);
     }
 
@@ -368,13 +362,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
         EnvSyncStatusDTO envSyncStatusDTO = new EnvSyncStatusDTO();
         if (devopsEnvironmentE.getAgentSyncCommit() != null) {
-            envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
+            envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository
+                    .query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
         }
         if (devopsEnvironmentE.getDevopsSyncCommit() != null) {
-            envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
+            envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository
+                    .query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
         }
         if (devopsEnvironmentE.getGitCommit() != null) {
-            envSyncStatusDTO.setGitCommit(devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit()).getCommitSha());
+            envSyncStatusDTO.setGitCommit(devopsEnvCommitRepository
+                    .query(devopsEnvironmentE.getGitCommit()).getCommitSha());
         }
         envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
                 gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
