@@ -179,7 +179,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
             addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getEnvGroupId(), userAttrE);
         } else {
-            gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+            try {
+                gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+            } catch (Exception e) {
+                LOGGER.info("error.gitlab.groupId.select");
+                return;
+            }
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                     gitlabGroupE.getGitlabGroupId(),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
