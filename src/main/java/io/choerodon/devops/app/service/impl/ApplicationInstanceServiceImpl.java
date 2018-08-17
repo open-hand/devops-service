@@ -377,12 +377,17 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandRepository.create(devopsEnvCommandE);
         } else {
             String path = handDevopsEnvGitRepository(devopsEnvironmentE);
+            String code = "";
             handDevopsEnvGitRepository(devopsEnvironmentE);
+            if(applicationDeployDTO.getType().equals("create")) {
+                code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+            }else {
+                code = applicationInstanceE.getCode();
+            }
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
-                    applicationInstanceE, applicationVersionE, applicationDeployDTO, applicationE));
+                    code, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            String code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             objectOperation.operationEnvGitlabFile(
                     "release-" + code,
                     projectId,
@@ -611,12 +616,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE,
+    private C7nHelmRelease getC7NHelmRelease(String code,
                                              ApplicationVersionE applicationVersionE,
                                              ApplicationDeployDTO applicationDeployDTO,
-                                             ApplicationE applicationE) {
+                                             ApplicationE applicationE
+    ) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
-        c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
+        c7nHelmRelease.getMetadata().setName(code);
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
