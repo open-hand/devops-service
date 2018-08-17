@@ -91,9 +91,7 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
     }
 
     @Override
-    public void saveDevopsMergeRequest(DevopsMergeRequestDTO devopsMergeRequestDTO) {
-        DevopsMergeRequestE devopsMergeRequestE = ConvertHelper.convert(devopsMergeRequestDTO,
-                DevopsMergeRequestE.class);
+    public void saveDevopsMergeRequest(DevopsMergeRequestE devopsMergeRequestE) {
         Long projectId = devopsMergeRequestE.getProjectId();
         Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
         DevopsMergeRequestE mergeRequestETemp = queryByAppIdAndGitlabId(projectId, gitlabMergeRequestId);
