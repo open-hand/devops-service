@@ -48,12 +48,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
 
     changeSet(author: 'runge', id: '2018-08-14-move-data') {
         update(tableName: 'devops_service') {
-            column(name: 'annotations', type: 'VARCHAR(1000)', valueComputed: 'labels')
             column(name: 'ports', type: 'VARCHAR(1000)',
                     valueComputed: 'CONCAT( \'[{"name":"http","protocol":"TCP","port":\', `port`, \',"targetPort":\', target_port, \'}]\' )')
-            column(name: 'type', type: 'VARCHAR(30)', value: 'ClusterIP')
-            column(name: 'labels', type: 'VARCHAR(1000)')
             where('ports IS NULL')
+        }
+        update(tableName: 'devops_service') {
+            column(name: 'type', type: 'VARCHAR(30)', value: 'ClusterIP')
+            where('type IS NULL')
         }
         dropColumn(columnName: "port", tableName: "devops_service")
         dropColumn(columnName: "target_port", tableName: "devops_service")
