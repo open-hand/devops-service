@@ -356,9 +356,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setValue(FileUtil.getChangeYaml(
+        devopsEnvCommandValueE.setValue(getReplaceResult(
                 applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
-                applicationDeployDTO.getValues()));
+                applicationDeployDTO.getValues()).getDeltaYaml().trim());
         if (gitops) {
             if (applicationDeployDTO.getType().equals("create")) {
                 applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
