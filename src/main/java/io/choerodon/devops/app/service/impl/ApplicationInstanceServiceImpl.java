@@ -9,7 +9,6 @@ import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -21,6 +20,8 @@ import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory;
@@ -102,6 +103,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DeployMsgHandlerService deployMsgHandlerService;
     @Autowired
     private DevopsEnvCommitRepository devopsEnvCommitRepository;
+    @Autowired
+    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    @Autowired
+    private DevopsProjectRepository devopsProjectRepository;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -337,7 +342,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
-
+        checkEnvProject(devopsEnvironmentE, userAttrE);
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
         ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
@@ -500,10 +505,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceDelete(Long instanceId, boolean gitops) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(instanceE.getDevopsEnvironmentE().getId());
         UserAttrE userAttrE = new UserAttrE();
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         }
+        checkEnvProject(devopsEnvironmentE, userAttrE);
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
@@ -516,10 +524,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
 
         }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(instanceE.getDevopsEnvironmentE().getId());
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         if (!gitops) {
             String path = handDevopsEnvGitRepository(devopsEnvironmentE);
@@ -656,5 +660,22 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             gitUtil.checkout(repoPath, devopsEnvCommitE.getCommitSha());
         }
         return path;
+    }
+
+    @Override
+    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        if (gitlabGroupE == null) {
+            throw new CommonException("error.group.not.sync");
+        }
+        if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
+            throw new CommonException("error.env.project.not.exist");
+        }
+        GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                gitlabGroupE.getEnvGroupId(),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.env.pro.owner");
+        }
     }
 }
