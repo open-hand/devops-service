@@ -433,6 +433,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Saga(code = "devops-upgrade-0.9",
             description = "devops smooth upgrade to 0.9", inputSchema = "{}")
     private void gitOpsUserAccess() {
-        sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("", "", ""));
+        sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", ""));
     }
 }
