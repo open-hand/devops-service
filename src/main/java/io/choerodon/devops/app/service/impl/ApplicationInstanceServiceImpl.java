@@ -651,7 +651,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
         //本地路径
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
@@ -660,10 +659,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         File file = new File(path);
         GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
-        final String repoPath = path + gitSuffix;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
-            gitUtil.checkout(repoPath, devopsEnvCommitE.getCommitSha());
         }
         return path;
     }
