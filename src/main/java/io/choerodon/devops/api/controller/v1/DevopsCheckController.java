@@ -13,7 +13,7 @@ import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.swagger.annotation.Permission;
 
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/logs")
+@RequestMapping(value = "/v1/upgrade")
 public class DevopsCheckController {
 
     @Autowired
@@ -22,16 +22,13 @@ public class DevopsCheckController {
     /**
      * 平滑升级
      *
-     * @param projectId 项目id
      * @param version   版本
      */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.SITE,
+            roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平滑升级")
     @GetMapping
     public ResponseEntity checkLog(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "version")
             @RequestParam(value = "version") String version) {
         devopsCheckLogService.checkLog(version);
