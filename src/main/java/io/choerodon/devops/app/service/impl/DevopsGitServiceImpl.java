@@ -724,12 +724,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
-                                                         Long projectId, Long envId, String type) {
+                                                         Long projectId, Long envId, String type,
+                                                         DevopsEnvFileErrorE devopsEnvFileErrorE) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
         if (applicationE == null) {
-            return null;
+            devopsEnvFileErrorE.setError("the App: " +c7nHelmRelease.getSpec().getChartName() +"not exit in the devops-service");
+            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+            throw new CommonException("error.app.not.exist");
         }
         ApplicationVersionE applicationVersionE = applicationVersionRepository
                 .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
@@ -779,13 +782,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                             .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
                     ApplicationDeployDTO applicationDeployDTO;
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())), path);
+
                     ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
                     if (applicationInstanceE == null) {
                         applicationDeployDTO = getApplicationDeployDTO(
                                 c7nHelmRelease,
                                 projectId,
                                 envId,
-                                "create");
+                                "create",
+                                devopsEnvFileErrorE);
                         if (applicationDeployDTO == null) {
                             return;
                         }
@@ -802,11 +808,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 });
         updateC7nHelmRelease.parallelStream()
                 .forEach(c7nHelmRelease -> {
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())), path);
                     ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(
                             c7nHelmRelease,
                             projectId,
                             envId,
-                            "update");
+                            "update",
+                            devopsEnvFileErrorE);
                     if (applicationDeployDTO == null) {
                         return;
                     }
@@ -1087,6 +1095,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         );
         applicationVersionE.setImage(image);
         applicationVersionE.setVersion(version);
+        applicationVersionE.initApplicationVersionReadmeV("");
         applicationVersionE
                 .setRepository("/" + orgCode + "/" + projectCode + "/");
         applicationVersionValueE.setValue(values);
