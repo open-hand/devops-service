@@ -473,11 +473,6 @@ public class FileUtil {
         }
     }
 
-    public static void main(String[] args) {
-        ReplaceResult replaceResult = replaceNew("/Users/crcokitwood/PythonProject/python-example/test.yml");
-        System.out.println(replaceResult);
-    }
-
     private static Node getKeysNode(List<String> keys, MappingNode mappingNode) {
         Node value = null;
         for (int i = 0; i < keys.size(); i++) {
