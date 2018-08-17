@@ -267,98 +267,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         });
     }
 
-    private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE) {
-        ApplicationVersionE applicationVersionE = applicationVersionRepository
-                .query(applicationInstanceE.getApplicationVersionE().getId());
-        ApplicationE applicationE = applicationRepository.query(applicationInstanceE.getApplicationE().getId());
-        C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
-        c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
-        c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
-        c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
-        c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationVersionE.getId()), applicationInstanceRepository.queryValueByEnvIdAndAppId(
-                applicationInstanceE.getDevopsEnvironmentE().getId(), applicationE.getId())).getDeltaYaml().trim());
-        return c7nHelmRelease;
-    }
-
-    private V1Service getService(DevopsServiceE devopsServiceE) {
-        V1Service service = new V1Service();
-        service.setKind("Service");
-        service.setApiVersion("v1");
-
-        // metadata
-        V1ObjectMeta metadata = new V1ObjectMeta();
-        metadata.setName(devopsServiceE.getName());
-        // metadata / labels
-        Map<String, String> label = new HashMap<>();
-        label.put(SERVICE_LABLE, SERVICE);
-        metadata.setLabels(label);
-        // metadata / annotations
-        if (devopsServiceE.getAnnotations() != null) {
-            Map<String, String> annotations = gson.fromJson(
-                    devopsServiceE.getAnnotations(), new TypeToken<Map<String, String>>() {
-                    }.getType());
-            metadata.setAnnotations(annotations);
-        }
-        // set metadata
-        service.setMetadata(metadata);
-
-        V1ServiceSpec spec = new V1ServiceSpec();
-        // spec / ports
-        final Integer[] serialNumber = {0};
-        List<V1ServicePort> ports = devopsServiceE.getPorts().parallelStream()
-                .map(t -> {
-                    V1ServicePort v1ServicePort = new V1ServicePort();
-                    if (t.getNodePort() != null) {
-                        v1ServicePort.setNodePort(t.getNodePort().intValue());
-                    }
-                    if (t.getPort() != null) {
-                        v1ServicePort.setPort(t.getPort().intValue());
-                    }
-                    if (t.getTargetPort() != null) {
-                        v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
-                    }
-                    v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
-                    v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
-                    return v1ServicePort;
-                }).collect(Collectors.toList());
-        spec.setPorts(ports);
-
-        // spec / selector
-        if (devopsServiceE.getLabels() != null) {
-            Map<String, String> selector = gson.fromJson(
-                    devopsServiceE.getLabels(), new TypeToken<Map<String, String>>() {
-                    }.getType());
-            spec.setSelector(selector);
-        }
-
-        // spec / externalIps
-        if (!StringUtils.isEmpty(devopsServiceE.getExternalIp())) {
-            List<String> externalIps = new ArrayList<>(Arrays.asList(devopsServiceE.getExternalIp().split(",")));
-            spec.setExternalIPs(externalIps);
-        }
-
-        spec.setSessionAffinity("None");
-        spec.type("ClusterIP");
-        service.setSpec(spec);
-
-        return service;
-    }
-
-    private V1beta1Ingress getV1beta1Ingress(DevopsIngressE devopsIngressE) {
-        V1beta1Ingress v1beta1Ingress = devopsIngressService
-                .createIngress(devopsIngressE.getDomain(), devopsIngressE.getName());
-        List<DevopsIngressPathE> devopsIngressPathES =
-                devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
-        devopsIngressPathES.parallelStream()
-                .forEach(devopsIngressPathE ->
-                        v1beta1Ingress.getSpec().getRules().get(0).getHttp()
-                                .addPathsItem(devopsIngressService
-                                        .createPath(devopsIngressPathE.getPath(), devopsIngressPathE.getServiceId())));
-
-        return v1beta1Ingress;
-    }
-
     @Saga(code = "devops-upgrade-0.9",
             description = "devops smooth upgrade to 0.9", inputSchema = "{}")
     private void gitOpsUserAccess() {
@@ -401,6 +309,23 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         logs.add(checkLog);
                     });
         }
+
+        private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE) {
+            ApplicationVersionE applicationVersionE = applicationVersionRepository
+                    .query(applicationInstanceE.getApplicationVersionE().getId());
+            ApplicationE applicationE = applicationRepository.query(applicationInstanceE.getApplicationE().getId());
+            C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
+            c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
+            c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
+            c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
+            c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
+            c7nHelmRelease.getSpec().setValues(applicationInstanceService.getReplaceResult(
+                    applicationVersionRepository.queryValue(applicationVersionE.getId()),
+                    applicationInstanceRepository.queryValueByEnvIdAndAppId(
+                            applicationInstanceE.getDevopsEnvironmentE().getId(),
+                            applicationE.getId())).getDeltaYaml().trim());
+            return c7nHelmRelease;
+        }
     }
 
     private class SynServiceByEnv {
@@ -440,6 +365,71 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         logs.add(checkLog);
                     });
         }
+
+        private V1Service getService(DevopsServiceE devopsServiceE) {
+            V1Service service = new V1Service();
+            service.setKind("Service");
+            service.setApiVersion("v1");
+
+            // metadata
+            V1ObjectMeta metadata = new V1ObjectMeta();
+            metadata.setName(devopsServiceE.getName());
+            // metadata / labels
+            Map<String, String> label = new HashMap<>();
+            label.put(SERVICE_LABLE, SERVICE);
+            metadata.setLabels(label);
+            // metadata / annotations
+            if (devopsServiceE.getAnnotations() != null) {
+                Map<String, String> annotations = gson.fromJson(
+                        devopsServiceE.getAnnotations(), new TypeToken<Map<String, String>>() {
+                        }.getType());
+                metadata.setAnnotations(annotations);
+            }
+            // set metadata
+            service.setMetadata(metadata);
+
+            V1ServiceSpec spec = new V1ServiceSpec();
+            // spec / ports
+            final Integer[] serialNumber = {0};
+            List<V1ServicePort> ports = devopsServiceE.getPorts().parallelStream()
+                    .map(t -> {
+                        V1ServicePort v1ServicePort = new V1ServicePort();
+                        if (t.getNodePort() != null) {
+                            v1ServicePort.setNodePort(t.getNodePort().intValue());
+                        }
+                        if (t.getPort() != null) {
+                            v1ServicePort.setPort(t.getPort().intValue());
+                        }
+                        if (t.getTargetPort() != null) {
+                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
+                        }
+                        v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
+                        v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
+                        return v1ServicePort;
+                    }).collect(Collectors.toList());
+            spec.setPorts(ports);
+
+            // spec / selector
+            if (devopsServiceE.getLabels() != null) {
+                Map<String, String> selector = gson.fromJson(
+                        devopsServiceE.getLabels(), new TypeToken<Map<String, String>>() {
+                        }.getType());
+                spec.setSelector(selector);
+            }
+
+            // spec / externalIps
+            if (!StringUtils.isEmpty(devopsServiceE.getExternalIp())) {
+                List<String> externalIps = new ArrayList<>(Arrays.asList(devopsServiceE.getExternalIp().split(",")));
+                spec.setExternalIPs(externalIps);
+            }
+
+            spec.setSessionAffinity("None");
+            spec.type("ClusterIP");
+            service.setSpec(spec);
+
+            return service;
+        }
+
     }
 
     private class SyncIngressByEnv {
@@ -476,6 +466,20 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         }
                         logs.add(checkLog);
                     });
+        }
+
+        private V1beta1Ingress getV1beta1Ingress(DevopsIngressE devopsIngressE) {
+            V1beta1Ingress v1beta1Ingress = devopsIngressService
+                    .createIngress(devopsIngressE.getDomain(), devopsIngressE.getName());
+            List<DevopsIngressPathE> devopsIngressPathES =
+                    devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
+            devopsIngressPathES.parallelStream()
+                    .forEach(devopsIngressPathE ->
+                            v1beta1Ingress.getSpec().getRules().get(0).getHttp()
+                                    .addPathsItem(devopsIngressService.createPath(
+                                            devopsIngressPathE.getPath(), devopsIngressPathE.getServiceId())));
+
+            return v1beta1Ingress;
         }
     }
 }
