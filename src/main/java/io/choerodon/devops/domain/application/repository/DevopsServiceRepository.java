@@ -38,4 +38,6 @@ public interface DevopsServiceRepository {
     Boolean checkEnvHasService(Long envId);
 
     List<DevopsServiceE> list();
+
+    List<DevopsServiceE> selectByEnvId(Long envId);
 }

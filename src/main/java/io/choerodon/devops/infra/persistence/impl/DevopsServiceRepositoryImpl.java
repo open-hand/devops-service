@@ -167,4 +167,11 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     public List<DevopsServiceE> list() {
         return ConvertHelper.convertList(devopsServiceMapper.selectAll(), DevopsServiceE.class);
     }
+
+    @Override
+    public List<DevopsServiceE> selectByEnvId(Long envId) {
+        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
+        devopsServiceDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsServiceMapper.select(devopsServiceDO), DevopsServiceE.class);
+    }
 }

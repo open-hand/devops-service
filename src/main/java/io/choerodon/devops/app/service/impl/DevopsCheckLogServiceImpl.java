@@ -54,6 +54,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SERVICE = "service";
     private static final String SUCCESS = "success";
     private static final String FAILED = "failed: ";
+    private static final String SERIAL_STRING = " serializable to yaml";
+    private static final String MASTER = "master";
+    private static final String YAML_FILE = ".yaml";
 
     private Gson gson = new Gson();
     @Value("${services.gateway.url}")
@@ -255,85 +258,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void syncObjects(List<CheckLog> logs) {
-        List<ApplicationInstanceE> applicationInstanceES = applicationInstanceRepository.list();
-        String serialString = " serializable to yaml";
-        String master = "master";
-        String yamlFile = ".yaml";
-        applicationInstanceES.parallelStream()
-                .filter(t -> !InstanceStatus.DELETED.getStatus().equals(t.getStatus()))
-                .forEach(applicationInstanceE -> {
-                    CheckLog checkLog = new CheckLog();
-                    try {
-                        checkLog.setContent("instance: " + applicationInstanceE.getCode() + serialString);
-                        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                                .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
-                        ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-                        objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
-                        Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                        String filePath = "release-" + applicationInstanceE.getCode();
-                        if (!gitlabRepository.getFile(projectId, master, filePath + yamlFile)) {
-                            objectOperation.operationEnvGitlabFile(
-                                    filePath,
-                                    projectId,
-                                    CREATE,
-                                    TypeUtil.objToLong(ADMIN), null, null, null, null);
-                            checkLog.setResult(SUCCESS);
-                        }
-                    } catch (Exception e) {
-                        checkLog.setResult(FAILED + e.getMessage());
-                    }
-                    logs.add(checkLog);
-                });
-        List<DevopsServiceE> devopsServiceES = devopsServiceRepository.list();
-        devopsServiceES.parallelStream()
-                .filter(t -> !ServiceStatus.DELETED.getStatus().equals(t.getStatus()))
-                .forEach(devopsServiceE -> {
-                    CheckLog checkLog = new CheckLog();
-                    try {
-                        checkLog.setContent("service: " + devopsServiceE.getName() + serialString);
-                        V1Service service = getService(devopsServiceE);
-                        DevopsEnvironmentE devopsEnvironmentE =
-                                devopsEnvironmentRepository.queryById(devopsServiceE.getEnvId());
-                        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
-                        objectOperation.setType(service);
-                        Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                        String filePath = "svc-" + devopsServiceE.getName();
-                        if (!gitlabRepository.getFile(projectId, master, filePath + yamlFile)) {
-                            objectOperation.operationEnvGitlabFile(
-                                    filePath,
-                                    projectId,
-                                    CREATE,
-                                    TypeUtil.objToLong(ADMIN), null, null, null, null);
-                            checkLog.setResult(SUCCESS);
-                        }
-                    } catch (Exception e) {
-                        checkLog.setResult(FAILED + e.getMessage());
-                    }
-                    logs.add(checkLog);
-                });
-        List<DevopsIngressE> devopsIngressES = devopsIngressRepository.list();
-        devopsIngressES.parallelStream().forEach(devopsIngressE -> {
-            CheckLog checkLog = new CheckLog();
-            try {
-                checkLog.setContent("ingress: " + devopsIngressE.getName() + serialString);
-                DevopsEnvironmentE devopsEnvironmentE =
-                        devopsEnvironmentRepository.queryById(devopsIngressE.getEnvId());
-                ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
-                objectOperation.setType(getV1beta1Ingress(devopsIngressE));
-                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                String filePath = "ing-" + devopsIngressE.getName();
-                if (!gitlabRepository.getFile(projectId, master, filePath + yamlFile)) {
-                    objectOperation.operationEnvGitlabFile(
-                            filePath,
-                            projectId,
-                            CREATE,
-                            TypeUtil.objToLong(ADMIN), null, null, null, null);
-                    checkLog.setResult(SUCCESS);
-                }
-            } catch (Exception e) {
-                checkLog.setResult(FAILED + e.getMessage());
-            }
-            logs.add(checkLog);
+        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
+
+        devopsEnvironmentES.parallelStream().forEach(env -> {
+            new SyncInstanceByEnv(logs, env).invoke();
+            new SynServiceByEnv(logs, env).invoke();
+            new SyncIngressByEnv(logs, env).invoke();
         });
     }
 
@@ -346,7 +276,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationVersionE.getId()),applicationInstanceRepository.queryValueByEnvIdAndAppId(
+        c7nHelmRelease.getSpec().setValues(applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationVersionE.getId()), applicationInstanceRepository.queryValueByEnvIdAndAppId(
                 applicationInstanceE.getDevopsEnvironmentE().getId(), applicationE.getId())).getDeltaYaml().trim());
         return c7nHelmRelease;
     }
@@ -433,5 +363,119 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             description = "devops smooth upgrade to 0.9", inputSchema = "{}")
     private void gitOpsUserAccess() {
         sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", ""));
+    }
+
+    private class SyncInstanceByEnv {
+        private List<CheckLog> logs;
+        private DevopsEnvironmentE env;
+
+        SyncInstanceByEnv(List<CheckLog> logs, DevopsEnvironmentE env) {
+            this.logs = logs;
+            this.env = env;
+        }
+
+        void invoke() {
+            applicationInstanceRepository.selectByEnvId(env.getId()).parallelStream()
+                    .filter(a -> !InstanceStatus.DELETED.getStatus().equals(a.getStatus()))
+                    .forEach(applicationInstanceE -> {
+                        CheckLog checkLog = new CheckLog();
+                        try {
+                            checkLog.setContent("instance: " + applicationInstanceE.getCode() + SERIAL_STRING);
+                            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                                    .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+                            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+                            objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
+                            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                            String filePath = "release-" + applicationInstanceE.getCode();
+                            if (!gitlabRepository.getFile(projectId, MASTER, filePath + YAML_FILE)) {
+                                objectOperation.operationEnvGitlabFile(
+                                        filePath,
+                                        projectId,
+                                        CREATE,
+                                        TypeUtil.objToLong(ADMIN), null, null, null, null);
+                                checkLog.setResult(SUCCESS);
+                            }
+                        } catch (Exception e) {
+                            checkLog.setResult(FAILED + e.getMessage());
+                        }
+                        logs.add(checkLog);
+                    });
+        }
+    }
+
+    private class SynServiceByEnv {
+        private List<CheckLog> logs;
+        private DevopsEnvironmentE env;
+
+        SynServiceByEnv(List<CheckLog> logs, DevopsEnvironmentE env) {
+            this.logs = logs;
+            this.env = env;
+        }
+
+        void invoke() {
+            devopsServiceRepository.selectByEnvId(env.getId()).parallelStream()
+                    .filter(t -> !ServiceStatus.DELETED.getStatus().equals(t.getStatus()))
+                    .forEach(devopsServiceE -> {
+                        CheckLog checkLog = new CheckLog();
+                        try {
+                            checkLog.setContent("service: " + devopsServiceE.getName() + SERIAL_STRING);
+                            V1Service service = getService(devopsServiceE);
+                            DevopsEnvironmentE devopsEnvironmentE =
+                                    devopsEnvironmentRepository.queryById(devopsServiceE.getEnvId());
+                            ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+                            objectOperation.setType(service);
+                            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                            String filePath = "svc-" + devopsServiceE.getName();
+                            if (!gitlabRepository.getFile(projectId, MASTER, filePath + YAML_FILE)) {
+                                objectOperation.operationEnvGitlabFile(
+                                        filePath,
+                                        projectId,
+                                        CREATE,
+                                        TypeUtil.objToLong(ADMIN), null, null, null, null);
+                                checkLog.setResult(SUCCESS);
+                            }
+                        } catch (Exception e) {
+                            checkLog.setResult(FAILED + e.getMessage());
+                        }
+                        logs.add(checkLog);
+                    });
+        }
+    }
+
+    private class SyncIngressByEnv {
+        private List<CheckLog> logs;
+        private DevopsEnvironmentE env;
+
+        SyncIngressByEnv(List<CheckLog> logs, DevopsEnvironmentE env) {
+            this.logs = logs;
+            this.env = env;
+        }
+
+        void invoke() {
+            devopsIngressRepository.listByEnvId(env.getId()).parallelStream()
+                    .forEach(devopsIngressE -> {
+                        CheckLog checkLog = new CheckLog();
+                        try {
+                            checkLog.setContent("ingress: " + devopsIngressE.getName() + SERIAL_STRING);
+                            DevopsEnvironmentE devopsEnvironmentE =
+                                    devopsEnvironmentRepository.queryById(devopsIngressE.getEnvId());
+                            ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+                            objectOperation.setType(getV1beta1Ingress(devopsIngressE));
+                            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                            String filePath = "ing-" + devopsIngressE.getName();
+                            if (!gitlabRepository.getFile(projectId, MASTER, filePath + YAML_FILE)) {
+                                objectOperation.operationEnvGitlabFile(
+                                        filePath,
+                                        projectId,
+                                        CREATE,
+                                        TypeUtil.objToLong(ADMIN), null, null, null, null);
+                                checkLog.setResult(SUCCESS);
+                            }
+                        } catch (Exception e) {
+                            checkLog.setResult(FAILED + e.getMessage());
+                        }
+                        logs.add(checkLog);
+                    });
+        }
     }
 }
