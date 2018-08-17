@@ -112,7 +112,7 @@ public class ObjectOperation<T> {
                     case "Service":
                         Yaml yaml3 = new Yaml();
                         V1Service v1Service = yaml3.loadAs(jsonObject.toJSONString(), V1Service.class);
-                        if (objectType.equals("Service") && v1Service.getMetadata().getName().equals(((V1beta1Ingress) t).getMetadata().getName())) {
+                        if (objectType.equals("Service") && v1Service.getMetadata().getName().equals(((V1Service) t).getMetadata().getName())) {
                             if (operationType.equals("update")) {
                                 v1Service = (V1Service) t;
                             } else {
