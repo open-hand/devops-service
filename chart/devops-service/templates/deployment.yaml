@@ -40,9 +40,7 @@ spec:
           #     scheme: HTTP
           readinessProbe:
             exec:
-              command:
-              - curl
-              - localhost:{{ .Values.deployment.managementPort }}/health
+              command: ["/bin/sh","-c","curl localhost:{{ .Values.deployment.managementPort }}/health --fail && curl localhost:{{ .Values.service.port }}/v2/choerodon/api-docs --fail"]
             failureThreshold: 3
             initialDelaySeconds: 60
             periodSeconds: 10
