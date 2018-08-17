@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+## [0.9.0] - 2018-08-17
+### ADD
+- Refactor deploy procedure of GitOps
+- Support to api  overview of thn environment
+### CHANGE
+- Optimize replace instance values to support standard yaml format
+- NetWork support multi port and support node port type network
+
 ## [0.8.0] - 2018-07-20
 ### Added
 - `Repository`, `branch management`, `tag` and `merge request`, achieving more flexible branch management models.
