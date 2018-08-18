@@ -47,9 +47,6 @@ public class DevopsServiceValidator {
     }
 
     private static void checkPorts(PortMapE port) {
-        if (!checkPort(port.getTargetPort())) {
-            throw new CommonException("error.targetPort.illegal");
-        }
         if (!checkPort(port.getPort())) {
             throw new CommonException("error.port.illegal");
         }

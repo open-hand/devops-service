@@ -13,7 +13,7 @@ public class PortMapE {
     private Long port;
     private Long nodePort;
     private String protocol;
-    private Long targetPort;
+    private String targetPort;
 
     public String getName() {
         return name;
@@ -47,11 +47,11 @@ public class PortMapE {
         this.port = port;
     }
 
-    public Long getTargetPort() {
+    public String getTargetPort() {
         return targetPort;
     }
 
-    public void setTargetPort(Long targetPort) {
+    public void setTargetPort(String targetPort) {
         this.targetPort = targetPort;
     }
 

@@ -258,7 +258,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         V1beta1IngressBackend backend = new V1beta1IngressBackend();
         backend.setServiceName(devopsServiceE.getName().toLowerCase());
         if (devopsServiceE.getPorts() != null) {
-            backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort().intValue()));
+            backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort()));
         }
         path.setBackend(backend);
         path.setPath(hostPath);

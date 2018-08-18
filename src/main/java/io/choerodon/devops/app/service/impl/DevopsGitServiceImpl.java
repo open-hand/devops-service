@@ -1038,7 +1038,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     }
                     portMap.setPort(t.getPort().longValue());
                     portMap.setProtocol(t.getProtocol());
-                    portMap.setTargetPort(TypeUtil.objToLong(t.getTargetPort()));
+                    portMap.setTargetPort(TypeUtil.objToString(t.getTargetPort()));
                     return portMap;
                 }).collect(Collectors.toList());
         devopsServiceReqDTO.setPorts(portMapList);
