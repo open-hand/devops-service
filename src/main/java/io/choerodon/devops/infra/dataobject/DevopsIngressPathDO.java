@@ -4,6 +4,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import java.util.Objects;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -99,5 +101,21 @@ public class DevopsIngressPathDO extends AuditDomain {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DevopsIngressPathDO that = (DevopsIngressPathDO) o;
+        return Objects.equals(ingressId, that.ingressId) &&
+                Objects.equals(path, that.path) &&
+                Objects.equals(serviceId, that.serviceId);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(ingressId, path, serviceId);
     }
 }
