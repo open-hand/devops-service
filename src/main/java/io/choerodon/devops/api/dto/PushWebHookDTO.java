@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.dto;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Creator: Runge
@@ -107,5 +108,23 @@ public class PushWebHookDTO {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    @Override
+    public String toString() {
+        return "PushWebHookDTO{"
+                + "objectKind='" + objectKind + '\''
+                + ", eventName='" + eventName + '\''
+                + ", before='" + before + '\''
+                + ", after='" + after + '\''
+                + ", ref='" + ref + '\''
+                + ", checkoutSha='" + checkoutSha + '\''
+                + ", userId=" + userId
+                + ", projectId=" + projectId
+                + ", commits=" + String.join(" , ",
+                commits.stream().map(t -> t.getId() + " : " + t.getMessage()).collect(Collectors.toList()))
+                + ", totalCommitsCount=" + totalCommitsCount
+                + ", token='" + token + '\''
+                + '}';
     }
 }

@@ -140,4 +140,6 @@ public interface ApplicationInstanceService {
     String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE);
 
     void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE);
+
+    ReplaceResult getReplaceResult(String versionValue, String deployValue);
 }

@@ -566,6 +566,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             c7nHelmReleaseSerializableOperation.setT(c7nHelmRelease);
                             C7nHelmRelease serializableC7n = c7nHelmReleaseSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
+                            if (serializableC7n.getMetadata().getName() == null) {
+                                throw new CommonException("The C7nHelmRelease does not have name");
+                            }
                             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(serializableC7n.getMetadata().getName(), envId);
 
                             if (applicationInstanceE != null) {
@@ -586,6 +589,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             v1beta1IngressSerializableOperation.setT(v1beta1Ingress);
                             V1beta1Ingress serializableIng = v1beta1IngressSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
+                            if (serializableIng.getMetadata().getName() == null) {
+                                throw new CommonException("The V1beta1Ingress does not have name");
+                            }
                             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, serializableIng.getMetadata().getName());
                             if (devopsIngressE != null) {
                                 if (!beforeSyncDelete.parallelStream().filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(serializableIng.getKind())).anyMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsIngressE.getId()))) {
@@ -605,6 +611,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             v1ServiceSerializableOperation.setT(v1Service);
                             V1Service serializableSvc = v1ServiceSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
+                            if (serializableSvc.getMetadata().getName() == null) {
+                                throw new CommonException("The V1Service does not have name");
+                            }
                             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(serializableSvc.getMetadata().getName(), devopsEnvironmentE.getCode());
                             if (devopsServiceE != null) {
                                 if (!beforeSyncDelete.parallelStream().filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(serializableSvc.getKind())).anyMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsServiceE.getId()))) {
@@ -724,12 +733,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
-                                                         Long projectId, Long envId, String type) {
+                                                         Long projectId, Long envId, String type,
+                                                         DevopsEnvFileErrorE devopsEnvFileErrorE) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
         if (applicationE == null) {
-            return null;
+            devopsEnvFileErrorE.setError("the App: " + c7nHelmRelease.getSpec().getChartName() + "not exit in the devops-service");
+            devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+            throw new CommonException("error.app.not.exist");
         }
         ApplicationVersionE applicationVersionE = applicationVersionRepository
                 .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
@@ -779,13 +791,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                             .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
                     ApplicationDeployDTO applicationDeployDTO;
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())), path);
+
                     ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
                     if (applicationInstanceE == null) {
                         applicationDeployDTO = getApplicationDeployDTO(
                                 c7nHelmRelease,
                                 projectId,
                                 envId,
-                                "create");
+                                "create",
+                                devopsEnvFileErrorE);
                         if (applicationDeployDTO == null) {
                             return;
                         }
@@ -802,11 +817,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 });
         updateC7nHelmRelease.parallelStream()
                 .forEach(c7nHelmRelease -> {
+                    DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())), path);
                     ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(
                             c7nHelmRelease,
                             projectId,
                             envId,
-                            "update");
+                            "update",
+                            devopsEnvFileErrorE);
                     if (applicationDeployDTO == null) {
                         return;
                     }
@@ -1087,6 +1104,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         );
         applicationVersionE.setImage(image);
         applicationVersionE.setVersion(version);
+        applicationVersionE.initApplicationVersionReadmeV("");
         applicationVersionE
                 .setRepository("/" + orgCode + "/" + projectCode + "/");
         applicationVersionValueE.setValue(values);

@@ -112,4 +112,21 @@ public class DevopsMergeRequestE {
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    @Override
+    public String toString() {
+        return "DevopsMergeRequestE{"
+                + "id=" + id
+                + ", projectId=" + projectId
+                + ", gitlabMergeRequestId=" + gitlabMergeRequestId
+                + ", authorId=" + authorId
+                + ", assigneeId=" + assigneeId
+                + ", sourceBranch='" + sourceBranch
+                + '\'' + ", targetBranch='" + targetBranch
+                + '\'' + ", state='" + state
+                + '\'' + ", title='" + title
+                + '\'' + ", createdAt=" + createdAt
+                + ", updatedAt=" + updatedAt
+                + '}';
+    }
 }

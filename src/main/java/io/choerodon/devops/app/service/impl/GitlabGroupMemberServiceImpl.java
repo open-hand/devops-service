@@ -50,25 +50,24 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        for (GitlabGroupMemberDTO gitlabGroupMemberDTO : gitlabGroupMemberDTOList) {
-            if (!gitlabGroupMemberDTO.getResourceType().equals(SITE)) {
-                List<Integer> accessLevelList = new ArrayList<>();
-                accessLevelList.add(0);
-                List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                if (userMemberRoleList.isEmpty()) {
-                    LOGGER.info("user member role is empty");
-                }
-                MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
-
-                operation(gitlabGroupMemberDTO.getResourceId(), gitlabGroupMemberDTO.getResourceType(), memberHelper,
-                        gitlabGroupMemberDTO.getUserId());
-            }
-        }
+        gitlabGroupMemberDTOList.parallelStream()
+                .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
+                .forEach(gitlabGroupMemberDTO -> {
+                    List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
+                    if (userMemberRoleList.isEmpty()) {
+                        LOGGER.info("user member role is empty");
+                    }
+                    MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
+                    operation(gitlabGroupMemberDTO.getResourceId(),
+                            gitlabGroupMemberDTO.getResourceType(),
+                            memberHelper,
+                            gitlabGroupMemberDTO.getUserId());
+                });
     }
 
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        gitlabGroupMemberDTOList.stream()
+        gitlabGroupMemberDTOList.parallelStream()
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
                     UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupMemberDTO.getUserId());
@@ -155,7 +154,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         if (!memberHelper.isDeploy()) {
             if (resourceType.equals(PROJECT)) {
-                gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+                try {
+                    gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+                } catch (Exception e) {
+                    LOGGER.info("error.gitlab.groupId.select");
+                    return;
+                }
             } else {
                 Organization organization = iamRepository.queryOrganizationById(resourceId);
                 gitlabGroupE = gitlabRepository.queryGroupByName(
@@ -170,8 +174,17 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     gitlabGroupE.getGitlabGroupId(),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
             addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getGitlabGroupId(), userAttrE);
+            groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                    gitlabGroupE.getEnvGroupId(),
+                    (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+            addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getEnvGroupId(), userAttrE);
         } else {
-            gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+            try {
+                gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
+            } catch (Exception e) {
+                LOGGER.info("error.gitlab.groupId.select");
+                return;
+            }
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                     gitlabGroupE.getGitlabGroupId(),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));

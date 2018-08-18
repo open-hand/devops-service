@@ -123,24 +123,25 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ApplicationInstanceE applicationInstanceE =
                 applicationInstanceRepository.selectByCode(KeyParseTool.getReleaseName(key), envId);
         if (applicationInstanceE == null) {
-            Payload payload = new Payload(
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    KeyParseTool.getReleaseName(key));
-            msg1.setKey(String.format("env:%s.envId:%d.release:%s",
-                    KeyParseTool.getNamespace(key),
-                    envId,
-                    KeyParseTool.getReleaseName(key)));
-            msg1.setType(HelmType.HELM_RELEASE_GET_CONTENT.toValue());
-            try {
-                msg1.setPayload(mapper.writeValueAsString(payload));
-            } catch (IOException e) {
-                throw new CommonException("error.payload.error");
-            }
-            socketMsgDispatcher.dispatcher(msg1);
+//            Payload payload = new Payload(
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    null,
+//                    KeyParseTool.getReleaseName(key));
+//            msg1.setKey(String.format("env:%s.envId:%d.release:%s",
+//                    KeyParseTool.getNamespace(key),
+//                    envId,
+//                    KeyParseTool.getReleaseName(key)));
+//            msg1.setType(HelmType.HELM_RELEASE_GET_CONTENT.toValue());
+//            try {
+//                msg1.setPayload(mapper.writeValueAsString(payload));
+//            } catch (IOException e) {
+//                throw new CommonException("error.payload.error");
+//            }
+//            socketMsgDispatcher.dispatcher(msg1);
+            logger.info("instance not found");
             return;
         }
         DevopsEnvResourceE devopsEnvResourceE = new DevopsEnvResourceE();

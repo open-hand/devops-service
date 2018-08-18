@@ -280,6 +280,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         resultMaps.forEach((key, value) -> {
             DevopsEnvPreviewAppDTO devopsEnvPreviewAppDTO = new DevopsEnvPreviewAppDTO();
             devopsEnvPreviewAppDTO.setAppName(key);
+            ApplicationE applicationE = applicationRepository.query(value.get(0).getApplicationE().getId());
+            devopsEnvPreviewAppDTO.setAppCode(applicationE.getCode());
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
             List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();
@@ -631,8 +633,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     }
 
-
-    private ReplaceResult getReplaceResult(String versionValue, String deployValue) {
+    @Override
+    public ReplaceResult getReplaceResult(String versionValue, String deployValue) {
         String fileName = GenerateUUID.generateUUID() + ".yaml";
         String path = "deployfile";
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);

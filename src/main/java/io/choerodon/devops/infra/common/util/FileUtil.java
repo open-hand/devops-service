@@ -50,7 +50,6 @@ public class FileUtil {
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
     private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
-
     private FileUtil() {
     }
 
@@ -472,11 +471,6 @@ public class FileUtil {
         for (int i = start; i <= end; i++) {
             adds.add(i);
         }
-    }
-
-    public static void main(String[] args) {
-        ReplaceResult replaceResult = replaceNew("/Users/crcokitwood/PythonProject/python-example/test.yml");
-        System.out.println(replaceResult);
     }
 
     private static Node getKeysNode(List<String> keys, MappingNode mappingNode) {

@@ -23,5 +23,5 @@ public interface DevopsMergeRequestRepository {
 
     List<DevopsMergeRequestE> getByGitlabProjectId(Integer gitlabProjectId);
 
-    void saveDevopsMergeRequest(DevopsMergeRequestDTO devopsMergeRequestDTO);
+    void saveDevopsMergeRequest(DevopsMergeRequestE devopsMergeRequestE);
 }
