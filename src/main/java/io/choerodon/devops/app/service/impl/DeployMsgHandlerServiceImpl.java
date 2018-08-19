@@ -828,10 +828,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsEnvFileErrorE.setError(error.getError());
                     devopsEnvFileErrorE.setFilePath(error.getPath());
                     devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
-                    devopsEnvFileErrorE = devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                    devopsEnvFileErrorE = devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
                 } else {
                     devopsEnvFileErrorE.setError(devopsEnvFileErrorE.getError() + error.getError());
-                    devopsEnvFileErrorE = devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+                    devopsEnvFileErrorE = devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
                 }
                 errorDevopsFiles.add(devopsEnvFileErrorE);
             });
