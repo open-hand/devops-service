@@ -348,6 +348,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         projectHook.setUrl(uri);
         devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                 gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
+        gitlabRepository.createFile(gitlabProjectDO.getId(),
+                README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
         devopsEnviromentRepository.update(devopsEnvironmentE);
     }
 
