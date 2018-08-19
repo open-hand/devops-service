@@ -323,6 +323,26 @@ public class FileUtil {
     }
 
     /**
+     * 获取文件夹下所有 yml 文件路径
+     *
+     * @param file 文件夹
+     * @return 路径列表
+     */
+    public static List<String> getFilesPath(File file) {
+        List<String> filesPath = new ArrayList<>();
+        if (file != null) {
+            if (file.isDirectory()) {
+                Arrays.stream(Objects.requireNonNull(file.listFiles())).parallel()
+                        .forEach(t -> filesPath.addAll(getFilesPath(t)));
+            } else if (file.isFile()
+                    && (file.getName().endsWith(".yml") || file.getName().endsWith("yaml"))) {
+                filesPath.add(file.getPath());
+            }
+        }
+        return filesPath;
+    }
+
+    /**
      * 删除文件
      */
     public static void deleteDirectory(File file) {
