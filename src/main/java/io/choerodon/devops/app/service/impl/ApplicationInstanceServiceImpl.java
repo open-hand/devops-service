@@ -16,9 +16,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
@@ -107,7 +105,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     @Autowired
     private DevopsProjectRepository devopsProjectRepository;
-
+    @Autowired
+    private DevopsGitService devopsGitService;
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                 Long envId, Long versionId, Long appId, String params) {
@@ -413,47 +412,53 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public List<VersionFeaturesDTO> queryVersionFeatures(Long appInstanceId) {
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
-        ApplicationE applicationE = applicationRepository.query(
-                applicationInstanceE.getApplicationE().getId());
 
-        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        List<GitlabPipelineE> gitlabPipelineEList =
-                gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
-        if (gitlabPipelineEList == null) {
-            return Collections.emptyList();
-        }
-
-        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
-        String branch = "";
-        long pipelineId = 0;
-        for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
-            PipelineResultV pipelineResultV = new PipelineResultV();
-            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
-                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
-            if (gitlabPipelineE != null) {
-                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
-                pipelineResultV.setRef(gitlabPipelineE.getRef());
-
-                UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
-                if (userE != null) {
-                    pipelineResultV.setImageUrl(userE.getImageUrl());
-                }
-            }
-            pipelineResultVS.add(pipelineResultV);
-        }
-
-        List<PipelineResultV> pipelineResultVList = new ArrayList<>();
-        for (PipelineResultV pipelineResult : pipelineResultVS) {
-            if (branch.equals(pipelineResult.getRef())
-                    && pipelineId >= pipelineResult.getId()) {
-                pipelineResultVList.add(pipelineResult);
-            }
-        }
-
-        Collections.sort(pipelineResultVList);
-
-        return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
+//        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
+//        ApplicationE applicationE = applicationRepository.query(
+//                applicationInstanceE.getApplicationE().getId());
+//
+//        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
+//        List<GitlabPipelineE> gitlabPipelineEList =
+//                gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
+//        if (gitlabPipelineEList == null) {
+//            return Collections.emptyList();
+//        }
+//
+//        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
+//        String branch = "";
+//        long pipelineId = 0;
+//        for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
+//            PipelineResultV pipelineResultV = new PipelineResultV();
+//            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
+//                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
+//            if (gitlabPipelineE != null) {
+//                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
+//                pipelineResultV.setRef(gitlabPipelineE.getRef());
+//
+//                UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
+//                if (userE != null) {
+//                    pipelineResultV.setImageUrl(userE.getImageUrl());
+//                }
+//            }
+//            pipelineResultVS.add(pipelineResultV);
+//        }
+//
+//        List<PipelineResultV> pipelineResultVList = new ArrayList<>();
+//        for (PipelineResultV pipelineResult : pipelineResultVS) {
+//            if (branch.equals(pipelineResult.getRef())
+//                    && pipelineId >= pipelineResult.getId()) {
+//                pipelineResultVList.add(pipelineResult);
+//            }
+//        }
+//
+//        Collections.sort(pipelineResultVList);
+        PushWebHookDTO pushWebHookDTO = new PushWebHookDTO();
+        pushWebHookDTO.setToken("ce047b11-9c05-4993-ba64-9ce06b831293");
+        pushWebHookDTO.setUserId(5);
+        pushWebHookDTO.setProjectId(602);
+          devopsGitService.fileResourceSync(pushWebHookDTO);
+          return  null;
+//        return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
 
     }
 

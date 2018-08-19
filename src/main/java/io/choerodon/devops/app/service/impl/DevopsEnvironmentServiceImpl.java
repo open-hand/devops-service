@@ -339,10 +339,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvironmentE.getEnvIdRsaPub(),
                 true,
                 gitlabProjectPayload.getUserId());
-        gitlabRepository.createFile(gitlabProjectDO.getId(),
-                README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
-        devopsGitRepository.createTag(gitlabProjectDO.getId(),
-                GitUtil.DEVOPS_GITOPS_TAG, "master", gitlabProjectPayload.getUserId());
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());
