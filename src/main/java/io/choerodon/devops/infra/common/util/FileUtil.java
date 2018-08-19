@@ -326,7 +326,7 @@ public class FileUtil {
     public static List<String> getFilesPath(String filepath) {
         File file = new File(filepath);
         return getFilesPath(file).parallelStream()
-                .map(t -> t.replaceFirst(filepath, "")).collect(Collectors.toList());
+                .map(t -> t.replaceFirst(filepath+"/", "")).collect(Collectors.toList());
     }
 
     /**
