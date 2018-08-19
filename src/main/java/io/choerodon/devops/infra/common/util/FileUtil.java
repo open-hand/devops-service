@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
@@ -320,6 +321,12 @@ public class FileUtil {
             }
         }
         return null;
+    }
+
+    public static List<String> getFilesPath(String filepath) {
+        File file = new File(filepath);
+        return getFilesPath(file).parallelStream()
+                .map(t -> t.replaceFirst(filepath, "")).collect(Collectors.toList());
     }
 
     /**
