@@ -720,6 +720,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     try {
                         DevopsServiceE devopsServiceE = devopsServiceRepository
                                 .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+                        if (devopsServiceE == null) {
+                            throw new CommonException("the service in the file is not exist in devops database");
+                        }
                         checkServiceName(devopsEnvFileErrorE, v1Service);
                         DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
                                 v1Service,
@@ -932,6 +935,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     try {
                         DevopsIngressE devopsIngressE = devopsIngressRepository
                                 .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                        if (devopsIngressE == null) {
+                            throw new CommonException("the ingress in the file is not exist in devops database");
+                        }
                         checkIngressAppVersion(devopsEnvFileErrorE, v1beta1Ingress);
                         DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(
                                 v1beta1Ingress,
