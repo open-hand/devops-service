@@ -34,4 +34,20 @@ public class DevopsCheckController {
         devopsCheckLogService.checkLog(version);
         return new ResponseEntity<>(HttpStatus.OK);
     }
+
+    /**
+     * 平滑升级
+     *
+     * @param version   版本
+     */
+    @Permission(level = ResourceLevel.SITE,
+            roles = {InitRoleCode.SITE_ADMINISTRATOR})
+    @ApiOperation(value = "平滑升级")
+    @GetMapping("/fix")
+    public ResponseEntity updateUserMemberRole(
+            @ApiParam(value = "version")
+            @RequestParam(value = "version") String version) {
+        devopsCheckLogService.updateUserMemberRole(version);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

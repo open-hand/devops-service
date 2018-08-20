@@ -143,6 +143,35 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogRepository.create(devopsCheckLogE);
     }
 
+    @Override
+    @Async
+    public void updateUserMemberRole(String version) {
+        DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
+        List<CheckLog> logs = new ArrayList<>();
+        devopsCheckLogE.setBeginCheckDate(new Date());
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" update start");
+        }
+        if ("0.9".equals(version)) {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(" update member role start");
+            }
+            gitOpsUserAccess();
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(" sync env start");
+            }
+            syncEnvProject(logs);
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(" sync object start");
+            }
+            syncObjects(logs);
+
+        }
+        devopsCheckLogE.setLog(JSON.toJSONString(logs));
+        devopsCheckLogE.setEndCheckDate(new Date());
+        devopsCheckLogRepository.create(devopsCheckLogE);
+    }
+
 
     private void syncWebHook(ApplicationDO applicationDO, List<CheckLog> logs) {
         CheckLog checkLog = new CheckLog();
@@ -287,7 +316,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Saga(code = "devops-upgrade-0.9",
             description = "devops smooth upgrade to 0.9", inputSchema = "{}")
     private void gitOpsUserAccess() {
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" saga start");
+        }
         sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", ""));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info(" saga start success");
+        }
     }
 
     public List<V1ServicePort> getServicePort(DevopsServiceE devopsServiceE) {
