@@ -673,6 +673,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .map(devopsEnvFileResourceE -> {
                     DevopsServiceE devopsServiceE = devopsServiceRepository
                             .query(devopsEnvFileResourceE.getResourceId());
+                    if (devopsServiceE == null) {
+                        throw new CommonException("the service in the file is not exist in devops database");
+                    }
                     return devopsServiceE.getName();
                 }).collect(Collectors.toList());
         List<V1Service> addV1Service = new ArrayList<>();
@@ -720,9 +723,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     try {
                         DevopsServiceE devopsServiceE = devopsServiceRepository
                                 .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
-                        if (devopsServiceE == null) {
-                            throw new CommonException("the service in the file is not exist in devops database");
-                        }
                         checkServiceName(devopsEnvFileErrorE, v1Service);
                         DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
                                 v1Service,
@@ -800,6 +800,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .map(devopsEnvFileResourceE -> {
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                             .selectById(devopsEnvFileResourceE.getResourceId());
+                    if (applicationInstanceE == null) {
+                        throw new CommonException("the applicationInstance in the file is not exist in devops database");
+                    }
                     return applicationInstanceE.getCode();
                 }).collect(Collectors.toList());
         List<C7nHelmRelease> addC7nHelmRelease = new ArrayList<>();
@@ -917,6 +920,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .map(devopsEnvFileResourceE -> {
                     DevopsIngressDO devopsIngressDO = devopsIngressRepository
                             .getIngress(devopsEnvFileResourceE.getResourceId());
+                    if (devopsIngressDO == null) {
+                        throw new CommonException("the ingress in the file is not exist in devops database");
+                    }
                     return devopsIngressDO.getName();
                 }).collect(Collectors.toList());
         List<V1beta1Ingress> addV1beta1Ingress = new ArrayList<>();
@@ -935,9 +941,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     try {
                         DevopsIngressE devopsIngressE = devopsIngressRepository
                                 .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-                        if (devopsIngressE == null) {
-                            throw new CommonException("the ingress in the file is not exist in devops database");
-                        }
                         checkIngressAppVersion(devopsEnvFileErrorE, v1beta1Ingress);
                         DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(
                                 v1beta1Ingress,
