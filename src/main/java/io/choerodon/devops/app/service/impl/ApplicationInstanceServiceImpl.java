@@ -16,9 +16,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
@@ -413,6 +411,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public List<VersionFeaturesDTO> queryVersionFeatures(Long appInstanceId) {
+
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
         ApplicationE applicationE = applicationRepository.query(
                 applicationInstanceE.getApplicationE().getId());
@@ -452,7 +451,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
 
         Collections.sort(pipelineResultVList);
-
         return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
 
     }

@@ -9,6 +9,8 @@ import com.google.gson.Gson;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -36,6 +38,7 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
@@ -57,12 +60,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SERIAL_STRING = " serializable to yaml";
     private static final String MASTER = "master";
     private static final String YAML_FILE = ".yaml";
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
+    private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
     private Gson gson = new Gson();
     @Value("${services.gateway.url}")
     private String gatewayUrl;
     @Value("${services.helm.url}")
     private String helmUrl;
+
 
     @Autowired
     private ApplicationMapper applicationMapper;
@@ -100,6 +105,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsIngressService devopsIngressService;
     @Autowired
     private SagaClient sagaClient;
+    @Autowired
+    private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
+    @Autowired
+    private DevopsEnvResourceRepository devopsEnvResourceRepository;
+    @Autowired
+    private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
     @Override
     @Async
@@ -261,13 +272,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
 
         devopsEnvironmentES.parallelStream().forEach(env -> {
-            new SyncInstanceByEnv(logs, env).invoke();
-            new SynServiceByEnv(logs, env).invoke();
-            new SyncIngressByEnv(logs, env).invoke();
+            if (env.getGitlabEnvProjectId() != null) {
+                LOGGER.info(env.getName() + " begin to upgrade!" + env.getId());
+                new SyncInstanceByEnv(logs, env).invoke();
+                new SynServiceByEnv(logs, env).invoke();
+                new SyncIngressByEnv(logs, env).invoke();
 
-            Long projectId = env.getProjectE().getId();
-            GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
-            devopsGitRepository.createTag(gitlabGroupE.getEnvGroupId(), "agent-sync", MASTER, ADMIN);
+                devopsGitRepository.createTag(TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, ADMIN);
+                LOGGER.info(env.getName() + " end to upgrade!" + env.getId());
+            }
         });
     }
 
@@ -275,6 +288,72 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             description = "devops smooth upgrade to 0.9", inputSchema = "{}")
     private void gitOpsUserAccess() {
         sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", ""));
+    }
+
+    public List<V1ServicePort> getServicePort(DevopsServiceE devopsServiceE) {
+        final Integer[] serialNumber = {0};
+        List<V1ServicePort> ports;
+        if (devopsServiceE.getPorts() == null) {
+            List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = devopsServiceInstanceRepository.queryByServiceId(devopsServiceE.getId());
+            if (!devopsServiceAppInstanceES.isEmpty()) {
+                DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(devopsServiceAppInstanceES.get(0).getAppInstanceId(), ResourceType.SERVICE.getType(), devopsServiceE.getName());
+                DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository.query(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
+                V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
+                        V1Service.class);
+                String port = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getPort());
+                if (port == null) {
+                    port = "<none>";
+                }
+                String targetPort = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getTargetPort());
+                if (targetPort == null) {
+                    targetPort = "<none>";
+                }
+                String name = v1Service.getSpec().getPorts().get(0).getName();
+                String protocol = v1Service.getSpec().getPorts().get(0).getProtocol();
+                List<PortMapE> portMapES = new ArrayList<>();
+                PortMapE portMapE = new PortMapE();
+                portMapE.setName(name);
+                portMapE.setPort(TypeUtil.objToLong(port));
+                portMapE.setProtocol(protocol);
+                portMapE.setTargetPort(targetPort);
+                portMapES.add(portMapE);
+                ports = portMapES.parallelStream()
+                        .map(t -> {
+                            V1ServicePort v1ServicePort = new V1ServicePort();
+                            if (t.getPort() != null) {
+                                v1ServicePort.setPort(TypeUtil.objToInteger(t.getPort()));
+                            }
+                            if (t.getTargetPort() != null) {
+                                v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
+                            }
+                            v1ServicePort.setName(t.getName());
+                            v1ServicePort.setProtocol(t.getProtocol());
+                            return v1ServicePort;
+                        }).collect(Collectors.toList());
+                devopsServiceE.setPorts(portMapES);
+                devopsServiceRepository.update(devopsServiceE);
+            } else {
+                ports = null;
+            }
+        } else {
+            ports = devopsServiceE.getPorts().parallelStream()
+                    .map(t -> {
+                        V1ServicePort v1ServicePort = new V1ServicePort();
+                        if (t.getNodePort() != null) {
+                            v1ServicePort.setNodePort(t.getNodePort().intValue());
+                        }
+                        if (t.getPort() != null) {
+                            v1ServicePort.setPort(t.getPort().intValue());
+                        }
+                        if (t.getTargetPort() != null) {
+                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
+                        }
+                        v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
+                        v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
+                        return v1ServicePort;
+                    }).collect(Collectors.toList());
+        }
+        return ports;
     }
 
     private class SyncInstanceByEnv {
@@ -394,24 +473,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
             V1ServiceSpec spec = new V1ServiceSpec();
             // spec / ports
-            final Integer[] serialNumber = {0};
-            List<V1ServicePort> ports = devopsServiceE.getPorts().parallelStream()
-                    .map(t -> {
-                        V1ServicePort v1ServicePort = new V1ServicePort();
-                        if (t.getNodePort() != null) {
-                            v1ServicePort.setNodePort(t.getNodePort().intValue());
-                        }
-                        if (t.getPort() != null) {
-                            v1ServicePort.setPort(t.getPort().intValue());
-                        }
-                        if (t.getTargetPort() != null) {
-                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort().intValue()));
-                        }
-                        v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
-                        v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
-                        return v1ServicePort;
-                    }).collect(Collectors.toList());
-            spec.setPorts(ports);
+            spec.setPorts(getServicePort(devopsServiceE));
 
             // spec / selector
             if (devopsServiceE.getLabels() != null) {

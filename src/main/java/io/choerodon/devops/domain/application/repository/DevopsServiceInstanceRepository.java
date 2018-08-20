@@ -18,4 +18,6 @@ public interface DevopsServiceInstanceRepository {
     void deleteByOptions(Long serviceId, Long instanceId);
 
     void deleteById(Long id);
+
+    List<DevopsServiceAppInstanceE> queryByServiceId(Long serviceId);
 }

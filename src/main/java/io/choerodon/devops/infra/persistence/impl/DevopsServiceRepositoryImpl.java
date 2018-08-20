@@ -131,7 +131,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         DevopsServiceDO devopsServiceDO = devopsServiceMapper.selectByPrimaryKey(devopsServiceE.getId());
         DevopsServiceDO devopsServiceDOUpdate = ConvertHelper.convert(devopsServiceE, DevopsServiceDO.class);
         devopsServiceDOUpdate.setObjectVersionNumber(devopsServiceDO.getObjectVersionNumber());
-        if (devopsServiceMapper.updateByPrimaryKey(
+        if (devopsServiceMapper.updateByPrimaryKeySelective(
                 devopsServiceDOUpdate) != 1) {
             throw new CommonException("error.k8s.service.update");
         }

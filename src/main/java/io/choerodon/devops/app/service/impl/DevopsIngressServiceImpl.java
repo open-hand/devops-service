@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,7 +26,6 @@ import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
@@ -258,7 +256,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         V1beta1IngressBackend backend = new V1beta1IngressBackend();
         backend.setServiceName(devopsServiceE.getName().toLowerCase());
         if (devopsServiceE.getPorts() != null) {
-            backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort().intValue()));
+            backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort()));
         }
         path.setBackend(backend);
         path.setPath(hostPath);
@@ -325,14 +323,4 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
     }
 
-
-    private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
-        File file = new File(path);
-        GitUtil gitUtil = new GitUtil(envIdRsa);
-        final String repoPath = path + gitSuffix;
-        if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url);
-            gitUtil.checkout(repoPath, commit);
-        }
-    }
 }

@@ -13,6 +13,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepository;
+import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -27,7 +28,7 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public DevopsEnvFileErrorE create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
+    public DevopsEnvFileErrorE createOrUpdate(DevopsEnvFileErrorE devopsEnvFileErrorE) {
         DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO();
         devopsEnvFileErrorDO.setFilePath(devopsEnvFileErrorE.getFilePath());
         devopsEnvFileErrorDO.setEnvId(devopsEnvFileErrorE.getEnvId());
@@ -77,6 +78,12 @@ public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepos
         devopsEnvFileErrorDO.setEnvId(envId);
         devopsEnvFileErrorDO.setFilePath(filePath);
         return ConvertHelper.convert(devopsEnvFileErrorMapper.selectOne(devopsEnvFileErrorDO), DevopsEnvFileErrorE.class);
+    }
+
+    @Override
+    public void create(DevopsEnvFileErrorE devopsEnvFileErrorE) {
+        DevopsEnvFileErrorDO devopsEnvFileErrorDO = ConvertHelper.convert(devopsEnvFileErrorE,DevopsEnvFileErrorDO.class);
+        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO);
     }
 
 
