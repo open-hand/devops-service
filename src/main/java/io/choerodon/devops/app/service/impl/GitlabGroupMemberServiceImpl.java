@@ -150,7 +150,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         GitlabGroupMemberE groupMemberE;
         Integer[] roles = {
                 memberHelper.getProjectDevelopAccessLevel().toValue(),
-                memberHelper.getProjectOwnerAccessLevel().toValue()};
+                memberHelper.getProjectOwnerAccessLevel().toValue(),
+                memberHelper.getDeployAdminAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         if (!memberHelper.isDeploy()) {
             if (resourceType.equals(PROJECT)) {
@@ -174,10 +175,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     gitlabGroupE.getGitlabGroupId(),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
             addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getGitlabGroupId(), userAttrE);
-            groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                    gitlabGroupE.getEnvGroupId(),
-                    (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-            addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getEnvGroupId(), userAttrE);
         } else {
             try {
                 gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
@@ -185,10 +182,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 LOGGER.info("error.gitlab.groupId.select");
                 return;
             }
-            groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                    gitlabGroupE.getGitlabGroupId(),
-                    (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-            addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getGitlabGroupId(), userAttrE);
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                     gitlabGroupE.getEnvGroupId(),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
