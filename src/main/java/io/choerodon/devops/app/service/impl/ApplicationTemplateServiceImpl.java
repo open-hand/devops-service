@@ -33,6 +33,7 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.Visibility;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.event.producer.execute.EventStoreClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**

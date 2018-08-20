@@ -24,8 +24,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         createIndex(indexName: "idx_project_id ", tableName: "devops_application") {
             column(name: "project_id")
         }
-        addUniqueConstraint(tableName: 'devops_application',
-                constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
+//        addUniqueConstraint(tableName: 'devops_application',
+//                constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
     }
 
     changeSet(author: 'younger', id: '2018-07-11-add-column') {
