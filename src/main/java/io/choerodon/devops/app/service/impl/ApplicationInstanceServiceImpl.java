@@ -16,7 +16,9 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
@@ -384,20 +386,21 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             } else {
                 code = applicationInstanceE.getCode();
             }
-            if(applicationDeployDTO.isNotChange()) {
-                deployService.deploy(applicationE,applicationVersionE,applicationInstanceE,devopsEnvironmentE,devopsEnvCommandValueE.getValue());
-            }else{
+            if (applicationDeployDTO.isNotChange()) {
+                deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue());
+            } else {
                 String path = handDevopsEnvGitRepository(devopsEnvironmentE);
                 ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(getC7NHelmRelease(
-                    code, applicationVersionE, applicationDeployDTO, applicationE));
-            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            objectOperation.operationEnvGitlabFile(
-                    "release-" + code,
-                    projectId,
-                    applicationDeployDTO.getType(),
-                    userAttrE.getGitlabUserId(),
-                    applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);}
+                objectOperation.setType(getC7NHelmRelease(
+                        code, applicationVersionE, applicationDeployDTO, applicationE));
+                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                objectOperation.operationEnvGitlabFile(
+                        "release-" + code,
+                        projectId,
+                        applicationDeployDTO.getType(),
+                        userAttrE.getGitlabUserId(),
+                        applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
+            }
             if (applicationDeployDTO.getType().equals("create")) {
                 applicationInstanceE.setCode(code);
                 applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
