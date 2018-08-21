@@ -48,7 +48,7 @@ public class DeployServiceImpl implements DeployService {
 
 
     @Override
-    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values) {
+    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId) {
         Msg msg = new Msg();
         Payload payload = new Payload(
                 devopsEnvironmentE.getCode(),
@@ -56,11 +56,14 @@ public class DeployServiceImpl implements DeployService {
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, applicationInstanceE.getCode());
-        msg.setKey("env:" + devopsEnvironmentE.getCode() + ".release:" + applicationInstanceE.getCode());
-        msg.setBrokerFrom("test");
+        msg.setKey(String.format("env:%s.envId:%d.release:%s",
+                devopsEnvironmentE.getCode(),
+                devopsEnvironmentE.getId(),
+                applicationInstanceE.getCode()));
         msg.setType(HelmType.HELM_RELEASE_PRE_UPGRADE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
+            msg.setCommandId(commandId);
         } catch (IOException e) {
             throw new CommonException("error.payload.error");
         }

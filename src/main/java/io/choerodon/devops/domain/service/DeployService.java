@@ -12,5 +12,5 @@ public interface DeployService {
     void sendCommand(DevopsEnvironmentE devopsEnvironmentE);
 
 
-    void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values);
+    void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values,Long commandId);
 }

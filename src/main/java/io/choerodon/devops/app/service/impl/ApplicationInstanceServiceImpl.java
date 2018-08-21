@@ -386,8 +386,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             } else {
                 code = applicationInstanceE.getCode();
             }
-            if (applicationDeployDTO.isNotChange()) {
-                deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue());
+            if (applicationDeployDTO.getIsNotChange()) {
+                applicationInstanceRepository.update(applicationInstanceE);
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             } else {
                 String path = handDevopsEnvGitRepository(devopsEnvironmentE);
                 ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
