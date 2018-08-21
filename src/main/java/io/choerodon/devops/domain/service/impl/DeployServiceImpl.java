@@ -1,14 +1,23 @@
 package io.choerodon.devops.domain.service.impl;
 
+import java.io.IOException;
+
+import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.domain.service.DeployService;
+import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 
@@ -18,7 +27,13 @@ import io.choerodon.websocket.helper.CommandSender;
 @Service
 public class DeployServiceImpl implements DeployService {
 
-    private final CommandSender commandSender;
+    private ObjectMapper mapper = new ObjectMapper();
+
+    @Autowired
+    private CommandSender commandSender;
+
+    @Value("${services.helm.url}")
+    private String helmUrl;
 
     @Autowired
     public DeployServiceImpl(CommandSender commandSender) {
@@ -34,4 +49,24 @@ public class DeployServiceImpl implements DeployService {
         commandSender.sendMsg(msg);
     }
 
+
+    @Override
+    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values) {
+        Msg msg = new Msg();
+        Payload payload = new Payload(
+                devopsEnvironmentE.getCode(),
+                helmUrl + applicationVersionE.getRepository(),
+                applicationE.getCode(),
+                applicationVersionE.getVersion(),
+                values, applicationInstanceE.getCode());
+        msg.setKey("env:" + devopsEnvironmentE.getCode() + ".release:" + applicationInstanceE.getCode());
+        msg.setBrokerFrom("test");
+        msg.setType(HelmType.HELM_RELEASE_PRE_UPGRADE.toValue());
+        try {
+            msg.setPayload(mapper.writeValueAsString(payload));
+        } catch (IOException e) {
+            throw new CommonException("error.payload.error");
+        }
+        commandSender.sendMsg(msg);
+    }
 }

@@ -106,6 +106,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DevopsProjectRepository devopsProjectRepository;
 
+
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                 Long envId, Long versionId, Long appId, String params) {
@@ -376,15 +377,18 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             devopsEnvCommandRepository.create(devopsEnvCommandE);
         } else {
-            String path = handDevopsEnvGitRepository(devopsEnvironmentE);
+
             String code = "";
-            handDevopsEnvGitRepository(devopsEnvironmentE);
             if (applicationDeployDTO.getType().equals("create")) {
                 code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 code = applicationInstanceE.getCode();
             }
-            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+            if(applicationDeployDTO.isNotChange()) {
+                deployService.deploy(applicationE,applicationVersionE,applicationInstanceE,devopsEnvironmentE,devopsEnvCommandValueE.getValue());
+            }else{
+                String path = handDevopsEnvGitRepository(devopsEnvironmentE);
+                ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
                     code, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
@@ -393,7 +397,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     projectId,
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
-                    applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
+                    applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);}
             if (applicationDeployDTO.getType().equals("create")) {
                 applicationInstanceE.setCode(code);
                 applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
@@ -404,6 +408,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandE.initDevopsEnvCommandValueE(
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             devopsEnvCommandRepository.create(devopsEnvCommandE);
+
 
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
