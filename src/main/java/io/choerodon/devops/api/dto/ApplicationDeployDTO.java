@@ -66,11 +66,11 @@ public class ApplicationDeployDTO {
         this.instanceName = instanceName;
     }
 
-    public boolean isNotChange() {
+    public boolean getIsNotChange() {
         return isNotChange;
     }
 
-    public void setNotChange(boolean notChange) {
-        isNotChange = notChange;
+    public void setIsNotChange(boolean isNotChange) {
+        this.isNotChange = isNotChange;
     }
 }
