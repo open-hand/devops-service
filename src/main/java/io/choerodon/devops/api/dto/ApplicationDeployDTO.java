@@ -8,6 +8,7 @@ public class ApplicationDeployDTO {
     private String type;
     private Long appInstanceId;
     private String instanceName;
+    private boolean isNotChange;
 
     public Long getAppVerisonId() {
         return appVerisonId;
@@ -63,5 +64,13 @@ public class ApplicationDeployDTO {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+    }
+
+    public boolean isNotChange() {
+        return isNotChange;
+    }
+
+    public void setNotChange(boolean notChange) {
+        isNotChange = notChange;
     }
 }
