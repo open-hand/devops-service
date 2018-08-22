@@ -45,7 +45,8 @@ public class ObjectOperation<T> {
      * @param operationType      operation type
      * @param userId             GitLab user ID
      */
-    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType, Long userId, Long objectId, String objectType, Long envId, String filePath) {
+    public void operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
+                                       Long userId, Long objectId, String objectType, Long envId, String filePath) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);

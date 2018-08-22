@@ -1,8 +1,6 @@
 package io.choerodon.devops.domain.application.entity;
 
 import java.util.List;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
 
 /**
  * Created by n!Ck

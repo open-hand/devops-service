@@ -7,7 +7,8 @@ package io.choerodon.devops.infra.common.util.enums;
  * Description:
  */
 public enum CertificationType {
-    REQUEST("request"), UPLOAD("upload");
+    REQUEST("request"),
+    UPLOAD("upload");
 
     private String type;
 

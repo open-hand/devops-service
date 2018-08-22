@@ -15,17 +15,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface CertificationRepository {
 
-    void create(CertificationE certificationE);
+    CertificationE create(CertificationE certificationE);
 
-    CertificationE queryByEnvAndName(Long envId,
-                                     String name);
+    CertificationE queryById(Long certId);
 
-    void deleteById(Long certId);
+    CertificationE queryByEnvAndName(Long envId, String name);
 
-    Page<CertificationDTO> getCertification(
-            Long envId,
-            PageRequest pageRequest,
-            String params);
+    Page<CertificationDTO> getCertification(Long envId, PageRequest pageRequest, String params);
 
     List<CertificationDTO> getActiveByDomain(Long envId, String domain);
+
+    void updateStatus(CertificationE certificationE);
+
+    void deleteById(Long certId);
 }

@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
@@ -234,6 +236,23 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             gitlabGroupMemberRepository.deleteMember(
                     isEnvDelete ? gitlabGroupE.getEnvGroupId() : gitlabGroupE.getGitlabGroupId(),
                     userId);
+        }
+    }
+
+    @Override
+    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        if (gitlabGroupE == null) {
+            throw new CommonException("error.group.not.sync");
+        }
+        if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
+            throw new CommonException("error.env.project.not.exist");
+        }
+        GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                gitlabGroupE.getEnvGroupId(),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.env.pro.owner");
         }
     }
 }

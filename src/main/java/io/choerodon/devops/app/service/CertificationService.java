@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
-import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -16,25 +16,18 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface CertificationService {
+
     /**
      * 创建c7n证书
-     *
-     * @param projectId 项目id
-     * @param envId     环境id
-     * @param name      证书名字
-     * @param type      整数类型
-     * @param domains   证书域名
-     * @param key       证书key
-     * @param cert      证书内容
-     * @return
+     * @param projectId   项目id
+     * @param envId      环境id
+     * @param certificationDTO 证书
+     * @param key        证书key
+     * @param cert       证书内容
+     * @return C7nCertificationDTO
      */
-    C7nCertification create(Long projectId,
-                            Long envId,
-                            String name,
-                            String type,
-                            List<String> domains,
-                            MultipartFile key,
-                            MultipartFile cert);
+    void create(Long projectId, Long envId, C7nCertificationDTO certificationDTO,
+                               MultipartFile key, MultipartFile cert, Boolean isGitOps);
 
     void deleteById(Long certId);
 

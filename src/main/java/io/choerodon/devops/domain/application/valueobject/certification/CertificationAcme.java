@@ -19,7 +19,8 @@ public class CertificationAcme {
     public void setConfig(List<CertificationConfig> config) {
         this.config = config;
     }
-    public void initSetConfig(CertificationConfig config) {
+
+    public void initConfig(CertificationConfig config) {
         this.config = new ArrayList<>();
         this.config.add(config);
     }

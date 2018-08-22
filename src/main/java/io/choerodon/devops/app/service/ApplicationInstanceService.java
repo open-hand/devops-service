@@ -5,7 +5,6 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -136,10 +135,6 @@ public interface ApplicationInstanceService {
 
 
     Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId, PageRequest pageRequest);
-
-    String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE);
-
-    void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE);
 
     ReplaceResult getReplaceResult(String versionValue, String deployValue);
 

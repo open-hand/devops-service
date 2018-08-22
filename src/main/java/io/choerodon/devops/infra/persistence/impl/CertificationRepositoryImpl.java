@@ -42,24 +42,27 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     private EnvUtil envUtil;
 
     @Override
-    public void create(CertificationE certificationE) {
-        devopsCertificationMapper.insert(ConvertHelper.convert(certificationE, CertificationDO.class));
-    }
-
-    @Override
-    public void deleteById(Long certId) {
-        devopsCertificationMapper.deleteByPrimaryKey(certId);
-    }
-
-    @Override
     public CertificationE queryByEnvAndName(Long envId,
                                             String name) {
+
         CertificationDO certificationDO = new CertificationDO();
         certificationDO.setEnvId(envId);
         certificationDO.setName(name);
         return ConvertHelper.convert(devopsCertificationMapper.selectOne(certificationDO), CertificationE.class);
     }
 
+    @Override
+    public CertificationE create(CertificationE certificationE) {
+        CertificationDO certificationDO = ConvertHelper.convert(certificationE, CertificationDO.class);
+        devopsCertificationMapper.insert(certificationDO);
+        certificationE.setId(certificationDO.getId());
+        return certificationE;
+    }
+
+    @Override
+    public CertificationE queryById(Long certId) {
+        return ConvertHelper.convert(devopsCertificationMapper.selectByPrimaryKey(certId), CertificationE.class);
+    }
     @Override
     public Page<CertificationDTO> getCertification(
             Long envId,
@@ -89,5 +92,17 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     public List<CertificationDTO> getActiveByDomain(Long envId, String domain) {
         return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(envId, domain),
                 CertificationDTO.class);
+    }
+
+    @Override
+    public void updateStatus(CertificationE certificationE) {
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certificationE.getId());
+        certificationDO.setStatus(certificationE.getStatus());
+        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDO);
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        devopsCertificationMapper.deleteByPrimaryKey(id);
     }
 }

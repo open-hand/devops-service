@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.dataobject;
 
-import com.google.gson.Gson;
-import io.choerodon.mybatis.annotation.ModifyAudit;
-
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
 
 /**
  * Created by n!Ck
@@ -13,7 +12,6 @@ import javax.persistence.Table;
  * Time: 19:51
  * Description:
  */
-
 @ModifyAudit
 @Table(name = "devops_certification")
 public class CertificationDO {

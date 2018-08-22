@@ -21,7 +21,6 @@ import io.choerodon.devops.infra.dataobject.CertificationDO;
  * Time: 10:31
  * Description:
  */
-
 @Component
 public class CertificationConvertor implements ConvertorI<CertificationE, CertificationDO, CertificationDTO> {
 

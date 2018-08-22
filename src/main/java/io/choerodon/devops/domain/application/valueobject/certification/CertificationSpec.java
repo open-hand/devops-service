@@ -11,7 +11,7 @@ import java.util.List;
 
 public class CertificationSpec {
     private String commonName;
-    private List<String> dnsName;
+    private List<String> dnsNames;
     private CertificationAcme acme;
     private CertificationExistCert existCert;
 
@@ -23,12 +23,12 @@ public class CertificationSpec {
         this.commonName = commonName;
     }
 
-    public List<String> getDnsName() {
-        return dnsName;
+    public List<String> getDnsNames() {
+        return dnsNames;
     }
 
-    public void setDnsName(List<String> dnsName) {
-        this.dnsName = dnsName;
+    public void setDnsNames(List<String> dnsNames) {
+        this.dnsNames = dnsNames;
     }
 
     public CertificationAcme getAcme() {

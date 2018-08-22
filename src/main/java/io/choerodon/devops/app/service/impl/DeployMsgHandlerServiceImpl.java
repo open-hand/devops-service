@@ -109,6 +109,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private DevopsEnvCommitRepository devopsEnvCommitRepository;
     @Autowired
     private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository;
+    @Autowired
+    private CertificationRepository certificationRepository;
 
     /**
      * pod 更新
@@ -884,6 +886,21 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
                             }
                             devopsServiceRepository.update(devopsServiceE);
+                            break;
+                        }
+                        case "certificate": {
+                            CertificationE certificationE = certificationRepository
+                                    .queryByEnvAndName(envId, objects[1]);
+                            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                    .queryByEnvIdAndResource(
+                                            envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
+                            if (isFileError(envId, devopsEnvFileResourceE.getFilePath(),
+                                    errorDevopsFiles)) {
+                                certificationE.setStatus(CertificationStatus.FAILED.getStatus());
+                            } else {
+                                certificationE.setStatus(CertificationStatus.ACTIVE.getStatus());
+                            }
+                            certificationRepository.updateStatus(certificationE);
                             break;
                         }
                         default:

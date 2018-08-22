@@ -4,7 +4,8 @@ public enum ObjectType {
 
     INSTANCE("instance"),
     SERVICE("service"),
-    INGRESS("ingress"),;
+    INGRESS("ingress"),
+    CERTIFICATE("certificate");
 
 
     private String type;

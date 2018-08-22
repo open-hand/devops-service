@@ -10,20 +10,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
+import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.app.service.CertificationService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.CertificationE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.common.util.CertificationStatus;
 import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CertificationType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -34,75 +40,67 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Time: 17:47
  * Description:
  */
-
 @Service
 public class CertificationServiceImpl implements CertificationService {
 
     private static final Integer ADMIN_ID = 1;
     private static final String CERT_PREFIX = "cert-";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+
     private Gson gson = new Gson();
+
     @Autowired
     private CertificationRepository certificationRepository;
-
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
-
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private DevopsCertificationValidator devopsCertificationValidator;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+
 
     @Override
-    public C7nCertification create(Long projectId,
-                                   Long envId,
-                                   String name,
-                                   String type,
-                                   List<String> domains,
-                                   MultipartFile key,
-                                   MultipartFile cert) {
-        if (certificationRepository.queryByEnvAndName(envId,
-                name) != null) {
-            throw new CommonException("Error.cert.exist");
-        }
-        // 得到环境id
-        DevopsEnvironmentE devopsEnvironment = devopsEnvironmentRepository.queryById(envId);
-        C7nCertification c7nCertification = getC7nCertification(projectId,
-                name,
-                type,
-                domains,
-                key,
-                cert,
-                devopsEnvironment.getCode());
+    public void create(Long projectId, Long envId, C7nCertificationDTO certificationDTO,
+                       MultipartFile key, MultipartFile cert, Boolean isGitOps) {
+        String certName = certificationDTO.getCertName();
+        String type = certificationDTO.getType();
+        List<String> domains = certificationDTO.getDomains();
+
+        devopsCertificationValidator.checkCertification(envId, certName);
+        // agent certification
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        C7nCertification c7nCertification = getC7nCertification(
+                projectId, certName, type, domains, key, cert, devopsEnvironmentE.getCode());
 
         // sent certification to agent
-//        ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
-//        certificationOperation.setType(c7nCertification);
-//        certificationOperation.operationEnvGitlabFile(CERT_PREFIX + name,
-//                devopsEnvironment.getGitlabEnvProjectId()
-//                        .intValue(),
-//                "create",
-//                TypeUtil.objToLong(ADMIN_ID),
-//                null,
-//                null,
-//                null,
-//                null);
+        ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
+        certificationOperation.setType(c7nCertification);
+        certificationOperation.operationEnvGitlabFile(
+                CERT_PREFIX + certName, devopsEnvironmentE.getGitlabEnvProjectId().intValue(),
+                "create", TypeUtil.objToLong(ADMIN_ID),
+                null, null, null, null);
+
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
-                name,
-                devopsEnvironment,
-                domains,
-                CertificationStatus.OPERATING.getStatus());
-        certificationRepository.create(certificationE);
-        return null;
+                certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus());
+        // create
+        if (isGitOps) {
+            certificationRepository.create(certificationE);
+        } else {
+            operateEnvGitLabFile(certName, devopsEnvironmentE,
+                    c7nCertification, devopsEnvironmentE.getId(), certificationE);
+        }
     }
 
-    private C7nCertification getC7nCertification(Long projectId,
-                                                 String name,
-                                                 String type,
-                                                 List<String> domains,
-                                                 MultipartFile key,
-                                                 MultipartFile cert,
-                                                 String envCode) {
+    private C7nCertification getC7nCertification(Long projectId, String name, String type, List<String> domains,
+                                                 MultipartFile key, MultipartFile cert, String envCode) {
         C7nCertification c7nCertification = new C7nCertification();
 
         c7nCertification.setMetadata(new CertificationMetadata(name,
@@ -110,32 +108,46 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationSpec spec = new CertificationSpec();
         if (type.equals(CertificationType.REQUEST.getType())) {
             CertificationAcme acme = new CertificationAcme();
-            acme.initSetConfig(new CertificationConfig(domains));
+            acme.initConfig(new CertificationConfig(domains));
             spec.setAcme(acme);
         } else if (type.equals(CertificationType.UPLOAD.getType())) {
 
             ProjectE projectE = iamRepository.queryIamProject(projectId);
-            String classPath = String.format("tmp%s%s%s%s",
+            String path = String.format("tmp%s%s%s%s",
                     FILE_SEPARATOR,
                     projectE.getCode(),
                     FILE_SEPARATOR,
                     envCode);
 
-            String keyContent = FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(classPath,
-                    key)));
-            String certContent = FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(classPath,
-                    cert)));
-            CertificationExistCert existCert = new CertificationExistCert(keyContent,
-                    certContent);
+            String keyContent = FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key)));
+            String certContent = FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert)));
+
+            CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
             spec.setExistCert(existCert);
         }
         spec.setCommonName(domains.get(0));
-        spec.setDnsName(domains.stream()
-                .skip(1)
-                .collect(Collectors.toList()));
+        spec.setDnsNames(domains.stream().skip(1).collect(Collectors.toList()));
         c7nCertification.setSpec(spec);
         return c7nCertification;
     }
+
+    private void operateEnvGitLabFile(String certName,
+                                      DevopsEnvironmentE devopsEnvironmentE,
+                                      C7nCertification c7nCertification,
+                                      Long envId,
+                                      CertificationE certificationE) {
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+        ObjectOperation<C7nCertification> objectOperation = new ObjectOperation<>();
+        objectOperation.setType(c7nCertification);
+        objectOperation.operationEnvGitlabFile("ing-" + certName,
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "create",
+                userAttrE.getGitlabUserId(), null, "Ingress", envId, path);
+        certificationRepository.create(certificationE);
+    }
+
 
     @Override
     public void deleteById(Long certId) {

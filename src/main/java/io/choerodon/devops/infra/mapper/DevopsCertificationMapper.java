@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -16,9 +15,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 
 public interface DevopsCertificationMapper extends BaseMapper<CertificationDO> {
-    List<CertificationDO> selectCertification(
-            @Param("envId")
-                    Long envId);
+    List<CertificationDO> selectCertification(@Param("envId") Long envId);
 
     List<CertificationDO> getActiveByDomain(@Param("envId") Long envId, @Param("domain") String domain);
 }

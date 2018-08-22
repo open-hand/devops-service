@@ -20,9 +20,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.app.service.DevopsServiceService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
@@ -81,6 +79,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsEnvCommitRepository devopsEnvCommitRepository;
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
@@ -223,9 +225,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         if (!isGitOps) {
             DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
-            String path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
+            String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            applicationInstanceService.checkEnvProject(devopsEnvironmentE, userAttrE);
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, "Service");
             if (devopsEnvFileResourceE == null) {
@@ -401,8 +403,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             });
         } else {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            applicationInstanceService.checkEnvProject(devopsEnvironmentE, userAttrE);
-            String path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+            String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
             operateEnvGitLabFile(devopsServiceReqDTO.getName(),
                     TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), service, isCreate, devopsServiceE.getId(), envId, path, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, userAttrE);
         }

@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -16,12 +15,8 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DeployMsgHandlerService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory;
@@ -104,9 +99,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DevopsEnvCommitRepository devopsEnvCommitRepository;
     @Autowired
-    private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsProjectRepository devopsProjectRepository;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
 
 
     @Override
@@ -350,7 +347,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            checkEnvProject(devopsEnvironmentE, userAttrE);
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
         }
         envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
@@ -387,8 +384,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             devopsEnvCommandRepository.create(devopsEnvCommandE);
         } else {
-
-            String code = "";
+            String code;
+            devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
             if (applicationDeployDTO.getType().equals("create")) {
                 code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
@@ -399,9 +396,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
                 devopsEnvCommandE.initDevopsEnvCommandValueE(
                         devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE,
+                        devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             } else {
-                String path = handDevopsEnvGitRepository(devopsEnvironmentE);
+                String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
                 ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
                 objectOperation.setType(getC7NHelmRelease(
                         code, applicationVersionE, applicationDeployDTO, applicationE));
@@ -535,7 +533,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         UserAttrE userAttrE = new UserAttrE();
         if (!gitops) {
             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            checkEnvProject(devopsEnvironmentE, userAttrE);
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
         }
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -551,8 +549,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
 
         if (!gitops) {
-            String path = handDevopsEnvGitRepository(devopsEnvironmentE);
-            handDevopsEnvGitRepository(devopsEnvironmentE);
+            String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+            devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, "C7NHelmRelease");
             if (devopsEnvFileResourceE == null) {
@@ -670,38 +668,4 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return replaceResult;
     }
 
-    @Override
-    public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        //生成环境git仓库ssh地址
-        String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        File file = new File(path);
-        GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
-        if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url);
-        }
-        return path;
-    }
-
-    @Override
-    public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
-        if (gitlabGroupE == null) {
-            throw new CommonException("error.group.not.sync");
-        }
-        if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
-            throw new CommonException("error.env.project.not.exist");
-        }
-        GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                gitlabGroupE.getEnvGroupId(),
-                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
-            throw new CommonException("error.user.not.env.pro.owner");
-        }
-    }
 }

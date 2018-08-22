@@ -16,6 +16,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -40,34 +41,28 @@ public class CertificationController {
     /**
      * 项目下创建证书
      *
-     * @param projectId 项目id
-     * @param envId     环境id
-     * @param name      证书名字
-     * @param type      证书类型
-     * @param domains   域名
-     * @param key       key文件
-     * @param cert      cert文件
+     * @param projectId  项目id
+     * @param envId      环境id
+     * @param certification      证书
+     * @param key        key文件
+     * @param cert       cert文件
      * @return 204, "No Content"
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下创建证书")
     @PostMapping
     public ResponseEntity create(
-            @ApiParam(value = "项目id", required = true)
+            @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id")
+            @ApiParam(value = "环境ID", required = true)
             @PathVariable(value = "env_id") Long envId,
-            @ApiParam(value = "证书名字")
-            @RequestParam(value = "name") String name,
-            @ApiParam(value = "证书类型", required = true)
-            @RequestParam(value = "type") String type,
-            @ApiParam(value = "域名", required = true)
-            @RequestParam(value = "domains") List<String> domains,
-            @ApiParam(value = "key文件")
-            @RequestParam(value = "keyFile", required = false) MultipartFile key,
-            @ApiParam(value = "cert文件")
-            @RequestParam(value = "certFile", required = false) MultipartFile cert) {
-        certificationService.create(projectId, envId, name, type, domains, key, cert);
+            @ApiParam(value = "证书名称", required = true)
+            @RequestBody C7nCertificationDTO certification,
+            @ApiParam(value = "文件")
+            @RequestParam(value = "file", required = false) MultipartFile key,
+            @ApiParam(value = "文件")
+            @RequestParam(value = "file", required = false) MultipartFile cert) {
+        certificationService.create(projectId, envId, certification, key, cert, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

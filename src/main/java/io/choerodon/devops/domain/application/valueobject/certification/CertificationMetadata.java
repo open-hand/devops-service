@@ -13,8 +13,7 @@ public class CertificationMetadata {
     public CertificationMetadata() {
     }
 
-    public CertificationMetadata(String name,
-                                 String namespace) {
+    public CertificationMetadata(String name, String namespace) {
         this.name = name;
         this.namespace = namespace;
     }
