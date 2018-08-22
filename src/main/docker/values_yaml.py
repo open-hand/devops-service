@@ -94,10 +94,10 @@ def main():
     traversal(code_old, code_new, follow_keys, delta_map, update, add)
     yaml.dump(code_old, sys.stdout)
 
-    print("---")
+    print("------love----you------choerodon----")
     yaml.dump(delta_map, sys.stdout)
 
-    print("---")
+    print("------love----you------choerodon----")
     change_key_map = dict()
 
     change_key_map["add"] = add
