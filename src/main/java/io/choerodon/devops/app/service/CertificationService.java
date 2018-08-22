@@ -31,9 +31,7 @@ public interface CertificationService {
 
     void deleteById(Long certId, Boolean isGitOps);
 
-    Page<CertificationDTO> getByEnvid(PageRequest pageRequest,
-                                      Long envId,
-                                      String params);
+    Page<CertificationDTO> pageByEnvId(PageRequest pageRequest, Long envId, String params);
 
     List<CertificationDTO> getActiveByDomain(Long envId, String domain);
 }

@@ -113,7 +113,7 @@ public class CertificationController {
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(certificationService.getByEnvid(pageRequest, envId, params))
+        return Optional.ofNullable(certificationService.pageByEnvId(pageRequest, envId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.page"));
     }

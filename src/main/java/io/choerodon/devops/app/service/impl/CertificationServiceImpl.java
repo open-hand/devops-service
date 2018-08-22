@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,8 +42,6 @@ public class CertificationServiceImpl implements CertificationService {
     private static final Integer ADMIN_ID = 1;
     private static final String CERT_PREFIX = "cert-";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
-
-    private Gson gson = new Gson();
 
     @Autowired
     private CertificationRepository certificationRepository;
@@ -90,7 +87,6 @@ public class CertificationServiceImpl implements CertificationService {
                 CERT_PREFIX + certName, devopsEnvironmentE.getGitlabEnvProjectId().intValue(),
                 "create", TypeUtil.objToLong(ADMIN_ID),
                 null, null, null, null);
-
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
@@ -166,7 +162,7 @@ public class CertificationServiceImpl implements CertificationService {
         } else {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-            
+
             Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             String certificateType = ObjectType.CERTIFICATE.getType();
             String certName = certificationE.getName();
@@ -199,10 +195,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Page<CertificationDTO> getByEnvid(PageRequest pageRequest,
-                                             Long envId,
-                                             String params) {
-        return certificationRepository.getCertification(envId, pageRequest, params);
+    public Page<CertificationDTO> pageByEnvId(PageRequest pageRequest, Long envId, String params) {
+        return certificationRepository.pageByEnvId(envId, pageRequest, params);
     }
 
     @Override

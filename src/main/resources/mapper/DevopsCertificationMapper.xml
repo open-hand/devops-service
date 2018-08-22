@@ -9,6 +9,24 @@
             devops_certification
         WHERE
             env_id = #{envId}
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    `name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.domain != null and searchParam.domain.size > 0'>
+                AND
+                <foreach collection="searchParam.domain" item="domain" open="(" separator=" OR " close=")">
+                    domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+            OR domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%'))
+        </if>
     </select>
 
     <select id="getActiveByDomain" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">

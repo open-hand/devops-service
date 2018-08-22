@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -42,9 +42,7 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     private EnvUtil envUtil;
 
     @Override
-    public CertificationE queryByEnvAndName(Long envId,
-                                            String name) {
-
+    public CertificationE queryByEnvAndName(Long envId, String name) {
         CertificationDO certificationDO = new CertificationDO();
         certificationDO.setEnvId(envId);
         certificationDO.setName(name);
@@ -63,28 +61,24 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     public CertificationE queryById(Long certId) {
         return ConvertHelper.convert(devopsCertificationMapper.selectByPrimaryKey(certId), CertificationE.class);
     }
+
     @Override
-    public Page<CertificationDTO> getCertification(
-            Long envId,
-            PageRequest pageRequest,
-            String params) {
-        List<CertificationDTO> certificationDTOS = new ArrayList<>();
-        Map<String, Object> maps = gson.fromJson(params, Map.class);
+    public Page<CertificationDTO> pageByEnvId(Long envId, PageRequest pageRequest, String params) {
+        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
+        }.getType());
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-        // domains name
-        Page<CertificationDO> certificationDOPage = PageHelper.doPageAndSort(pageRequest,
-                () -> devopsCertificationMapper.selectCertification(envId));
-// TODO
-        Page<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPage(certificationDOPage, CertificationDTO.class);
+        String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        Page<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPage(
+                PageHelper.doPageAndSort(pageRequest,
+                        () -> devopsCertificationMapper.selectCertification(envId, searchParamMap, param)),
+                CertificationDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        certificationDTOPage.parallelStream().forEach(certificationDTO -> {
-            if (connectedEnvList.contains(certificationDTO.getEnvId()) &&
-                    updatedEnvList.contains(certificationDTO.getEnvId())) {
-                certificationDTO.setEnvConnected(true);
-            }
-        });
+        certificationDTOPage.getContent().parallelStream()
+                .forEach(certificationDTO ->
+                        certificationDTO.setEnvConnected(
+                                connectedEnvList.contains(certificationDTO.getEnvId())
+                                        && updatedEnvList.contains(certificationDTO.getEnvId())));
         return certificationDTOPage;
     }
 

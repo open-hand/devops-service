@@ -21,7 +21,7 @@ public interface CertificationRepository {
 
     CertificationE queryByEnvAndName(Long envId, String name);
 
-    Page<CertificationDTO> getCertification(Long envId, PageRequest pageRequest, String params);
+    Page<CertificationDTO> pageByEnvId(Long envId, PageRequest pageRequest, String params);
 
     List<CertificationDTO> getActiveByDomain(Long envId, String domain);
 
