@@ -253,8 +253,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
                             devopsProjectDO.setEnvGroupId(group.getId());
                             devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+                            checkLog.setResult(SUCCESS);
+                        } else {
+                            checkLog.setResult(FAILED + "create group response error! Header:"
+                                    + responseEntity.getHeaders() + "    Body: " + responseEntity.getBody().toString());
                         }
-                        checkLog.setResult(SUCCESS);
                     } catch (Exception e) {
                         checkLog.setResult(FAILED + e.getMessage());
                     }
