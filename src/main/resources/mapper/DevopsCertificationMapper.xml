@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationMapper">
+    <select id="selectCertification" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
+        SELECT
+            *
+        FROM
+            devops_certification
+        WHERE
+            env_id = #{envId}
+    </select>
+
+    <select id="getActiveByDomain" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
+        SELECT
+            *
+        FROM
+            devops_certification
+        WHERE
+            env_id = #{envId}
+            AND `status` = 'active'
+            AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
+    </select>
+</mapper>
