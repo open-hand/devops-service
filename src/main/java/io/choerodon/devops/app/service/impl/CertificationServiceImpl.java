@@ -185,7 +185,7 @@ public class CertificationServiceImpl implements CertificationService {
                 c7nCertification.setMetadata(certificationMetadata);
                 certificationOperation.setType(c7nCertification);
                 certificationOperation.operationEnvGitlabFile(
-                        "release-" + certName, gitLabEnvProjectId,
+                        null, gitLabEnvProjectId,
                         "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
                         devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
             }
