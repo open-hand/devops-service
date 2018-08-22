@@ -209,6 +209,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             String path = applicationInstanceService.handDevopsEnvGitRepository(devopsEnvironmentE);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
+            if (devopsEnvFileResourceE == null) {
+                throw new CommonException("error.fileResource.not.exist");
+            }
             List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
             if (devopsEnvFileResourceES.size() == 1) {
                 gitlabRepository.deleteFile(
