@@ -663,7 +663,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         try {
             replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(),e);
         }
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
         FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
