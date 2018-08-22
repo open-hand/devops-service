@@ -59,9 +59,9 @@ public class CertificationController {
             @ApiParam(value = "证书名称", required = true)
             @RequestBody C7nCertificationDTO certification,
             @ApiParam(value = "文件")
-            @RequestParam(value = "file", required = false) MultipartFile key,
+            @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "文件")
-            @RequestParam(value = "file", required = false) MultipartFile cert) {
+            @RequestParam(value = "cert", required = false) MultipartFile cert) {
         certificationService.create(projectId, envId, certification, key, cert, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
