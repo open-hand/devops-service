@@ -58,9 +58,9 @@ public class CertificationController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
             @RequestBody C7nCertificationDTO certification,
-            @ApiParam(value = "文件")
+            @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
-            @ApiParam(value = "文件")
+            @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
         certificationService.create(projectId, envId, certification, key, cert, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -84,7 +84,7 @@ public class CertificationController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "证书id")
             @RequestParam(value = "cert_id") Long certId) {
-        certificationService.deleteById(certId);
+        certificationService.deleteById(certId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

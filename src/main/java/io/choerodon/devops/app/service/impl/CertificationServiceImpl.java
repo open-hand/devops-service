@@ -16,23 +16,20 @@ import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.CertificationE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
-import io.choerodon.devops.domain.application.repository.CertificationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
-import io.choerodon.devops.infra.common.util.CertificationStatus;
+import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.common.util.enums.CertificationType;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.helper.EnvListener;
 
 /**
  * Created by n!Ck
@@ -63,6 +60,14 @@ public class CertificationServiceImpl implements CertificationService {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
 
 
     @Override
@@ -150,8 +155,47 @@ public class CertificationServiceImpl implements CertificationService {
 
 
     @Override
-    public void deleteById(Long certId) {
-        certificationRepository.deleteById(certId);
+    public void deleteById(Long certId, Boolean isGitOps) {
+        CertificationE certificationE = certificationRepository.queryById(certId);
+        Long certEnvId = certificationE.getEnvironmentE().getId();
+        envUtil.checkEnvConnection(certEnvId, envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
+
+        if (isGitOps) {
+            certificationRepository.deleteById(certId);
+        } else {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+            
+            Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+            String certificateType = ObjectType.CERTIFICATE.getType();
+            String certName = certificationE.getName();
+
+            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                    .queryByEnvIdAndResource(certEnvId, certId, certificateType);
+            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                    .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath());
+            if (devopsEnvFileResourceES.size() == 1) {
+                gitlabRepository.deleteFile(
+                        gitLabEnvProjectId,
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE " + certName,
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            } else {
+                ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
+                C7nCertification c7nCertification = new C7nCertification();
+                CertificationMetadata certificationMetadata = new CertificationMetadata();
+                certificationMetadata.setName(certName);
+                c7nCertification.setMetadata(certificationMetadata);
+                certificationOperation.setType(c7nCertification);
+                certificationOperation.operationEnvGitlabFile(
+                        "release-" + certName, gitLabEnvProjectId,
+                        "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
+                        devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
+            }
+            certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
+            certificationRepository.updateStatus(certificationE);
+        }
     }
 
     @Override

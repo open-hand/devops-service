@@ -722,7 +722,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 })
                 .forEach(certName -> {
                     CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-                    certificationRepository.deleteById(certificationE.getId());
+                    certificationService.deleteById(certificationE.getId(), true);
                     devopsEnvFileResourceRepository
                             .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
                 });
