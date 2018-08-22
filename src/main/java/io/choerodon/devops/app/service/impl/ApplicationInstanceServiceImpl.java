@@ -233,12 +233,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return replaceResult;
     }
 
+    @Override
+    public ReplaceResult queryUpgradeValue(Long instanceId, Long versionId) {
+        String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByInstanceId(instanceId));
+        String versionValue = applicationVersionRepository
+                .queryValue(versionId);
+        return getReplaceResult(versionValue, yaml);
+    }
+
 
     @Override
     public ReplaceResult queryValue(Long instanceId) {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
-        String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByEnvIdAndAppId(
-                applicationInstanceE.getDevopsEnvironmentE().getId(), applicationInstanceE.getApplicationE().getId()));
+        String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByInstanceId(
+                instanceId));
         String versionValue = applicationVersionRepository
                 .queryValue(applicationInstanceE.getApplicationVersionE().getId());
         return getReplaceResult(versionValue, yaml);

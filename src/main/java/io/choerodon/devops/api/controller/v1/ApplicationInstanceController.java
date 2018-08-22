@@ -117,6 +117,31 @@ public class ApplicationInstanceController {
                 .orElseThrow(() -> new CommonException("error.instance.value.get"));
     }
 
+
+    /**
+     * 获取升级 Value
+     *
+     * @param projectId     项目id
+     * @param appInstanceId 实例id
+     * @param appVersionId  版本Id
+     * @return string
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取部署 Value")
+    @GetMapping(value = "/{appInstanceId}/appVersion/{appVersionId}/value")
+    public ResponseEntity<ReplaceResult> queryValue(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable Long appInstanceId,
+            @ApiParam(value = "版本Id", required = true)
+            @PathVariable Long appVersionId) {
+        return Optional.ofNullable(applicationInstanceService.queryUpgradeValue(appInstanceId, appVersionId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.instance.value.get"));
+    }
+
     /**
      * 查询value列表
      *

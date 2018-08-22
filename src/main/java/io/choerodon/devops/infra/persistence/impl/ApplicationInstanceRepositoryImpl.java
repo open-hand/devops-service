@@ -114,4 +114,9 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     public List<ApplicationInstanceE> list() {
         return ConvertHelper.convertList(applicationInstanceMapper.selectAll(), ApplicationInstanceE.class);
     }
+
+    @Override
+    public String queryValueByInstanceId(Long instanceId) {
+        return applicationInstanceMapper.queryByInstanceId(instanceId);
+    }
 }
