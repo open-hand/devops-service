@@ -53,7 +53,7 @@ public class K8sUtil {
                 status = INIT + pod.getSpec().getInitContainers().size();
             }
         } else {
-            if (pod.getStatus() != null) {
+            if (pod.getStatus().getContainerStatuses() != null) {
                 if (!"Pending".equals(pod.getStatus().getPhase()) && !pod.getStatus().getContainerStatuses().isEmpty()) {
                     V1ContainerStatus containerStatus = pod.getStatus().getContainerStatuses().get(0);
                     V1ContainerState containerState = containerStatus.getState();
