@@ -34,4 +34,6 @@ public interface ApplicationInstanceMapper extends BaseMapper<ApplicationInstanc
     String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appId") Long appId);
 
     List<ApplicationInstancesDO> listApplicationInstances(@Param("projectId") Long projectId, @Param("appId") Long appId);
+
+    String queryByInstanceId(@Param("instanceId") Long instanceId);
 }

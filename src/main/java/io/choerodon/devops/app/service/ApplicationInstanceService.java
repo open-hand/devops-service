@@ -142,4 +142,6 @@ public interface ApplicationInstanceService {
     void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE);
 
     ReplaceResult getReplaceResult(String versionValue, String deployValue);
+
+    ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
 }
