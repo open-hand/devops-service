@@ -150,10 +150,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         GitlabGroupMemberE groupMemberE;
         Integer[] roles = {
                 memberHelper.getProjectDevelopAccessLevel().toValue(),
-                memberHelper.getProjectOwnerAccessLevel().toValue(),
-                memberHelper.getDeployAdminAccessLevel().toValue()};
+                memberHelper.getProjectOwnerAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
-        if (!memberHelper.isDeploy()) {
+        if (!accessLevel.equals(AccessLevel.NONE)) {
             if (resourceType.equals(PROJECT)) {
                 try {
                     gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
@@ -175,7 +174,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     gitlabGroupE.getGitlabGroupId(),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
             addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getGitlabGroupId(), userAttrE);
-        } else {
+        }
+        if (memberHelper.isDeploy()) {
             try {
                 gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
             } catch (Exception e) {
