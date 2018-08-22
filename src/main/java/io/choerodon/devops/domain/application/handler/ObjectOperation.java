@@ -50,8 +50,8 @@ public class ObjectOperation<T> {
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
-        String path = fileCode + ".yaml";
         if (operationType.equals("create")) {
+            String path = fileCode + ".yaml";
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,
                     "ADD FILE", TypeUtil.objToInteger(userId));
 

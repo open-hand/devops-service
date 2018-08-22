@@ -228,7 +228,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 objectOperation.setType(v1beta1Ingress);
                 Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
                 objectOperation.operationEnvGitlabFile(
-                        "release-" + ingressDO.getName(),
+                        null,
                         projectId,
                         "delete",
                         userAttrE.getGitlabUserId(),
