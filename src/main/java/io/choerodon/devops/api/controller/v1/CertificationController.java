@@ -32,7 +32,7 @@ import io.choerodon.swagger.annotation.Permission;
  * Description:
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/envs/{env_id}/certifications")
+@RequestMapping(value = "/v1/projects/{project_id}/certifications")
 public class CertificationController {
 
     @Autowired
@@ -42,8 +42,7 @@ public class CertificationController {
      * 项目下创建证书
      *
      * @param projectId  项目id
-     * @param envId      环境id
-     * @param certification      证书
+     * @param certification 证书
      * @param key        key文件
      * @param cert       cert文件
      * @return 204, "No Content"
@@ -54,15 +53,13 @@ public class CertificationController {
     public ResponseEntity create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境ID", required = true)
-            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "证书名称", required = true)
             @RequestBody C7nCertificationDTO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        certificationService.create(projectId, envId, certification, key, cert, false);
+        certificationService.create(projectId, certification, key, cert, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -70,7 +67,6 @@ public class CertificationController {
      * 项目下删除证书
      *
      * @param projectId 项目id
-     * @param envId     环境id
      * @param certId    证书id
      * @return 204, "No Content"
      */
@@ -80,8 +76,6 @@ public class CertificationController {
     public ResponseEntity delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id")
-            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "证书id")
             @RequestParam(value = "cert_id") Long certId) {
         certificationService.deleteById(certId, false);
@@ -93,7 +87,6 @@ public class CertificationController {
      * 分页查询
      *
      * @param projectId   项目id
-     * @param envId       环境id
      * @param pageRequest 分页参数
      * @param params      查询参数
      * @return CertificationDTO page
@@ -106,14 +99,12 @@ public class CertificationController {
     public ResponseEntity<Page<CertificationDTO>> listByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(certificationService.pageByEnvId(pageRequest, envId, params))
+        return Optional.ofNullable(certificationService.page(pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.page"));
     }
@@ -122,7 +113,6 @@ public class CertificationController {
      * 通过域名查询已生效的证书
      *
      * @param projectId 项目id
-     * @param envId     环境id
      * @param domain    域名
      * @return CertificationDTO list
      */
@@ -133,11 +123,9 @@ public class CertificationController {
     public ResponseEntity<List<CertificationDTO>> getActiveByDomain(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "域名")
             @RequestParam(value = "domain") String domain) {
-        return Optional.ofNullable(certificationService.getActiveByDomain(envId, domain))
+        return Optional.ofNullable(certificationService.getActiveByDomain(domain))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
     }

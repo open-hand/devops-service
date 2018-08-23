@@ -21,17 +21,16 @@ public interface CertificationService {
      * 创建c7n证书
      *
      * @param projectId        项目id
-     * @param envId            环境id
      * @param certificationDTO 证书
      * @param key              证书key
      * @param cert             证书内容
      */
-    void create(Long projectId, Long envId, C7nCertificationDTO certificationDTO,
+    void create(Long projectId, C7nCertificationDTO certificationDTO,
                 MultipartFile key, MultipartFile cert, Boolean isGitOps);
 
     void deleteById(Long certId, Boolean isGitOps);
 
-    Page<CertificationDTO> pageByEnvId(PageRequest pageRequest, Long envId, String params);
+    Page<CertificationDTO> page(PageRequest pageRequest, String params);
 
-    List<CertificationDTO> getActiveByDomain(Long envId, String domain);
+    List<CertificationDTO> getActiveByDomain(String domain);
 }

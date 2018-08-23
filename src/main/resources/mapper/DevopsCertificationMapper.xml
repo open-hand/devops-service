@@ -8,7 +8,7 @@
         FROM
             devops_certification
         WHERE
-            env_id = #{envId}
+            1
         <if test='searchParam != null'>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
                 AND
@@ -35,8 +35,7 @@
         FROM
             devops_certification
         WHERE
-            env_id = #{envId}
-            AND `status` = 'active'
+            `status` = 'active'
             AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
     </select>
 </mapper>

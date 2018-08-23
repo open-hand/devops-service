@@ -68,12 +68,13 @@ public class CertificationServiceImpl implements CertificationService {
 
 
     @Override
-    public void create(Long projectId, Long envId, C7nCertificationDTO certificationDTO,
+    public void create(Long projectId, C7nCertificationDTO certificationDTO,
                        MultipartFile key, MultipartFile cert, Boolean isGitOps) {
         String certName = certificationDTO.getCertName();
         String type = certificationDTO.getType();
         List<String> domains = certificationDTO.getDomains();
 
+        Long envId = certificationDTO.getEnvId();
         devopsCertificationValidator.checkCertification(envId, certName);
         // agent certification
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
@@ -149,26 +150,40 @@ public class CertificationServiceImpl implements CertificationService {
         certificationRepository.create(certificationE);
     }
 
-
+    /*
+     * 通过id删除证书，含gitops操作
+     * */
     @Override
     public void deleteById(Long certId, Boolean isGitOps) {
+        // 通过证书id得到实体类对象E
         CertificationE certificationE = certificationRepository.queryById(certId);
+        // 得到证书部署的环境id
         Long certEnvId = certificationE.getEnvironmentE().getId();
+        // 检测环境是否连接，固定操作
         envUtil.checkEnvConnection(certEnvId, envListener);
+        // 得到证书环境实体类对象E
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
 
         if (isGitOps) {
+            // 如果有gitops操作，就直接在数据库中删掉对应的证书
             certificationRepository.deleteById(certId);
         } else {
+            // 得到操作用户，固定操作
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            // 1项目是否存在，2用户是否存在，3用户是否有操作权限，固定操作
             gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-
+            // 得到gitlab环境下的项目的项目id
             Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+            // 得到部署类型，固定操作，类型为证书
+            // 部署类型只有 1实例instance 2网络service 3域名ingress 4证书certification
             String certificateType = ObjectType.CERTIFICATE.getType();
+            // 得到证书名字
             String certName = certificationE.getName();
-
+            // 通过证书环境id，证书id，部署类型(类型为证书CERTIFICATION) 得到部署资源文件
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(certEnvId, certId, certificateType);
+            // 得到部署资源文件路径
+            // 使用List因为
             List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                     .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath());
             if (devopsEnvFileResourceES.size() == 1) {
@@ -195,12 +210,12 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Page<CertificationDTO> pageByEnvId(PageRequest pageRequest, Long envId, String params) {
-        return certificationRepository.pageByEnvId(envId, pageRequest, params);
+    public Page<CertificationDTO> page(PageRequest pageRequest, String params) {
+        return certificationRepository.page(pageRequest, params);
     }
 
     @Override
-    public List<CertificationDTO> getActiveByDomain(Long envId, String domain) {
-        return certificationRepository.getActiveByDomain(envId, domain);
+    public List<CertificationDTO> getActiveByDomain(String domain) {
+        return certificationRepository.getActiveByDomain(domain);
     }
 }

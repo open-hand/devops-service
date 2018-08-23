@@ -16,9 +16,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 
 public interface DevopsCertificationMapper extends BaseMapper<CertificationDO> {
-    List<CertificationDO> selectCertification(@Param("envId") Long envId,
-                                              @Param("searchParam") Map<String, Object> searchParam,
+    List<CertificationDO> selectCertification(@Param("searchParam") Map<String, Object> searchParam,
                                               @Param("param") String param);
 
-    List<CertificationDO> getActiveByDomain(@Param("envId") Long envId, @Param("domain") String domain);
+    List<CertificationDO> getActiveByDomain(@Param("domain") String domain);
 }
