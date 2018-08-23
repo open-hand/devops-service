@@ -1,0 +1,81 @@
+---
+apiVersion: choerodon.io/v1alpha1
+kind: C7NHelmRelease
+metadata:
+  name: instest2
+spec:
+  chartName: testapp
+  chartVersion: 2018.8.21-091848-release-0-9-0
+  repoUrl: http://chart.choerodon.com.cn/choerodon/c7ncd/
+  values: |-
+    resources:
+      requests:
+        memory: 1.6Gi
+      limits:
+        memory: 2.5Gi
+    env:
+      open:
+        SPRING_REDIS_HOST: redis.tools.svc
+        SERVICES_GITLAB_URL: http://git.staging.saas.hand-china.com
+        SERVICES_GATEWAY_URL: http://api.staging.saas.hand-china.com
+        AGENT_SERVICEURL: ws://devops-service-front.staging.saas.hand-china.com/agent/
+        SERVICES_SONARQUBE_URL: http://sonarqube.staging.saas.hand-china.com
+        AGENT_REPOURL: http://chart.choerodon.com.cn/choerodon/c7ncd/
+        SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**
+        SPRING_CLOUD_CONFIG_URI: http://config-server.choerodon-framework-staging:8010
+        SERVICES_HARBOR_PASSWORD: Handhand123
+        SERVICES_HELM_URL: http://helm-charts.staging.saas.hand-china.com
+        SERVICES_HARBOR_BASEURL: https://registry.saas.hand-china.com
+        SPRING_DATASOURCE_URL: jdbc:mysql://hapcloud-mysql.db:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+        EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.choerodon-framework-staging:8000/eureka/
+        SPRING_DATASOURCE_PASSWORD: handhand
+        SERVICES_GITLAB_SSHURL: git.vk.vu
+        AGENT_VERSION: 0.9.2
+    preJob:
+      preConfig:
+        mysql:
+          host: hapcloud-mysql.db
+          password: handhand
+      preInitDB:
+        mysql:
+          host: hapcloud-mysql.db
+          password: handhand
+    persistence:
+      existingClaim: chartmuseum-pv
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    choerodon.io/network-service-instances: instest2
+  labels:
+    choerodon.io/network: service
+  name: svctest2
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  sessionAffinity: None
+  type: ClusterIP
+
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations: {}
+  labels:
+    choerodon.io/network: ingress
+  name: ingtest2
+spec:
+  rules:
+  - host: devops-service2-front.staging.saas.hand-china.com
+    http:
+      paths:
+      - backend:
+          serviceName: svctest2
+          servicePort: 8060
+        path: /

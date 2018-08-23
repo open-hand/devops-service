@@ -2,29 +2,19 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.domain.application.repository.ApplicationRepository
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.repository.UserAttrRepository
+import io.choerodon.devops.app.service.ApplicationInstanceService
+import io.choerodon.devops.app.service.DevopsIngressService
+import io.choerodon.devops.app.service.DevopsServiceService
+import io.choerodon.devops.domain.application.repository.*
+import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
-import io.choerodon.event.producer.execute.EventProducerTemplate
-import io.choerodon.event.producer.execute.EventRecord
-import io.choerodon.event.producer.execute.EventStoreClient
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import io.choerodon.websocket.helper.EnvListener
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
@@ -37,10 +27,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
-import org.springframework.stereotype.Component
 import org.springframework.test.context.TestPropertySource
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestBody
 import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
@@ -50,7 +37,7 @@ import javax.annotation.PostConstruct
  */
 @TestConfiguration
 @Import(LiquibaseConfig)
-@TestPropertySource(value = "classpath:application-test.yml")
+@TestPropertySource("classpath:application-test.yml")
 class IntegrationTestConfiguration {
 
     private final detachedMockFactory = new DetachedMockFactory()
@@ -71,6 +58,7 @@ class IntegrationTestConfiguration {
     GitlabRepository gitlabRepository() {
         detachedMockFactory.Mock(GitlabRepository)
     }
+
     @Bean("mockUserAttrRepository")
     @Primary
     UserAttrRepository userAttrRepository() {
@@ -79,22 +67,19 @@ class IntegrationTestConfiguration {
 
     @Bean("mockGitlabGroupMemberRepository")
     @Primary
-    GitlabGroupMemberRepository gitlabGroupMemberRepository()
-    {
+    GitlabGroupMemberRepository gitlabGroupMemberRepository() {
         detachedMockFactory.Mock(GitlabGroupMemberRepository);
     }
 
     @Primary
     @Bean("mockEnvUtil")
-    EnvUtil envUtil()
-    {
+    EnvUtil envUtil() {
         detachedMockFactory.Mock(EnvUtil);
     }
 
     @Primary
     @Bean("mockEnvListener")
-    EnvListener envListener()
-    {
+    EnvListener envListener() {
         detachedMockFactory.Mock(EnvListener);
     }
 
@@ -104,13 +89,12 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(IamRepository)
     }
 
+
     @Bean("mockGitUtil")
     @Primary
-    GitUtil gitUtil()
-    {
+    GitUtil gitUtil() {
         detachedMockFactory.Mock(GitUtil)
     }
-
 
 //    @Bean("mockEventProducerTemplate")
 //    @Primary
@@ -122,10 +106,80 @@ class IntegrationTestConfiguration {
 //    EventStoreClient eventStoreClient(){
 //        detachedMockFactory.Mock(EventStoreClient)
 //    }
-    @Bean("mockEventProducerTemplate")
+
+//    @Bean("mockDevopsGitService")
+//    @Primary
+//    DevopsGitService devopsGitService() {
+//        detachedMockFactory.Mock(DevopsGitService)
+//    }
+
+
+    @Bean("mockDevopsGitRepository")
     @Primary
-    EventProducerTemplate eventProducerTemplate() {
-        detachedMockFactory.Mock(EventProducerTemplate)
+    DevopsGitRepository devopsGitRepository() {
+        detachedMockFactory.Mock(DevopsGitRepository)
+    }
+
+//    @Bean("mockDevopsEnvFileResourceRepository")
+//    @Primary
+//     DevopsEnvFileResourceRepository devopsEnvFileResourceRepository(){
+//        detachedMockFactory.Mock(DevopsEnvFileResourceRepository)
+//    }
+
+//    @Bean("mockDevopsEnvFileRepository")
+//    @Primary
+//     DevopsEnvFileRepository devopsEnvFileRepository(){
+//        detachedMockFactory.Mock(DevopsEnvFileRepository)
+//    }
+
+//    @Bean("mockDevopsEnvFileErrorRepository")
+//    @Primary
+//     DevopsEnvFileErrorRepository devopsEnvFileErrorRepository(){
+//        detachedMockFactory.Mock(DevopsEnvFileErrorRepository)
+//    }
+
+    @Bean("mockDeployService")
+    @Primary
+    DeployService deployService() {
+        detachedMockFactory.Mock(DeployService)
+    }
+
+//    @Bean("mockApplicationInstanceRepository")
+//    @Primary
+//     ApplicationInstanceRepository applicationInstanceRepository(){
+//        detachedMockFactory.Mock(ApplicationInstanceRepository)
+//    }
+//
+//    @Bean("mockDevopsServiceRepository")
+//    @Primary
+//     DevopsServiceRepository devopsServiceRepository(){
+//        detachedMockFactory.Mock(DevopsServiceRepository)
+//    }
+//
+//    @Bean("mockDevopsIngressRepository")
+//    @Primary
+//     DevopsIngressRepository devopsIngressRepository(){
+//        detachedMockFactory.Mock(DevopsIngressRepository)
+//    }
+
+
+    @Bean("mockApplicationInstanceService")
+    @Primary
+    ApplicationInstanceService applicationInstanceService() {
+        detachedMockFactory.Mock(ApplicationInstanceService)
+    }
+
+    @Bean("mockDevopsServiceService")
+    @Primary
+    DevopsServiceService devopsServiceService() {
+        detachedMockFactory.Mock(DevopsServiceService)
+    }
+
+
+    @Bean("mockDevopsIngressService")
+    @Primary
+    DevopsIngressService devopsIngressService() {
+        detachedMockFactory.Mock(DevopsIngressService)
     }
 
 

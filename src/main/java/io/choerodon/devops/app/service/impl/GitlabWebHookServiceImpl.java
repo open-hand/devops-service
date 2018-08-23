@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
+import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.GitlabWebHookService;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
@@ -20,10 +21,13 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GitlabWebHookServiceImpl.class);
 
-    @Autowired
     private DevopsMergeRequestRepository devopsMergeRequestRepository;
-    @Autowired
-    private DevopsGitServiceImpl devopsGitService;
+    private DevopsGitService devopsGitService;
+
+    public GitlabWebHookServiceImpl(DevopsMergeRequestRepository devopsMergeRequestRepository, DevopsGitService devopsGitService){
+        this.devopsMergeRequestRepository  = devopsMergeRequestRepository;
+        this.devopsGitService = devopsGitService;
+    }
 
     @Override
     public void forwardingEventToPortal(String body, String token) {
@@ -57,8 +61,8 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
         String kind = returnData.get("object_kind").getAsString();
         if ("push".equals(kind)) {
             PushWebHookDTO pushWebHookDTO = JSONArray.parseObject(body, PushWebHookDTO.class);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(pushWebHookDTO.toString());
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(pushWebHookDTO.toString());
             }
             devopsGitService.fileResourceSyncSaga(pushWebHookDTO, token);
         }

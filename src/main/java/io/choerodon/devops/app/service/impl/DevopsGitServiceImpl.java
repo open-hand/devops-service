@@ -132,6 +132,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private CertificationService certificationService;
 
+
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
@@ -349,7 +350,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
         Boolean tagNotExist = false;
         try {
-
             //从iam服务中查出项目和组织code
             ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -376,10 +376,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         beforeSync.addAll(devopsEnvFileResourceES);
                     }
                 });
-
             } else {
                 handleDiffs(gitLabProjectId, operationFiles, deletedFiles, beforeSync, beforeSyncDelete, devopsEnvironmentE, devopsEnvCommitE);
-
             }
         } catch (CommonException e) {
             LOGGER.info(e.getTrace());
@@ -415,7 +413,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     path
             );
         } catch (CommonException e) {
-            LOGGER.info(e.getMessage(),e);
+            LOGGER.info(e.getMessage(), e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return;
         }
@@ -451,7 +449,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //更新环境 解释commit
             devopsEnvironmentRepository.update(devopsEnvironmentE);
         } catch (CommonException e) {
-            LOGGER.info(e.getMessage(),e);
+            LOGGER.info(e.getMessage(), e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             DevopsEnvFileErrorE newdevopsEnvFileErrorE = new DevopsEnvFileErrorE();
             newdevopsEnvFileErrorE.setCommit(devopsEnvCommitE.getCommitSha());
@@ -1031,7 +1029,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationDeployDTO.getAppInstanceId());
 
-                        if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType())&&!applicationDeployDTO.getIsNotChange()) {
+                        if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType()) && !applicationDeployDTO.getIsNotChange()) {
                             applicationInstanceService
                                     .createOrUpdateByGitOps(applicationDeployDTO);
                         }
@@ -1085,7 +1083,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         throw new CommonException(e.getMessage(), e);
                     }
                 });
-
     }
 
     private void updateOrCreateFileResource(Map<String, String> objectPath,
@@ -1556,5 +1553,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (v1beta1HTTPIngressPath.getBackend().getServicePort() == null) {
             throw new CommonException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_PORT_NOT_FOUND.getError());
         }
+    }
+
+    @Override
+    public void initFeignClient(SagaClient sagaClient) {
+        this.sagaClient = sagaClient;
     }
 }

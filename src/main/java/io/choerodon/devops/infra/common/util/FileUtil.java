@@ -1393,8 +1393,4 @@ public class FileUtil {
         return replaceResult;
     }
 
-    public static String returnString()
-    {
-        return "test";
-    }
 }

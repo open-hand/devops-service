@@ -27,7 +27,9 @@ public class ApplicationVersionConverter implements ConvertorI<ApplicationVersio
         ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO();
         BeanUtils.copyProperties(applicationVersionE, applicationVersionDO);
         applicationVersionDO.setAppId(applicationVersionE.getApplicationE().getId());
-        applicationVersionDO.setValueId(applicationVersionE.getApplicationVersionValueE().getId());
+        if(applicationVersionE.getApplicationVersionValueE()!=null) {
+            applicationVersionDO.setValueId(applicationVersionE.getApplicationVersionValueE().getId());
+        }
         return applicationVersionDO;
     }
 
