@@ -14,6 +14,7 @@ public class DevopsIngressPathDTO {
     private Long serviceId;
     private String serviceName;
     private String serviceStatus;
+    private Long servicePort;
 
     public DevopsIngressPathDTO() {
     }
@@ -58,6 +59,14 @@ public class DevopsIngressPathDTO {
 
     public void setServiceStatus(String serviceStatus) {
         this.serviceStatus = serviceStatus;
+    }
+
+    public Long getServicePort() {
+        return servicePort;
+    }
+
+    public void setServicePort(Long servicePort) {
+        this.servicePort = servicePort;
     }
 
     @Override

@@ -93,7 +93,7 @@ public interface DevopsIngressService {
      * @param serviceId 网络Id
      * @return V1beta1HTTPIngressPath
      */
-    V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId);
+    V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId, Long port);
 
 
     /**
