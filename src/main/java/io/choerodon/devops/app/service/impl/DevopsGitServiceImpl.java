@@ -42,6 +42,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
@@ -59,14 +60,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
-    private static final String PATH_DUPLICATED = "the ingress path is duplicated!";
-    private static final String INSTANCE_APP_ID_NOT_SAME = "The instance is not belong to the same application! \n";
-    private static final String SERVICE_RELEATED_TO_INGRESS = "the related service of the ingress not exist:";
-    private static final String INSTANCE_NOT_FOUND = "The related instance of the service not found: ";
     private static final String GIT_SUFFIX = "/.git";
-    private static final String ERROR_MESSAGE = "the another file already has the same object: ";
-    private static final String PATH_ERROR = "the ingress path is empty!";
-    private static final String PATH_EXIST = "the ingress domain and path is already exist!";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private ObjectMapper objectMapper = new ObjectMapper();
     @Value("${services.gitlab.url}")
@@ -953,7 +947,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         if (!devopsIngressDTO.getPathList().stream()
                                 .allMatch(t ->
                                         devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
-                            throw new CommonException(PATH_EXIST);
+                            throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
                         }
                         devopsIngressService.updateIngress(devopsIngressE.getId(), devopsIngressDTO, projectId, true);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -983,7 +977,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             if (!devopsIngressDTO.getPathList().stream()
                                     .allMatch(t ->
                                             devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
-                                throw new CommonException(PATH_EXIST);
+                                throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
                             }
                             devopsIngressService.addIngress(devopsIngressDTO, projectId, true);
                             devopsIngressE = devopsIngressRepository
@@ -1027,13 +1021,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = new ArrayList<>();
         List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
         if (paths == null) {
-            throw new CommonException(PATH_ERROR);
+            throw new CommonException(GitOpsObjectError.INGRESS_PATH_IS_EMPTY.getError());
         }
         for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
             try {
                 DevopsIngressValidator.checkPath(v1beta1HTTPIngressPath.getPath());
                 if (pathCheckList.contains(v1beta1HTTPIngressPath.getPath())) {
-                    throw new CommonException(PATH_DUPLICATED);
+                    throw new CommonException(GitOpsObjectError.INGRESS_PATH_DUPLICATED.getError());
                 } else {
                     pathCheckList.add(v1beta1HTTPIngressPath.getPath());
                 }
@@ -1044,7 +1038,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
                     v1beta1HTTPIngressPath.getBackend().getServiceName(), devopsEnvironmentE.getCode());
             if (devopsServiceE == null) {
-                throw new CommonException(SERVICE_RELEATED_TO_INGRESS + v1beta1HTTPIngressPath.getBackend().getServiceName());
+                throw new CommonException(GitOpsObjectError.SERVICE_RELEATED_INGRESS_NOT_FOUND.getError() + v1beta1HTTPIngressPath.getBackend().getServiceName());
             }
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
             devopsIngressPathDTO.setPath(v1beta1HTTPIngressPath.getPath());
@@ -1106,11 +1100,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
             String logMsg = devopsEnvFileErrorE.getError();
             if (!devopsServiceReqDTO.getAppId().equals(instanceE.getApplicationE().getId())
-                    && (logMsg == null || !logMsg.contains(INSTANCE_APP_ID_NOT_SAME))) {
+                    && (logMsg == null || !logMsg.contains(GitOpsObjectError.INSTANCE_APP_ID_NOT_SAME.getError()))) {
                 if (logMsg == null) {
-                    devopsEnvFileErrorE.setError(INSTANCE_APP_ID_NOT_SAME);
+                    devopsEnvFileErrorE.setError(GitOpsObjectError.INSTANCE_APP_ID_NOT_SAME.getError());
                 } else {
-                    devopsEnvFileErrorE.setError(INSTANCE_APP_ID_NOT_SAME + logMsg);
+                    devopsEnvFileErrorE.setError(GitOpsObjectError.INSTANCE_APP_ID_NOT_SAME.getError() + logMsg);
                 }
                 throw new CommonException(devopsEnvFileErrorE.getError());
             }
@@ -1118,9 +1112,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } catch (Exception e) {
             String logMsg = devopsEnvFileErrorE.getError();
             if (logMsg == null) {
-                devopsEnvFileErrorE.setError(INSTANCE_NOT_FOUND + instanceCode);
-            } else if (!logMsg.contains(INSTANCE_NOT_FOUND)) {
-                devopsEnvFileErrorE.setError(logMsg + INSTANCE_NOT_FOUND + instanceCode);
+                devopsEnvFileErrorE.setError(GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND + instanceCode);
+            } else if (!logMsg.contains(GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND.getError())) {
+                devopsEnvFileErrorE.setError(logMsg + GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND.getError() + instanceCode);
             } else {
                 devopsEnvFileErrorE.setError(logMsg + ", " + instanceCode);
             }
@@ -1186,101 +1180,115 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     public void createDevopsFileError(DevopsEnvFileErrorE devopsEnvFileErrorE, String objectName) {
-        devopsEnvFileErrorE.setError(ERROR_MESSAGE + objectName);
+        devopsEnvFileErrorE.setError(GitOpsObjectError.OBJECT_EXIST.getError() + objectName);
         devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
-        throw new CommonException(ERROR_MESSAGE + objectName);
+        throw new CommonException(GitOpsObjectError.OBJECT_EXIST.getError() + objectName);
     }
 
 
     private void formatC7nRelease(C7nHelmRelease c7nHelmRelease) {
         if (c7nHelmRelease.getMetadata() == null) {
-            throw new CommonException("The C7nHelmRelease does not define metadata properties");
+            throw new CommonException(GitOpsObjectError.RELEASE_APIVERSION_NOT_FOUND.getError());
         } else {
             if (c7nHelmRelease.getMetadata().getName() == null) {
-                throw new CommonException("The C7nHelmRelease does not define name properties");
+                throw new CommonException(GitOpsObjectError.RELEASE_NAME_NOT_FOUND.getError());
             }
         }
         if (c7nHelmRelease.getSpec() == null) {
-            throw new CommonException("The C7nHelmRelease does not define spec properties");
+            throw new CommonException(GitOpsObjectError.RELEASE_SPEC_NOT_FOUND.getError());
         } else {
             if (c7nHelmRelease.getSpec().getChartName() == null) {
-                throw new CommonException("The C7nHelmRelease does not define chartName properties in spec");
+                throw new CommonException(GitOpsObjectError.RELEASE_CHART_NAME_NOT_FOUND.getError());
             }
             if (c7nHelmRelease.getSpec().getChartVersion() == null) {
-                throw new CommonException("The C7nHelmRelease does not define chartVersion properties in spec");
+                throw new CommonException(GitOpsObjectError.RELEASE_CHART_VERSION_NOT_FOUND.getError());
             }
             if (c7nHelmRelease.getSpec().getRepoUrl() == null) {
-                throw new CommonException("The C7nHelmRelease does not define repoUrl properties in spec");
+                throw new CommonException(GitOpsObjectError.RELEASE_REPOURL_NOT_FOUND.getError());
             }
         }
         if (c7nHelmRelease.getApiVersion() == null) {
-            throw new CommonException("The C7nHelmRelease does not define apiVersion properties");
+            throw new CommonException(GitOpsObjectError.RELEASE_APIVERSION_NOT_FOUND.getError());
         }
     }
 
     private void formatService(V1Service v1Service) {
         if (v1Service.getMetadata() == null) {
-            throw new CommonException("The V1service does not define metadata properties");
+            throw new CommonException(GitOpsObjectError.SERVICE_METADATA_NOT_FOUND.getError());
         } else {
             if (v1Service.getMetadata().getName() == null) {
-                throw new CommonException("The V1service does not define name properties in metadata");
+                throw new CommonException(GitOpsObjectError.SERVICE_NAME_NOT_FOUND.getError());
             }
         }
         if (v1Service.getSpec() == null) {
-            throw new CommonException("The V1service does not define spec properties");
+            throw new CommonException(GitOpsObjectError.SERVICE_SPEC_NOT_FOUND.getError());
         } else {
             List<V1ServicePort> v1ServicePorts = v1Service.getSpec().getPorts();
             if (v1ServicePorts == null || v1ServicePorts.size() == 0) {
-                throw new CommonException("The V1service does not define ports properties in spec");
+                throw new CommonException(GitOpsObjectError.SERVICE_PORTS_NOT_FOUND.getError());
+            } else {
+                for (V1ServicePort v1ServicePort : v1ServicePorts) {
+                    if (v1ServicePort.getName() == null) {
+                        throw new CommonException(GitOpsObjectError.SERVICE_PORTS_NAME_NOT_FOUND.getError());
+
+                    }
+                    if (v1ServicePort.getPort() == null) {
+                        throw new CommonException(GitOpsObjectError.SERVICE_PORTS_PORT_NOT_FOUND.getError());
+
+                    }
+                    if (v1ServicePort.getTargetPort() == null) {
+                        throw new CommonException(GitOpsObjectError.SERVICE_PORTS_TARGET_PORT.getError());
+                    }
+                }
             }
             if (v1Service.getSpec().getType() == null) {
-                throw new CommonException("The V1service does not define type properties in spec");
+                throw new CommonException(GitOpsObjectError.SERVICE_TYPE_NOT_FOUND.getError());
             }
         }
         if (v1Service.getApiVersion() == null) {
-            throw new CommonException("The V1service does not define apiVersion properties");
+            throw new CommonException(GitOpsObjectError.SERVICE_APIVERSION_NOT_FOUND.getError());
 
         }
     }
 
     private void formatIngress(V1beta1Ingress v1beta1Ingress) {
         if (v1beta1Ingress == null) {
-            throw new CommonException("The v1beta1Ingress does not define metadata properties");
+            throw new CommonException(GitOpsObjectError.INGRESS_META_DATA_NOT_FOUND.getError());
         } else {
             if (v1beta1Ingress.getMetadata().getName() == null) {
-                throw new CommonException("The v1beta1Ingress does not define name properties in metadata");
+                throw new CommonException(GitOpsObjectError.INGRESS_NAME_NOT_FOUND.getError());
             }
         }
         if (v1beta1Ingress.getSpec() == null) {
-            throw new CommonException("The v1beta1Ingress does not define spec properties");
+            throw new CommonException(GitOpsObjectError.INGRESS_SPEC_NOT_FOUND.getError());
         } else {
             List<V1beta1IngressRule> v1beta1IngressRules = v1beta1Ingress.getSpec().getRules();
             if (v1beta1IngressRules == null || v1beta1IngressRules.size() == 0) {
-                throw new CommonException("The v1beta1Ingress does not define rules properties in spec");
+                throw new CommonException(GitOpsObjectError.INGRESS_RULES_NOT_FOUND.getError());
             } else {
                 for (V1beta1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
                     if (v1beta1IngressRule.getHost() == null) {
-                        throw new CommonException("The v1beta1Ingress does not define host properties in rule");
+                        throw new CommonException(GitOpsObjectError.INGRESS_RULE_HOST_NOT_FOUND.getError());
                     }
                     if (v1beta1IngressRule.getHttp() == null) {
-                        throw new CommonException("The v1beta1Ingress does not define http properties in rule");
+                        throw new CommonException(GitOpsObjectError.INGRESS_RULE_HTTP_NOT_FOUND.getError());
                     } else {
                         List<V1beta1HTTPIngressPath> v1beta1HTTPIngressPaths = v1beta1IngressRule.getHttp().getPaths();
                         if (v1beta1HTTPIngressPaths == null && v1beta1HTTPIngressPaths.size() == 0) {
-                            throw new CommonException("The v1beta1Ingress does not define paths properties in http");
+                            throw new CommonException(GitOpsObjectError.INGRESS_PATHS_NOT_FOUND.getError());
                         } else {
                             for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : v1beta1HTTPIngressPaths) {
                                 if (v1beta1HTTPIngressPath.getPath() == null) {
-                                    throw new CommonException("The v1beta1Ingress does not define path properties in paths");
+                                    throw new CommonException(GitOpsObjectError.INGRESS_PATHS_PATH_NOT_FOUND.getError());
                                 }
                                 if (v1beta1HTTPIngressPath.getBackend() == null) {
-                                    throw new CommonException("The v1beta1Ingress does not define backend properties in paths");
+                                    throw new CommonException(GitOpsObjectError.INGRESS_PATHS_BACKEND_NOT_FOUND.getError());
                                 } else {
                                     if (v1beta1HTTPIngressPath.getBackend().getServiceName() == null) {
-                                        throw new CommonException("The v1beta1Ingress does not define serviceName properties in backend");
+                                        throw new CommonException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_NAME_NOT_FOUND.getError());
                                     }
                                     if (v1beta1HTTPIngressPath.getBackend().getServicePort() == null) {
-                                        throw new CommonException("The v1beta1Ingress does not define servicePort properties in backend");
+                                        throw new CommonException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_PORT_NOT_FOUND.getError());
                                     }
                                 }
                             }
@@ -1291,7 +1299,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         }
         if (v1beta1Ingress.getApiVersion() == null) {
-            throw new CommonException("The v1beta1Ingress does not define apiVersion properties");
+            throw new CommonException(GitOpsObjectError.INGRESS_APIVERSION_NOT_FOUND.getError());
 
         }
 
