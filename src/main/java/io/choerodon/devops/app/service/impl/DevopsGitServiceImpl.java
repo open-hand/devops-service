@@ -1233,10 +1233,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (v1Service.getSpec() == null) {
             throw new CommonException("The V1service does not define spec properties");
         } else {
-            List<V1ServicePort> v1ServicePorts = new ArrayList<>();
-                if(v1ServicePorts==null||v1ServicePorts.size()==0) {
-                    throw new CommonException("The V1servcie does not define ports properties in spec ");
-                }
+            List<V1ServicePort> v1ServicePorts = v1Service.getSpec().getPorts();
+            if (v1ServicePorts == null || v1ServicePorts.size() == 0) {
+                throw new CommonException("The V1service does not define ports properties in spec");
+            }
+            if (v1Service.getSpec().getType() == null) {
+                throw new CommonException("The V1service does not define type properties in spec");
+            }
         }
         if (v1Service.getApiVersion() == null) {
             throw new CommonException("The C7nHelmRelease does not define apiVersion properties");
