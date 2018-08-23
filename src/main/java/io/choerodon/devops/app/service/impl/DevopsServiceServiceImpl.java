@@ -142,7 +142,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
-        devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        if (devopsServiceReqDTO.getLabel() != null) {
+            devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        }
 
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
@@ -404,7 +406,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceE.setName(devopsServiceReqDTO.getName());
         }
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
-        devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        if (devopsServiceReqDTO.getLabel() != null) {
+            devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        }
         devopsServiceE.setPorts(devopsServiceReqDTO.getPorts());
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setExternalIp(devopsServiceReqDTO.getExternalIp());
