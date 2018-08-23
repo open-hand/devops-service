@@ -8,10 +8,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1ServicePort;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -589,9 +586,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             c7nHelmReleaseSerializableOperation.setT(c7nHelmRelease);
                             C7nHelmRelease serializableC7n = c7nHelmReleaseSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
-                            if (serializableC7n.getMetadata().getName() == null) {
-                                throw new CommonException("The C7nHelmRelease does not have name");
-                            }
+                            formatC7nRelease(serializableC7n);
                             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(serializableC7n.getMetadata().getName(), envId);
 
                             if (applicationInstanceE != null) {
@@ -612,9 +607,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             v1beta1IngressSerializableOperation.setT(v1beta1Ingress);
                             V1beta1Ingress serializableIng = v1beta1IngressSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
-                            if (serializableIng.getMetadata().getName() == null) {
-                                throw new CommonException("The V1beta1Ingress does not have name");
-                            }
+                            formatIngress(serializableIng);
                             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, serializableIng.getMetadata().getName());
                             if (devopsIngressE != null) {
                                 if (!beforeSyncDelete.parallelStream().filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(serializableIng.getKind())).anyMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsIngressE.getId()))) {
@@ -634,9 +627,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             v1ServiceSerializableOperation.setT(v1Service);
                             V1Service serializableSvc = v1ServiceSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
-                            if (serializableSvc.getMetadata().getName() == null) {
-                                throw new CommonException("The V1Service does not have name");
-                            }
+                            formatService(serializableSvc);
                             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(serializableSvc.getMetadata().getName(), devopsEnvironmentE.getCode());
                             if (devopsServiceE != null) {
                                 if (!beforeSyncDelete.parallelStream().filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(serializableSvc.getKind())).anyMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsServiceE.getId()))) {
@@ -944,6 +935,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 addV1beta1Ingress.add(v1beta1Ingress);
             }
         });
+        beforeIngress.stream().forEach(ingressName -> {
+            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, ingressName);
+            devopsIngressService.deleteIngress(devopsIngressE.getId(), true);
+            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
+        });
         updateV1beta1Ingress.stream()
                 .forEach(v1beta1Ingress -> {
                     DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())), path);
@@ -972,11 +968,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         throw new CommonException(e.getMessage(), e);
                     }
                 });
-        beforeIngress.stream().forEach(ingressName -> {
-            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, ingressName);
-            devopsIngressService.deleteIngress(devopsIngressE.getId(), true);
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
-        });
         addV1beta1Ingress.stream()
                 .forEach(v1beta1Ingress -> {
                     DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())), path);
@@ -1247,8 +1238,62 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         }
         if (v1Service.getApiVersion() == null) {
-            throw new CommonException("The C7nHelmRelease does not define apiVersion properties");
+            throw new CommonException("The V1service does not define apiVersion properties");
 
         }
+    }
+
+    private void formatIngress(V1beta1Ingress v1beta1Ingress) {
+        if (v1beta1Ingress == null) {
+            throw new CommonException("The v1beta1Ingress does not define metadata properties");
+        } else {
+            if (v1beta1Ingress.getMetadata().getName() == null) {
+                throw new CommonException("The v1beta1Ingress does not define name properties in metadata");
+            }
+        }
+        if (v1beta1Ingress.getSpec() == null) {
+            throw new CommonException("The v1beta1Ingress does not define spec properties");
+        } else {
+            List<V1beta1IngressRule> v1beta1IngressRules = v1beta1Ingress.getSpec().getRules();
+            if (v1beta1IngressRules == null || v1beta1IngressRules.size() == 0) {
+                throw new CommonException("The v1beta1Ingress does not define rules properties in spec");
+            } else {
+                for (V1beta1IngressRule v1beta1IngressRule : v1beta1IngressRules) {
+                    if (v1beta1IngressRule.getHost() == null) {
+                        throw new CommonException("The v1beta1Ingress does not define host properties in rule");
+                    }
+                    if (v1beta1IngressRule.getHttp() == null) {
+                        throw new CommonException("The v1beta1Ingress does not define http properties in rule");
+                    } else {
+                        List<V1beta1HTTPIngressPath> v1beta1HTTPIngressPaths = v1beta1IngressRule.getHttp().getPaths();
+                        if (v1beta1HTTPIngressPaths == null && v1beta1HTTPIngressPaths.size() == 0) {
+                            throw new CommonException("The v1beta1Ingress does not define paths properties in http");
+                        } else {
+                            for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : v1beta1HTTPIngressPaths) {
+                                if (v1beta1HTTPIngressPath.getPath() == null) {
+                                    throw new CommonException("The v1beta1Ingress does not define path properties in paths");
+                                }
+                                if (v1beta1HTTPIngressPath.getBackend() == null) {
+                                    throw new CommonException("The v1beta1Ingress does not define backend properties in paths");
+                                } else {
+                                    if (v1beta1HTTPIngressPath.getBackend().getServiceName() == null) {
+                                        throw new CommonException("The v1beta1Ingress does not define serviceName properties in backend");
+                                    }
+                                    if (v1beta1HTTPIngressPath.getBackend().getServicePort() == null) {
+                                        throw new CommonException("The v1beta1Ingress does not define servicePort properties in backend");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        if (v1beta1Ingress.getApiVersion() == null) {
+            throw new CommonException("The v1beta1Ingress does not define apiVersion properties");
+
+        }
+
     }
 }
