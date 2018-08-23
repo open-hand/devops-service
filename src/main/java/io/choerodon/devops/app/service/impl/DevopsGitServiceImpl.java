@@ -1075,7 +1075,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
         devopsServiceReqDTO.setName(v1Service.getMetadata().getName());
         devopsServiceReqDTO.setEnvId(envId);
-        devopsServiceReqDTO.setLabel(v1Service.getMetadata().getLabels());
 
         List<PortMapE> portMapList = v1Service.getSpec().getPorts().parallelStream()
                 .map(t -> {
@@ -1091,12 +1090,18 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 }).collect(Collectors.toList());
         devopsServiceReqDTO.setPorts(portMapList);
 
-        String instancesCode = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
-        if (!instancesCode.isEmpty()) {
-            List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
-                    .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, devopsEnvFileErrorE))
-                    .collect(Collectors.toList());
-            devopsServiceReqDTO.setAppInstance(instanceIdList);
+        if (v1Service.getMetadata().getAnnotations() != null) {
+            String instancesCode = v1Service.getMetadata().getAnnotations()
+                    .get("choerodon.io/network-service-instances");
+            if (!instancesCode.isEmpty()) {
+                List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
+                        .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, devopsEnvFileErrorE))
+                        .collect(Collectors.toList());
+                devopsServiceReqDTO.setAppInstance(instanceIdList);
+            }
+        }
+        if (v1Service.getSpec().getSelector() != null) {
+            devopsServiceReqDTO.setLabel(v1Service.getSpec().getSelector());
         }
         return devopsServiceReqDTO;
     }
