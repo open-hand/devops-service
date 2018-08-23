@@ -77,12 +77,21 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId) {
-        gitlabServiceClient.createTag(gitLabProjectId, tag, ref, userId);
+        try {
+            gitlabServiceClient.createTag(gitLabProjectId, tag, ref, userId);
+        } catch (Exception e) {
+            throw new CommonException("create gitlab devops-sync tag failed", e);
+        }
+
     }
 
     @Override
     public void deleteTag(Integer gitLabProjectId, String tag, Integer userId) {
-        gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
+        try {
+            gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
+        } catch (Exception e) {
+            throw new CommonException("delete gitlab devops-sync tag failed", e);
+        }
     }
 
     @Override
@@ -296,9 +305,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public List<TagDO> getGitLabTags(Integer projectId, Integer userId) {
-        ResponseEntity<List<TagDO>> tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
-        if (tagResponseEntity.getStatusCode() != HttpStatus.OK) {
-            throw new CommonException("error.tags.get");
+        ResponseEntity<List<TagDO>> tagResponseEntity;
+        try {
+            tagResponseEntity = gitlabServiceClient.getTags(projectId, userId);
+        } catch (Exception e) {
+            throw new CommonException("error.tags.get", e);
         }
         return tagResponseEntity.getBody();
     }
@@ -315,9 +326,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public CompareResultsE getCompareResults(Integer gitlabProjectId, String from, String to) {
-        ResponseEntity<CompareResultsE> compareResultsEResponseEntity
-                = gitlabServiceClient.getCompareResults(gitlabProjectId, from, to);
-        if (compareResultsEResponseEntity.getStatusCode() != HttpStatus.OK) {
+        ResponseEntity<CompareResultsE> compareResultsEResponseEntity;
+        try {
+            compareResultsEResponseEntity
+                    = gitlabServiceClient.getCompareResults(gitlabProjectId, from, to);
+        } catch (Exception e) {
             throw new CommonException("error.diffs.get");
         }
         return compareResultsEResponseEntity.getBody();
