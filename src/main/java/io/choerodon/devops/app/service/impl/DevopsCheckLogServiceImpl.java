@@ -130,6 +130,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         });
                 break;
             case "0.9":
+                LOGGER.info("Start to execute upgrade task 0.9");
                 syncNonEnvGroupProject(logs);
                 gitOpsUserAccess();
                 syncEnvProject(logs);
@@ -229,6 +230,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private void syncNonEnvGroupProject(List<CheckLog> logs) {
         List<DevopsProjectDO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
+        LOGGER.info("{} projects need to upgrade", projectDOList.size());
         final String groupCodeSuffix = "gitops";
         projectDOList.parallelStream()
                 .forEach(t -> {
@@ -259,8 +261,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     + responseEntity.getHeaders() + "    Body: " + responseEntity.getBody().toString());
                         }
                     } catch (Exception e) {
+                        LOGGER.info("create project GitOps group error");
                         checkLog.setResult(FAILED + e.getMessage());
                     }
+                    LOGGER.info(checkLog.toString());
                     logs.add(checkLog);
                 });
 
@@ -268,16 +272,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void syncEnvProject(List<CheckLog> logs) {
+        LOGGER.info("start to sync env project");
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
         devopsEnvironmentES.parallelStream()
                 .filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() == null)
                 .forEach(devopsEnvironmentE -> {
                     CheckLog checkLog = new CheckLog();
                     try {
+                        //generate git project code
                         checkLog.setContent("env: " + devopsEnvironmentE.getName() + " create gitops project");
                         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
                         Organization organization = iamRepository
                                 .queryOrganizationById(projectE.getOrganization().getId());
+                        //generate rsa key
                         List<String> sshKeys = FileUtil.getSshKey(String.format("%s/%s/%s",
                                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
                         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
@@ -293,8 +300,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
                         checkLog.setResult(SUCCESS);
                     } catch (Exception e) {
+                        LOGGER.info("create env git project error", e);
                         checkLog.setResult(FAILED + e.getMessage());
                     }
+                    LOGGER.info(checkLog.toString());
                     logs.add(checkLog);
                 });
     }
@@ -302,16 +311,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private void syncObjects(List<CheckLog> logs) {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
-
+        LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
         devopsEnvironmentES.parallelStream().forEach(env -> {
             if (env.getGitlabEnvProjectId() != null) {
-                LOGGER.info(env.getName() + " begin to upgrade!" + env.getId());
+                LOGGER.info("{}:{}  begin to upgrade!", env.getCode(), env.getId());
                 new SyncInstanceByEnv(logs, env).invoke();
                 new SynServiceByEnv(logs, env).invoke();
                 new SyncIngressByEnv(logs, env).invoke();
-
                 devopsGitRepository.createTag(TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, ADMIN);
-                LOGGER.info(env.getName() + " end to upgrade!" + env.getId());
+                LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
             }
         });
     }
@@ -424,7 +432,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         TypeUtil.objToLong(ADMIN), null, null, null, null);
                                 checkLog.setResult(SUCCESS);
                             }
+                            LOGGER.info(checkLog.toString());
                         } catch (Exception e) {
+                            LOGGER.info("{}:{} instance/{} sync failed {}", env.getCode(), env.getId(), applicationInstanceE.getCode(), e);
                             checkLog.setResult(FAILED + e.getMessage());
                         }
                         logs.add(checkLog);
@@ -480,7 +490,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         TypeUtil.objToLong(ADMIN), null, null, null, null);
                                 checkLog.setResult(SUCCESS);
                             }
+                            LOGGER.info(checkLog.toString());
                         } catch (Exception e) {
+                            LOGGER.info("{}:{} service/{} sync failed {}", env.getCode(), env.getId(), devopsServiceE.getName(), e);
                             checkLog.setResult(FAILED + e.getMessage());
                         }
                         logs.add(checkLog);
@@ -565,7 +577,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         TypeUtil.objToLong(ADMIN), null, null, null, null);
                                 checkLog.setResult(SUCCESS);
                             }
+                            LOGGER.info(checkLog.toString());
                         } catch (Exception e) {
+                            LOGGER.info("{}:{} ingress/{} sync failed {}", env.getCode(), env.getId(), devopsIngressE.getName(), e);
                             checkLog.setResult(FAILED + e.getMessage());
                         }
                         logs.add(checkLog);
