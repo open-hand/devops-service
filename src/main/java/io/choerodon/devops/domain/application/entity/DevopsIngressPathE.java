@@ -7,6 +7,7 @@ public class DevopsIngressPathE {
     private String path;
     private Long serviceId;
     private String serviceName;
+    private Long servicePort;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -59,5 +60,13 @@ public class DevopsIngressPathE {
 
     public void initDevopsIngressE(Long id) {
         this.devopsIngressE = new DevopsIngressE(id);
+    }
+
+    public Long getServicePort() {
+        return servicePort;
+    }
+
+    public void setServicePort(Long servicePort) {
+        this.servicePort = servicePort;
     }
 }

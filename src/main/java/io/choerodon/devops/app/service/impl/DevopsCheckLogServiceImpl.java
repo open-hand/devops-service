@@ -581,7 +581,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     .forEach(devopsIngressPathE ->
                             v1beta1Ingress.getSpec().getRules().get(0).getHttp()
                                     .addPathsItem(devopsIngressService.createPath(
-                                            devopsIngressPathE.getPath(), devopsIngressPathE.getServiceId(), null)));
+                                            devopsIngressPathE.getPath(),
+                                            devopsIngressPathE.getServiceId(),
+                                            devopsIngressPathE.getServicePort())));
 
             return v1beta1Ingress;
         }
