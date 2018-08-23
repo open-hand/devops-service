@@ -21,7 +21,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress_path.groovy') {
 
     changeSet(author: 'Runge', id: '2018-08-23-add-column') {
         addColumn(tableName: 'devops_ingress_path') {
-            column(name: 'service_port', type: 'BIGINT UNSIGNED', remarks: '网络端口')
+            column(name: 'service_port', type: 'BIGINT UNSIGNED', remarks: '网络端口', afterColumn: 'service_name')
         }
     }
 }
