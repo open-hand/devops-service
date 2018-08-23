@@ -465,7 +465,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 .selectByIngressId(devopsIngressDO.getId());
         devopsIngressPathEListTemp.forEach(ddTemp ->
                 v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
-                        devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId())));
+                        devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId(), null)));
     }
 
     private void operateEnvGitLabFile(String serviceName,

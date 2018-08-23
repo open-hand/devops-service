@@ -18,10 +18,7 @@ import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsServiceE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
@@ -107,7 +104,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
             devopsIngressPathDOS.add(new DevopsIngressPathDO(
                     devopsIngressDTO.getId(), t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
-            ingress.getSpec().getRules().get(0).getHttp().addPathsItem(createPath(t.getPath(), t.getServiceId()));
+            ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
+                    createPath(t.getPath(), t.getServiceId(), t.getServicePort()));
         });
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
         if (gitOps) {
@@ -158,7 +156,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressPathDOS.add(new DevopsIngressPathDO(
                     id, t.getPath(), devopsServiceE.getId(), devopsServiceE.getName()));
             ingress.getSpec().getRules().get(0).getHttp()
-                    .addPathsItem(createPath(t.getPath(), t.getServiceId()));
+                    .addPathsItem(createPath(t.getPath(), t.getServiceId(), t.getServicePort()));
         });
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
         if (gitOps) {
@@ -253,13 +251,22 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId) {
+    public V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId, Long port) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(serviceId);
         V1beta1HTTPIngressPath path = new V1beta1HTTPIngressPath();
         V1beta1IngressBackend backend = new V1beta1IngressBackend();
         backend.setServiceName(devopsServiceE.getName().toLowerCase());
         if (devopsServiceE.getPorts() != null) {
-            backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort()));
+            if (port == null) {
+                backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort()));
+            } else {
+                if (devopsServiceE.getPorts().parallelStream()
+                        .map(PortMapE::getTargetPort).anyMatch(t -> t.equals(port.toString()))) {
+                    backend.setServicePort(new IntOrString(port.intValue()));
+                } else {
+                    throw new CommonException("error.service.notContain.port");
+                }
+            }
         }
         path.setBackend(backend);
         path.setPath(hostPath);
