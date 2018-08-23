@@ -50,7 +50,8 @@
     <select id="listDevopsService" resultType="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
         SELECT
         ds.id,
-        ds.`name`
+        ds.`name`,
+        ds.ports
         FROM
         devops_service ds
         WHERE ds.`status` = 'running'
