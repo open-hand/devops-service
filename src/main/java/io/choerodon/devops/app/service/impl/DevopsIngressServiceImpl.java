@@ -258,10 +258,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         backend.setServiceName(devopsServiceE.getName().toLowerCase());
         if (devopsServiceE.getPorts() != null) {
             if (port == null) {
-                backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getTargetPort()));
+                backend.setServicePort(new IntOrString(devopsServiceE.getPorts().get(0).getPort().intValue()));
             } else {
                 if (devopsServiceE.getPorts().parallelStream()
-                        .map(PortMapE::getTargetPort).anyMatch(t -> t.equals(port.toString()))) {
+                        .map(PortMapE::getPort).anyMatch(t -> t.equals(port))) {
                     backend.setServicePort(new IntOrString(port.intValue()));
                 } else {
                     throw new CommonException("error.service.notContain.port");
