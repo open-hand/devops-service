@@ -804,6 +804,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void gitOpsSyncEvent(Long envId, String msg) {
+        logger.info("env {} receive git ops msg :\n{}", envId, msg);
         GitOpsSync gitOpsSync = JSONArray.parseObject(msg, GitOpsSync.class);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         DevopsEnvCommitE agentSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit());
