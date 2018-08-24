@@ -119,7 +119,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             new LinkedBlockingQueue<Runnable>(), new DefaultThreadFactory("devops-upgrade", false));
 
     @Override
-    public void checkLog(int version) {
+    public void checkLog(String version) {
         LOGGER.info("start upgrade task");
         executorService.submit(new UpgradeTask(version));
     }
@@ -584,9 +584,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
     class UpgradeTask implements Runnable{
-        private int version;
+        private String version;
 
-        UpgradeTask(int version){
+        UpgradeTask(String version){
             this.version = version;
         }
         @Override
@@ -594,7 +594,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
             List<CheckLog> logs = new ArrayList<>();
             devopsCheckLogE.setBeginCheckDate(new Date());
-            if (version == 8) {
+            if ("0.8".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 0.8");
                 List<ApplicationDO> applications = applicationMapper.selectAll();
                 applications.parallelStream()
@@ -604,7 +604,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             syncWebHook(applicationDO, logs);
                             syncBranches(applicationDO, logs);
                         });
-            } else if (version == 9) {
+            } else if ("0.9".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 0.9");
                 syncNonEnvGroupProject(logs);
                 gitOpsUserAccess();
