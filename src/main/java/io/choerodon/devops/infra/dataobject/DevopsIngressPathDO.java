@@ -108,7 +108,8 @@ public class DevopsIngressPathDO extends AuditDomain {
         DevopsIngressPathDO that = (DevopsIngressPathDO) o;
         return Objects.equals(ingressId, that.ingressId)
                 && Objects.equals(path, that.path)
-                && Objects.equals(serviceId, that.serviceId);
+                && Objects.equals(serviceId, that.serviceId)
+                && Objects.equals(servicePort,that.servicePort);
     }
 
     @Override

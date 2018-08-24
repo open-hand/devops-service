@@ -177,9 +177,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                         .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
                     throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
                 }
-
-                devopsIngressPathDOS.add(new DevopsIngressPathDO(
-                        id, path, devopsServiceE.getId(), devopsServiceE.getName(), servicePort));
+                DevopsIngressPathDO devopsIngressPathDO = new DevopsIngressPathDO(
+                        id, path, devopsServiceE.getId(), devopsServiceE.getName(), servicePort);
+                devopsIngressPathDOS.add(devopsIngressPathDO);
                 ingress.getSpec().getRules().get(0).getHttp()
                         .addPathsItem(createPath(path, serviceId, servicePort));
             });
