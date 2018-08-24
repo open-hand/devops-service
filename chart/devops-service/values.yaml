@@ -41,7 +41,7 @@ env:
     SPRING_CLOUD_CONFIG_URI: http://config-server.framework:8010/
     SPRING_CLOUD_CONFIG_ENABLED: true
     SERVICES_GITLAB_URL: http://git.choerodon.com.cn
-    SERVICES_GITLAB_SSHURL: http://git.choerodon.com.cn
+    SERVICES_GITLAB_SSHURL: git@choerodon.com.cn
     SERVICES_GITLAB_PASSWORD: abc123456
     SERVICES_GITLAB_PROJECTLIMIT: 100
     SERVICES_HELM_URL: helm.example.com
