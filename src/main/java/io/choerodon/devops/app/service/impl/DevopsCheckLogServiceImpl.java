@@ -594,28 +594,24 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
             List<CheckLog> logs = new ArrayList<>();
             devopsCheckLogE.setBeginCheckDate(new Date());
-            switch (version) {
-                case 8:
-                    LOGGER.info("Start to execute upgrade task 0.8");
-                    List<ApplicationDO> applications = applicationMapper.selectAll();
-                    applications.parallelStream()
-                            .filter(applicationDO ->
-                                    applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
-                            .forEach(applicationDO -> {
-                                syncWebHook(applicationDO, logs);
-                                syncBranches(applicationDO, logs);
-                            });
-                    break;
-                case 9:
-                    LOGGER.info("Start to execute upgrade task 0.9");
-                    syncNonEnvGroupProject(logs);
-                    gitOpsUserAccess();
-                    syncEnvProject(logs);
-                    syncObjects(logs);
-                    break;
-                default:
-                    LOGGER.info("version not matched");
-                    break;
+            if (version == 8) {
+                LOGGER.info("Start to execute upgrade task 0.8");
+                List<ApplicationDO> applications = applicationMapper.selectAll();
+                applications.parallelStream()
+                        .filter(applicationDO ->
+                                applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
+                        .forEach(applicationDO -> {
+                            syncWebHook(applicationDO, logs);
+                            syncBranches(applicationDO, logs);
+                        });
+            } else if (version == 9) {
+                LOGGER.info("Start to execute upgrade task 0.9");
+                syncNonEnvGroupProject(logs);
+                gitOpsUserAccess();
+                syncEnvProject(logs);
+                syncObjects(logs);
+            } else {
+                LOGGER.info("version not matched");
             }
             devopsCheckLogE.setLog(JSON.toJSONString(logs));
             devopsCheckLogE.setEndCheckDate(new Date());
