@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -1024,25 +1025,40 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             throw new CommonException(GitOpsObjectError.INGRESS_PATH_IS_EMPTY.getError());
         }
         for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
+            String path = v1beta1HTTPIngressPath.getPath();
             try {
-                DevopsIngressValidator.checkPath(v1beta1HTTPIngressPath.getPath());
-                if (pathCheckList.contains(v1beta1HTTPIngressPath.getPath())) {
+                DevopsIngressValidator.checkPath(path);
+                if (pathCheckList.contains(path)) {
                     throw new CommonException(GitOpsObjectError.INGRESS_PATH_DUPLICATED.getError());
                 } else {
-                    pathCheckList.add(v1beta1HTTPIngressPath.getPath());
+                    pathCheckList.add(path);
                 }
             } catch (Exception e) {
                 throw new CommonException(e.getMessage());
             }
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+            V1beta1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
+            String serviceName = backend.getServiceName();
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                    v1beta1HTTPIngressPath.getBackend().getServiceName(), devopsEnvironmentE.getCode());
+                    serviceName, devopsEnvironmentE.getCode());
             if (devopsServiceE == null) {
-                throw new CommonException(GitOpsObjectError.SERVICE_RELEATED_INGRESS_NOT_FOUND.getError() + v1beta1HTTPIngressPath.getBackend().getServiceName());
+                throw new CommonException(GitOpsObjectError.SERVICE_RELEATED_INGRESS_NOT_FOUND.getError() + serviceName);
+            }
+            Long servicePort;
+            IntOrString backendServicePort = backend.getServicePort();
+            if (backendServicePort.isInteger()) {
+                servicePort = backendServicePort.getIntValue().longValue();
+                if (devopsServiceE.getPorts().parallelStream()
+                        .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
+                    throw new CommonException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
+                            serviceName, servicePort);
+                }
+            } else {
+                servicePort = devopsServiceE.getPorts().get(0).getPort();
             }
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
-            devopsIngressPathDTO.setPath(v1beta1HTTPIngressPath.getPath());
-
+            devopsIngressPathDTO.setPath(path);
+            devopsIngressPathDTO.setServicePort(servicePort);
             devopsIngressPathDTO.setServiceId(devopsServiceE.getId());
             devopsIngressPathDTOS.add(devopsIngressPathDTO);
         }

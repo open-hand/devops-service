@@ -33,6 +33,7 @@ public enum GitOpsObjectError {
     INGRESS_PATH_DUPLICATED("the ingress path is duplicated"),
     INSTANCE_APP_ID_NOT_SAME("The instance is not belong to the same application"),
     SERVICE_RELEATED_INGRESS_NOT_FOUND("the related service of the ingress not exist:"),
+    INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE("the ingress path's port '{}' does not belong to service '{}'"),
     INSTANCE_RELEATED_SERVICE_NOT_FOUND("The related instance of the service not found: "),
     OBJECT_EXIST("the another file already has the same object: "),
     INGRESS_PATH_IS_EMPTY("the ingress path is empty!"),
