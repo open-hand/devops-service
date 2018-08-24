@@ -30,7 +30,7 @@ public class DevopsCheckController {
     @GetMapping
     public ResponseEntity<String> checkLog(
             @ApiParam(value = "version")
-            @RequestParam(value = "version") int version) {
+            @RequestParam(value = "version") String version) {
         devopsCheckLogService.checkLog(version);
         return new ResponseEntity<String>(System.currentTimeMillis()+"",HttpStatus.OK);
     }
