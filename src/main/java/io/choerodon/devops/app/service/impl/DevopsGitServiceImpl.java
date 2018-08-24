@@ -1075,6 +1075,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
         }
         devopsServiceReqDTO.setName(v1Service.getMetadata().getName());
+        devopsServiceReqDTO.setType(v1Service.getSpec().getType());
         devopsServiceReqDTO.setEnvId(envId);
 
         List<PortMapE> portMapList = v1Service.getSpec().getPorts().parallelStream()
