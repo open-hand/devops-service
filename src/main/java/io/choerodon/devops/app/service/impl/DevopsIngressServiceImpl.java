@@ -42,7 +42,7 @@ import io.choerodon.websocket.helper.EnvListener;
 public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String PATH_ERROR = "error.path.empty";
     private static final String PATH_DUPLICATED = "error.path.duplicated";
-    private static final String gitSuffix = "/.git";
+    private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "error.service.notContain.port";
     private static JSON json = new JSON();
 
     @Value("${services.gitlab.sshUrl}")
@@ -107,7 +107,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
             if (devopsServiceE.getPorts().parallelStream()
                     .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
-                throw new CommonException("error.service.notContain.port");
+                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }
 
             devopsIngressPathDOS.add(new DevopsIngressPathDO(
@@ -175,7 +175,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
                 if (devopsServiceE.getPorts().parallelStream()
                         .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
-                    throw new CommonException("error.service.notContain.port");
+                    throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
                 }
 
                 devopsIngressPathDOS.add(new DevopsIngressPathDO(
@@ -300,7 +300,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     .map(PortMapE::getPort).anyMatch(t -> t.equals(port))) {
                 servicePort = port.intValue();
             } else {
-                throw new CommonException("error.service.notContain.port");
+                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }
         }
         backend.setServicePort(new IntOrString(servicePort));
