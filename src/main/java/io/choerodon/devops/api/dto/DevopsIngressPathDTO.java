@@ -79,7 +79,8 @@ public class DevopsIngressPathDTO {
         }
         DevopsIngressPathDTO that = (DevopsIngressPathDTO) o;
         return Objects.equals(path, that.path)
-                && Objects.equals(serviceId, that.serviceId);
+                && Objects.equals(serviceId, that.serviceId)
+                && Objects.equals(servicePort,that.servicePort);
     }
 
     @Override
