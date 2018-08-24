@@ -179,9 +179,24 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     updateIngressPath(dd, serviceName));
         } else {
             List<PortMapE> oldPort = devopsServiceE.getPorts();
-            if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
+            if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
+                //查询网络对应的实例
+                List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
+                        devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+                Boolean isUpdate = devopsServiceReqDTO.getAppInstance()
+                        .retainAll(devopsServiceInstanceEList.stream()
+                                .map(DevopsServiceAppInstanceE::getAppInstanceId)
+                                .collect(Collectors.toList()));
+
+                if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+                        .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
+                        && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
+                    return false;
+                }
+            } else {
                 checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
+
 
             updateService(devopsServiceE,
                     devopsServiceReqDTO,
