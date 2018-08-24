@@ -8,7 +8,7 @@ import java.util.Objects;
  * Time: 11:04
  * Description:
  */
-public class PortMapE {
+public class PortMapE implements Comparable<PortMapE> {
     private String name;
     private Long port;
     private Long nodePort;
@@ -73,5 +73,19 @@ public class PortMapE {
     @Override
     public int hashCode() {
         return Objects.hash(getPort(), getNodePort(), getProtocol(), getTargetPort());
+    }
+
+    @Override
+    public int compareTo(PortMapE o) {
+        Integer portCompare = port.compareTo(o.port);
+        if (portCompare != 0) {
+            return portCompare;
+        }
+        Integer targetPortCompare = targetPort.compareTo(o.targetPort);
+        if (targetPortCompare != 0) {
+            return targetPortCompare;
+        }
+        Integer nodePortCompare = nodePort.compareTo(o.nodePort);
+        return nodePortCompare != 0 ? nodePortCompare : protocol.compareTo(o.protocol);
     }
 }
