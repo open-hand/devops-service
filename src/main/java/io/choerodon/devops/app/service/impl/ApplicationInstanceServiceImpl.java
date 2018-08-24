@@ -35,6 +35,8 @@ import io.choerodon.websocket.helper.CommandSender;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
 
+import static io.choerodon.devops.infra.common.util.FileUtil.getReplaceResult;
+
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -704,6 +706,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return c7nHelmRelease;
 
     }
+
 
     @Override
     public ReplaceResult getReplaceResult(String versionValue, String deployValue) {

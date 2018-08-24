@@ -8,7 +8,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file_resource.groovy') {
             }
 
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境 ID ') {
-                constraints(unique: true)
+//                constraints(unique: true)
             }
             column(name: 'file_path', type: 'VARCHAR(512)', remarks: '文件路径')
             column(name: 'resource_type', type: 'VARCHAR(32)', remarks: '资源类型')
@@ -22,8 +22,8 @@ databaseChangeLog(logicalFilePath: 'db/devops_env_file_resource.groovy') {
         }
     }
 
-    changeSet(id: '2018-08-01-drop-constraint', author: 'runge') {
-        dropUniqueConstraint(tableName: 'devops_env_file_resource',
-                constraintName: 'env_id')
-    }
+//    changeSet(id: '2018-08-01-drop-constraint', author: 'runge') {
+//        dropUniqueConstraint(tableName: 'devops_env_file_resource',
+//                constraintName: 'env_id')
+//    }
 }

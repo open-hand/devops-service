@@ -1371,4 +1371,30 @@ public class FileUtil {
         }
         return sshkeys;
     }
+
+    public static ReplaceResult getReplaceResult(String versionValue, String deployValue) {
+        if (versionValue == null)
+        {
+            ReplaceResult replaceResult = new ReplaceResult();
+            replaceResult.setDeltaYaml("1231");
+            return replaceResult;
+        }
+        String fileName = GenerateUUID.generateUUID() + ".yaml";
+        String path = "deployfile";
+        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
+        ReplaceResult replaceResult;
+        try {
+            replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage());
+        }
+        replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
+        FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
+        return replaceResult;
+    }
+
+    public static String returnString()
+    {
+        return "test";
+    }
 }

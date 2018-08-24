@@ -253,5 +253,14 @@ public class GitUtil {
         }
     }
 
+    public String getSshKey()
+    {
+        return sshKey;
+    }
+
+    public void setSshKey(String sshKey)
+    {
+        this.sshKey = sshKey;
+    }
 
 }

@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Primary
 import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Component
+import org.springframework.test.context.TestPropertySource
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import spock.lang.Shared
@@ -80,7 +81,6 @@ class ApplicationTemplateControllerSpec extends Specification {
 
     def "Create"() {
         given:
-        EventStoreClient eventStoreClient1 = detachedMockFactory.Mock(EventStoreClient.class)
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
         applicationTemplateDTO.setCode("test")
         applicationTemplateDTO.setName("test")
@@ -90,7 +90,6 @@ class ApplicationTemplateControllerSpec extends Specification {
         organization.setId(1L)
         organization.setCode("test")
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setId(1)
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setGitlabUserId(1L)
 
@@ -101,7 +100,6 @@ class ApplicationTemplateControllerSpec extends Specification {
         1 * iamRepository.queryOrganizationById(_) >> organization
         1 * gitlabRepository.queryGroupByName(_,_) >> null
         1 * gitlabRepository.createGroup(_,_) >> gitlabGroupE
-        1 * eventProducerTemplate.execute(_,_,_,_)
 //        entity.statusCode.is2xxSuccessful()
 //        entity.body.getCode().equals("test")
 //        applicationTemplateRepository.delete(entity.getBody().getId())
