@@ -119,7 +119,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         DevopsIngressDO devopsIngressDO = new DevopsIngressDO(projectId, envId, domain, ingressName);
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
-
+        if (!devopsIngressPathDOS.stream()
+                .allMatch(t ->
+                        devopsIngressRepository.checkIngressAndPath(null, devopsIngressDO.getDomain(), t.getPath()))) {
+            throw new CommonException("error.domain.path.exist");
+        }
         if (gitOps) {
             devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
         } else {
@@ -183,6 +187,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             DevopsIngressDO devopsIngressDO = new DevopsIngressDO(
                     id, projectId, domainEnvId, domain, name);
             devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
+            if (!devopsIngressPathDOS.stream()
+                    .allMatch(t -> (t.getId() != null && id.equals(t.getId()))
+                            || devopsIngressRepository.checkIngressAndPath(devopsIngressDO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
+                throw new CommonException("error.domain.path.exist");
+            }
             if (gitOps) {
                 devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
             } else {

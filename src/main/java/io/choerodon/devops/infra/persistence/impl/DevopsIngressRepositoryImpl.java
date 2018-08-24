@@ -74,11 +74,6 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         if (!checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
         }
-        if (!devopsIngressPathDOList.stream()
-                .allMatch(t ->
-                        checkIngressAndPath(null, devopsIngressDO.getDomain(), t.getPath()))) {
-            throw new CommonException("error.domain.path.exist");
-        }
         devopsIngressMapper.insert(devopsIngressDO);
         devopsIngressPathDOList.forEach(t -> {
             t.setIngressId(devopsIngressDO.getId());
@@ -96,11 +91,6 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         if (!devopsIngressDO.getName().equals(ingressDO.getName())
                 && !checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
-        }
-        if (!devopsIngressPathDOList.stream()
-                .allMatch(t -> (t.getId() != null && id.equals(t.getId()))
-                        || checkIngressAndPath(devopsIngressDO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
-            throw new CommonException("error.domain.path.exist");
         }
         if (!ingressDO.equals(devopsIngressDO)) {
             devopsIngressDO.setObjectVersionNumber(ingressDO.getObjectVersionNumber());
