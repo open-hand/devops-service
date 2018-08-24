@@ -120,6 +120,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     @Override
     public void checkLog(String version) {
+        LOGGER.info("start upgrade task");
         executorService.submit(new UpgradeTask(version));
     }
 
@@ -595,6 +596,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogE.setBeginCheckDate(new Date());
             switch (version) {
                 case "0.8":
+                    LOGGER.info("Start to execute upgrade task 0.8");
                     List<ApplicationDO> applications = applicationMapper.selectAll();
                     applications.parallelStream()
                             .filter(applicationDO ->
@@ -612,6 +614,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     syncObjects(logs);
                     break;
                 default:
+                    LOGGER.info("version not matched");
                     break;
             }
             devopsCheckLogE.setLog(JSON.toJSONString(logs));
