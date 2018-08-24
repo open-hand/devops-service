@@ -28,11 +28,11 @@ public class DevopsCheckController {
             roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平滑升级")
     @GetMapping
-    public ResponseEntity checkLog(
+    public ResponseEntity<String> checkLog(
             @ApiParam(value = "version")
             @RequestParam(value = "version") int version) {
         devopsCheckLogService.checkLog(version);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<String>(System.currentTimeMillis()+"",HttpStatus.OK);
     }
 
     /**
