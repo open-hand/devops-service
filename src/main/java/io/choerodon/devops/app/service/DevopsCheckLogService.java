@@ -7,7 +7,7 @@ public interface DevopsCheckLogService {
      *
      * @param version 版本
      */
-    void checkLog(String version);
+    void checkLog(int version);
 
     void updateUserMemberRole(String version);
 }
