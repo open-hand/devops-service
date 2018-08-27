@@ -96,23 +96,6 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(GitUtil)
     }
 
-//    @Bean("mockEventProducerTemplate")
-//    @Primary
-//    EventProducerTemplate eventProducerTemplate() {
-//        detachedMockFactory.Mock(EventProducerTemplate)
-//    }
-
-//    @Bean
-//    EventStoreClient eventStoreClient(){
-//        detachedMockFactory.Mock(EventStoreClient)
-//    }
-
-//    @Bean("mockDevopsGitService")
-//    @Primary
-//    DevopsGitService devopsGitService() {
-//        detachedMockFactory.Mock(DevopsGitService)
-//    }
-
 
     @Bean("mockDevopsGitRepository")
     @Primary
@@ -120,23 +103,6 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(DevopsGitRepository)
     }
 
-//    @Bean("mockDevopsEnvFileResourceRepository")
-//    @Primary
-//     DevopsEnvFileResourceRepository devopsEnvFileResourceRepository(){
-//        detachedMockFactory.Mock(DevopsEnvFileResourceRepository)
-//    }
-
-//    @Bean("mockDevopsEnvFileRepository")
-//    @Primary
-//     DevopsEnvFileRepository devopsEnvFileRepository(){
-//        detachedMockFactory.Mock(DevopsEnvFileRepository)
-//    }
-
-//    @Bean("mockDevopsEnvFileErrorRepository")
-//    @Primary
-//     DevopsEnvFileErrorRepository devopsEnvFileErrorRepository(){
-//        detachedMockFactory.Mock(DevopsEnvFileErrorRepository)
-//    }
 
     @Bean("mockDeployService")
     @Primary
@@ -144,43 +110,6 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(DeployService)
     }
 
-//    @Bean("mockApplicationInstanceRepository")
-//    @Primary
-//     ApplicationInstanceRepository applicationInstanceRepository(){
-//        detachedMockFactory.Mock(ApplicationInstanceRepository)
-//    }
-//
-//    @Bean("mockDevopsServiceRepository")
-//    @Primary
-//     DevopsServiceRepository devopsServiceRepository(){
-//        detachedMockFactory.Mock(DevopsServiceRepository)
-//    }
-//
-//    @Bean("mockDevopsIngressRepository")
-//    @Primary
-//     DevopsIngressRepository devopsIngressRepository(){
-//        detachedMockFactory.Mock(DevopsIngressRepository)
-//    }
-
-
-    @Bean("mockApplicationInstanceService")
-    @Primary
-    ApplicationInstanceService applicationInstanceService() {
-        detachedMockFactory.Mock(ApplicationInstanceService)
-    }
-
-    @Bean("mockDevopsServiceService")
-    @Primary
-    DevopsServiceService devopsServiceService() {
-        detachedMockFactory.Mock(DevopsServiceService)
-    }
-
-
-    @Bean("mockDevopsIngressService")
-    @Primary
-    DevopsIngressService devopsIngressService() {
-        detachedMockFactory.Mock(DevopsIngressService)
-    }
 
 
     @PostConstruct

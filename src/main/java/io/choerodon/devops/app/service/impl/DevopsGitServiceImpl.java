@@ -1556,7 +1556,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void initFeignClient(SagaClient sagaClient) {
+    public void initMockService(SagaClient sagaClient, ApplicationInstanceService applicationInstanceService,DevopsServiceService devopsServiceService, DevopsIngressService devopsIngressService) {
         this.sagaClient = sagaClient;
+        this.devopsIngressService = devopsIngressService;
+        this.devopsServiceService = devopsServiceService;
+        this.applicationInstanceService = applicationInstanceService;
     }
 }

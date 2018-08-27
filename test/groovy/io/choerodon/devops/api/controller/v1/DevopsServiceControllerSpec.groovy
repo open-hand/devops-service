@@ -150,8 +150,8 @@ class DevopsServiceControllerSpec extends Specification {
 
             ApplicationE applicationE = new ApplicationE(1);
             applicationE.setName("test");
-            applicationE.initProjectE(1);
-            applicationE.initGitlabProjectE(1);
+            applicationE.initProjectE(1)
+            applicationE.initGitlabProjectE(1)
             applicationE.setCode("test");
             applicationRepository.create(applicationE);
 
@@ -177,21 +177,21 @@ class DevopsServiceControllerSpec extends Specification {
             devopsEnvFileResourceE.setId(1)
             devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
             devopsEnvFileResourceE.setResourceId(1)
-            devopsEnvFileResourceE.setFilePath("/Test.yml")
+            devopsEnvFileResourceE.setFilePath("/test1.yaml")
             devopsEnvFileResourceE.setResourceType("Service")
 
             DevopsEnvFileResourceE devopsEnvFileResourceE2 = new DevopsEnvFileResourceE();
             devopsEnvFileResourceE2.setId(2)
             devopsEnvFileResourceE2.setEnvironment(devopsEnvironmentE2)
             devopsEnvFileResourceE2.setResourceId(2)
-            devopsEnvFileResourceE2.setFilePath("/Test2.yml")
+            devopsEnvFileResourceE2.setFilePath("/test2.yaml")
             devopsEnvFileResourceE2.setResourceType("Service")
 
             DevopsEnvFileResourceE devopsEnvFileResourceE3 = new DevopsEnvFileResourceE();
             devopsEnvFileResourceE3.setId(3)
             devopsEnvFileResourceE3.setEnvironment(devopsEnvironmentE2)
             devopsEnvFileResourceE3.setResourceId(3)
-            devopsEnvFileResourceE3.setFilePath("/Test2.yml")
+            devopsEnvFileResourceE3.setFilePath("/test2.yaml")
             devopsEnvFileResourceE3.setResourceType("Service")
 
             devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);

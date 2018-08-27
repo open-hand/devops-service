@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ApplicationDeployDTO
+import io.choerodon.devops.app.service.ApplicationInstanceService
 import io.choerodon.devops.domain.application.entity.ApplicationE
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE
@@ -27,6 +28,7 @@ import io.choerodon.devops.domain.application.repository.UserAttrRepository
 import io.choerodon.devops.domain.application.valueobject.ApplicationVersionReadmeV
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.CommandType
@@ -72,8 +74,10 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository
     @Autowired
+    private ApplicationInstanceService  applicationInstanceService
+    @Autowired
     @Qualifier("mockGitlabGroupMemberRepository")
-    GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    GitlabGroupMemberRepository gitlabGroupMemberRepository
     @Autowired
     @Qualifier("mockGitlabRepository")
     private GitlabRepository gitlabRepository;
@@ -91,6 +95,19 @@ class ApplicationInstanceControllerSpec extends Specification {
     private GitUtil gitUtil;
 
     def setup() {
+        FileUtil.copyFile("test/gitops/test1.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test3.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test4.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test5.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test6.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test7.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test8.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test9.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test10.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test11.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test12.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test2")
         if (initLabel == 0) {
             DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE(1L);
             ProjectE projectE = new ProjectE(1L);
@@ -168,7 +185,7 @@ class ApplicationInstanceControllerSpec extends Specification {
             devopsEnvFileResourceE.setId(1)
             devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
             devopsEnvFileResourceE.setResourceId(1)
-            devopsEnvFileResourceE.setFilePath("/Test.yml")
+            devopsEnvFileResourceE.setFilePath("/test1.yaml")
             devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
 
             devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
@@ -177,7 +194,7 @@ class ApplicationInstanceControllerSpec extends Specification {
             devopsEnvFileResourceE2.setId(2)
             devopsEnvFileResourceE2.setEnvironment(devopsEnvironmentE2)
             devopsEnvFileResourceE2.setResourceId(2)
-            devopsEnvFileResourceE2.setFilePath("/Test2.yml")
+            devopsEnvFileResourceE2.setFilePath("/test2.yaml")
             devopsEnvFileResourceE2.setResourceType("C7NHelmRelease")
             devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE2);
 
@@ -185,7 +202,7 @@ class ApplicationInstanceControllerSpec extends Specification {
             devopsEnvFileResourceE3.setId(3)
             devopsEnvFileResourceE3.setEnvironment(devopsEnvironmentE2)
             devopsEnvFileResourceE3.setResourceId(3)
-            devopsEnvFileResourceE3.setFilePath("/Test2.yml")
+            devopsEnvFileResourceE3.setFilePath("/test2.yaml")
             devopsEnvFileResourceE3.setResourceType("C7NHelmRelease")
             devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE3);
             initLabel = 1
@@ -419,7 +436,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         applicationVersionRepository.queryValue(_) >> null;
         iamRepository.queryIamProject(_) >> projectE;
         iamRepository.queryOrganizationById(_) >> organization;
-        devopsEnvFileResourceRepository.queryByEnvIdAndPath(2,"/Test2.yml").size()>1;
+        devopsEnvFileResourceRepository.queryByEnvIdAndPath(2,"/test2.yaml").size()>1;
         applicationInstanceRepository.selectById(2).status.equals(InstanceStatus.OPERATIING.getStatus());
     }
 }

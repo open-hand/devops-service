@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service
 
+import groovy.sql.Sql
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.convertor.ConvertHelper
@@ -24,8 +25,12 @@ import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
+import org.springframework.context.annotation.Primary
+import spock.lang.Shared
 import spock.lang.Specification
+import spock.mock.DetachedMockFactory
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -33,6 +38,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Import(IntegrationTestConfiguration)
 class GitlabWebHookServiceTest extends Specification {
 
+
+
+//    @Shared sql = Sql.newInstance("jdbc:h2:mem:", "sa","sa","org.h2.Driver")
 
     private static int level = 0
 
@@ -69,18 +77,17 @@ class GitlabWebHookServiceTest extends Specification {
     @Qualifier("mockDeployService")
     private DeployService deployService
 
-
-    @Autowired
-    @Qualifier("mockApplicationInstanceService")
-    private ApplicationInstanceService applicationInstanceService
-
-    @Autowired
-    @Qualifier("mockDevopsServiceService")
-    private DevopsServiceService devopsServiceService
-
-    @Autowired
-    @Qualifier("mockDevopsIngressService")
-    private DevopsIngressService devopsIngressService
+//    @Autowired
+//    @Qualifier("mockApplicationInstanceService")
+//    private ApplicationInstanceService applicationInstanceService
+//
+//    @Autowired
+//    @Qualifier("mockDevopsServiceService")
+//    private DevopsServiceService devopsServiceService
+//
+//    @Autowired
+//    @Qualifier("mockDevopsIngressService")
+//    private DevopsIngressService devopsIngressService
 
 
     @Autowired
@@ -106,29 +113,24 @@ class GitlabWebHookServiceTest extends Specification {
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
 
+    ApplicationInstanceService applicationInstanceService = Mockito.mock(ApplicationInstanceService.class)
+
+    DevopsServiceService devopsServiceService  = Mockito.mock(DevopsServiceService.class)
+
+    DevopsIngressService devopsIngressService = Mockito.mock(DevopsIngressService.class)
+
     def subscriber = Spy(DevopsGitServiceImpl)
 
 
     def setup() {
-        FileUtil.copyFile("test/gitops/test1.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test3.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test4.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test5.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test6.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test7.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test8.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test9.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test10.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test11.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test12.yaml", "gitops/test/test/test")
+
         DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
         devopsEnvironmentE.setId(1L)
         devopsEnvironmentE.setToken("123456")
         devopsEnvironmentE.setCode("test")
         devopsEnvironmentE.setGitCommit(1L)
         devopsEnvironmentE.initProjectE(1L)
-        devopsGitService.initFeignClient(sagaClient)
+        devopsGitService.initMockService(sagaClient,applicationInstanceService,devopsServiceService,devopsIngressService)
         ApplicationE applicationE = new ApplicationE()
         applicationE.setCode("testapp")
         applicationE.initProjectE(1L)

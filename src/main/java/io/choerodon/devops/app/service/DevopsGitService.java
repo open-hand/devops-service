@@ -88,5 +88,5 @@ public interface DevopsGitService {
 
     void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token);
 
-    void initFeignClient(SagaClient sagaClient);
+    void initMockService(SagaClient sagaClient, ApplicationInstanceService applicationInstanceService,DevopsServiceService devopsServiceService, DevopsIngressService devopsIngressService);
 }
