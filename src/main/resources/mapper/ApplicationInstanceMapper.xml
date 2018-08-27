@@ -132,6 +132,32 @@
         r.value_id = dv.id
     </select>
 
+    <select id="queryByInstanceId" resultType="java.lang.String">
+        SELECT
+        dv.
+        VALUE
+
+        FROM
+        (
+        SELECT
+        dai.id instance_id,
+        de.id commandId,
+        de.value_id value_id
+        FROM
+        devops_env_command de,
+        devops_app_instance dai
+        WHERE
+        de.object_id = dai.id
+        AND de.object_id = #{instanceId}
+        ORDER BY
+        de.creation_date DESC
+        LIMIT 1
+        ) r,
+        devops_env_command_value dv
+        WHERE
+        r.value_id = dv.id
+    </select>
+
     <sql id="sqlparam">
         <if test="envId != null">
             AND de.id = #{envId}

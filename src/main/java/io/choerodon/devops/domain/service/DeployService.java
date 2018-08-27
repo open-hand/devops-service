@@ -1,5 +1,8 @@
 package io.choerodon.devops.domain.service;
 
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 
 /**
@@ -7,4 +10,7 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
  */
 public interface DeployService {
     void sendCommand(DevopsEnvironmentE devopsEnvironmentE);
+
+
+    void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values,Long commandId);
 }

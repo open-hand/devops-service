@@ -142,7 +142,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
-        devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        if (devopsServiceReqDTO.getLabel() != null) {
+            devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        }
 
         insertOrUpdateService(devopsServiceReqDTO,
                 devopsServiceE,
@@ -177,9 +179,25 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     updateIngressPath(dd, serviceName));
         } else {
             List<PortMapE> oldPort = devopsServiceE.getPorts();
-            if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
+            if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
+                //查询网络对应的实例
+                List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
+                        devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+                Boolean isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
+                        .sorted().collect(Collectors.toList())
+                        .equals(devopsServiceInstanceEList.stream()
+                                .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
+                                .collect(Collectors.toList()));
+
+                if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+                        .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
+                        && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
+                    return false;
+                }
+            } else {
                 checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
+
 
             updateService(devopsServiceE,
                     devopsServiceReqDTO,
@@ -210,6 +228,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             applicationInstanceService.checkEnvProject(devopsEnvironmentE, userAttrE);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, "Service");
+            if (devopsEnvFileResourceE == null) {
+                throw new CommonException("error.fileResource.not.exist");
+            }
             List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
             if (devopsEnvFileResourceES.size() == 1) {
                 gitlabRepository.deleteFile(
@@ -401,7 +422,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceE.setName(devopsServiceReqDTO.getName());
         }
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
-        devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        if (devopsServiceReqDTO.getLabel() != null) {
+            devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        }
         devopsServiceE.setPorts(devopsServiceReqDTO.getPorts());
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         devopsServiceE.setExternalIp(devopsServiceReqDTO.getExternalIp());
@@ -462,7 +485,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 .selectByIngressId(devopsIngressDO.getId());
         devopsIngressPathEListTemp.forEach(ddTemp ->
                 v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
-                        devopsIngressService.createPath(ddTemp.getPath(), ddTemp.getServiceId())));
+                        devopsIngressService.createPath(
+                                ddTemp.getPath(), ddTemp.getServiceId(), null)));
     }
 
     private void operateEnvGitLabFile(String serviceName,

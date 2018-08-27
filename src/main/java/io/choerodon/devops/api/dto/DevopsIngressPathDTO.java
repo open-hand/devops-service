@@ -14,6 +14,7 @@ public class DevopsIngressPathDTO {
     private Long serviceId;
     private String serviceName;
     private String serviceStatus;
+    private Long servicePort;
 
     public DevopsIngressPathDTO() {
     }
@@ -60,6 +61,14 @@ public class DevopsIngressPathDTO {
         this.serviceStatus = serviceStatus;
     }
 
+    public Long getServicePort() {
+        return servicePort;
+    }
+
+    public void setServicePort(Long servicePort) {
+        this.servicePort = servicePort;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -70,7 +79,8 @@ public class DevopsIngressPathDTO {
         }
         DevopsIngressPathDTO that = (DevopsIngressPathDTO) o;
         return Objects.equals(path, that.path)
-                && Objects.equals(serviceId, that.serviceId);
+                && Objects.equals(serviceId, that.serviceId)
+                && Objects.equals(servicePort,that.servicePort);
     }
 
     @Override

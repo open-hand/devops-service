@@ -322,25 +322,24 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     break;
                 case SERVICE:
                     V1Service v1Service = json.deserialize(msg, V1Service.class);
-                    String releaseNames = v1Service.getMetadata().getAnnotations()
-                            .get("choerodon.io/network-service-instances");
-                    List<String> releases = Arrays.asList(releaseNames.split("\\+"));
+                    if (v1Service.getMetadata().getAnnotations() != null) {
+                        String releaseNames = v1Service.getMetadata().getAnnotations()
+                                .get("choerodon.io/network-service-instances");
+                        if (releaseNames != null) {
+                            List<String> releases = Arrays.asList(releaseNames.split("\\+"));
 
-                    Boolean flag = false;
-                    Map<String, String> lab = v1Service.getMetadata().getLabels();
-                    if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals("service")) {
-                        flag = true;
-                    }
-                    for (String release : releases) {
-                        applicationInstanceE = applicationInstanceRepository
-                                .selectByCode(release, envId);
-                        DevopsEnvResourceE newdevopsInsResourceE =
-                                devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                        applicationInstanceE.getId(),
-                                        KeyParseTool.getResourceType(key),
-                                        KeyParseTool.getResourceName(key));
-                        saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
-                                devopsEnvResourceDetailE, applicationInstanceE);
+                            for (String release : releases) {
+                                applicationInstanceE = applicationInstanceRepository
+                                        .selectByCode(release, envId);
+                                DevopsEnvResourceE newdevopsInsResourceE =
+                                        devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
+                                                applicationInstanceE.getId(),
+                                                KeyParseTool.getResourceType(key),
+                                                KeyParseTool.getResourceName(key));
+                                saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
+                                        devopsEnvResourceDetailE, applicationInstanceE);
+                            }
+                        }
                     }
                     break;
                 default:
@@ -805,6 +804,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void gitOpsSyncEvent(Long envId, String msg) {
+        logger.info("env {} receive git ops msg :\n{}", envId, msg);
         GitOpsSync gitOpsSync = JSONArray.parseObject(msg, GitOpsSync.class);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         DevopsEnvCommitE agentSyncCommit = devopsEnvCommitRepository.query(devopsEnvironmentE.getAgentSyncCommit());
@@ -899,7 +899,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (newdevopsEnvResourceE == null) {
             devopsEnvResourceE.initDevopsInstanceResourceMessageE(
                     devopsEnvResourceDetailRepository.create(devopsEnvResourceDetailE).getId());
-            if (!devopsEnvResourceE.getKind().equals(ResourceType.INGRESS.getType())) {
+            if (!devopsEnvResourceE.getKind().equals(ResourceType.INGRESS.getType())
+                    && applicationInstanceE != null) {
                 devopsEnvResourceE.initApplicationInstanceE(applicationInstanceE.getId());
             }
             devopsEnvResourceRepository.create(devopsEnvResourceE);

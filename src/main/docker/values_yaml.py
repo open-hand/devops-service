@@ -1,6 +1,5 @@
 import sys
 from ruamel.yaml import YAML
-import argparse
 
 
 def set_map_item(follow_list, delta_map, value):
@@ -26,6 +25,7 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
         follow_keys_copy = list(follow_keys)
         follow_keys_copy.append(key)
         # check version values if exit the same key
+
         if type(deploy_value_map[key]).__name__ == 'CommentedMap':
             if key in version_value_map.keys():
                 if type(version_value_map[key]).__name__ == 'CommentedMap':
@@ -42,10 +42,10 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
                 add_list.append(follow_keys_copy)
                 version_value_map[key] = deploy_value_map[key]
                 set_map_item(follow_keys_copy, delta_map, dict(deploy_value_map[key]))
-        elif type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int':
+        elif type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int' or type(deploy_value_map[key]).__name__ == 'bool' or type(deploy_value_map[key]).__name__ == 'PreservedScalarString':
             # check if exist
             if key in version_value_map.keys():
-                if (type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int') and (version_value_map[key] != deploy_value_map[key]):
+                if (type(deploy_value_map[key]).__name__ == 'str' or type(deploy_value_map[key]).__name__ == 'int' or type(deploy_value_map[key]).__name__ == 'bool' or  type(deploy_value_map[key]).__name__ == 'PreservedScalarString') and (version_value_map[key] != deploy_value_map[key]):
                     # not equal,replace
                     #
                     update_list.append(follow_keys_copy)
@@ -94,10 +94,12 @@ def main():
     traversal(code_old, code_new, follow_keys, delta_map, update, add)
     yaml.dump(code_old, sys.stdout)
 
-    print("---")
+    split = '------love----you------choerodon----'
+
+    print(split)
     yaml.dump(delta_map, sys.stdout)
 
-    print("---")
+    print(split)
     change_key_map = dict()
 
     change_key_map["add"] = add
@@ -107,3 +109,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+

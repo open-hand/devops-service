@@ -53,21 +53,23 @@ public class K8sUtil {
                 status = INIT + pod.getSpec().getInitContainers().size();
             }
         } else {
-            if (!"Pending".equals(pod.getStatus().getPhase()) && !pod.getStatus().getContainerStatuses().isEmpty()) {
-                V1ContainerStatus containerStatus = pod.getStatus().getContainerStatuses().get(0);
-                V1ContainerState containerState = containerStatus.getState();
-                V1ContainerStateWaiting containerStateWaiting = containerState.getWaiting();
-                V1ContainerStateTerminated containerStateTerminated = containerState.getTerminated();
+            if (pod.getStatus().getContainerStatuses() != null) {
+                if (!"Pending".equals(pod.getStatus().getPhase()) && !pod.getStatus().getContainerStatuses().isEmpty()) {
+                    V1ContainerStatus containerStatus = pod.getStatus().getContainerStatuses().get(0);
+                    V1ContainerState containerState = containerStatus.getState();
+                    V1ContainerStateWaiting containerStateWaiting = containerState.getWaiting();
+                    V1ContainerStateTerminated containerStateTerminated = containerState.getTerminated();
 
-                if (containerStateWaiting != null && containerStateWaiting.getReason().length() != 0) {
-                    status = containerStateWaiting.getReason();
-                } else if (containerStateTerminated != null) {
-                    if (containerStateTerminated.getReason().length() != 0) {
-                        status = containerStateTerminated.getReason();
-                    } else {
-                        status = containerStateTerminated.getSignal() != 0
-                                ? SIGNAL + containerStateTerminated.getSignal()
-                                : EXIT_CODE + containerStateTerminated.getExitCode();
+                    if (containerStateWaiting != null && containerStateWaiting.getReason().length() != 0) {
+                        status = containerStateWaiting.getReason();
+                    } else if (containerStateTerminated != null) {
+                        if (containerStateTerminated.getReason().length() != 0) {
+                            status = containerStateTerminated.getReason();
+                        } else {
+                            status = containerStateTerminated.getSignal() != 0
+                                    ? SIGNAL + containerStateTerminated.getSignal()
+                                    : EXIT_CODE + containerStateTerminated.getExitCode();
+                        }
                     }
                 }
             }

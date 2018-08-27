@@ -50,7 +50,8 @@
     <select id="listDevopsService" resultType="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
         SELECT
         ds.id,
-        ds.`name`
+        ds.`name`,
+        ds.ports
         FROM
         devops_service ds
         WHERE ds.`status` = 'running'
@@ -195,12 +196,6 @@
                     ds.external_ip LIKE CONCAT(CONCAT('%', #{externalIp, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.targetPort != null and searchParam.targetPort.size > 0'>
-                AND
-                <foreach collection="searchParam.targetPort" item="targetPort" open="(" separator=" OR " close=")">
-                    ds.target_port LIKE CONCAT(CONCAT('%', #{targetPort, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
             <if test='searchParam.code != null and searchParam.code.size > 0'>
                 AND
                 <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
@@ -214,7 +209,6 @@
             OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR ds.target_port LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dsai.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </sql>

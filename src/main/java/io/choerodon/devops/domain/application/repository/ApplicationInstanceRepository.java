@@ -34,4 +34,6 @@ public interface ApplicationInstanceRepository {
     List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId);
 
     List<ApplicationInstanceE> list();
+
+    String queryValueByInstanceId(Long instanceId);
 }

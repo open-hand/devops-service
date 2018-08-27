@@ -19,4 +19,12 @@ public class CheckLog {
     public void setResult(String result) {
         this.result = result;
     }
+
+    @Override
+    public String toString() {
+        return "CheckLog{" +
+                "content='" + content + '\'' +
+                ", result='" + result + '\'' +
+                '}';
+    }
 }

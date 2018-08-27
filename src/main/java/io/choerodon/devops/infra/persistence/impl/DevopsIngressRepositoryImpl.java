@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -73,11 +74,6 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         if (!checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
         }
-        if (!devopsIngressPathDOList.stream()
-                .allMatch(t ->
-                        checkIngressAndPath(null, devopsIngressDO.getDomain(), t.getPath()))) {
-            throw new CommonException("error.domain.path.exist");
-        }
         devopsIngressMapper.insert(devopsIngressDO);
         devopsIngressPathDOList.forEach(t -> {
             t.setIngressId(devopsIngressDO.getId());
@@ -95,11 +91,6 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         if (!devopsIngressDO.getName().equals(ingressDO.getName())
                 && !checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
-        }
-        if (!devopsIngressPathDOList.stream()
-                .allMatch(t -> (t.getId() != null && id.equals(t.getId()))
-                        || checkIngressAndPath(devopsIngressDO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
-            throw new CommonException("error.domain.path.exist");
         }
         if (!ingressDO.equals(devopsIngressDO)) {
             devopsIngressDO.setObjectVersionNumber(ingressDO.getObjectVersionNumber());
@@ -135,7 +126,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     @Override
     public Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, PageRequest pageRequest, String params) {
         List<DevopsIngressDTO> devopsIngressDTOS = new ArrayList<>();
-        Map<String, Object> maps = gson.fromJson(params, Map.class);
+        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {}.getType());
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
 
@@ -312,12 +303,10 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
 
     private void getDevopsIngressDTO(DevopsIngressDTO devopsIngressDTO, DevopsIngressPathDO e) {
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(e.getServiceId());
-        if (devopsServiceE == null) {
-            devopsIngressDTO.addDevopsIngressPathDTO(new DevopsIngressPathDTO(
-                    e.getPath(), e.getServiceId(), e.getServiceName(), ServiceStatus.DELETED.getStatus()));
-        } else {
-            devopsIngressDTO.addDevopsIngressPathDTO(new DevopsIngressPathDTO(
-                    e.getPath(), e.getServiceId(), e.getServiceName(), devopsServiceE.getStatus()));
-        }
+        DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO(
+                e.getPath(), e.getServiceId(), e.getServiceName(),
+                devopsServiceE == null ? ServiceStatus.DELETED.getStatus() : devopsServiceE.getStatus());
+        devopsIngressPathDTO.setServicePort(e.getServicePort());
+        devopsIngressDTO.addDevopsIngressPathDTO(devopsIngressPathDTO);
     }
 }

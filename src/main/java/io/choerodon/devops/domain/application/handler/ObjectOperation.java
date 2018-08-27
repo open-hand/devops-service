@@ -15,7 +15,6 @@ import org.yaml.snakeyaml.nodes.Tag;
 import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
@@ -51,14 +50,17 @@ public class ObjectOperation<T> {
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
-        String path = fileCode + ".yaml";
         if (operationType.equals("create")) {
+            String path = fileCode + ".yaml";
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,
                     "ADD FILE", TypeUtil.objToInteger(userId));
 
         } else {
             DevopsEnvFileResourceRepository devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, objectId, objectType);
+            if (devopsEnvFileResourceE == null) {
+                throw new CommonException("error.fileResource.not.exist");
+            }
             gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
         }
