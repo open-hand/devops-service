@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
 import java.io.File;
+import java.util.Objects;
 
 /**
  * Creator: Runge
@@ -63,5 +64,22 @@ public class DevopsEnvFileResourceE {
 
     public void setResourceId(Long resourceId) {
         this.resourceId = resourceId;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DevopsEnvFileResourceE that = (DevopsEnvFileResourceE) o;
+        return Objects.equals(filePath, that.filePath) &&
+                Objects.equals(resourceType, that.resourceType) &&
+                Objects.equals(resourceId, that.resourceId);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(filePath, resourceType, resourceId);
     }
 }

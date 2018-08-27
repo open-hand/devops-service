@@ -328,7 +328,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         List<String> operationFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();
-        List<DevopsEnvFileResourceE> beforeSync = new ArrayList<>();
+        Set<DevopsEnvFileResourceE> beforeSync = new HashSet<>();
         List<DevopsEnvFileResourceE> beforeSyncDelete = new ArrayList<>();
         String path = "";
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
@@ -369,11 +369,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             operationFiles.add(t.getNewPath());
                         }
                     }
-                    List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                            .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getOldPath());
-                    if (!devopsEnvFileResourceES.isEmpty()) {
-                        beforeSync.addAll(devopsEnvFileResourceES);
-                    }
+
+                        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                                .queryByEnvIdAndPath(devopsEnvironmentE.getId(), t.getOldPath());
+                        if (!devopsEnvFileResourceES.isEmpty()) {
+                            beforeSync.addAll(devopsEnvFileResourceES);
+                        }
                 });
 
                 deletedFiles.parallelStream().forEach(file -> {
@@ -407,7 +408,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //处理对象关系
             handlerObjectRelations(
                     objectPath,
-                    beforeSync,
+                    new ArrayList<>(beforeSync),
                     c7nHelmReleases,
                     v1Services,
                     v1beta1Ingresses,
