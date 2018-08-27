@@ -127,10 +127,10 @@ public class ApplicationInstanceController {
      * @return string
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "获取部署 Value")
+            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取升级 Value")
     @GetMapping(value = "/{appInstanceId}/appVersion/{appVersionId}/value")
-    public ResponseEntity<ReplaceResult> queryValue(
+    public ResponseEntity<ReplaceResult> queryUpgradeValue(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署ID", required = true)

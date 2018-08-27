@@ -7,6 +7,7 @@ public class AppInstanceCodeDTO {
 
     private String id;
     private String code;
+    private String appVersion;
 
     public String getId() {
         return id;
@@ -22,5 +23,13 @@ public class AppInstanceCodeDTO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getAppVersion() {
+        return appVersion;
+    }
+
+    public void setAppVersion(String appVersion) {
+        this.appVersion = appVersion;
     }
 }
