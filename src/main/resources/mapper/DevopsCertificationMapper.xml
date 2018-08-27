@@ -7,13 +7,20 @@
             *
         FROM
             devops_certification
+        JOIN devops_env AS de ON env_id = de.id
         WHERE
-            1
+            de.project_id = #{projectId}
         <if test='searchParam != null'>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
                 AND
                 <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
                     `name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envId != null and searchParam.envId.size > 0'>
+                AND
+                <foreach collection="searchParam.envId" item="envId" open="(" separator=" OR " close=")">
+                    env_id = #{envId}
                 </foreach>
             </if>
             <if test='searchParam.domain != null and searchParam.domain.size > 0'>
@@ -36,6 +43,7 @@
             devops_certification
         WHERE
             `status` = 'active'
+            AND env_id = #{envId}
             AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
     </select>
 </mapper>

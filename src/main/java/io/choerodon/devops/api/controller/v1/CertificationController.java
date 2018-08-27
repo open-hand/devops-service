@@ -53,7 +53,7 @@ public class CertificationController {
     public ResponseEntity create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "证书名称", required = true)
+            @ApiParam(value = "证书", required = true)
             @RequestBody C7nCertificationDTO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
@@ -104,7 +104,7 @@ public class CertificationController {
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(certificationService.page(pageRequest, params))
+        return Optional.ofNullable(certificationService.page(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.page"));
     }
@@ -123,9 +123,11 @@ public class CertificationController {
     public ResponseEntity<List<CertificationDTO>> getActiveByDomain(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境ID")
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名")
             @RequestParam(value = "domain") String domain) {
-        return Optional.ofNullable(certificationService.getActiveByDomain(domain))
+        return Optional.ofNullable(certificationService.getActiveByDomain(envId, domain))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
     }

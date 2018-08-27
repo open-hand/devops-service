@@ -63,14 +63,14 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public Page<CertificationDTO> page(PageRequest pageRequest, String params) {
+    public Page<CertificationDTO> page(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         Page<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPage(
                 PageHelper.doPageAndSort(pageRequest,
-                        () -> devopsCertificationMapper.selectCertification(searchParamMap, param)),
+                        () -> devopsCertificationMapper.selectCertification(projectId, searchParamMap, param)),
                 CertificationDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
@@ -83,8 +83,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public List<CertificationDTO> getActiveByDomain(String domain) {
-        return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(domain),
+    public List<CertificationDTO> getActiveByDomain(Long envId, String domain) {
+        return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(envId, domain),
                 CertificationDTO.class);
     }
 
