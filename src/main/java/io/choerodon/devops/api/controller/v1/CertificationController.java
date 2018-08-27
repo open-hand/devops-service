@@ -45,7 +45,7 @@ public class CertificationController {
      * @param certification 证书
      * @param key        key文件
      * @param cert       cert文件
-     * @return 204, "No Content"
+     * @return 201, "Created"
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下创建证书")
@@ -60,7 +60,7 @@ public class CertificationController {
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
         certificationService.create(projectId, certification, key, cert, false);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.CREATED);
     }
 
     /**
@@ -76,7 +76,7 @@ public class CertificationController {
     public ResponseEntity delete(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "证书id")
+            @ApiParam(value = "证书id", required = true)
             @RequestParam(value = "cert_id") Long certId) {
         certificationService.deleteById(certId, false);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -118,14 +118,13 @@ public class CertificationController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "通过域名查询已生效的证书")
-    @CustomPageRequest
     @PostMapping("/active")
     public ResponseEntity<List<CertificationDTO>> getActiveByDomain(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境ID")
+            @ApiParam(value = "环境ID", required = true)
             @RequestParam(value = "env_id") Long envId,
-            @ApiParam(value = "域名")
+            @ApiParam(value = "域名", required = true)
             @RequestParam(value = "domain") String domain) {
         return Optional.ofNullable(certificationService.getActiveByDomain(envId, domain))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
