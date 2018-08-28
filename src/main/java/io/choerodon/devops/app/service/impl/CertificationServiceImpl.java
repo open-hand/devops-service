@@ -136,7 +136,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         ObjectOperation<C7nCertification> objectOperation = new ObjectOperation<>();
         objectOperation.setType(c7nCertification);
-        objectOperation.operationEnvGitlabFile("ing-" + certName,
+        objectOperation.operationEnvGitlabFile(CERT_PREFIX + certName,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "create",
                 userAttrE.getGitlabUserId(), null, null, null, null);
     }
