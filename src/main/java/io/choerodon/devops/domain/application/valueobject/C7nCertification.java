@@ -20,6 +20,14 @@ public class C7nCertification {
         this.kind = "Certificate";
     }
 
+    public void setApiVersion(String apiVersion) {
+        this.apiVersion = apiVersion;
+    }
+
+    public void setKind(String kind) {
+        this.kind = kind;
+    }
+
     public String getApiVersion() {
         return apiVersion;
     }

@@ -12,23 +12,27 @@ import java.util.Map;
  * Description:
  */
 public class CertificationConfig {
-    private static final Map<String, String> http = new HashMap();
+    private Map<String, String> http01;
     private List<String> domains;
-
-    static {
-        http.put("ingressClass", "nginx");
-    }
 
     public CertificationConfig() {
         this.domains = new ArrayList<>();
+        this.http01 = new HashMap<>();
+        this.http01.put("ingressClass", "nginx");
     }
 
     public CertificationConfig(List<String> domains) {
         this.domains = domains;
+        this.http01 = new HashMap<>();
+        this.http01.put("ingressClass", "nginx");
     }
 
-    public static Map<String, String> getHttp() {
-        return http;
+    public void setHttp01(Map<String, String> http01) {
+        this.http01 = http01;
+    }
+
+    public Map<String, String> getHttp01() {
+        return http01;
     }
 
     public List<String> getDomains() {
