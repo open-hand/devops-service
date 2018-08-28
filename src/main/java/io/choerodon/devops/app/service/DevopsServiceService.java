@@ -17,10 +17,19 @@ public interface DevopsServiceService {
      *
      * @param projectId           项目id
      * @param devopsServiceReqDTO 部署网络参数
-     * @param isGitOps            是否是 GitOps 操作
      * @return Boolean
      */
-    Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Boolean isGitOps);
+    Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO);
+
+
+    /**
+     * 部署网络,GitOps
+     *
+     * @param projectId           项目id
+     * @param devopsServiceReqDTO 部署网络参数
+     * @return Boolean
+     */
+    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO);
 
     /**
      * 更新网络
@@ -28,18 +37,35 @@ public interface DevopsServiceService {
      * @param projectId           项目id
      * @param id                  网络Id
      * @param devopsServiceReqDTO 部署网络参数
-     * @param isGitOps            是否是 GitOps 操作
      * @return boolean
      */
-    Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO, Boolean isGitOps);
+    Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
+
+    /**
+     * 更新网络
+     *
+     * @param projectId           项目id
+     * @param id                  网络Id
+     * @param devopsServiceReqDTO 部署网络参数
+     * @return boolean
+     */
+    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
+
 
     /**
      * 删除网络
      *
      * @param id       网络ID
-     * @param isGitOps 是否是 GitOps 操作
      */
-    void deleteDevopsService(Long id, Boolean isGitOps);
+    void deleteDevopsService(Long id);
+
+
+    /**
+     * 删除网络
+     *
+     * @param id       网络ID
+     */
+    void deleteDevopsServiceByGitOps(Long id);
 
     /**
      * 检查网络唯一性

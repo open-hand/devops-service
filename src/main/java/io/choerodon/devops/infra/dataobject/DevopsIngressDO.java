@@ -4,7 +4,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.List;
 import java.util.Objects;
+
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -35,6 +38,10 @@ public class DevopsIngressDO extends AuditDomain {
     private String envName;
     @Transient
     private String namespace;
+    @Transient
+    private List<DevopsIngressPathDO> devopsIngressPathDOS;
+
+
 
     public DevopsIngressDO() {
     }
@@ -53,15 +60,31 @@ public class DevopsIngressDO extends AuditDomain {
         this.name = name;
     }
 
+    public DevopsIngressDO(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public DevopsIngressDO(Long projectId, String name) {
+        this.projectId = projectId;
+        this.name = name;
+    }
+
+    public DevopsIngressDO(String domain, Long projectId) {
+        this.projectId = projectId;
+        this.domain = domain;
+    }
+
+
     /**
      * 构造函数
      */
-    public DevopsIngressDO(Long id, Long projectId, Long envId, String domain, String name) {
+    public DevopsIngressDO(Long id, Long projectId, Long envId, String domain, String name, String status) {
         this.id = id;
         this.name = name;
         this.projectId = projectId;
         this.envId = envId;
         this.domain = domain;
+        this.status = status;
     }
 
     public Long getId() {
@@ -143,6 +166,14 @@ public class DevopsIngressDO extends AuditDomain {
 
     public void setCertId(Long certId) {
         this.certId = certId;
+    }
+
+    public List<DevopsIngressPathDO> getDevopsIngressPathDOS() {
+        return devopsIngressPathDOS;
+    }
+
+    public void setDevopsIngressPathDOS(List<DevopsIngressPathDO> devopsIngressPathDOS) {
+        this.devopsIngressPathDOS = devopsIngressPathDOS;
     }
 
     @Override

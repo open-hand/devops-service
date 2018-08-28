@@ -17,9 +17,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface DevopsIngressRepository {
-    void createIngress(DevopsIngressDO devopsIngressDO, List<DevopsIngressPathDO> devopsIngressPathDOList);
+    void createIngress(DevopsIngressDO devopsIngressDO);
 
-    void updateIngress(DevopsIngressDO devopsIngressDO, List<DevopsIngressPathDO> devopsIngressPathDOList);
+    void updateIngressAndIngressPath(DevopsIngressDO devopsIngressDO);
 
     void updateIngress(DevopsIngressDO devopsIngressDO);
 
