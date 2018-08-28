@@ -148,9 +148,7 @@ public class CertificationServiceImpl implements CertificationService {
         envUtil.checkEnvConnection(certEnvId, envListener);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
 
-        if (isGitOps) {
-            certificationRepository.deleteById(certId);
-        } else {
+        if (!isGitOps) {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
             Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
@@ -178,9 +176,8 @@ public class CertificationServiceImpl implements CertificationService {
                         "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
                         devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
             }
-            certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
-            certificationRepository.updateStatus(certificationE);
         }
+        certificationRepository.deleteById(certId);
     }
 
     @Override
