@@ -2,9 +2,6 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.app.service.ApplicationInstanceService
-import io.choerodon.devops.app.service.DevopsIngressService
-import io.choerodon.devops.app.service.DevopsServiceService
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -110,6 +107,12 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(DeployService)
     }
 
+
+    @Bean("mockApplicationTemplateRepository")
+    @Primary
+    ApplicationTemplateRepository applicationTemplateRepository() {
+        detachedMockFactory.Mock(ApplicationTemplateRepository)
+    }
 
 
     @PostConstruct
