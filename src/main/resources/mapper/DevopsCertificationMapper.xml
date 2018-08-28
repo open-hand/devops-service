@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationMapper">
     <select id="selectCertification" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
         SELECT
-            *
+            devops_certification.*
         FROM
             devops_certification
         JOIN devops_env AS de ON env_id = de.id
