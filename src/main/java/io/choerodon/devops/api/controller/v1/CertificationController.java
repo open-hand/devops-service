@@ -54,12 +54,14 @@ public class CertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @RequestBody C7nCertificationDTO certification,
-            @ApiParam(value = "key文件")
-            @RequestParam(value = "key", required = false) MultipartFile key,
-            @ApiParam(value = "cert文件")
-            @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        certificationService.create(projectId, certification, key, cert, false);
+            @RequestBody C7nCertificationDTO certification
+//            ,
+//            @ApiParam(value = "key文件")
+//            @RequestParam(value = "key", required = false) MultipartFile key,
+//            @ApiParam(value = "cert文件")
+//            @RequestParam(value = "cert", required = false) MultipartFile cert) {
+        ){
+        certificationService.create(projectId, certification, null, null, false);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
 

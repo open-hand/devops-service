@@ -78,27 +78,21 @@ public class CertificationServiceImpl implements CertificationService {
         devopsCertificationValidator.checkCertification(envId, certName);
         // agent certification
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        C7nCertification c7nCertification = getC7nCertification(
-                projectId, certName, type, domains, key, cert, devopsEnvironmentE.getCode());
-
-        // sent certification to agent
-        ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
-        certificationOperation.setType(c7nCertification);
-        certificationOperation.operationEnvGitlabFile(
-                CERT_PREFIX + certName, devopsEnvironmentE.getGitlabEnvProjectId().intValue(),
-                "create", TypeUtil.objToLong(ADMIN_ID),
-                null, null, null, null);
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
                 certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus());
         // create
-        if (isGitOps) {
-            certificationRepository.create(certificationE);
-        } else {
-            operateEnvGitLabFile(certName, devopsEnvironmentE,
-                    c7nCertification, devopsEnvironmentE.getId(), certificationE);
+        if (!isGitOps) {
+            C7nCertification c7nCertification = getC7nCertification(
+                    projectId, certName, type, domains, key, cert, devopsEnvironmentE.getCode());
+
+            // sent certification to agent
+            ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
+            certificationOperation.setType(c7nCertification);
+            operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
         }
+        certificationRepository.create(certificationE);
     }
 
     private C7nCertification getC7nCertification(Long projectId, String name, String type, List<String> domains,
@@ -128,26 +122,23 @@ public class CertificationServiceImpl implements CertificationService {
             spec.setExistCert(existCert);
         }
         spec.setCommonName(domains.get(0));
-        spec.setDnsNames(domains.stream().skip(1).collect(Collectors.toList()));
+        spec.setDnsNames(domains.size() > 1 ? domains.stream().skip(1).collect(Collectors.toList()) : null);
         c7nCertification.setSpec(spec);
         return c7nCertification;
     }
 
     private void operateEnvGitLabFile(String certName,
                                       DevopsEnvironmentE devopsEnvironmentE,
-                                      C7nCertification c7nCertification,
-                                      Long envId,
-                                      CertificationE certificationE) {
+                                      C7nCertification c7nCertification) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+        devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
 
         ObjectOperation<C7nCertification> objectOperation = new ObjectOperation<>();
         objectOperation.setType(c7nCertification);
         objectOperation.operationEnvGitlabFile("ing-" + certName,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "create",
-                userAttrE.getGitlabUserId(), null, "Ingress", envId, path);
-        certificationRepository.create(certificationE);
+                userAttrE.getGitlabUserId(), null, null, null, null);
     }
 
     @Override

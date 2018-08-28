@@ -72,6 +72,7 @@ public class ObjectOperation<T> {
         skipNullRepresenter.addClassTag(type.getClass(), tag);
         DumperOptions options = new DumperOptions();
         options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
         Yaml yaml = new Yaml(skipNullRepresenter, options);
         return yaml;
     }
