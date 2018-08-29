@@ -6,6 +6,7 @@ import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
 import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
 import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
 /**
@@ -116,4 +117,6 @@ public interface DevopsEnvironmentService {
 
 
     EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId);
+
+    String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE);
 }

@@ -37,11 +37,14 @@ import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.SerializableOperation;
 import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.certification.CertificationSpec;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
@@ -63,7 +66,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
+    private static final String ERROR_MESSAGE = "the another file already has the same object :";
+
     private ObjectMapper objectMapper = new ObjectMapper();
+
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
@@ -117,6 +123,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
     private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository;
+    @Autowired
+    private CertificationRepository certificationRepository;
+    @Autowired
+    private CertificationService certificationService;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -348,7 +358,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             String url = String.format("git@%s:%s-%s-gitops/%s.git",
                     gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
 
-
             //更新本地库到最新提交
             handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
             tagNotExist = getDevopsSyncTag(pushWebHookDTO);
@@ -404,12 +413,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
         List<V1Service> v1Services = new ArrayList<>();
         List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();
+        List<C7nCertification> c7nCertifications = new ArrayList<>();
 
         Map<String, String> objectPath = new HashMap<>();
         try {
             //从文件中读出对象
             handleFilesToObject(operationFiles, path, c7nHelmReleases,
-                    v1Services, v1beta1Ingresses,
+                    v1Services, v1beta1Ingresses, c7nCertifications,
                     objectPath, devopsEnvironmentE.getId(),
                     beforeSyncDelete);
 
@@ -420,6 +430,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     c7nHelmReleases,
                     v1Services,
                     v1beta1Ingresses,
+                    c7nCertifications,
                     devopsEnvironmentE.getId(),
                     devopsEnvironmentE.getProjectE().getId(),
                     path
@@ -581,6 +592,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                      List<C7nHelmRelease> c7nHelmReleases,
                                      List<V1Service> v1Services,
                                      List<V1beta1Ingress> v1beta1Ingresses,
+                                     List<C7nCertification> c7nCertifications,
                                      Map<String, String> objectPath,
                                      Long envId,
                                      List<DevopsEnvFileResourceE> beforeSyncDelete) {
@@ -656,6 +668,38 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                 v1Services.add(serializableSvc);
                             }
                             break;
+                        case "Certificate":
+                            C7nCertification c7nCertification = new C7nCertification();
+                            SerializableOperation<C7nCertification> c7nCertificationSerializableOperation
+                                    = new SerializableOperation<>();
+                            c7nCertificationSerializableOperation.setT(c7nCertification);
+                            C7nCertification serializableCert = c7nCertificationSerializableOperation
+                                    .serializable(jsonObject.toJSONString(), filePath, objectPath);
+                            String certName = serializableCert.getMetadata().getName();
+                            if (certName == null) {
+                                throw new CommonException("The C7nCertification does not have name");
+                            }
+                            CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+                            if (certificationE != null) {
+                                Long certId = certificationE.getId();
+                                if (beforeSyncDelete.parallelStream()
+                                        .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
+                                                .equals(serializableCert.getKind()))
+                                        .noneMatch(devopsEnvFileResourceE ->
+                                                devopsEnvFileResourceE.getResourceId()
+                                                        .equals(certId))) {
+                                    hasSameObject(envId, objectPath, certName, serializableCert.getKind(),
+                                            certId, path, serializableCert.hashCode());
+                                }
+                            }
+                            if (c7nCertifications.parallelStream()
+                                    .anyMatch(certification -> certification.getMetadata().getName()
+                                            .equals(certName))) {
+                                createDevopsFileError(devopsEnvFileErrorE, ERROR_MESSAGE + certName);
+                            } else {
+                                c7nCertifications.add(serializableCert);
+                            }
+                            break;
                         default:
                             break;
                     }
@@ -674,10 +718,73 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                         List<C7nHelmRelease> c7nHelmReleases,
                                         List<V1Service> v1Services,
                                         List<V1beta1Ingress> v1beta1Ingresses,
+                                        List<C7nCertification> c7nCertifications,
                                         Long envId, Long projectId, String path) {
         handlerC7nReleaseRelations(objectPath, beforeSync, c7nHelmReleases, envId, projectId, path);
         handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId, path);
         handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId, path);
+        handlerC7nCertifications(objectPath, beforeSync, c7nCertifications, envId, path);
+    }
+
+    private void handlerC7nCertifications(Map<String, String> objectPath,
+                                          List<DevopsEnvFileResourceE> beforeSync,
+                                          List<C7nCertification> c7nCertifications, Long envId, String path) {
+        beforeSync.parallelStream().filter(devopsEnvFileResourceE ->
+                devopsEnvFileResourceE.getResourceType().equals("Certificate"))
+                .map(devopsEnvFileResourceE -> {
+                    CertificationE certificationE = certificationRepository
+                            .queryById(devopsEnvFileResourceE.getResourceId());
+                    if (certificationE == null) {
+                        throw new CommonException("the certification in the file is not exist in devops database");
+                    }
+                    return certificationE.getName();
+                })
+                .forEach(certName -> {
+                    CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+                    certificationService.deleteById(certificationE.getId(), true);
+                    devopsEnvFileResourceRepository
+                            .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
+                });
+        c7nCertifications.parallelStream().forEach(c7nCertification -> {
+            DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(
+                    envId, objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())), path);
+            try {
+                DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())));
+                devopsEnvFileResourceE.setResourceId(
+                        getOrCreateCertificationId(envId, c7nCertification, c7nCertification.getMetadata().getName()));
+                devopsEnvFileResourceE.setResourceType(c7nCertification.getKind());
+                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+            } catch (Exception e) {
+                devopsEnvFileErrorE.setError(e.getMessage());
+                devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
+                throw new CommonException(e.getMessage());
+            }
+        });
+    }
+
+    private Long getOrCreateCertificationId(Long envId, C7nCertification c7nCertification, String certName) {
+        CertificationE certificationE = certificationRepository
+                .queryByEnvAndName(envId, certName);
+        DevopsEnvironmentE environmentE = new DevopsEnvironmentE(envId);
+        if (certificationE == null) {
+            certificationE = new CertificationE();
+            CertificationSpec certificationSpec = c7nCertification.getSpec();
+            String domain = certificationSpec.getCommonName();
+            List<String> dnsDomain = certificationSpec.getDnsNames();
+            List<String> domains = new ArrayList<>();
+            domains.add(domain);
+            if (dnsDomain != null && !dnsDomain.isEmpty()) {
+                domains.addAll(dnsDomain);
+            }
+            certificationE.setDomains(domains);
+            certificationE.setEnvironmentE(environmentE);
+            certificationE.setName(certName);
+            certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
+            certificationE = certificationRepository.create(certificationE);
+        }
+        return certificationE.getId();
     }
 
     private void handlerServiceRelations(Map<String, String> objectPath,
