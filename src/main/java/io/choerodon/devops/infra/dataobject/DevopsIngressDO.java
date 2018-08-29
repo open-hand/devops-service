@@ -29,6 +29,7 @@ public class DevopsIngressDO extends AuditDomain {
     private String domain;
     private Boolean isUsable;
     private String status;
+    private Long certId;
 
     @Transient
     private String envName;
@@ -40,20 +41,6 @@ public class DevopsIngressDO extends AuditDomain {
 
     public DevopsIngressDO(String name) {
         this.name = name;
-    }
-
-    public DevopsIngressDO(Long projectId) {
-        this.projectId = projectId;
-    }
-
-    public DevopsIngressDO(Long projectId, String name) {
-        this.projectId = projectId;
-        this.name = name;
-    }
-
-    public DevopsIngressDO(String domain, Long projectId) {
-        this.projectId = projectId;
-        this.domain = domain;
     }
 
     /**
@@ -148,6 +135,14 @@ public class DevopsIngressDO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getCertId() {
+        return certId;
+    }
+
+    public void setCertId(Long certId) {
+        this.certId = certId;
     }
 
     @Override

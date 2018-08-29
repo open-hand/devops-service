@@ -20,17 +20,14 @@ import io.choerodon.devops.api.validator.DevopsIngressValidator;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
-import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.DevopsServiceE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
@@ -49,6 +46,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private static final String PATH_ERROR = "error.path.empty";
     private static final String PATH_DUPLICATED = "error.path.duplicated";
     private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "error.service.notContain.port";
+    private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
     private static JSON json = new JSON();
 
     @Value("${services.gitlab.sshUrl}")
@@ -82,6 +80,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private CertificationRepository certificationRepository;
 
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
@@ -91,12 +91,15 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsIngressValidator.checkIngressName(ingressName);
         String domain = devopsIngressDTO.getDomain();
 
+        Long certId = devopsIngressDTO.getCertId();
+        String certName = getCertName(certId);
+
         List<DevopsIngressPathDTO> pathList = devopsIngressDTO.getPathList();
         if (pathList == null || pathList.isEmpty()) {
             throw new CommonException(PATH_ERROR);
         }
 
-        V1beta1Ingress ingress = createIngress(domain, ingressName);
+        V1beta1Ingress ingress = createIngress(domain, ingressName, certName);
         List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
         List<String> pathCheckList = new ArrayList<>();
         pathList.forEach(t -> {
@@ -129,6 +132,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         DevopsIngressDO devopsIngressDO = new DevopsIngressDO(projectId, envId, domain, ingressName);
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
+        devopsIngressDO.setCertId(certId);
         if (!devopsIngressPathDOS.stream()
                 .allMatch(t ->
                         devopsIngressRepository.checkIngressAndPath(null, devopsIngressDO.getDomain(), t.getPath()))) {
@@ -147,12 +151,28 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
     }
 
+    private String getCertName(Long certId) {
+        String certName = null;
+        if (certId != null) {
+            CertificationE certificationE = certificationRepository.queryById(certId);
+            if (!certificationE.getStatus().equals(CertificationStatus.ACTIVE.getStatus())) {
+                throw new CommonException(CERT_NOT_ACTIVE);
+            }
+            certName = certificationE.getName();
+        }
+        return certName;
+    }
+
     @Override
     public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
         Long domainEnvId = devopsIngressDTO.getEnvId();
         envUtil.checkEnvConnection(domainEnvId, envListener);
         String name = devopsIngressDTO.getName();
         DevopsIngressValidator.checkIngressName(name);
+
+        Long certId = devopsIngressDTO.getCertId();
+        String certName = getCertName(certId);
+
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
         if (!devopsIngressDTO.equals(ingressDTO)) {
 
@@ -161,7 +181,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 throw new CommonException(PATH_ERROR);
             }
             String domain = devopsIngressDTO.getDomain();
-            V1beta1Ingress ingress = createIngress(domain, name);
+            V1beta1Ingress ingress = createIngress(domain, name, certName);
             List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
             List<String> pathCheckList = new ArrayList<>();
             pathList.forEach(t -> {
@@ -196,6 +216,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
             DevopsIngressDO devopsIngressDO = new DevopsIngressDO(
                     id, projectId, domainEnvId, domain, name);
+            devopsIngressDO.setCertId(certId);
             devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
             if (!devopsIngressPathDOS.stream()
                     .allMatch(t -> (t.getId() != null && id.equals(t.getId()))
@@ -321,7 +342,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public V1beta1Ingress createIngress(String host, String name) {
+    public V1beta1Ingress createIngress(String host, String name, String certName) {
         V1beta1Ingress ingress = new V1beta1Ingress();
         ingress.setKind("Ingress");
         ingress.setApiVersion("extensions/v1beta1");
@@ -334,6 +355,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         metadata.setAnnotations(new HashMap<>());
         ingress.setMetadata(metadata);
         V1beta1IngressSpec spec = new V1beta1IngressSpec();
+
         List<V1beta1IngressRule> rules = new ArrayList<>();
         V1beta1IngressRule rule = new V1beta1IngressRule();
         V1beta1HTTPIngressRuleValue http = new V1beta1HTTPIngressRuleValue();
@@ -343,6 +365,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         rule.setHttp(http);
         rules.add(rule);
         spec.setRules(rules);
+
+        if (certName != null) {
+            List<V1beta1IngressTLS> tlsList = new ArrayList<>();
+            V1beta1IngressTLS tls = new V1beta1IngressTLS();
+            tls.addHostsItem(host);
+            tls.setSecretName(certName);
+            tlsList.add(tls);
+            spec.setTls(tlsList);
+        }
+
         ingress.setSpec(spec);
         json.serialize(ingress);
         return ingress;

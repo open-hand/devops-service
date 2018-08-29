@@ -80,11 +80,12 @@ public interface DevopsIngressService {
     /**
      * 项目下创建域名
      *
-     * @param host      主机
-     * @param name      域名名称
+     * @param host     主机
+     * @param name     域名名称
+     * @param certName 证书名称
      * @return V1beta1Ingress
      */
-    V1beta1Ingress createIngress(String host, String name);
+    V1beta1Ingress createIngress(String host, String name, String certName);
 
     /**
      * 项目下创建path

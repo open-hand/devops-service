@@ -20,6 +20,9 @@ public class DevopsIngressDTO {
     private Boolean envStatus;
     private Boolean isUsable;
     private String status;
+    private Long certId;
+    private String certName;
+    private String certStatus;
     private List<DevopsIngressPathDTO> pathList;
 
     public DevopsIngressDTO() {
@@ -118,6 +121,30 @@ public class DevopsIngressDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getCertId() {
+        return certId;
+    }
+
+    public void setCertId(Long certId) {
+        this.certId = certId;
+    }
+
+    public String getCertName() {
+        return certName;
+    }
+
+    public void setCertName(String certName) {
+        this.certName = certName;
+    }
+
+    public String getCertStatus() {
+        return certStatus;
+    }
+
+    public void setCertStatus(String certStatus) {
+        this.certStatus = certStatus;
     }
 
     @Override
