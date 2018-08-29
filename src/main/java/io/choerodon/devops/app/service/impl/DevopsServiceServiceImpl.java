@@ -132,9 +132,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
 
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
-
+        List<Long> beforeDevopsServiceAppInstanceES = new ArrayList<>();
         //处理创建service对象数据
-        DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES);
+        DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
         //初始化V1Service对象
         V1Service v1Service = initV1Service(
@@ -142,7 +142,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 gson.fromJson(devopsServiceE.getAnnotations(), Map.class));
 
         //在gitops库处理service文件
-        operateEnvGitLabFile(v1Service, true, devopsServiceE, devopsServiceAppInstanceES, null);
+        operateEnvGitLabFile(v1Service, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
         return true;
     }
 
@@ -152,9 +152,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
+        List<Long> beforeDevopsServiceAppInstanceES = new ArrayList<>();
 
         //处理创建service对象数据
-        DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES);
+        DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
         //存储service对象到数据库
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
@@ -169,7 +170,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
 
-    private DevopsServiceE handlerCreateService(DevopsServiceReqDTO devopsServiceReqDTO, Long projectId, List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES) {
+    private DevopsServiceE handlerCreateService(DevopsServiceReqDTO devopsServiceReqDTO, Long projectId, List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES, List<Long> beforeDevopsServiceAppInstanceES) {
 
         //校验service相关参数
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
@@ -185,8 +186,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //初始化DevopsService对象
         DevopsServiceE devopsServiceE = new DevopsServiceE();
+        devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
-        return initDevopsService(devopsServiceE, devopsServiceReqDTO, devopsServiceAppInstanceES, null);
+        return initDevopsService(devopsServiceE, devopsServiceReqDTO, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
     }
 
@@ -226,6 +228,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (!serviceName.equals(devopsServiceE.getName())) {
             throw new CommonException("error.name.notEqual");
         }
+
+        //验证网络是否需要更新
         List<PortMapE> oldPort = devopsServiceE.getPorts();
         if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
             //查询网络对应的实例

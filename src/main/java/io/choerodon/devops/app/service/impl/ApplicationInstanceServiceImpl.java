@@ -19,7 +19,6 @@ import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.factory.ApplicationInstanceFactory;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
@@ -42,8 +41,9 @@ import io.choerodon.websocket.helper.EnvSession;
  */
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
+    public static final String C7NHELM_RELEASE = "C7NHelmRelease";
+    public static final String CREATE_TYPE = "create";
     private static final String RELEASE_NAME = "ReleaseName";
-    private static final String gitSuffix = "/.git";
 
     private static Gson gson = new Gson();
     @Autowired
@@ -339,92 +339,130 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    @Override
-    public ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops) {
+    public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
+        //校验环境是否连接
+        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+
+        //校验values
         FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
-        UserAttrE userAttrE = new UserAttrE();
+
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
-        if (!gitops) {
-            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-        }
-        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         ApplicationVersionE applicationVersionE =
                 applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
-        ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
+
+        //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
+        ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE();
+        DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
+
+        //初始化实例名
+        String code = "";
+        if (applicationDeployDTO.getType().equals(CREATE_TYPE)) {
+            code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+        } else {
+            code = applicationInstanceE.getCode();
+        }
+
+        //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
+        if (applicationDeployDTO.getIsNotChange()) {
+            applicationInstanceRepository.update(applicationInstanceE);
+            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+            devopsEnvCommandE.initDevopsEnvCommandValueE(
+                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+            deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        } else {
+            //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+            //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+            String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+            //在gitops库处理instance文件
+            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+            objectOperation.setType(getC7NHelmRelease(
+                    code, applicationVersionE, applicationDeployDTO, applicationE));
+            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+            objectOperation.operationEnvGitlabFile(
+                    "release-" + code,
+                    projectId,
+                    applicationDeployDTO.getType(),
+                    userAttrE.getGitlabUserId(),
+                    applicationInstanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), filePath);
+        }
+
+        //实例相关对象数据库操作
+        if (applicationDeployDTO.getType().equals(CREATE_TYPE)) {
+            applicationInstanceE.setCode(code);
+            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+        } else {
+            applicationInstanceRepository.update(applicationInstanceE);
+        }
+        devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+        devopsEnvCommandE.initDevopsEnvCommandValueE(
+                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+    }
+
+
+    public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO) {
+        //校验环境是否连接
+        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+
+        //校验values
+        FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
+
+        //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
+        ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE();
+        DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
+
+        //实例相关对象数据库操作
+        if (applicationDeployDTO.getType().equals(CREATE_TYPE)) {
+            applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
+            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+        } else {
+            applicationInstanceRepository.update(applicationInstanceE);
+        }
+        devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+        devopsEnvCommandE.initDevopsEnvCommandValueE(
+                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+    }
+
+    private ApplicationInstanceE initApplicationInstanceE(ApplicationDeployDTO applicationDeployDTO) {
+
+        ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
         applicationInstanceE.initApplicationVersionEById(applicationDeployDTO.getAppVerisonId());
         applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
         applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         if (applicationDeployDTO.getType().equals("update")) {
             ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
                     applicationDeployDTO.getAppInstanceId());
             applicationInstanceE.setCode(newApplicationInstanceE.getCode());
             applicationInstanceE.setId(applicationDeployDTO.getAppInstanceId());
         }
+        return applicationInstanceE;
+    }
+
+    private DevopsEnvCommandE initDevopsEnvCommandE() {
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         devopsEnvCommandE.setCommandType(CommandType.SYNC.getType());
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        return devopsEnvCommandE;
+    }
+
+    private DevopsEnvCommandValueE initDevopsEnvCommandValueE(ApplicationDeployDTO applicationDeployDTO) {
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setValue(getReplaceResult(
-                applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
-                applicationDeployDTO.getValues()).getDeltaYaml().trim());
-        if (gitops) {
-            if (applicationDeployDTO.getType().equals("create")) {
-                applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
-                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-            } else {
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
-            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-            devopsEnvCommandE.initDevopsEnvCommandValueE(
-                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
-        } else {
-            String code;
-            devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-            if (applicationDeployDTO.getType().equals("create")) {
-                code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
-            } else {
-                code = applicationInstanceE.getCode();
-            }
-            if (applicationDeployDTO.getIsNotChange()) {
-                applicationInstanceRepository.update(applicationInstanceE);
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                devopsEnvCommandE.initDevopsEnvCommandValueE(
-                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE,
-                        devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            } else {
-                String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-                ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-                objectOperation.setType(getC7NHelmRelease(
-                        code, applicationVersionE, applicationDeployDTO, applicationE));
-                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                objectOperation.operationEnvGitlabFile(
-                        "release-" + code,
-                        projectId,
-                        applicationDeployDTO.getType(),
-                        userAttrE.getGitlabUserId(),
-                        applicationInstanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
-            }
-            if (applicationDeployDTO.getType().equals("create")) {
-                applicationInstanceE.setCode(code);
-                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-            } else {
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
-            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-            devopsEnvCommandE.initDevopsEnvCommandValueE(
-                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
-
-
-        }
-        return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+        devopsEnvCommandValueE.setValue(null);
+        return devopsEnvCommandValueE;
     }
 
     @Override
@@ -526,61 +564,76 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void instanceDelete(Long instanceId, boolean gitops) {
+    public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+
+        //校验环境是否连接
+        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
-        UserAttrE userAttrE = new UserAttrE();
-        if (!gitops) {
-            userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-        }
-        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
 
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         devopsEnvCommandE.setId(null);
-        if (gitops) {
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
-            updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
 
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+        //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
+        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
+        if (devopsEnvFileResourceE == null) {
+            throw new CommonException("error.fileResource.not.exist");
+        }
+        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+        if (devopsEnvFileResourceES.size() == 1) {
+            gitlabRepository.deleteFile(
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                    devopsEnvFileResourceE.getFilePath(),
+                    "DELETE FILE",
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        } else {
+            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+            C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
+            Metadata metadata = new Metadata();
+            metadata.setName(instanceE.getCode());
+            c7nHelmRelease.setMetadata(metadata);
+            objectOperation.setType(c7nHelmRelease);
+            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+            objectOperation.operationEnvGitlabFile(
+                    "release-" + instanceE.getCode(),
+                    projectId,
+                    "delete",
+                    userAttrE.getGitlabUserId(),
+                    instanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), path);
         }
 
-        if (!gitops) {
-            String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-            devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, "C7NHelmRelease");
-            if (devopsEnvFileResourceE == null) {
-                throw new CommonException("error.fileResource.not.exist");
-            }
-            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
-            if (devopsEnvFileResourceES.size() == 1) {
-                gitlabRepository.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceE.getFilePath(),
-                        "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-            } else {
-                ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-                C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
-                Metadata metadata = new Metadata();
-                metadata.setName(instanceE.getCode());
-                c7nHelmRelease.setMetadata(metadata);
-                objectOperation.setType(c7nHelmRelease);
-                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                objectOperation.operationEnvGitlabFile(
-                        "release-" + instanceE.getCode(),
-                        projectId,
-                        "delete",
-                        userAttrE.getGitlabUserId(),
-                        instanceE.getId(), "C7NHelmRelease", devopsEnvironmentE.getId(), path);
-            }
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
-            updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
-        }
+        //实例相关对象数据库操作
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+    }
+
+    @Override
+    public void instanceDeleteByGitOps(Long instanceId) {
+        ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+
+        //校验环境是否连接
+        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+
+        //实例相关对象数据库操作
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
+        devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setId(null);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
     }
 
     private String getNameSpace(Long envId) {
@@ -647,7 +700,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml().trim());
+        c7nHelmRelease.getSpec().setValues(null);
         return c7nHelmRelease;
 
     }
@@ -661,7 +714,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         try {
             replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
-            throw new CommonException(e.getMessage(),e);
+            throw new CommonException(e.getMessage(), e);
         }
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
         FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);

@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
-import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -117,7 +117,7 @@ public class DevopsServiceController {
                                  @PathVariable(value = "project_id") Long projectId,
                                  @ApiParam(value = "网络ID", required = true)
                                  @PathVariable Long id) {
-        devopsServiceService.deleteDevopsService(id, false);
+        devopsServiceService.deleteDevopsService(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

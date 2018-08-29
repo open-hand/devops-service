@@ -824,7 +824,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                     v1Service,
                                     envId,
                                     devopsEnvFileErrorE);
-                            devopsServiceService.insertDevopsService(projectId, devopsServiceReqDTO, true);
+                            devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO);
                             devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                                     devopsServiceReqDTO.getName(), envId);
                         }
@@ -851,8 +851,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                 v1Service,
                                 envId,
                                 devopsEnvFileErrorE);
-                        devopsServiceService.updateDevopsService(
-                                projectId, devopsServiceE.getId(), devopsServiceReqDTO, true);
+                        devopsServiceService.updateDevopsServiceByGitOps(
+                                projectId, devopsServiceE.getId(), devopsServiceReqDTO);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                 .queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
                         updateOrCreateFileResource(objectPath,
@@ -867,7 +867,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 });
         beforeService.stream().forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
-            devopsServiceService.deleteDevopsService(devopsServiceE.getId(), true);
+            devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
         });
     }
@@ -960,7 +960,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             if (applicationDeployDTO == null) {
                                 return;
                             }
-                            applicationInstanceDTO = applicationInstanceService.create(applicationDeployDTO, true);
+                            applicationInstanceDTO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO);
                         } else {
                             applicationInstanceDTO.setId(applicationInstanceE.getId());
                         }
@@ -992,7 +992,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
                         if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType()) && !applicationDeployDTO.getIsNotChange()) {
                             applicationInstanceService
-                                    .create(applicationDeployDTO, true);
+                                    .createOrUpdateByGitOps(applicationDeployDTO);
                         }
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                 .queryByEnvIdAndResource(envId, applicationDeployDTO.getAppInstanceId(), c7nHelmRelease.getKind());
@@ -1010,7 +1010,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
             if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
-                applicationInstanceService.instanceDelete(applicationInstanceE.getId(), true);
+                applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());
             }
             devopsEnvFileResourceRepository
                     .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
@@ -1064,7 +1064,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         });
         beforeIngress.stream().forEach(ingressName -> {
             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, ingressName);
-            devopsIngressService.deleteIngress(devopsIngressE.getId(), true);
+            devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
         });
         updateV1beta1Ingress.stream()
@@ -1082,7 +1082,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                         devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
                             throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
                         }
-                        devopsIngressService.updateIngress(devopsIngressE.getId(), devopsIngressDTO, projectId, true);
+                        devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressDTO, projectId);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                 .queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
                         updateOrCreateFileResource(objectPath,
@@ -1112,7 +1112,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                             devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
                                 throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
                             }
-                            devopsIngressService.addIngress(devopsIngressDTO, projectId, true);
+                            devopsIngressService.addIngressByGitOps(devopsIngressDTO, projectId);
                             devopsIngressE = devopsIngressRepository
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         }
