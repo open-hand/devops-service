@@ -756,7 +756,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<String> dnsDomain = certificationSpec.getDnsNames();
             List<String> domains = new ArrayList<>();
             domains.add(domain);
-            domains.addAll(dnsDomain);
+            if (dnsDomain != null && !dnsDomain.isEmpty()) {
+                domains.addAll(dnsDomain);
+            }
             certificationE.setDomains(domains);
             certificationE.setEnvironmentE(environmentE);
             certificationE.setName(certName);
