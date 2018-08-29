@@ -66,7 +66,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-    private static final String CERT_ACTIVE_STATUS = CertificationStatus.ACTIVE.getStatus();
     private static final String ERROR_MESSAGE = "the another file already has the same object :";
 
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -762,7 +761,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             certificationE.setDomains(domains);
             certificationE.setEnvironmentE(environmentE);
             certificationE.setName(certName);
-            certificationE.setStatus(CERT_ACTIVE_STATUS);
+            certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
             certificationE = certificationRepository.create(certificationE);
         }
         return certificationE.getId();
