@@ -351,7 +351,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             //更新本地库到最新提交
             handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
-            tagNotExist = devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId()).parallelStream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEVOPS_GITOPS_TAG));
+            tagNotExist = getDevopsSyncTag(pushWebHookDTO);
             if (tagNotExist) {
                 operationFiles.addAll(FileUtil.getFilesPath(path));
                 operationFiles.parallelStream().forEach(file -> {
@@ -458,9 +458,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (tagNotExist) {
                 devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
             } else {
-                devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
+                try {
+                    devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
+                } catch (CommonException e) {
+                    if (getDevopsSyncTag(pushWebHookDTO)) {
+                        devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+                    } else {
+                        throw new CommonException(e.getMessage(), e);
+                    }
+                }
                 //创建新tag
-                devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+                if (getDevopsSyncTag(pushWebHookDTO)) {
+                    devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+                }
             }
 
 
@@ -1335,5 +1345,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         }
 
+    }
+
+    private boolean getDevopsSyncTag(PushWebHookDTO pushWebHookDTO) {
+        return devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId()).parallelStream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEVOPS_GITOPS_TAG));
     }
 }
