@@ -156,9 +156,9 @@ public class CertificationServiceImpl implements CertificationService {
             String certName = certificationE.getName();
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                     .queryByEnvIdAndResource(certEnvId, certId, certificateType);
-            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath());
-            if (devopsEnvFileResourceES.size() == 1) {
+            if (devopsEnvFileResourceE != null && devopsEnvFileResourceE.getFilePath() != null
+                    && devopsEnvFileResourceRepository
+                    .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
                 gitlabRepository.deleteFile(
                         gitLabEnvProjectId,
                         devopsEnvFileResourceE.getFilePath(),

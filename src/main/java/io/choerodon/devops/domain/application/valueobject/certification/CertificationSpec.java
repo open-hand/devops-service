@@ -1,6 +1,8 @@
 package io.choerodon.devops.domain.application.valueobject.certification;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by n!Ck
@@ -14,6 +16,21 @@ public class CertificationSpec {
     private List<String> dnsNames;
     private CertificationAcme acme;
     private CertificationExistCert existCert;
+    private Map<String, String> issuerRef;
+
+    // for test
+    public CertificationSpec() {
+        issuerRef = new HashMap<>();
+        issuerRef.put("name", "localhost");
+    }
+
+    public Map<String, String> getIssuerRef() {
+        return issuerRef;
+    }
+
+    public void setIssuerRef(Map<String, String> issuerRef) {
+        this.issuerRef = issuerRef;
+    }
 
     public String getCommonName() {
         return commonName;
