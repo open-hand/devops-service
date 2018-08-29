@@ -48,9 +48,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
 
     @Override
-    public Page<ApplicationVersionRepDTO> listApplicationVersion(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<ApplicationVersionRepDTO> listApplicationVersion(Long projectId, Long appId , PageRequest pageRequest, String searchParam) {
         Page<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersion(
-                projectId, pageRequest, searchParam);
+                projectId, appId ,pageRequest, searchParam);
         return ConvertPageHelper.convertPage(applicationVersionEPage, ApplicationVersionRepDTO.class);
     }
 

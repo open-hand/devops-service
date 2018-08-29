@@ -43,7 +43,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     private IamRepository iamRepository;
 
     @Override
-    public Page<ApplicationVersionE> listApplicationVersion(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<ApplicationVersionE> listApplicationVersion(Long projectId, Long appId ,PageRequest pageRequest, String searchParam) {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("version", "dav.version");
@@ -59,12 +59,12 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             applicationVersionQueryDOPage = PageHelper.doPageAndSort(
                     pageRequest, () -> applicationVersionMapper.listApplicationVersion(
                             projectId,
-                            null,
+                            appId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
             applicationVersionQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationVersionMapper.listApplicationVersion(projectId, null, null, null));
+                    pageRequest, () -> applicationVersionMapper.listApplicationVersion(projectId, appId, null, null));
         }
         return ConvertPageHelper.convertPage(applicationVersionQueryDOPage, ApplicationVersionE.class);
     }

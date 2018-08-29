@@ -19,18 +19,6 @@
             AND da.id= #{appId}
         </if>
         <if test='searchParam != null'>
-            <if test='searchParam.appCode != null and searchParam.appCode.size > 0'>
-                AND
-                <foreach collection="searchParam.appCode" item="appCode" open="(" separator=" OR " close=")">
-                    da.code LIKE CONCAT(CONCAT('%', #{appCode, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
-                AND
-                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
-                    da.name LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
             <if test='searchParam.version != null and searchParam.version.size > 0'>
                 AND
                 <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
@@ -39,9 +27,7 @@
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
         </if>
     </select>
 

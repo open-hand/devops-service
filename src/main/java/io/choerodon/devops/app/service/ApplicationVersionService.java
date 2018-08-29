@@ -18,10 +18,11 @@ public interface ApplicationVersionService {
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
+     * @param appId 应用Id
      * @param searchParam 查询参数
      * @return ApplicationVersionRepDTO
      */
-    Page<ApplicationVersionRepDTO> listApplicationVersion(Long projectId, PageRequest pageRequest, String searchParam);
+    Page<ApplicationVersionRepDTO> listApplicationVersion(Long projectId, Long appId, PageRequest pageRequest, String searchParam);
 
     /**
      * 创建应用版本信息
