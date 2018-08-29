@@ -320,7 +320,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
 
-
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
