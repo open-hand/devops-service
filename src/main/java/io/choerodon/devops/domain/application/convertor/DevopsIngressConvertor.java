@@ -1,11 +1,14 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
+import io.choerodon.devops.domain.application.entity.CertificationE;
 import io.choerodon.devops.domain.application.entity.DevopsIngressE;
+import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 
 /**
@@ -14,10 +17,23 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 @Component
 public class DevopsIngressConvertor implements ConvertorI<DevopsIngressE, DevopsIngressDO, DevopsIngressDTO> {
 
+    @Autowired
+    private CertificationRepository certificationRepository;
+
     @Override
     public DevopsIngressE doToEntity(DevopsIngressDO dataObject) {
         DevopsIngressE devopsIngressE = new DevopsIngressE();
         BeanUtils.copyProperties(dataObject, devopsIngressE);
+        Long certId = dataObject.getCertId();
+        if (certId != null) {
+            CertificationE certificationE = certificationRepository.queryById(certId);
+            if (certificationE != null) {
+                devopsIngressE.setCertName(certificationE.getName());
+                devopsIngressE.setCertStatus(certificationE.getStatus());
+            } else {
+                devopsIngressE.setCertId(null);
+            }
+        }
         return devopsIngressE;
     }
 

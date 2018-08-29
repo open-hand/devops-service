@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
@@ -568,7 +571,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private V1beta1Ingress getV1beta1Ingress(DevopsIngressE devopsIngressE) {
             V1beta1Ingress v1beta1Ingress = devopsIngressService
-                    .createIngress(devopsIngressE.getDomain(), devopsIngressE.getName());
+                    .createIngress(devopsIngressE.getDomain(), devopsIngressE.getName(), devopsIngressE.getCertName());
             List<DevopsIngressPathE> devopsIngressPathES =
                     devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
             devopsIngressPathES.parallelStream()

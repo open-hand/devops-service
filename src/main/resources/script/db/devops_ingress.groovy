@@ -25,4 +25,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress.groovy') {
             column(name: 'status', type: 'VARCHAR(10)', remarks: '状态')
         }
     }
+
+    changeSet(author: 'Runge', id: '2018-08-29-add-column') {
+        addColumn(tableName: 'devops_ingress') {
+            column(name: 'cert_id', type: 'BIGINT UNSIGNED', remarks: '证书ID', afterColumn: 'env_id')
+        }
+    }
 }

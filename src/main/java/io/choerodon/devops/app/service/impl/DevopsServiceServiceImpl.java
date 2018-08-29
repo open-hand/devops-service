@@ -28,6 +28,7 @@ import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -83,6 +84,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private CertificationRepository certificationRepository;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
@@ -483,14 +486,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsIngressRepository.updateIngressPath(devopsIngressPathE);
         }
 
-        V1beta1Ingress v1beta1Ingress = devopsIngressService.createIngress(devopsIngressDO.getDomain(),
-                devopsIngressDO.getName());
         List<DevopsIngressPathE> devopsIngressPathEListTemp = devopsIngressRepository
                 .selectByIngressId(devopsIngressDO.getId());
         devopsIngressPathEListTemp.forEach(ddTemp ->
-                v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
                         devopsIngressService.createPath(
-                                ddTemp.getPath(), ddTemp.getServiceId(), null)));
+                                ddTemp.getPath(), ddTemp.getServiceId(), null));
     }
 
     private void operateEnvGitLabFile(String serviceName,
