@@ -124,6 +124,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Boolean isGitOps) {
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
+        initDevopsServicePorts(devopsServiceReqDTO);
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
         if (devopsEnvironmentE == null) {
@@ -158,6 +159,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                        Boolean isGitOps) {
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
+        initDevopsServicePorts(devopsServiceReqDTO);
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         if (!devopsServiceE.getEnvId().equals(devopsServiceReqDTO.getEnvId())) {
             throw new CommonException("error.env.notEqual");
@@ -516,4 +518,19 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     }
 
+
+    private void initDevopsServicePorts(DevopsServiceReqDTO devopsServiceReqDTO) {
+        final Integer[] serialNumber = {0};
+        devopsServiceReqDTO.setPorts(devopsServiceReqDTO.getPorts().stream()
+                .map(t -> {
+                    PortMapE portMapE = new PortMapE();
+                    portMapE.setNodePort(t.getNodePort());
+                    portMapE.setPort(t.getPort());
+                    portMapE.setTargetPort(t.getTargetPort());
+                    portMapE.setName(t.getName() == null ? "http" + ++serialNumber[0] : t.getName());
+                    portMapE.setProtocol(t.getProtocol() == null ? "TCP" : t.getProtocol());
+                    return portMapE;
+                })
+                .collect(Collectors.toList()));
+    }
 }

@@ -50,6 +50,9 @@ public class DevopsServiceValidator {
         if (!checkPort(port.getPort())) {
             throw new CommonException("error.port.illegal");
         }
+        if (!checkPort(Long.valueOf(port.getTargetPort()))) {
+            throw new CommonException("error.targetPort.illegal");
+        }
         if (port.getNodePort() != null && !checkPort(port.getNodePort())) {
             throw new CommonException("error.nodePort.illegal");
         }
