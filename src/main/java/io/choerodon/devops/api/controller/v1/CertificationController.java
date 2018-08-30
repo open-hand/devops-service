@@ -143,6 +143,6 @@ public class CertificationController {
             @RequestParam(value = "cert_name") String certName) {
         return Optional.ofNullable(certificationService.checkCertNameUniqueInEnv(envId, certName))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
+                .orElseThrow(() -> new CommonException("error.certification.checkUnique"));
     }
 }
