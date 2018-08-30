@@ -105,9 +105,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, true, null, devopsIngressDO, userAttrE);
-
-        devopsIngressRepository.createIngress(devopsIngressDO);
-    }
+        }
 
     private String getCertName(Long certId) {
         String certName = null;
