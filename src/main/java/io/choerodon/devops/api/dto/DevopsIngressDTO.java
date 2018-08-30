@@ -159,7 +159,8 @@ public class DevopsIngressDTO {
         return Objects.equals(domain, that.domain)
                 && Objects.equals(name, that.name)
                 && Objects.equals(envId, that.envId)
-                && Objects.equals(pathList, that.pathList);
+                && Objects.equals(pathList, that.pathList)
+                && Objects.equals(certId, that.certId);
     }
 
     @Override
