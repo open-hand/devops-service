@@ -131,6 +131,14 @@ public class CertificationController {
                 .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
     }
 
+    /**
+     * 校验证书名称唯一性
+     *
+     * @param projectId 项目id
+     * @param envId     环境ID
+     * @param certName  证书名称
+     * @return Boolean
+     */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "校验证书名称唯一性")
     @GetMapping("/unique")
