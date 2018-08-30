@@ -33,4 +33,6 @@ public interface CertificationService {
     Page<CertificationDTO> page(Long projectId, PageRequest pageRequest, String params);
 
     List<CertificationDTO> getActiveByDomain(Long envId, String domain);
+
+    Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 }

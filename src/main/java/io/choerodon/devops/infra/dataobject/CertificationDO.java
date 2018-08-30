@@ -35,14 +35,21 @@ public class CertificationDO {
      * @param domains Certification's domains json format
      * @param status  Certification's status
      */
-    public CertificationDO(String name,
-                           Long envId,
-                           String domains,
-                           String status) {
+    public CertificationDO(String name, Long envId, String domains, String status) {
         this.name = name;
         this.envId = envId;
         this.domains = domains;
         this.status = status;
+    }
+    /**
+     * Certification constructor
+     *
+     * @param name    Certification's name
+     * @param envId   Certification's enviroment ID
+     */
+    public CertificationDO(String name, Long envId) {
+        this.name = name;
+        this.envId = envId;
     }
 
     public Long getId() {

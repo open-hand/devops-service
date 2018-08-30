@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -98,5 +99,10 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     @Override
     public void deleteById(Long id) {
         devopsCertificationMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public Boolean checkCertNameUniqueInEnv(Long envId, String certName) {
+        return devopsCertificationMapper.select(new CertificationDO(certName, envId)).isEmpty();
     }
 }

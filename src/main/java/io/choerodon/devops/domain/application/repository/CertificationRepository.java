@@ -28,4 +28,6 @@ public interface CertificationRepository {
     void updateStatus(CertificationE certificationE);
 
     void deleteById(Long certId);
+
+    Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 }

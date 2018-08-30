@@ -39,7 +39,6 @@ import io.choerodon.websocket.helper.EnvListener;
 @Service
 public class CertificationServiceImpl implements CertificationService {
 
-    private static final Integer ADMIN_ID = 1;
     private static final String CERT_PREFIX = "cert-";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
@@ -188,5 +187,10 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public List<CertificationDTO> getActiveByDomain(Long envId, String domain) {
         return certificationRepository.getActiveByDomain(envId, domain);
+    }
+
+    @Override
+    public Boolean checkCertNameUniqueInEnv(Long envId, String certName) {
+        return certificationRepository.checkCertNameUniqueInEnv(envId, certName);
     }
 }
