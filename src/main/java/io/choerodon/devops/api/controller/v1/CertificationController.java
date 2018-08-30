@@ -130,4 +130,27 @@ public class CertificationController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
     }
+
+    /**
+     * 校验证书名称唯一性
+     *
+     * @param projectId 项目id
+     * @param envId     环境ID
+     * @param certName  证书名称
+     * @return Boolean
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "校验证书名称唯一性")
+    @GetMapping("/unique")
+    public ResponseEntity<Boolean> checkCertNameUniqueInEnv(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "证书名称", required = true)
+            @RequestParam(value = "cert_name") String certName) {
+        return Optional.ofNullable(certificationService.checkCertNameUniqueInEnv(envId, certName))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.certification.checkUnique"));
+    }
 }
