@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -36,7 +37,7 @@ public class DevopsEnvPodContainerController {
      *
      * @param projectId 项目ID
      * @param podId     pod ID
-     * @return DevopsEnvPodContainerLogDTO
+     * @return List of DevopsEnvPodContainerLogDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
@@ -44,7 +45,7 @@ public class DevopsEnvPodContainerController {
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取日志信息 By Pod")
     @GetMapping(value = "/logs")
-    public ResponseEntity<DevopsEnvPodContainerLogDTO> queryLogByPod(
+    public ResponseEntity<List<DevopsEnvPodContainerLogDTO>> queryLogByPod(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "pod ID", required = true)
