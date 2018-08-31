@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvPodContainerDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPodContainerLogDTO;
@@ -27,7 +29,7 @@ public interface DevopsEnvPodContainerService {
      * @param podId pod ID
      * @return DevopsEnvPodContainerLogDTO
      */
-    DevopsEnvPodContainerLogDTO logByPodId(Long podId);
+    List<DevopsEnvPodContainerLogDTO> logByPodId(Long podId);
 
     /**
      * 分页查询容器
