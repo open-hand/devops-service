@@ -10,6 +10,7 @@ image:
 
 preJob:
   preConfig:
+    enable: true
     configFile: application.yml
     mysql:
       host: 192.168.12.175
@@ -18,6 +19,7 @@ preJob:
       username: root
       password: choerodon
   preInitDB:
+    enable: true
     mysql:
       host: 192.168.12.175
       port: 3306

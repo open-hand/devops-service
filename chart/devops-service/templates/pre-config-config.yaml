@@ -1,3 +1,4 @@
+{{- if .Values.preJob.preConfig.enable }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -41,3 +42,4 @@ spec:
       volumes:
       - emptyDir: {}
         name: tools-jar
+{{- end }}
