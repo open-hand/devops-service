@@ -652,13 +652,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             checkService(path, v1Services, envId, beforeSyncDelete, objectPath, devopsEnvFileErrorE, serializableSvc);
                             break;
                         case "Certificate":
+                            //反序列文件为Certificate对象
                             C7nCertification c7nCertification = new C7nCertification();
                             SerializableOperation<C7nCertification> c7nCertificationSerializableOperation
                                     = new SerializableOperation<>();
                             c7nCertificationSerializableOperation.setT(c7nCertification);
                             C7nCertification serializableCert = c7nCertificationSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
-                            String certName = serializableCert.getMetadata().getName();
+                            //校验Certificate对象，校验是否已存在，以及参数是否填写正确
                             checkC7nCertification(path, envId, beforeSyncDelete, c7nCertifications, objectPath, devopsEnvFileErrorE, serializableCert);
                             break;
                         default:
