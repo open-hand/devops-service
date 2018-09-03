@@ -174,6 +174,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //校验service相关参数
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
+
+        initDevopsServicePorts(devopsServiceReqDTO);
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
         if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {

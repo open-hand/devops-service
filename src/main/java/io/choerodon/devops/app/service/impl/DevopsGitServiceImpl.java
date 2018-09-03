@@ -65,6 +65,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public static final String INGRESS = "Ingress";
     public static final String C7NHELM_RELEASE = "C7NHelmRelease";
     public static final String SERVICE = "Service";
+    public static final String CERTIFICATE = "Certificate";
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
@@ -343,10 +344,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Set<DevopsEnvFileResourceE> beforeSync = new HashSet<>();
         Set<DevopsEnvFileResourceE> beforeSyncDelete = new HashSet<>();
         String path = "";
+        //根据token查出环境
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
         DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
         Boolean tagNotExist = false;
-        //根据token查出环境
         try {
 
             //从iam服务中查出项目和组织code
@@ -387,6 +388,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsEnvFileErrorE.setError(e.getMessage());
             devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
             devopsEnvFileErrorRepository.create(devopsEnvFileErrorE);
+            return;
         }
         List<C7nHelmRelease> c7nHelmReleases = new ArrayList<>();
         List<V1Service> v1Services = new ArrayList<>();
@@ -413,7 +415,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     path
             );
         } catch (CommonException e) {
-            LOGGER.info(e.getTrace());
+            LOGGER.info(e.getMessage(),e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             return;
         }
@@ -449,7 +451,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //更新环境 解释commit
             devopsEnvironmentRepository.update(devopsEnvironmentE);
         } catch (CommonException e) {
-            LOGGER.info(e.getTrace());
+            LOGGER.info(e.getMessage(),e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
             DevopsEnvFileErrorE newdevopsEnvFileErrorE = new DevopsEnvFileErrorE();
             newdevopsEnvFileErrorE.setCommit(devopsEnvCommitE.getCommitSha());
@@ -651,7 +653,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验service对象，校验是否已存在，以及参数是否填写正确
                             checkService(path, v1Services, envId, beforeSyncDelete, objectPath, devopsEnvFileErrorE, serializableSvc);
                             break;
-                        case "Certificate":
+                        case CERTIFICATE:
                             //反序列文件为Certificate对象
                             C7nCertification c7nCertification = new C7nCertification();
                             SerializableOperation<C7nCertification> c7nCertificationSerializableOperation
@@ -760,6 +762,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         handlerServiceRelations(objectPath, beforeSync, v1Services, envId, projectId, path);
         //处理Ingress对象
         handlerIngressRelations(objectPath, beforeSync, v1beta1Ingresses, envId, projectId, path);
+        //处理C7nCertifications对象
         handlerC7nCertifications(objectPath, beforeSync, c7nCertifications, envId, path);
     }
 
@@ -1028,7 +1031,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationDeployDTO.getAppInstanceId());
 
-                        if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType())) {
+                        if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType())&&!applicationDeployDTO.getIsNotChange()) {
                             applicationInstanceService
                                     .createOrUpdateByGitOps(applicationDeployDTO);
                         }
@@ -1343,7 +1346,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         } catch (Exception e) {
             String logMsg = devopsEnvFileErrorE.getError();
             if (logMsg == null) {
-                devopsEnvFileErrorE.setError(GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND + instanceCode);
+                devopsEnvFileErrorE.setError(GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND.getError() + instanceCode);
             } else if (!logMsg.contains(GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND.getError())) {
                 devopsEnvFileErrorE.setError(logMsg + GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND.getError() + instanceCode);
             } else {
@@ -1413,7 +1416,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
         throw new CommonException(GitOpsObjectError.OBJECT_EXIST.getError() + objectName);
     }
-
 
     private void formatC7nRelease(C7nHelmRelease c7nHelmRelease) {
         if (c7nHelmRelease.getMetadata() == null) {

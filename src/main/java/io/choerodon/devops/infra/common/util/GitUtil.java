@@ -111,8 +111,7 @@ public class GitUtil {
             cloneCommand.setDirectory(new File(path));
             cloneCommand.call();
         } catch (GitAPIException e) {
-            LOGGER.info(e.getMessage());
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(),e);
         }
     }
 
