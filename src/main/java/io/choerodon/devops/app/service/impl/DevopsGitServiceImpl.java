@@ -607,6 +607,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                     List<DevopsEnvFileResourceE> beforeSyncDelete,
                                                     List<C7nCertification> c7nCertifications) {
         Map<String, String> objectPath = new HashMap<>();
+
         files.stream().forEach(filePath -> {
             Yaml yaml = new Yaml();
             File file = new File(String.format("%s/%s", path, filePath));
