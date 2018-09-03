@@ -72,6 +72,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
             Map<String, String> map = new HashMap<>();
             map.put("envName", "de.name");
             map.put("envCode", "de.code");
+            map.put("certName", "dc.`name`");
+            map.put("commonName", "dc.domains");
             pageRequest.resetOrder("dc", map);
         }
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
