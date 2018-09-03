@@ -4,9 +4,13 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationMapper">
     <select id="selectCertification" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
         SELECT
-            devops_certification.*
+            dc.id,
+            dc.`name`,
+            dc.env_id envId,
+            dc.domains,
+            dc.status
         FROM
-            devops_certification
+            devops_certification dc
         JOIN devops_env AS de ON env_id = de.id
         WHERE
             de.project_id = #{projectId}
@@ -14,25 +18,39 @@
             <if test='searchParam.name != null and searchParam.name.size > 0'>
                 AND
                 <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    `name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                    dc.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.envId != null and searchParam.envId.size > 0'>
                 AND
                 <foreach collection="searchParam.envId" item="envId" open="(" separator=" OR " close=")">
-                    env_id = #{envId}
+                    dc.env_id = #{envId}
+                </foreach>
+            </if>
+            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
+                AND
+                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
+                    de.code LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
+                AND
+                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
+                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.domain != null and searchParam.domain.size > 0'>
                 AND
                 <foreach collection="searchParam.domain" item="domain" open="(" separator=" OR " close=")">
-                    domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
+                    dc.domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
                 </foreach>
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
-            OR domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%'))
+            AND (dc.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dc.domains LIKE CONCAT(CONCAT('%"', #{param, jdbcType=VARCHAR}),'"%'))
         </if>
     </select>
 

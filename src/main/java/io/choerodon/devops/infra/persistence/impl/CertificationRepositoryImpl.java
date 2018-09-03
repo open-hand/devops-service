@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -67,6 +68,12 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     public Page<CertificationDTO> page(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
+        if (pageRequest.getSort() != null) {
+            Map<String, String> map = new HashMap<>();
+            map.put("envName", "de.name");
+            map.put("envCode", "de.code");
+            pageRequest.resetOrder("dc", map);
+        }
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         Page<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPage(
