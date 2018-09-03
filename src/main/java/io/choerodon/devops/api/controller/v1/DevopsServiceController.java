@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
-import javax.validation.Valid;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -75,7 +75,7 @@ public class DevopsServiceController {
                                           @ApiParam(value = "部署网络参数", required = true)
                                           @RequestBody @Valid DevopsServiceReqDTO devopsServiceReqDTO) {
         return Optional.ofNullable(
-                devopsServiceService.insertDevopsService(projectId, devopsServiceReqDTO, false))
+                devopsServiceService.insertDevopsService(projectId, devopsServiceReqDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
                 .orElseThrow(() -> new CommonException("error.service.deploy"));
     }
@@ -98,7 +98,7 @@ public class DevopsServiceController {
                                           @ApiParam(value = "部署网络参数", required = true)
                                           @RequestBody DevopsServiceReqDTO devopsServiceReqDTO) {
         return Optional.ofNullable(
-                devopsServiceService.updateDevopsService(projectId, id, devopsServiceReqDTO, false))
+                devopsServiceService.updateDevopsService(projectId, id, devopsServiceReqDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.CREATED))
                 .orElseThrow(() -> new CommonException("error.app.k8s.service.update"));
     }
@@ -117,7 +117,7 @@ public class DevopsServiceController {
                                  @PathVariable(value = "project_id") Long projectId,
                                  @ApiParam(value = "网络ID", required = true)
                                  @PathVariable Long id) {
-        devopsServiceService.deleteDevopsService(id, false);
+        devopsServiceService.deleteDevopsService(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

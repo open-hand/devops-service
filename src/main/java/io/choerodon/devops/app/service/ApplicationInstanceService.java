@@ -52,7 +52,16 @@ public interface ApplicationInstanceService {
      * @param applicationDeployDTO 部署信息
      * @return ApplicationInstanceDTO
      */
-    ApplicationInstanceDTO create(ApplicationDeployDTO applicationDeployDTO, boolean gitops);
+    ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO);
+
+    /**
+     * 部署应用,GitOps
+     *
+     * @param applicationDeployDTO 部署信息
+     * @return ApplicationInstanceDTO
+     */
+    ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO);
+
 
     /**
      * 获取版本特性
@@ -92,7 +101,16 @@ public interface ApplicationInstanceService {
      *
      * @param instanceId 实例id
      */
-    void instanceDelete(Long instanceId, boolean gitops);
+    void instanceDelete(Long instanceId);
+
+
+    /**
+     * 实例删除
+     *
+     * @param instanceId 实例id
+     */
+    void instanceDeleteByGitOps(Long instanceId);
+
 
     /**
      * 获取部署 Value

@@ -21,8 +21,15 @@ public interface DevopsIngressService {
      * @param devopsIngressDTO 域名参数
      * @param projectId        项目Id
      */
-    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitops);
+    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId);
 
+    /**
+     * 项目下创建域名,GitOps
+     *
+     * @param devopsIngressDTO 域名参数
+     * @param projectId        项目Id
+     */
+    void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId);
     /**
      * 项目下更新域名
      *
@@ -30,7 +37,18 @@ public interface DevopsIngressService {
      * @param devopsIngressDTO 域名参数
      * @param projectId        项目Id
      */
-    void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitops);
+    void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId);
+
+
+    /**
+     * 项目下更新域名,GitOps
+     *
+     * @param id               域名Id
+     * @param devopsIngressDTO 域名参数
+     * @param projectId        项目Id
+     */
+    void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId);
+
 
     /**
      * 项目下查询域
@@ -56,7 +74,15 @@ public interface DevopsIngressService {
      *
      * @param ingressId 域名Id
      */
-    void deleteIngress(Long ingressId, boolean gitops);
+    void deleteIngress(Long ingressId);
+
+
+    /**
+     * 项目下删除域名,GitOps
+     *
+     * @param ingressId 域名Id
+     */
+    void deleteIngressByGitOps(Long ingressId);
 
     /**
      * 检查域名唯一性
@@ -85,7 +111,8 @@ public interface DevopsIngressService {
      * @param certName 证书名称
      * @return V1beta1Ingress
      */
-    V1beta1Ingress createIngress(String host, String name, String certName);
+    V1beta1Ingress initV1beta1Ingress(String host, String name,String certName);
+
 
     /**
      * 项目下创建path

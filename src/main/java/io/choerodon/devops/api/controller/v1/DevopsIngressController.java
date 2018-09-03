@@ -53,7 +53,7 @@ public class DevopsIngressController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressDTO devopsIngressDTO) {
-        devopsIngressService.addIngress(devopsIngressDTO, projectId, false);
+        devopsIngressService.addIngress(devopsIngressDTO, projectId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -75,7 +75,7 @@ public class DevopsIngressController {
             @PathVariable Long id,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressDTO devopsIngressDTO) {
-        devopsIngressService.updateIngress(id, devopsIngressDTO, projectId, false);
+        devopsIngressService.updateIngress(id, devopsIngressDTO, projectId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -146,7 +146,7 @@ public class DevopsIngressController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "域名ID", required = true)
             @PathVariable Long id) {
-        devopsIngressService.deleteIngress(id, false);
+        devopsIngressService.deleteIngress(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

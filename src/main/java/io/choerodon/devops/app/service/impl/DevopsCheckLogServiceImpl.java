@@ -571,7 +571,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private V1beta1Ingress getV1beta1Ingress(DevopsIngressE devopsIngressE) {
             V1beta1Ingress v1beta1Ingress = devopsIngressService
-                    .createIngress(devopsIngressE.getDomain(), devopsIngressE.getName(), devopsIngressE.getCertName());
+                    .initV1beta1Ingress(devopsIngressE.getDomain(), devopsIngressE.getName(),   devopsIngressE.getCertName());
             List<DevopsIngressPathE> devopsIngressPathES =
                     devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
             devopsIngressPathES.parallelStream()

@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.kubernetes.client.JSON;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,11 +42,13 @@ import io.choerodon.websocket.helper.EnvListener;
  */
 @Component
 public class DevopsIngressServiceImpl implements DevopsIngressService {
+    public static final String ERROR_DOMAIN_PATH_EXIST = "error.domain.path.exist";
+    public static final String INGRESS = "Ingress";
+    public static final String ERROR_FILE_RESOURCE_NOT_EXIST = "error.fileResource.not.exist";
     private static final String PATH_ERROR = "error.path.empty";
     private static final String PATH_DUPLICATED = "error.path.duplicated";
     private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "error.service.notContain.port";
     private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
-    private static JSON json = new JSON();
 
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
@@ -84,72 +85,27 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private CertificationRepository certificationRepository;
 
     @Override
-    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
-        Long envId = devopsIngressDTO.getEnvId();
-        envUtil.checkEnvConnection(envId, envListener);
-        String ingressName = devopsIngressDTO.getName();
-        DevopsIngressValidator.checkIngressName(ingressName);
-        String domain = devopsIngressDTO.getDomain();
+    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
-        Long certId = devopsIngressDTO.getCertId();
-        String certName = getCertName(certId);
+        //校验环境是否连接
+        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
 
-        List<DevopsIngressPathDTO> pathList = devopsIngressDTO.getPathList();
-        if (pathList == null || pathList.isEmpty()) {
-            throw new CommonException(PATH_ERROR);
+        //初始化V1beta1Ingress对象
+        String certName = getCertName(devopsIngressDTO.getCertId());
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(),certName);
+        //处理创建域名数据
+        DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
+
+        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDTO.getEnvId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //在gitops库处理ingress文件
+        operateEnvGitLabFile(
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, true, null, devopsIngressDO, userAttrE);
         }
-
-        V1beta1Ingress ingress = createIngress(domain, ingressName, certName);
-        List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
-        List<String> pathCheckList = new ArrayList<>();
-        pathList.forEach(t -> {
-            Long serviceId = t.getServiceId();
-            Long servicePort = t.getServicePort();
-            String hostPath = t.getPath();
-
-            if (hostPath == null || serviceId == null) {
-                throw new CommonException(PATH_ERROR);
-            }
-            DevopsIngressValidator.checkPath(hostPath);
-            if (pathCheckList.contains(hostPath)) {
-                throw new CommonException(PATH_DUPLICATED);
-            } else {
-                pathCheckList.add(hostPath);
-            }
-            DevopsServiceE devopsServiceE = getDevopsService(serviceId);
-
-            if (devopsServiceE.getPorts().parallelStream()
-                    .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
-                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
-            }
-
-            devopsIngressPathDOS.add(new DevopsIngressPathDO(
-                    devopsIngressDTO.getId(), hostPath,
-                    devopsServiceE.getId(), devopsServiceE.getName(), servicePort));
-            ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
-                    createPath(hostPath, serviceId, servicePort));
-        });
-
-        DevopsIngressDO devopsIngressDO = new DevopsIngressDO(projectId, envId, domain, ingressName);
-        devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
-        devopsIngressDO.setCertId(certId);
-        if (!devopsIngressPathDOS.stream()
-                .allMatch(t ->
-                        devopsIngressRepository.checkIngressAndPath(null, devopsIngressDO.getDomain(), t.getPath()))) {
-            throw new CommonException("error.domain.path.exist");
-        }
-        if (gitOps) {
-            devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
-        } else {
-            DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(envId);
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-            String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-            operateEnvGitLabFile(ingressName,
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, true, null,
-                    devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS, userAttrE);
-        }
-    }
 
     private String getCertName(Long certId) {
         String certName = null;
@@ -164,80 +120,77 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, boolean gitOps) {
-        Long domainEnvId = devopsIngressDTO.getEnvId();
-        envUtil.checkEnvConnection(domainEnvId, envListener);
-        String name = devopsIngressDTO.getName();
-        DevopsIngressValidator.checkIngressName(name);
+    public void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId) {
+        //校验环境是否连接
+        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
 
-        Long certId = devopsIngressDTO.getCertId();
-        String certName = getCertName(certId);
+        //初始化V1beta1Ingress对象
+        String certName = getCertName(devopsIngressDTO.getCertId());
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(),certName);
+        //处理域名数据
+        DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
+        //创建域名
+        devopsIngressRepository.createIngress(devopsIngressDO);
+    }
 
+    @Override
+    public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
+
+        //校验环境是否连接
+        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
+
+        //判断ingress有没有修改，没有修改直接返回
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
-        if (!devopsIngressDTO.equals(ingressDTO)) {
-
-            List<DevopsIngressPathDTO> pathList = devopsIngressDTO.getPathList();
-            if (pathList == null || pathList.isEmpty()) {
-                throw new CommonException(PATH_ERROR);
-            }
-            String domain = devopsIngressDTO.getDomain();
-            V1beta1Ingress ingress = createIngress(domain, name, certName);
-            List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
-            List<String> pathCheckList = new ArrayList<>();
-            pathList.forEach(t -> {
-                Long servicePort = t.getServicePort();
-                Long serviceId = t.getServiceId();
-                String path = t.getPath();
-
-                if (path == null) {
-                    throw new CommonException(PATH_ERROR);
-                } else if (serviceId == null) {
-                    throw new CommonException("error.service.id.get");
-                }
-                DevopsIngressValidator.checkPath(path);
-                if (pathCheckList.contains(path)) {
-                    throw new CommonException(PATH_DUPLICATED);
-                } else {
-                    pathCheckList.add(path);
-                }
-
-                DevopsServiceE devopsServiceE = getDevopsService(serviceId);
-
-                if (devopsServiceE.getPorts().parallelStream()
-                        .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
-                    throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
-                }
-                DevopsIngressPathDO devopsIngressPathDO = new DevopsIngressPathDO(
-                        id, path, devopsServiceE.getId(), devopsServiceE.getName(), servicePort);
-                devopsIngressPathDOS.add(devopsIngressPathDO);
-                ingress.getSpec().getRules().get(0).getHttp()
-                        .addPathsItem(createPath(path, serviceId, servicePort));
-            });
-
-            DevopsIngressDO devopsIngressDO = new DevopsIngressDO(
-                    id, projectId, domainEnvId, domain, name);
-            devopsIngressDO.setCertId(certId);
-            devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
-            if (!devopsIngressPathDOS.stream()
-                    .allMatch(t -> (t.getId() != null && id.equals(t.getId()))
-                            || devopsIngressRepository.checkIngressAndPath(
-                                    devopsIngressDO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
-                throw new CommonException("error.domain.path.exist");
-            }
-            if (gitOps) {
-                devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
-            } else {
-                DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(domainEnvId);
-                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-                gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-                String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-                operateEnvGitLabFile(name,
-                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), ingress, false, id,
-                        devopsEnvironmentE.getId(), path, devopsIngressDO, devopsIngressPathDOS, userAttrE);
-            }
+        if (devopsIngressDTO.equals(ingressDTO)) {
+            return;
         }
 
+        //初始化V1beta1Ingress对象
+        Long certId  = devopsIngressDTO.getCertId();
+        String certName = devopsIngressDTO.getCertName();
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
+
+        //处理域名数据
+        devopsIngressDTO.setId(id);
+        DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
+
+                DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDTO.getEnvId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+        //在gitops库处理ingress文件
+        operateEnvGitLabFile(
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, false, path, devopsIngressDO, userAttrE);
     }
+
+    @Override
+    public void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
+        //校验环境是否连接
+        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
+
+        //判断ingress有没有修改，没有修改直接返回
+        DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
+        if (devopsIngressDTO.equals(ingressDTO)) {
+            return;
+        }
+
+        //初始化V1beta1Ingress对象
+        String certName = devopsIngressDTO.getCertName();
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(),certName);
+
+        //处理域名数据
+        devopsIngressDTO.setId(id);
+        DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
+
+        //更新域名域名
+        devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
+    }
+
 
     @Override
     public Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params) {
@@ -265,48 +218,67 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public void deleteIngress(Long ingressId, boolean gitOps) {
-        envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
+    public void deleteIngress(Long ingressId) {
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
+
+        //校验环境是否连接
+        envUtil.checkEnvConnection(ingressDO.getEnvId(), envListener);
+
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
-        if (!gitOps) {
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-            String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, "Ingress");
-            if (devopsEnvFileResourceE == null) {
-                throw new CommonException("error.fileResource.not.exist");
-            }
-            List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
-            if (devopsEnvFileResourceES.size() == 1) {
-                gitlabRepository.deleteFile(
-                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        devopsEnvFileResourceE.getFilePath(),
-                        "DELETE FILE",
-                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-            } else {
-                ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
-                V1beta1Ingress v1beta1Ingress = new V1beta1Ingress();
-                V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
-                v1ObjectMeta.setName(ingressDO.getName());
-                v1beta1Ingress.setMetadata(v1ObjectMeta);
-                objectOperation.setType(v1beta1Ingress);
-                Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                objectOperation.operationEnvGitlabFile(
-                        null,
-                        projectId,
-                        "delete",
-                        userAttrE.getGitlabUserId(),
-                        ingressDO.getId(), "Ingress", devopsEnvironmentE.getId(), path);
-            }
-            ingressDO.setStatus(IngressStatus.OPERATING.getStatus());
-            devopsIngressRepository.updateIngress(ingressDO);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+        //查询改对象所在文件中是否含有其它对象
+        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, INGRESS);
+        if (devopsEnvFileResourceE == null) {
+            throw new CommonException(ERROR_FILE_RESOURCE_NOT_EXIST);
         }
-        if (gitOps) {
-            devopsIngressRepository.deleteIngress(ingressId);
+        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+
+        //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
+        if (devopsEnvFileResourceES.size() == 1) {
+            gitlabRepository.deleteFile(
+                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                    devopsEnvFileResourceE.getFilePath(),
+                    "DELETE FILE",
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        } else {
+            ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+            V1beta1Ingress v1beta1Ingress = new V1beta1Ingress();
+            V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+            v1ObjectMeta.setName(ingressDO.getName());
+            v1beta1Ingress.setMetadata(v1ObjectMeta);
+            objectOperation.setType(v1beta1Ingress);
+            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+            objectOperation.operationEnvGitlabFile(
+                    null,
+                    projectId,
+                    "delete",
+                    userAttrE.getGitlabUserId(),
+                    ingressDO.getId(), INGRESS, devopsEnvironmentE.getId(), path);
         }
+
+        //更新ingress状态
+        ingressDO.setStatus(IngressStatus.OPERATING.getStatus());
+        devopsIngressRepository.updateIngress(ingressDO);
+
+
     }
+
+
+    @Override
+    public void deleteIngressByGitOps(Long ingressId) {
+        envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
+        devopsIngressRepository.deleteIngress(ingressId);
+    }
+
+
 
     @Override
     public Boolean checkName(Long envId, String name) {
@@ -341,10 +313,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return path;
     }
 
+
     @Override
-    public V1beta1Ingress createIngress(String host, String name, String certName) {
+    public V1beta1Ingress initV1beta1Ingress(String host, String name, String certName) {
         V1beta1Ingress ingress = new V1beta1Ingress();
-        ingress.setKind("Ingress");
+        ingress.setKind(INGRESS);
         ingress.setApiVersion("extensions/v1beta1");
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(name);
@@ -376,7 +349,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
 
         ingress.setSpec(spec);
-        json.serialize(ingress);
         return ingress;
     }
 
@@ -391,25 +363,82 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         return devopsServiceE;
     }
 
-    private void operateEnvGitLabFile(String ingressName,
-                                      Integer envGitLabProjectId,
+    private void operateEnvGitLabFile(Integer envGitLabProjectId,
                                       V1beta1Ingress ingress,
                                       Boolean isCreate,
-                                      Long objectId,
-                                      Long envId,
                                       String path,
                                       DevopsIngressDO devopsIngressDO,
-                                      List<DevopsIngressPathDO> devopsIngressPathDOS,
                                       UserAttrE userAttrE) {
         ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
         objectOperation.setType(ingress);
-        objectOperation.operationEnvGitlabFile("ing-" + ingressName, envGitLabProjectId, isCreate ? "create" : "update",
-                userAttrE.getGitlabUserId(), objectId, "Ingress", envId, path);
+        objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? "create" : "update",
+                userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, devopsIngressDO.getEnvId(), path);
+        //文件操作成功后才创建或更新数据,避免文件数据不一致
         if (isCreate) {
-            devopsIngressRepository.createIngress(devopsIngressDO, devopsIngressPathDOS);
+            devopsIngressRepository.createIngress(devopsIngressDO);
         } else {
-            devopsIngressRepository.updateIngress(devopsIngressDO, devopsIngressPathDOS);
+            devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
         }
     }
 
+
+    private DevopsIngressDO handlerIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, V1beta1Ingress v1beta1Ingress) {
+        Long envId = devopsIngressDTO.getEnvId();
+        String ingressName = devopsIngressDTO.getName();
+        DevopsIngressValidator.checkIngressName(ingressName);
+        String domain = devopsIngressDTO.getDomain();
+
+        //处理pathlist,生成域名和service的关联对象列表
+        List<DevopsIngressPathDO> devopsIngressPathDOS = handlerPathList(devopsIngressDTO.getPathList(), devopsIngressDTO, v1beta1Ingress);
+
+        //初始化ingressDO对象
+        DevopsIngressDO devopsIngressDO = new DevopsIngressDO(devopsIngressDTO.getId(), projectId, envId, domain, ingressName, IngressStatus.OPERATING.getStatus());
+
+        //校验域名的domain和path是否在数据库中已存在
+        if (devopsIngressPathDOS.stream()
+                .noneMatch(t ->
+                        devopsIngressRepository.checkIngressAndPath(devopsIngressDTO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
+            throw new CommonException(ERROR_DOMAIN_PATH_EXIST);
+        }
+        devopsIngressDO.setDevopsIngressPathDOS(devopsIngressPathDOS);
+        devopsIngressDO.setCertId(devopsIngressDTO.getCertId());
+        return devopsIngressDO;
+    }
+
+
+    private List<DevopsIngressPathDO> handlerPathList(List<DevopsIngressPathDTO> pathList, DevopsIngressDTO devopsIngressDTO, V1beta1Ingress v1beta1Ingress) {
+        if (pathList == null || pathList.isEmpty()) {
+            throw new CommonException(PATH_ERROR);
+        }
+        List<DevopsIngressPathDO> devopsIngressPathDOS = new ArrayList<>();
+        List<String> pathCheckList = new ArrayList<>();
+        pathList.forEach(t -> {
+            Long serviceId = t.getServiceId();
+            Long servicePort = t.getServicePort();
+            String hostPath = t.getPath();
+
+            if (hostPath == null || serviceId == null) {
+                throw new CommonException(PATH_ERROR);
+            }
+            DevopsIngressValidator.checkPath(hostPath);
+            if (pathCheckList.contains(hostPath)) {
+                throw new CommonException(PATH_DUPLICATED);
+            } else {
+                pathCheckList.add(hostPath);
+            }
+            DevopsServiceE devopsServiceE = getDevopsService(serviceId);
+
+            if (devopsServiceE.getPorts().parallelStream()
+                    .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
+                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
+            }
+
+            devopsIngressPathDOS.add(new DevopsIngressPathDO(
+                    devopsIngressDTO.getId(), hostPath,
+                    devopsServiceE.getId(), devopsServiceE.getName(), servicePort));
+            v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
+                    createPath(hostPath, serviceId, servicePort));
+        });
+        return devopsIngressPathDOS;
+    }
 }

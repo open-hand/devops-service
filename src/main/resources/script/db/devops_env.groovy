@@ -25,9 +25,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                 constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
         addUniqueConstraint(tableName: 'devops_env',
                 constraintName: 'uk_project_id_code', columnNames: 'project_id,code')
-//        createIndex(indexName: "idx_project_id", tableName: "devops_env") {
-//            column(name: "project_id")
-//        }
+        createIndex(indexName: "idx_project_id", tableName: "devops_env") {
+            column(name: "project_id")
+        }
     }
 
     changeSet(id: '2018-05-20-drop-constraint', author: 'younger') {
@@ -66,4 +66,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                     column(name: 'agent_sync_commit', type: 'BIGINT UNSIGNED', remarks: 'senv_commit_agent_sync_id', afterColumn: 'devops_sync_commit')
                 }
             }
+
+
+    changeSet(author: 'younger', id: '2018-09-03-modify-index') {
+        dropIndex(indexName: "idx_project_id",tableName: "devops_env")
+
+        createIndex(indexName: "devops_env_idx_project_id", tableName: "devops_env") {
+            column(name: "project_id")
+        }
+    }
 }

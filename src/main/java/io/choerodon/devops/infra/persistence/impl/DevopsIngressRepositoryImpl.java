@@ -71,19 +71,19 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public void createIngress(DevopsIngressDO devopsIngressDO, List<DevopsIngressPathDO> devopsIngressPathDOList) {
+    public void createIngress(DevopsIngressDO devopsIngressDO) {
         if (!checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
         }
         devopsIngressMapper.insert(devopsIngressDO);
-        devopsIngressPathDOList.forEach(t -> {
+        devopsIngressDO.getDevopsIngressPathDOS().forEach(t -> {
             t.setIngressId(devopsIngressDO.getId());
             devopsIngressPathMapper.insert(t);
         });
     }
 
     @Override
-    public void updateIngress(DevopsIngressDO devopsIngressDO, List<DevopsIngressPathDO> devopsIngressPathDOList) {
+    public void updateIngressAndIngressPath(DevopsIngressDO devopsIngressDO) {
         Long id = devopsIngressDO.getId();
         DevopsIngressDO ingressDO = devopsIngressMapper.selectByPrimaryKey(id);
         if (ingressDO == null) {
@@ -98,9 +98,9 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressMapper.updateByPrimaryKey(devopsIngressDO);
         }
         List<DevopsIngressPathDO> ingressPathList = devopsIngressPathMapper.select(new DevopsIngressPathDO(id));
-        if (!devopsIngressPathDOList.equals(ingressPathList)) {
+        if (!devopsIngressDO.getDevopsIngressPathDOS().equals(ingressPathList)) {
             devopsIngressPathMapper.delete(new DevopsIngressPathDO(id));
-            devopsIngressPathDOList.forEach(t -> {
+            devopsIngressDO.getDevopsIngressPathDOS().forEach(t -> {
                 t.setIngressId(id);
                 devopsIngressPathMapper.insert(t);
             });
