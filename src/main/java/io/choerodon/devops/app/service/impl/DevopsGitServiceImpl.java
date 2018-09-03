@@ -1138,9 +1138,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
         });
         //新增ingress
-        addIngress(objectPath, envId, projectId, path, updateV1beta1Ingress);
+        addIngress(objectPath, envId, projectId, path, addV1beta1Ingress);
         //更新ingress
-        updateIngress(objectPath, envId, projectId, path, addV1beta1Ingress);
+        updateIngress(objectPath, envId, projectId, path, updateV1beta1Ingress);
     }
 
     private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, String path, List<V1beta1Ingress> addV1beta1Ingress) {
