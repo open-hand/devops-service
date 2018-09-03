@@ -440,23 +440,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsEnvFileRepository.delete(devopsEnvFileE);
             }
             //删除tag
-            if (tagNotExist) {
-                devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
-            } else {
-                try {
-                    devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
-                } catch (CommonException e) {
-                    if (getDevopsSyncTag(pushWebHookDTO)) {
-                        devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
-                    } else {
-                        throw new CommonException(e.getMessage(), e);
-                    }
-                }
-                //创建新tag
-                if (getDevopsSyncTag(pushWebHookDTO)) {
-                    devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
-                }
-            }
+            handleTag(pushWebHookDTO, gitLabProjectId, gitLabUserId, devopsEnvCommitE, tagNotExist);
 
 
             //向agent发送同步指令
@@ -481,6 +465,26 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE);
         // do sth to files
+    }
+
+    private void handleTag(PushWebHookDTO pushWebHookDTO, Integer gitLabProjectId, Integer gitLabUserId, DevopsEnvCommitE devopsEnvCommitE, Boolean tagNotExist) {
+        if (tagNotExist) {
+            devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+        } else {
+            try {
+                devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
+            } catch (CommonException e) {
+                if (getDevopsSyncTag(pushWebHookDTO)) {
+                    devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+                } else {
+                    throw new CommonException(e.getMessage(), e);
+                }
+            }
+            //创建新tag
+            if (getDevopsSyncTag(pushWebHookDTO)) {
+                devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+            }
+        }
     }
 
     private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles, Set<DevopsEnvFileResourceE> beforeSync, Set<DevopsEnvFileResourceE> beforeSyncDelete, DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitE devopsEnvCommitE) {
@@ -644,7 +648,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             V1Service serializableSvc = v1ServiceSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
                             //校验service对象，校验是否已存在，以及参数是否填写正确
-                            checkService(path, v1Services, envId, beforeSyncDelete, objectPath,  devopsEnvFileErrorE, serializableSvc);
+                            checkService(path, v1Services, envId, beforeSyncDelete, objectPath, devopsEnvFileErrorE, serializableSvc);
                             break;
                         case "Certificate":
                             C7nCertification c7nCertification = new C7nCertification();
@@ -654,29 +658,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             C7nCertification serializableCert = c7nCertificationSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
                             String certName = serializableCert.getMetadata().getName();
-                            if (certName == null) {
-                                throw new CommonException("The C7nCertification does not have name");
-                            }
-                            CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-                            if (certificationE != null) {
-                                Long certId = certificationE.getId();
-                                if (beforeSyncDelete.parallelStream()
-                                        .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
-                                                .equals(serializableCert.getKind()))
-                                        .noneMatch(devopsEnvFileResourceE ->
-                                                devopsEnvFileResourceE.getResourceId()
-                                                        .equals(certId))) {
-                                    hasSameObject(envId, objectPath, certName, serializableCert.getKind(),
-                                            certId, path, serializableCert.hashCode());
-                                }
-                            }
-                            if (c7nCertifications.parallelStream()
-                                    .anyMatch(certification -> certification.getMetadata().getName()
-                                            .equals(certName))) {
-                                createDevopsFileError(devopsEnvFileErrorE, ERROR_MESSAGE + certName);
-                            } else {
-                                c7nCertifications.add(serializableCert);
-                            }
+                            checkC7nCertification(path, envId, beforeSyncDelete, c7nCertifications, objectPath, devopsEnvFileErrorE, serializableCert, certName);
                             break;
                         default:
                             break;
@@ -689,6 +671,33 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
         return objectPath;
+    }
+
+    private void checkC7nCertification(String path, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, List<C7nCertification> c7nCertifications, Map<String, String> objectPath, DevopsEnvFileErrorE devopsEnvFileErrorE, C7nCertification serializableCert) {
+        String certName = serializableCert.getMetadata().getName();
+        if (certName == null) {
+            throw new CommonException("The C7nCertification does not have name");
+        }
+        CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+        if (certificationE != null) {
+            Long certId = certificationE.getId();
+            if (beforeSyncDelete.parallelStream()
+                    .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
+                            .equals(serializableCert.getKind()))
+                    .noneMatch(devopsEnvFileResourceE ->
+                            devopsEnvFileResourceE.getResourceId()
+                                    .equals(certId))) {
+                hasSameObject(envId, objectPath, certName, serializableCert.getKind(),
+                        certId, path, serializableCert.hashCode());
+            }
+        }
+        if (c7nCertifications.parallelStream()
+                .anyMatch(certification -> certification.getMetadata().getName()
+                        .equals(certName))) {
+            createDevopsFileError(devopsEnvFileErrorE, ERROR_MESSAGE + certName);
+        } else {
+            c7nCertifications.add(serializableCert);
+        }
     }
 
     private void checkService(String path, List<V1Service> v1Services, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, DevopsEnvFileErrorE devopsEnvFileErrorE, V1Service serializableSvc) {
@@ -739,7 +748,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                         List<V1Service> v1Services,
                                         List<V1beta1Ingress> v1beta1Ingresses,
                                         List<C7nCertification> c7nCertifications,
-                                        Long envId,String path) {
+                                        Long envId, String path) {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         Long projectId = devopsEnvironmentE.getProjectE().getId();
