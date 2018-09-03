@@ -659,7 +659,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             C7nCertification serializableCert = c7nCertificationSerializableOperation
                                     .serializable(jsonObject.toJSONString(), filePath, objectPath);
                             String certName = serializableCert.getMetadata().getName();
-                            checkC7nCertification(path, envId, beforeSyncDelete, c7nCertifications, objectPath, devopsEnvFileErrorE, serializableCert, certName);
+                            checkC7nCertification(path, envId, beforeSyncDelete, c7nCertifications, objectPath, devopsEnvFileErrorE, serializableCert);
                             break;
                         default:
                             break;
