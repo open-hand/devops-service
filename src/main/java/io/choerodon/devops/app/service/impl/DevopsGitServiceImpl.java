@@ -961,8 +961,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                     .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
-            if (deployValue.equals(applicationDeployDTO.getValues()) && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
-                applicationDeployDTO.setIsNotChange(true);
+            if(deployValue!=null) {
+                if (deployValue.equals(applicationDeployDTO.getValues()) && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
+                    applicationDeployDTO.setIsNotChange(true);
+                }
             }
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
         }
@@ -1556,10 +1558,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void initMockService(SagaClient sagaClient, ApplicationInstanceService applicationInstanceService,DevopsServiceService devopsServiceService, DevopsIngressService devopsIngressService) {
+    public void initMockService(SagaClient sagaClient) {
         this.sagaClient = sagaClient;
-        this.devopsIngressService = devopsIngressService;
-        this.devopsServiceService = devopsServiceService;
-        this.applicationInstanceService = applicationInstanceService;
     }
 }

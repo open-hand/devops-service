@@ -61,9 +61,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     private ApplicationTemplateService applicationTemplateService
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
-    ApplicationInstanceService applicationInstanceService = Mockito.mock(ApplicationInstanceService.class)
-    DevopsServiceService devopsServiceService = Mockito.mock(DevopsServiceService.class)
-    DevopsIngressService devopsIngressService = Mockito.mock(DevopsIngressService.class)
+
 
     @Autowired
     @Qualifier("mockIamRepository")
@@ -77,12 +75,6 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Qualifier("mockApplicationTemplateRepository")
     private ApplicationTemplateRepository applicationTemplateRepository
 
-//    @Autowired
-//    @Qualifier("mockEventProducerTemplate")
-//    private EventProducerTemplate eventProducerTemplate
-
-//    @Autowired
-//    private EventStoreClient eventStoreClient
 
     def "Create"() {
         given:
@@ -102,7 +94,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         userAttrE.setGitlabUserId(1L)
         userAttrRepository.insert(userAttrE)
 
-        devopsGitService.initMockService(sagaClient, applicationInstanceService, devopsServiceService, devopsIngressService)
+        devopsGitService.initMockService(sagaClient)
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(null, null)
 
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE()
@@ -116,32 +108,6 @@ class ApplicationTemplateControllerSpec extends Specification {
         1 * gitlabRepository.queryGroupByName(_, _) >> null
         1 * gitlabRepository.createGroup(_, _) >> gitlabGroupE
         1 * applicationTemplateRepository.create(_) >> applicationTemplateE
-//        entity.statusCode.is2xxSuccessful()
-//        entity.body.getCode().equals("test")
-//        applicationTemplateRepository.delete(entity.getBody().getId())
-
-//        when:
-//        def entity1 = restTemplate.postForEntity('/v1/organizations/{organization_id}/app_templates', applicationTemplateDTO, ApplicationTemplateRepDTO, 1L)
-//        then:
-//        iamRepository.queryOrganizationById(_) >> organization
-//        gitlabRepository.queryGroupByName(_) >> gitlabGroupE
-//        gitlabRepository.createGroup(_) >> 1L
-//        1 * eventProducerTemplate.execute(_)
-//        entity1.statusCode.is2xxSuccessful()
-//        entity1.body.getCode().equals("test")
-//
-//        when:
-//        applicationTemplateDTO.setCode(".....")
-//        restTemplate.postForEntity('/v1/organizations/{organization_id}/app_templates', applicationTemplateDTO, ApplicationTemplateRepDTO, 1L)
-//
-//        then:
-//        thrown("error.template.code.notMatch")
-//
-//        when:
-//        restTemplate.postForEntity('/v1/organizations/{organization_id}/app_templates', applicationTemplateDTO, ApplicationTemplateRepDTO, 1L)
-//
-//        then:
-//        thrown("error.code.exist")
     }
 
     def "Update"() {

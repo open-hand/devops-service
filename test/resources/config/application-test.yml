@@ -16,7 +16,7 @@ hystrix:
     queue:
       enabled: false
 data:
-  dir: src/main/resources
+  dir: test/resources
 eureka:
   client:
     enabled: false

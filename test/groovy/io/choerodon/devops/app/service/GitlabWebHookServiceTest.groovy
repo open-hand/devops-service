@@ -15,6 +15,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.DiffE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.domain.service.DeployService
+import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.enums.CommandType
 import io.choerodon.devops.infra.common.util.enums.ObjectType
@@ -111,15 +112,12 @@ class GitlabWebHookServiceTest extends Specification {
     @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper
 
+    @Autowired
+    @Qualifier("mockEnvUtil")
+    private EnvUtil envUtil;
+
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
 
-    ApplicationInstanceService applicationInstanceService = Mockito.mock(ApplicationInstanceService.class)
-
-    DevopsServiceService devopsServiceService  = Mockito.mock(DevopsServiceService.class)
-
-    DevopsIngressService devopsIngressService = Mockito.mock(DevopsIngressService.class)
-
-    def subscriber = Spy(DevopsGitServiceImpl)
 
 
     def setup() {
@@ -130,7 +128,7 @@ class GitlabWebHookServiceTest extends Specification {
         devopsEnvironmentE.setCode("test")
         devopsEnvironmentE.setGitCommit(1L)
         devopsEnvironmentE.initProjectE(1L)
-        devopsGitService.initMockService(sagaClient,applicationInstanceService,devopsServiceService,devopsIngressService)
+        devopsGitService.initMockService(sagaClient)
         ApplicationE applicationE = new ApplicationE()
         applicationE.setCode("testapp")
         applicationE.initProjectE(1L)
@@ -168,6 +166,8 @@ class GitlabWebHookServiceTest extends Specification {
         devopsServiceE.setName("svc" + code)
         devopsServiceE.setNamespace("test")
         devopsServiceE.setEnvId(devopsEnvironmentE.getId())
+        devopsServiceE.setAppId(1L)
+        devopsServiceE.setPorts(new ArrayList<PortMapE>())
         DevopsEnvFileResourceE devopsEnvFileResourceE1 = new DevopsEnvFileResourceE()
         devopsEnvFileResourceE1.setEnvironment(devopsEnvironmentE)
         devopsEnvFileResourceE1.setResourceId(devopsServiceRepository.insert(devopsServiceE).getId())
@@ -260,6 +260,7 @@ class GitlabWebHookServiceTest extends Specification {
         devopsServiceE.setName("svctest3")
         devopsServiceE.setNamespace("test")
         devopsServiceE.setEnvId(devopsEnvironmentE.getId())
+        devopsServiceE.setPorts(new ArrayList<PortMapE>())
         DevopsIngressE devopsIngressE = new DevopsIngressE()
         devopsIngressE.setName("ingtest3")
         devopsIngressE.setEnvId(devopsEnvironmentE.getId())
@@ -268,12 +269,12 @@ class GitlabWebHookServiceTest extends Specification {
         ApplicationInstanceDTO applicationInstanceDTO1 = new ApplicationInstanceDTO();
         applicationInstanceDTO1.setId(2L)
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE()
-        devopsEnvCommandE.setCommandType(CommandType.SYNC.getType())
+        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType())
         devopsEnvCommandE.setObjectId(2L)
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType())
         devopsEnvCommandRepository.create(devopsEnvCommandE)
         DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE()
-        devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType())
+        devopsEnvCommandE1.setCommandType(CommandType.CREATE.getType())
         devopsEnvCommandE1.setObjectId(1L)
         devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType())
         devopsEnvCommandRepository.create(devopsEnvCommandE1)
@@ -291,22 +292,12 @@ class GitlabWebHookServiceTest extends Specification {
         devopsGitService.fileResourceSync(pushWebHookDTO)
 
         then:
+        9 * envUtil.checkEnvConnection(_,_)
         3 * iamRepository.queryIamProject(_) >> projectE
         3 * iamRepository.queryOrganizationById(_) >> organization
-        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
+        2 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-        1 * applicationInstanceService.create(_, _) >> {
-            ConvertHelper.convert(applicationInstanceRepository.create(applicationInstanceE), ApplicationInstanceDTO.class)
-        }
-        1 * devopsServiceService.insertDevopsService(_, _, _) >> {
-            devopsServiceRepository.insert(devopsServiceE)
-        } >> applicationInstanceDTO1
-        1 * devopsIngressService.addIngress(_, _, _) >> { devopsIngressRepository.insertIngress(devopsIngressE) }
-        1 * devopsServiceService.updateDevopsService(_, _, _, _)
-        1 * devopsServiceService.deleteDevopsService(_, _)
-        1 * devopsIngressService.updateIngress(_, _, _, _)
-        1 * devopsIngressService.deleteIngress(_, _)
-        1 * devopsGitRepository.deleteTag(_, _, _)
+        1 * devopsGitRepository.deleteTag(_, _, _) >> {tagDOS.clear()}
         1 * devopsGitRepository.createTag(_, _, _, _)
         1 * deployService.sendCommand(_)
         List<DevopsEnvFileResourceE> devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(1, "test3.yaml")
@@ -345,18 +336,24 @@ class GitlabWebHookServiceTest extends Specification {
         TagDO tagDO = new TagDO()
         tagDO.setName("devops-sync")
         tagDOS.add(tagDO)
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE()
+        devopsEnvCommandE.setId(4L)
+        devopsEnvCommandE.setCommandType(CommandType.CREATE.getType())
+        devopsEnvCommandE.setObjectId(2L)
+        devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType())
+        devopsEnvCommandRepository.update(devopsEnvCommandE)
+
 
         when:
         devopsGitService.fileResourceSync(pushWebHookDTO)
 
         then:
+        3 * envUtil.checkEnvConnection(_,_)
         2 * iamRepository.queryIamProject(_) >> projectE
         2 * iamRepository.queryOrganizationById(_) >> organization
-        1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
+        2 * devopsGitRepository.getGitLabTags(_,_) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
-        1 * devopsServiceService.updateDevopsService(_, _, _, _)
-        1 * devopsIngressService.updateIngress(_, _, _, _)
-        1 * devopsGitRepository.deleteTag(_, _, _)
+        1 * devopsGitRepository.deleteTag(_, _, _) >> {tagDOS.clear()}
         1 * devopsGitRepository.createTag(_, _, _, _)
         1 * deployService.sendCommand(_)
         List<DevopsEnvFileResourceE> devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(1, "test2.yaml")
@@ -401,7 +398,7 @@ class GitlabWebHookServiceTest extends Specification {
         1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
-        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object :instest2";
+        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: instest2";
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
     }
 
@@ -440,7 +437,7 @@ class GitlabWebHookServiceTest extends Specification {
         1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
-        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object :svctest2"
+        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: svctest2"
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 
     }
@@ -480,7 +477,7 @@ class GitlabWebHookServiceTest extends Specification {
         1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
-        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object :ingtest2"
+        devopsEnvFileErrorE.get(0).getError() == "the another file already has the same object: ingtest2"
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 
     }
@@ -641,7 +638,7 @@ class GitlabWebHookServiceTest extends Specification {
         1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
-        devopsEnvFileErrorE.get(0).getError() == "error.domain.path.exist"
+        devopsEnvFileErrorE.get(0).getError() == "the ingress domain and path is already exist!"
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
     }
 
@@ -680,7 +677,7 @@ class GitlabWebHookServiceTest extends Specification {
         1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
-        devopsEnvFileErrorE.get(0).getError() == "The C7nHelmRelease does not have name"
+        devopsEnvFileErrorE.get(0).getError() == "The C7nHelmRelease does not define name properties"
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
     }
 }
