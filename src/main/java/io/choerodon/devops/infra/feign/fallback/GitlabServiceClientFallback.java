@@ -225,7 +225,8 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<TagDO> createTag(Integer projectId, String name, String ref, Integer userId) {
+    public ResponseEntity<TagDO> createTag(Integer projectId, String name, String ref,
+                                           String msg, String releaseNotes, Integer userId) {
         return new ResponseEntity("error.tags.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

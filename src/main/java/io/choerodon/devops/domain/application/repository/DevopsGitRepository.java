@@ -20,7 +20,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsGitRepository {
 
-    void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId);
+    void createTag(Integer gitLabProjectId, String tag, String ref, String msg, String releaseNotes, Integer userId);
 
     void deleteTag(Integer gitLabProjectId, String tag, Integer userId);
 

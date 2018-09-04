@@ -76,9 +76,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     private DevopsMergeRequestRepository devopsMergeRequestRepository;
 
     @Override
-    public void createTag(Integer gitLabProjectId, String tag, String ref, Integer userId) {
+    public void createTag(Integer gitLabProjectId, String tag, String ref, String msg, String releaseNotes, Integer userId) {
         try {
-            gitlabServiceClient.createTag(gitLabProjectId, tag, ref, userId);
+            gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
         } catch (Exception e) {
             throw new CommonException("create gitlab devops-sync tag failed", e);
         }
