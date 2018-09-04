@@ -275,6 +275,8 @@ public interface GitlabServiceClient {
             @PathVariable("projectId") Integer projectId,
             @RequestParam("name") String name,
             @RequestParam("ref") String ref,
+            @RequestParam(value = "message", defaultValue = "") String msg,
+            @RequestParam(value = "release_notes", defaultValue = "") String releaseNotes,
             @RequestParam("userId") Integer userId);
 
     /**

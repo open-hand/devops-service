@@ -143,11 +143,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void createTag(Long projectId, Long appId, String tag, String ref) {
+    public void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes) {
         applicationRepository.checkApp(projectId, appId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
         Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
-        devopsGitRepository.createTag(gitLabProjectId, tag, ref, gitLabUserId);
+        devopsGitRepository.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, gitLabUserId);
     }
 
     @Override
@@ -471,20 +471,26 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void handleTag(PushWebHookDTO pushWebHookDTO, Integer gitLabProjectId, Integer gitLabUserId, DevopsEnvCommitE devopsEnvCommitE, Boolean tagNotExist) {
         if (tagNotExist) {
-            devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+            devopsGitRepository.createTag(
+                    gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
+                    null, null, gitLabUserId);
         } else {
             try {
                 devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
             } catch (CommonException e) {
                 if (getDevopsSyncTag(pushWebHookDTO)) {
-                    devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+                    devopsGitRepository.createTag(
+                            gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
+                            null, null, gitLabUserId);
                 } else {
                     throw new CommonException(e.getMessage(), e);
                 }
             }
             //创建新tag
             if (getDevopsSyncTag(pushWebHookDTO)) {
-                devopsGitRepository.createTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(), gitLabUserId);
+                devopsGitRepository.createTag(
+                        gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
+                        null, null, gitLabUserId);
             }
         }
     }

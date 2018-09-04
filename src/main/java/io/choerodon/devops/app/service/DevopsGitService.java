@@ -21,7 +21,7 @@ public interface DevopsGitService {
 
     String getUrl(Long projectId, Long appId);
 
-    void createTag(Long projectId, Long appId, String tag, String ref);
+    void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes);
 
     void deleteTag(Long projectId, Long appId, String tag);
 

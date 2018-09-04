@@ -301,7 +301,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 new SyncInstanceByEnv(logs, env).invoke();
                 new SynServiceByEnv(logs, env).invoke();
                 new SyncIngressByEnv(logs, env).invoke();
-                devopsGitRepository.createTag(TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, ADMIN);
+                devopsGitRepository.createTag(
+                        TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, null, null, ADMIN);
                 LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
             }
         });
