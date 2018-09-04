@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper">
+
+    <update id="queryByObject" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO">
+        UPDATE devops_env_group deg
+        RIGHT JOIN (
+        SELECT
+            id group_id
+        FROM
+            devops_env_group,
+            ( SELECT @rowno := 0 ) r
+        WHERE
+            project_id = #{projectId}
+        ORDER BY
+            FIELD( id,
+                <foreach collection="searchParam.envGroupIds" item="envGroupId" separator=", " >
+                    #{envGroupId}
+                </foreach>
+             )
+            ) t ON deg.id = t.group_id
+            SET sequence = @rowno := @rowno + 1;
+    </update>
+</mapper>

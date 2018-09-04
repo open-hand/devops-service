@@ -6,14 +6,19 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvGroupE;
 
 public interface DevopsEnvGroupRepository {
 
-
     DevopsEnvGroupE create(DevopsEnvGroupE devopsEnvGroupE);
 
     DevopsEnvGroupE update(DevopsEnvGroupE devopsEnvGroupE);
 
     List<DevopsEnvGroupE> listByProjectId(Long projectId);
 
-    DevopsEnvGroupE queryByProjectIdAndName(String name, Long projectId);
-
     DevopsEnvGroupE query(Long id);
+
+    void sort(Long projectId, List<Long> devopsEnvGroupIds);
+
+    Boolean checkUniqueInProject(Long id, String name, Long projectId);
+
+    Boolean checkUniqueInProject(String name, Long projectId);
+
+    void delete(Long id);
 }

@@ -11,13 +11,13 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @Table(name = "devops_env_group")
 @VersionAudit
 public class DevopsEnvGroupDO {
-
     @Id
     @GeneratedValue
     private Long id;
     private Long projectId;
     private String name;
     private Long objectVersionNumber;
+    private Long sequence;
 
     public Long getId() {
         return id;
@@ -49,5 +49,13 @@ public class DevopsEnvGroupDO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
     }
 }

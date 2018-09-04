@@ -17,8 +17,15 @@ import io.choerodon.devops.api.dto.DevopsEnvGroupDTO;
 import io.choerodon.devops.app.service.DevopsEnvGroupService;
 import io.choerodon.swagger.annotation.Permission;
 
+
+/**
+ * Creator: Runge
+ * Date: 2018/9/4
+ * Time: 14:18
+ * Description:
+ */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/envGroups")
+@RequestMapping(value = "/v1/projects/{project_id}/env_groups")
 public class DevopsEnvGroupController {
 
     @Autowired
@@ -27,8 +34,8 @@ public class DevopsEnvGroupController {
     /**
      * 项目下创建环境组
      *
-     * @param projectId         项目id
-     * @param devopsEnvGroupDTO 环境组信息
+     * @param projectId          项目id
+     * @param devopsEnvGroupName 环境组名称
      * @return ApplicationTemplateDTO
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
@@ -38,8 +45,8 @@ public class DevopsEnvGroupController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组信息", required = true)
-            @RequestBody DevopsEnvGroupDTO devopsEnvGroupDTO) {
-        return Optional.ofNullable(devopsEnvGroupService.create(devopsEnvGroupDTO, projectId))
+            @RequestParam String devopsEnvGroupName) {
+        return Optional.ofNullable(devopsEnvGroupService.create(devopsEnvGroupName, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.create"));
     }
@@ -67,16 +74,35 @@ public class DevopsEnvGroupController {
 
 
     /**
+     * 项目下更新环境组
+     *
+     * @param projectId         项目id
+     * @param devopsEnvGroupIds 环境组id序列
+     * @return ApplicationTemplateDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "项目下更新环境组顺序")
+    @PutMapping(value = "/sort")
+    public ResponseEntity<List<DevopsEnvGroupDTO>> sort(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境组信息", required = true)
+            @RequestBody List<Long> devopsEnvGroupIds) {
+        return Optional.ofNullable(devopsEnvGroupService.sort(projectId, devopsEnvGroupIds))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.group.sort"));
+    }
+
+
+    /**
      * 项目下查询环境组
      *
      * @param projectId 项目id
      * @return DevopsEnvGroupDTO
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {
-            InitRoleCode.DEPLOY_ADMINISTRATOR
-    })
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询环境组")
-    @GetMapping(value = "/list_all")
+    @GetMapping
     public ResponseEntity<List<DevopsEnvGroupDTO>> listByProject(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
@@ -91,9 +117,7 @@ public class DevopsEnvGroupController {
      * @param projectId 项目id
      * @return boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {
-            InitRoleCode.DEPLOY_ADMINISTRATOR
-    })
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "校验环境组名唯一性")
     @GetMapping(value = "/checkName")
     public ResponseEntity<Boolean> checkName(
@@ -101,10 +125,8 @@ public class DevopsEnvGroupController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境组名", required = true)
             @RequestParam String name) {
-        return Optional.ofNullable(devopsEnvGroupService.checkName(name, projectId))
+        return Optional.ofNullable(devopsEnvGroupService.checkUniqueInProject(name, projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.get"));
     }
-
-
 }

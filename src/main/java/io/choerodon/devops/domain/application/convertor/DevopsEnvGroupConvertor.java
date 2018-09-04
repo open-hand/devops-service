@@ -1,6 +1,5 @@
 package io.choerodon.devops.domain.application.convertor;
 
-
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
@@ -35,6 +34,7 @@ public class DevopsEnvGroupConvertor implements ConvertorI<DevopsEnvGroupE, Devo
     public DevopsEnvGroupDTO entityToDto(DevopsEnvGroupE devopsEnvGroupE) {
         DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO();
         BeanUtils.copyProperties(devopsEnvGroupE, devopsEnvGroupDTO);
+        devopsEnvGroupDTO.setProjectId(devopsEnvGroupE.getProjectE().getId());
         return devopsEnvGroupDTO;
     }
 
@@ -42,7 +42,7 @@ public class DevopsEnvGroupConvertor implements ConvertorI<DevopsEnvGroupE, Devo
     public DevopsEnvGroupE dtoToEntity(DevopsEnvGroupDTO devopsEnvGroupDTO) {
         DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
         BeanUtils.copyProperties(devopsEnvGroupDTO, devopsEnvGroupE);
+        devopsEnvGroupE.initProject(devopsEnvGroupDTO.getProjectId());
         return devopsEnvGroupE;
     }
-
 }

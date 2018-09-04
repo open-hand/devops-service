@@ -5,6 +5,7 @@ public class DevopsEnvGroupE {
     private Long id;
     private ProjectE projectE;
     private String name;
+    private Long sequence;
 
 
     public Long getId() {
@@ -29,5 +30,17 @@ public class DevopsEnvGroupE {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setProjectE(ProjectE projectE) {
+        this.projectE = projectE;
+    }
+
+    public Long getSequence() {
+        return sequence;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
     }
 }
