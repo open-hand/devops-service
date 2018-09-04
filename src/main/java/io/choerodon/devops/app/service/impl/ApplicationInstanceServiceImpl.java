@@ -705,8 +705,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     }
 
+
     @Override
     public ReplaceResult getReplaceResult(String versionValue, String deployValue) {
+        if (versionValue.equals(deployValue)) {
+            ReplaceResult replaceResult = new ReplaceResult();
+            replaceResult.setDeltaYaml("");
+            return replaceResult;
+        }
         String fileName = GenerateUUID.generateUUID() + ".yaml";
         String path = "deployfile";
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
@@ -714,7 +720,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         try {
             replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
-            throw new CommonException(e.getMessage(), e);
+            throw new CommonException(e.getMessage());
         }
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
         FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);

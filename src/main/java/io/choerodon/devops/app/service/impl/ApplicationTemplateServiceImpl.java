@@ -77,8 +77,11 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     private UserAttrRepository userAttrRepository;
     @Autowired
     private GitlabUserRepository gitlabUserRepository;
+
     @Autowired
     private SagaClient sagaClient;
+
+
 
 
     @Override

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl
 
+import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -24,6 +25,7 @@ class IamRepositoryImplSpec extends Specification {
 
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
+
     def "QueryOrganization"() {
         given:
         iamRepository = new IamRepositoryImpl(iamServiceClient)
@@ -32,11 +34,13 @@ class IamRepositoryImplSpec extends Specification {
         ResponseEntity<OrganizationDO> organization = new ResponseEntity<>(organizationDO,HttpStatus.OK)
         Mockito.doReturn(organization).when(iamServiceClient).queryOrganization()
 
+
         when:
         def newOrganization = iamRepository.queryOrganization()
 
         then:
         newOrganization.getId()==1L
+
 
     }
 }

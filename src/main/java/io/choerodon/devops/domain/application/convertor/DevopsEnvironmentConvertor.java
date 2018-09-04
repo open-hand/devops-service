@@ -25,7 +25,9 @@ public class DevopsEnvironmentConvertor implements ConvertorI<DevopsEnvironmentE
     @Override
     public DevopsEnvironmentDO entityToDo(DevopsEnvironmentE devopsEnvironmentE) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
-        devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
+        if(devopsEnvironmentE.getProjectE()!=null) {
+            devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
+        }
         BeanUtils.copyProperties(devopsEnvironmentE, devopsEnvironmentDO);
         return devopsEnvironmentDO;
     }

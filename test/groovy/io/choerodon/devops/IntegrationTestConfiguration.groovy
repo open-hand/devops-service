@@ -2,17 +2,16 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.event.producer.execute.EventProducerTemplate
-import io.choerodon.event.producer.execute.EventRecord
-import io.choerodon.event.producer.execute.EventStoreClient
+import io.choerodon.devops.domain.application.repository.*
+import io.choerodon.devops.domain.service.DeployService
+import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
+import io.choerodon.websocket.helper.EnvListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
-import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
@@ -25,9 +24,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
-import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.test.context.TestPropertySource
 import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
@@ -37,6 +34,7 @@ import javax.annotation.PostConstruct
  */
 @TestConfiguration
 @Import(LiquibaseConfig)
+@TestPropertySource("classpath:application-test.yml")
 class IntegrationTestConfiguration {
 
     private final detachedMockFactory = new DetachedMockFactory()
@@ -58,18 +56,63 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(GitlabRepository)
     }
 
+    @Bean("mockUserAttrRepository")
+    @Primary
+    UserAttrRepository userAttrRepository() {
+        detachedMockFactory.Mock(UserAttrRepository);
+    }
+
+    @Bean("mockGitlabGroupMemberRepository")
+    @Primary
+    GitlabGroupMemberRepository gitlabGroupMemberRepository() {
+        detachedMockFactory.Mock(GitlabGroupMemberRepository);
+    }
+
+    @Primary
+    @Bean("mockEnvUtil")
+    EnvUtil envUtil() {
+        detachedMockFactory.Mock(EnvUtil);
+    }
+
+    @Primary
+    @Bean("mockEnvListener")
+    EnvListener envListener() {
+        detachedMockFactory.Mock(EnvListener);
+    }
+
     @Bean("mockIamRepository")
     @Primary
     IamRepository iamRepository() {
         detachedMockFactory.Mock(IamRepository)
     }
 
-    @Bean("mockEventProducerTemplate")
+
+    @Bean("mockGitUtil")
     @Primary
-    EventProducerTemplate eventProducerTemplate() {
-        detachedMockFactory.Mock(EventProducerTemplate)
+    GitUtil gitUtil() {
+        detachedMockFactory.Mock(GitUtil)
     }
 
+
+    @Bean("mockDevopsGitRepository")
+    @Primary
+    DevopsGitRepository devopsGitRepository() {
+        detachedMockFactory.Mock(DevopsGitRepository)
+    }
+
+
+    @Bean("mockDeployService")
+    @Primary
+    DeployService deployService() {
+        detachedMockFactory.Mock(DeployService)
+    }
+
+
+    @Bean("mockApplicationTemplateRepository")
+    @Primary
+    ApplicationTemplateRepository applicationTemplateRepository() {
+        detachedMockFactory.Mock(ApplicationTemplateRepository)
+    }
 
 
     @PostConstruct

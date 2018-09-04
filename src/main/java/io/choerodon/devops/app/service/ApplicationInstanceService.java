@@ -154,7 +154,10 @@ public interface ApplicationInstanceService {
 
     Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId, PageRequest pageRequest);
 
+
     ReplaceResult getReplaceResult(String versionValue, String deployValue);
 
     ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
+
+
 }

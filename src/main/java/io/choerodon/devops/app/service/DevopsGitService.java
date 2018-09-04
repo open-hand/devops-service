@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.BranchDTO;
 import io.choerodon.devops.api.dto.DevopsBranchDTO;
@@ -86,4 +87,6 @@ public interface DevopsGitService {
     void fileResourceSync(PushWebHookDTO pushWebHookDTO);
 
     void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token);
+
+    void initMockService(SagaClient sagaClient);
 }
