@@ -39,10 +39,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Import(IntegrationTestConfiguration)
 class GitlabWebHookServiceTest extends Specification {
 
-
-
-//    @Shared sql = Sql.newInstance("jdbc:h2:mem:", "sa","sa","org.h2.Driver")
-
     private static int level = 0
 
     @Autowired
