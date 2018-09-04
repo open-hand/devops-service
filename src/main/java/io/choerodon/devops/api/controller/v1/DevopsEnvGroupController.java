@@ -129,4 +129,24 @@ public class DevopsEnvGroupController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.group.get"));
     }
+
+
+    /**
+     * 环境组删除
+     *
+     * @param projectId  项目id
+     * @param groupId 实例id
+     * @return responseEntity
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "环境组删除")
+    @DeleteMapping(value = "/{groupId}")
+    public ResponseEntity delete(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境组ID", required = true)
+            @PathVariable Long groupId) {
+        devopsEnvGroupService.delete(groupId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 }

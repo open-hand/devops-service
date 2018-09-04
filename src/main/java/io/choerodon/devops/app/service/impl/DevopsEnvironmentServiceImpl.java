@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -177,7 +178,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvGroupEnvsDTOS;
     }
 
-
+    @Autowired
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);

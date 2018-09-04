@@ -28,6 +28,15 @@ public interface DevopsEnvironmentService {
      */
     List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active);
 
+
+    /**
+     * 项目下环境流水线查询环境
+     *
+     * @param projectId 项目id
+     * @param active    是否可用
+     * @return List
+     */
+    List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active);
     /**
      * 项目下查询环境
      *
