@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,10 +50,12 @@ public class DevopsEnvGroupRepositoryImpl implements DevopsEnvGroupRepository {
 
     @Override
     public void sort(Long projectId, List<Long> envGroupIds) {
-        if (!envGroupIds.isEmpty() && envGroupIds.size() == (devopsEnvGroupMapper.selectAll().size())) {
+        if (envGroupIds != null && !envGroupIds.isEmpty() && envGroupIds.stream().sorted().collect(Collectors.toList())
+                .equals(devopsEnvGroupMapper.selectAll().stream()
+                        .map(DevopsEnvGroupDO::getId).sorted().collect(Collectors.toList()))) {
             devopsEnvGroupMapper.sortGroupInProject(projectId, envGroupIds);
         } else {
-            throw new CommonException("error.groupSize.illegal");
+            throw new CommonException("error.groupIds.illegal");
         }
     }
 

@@ -3,7 +3,7 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper">
 
-    <update id="queryByObject" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO">
+    <update id="sortGroupInProject" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO">
         UPDATE devops_env_group deg
         RIGHT JOIN (
         SELECT
@@ -15,7 +15,7 @@
             project_id = #{projectId}
         ORDER BY
             FIELD( id,
-                <foreach collection="searchParam.envGroupIds" item="envGroupId" separator=", " >
+                <foreach collection="envGroupIds" item="envGroupId" open="" separator=", " close="">
                     #{envGroupId}
                 </foreach>
              )

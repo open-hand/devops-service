@@ -2,6 +2,8 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import org.apache.ibatis.annotations.Param;
+
 import io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -12,5 +14,5 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Description:
  */
 public interface DevopsEnvGroupMapper extends BaseMapper<DevopsEnvGroupDO> {
-    void sortGroupInProject(Long projectId, List<Long> envGroupIds);
+    void sortGroupInProject(@Param("projectId") Long projectId, @Param("envGroupIds") List<Long> envGroupIds);
 }
