@@ -17,6 +17,8 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsEnvPodMapper extends BaseMapper<DevopsEnvPodDO> {
 
     List<DevopsEnvPodDO> listAppPod(@Param("projectId") Long projectId,
+                                    @Param("envId") Long envId,
+                                    @Param("appId") Long appId,
                                     @Param("searchParam") Map<String, Object> searchParam,
                                     @Param("param") String param);
 }

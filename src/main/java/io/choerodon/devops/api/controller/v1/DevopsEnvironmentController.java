@@ -246,8 +246,10 @@ public class DevopsEnvironmentController {
     @GetMapping(value = "/instance")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectId(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId))
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id")
+            @RequestParam(required = false) Long appId) {
+        return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.running.get"));
     }

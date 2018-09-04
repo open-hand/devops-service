@@ -363,13 +363,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnviromentRepDTO> listByProjectId(Long projectId) {
+    public List<DevopsEnviromentRepDTO> listByProjectId(Long projectId, Long appId) {
         List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOList = listByProjectIdAndActive(projectId, true);
-        return devopsEnviromentRepDTOList.stream().filter(t ->
-                applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream()
-                        .anyMatch(applicationInstanceE ->
-                                applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
-                .collect(Collectors.toList());
+
+        if (appId == null) {
+            return devopsEnviromentRepDTOList.stream().filter(t ->
+                    applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream()
+                            .anyMatch(applicationInstanceE ->
+                                    applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
+                    .collect(Collectors.toList());
+        } else {
+            return devopsEnviromentRepDTOList.stream().filter(t ->
+                    applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream()
+                            .anyMatch(applicationInstanceE ->
+                                    applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus()) && applicationInstanceE.getApplicationE().getId().equals(appId)))
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override

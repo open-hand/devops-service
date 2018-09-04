@@ -52,10 +52,14 @@ public class DevopsEnvPodController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "环境id")
+            @RequestParam(required = false) Long envId,
+            @ApiParam(value = "应用id")
+            @RequestParam(required = false) Long appId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsEnvPodService.listAppPod(
-                projectId, pageRequest, searchParam))
+                projectId, envId, appId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.query"));
     }
