@@ -2,10 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
-import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
-import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
-import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
-import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
@@ -29,7 +26,7 @@ public interface DevopsEnvironmentService {
      * @param active    是否可用
      * @return List
      */
-    List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active);
+    List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active);
 
     /**
      * 项目下查询环境
@@ -72,7 +69,7 @@ public interface DevopsEnvironmentService {
      * @param environmentIds 环境列表
      * @return List
      */
-    List<DevopsEnviromentRepDTO> sort(Long[] environmentIds);
+    DevopsEnvGroupEnvsDTO sort(Long[] environmentIds);
 
 
     /**

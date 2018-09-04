@@ -29,6 +29,7 @@ public class DevopsEnvironmentDO {
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
+    private Long devopsEnvGroupId;
     private Long gitCommit;
     private Long devopsSyncCommit;
     private Long agentSyncCommit;
@@ -169,5 +170,13 @@ public class DevopsEnvironmentDO {
 
     public void setAgentSyncCommit(Long agentSyncCommit) {
         this.agentSyncCommit = agentSyncCommit;
+    }
+
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
+    }
+
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
     }
 }

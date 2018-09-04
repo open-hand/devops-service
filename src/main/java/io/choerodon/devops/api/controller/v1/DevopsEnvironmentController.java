@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
-import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
-import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
-import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -82,12 +79,12 @@ public class DevopsEnvironmentController {
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下查询环境")
     @GetMapping
-    public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdAndActive(
+    public ResponseEntity<List<DevopsEnvGroupEnvsDTO>> listByProjectIdAndActive(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否启用", required = true)
             @RequestParam Boolean active) {
-        return Optional.ofNullable(devopsEnvironmentService.listByProjectIdAndActive(projectId, active))
+        return Optional.ofNullable(devopsEnvironmentService.listDevopsEnvGroupEnvs(projectId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.get"));
     }
@@ -190,7 +187,7 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下环境流水线排序")
     @PutMapping("/sort")
-    public ResponseEntity<List<DevopsEnviromentRepDTO>> sort(
+    public ResponseEntity<DevopsEnvGroupEnvsDTO> sort(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境列表", required = true)
