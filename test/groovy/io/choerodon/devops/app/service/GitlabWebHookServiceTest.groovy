@@ -121,7 +121,19 @@ class GitlabWebHookServiceTest extends Specification {
 
 
     def setup() {
-
+        FileUtil.copyFile("test/gitops/test1.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test3.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test4.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test5.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test6.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test7.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test8.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test9.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test10.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test11.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test12.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test2")
         DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
         devopsEnvironmentE.setId(1L)
         devopsEnvironmentE.setToken("123456")
@@ -679,5 +691,10 @@ class GitlabWebHookServiceTest extends Specification {
         List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
         devopsEnvFileErrorE.get(0).getError() == "The C7nHelmRelease does not define name properties"
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
+    }
+
+
+    def cleanupSpec() {
+        FileUtil.deleteDirectory(new File("gitops"))
     }
 }
