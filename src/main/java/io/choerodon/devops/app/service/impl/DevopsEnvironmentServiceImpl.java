@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -256,9 +255,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
+        DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository.queryById(devopsEnvironmentUpdateDTO.getId());
+        List<Long> ids;
         if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
-            DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository.queryById(devopsEnvironmentUpdateDTO.getId());
-            List<Long> ids;
             if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
                 ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(DevopsEnvironmentE::getId).collect(Collectors.toList());
             } else {
@@ -267,6 +266,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             ids.remove(devopsEnvironmentUpdateDTO.getId());
             sort(ids.toArray(new Long[ids.size()]));
             devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
+        } else {
+            if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null) {
+                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> beforeDevopsEnvironmentE.getDevopsEnvGroupId().equals(devopsEnvironmentE1.getDevopsEnvGroupId())).sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(DevopsEnvironmentE::getId).collect(Collectors.toList());
+                ids.remove(devopsEnvironmentUpdateDTO.getId());
+                sort(ids.toArray(new Long[ids.size()]));
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+            }
         }
         return ConvertHelper.convert(devopsEnviromentRepository.update(
                 devopsEnvironmentE), DevopsEnvironmentUpdateDTO.class);
@@ -304,13 +310,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         t.initConnect(false);
                     }
                 });
-        DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
-        if (devopsEnvironmentES.get(0).getDevopsEnvGroupId() != null) {
-            devopsEnvGroupE = devopsEnvGroupRepository.query(devopsEnvironmentES.get(0).getDevopsEnvGroupId());
+        if (!devopsEnvironmentES.isEmpty()) {
+            DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
+            if (devopsEnvironmentES.get(0).getDevopsEnvGroupId() != null) {
+                devopsEnvGroupE = devopsEnvGroupRepository.query(devopsEnvironmentES.get(0).getDevopsEnvGroupId());
+            }
+            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class));
+            devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+            devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
         }
-        devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class));
-        devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
-        devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
         return devopsEnvGroupEnvsDTO;
     }
 
