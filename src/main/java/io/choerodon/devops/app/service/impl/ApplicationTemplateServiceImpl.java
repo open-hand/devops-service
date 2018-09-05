@@ -191,7 +191,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     public void operationApplicationTemplate(GitlabProjectPayload gitlabProjectPayload) {
         GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
                 gitlabProjectPayload.getPath(),
-                gitlabProjectPayload.getUserId(), false);
+                gitlabProjectPayload.getUserId(), true);
         gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
 
 
