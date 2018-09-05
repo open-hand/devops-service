@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -142,7 +143,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
-        String input = null;
+        String input;
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
             sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", ""));
@@ -207,7 +208,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                             t.setUpdate(true);
                             t.initConnect(false);
                             t.setUpdateMessage("Version is too low, please upgrade!");
-
                         }
                     } else {
                         t.initConnect(false);
@@ -399,7 +399,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
      * @param devopsEnvironmentUpdateDTO 环境参数
      * @return boolean
      */
-    public Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
+    private Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryById(devopsEnvironmentUpdateDTO.getId());
         return !devopsEnvironmentE.getName().equals(devopsEnvironmentUpdateDTO.getName());
@@ -496,5 +496,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             gitUtil.cloneBySsh(path, url);
         }
         return path;
+    }
+
+    @Override
+    public void initMockService(SagaClient sagaClient) {
+        this.sagaClient = sagaClient;
     }
 }

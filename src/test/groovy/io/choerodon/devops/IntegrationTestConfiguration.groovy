@@ -114,6 +114,12 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(ApplicationTemplateRepository)
     }
 
+    @Bean("mockApplicationRepository")
+    @Primary
+    ApplicationRepository applicationRepository() {
+        detachedMockFactory.Mock(ApplicationRepository)
+    }
+
 
     @PostConstruct
     void init() {

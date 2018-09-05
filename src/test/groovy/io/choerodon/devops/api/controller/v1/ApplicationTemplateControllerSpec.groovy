@@ -61,7 +61,9 @@ class ApplicationTemplateControllerSpec extends Specification {
     private ApplicationTemplateService applicationTemplateService
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
-
+    ApplicationInstanceService applicationInstanceService = Mockito.mock(ApplicationInstanceService.class)
+    DevopsServiceService devopsServiceService = Mockito.mock(DevopsServiceService.class)
+    DevopsIngressService devopsIngressService = Mockito.mock(DevopsIngressService.class)
 
     @Autowired
     @Qualifier("mockIamRepository")
@@ -74,7 +76,6 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockApplicationTemplateRepository")
     private ApplicationTemplateRepository applicationTemplateRepository
-
 
     def "Create"() {
         given:
@@ -94,7 +95,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         userAttrE.setGitlabUserId(1L)
         userAttrRepository.insert(userAttrE)
 
-        devopsGitService.initMockService(sagaClient)
+        devopsGitService.initMockService(sagaClient, applicationInstanceService, devopsServiceService, devopsIngressService)
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(null, null)
 
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE()
@@ -137,12 +138,6 @@ class ApplicationTemplateControllerSpec extends Specification {
 
     def "Delete"() {
         given:
-//        ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
-//        applicationTemplateDTO.setCode("test")
-//        applicationTemplateDTO.setName("test")
-//        applicationTemplateDTO.setDescription("test")
-//        applicationTemplateDTO.setOrganizationId(1L)
-
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE();
         applicationTemplateE.setName("test")
         applicationTemplateE.setCode("test")

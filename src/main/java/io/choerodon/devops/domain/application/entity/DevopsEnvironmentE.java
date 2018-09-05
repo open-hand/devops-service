@@ -169,6 +169,11 @@ public class DevopsEnvironmentE {
         this.sequence = sequence;
     }
 
+    public DevopsEnvironmentE resetOrder(Long sequence) {
+        this.sequence = sequence;
+        return this;
+    }
+
     public void initToken(String token) {
         this.token = token;
     }
