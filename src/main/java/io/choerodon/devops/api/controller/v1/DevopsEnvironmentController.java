@@ -102,7 +102,7 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER,
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下环境流水线查询环境")
-    @GetMapping
+    @GetMapping("/groups")
     public ResponseEntity<List<DevopsEnvGroupEnvsDTO>> listByProjectIdAndActiveWithGroup(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
