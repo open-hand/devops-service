@@ -20,7 +20,7 @@ public interface DevopsEnvironmentService {
     String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO);
 
     /**
-     * 项目下查询环境
+     * 项目下环境流水线查询环境
      *
      * @param projectId 项目id
      * @param active    是否可用
@@ -30,7 +30,7 @@ public interface DevopsEnvironmentService {
 
 
     /**
-     * 项目下环境流水线查询环境
+     * 项目下查询环境
      *
      * @param projectId 项目id
      * @param active    是否可用

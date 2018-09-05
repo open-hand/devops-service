@@ -178,7 +178,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvGroupEnvsDTOS;
     }
 
-    @Autowired
+    @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
@@ -203,6 +203,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .collect(Collectors.toList());
         return ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class);
     }
+
 
     @Override
     public List<DevopsEnviromentRepDTO> listDeployed(Long projectId) {
