@@ -78,6 +78,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
     public void delete(Long id) {
         DevopsEnvGroupE devopsEnvGroupE = devopsEnvGroupRepository.query(id);
         devopsEnvGroupRepository.delete(id);
+        //删除环境组，将原环境组内所有环境放到默认组内，环境sequence在默认组环境递增
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.queryByprojectAndActive(devopsEnvGroupE.getProjectE().getId(), true);
 
         LongSummaryStatistics stats = devopsEnvironmentES

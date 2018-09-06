@@ -111,6 +111,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
+        //创建环境没有选环境组，序列从默认组环境递增，创建环境选了环境组，序列从该环境组环境递增
         if (devopsEnviromentDTO.getDevopsEnvGroupId() == null) {
             devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
         } else {
@@ -162,6 +163,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnviromentRepDTO.setDevopsEnvGroupId(0L);
             }
         });
+        //按照环境组分组查询，有环境的环境组放前面，没环境的环境组放后面
         Map<Long, List<DevopsEnviromentRepDTO>> resultMaps = devopsEnviromentRepDTOS.stream()
                 .collect(Collectors.groupingBy(t -> t.getDevopsEnvGroupId()));
         List<Long> envGroupIds = new ArrayList<>();
@@ -232,13 +234,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .queryByprojectAndActive(projectId, true);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
         devopsEnvironmentE.setActive(active);
+        //启用环境，原环境不在环境组内，则序列在默认组内环境递增，员环境在环境组内，则序列在环境组内环境递增
         if (active) {
             if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
                 devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             } else {
                 devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
             }
-        } else {
+        }
+        //停用环境，环境停用后，原组sequence重新排序
+        else {
             List<Long> environmentIds;
             if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
                 environmentIds = devopsEnvironmentES.parallelStream()
@@ -283,6 +288,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .queryByprojectAndActive(projectId, true);
         DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository.queryById(devopsEnvironmentUpdateDTO.getId());
         List<Long> ids;
+        //更新环境，包含默认组到环境组，环境组到环境组，环境组到默认组,此时将初始组sequence重新排列,新环境在所选环境组中环境sequence递增
         if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
             if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
                 ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(DevopsEnvironmentE::getId).collect(Collectors.toList());
