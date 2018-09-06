@@ -59,25 +59,25 @@ class IntegrationTestConfiguration {
     @Bean("mockUserAttrRepository")
     @Primary
     UserAttrRepository userAttrRepository() {
-        detachedMockFactory.Mock(UserAttrRepository);
+        detachedMockFactory.Mock(UserAttrRepository)
     }
 
     @Bean("mockGitlabGroupMemberRepository")
     @Primary
     GitlabGroupMemberRepository gitlabGroupMemberRepository() {
-        detachedMockFactory.Mock(GitlabGroupMemberRepository);
+        detachedMockFactory.Mock(GitlabGroupMemberRepository)
     }
 
     @Primary
     @Bean("mockEnvUtil")
     EnvUtil envUtil() {
-        detachedMockFactory.Mock(EnvUtil);
+        detachedMockFactory.Mock(EnvUtil)
     }
 
     @Primary
     @Bean("mockEnvListener")
     EnvListener envListener() {
-        detachedMockFactory.Mock(EnvListener);
+        detachedMockFactory.Mock(EnvListener)
     }
 
     @Bean("mockIamRepository")
@@ -106,20 +106,6 @@ class IntegrationTestConfiguration {
     DeployService deployService() {
         detachedMockFactory.Mock(DeployService)
     }
-
-
-    @Bean("mockApplicationTemplateRepository")
-    @Primary
-    ApplicationTemplateRepository applicationTemplateRepository() {
-        detachedMockFactory.Mock(ApplicationTemplateRepository)
-    }
-
-    @Bean("mockApplicationRepository")
-    @Primary
-    ApplicationRepository applicationRepository() {
-        detachedMockFactory.Mock(ApplicationRepository)
-    }
-
 
     @PostConstruct
     void init() {
