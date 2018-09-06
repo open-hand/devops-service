@@ -80,9 +80,17 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         try {
             gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
         } catch (Exception e) {
-            throw new CommonException("create gitlab devops-sync tag failed", e);
+            throw new CommonException("create gitlab tag failed", e);
         }
+    }
 
+    @Override
+    public TagDO updateTag(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
+        try {
+            return gitlabServiceClient.updateTagRelease(gitLabProjectId, tag, releaseNotes, userId).getBody();
+        } catch (Exception e) {
+            throw new CommonException("update gitlab tag failed", e);
+        }
     }
 
     @Override
@@ -90,7 +98,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         try {
             gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
         } catch (Exception e) {
-            throw new CommonException("delete gitlab devops-sync tag failed", e);
+            throw new CommonException("delete gitlab tag failed", e);
         }
     }
 
