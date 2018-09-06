@@ -51,6 +51,7 @@ public class FileUtil {
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
     private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
+
     private FileUtil() {
     }
 
@@ -326,7 +327,7 @@ public class FileUtil {
     public static List<String> getFilesPath(String filepath) {
         File file = new File(filepath);
         return getFilesPath(file).parallelStream()
-                .map(t -> t.replaceFirst(filepath+"/", "")).collect(Collectors.toList());
+                .map(t -> t.replaceFirst(filepath + "/", "")).collect(Collectors.toList());
     }
 
     /**
@@ -443,7 +444,7 @@ public class FileUtil {
                     stdInput.close();
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new CommonException(e);
             }
         }
         return replaceResult;
@@ -468,7 +469,9 @@ public class FileUtil {
         for (Object add : addLists) {
             ArrayList<String> addList = (ArrayList<String>) add;
             Node node = getKeysNode(addList, mappingNode);
-            appendLine(node.getStartMark().getLine(), node.getEndMark().getLine(), addLines);
+            if (node != null) {
+                appendLine(node.getStartMark().getLine(), node.getEndMark().getLine(), addLines);
+            }
         }
 
         List<HighlightMarker> highlightMarkers = new ArrayList<>();
@@ -479,11 +482,13 @@ public class FileUtil {
             ArrayList<String> addList = (ArrayList<String>) add;
             Node node = getKeysNode(addList, mappingNode);
             HighlightMarker highlightMarker = new HighlightMarker();
-            highlightMarker.setLine(node.getStartMark().getLine());
-            highlightMarker.setEndLine(node.getEndMark().getLine());
-            highlightMarker.setStartColumn(node.getStartMark().getColumn());
-            highlightMarker.setEndColumn(node.getEndMark().getColumn());
-            highlightMarkers.add(highlightMarker);
+            if (node != null) {
+                highlightMarker.setLine(node.getStartMark().getLine());
+                highlightMarker.setEndLine(node.getEndMark().getLine());
+                highlightMarker.setStartColumn(node.getStartMark().getColumn());
+                highlightMarker.setEndColumn(node.getEndMark().getColumn());
+                highlightMarkers.add(highlightMarker);
+            }
         }
 
         ReplaceResult replaceResult = new ReplaceResult();
