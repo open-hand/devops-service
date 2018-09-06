@@ -26,9 +26,10 @@ public class SerializableOperation<T> {
         try {
             t = (T) yaml.loadAs(yamlContent, t.getClass());
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new GitOpsExplainException(e.getMessage(),filePath);
         }
         objectPath.put(TypeUtil.objToString(t.hashCode()), filePath);
         return t;
     }
+
 }

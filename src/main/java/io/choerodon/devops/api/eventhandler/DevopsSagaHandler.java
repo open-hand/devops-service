@@ -48,6 +48,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsCreateEnv",
             description = "devops创建环境",
             sagaCode = "devops-create-env",
+            maxRetryCount = 0,
             seq = 1)
     public String devopsCreateUser(String data) {
         GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
@@ -62,6 +63,7 @@ public class DevopsSagaHandler {
             description = "gitops",
             sagaCode = "devops-sync-gitops",
             concurrentLimitNum = 1,
+            maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitops(String data) {
@@ -81,6 +83,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsOperationGitlabProject",
             description = "devops create GitLab project",
             sagaCode = "devops-create-gitlab-project",
+            maxRetryCount = 0,
             seq = 1)
     public String createApp(String data) {
         GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);
@@ -96,6 +99,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsOperationGitlabTemplateProject",
             description = "devops create GitLab template project",
             sagaCode = "devops-create-gitlab-template-project",
+            maxRetryCount = 0,
             seq = 1)
     public String createTemplate(String data) {
         GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);

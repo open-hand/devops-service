@@ -75,4 +75,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
             column(name: "project_id")
         }
     }
+
+    changeSet(author: 'younger', id: '2018-09-04-add-column')
+            {
+                addColumn(tableName: 'devops_env') {
+                    column(name: 'devops_env_group_id', type: 'BIGINT UNSIGNED', remarks: 'devops env group id', afterColumn: 'agent_sync_commit')
+                }
+            }
 }
