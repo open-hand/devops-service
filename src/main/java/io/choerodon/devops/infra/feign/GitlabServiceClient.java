@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -275,7 +275,7 @@ public interface GitlabServiceClient {
             @PathVariable("projectId") Integer projectId,
             @RequestParam("name") String name,
             @RequestParam("ref") String ref,
-            @RequestParam(value = "message", defaultValue = "") String msg,
+            @RequestParam(value = "message", required = false, defaultValue = "") String msg,
             @RequestBody(required = false) String releaseNotes,
             @RequestParam("userId") Integer userId);
 
