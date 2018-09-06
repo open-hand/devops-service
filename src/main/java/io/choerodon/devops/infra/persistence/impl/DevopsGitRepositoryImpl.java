@@ -98,7 +98,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             }
             return gitlabServiceClient.updateTagRelease(gitLabProjectId, tag, releaseNotes, userId).getBody();
         } catch (Exception e) {
-            throw new CommonException("update gitlab tag failed", e);
+            throw new CommonException("update gitlab tag failed: " + e.getMessage(), e);
         }
     }
 
@@ -107,7 +107,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         try {
             gitlabServiceClient.deleteTag(gitLabProjectId, tag, userId);
         } catch (Exception e) {
-            throw new CommonException("delete gitlab tag failed", e);
+            throw new CommonException("delete gitlab tag failed: " + e.getMessage(), e);
         }
     }
 
