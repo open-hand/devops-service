@@ -156,6 +156,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsDTO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOS = listByProjectIdAndActive(projectId, active);
+        List<DevopsEnvGroupE> devopsEnvGroupES = devopsEnvGroupRepository.listByProjectId(projectId);
         devopsEnviromentRepDTOS.stream().forEach(devopsEnviromentRepDTO -> {
             if (devopsEnviromentRepDTO.getDevopsEnvGroupId() == null) {
                 devopsEnviromentRepDTO.setDevopsEnvGroupId(0L);
@@ -163,7 +164,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         });
         Map<Long, List<DevopsEnviromentRepDTO>> resultMaps = devopsEnviromentRepDTOS.stream()
                 .collect(Collectors.groupingBy(t -> t.getDevopsEnvGroupId()));
+        List<Long> envGroupIds = new ArrayList<>();
         resultMaps.forEach((key, value) -> {
+            envGroupIds.add(key);
             DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
             DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
             if (key != 0) {
@@ -173,6 +176,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
             devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(value);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+        });
+
+        devopsEnvGroupES.parallelStream().forEach(devopsEnvGroupE -> {
+            if(!envGroupIds.contains(devopsEnvGroupE.getId())) {
+                DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+                devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
+                devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+                devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+            }
         });
         return devopsEnvGroupEnvsDTOS;
     }
@@ -216,21 +228,35 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (!active) {
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
+        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
+                .queryByprojectAndActive(projectId, true);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
         devopsEnvironmentE.setActive(active);
         if (active) {
-            devopsEnvironmentE.initSequence(devopsEnviromentRepository
-                    .queryByprojectAndActive(projectId, active));
+            if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+            } else {
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
+            }
         } else {
-            List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
-                    .queryByprojectAndActive(projectId, true).parallelStream()
-                    .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
-                    .collect(Collectors.toList());
-            List<Long> environmentIds = devopsEnvironmentES
-                    .stream()
-                    .map(devopsEnvironmentE1
-                            -> devopsEnvironmentE1.getId().longValue())
-                    .collect(Collectors.toList());
+            List<Long> environmentIds;
+            if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
+                environmentIds = devopsEnvironmentES.parallelStream()
+                        .filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null)
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
+                        .collect(Collectors.toList()).stream()
+                        .map(devopsEnvironmentE1
+                                -> devopsEnvironmentE1.getId().longValue())
+                        .collect(Collectors.toList());
+            } else {
+                environmentIds = devopsEnvironmentES.parallelStream()
+                        .filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
+                        .collect(Collectors.toList()).stream()
+                        .map(devopsEnvironmentE1
+                                -> devopsEnvironmentE1.getId().longValue())
+                        .collect(Collectors.toList());
+            }
             environmentIds.remove(environmentId);
             Long[] ids = new Long[environmentIds.size()];
             sort(environmentIds.toArray(ids));
