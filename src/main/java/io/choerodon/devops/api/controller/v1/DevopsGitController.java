@@ -87,7 +87,7 @@ public class DevopsGitController {
             @ApiParam(value = "标签描述")
             @RequestParam(value = "message", required = false, defaultValue = "") String msg,
             @ApiParam(value = "发布日志")
-            @RequestParam(value = "release_notes", required = false, defaultValue = "") String releaseNotes) {
+            @RequestBody(required = false) String releaseNotes) {
         devopsGitService.createTag(projectId, applicationId, tag, ref, msg, releaseNotes);
         return new ResponseEntity<>(HttpStatus.OK);
     }
