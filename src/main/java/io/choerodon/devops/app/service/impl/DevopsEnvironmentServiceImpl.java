@@ -179,15 +179,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(value);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
         });
-
-        devopsEnvGroupES.parallelStream().forEach(devopsEnvGroupE -> {
-            if(!envGroupIds.contains(devopsEnvGroupE.getId())) {
-                DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
-                devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
-                devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
-                devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
-            }
-        });
+        if (active) {
+            devopsEnvGroupES.parallelStream().forEach(devopsEnvGroupE -> {
+                if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
+                    DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
+                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+                    devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+                }
+            });
+        }
         return devopsEnvGroupEnvsDTOS;
     }
 
