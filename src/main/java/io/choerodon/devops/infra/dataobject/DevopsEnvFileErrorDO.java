@@ -21,7 +21,7 @@ public class DevopsEnvFileErrorDO {
     private String commit;
     private String error;
     private Long objectVersionNumber;
-    private Date creationDate;
+    private Date lastUpdateDate;
 
 
     public Long getId() {
@@ -72,11 +72,11 @@ public class DevopsEnvFileErrorDO {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public Date getCreationDate() {
-        return creationDate;
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
     }
 
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 }

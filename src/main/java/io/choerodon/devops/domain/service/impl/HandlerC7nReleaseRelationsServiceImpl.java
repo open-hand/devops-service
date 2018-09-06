@@ -1,0 +1,195 @@
+package io.choerodon.devops.domain.service.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DeployMsgHandlerService;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
+import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
+
+@Service
+public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
+
+    public static final String C7NHELM_RELEASE = "C7NHelmRelease";
+
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private ApplicationInstanceService applicationInstanceService;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
+    @Autowired
+    private ApplicationVersionRepository applicationVersionRepository;
+    @Autowired
+    private DevopsEnvFileResourceService devopsEnvFileResourceService;
+
+    @Override
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, Long envId, Long projectId, String path) {
+        List<String> beforeC7nRelease = beforeSync.parallelStream()
+                .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(C7NHELM_RELEASE))
+                .map(devopsEnvFileResourceE -> {
+                    ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                            .selectById(devopsEnvFileResourceE.getResourceId());
+                    if (applicationInstanceE == null) {
+                        throw new CommonException("the applicationInstance in the file is not exist in devops database");
+                    }
+                    return applicationInstanceE.getCode();
+                }).collect(Collectors.toList());
+
+        //比较已存在实例和新增要处理的实例,获取新增实例，更新实例，删除实例
+        List<C7nHelmRelease> addC7nHelmRelease = new ArrayList<>();
+        List<C7nHelmRelease> updateC7nHelmRelease = new ArrayList<>();
+        c7nHelmReleases.parallelStream().forEach(c7nHelmRelease -> {
+            if (beforeC7nRelease.contains(c7nHelmRelease.getMetadata().getName())) {
+                updateC7nHelmRelease.add(c7nHelmRelease);
+                beforeC7nRelease.remove(c7nHelmRelease.getMetadata().getName());
+            } else {
+                addC7nHelmRelease.add(c7nHelmRelease);
+            }
+        });
+
+        //新增instance
+        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease);
+        //更新instance
+        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease);
+        //删除instance,和文件对象关联关系
+        beforeC7nRelease.stream().forEach(releaseName -> {
+            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());
+            }
+            devopsEnvFileResourceRepository
+                    .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), C7NHELM_RELEASE);
+        });
+    }
+
+
+    private void updateC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> updateC7nHelmRelease) {
+        updateC7nHelmRelease.stream()
+                .forEach(c7nHelmRelease -> {
+                            String filePath = "";
+                            try {
+                                filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
+                                //初始化实例参数,更新时判断实例是否真的修改，没有修改则直接更新文件关联关系
+                                ApplicationDeployDTO applicationDeployDTO = getApplicationDeployDTO(
+                                        c7nHelmRelease,
+                                        projectId,
+                                        envId,
+                                        "update");
+                                if (applicationDeployDTO == null) {
+                                    return;
+                                }
+                                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationDeployDTO.getAppInstanceId());
+
+                                if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType()) && !applicationDeployDTO.getIsNotChange()) {
+                                    applicationInstanceService
+                                            .createOrUpdateByGitOps(applicationDeployDTO);
+                                }
+                                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                                        .queryByEnvIdAndResource(envId, applicationDeployDTO.getAppInstanceId(), c7nHelmRelease.getKind());
+                                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
+                                        devopsEnvFileResourceE,
+                                        c7nHelmRelease.hashCode(), applicationDeployDTO.getAppInstanceId(),
+                                        c7nHelmRelease.getKind());
+                            } catch (CommonException e) {
+                                throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                            }
+                        }
+                );
+    }
+
+    private void addC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> addC7nHelmRelease) {
+        addC7nHelmRelease.stream()
+                .forEach(c7nHelmRelease -> {
+                    String filePath = "";
+                    try {
+                        filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
+                        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                                .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
+                        ApplicationDeployDTO applicationDeployDTO;
+
+                        ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+                        //初始化实例参数,创建时判断实例是否存在，存在则直接创建文件对象关联关系
+                        if (applicationInstanceE == null) {
+                            applicationDeployDTO = getApplicationDeployDTO(
+                                    c7nHelmRelease,
+                                    projectId,
+                                    envId,
+                                    "create");
+                            if (applicationDeployDTO == null) {
+                                return;
+                            }
+                            applicationInstanceDTO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO);
+                        } else {
+                            applicationInstanceDTO.setId(applicationInstanceE.getId());
+                        }
+                        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                        devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                        devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
+                        devopsEnvFileResourceE.setResourceId(applicationInstanceDTO.getId());
+                        devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
+                        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                    } catch (CommonException e) {
+                        throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                    }
+                });
+    }
+
+
+    private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
+                                                         Long projectId, Long envId, String type) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        ApplicationE applicationE = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
+        if (applicationE == null) {
+            throw new CommonException("the App: " + c7nHelmRelease.getSpec().getChartName() + "not exist in the devops-service");
+        }
+        ApplicationVersionE applicationVersionE = applicationVersionRepository
+                .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
+        if (applicationVersionE == null) {
+            throw new CommonException("the AppVersion:" + c7nHelmRelease.getSpec().getChartVersion() + "not exist in the devops-service");
+        }
+
+        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
+        applicationDeployDTO.setEnvironmentId(envId);
+        applicationDeployDTO.setType(type);
+        applicationDeployDTO.setValues(c7nHelmRelease.getSpec().getValues());
+        applicationDeployDTO.setAppId(applicationE.getId());
+        applicationDeployDTO.setAppVerisonId(applicationVersionE.getId());
+        applicationDeployDTO.setInstanceName(c7nHelmRelease.getMetadata().getName());
+        if (type.equals("update")) {
+            ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                    .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
+            String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
+            if (deployValue != null && deployValue.equals(applicationDeployDTO.getValues()) && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
+                applicationDeployDTO.setIsNotChange(true);
+            }
+            applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
+        }
+        return applicationDeployDTO;
+    }
+}
