@@ -1,6 +1,6 @@
 default: &default
   docker:
-  - image: choerodon/cibase:latest
+  - image: choerodon/cibase:0.6.0
 
 version: 2
 jobs:
@@ -37,11 +37,10 @@ jobs:
           - v1-dependencies-{{ checksum "pom.xml" }}
           - v1-dependencies-
       - run: |
-          export CI_COMMIT_TAG=$(GetVersion)
-          mvn versions:set -DnewVersion=${CI_COMMIT_TAG} || \
+          mvn versions:set -DnewVersion=${CIRCLE_TAG} || \
           find . -name pom.xml | xargs xml ed -L \
             -N x=http://maven.apache.org/POM/4.0.0 \
-            -u '/x:project/x:version' -v "${CI_COMMIT_TAG}"
+            -u '/x:project/x:version' -v "${CIRCLE_TAG}"
           mvn versions:commit
           mvn package -U -DskipTests=true
       - save_cache:
@@ -63,22 +62,20 @@ jobs:
       - attach_workspace:
           at: .
       - run: |
-          export CI_COMMIT_TAG=$(GetVersion)
           cp target/app.jar src/main/docker/app.jar
           docker login -u ${REGISTRY_USER} -p ${REGISTRY_PASSWORD}
-          docker build --pull -t ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}:${CI_COMMIT_TAG} src/main/docker
-          docker push ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}:${CI_COMMIT_TAG}
+          docker build --pull -t ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG} src/main/docker
+          docker push ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
   helm_chart_build:
     <<: *default
     steps:
       - checkout
       - run: |
-          export CI_COMMIT_TAG=$(GetVersion)
           CHART_PATH=`find . -name Chart.yaml`
           yq w -i ${CHART_PATH%/*}/values.yaml image.repository ${DOCKER_GROUP_NAME}/${CIRCLE_PROJECT_REPONAME}
-          yq w -i ${CHART_PATH%/*}/values.yaml image.tag ${CI_COMMIT_TAG}
+          yq w -i ${CHART_PATH%/*}/values.yaml image.tag ${CIRCLE_TAG}
           helm repo add choerodon "${CHART_REPOSITORY}/${CHART_ORGANIZATION}/${CHART_PROJECT}/"
-          helm push --username ${HELM_USER} --password ${HELM_PASSWORD} ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} choerodon
+          helm push --username ${HELM_USER} --password ${HELM_PASSWORD} ${CHART_PATH%/*} --version ${CIRCLE_TAG} choerodon
 workflows:
   version: 2
   release:
