@@ -80,7 +80,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         try {
             gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
         } catch (Exception e) {
-            throw new CommonException("create gitlab tag failed", e);
+            throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
         }
     }
 
