@@ -152,6 +152,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
+    public TagDO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes) {
+        applicationRepository.checkApp(projectId, appId);
+        Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
+        Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
+        return devopsGitRepository.updateTag(gitLabProjectId, tag, releaseNotes, gitLabUserId);
+    }
+
+    @Override
     public void deleteTag(Long projectId, Long appId, String tag) {
         applicationRepository.checkApp(projectId, appId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);

@@ -24,6 +24,8 @@ public interface DevopsGitService {
 
     void createTag(Long projectId, Long appId, String tag, String ref, String msg, String releaseNotes);
 
+    TagDO updateTagRelease(Long projectId, Long appId, String tag, String releaseNotes);
+
     void deleteTag(Long projectId, Long appId, String tag);
 
     /**

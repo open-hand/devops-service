@@ -231,6 +231,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity<TagDO> updateTagRelease(Integer projectId, String name, String releaseNotes, Integer userId) {
+        return new ResponseEntity("error.tags.update", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity deleteTag(Integer projectId, String name, Integer userId) {
         return new ResponseEntity("error.tag.delete", HttpStatus.INTERNAL_SERVER_ERROR);
     }

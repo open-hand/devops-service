@@ -279,6 +279,22 @@ public interface GitlabServiceClient {
             @RequestBody(required = false) String releaseNotes,
             @RequestParam("userId") Integer userId);
 
+
+    /**
+     * 更新 tag
+     *
+     * @param projectId    项目id
+     * @param name         标签名
+     * @param releaseNotes 发布日志
+     * @return Tag
+     */
+    @PutMapping("/v1/projects/{projectId}/repository/tags")
+    ResponseEntity<TagDO> updateTagRelease(
+            @PathVariable("projectId") Integer projectId,
+            @RequestParam("name") String name,
+            @RequestBody(required = false) String releaseNotes,
+            @RequestParam("userId") Integer userId);
+
     /**
      * 删除tag
      *
