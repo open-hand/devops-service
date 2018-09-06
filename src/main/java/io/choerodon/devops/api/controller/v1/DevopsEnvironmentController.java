@@ -12,10 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
-import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
-import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
-import io.choerodon.devops.api.dto.EnvSyncStatusDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -88,6 +85,30 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "是否启用", required = true)
             @RequestParam Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectIdAndActive(projectId, active))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.environment.get"));
+    }
+
+
+    /**
+     * 项目下环境流水线查询环境
+     *
+     * @param projectId 项目id
+     * @param active    是否启用
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "项目下环境流水线查询环境")
+    @GetMapping("/groups")
+    public ResponseEntity<List<DevopsEnvGroupEnvsDTO>> listByProjectIdAndActiveWithGroup(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "是否启用", required = true)
+            @RequestParam Boolean active) {
+        return Optional.ofNullable(devopsEnvironmentService.listDevopsEnvGroupEnvs(projectId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.get"));
     }
@@ -190,7 +211,7 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下环境流水线排序")
     @PutMapping("/sort")
-    public ResponseEntity<List<DevopsEnviromentRepDTO>> sort(
+    public ResponseEntity<DevopsEnvGroupEnvsDTO> sort(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境列表", required = true)
@@ -249,8 +270,10 @@ public class DevopsEnvironmentController {
     @GetMapping(value = "/instance")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectId(
             @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
-        return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId))
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id")
+            @RequestParam(required = false) Long appId) {
+        return Optional.ofNullable(devopsEnvironmentService.listByProjectId(projectId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.running.get"));
     }

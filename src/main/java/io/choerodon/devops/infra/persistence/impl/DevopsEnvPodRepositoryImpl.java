@@ -67,7 +67,7 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
     }
 
     @Override
-    public Page<DevopsEnvPodE> listAppPod(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("name", "dp.`name`");
@@ -83,11 +83,13 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
             devopsEnvPodDOPage = PageHelper.doPageAndSort(
                     pageRequest, () -> devopsEnvPodMapper.listAppPod(
                             projectId,
+                            envId,
+                            appId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
             devopsEnvPodDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> devopsEnvPodMapper.listAppPod(projectId, null, null));
+                    pageRequest, () -> devopsEnvPodMapper.listAppPod(projectId, envId, appId, null, null));
         }
 
         return ConvertPageHelper.convertPage(devopsEnvPodDOPage, DevopsEnvPodE.class);

@@ -55,6 +55,9 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
                 devopsEnvironmentE.getId());
         DevopsEnvironmentDO devopsEnvironmentDO = ConvertHelper.convert(devopsEnvironmentE, DevopsEnvironmentDO.class);
         devopsEnvironmentDO.setObjectVersionNumber(newDevopsEnvironmentDO.getObjectVersionNumber());
+        if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
+            devopsEnvironmentMapper.updateDevopsEnvGroupId(devopsEnvironmentDO.getId());
+        }
         if (devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDO) != 1) {
             throw new CommonException("error.environment.update");
         }

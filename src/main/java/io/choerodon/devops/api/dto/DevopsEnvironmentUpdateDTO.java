@@ -8,6 +8,7 @@ public class DevopsEnvironmentUpdateDTO {
     private String name;
     private String description;
     private String code;
+    private Long devopsEnvGroupId;
 
     public Long getId() {
         return id;
@@ -39,5 +40,13 @@ public class DevopsEnvironmentUpdateDTO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
+    }
+
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
     }
 }

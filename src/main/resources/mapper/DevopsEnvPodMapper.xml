@@ -4,12 +4,6 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvPodMapper">
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
-                AND
-                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
-                    da.`name` LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
                 AND
                 <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
@@ -40,28 +34,14 @@
                     dai.`code` LIKE CONCAT(CONCAT('%', #{instanceCode, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.envCode != null and searchParam.envCode.size > 0'>
-                AND
-                <foreach collection="searchParam.envCode" item="envCode" open="(" separator=" OR " close=")">
-                    de.`code` LIKE CONCAT(CONCAT('%', #{envCode, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.envName != null and searchParam.envName.size > 0'>
-                AND
-                <foreach collection="searchParam.envName" item="envName" open="(" separator=" OR " close=")">
-                    de.`name` LIKE CONCAT(CONCAT('%', #{envName, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (da.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dp.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (dp.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dp.ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dp.is_ready LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dai.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.`code` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            )
         </if>
     </sql>
 
@@ -91,6 +71,12 @@
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_app_market dam on dam.app_id = da.id
         WHERE de.project_id = #{projectId}
+        <if test='appId != null'>
+            AND da.id= #{appId}
+        </if>
+        <if test='envId != null'>
+            AND de.id= #{envId}
+        </if>
         <include refid="sqlparam"/>
     </select>
 </mapper>

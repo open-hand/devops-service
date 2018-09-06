@@ -14,6 +14,7 @@ public class DevopsEnviromentRepDTO {
     private Long sequence;
     private Boolean isUpdate;
     private String updateMessage;
+    private Long devopsEnvGroupId;
 
     public Long getId() {
         return id;
@@ -85,5 +86,13 @@ public class DevopsEnviromentRepDTO {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
+    }
+
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
     }
 }
