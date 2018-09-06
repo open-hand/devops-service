@@ -95,6 +95,6 @@ feign:
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
+
 logging:
-  level:
-    io.choerodon.event.consumer: debug
+  config: classpath:logback-spring.xml
