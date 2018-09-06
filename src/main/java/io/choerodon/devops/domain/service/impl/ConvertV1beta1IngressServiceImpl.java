@@ -50,7 +50,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
 
     public void checkParameters(V1beta1Ingress v1beta1Ingress, Map<String, String> objectPath) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
-        if (v1beta1Ingress == null) {
+        if (v1beta1Ingress.getMetadata() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_META_DATA_NOT_FOUND.getError(), filePath);
         } else {
             if (v1beta1Ingress.getMetadata().getName() == null) {
