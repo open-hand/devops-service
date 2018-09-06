@@ -444,7 +444,7 @@ public class FileUtil {
                     stdInput.close();
                 }
             } catch (IOException e) {
-                throw new CommonException(e);
+                logger.info(e.getMessage(),e);
             }
         }
         return replaceResult;

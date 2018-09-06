@@ -37,7 +37,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-class GitlabWebHookServiceTest extends Specification {
+class GitlabWebHookServiceSpec extends Specification {
 
     private static int level = 0
 
@@ -107,6 +107,8 @@ class GitlabWebHookServiceTest extends Specification {
 
     @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper
+    @Autowired
+    private ApplicationVersionValueRepository applicationVersionValueRepository
 
     @Autowired
     @Qualifier("mockEnvUtil")
@@ -117,19 +119,19 @@ class GitlabWebHookServiceTest extends Specification {
 
 
     def setup() {
-        FileUtil.copyFile("test/gitops/test1.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test3.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test4.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test5.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test6.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test7.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test8.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test9.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test10.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test11.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test12.yaml", "gitops/test/test/test")
-        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test2")
+        FileUtil.copyFile("src/test/gitops/test1.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test2.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test3.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test4.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test5.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test6.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test7.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test8.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test9.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test10.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test11.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test12.yaml", "gitops/test/test/test")
+        FileUtil.copyFile("src/test/gitops/test2.yaml", "gitops/test/test/test2")
         DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
         devopsEnvironmentE.setId(1L)
         devopsEnvironmentE.setToken("123456")
@@ -140,10 +142,46 @@ class GitlabWebHookServiceTest extends Specification {
         ApplicationE applicationE = new ApplicationE()
         applicationE.setCode("testapp")
         applicationE.initProjectE(1L)
+        ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
+        applicationVersionValueE.setValue("resources:\n" +
+                "  requests:\n" +
+                "    memory: 1.6Gi\n" +
+                "  limits:\n" +
+                "    memory: 2.5Gi\n" +
+                "env:\n" +
+                "  open:\n" +
+                "    SPRING_REDIS_HOST: redis.tools.svc\n" +
+                "    SERVICES_GITLAB_URL: http://git.staging.saas.hand-china.com\n" +
+                "    SERVICES_GATEWAY_URL: http://api.staging.saas.hand-china.com\n" +
+                "    AGENT_SERVICEURL: ws://devops-service-front.staging.saas.hand-china.com/agent/\n" +
+                "    SERVICES_SONARQUBE_URL: http://sonarqube.staging.saas.hand-china.com\n" +
+                "    AGENT_REPOURL: http://chart.choerodon.com.cn/choerodon/c7ncd/\n" +
+                "    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**\n" +
+                "    SPRING_CLOUD_CONFIG_URI: http://config-server.choerodon-framework-staging:8010\n" +
+                "    SERVICES_HARBOR_PASSWORD: Handhand123\n" +
+                "    SERVICES_HELM_URL: http://helm-charts.staging.saas.hand-china.com\n" +
+                "    SERVICES_HARBOR_BASEURL: https://registry.saas.hand-china.com\n" +
+                "    SPRING_DATASOURCE_URL: jdbc:mysql://hapcloud-mysql.db:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\n" +
+                "    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.choerodon-framework-staging:8000/eureka/\n" +
+                "    SPRING_DATASOURCE_PASSWORD: handhand\n" +
+                "    SERVICES_GITLAB_SSHURL: git.vk.vu\n" +
+                "    AGENT_VERSION: 0.9.2\n" +
+                "preJob:\n" +
+                "  preConfig:\n" +
+                "    mysql:\n" +
+                "      host: hapcloud-mysql.db\n" +
+                "      password: handhand\n" +
+                "  preInitDB:\n" +
+                "    mysql:\n" +
+                "      host: hapcloud-mysql.db\n" +
+                "      password: handhand\n" +
+                "persistence:\n" +
+                "  existingClaim: chartmuseum-pv")
         ApplicationVersionE applicationVersionE = new ApplicationVersionE()
         applicationVersionE.initApplicationEById(applicationRepository.create(applicationE).getId())
-        applicationVersionE.setVersion("testversion")
+        applicationVersionE.setVersion("2018.8.21-091848-release-0-9-0")
         applicationVersionE.initApplicationVersionReadmeV("")
+        applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository.create(applicationVersionValueE).getId())
         DevopsEnvCommitE devopsEnvCommitE = new DevopsEnvCommitE()
         devopsEnvCommitE.setId(1L)
         devopsEnvCommitE.setEnvId(1L)
@@ -306,7 +344,7 @@ class GitlabWebHookServiceTest extends Specification {
         2 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         1 * devopsGitRepository.deleteTag(_, _, _) >> {tagDOS.clear()}
-        1 * devopsGitRepository.createTag(_, _, _, _)
+        1 * devopsGitRepository.createTag(_, _, _, _,_,_)
         1 * deployService.sendCommand(_)
         List<DevopsEnvFileResourceE> devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(1, "test3.yaml")
         devopsEnvFileResourceE.size() == 3
@@ -362,7 +400,7 @@ class GitlabWebHookServiceTest extends Specification {
         2 * devopsGitRepository.getGitLabTags(_,_) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         1 * devopsGitRepository.deleteTag(_, _, _) >> {tagDOS.clear()}
-        1 * devopsGitRepository.createTag(_, _, _, _)
+        1 * devopsGitRepository.createTag(_, _, _, _,_,_)
         1 * deployService.sendCommand(_)
         List<DevopsEnvFileResourceE> devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndPath(1, "test2.yaml")
         devopsEnvFileResourceE.size() == 0
@@ -524,7 +562,7 @@ class GitlabWebHookServiceTest extends Specification {
         1 * devopsGitRepository.getGitLabTags(_, _) >> tagDOS
         1 * devopsGitRepository.getCompareResults(_, _, _) >> compareResultsE
         List<DevopsEnvFileErrorE> devopsEnvFileErrorE = devopsEnvFileErrorRepository.listByEnvId(1L)
-        devopsEnvFileErrorE.get(0).getError() == "the App: testappasdasdasdnot exit in the devops-service"
+        devopsEnvFileErrorE.get(0).getError() == "the App: testappasdasdasdnot exist in the devops-service"
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE.get(0))
 
     }

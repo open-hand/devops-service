@@ -1,3 +1,4 @@
+package io.choerodon.devops.api.controller.v1
 //package io.choerodon.devops.api.controller.v1
 //
 //import io.choerodon.devops.IntegrationTestConfiguration
