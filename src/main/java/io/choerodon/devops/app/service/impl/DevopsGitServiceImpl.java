@@ -148,6 +148,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         applicationRepository.checkApp(projectId, appId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
         Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
+        if (msg == null) {
+            msg = "";
+        }
+        if (releaseNotes == null) {
+            releaseNotes = "";
+        }
         devopsGitRepository.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, gitLabUserId);
     }
 
@@ -479,7 +485,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (tagNotExist) {
             devopsGitRepository.createTag(
                     gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
-                    null, null, gitLabUserId);
+                    "", "", gitLabUserId);
         } else {
             try {
                 devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
@@ -487,7 +493,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 if (getDevopsSyncTag(pushWebHookDTO)) {
                     devopsGitRepository.createTag(
                             gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
-                            null, null, gitLabUserId);
+                            "", "", gitLabUserId);
                 } else {
                     throw new CommonException(e.getMessage(), e);
                 }
@@ -496,7 +502,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             if (getDevopsSyncTag(pushWebHookDTO)) {
                 devopsGitRepository.createTag(
                         gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
-                        null, null, gitLabUserId);
+                        "", "", gitLabUserId);
             }
         }
     }

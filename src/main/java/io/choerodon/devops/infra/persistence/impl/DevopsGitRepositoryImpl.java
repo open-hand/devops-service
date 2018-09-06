@@ -78,6 +78,12 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, String msg, String releaseNotes, Integer userId) {
         try {
+            if (msg == null) {
+                msg = "";
+            }
+            if (releaseNotes == null) {
+                releaseNotes = "";
+            }
             gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
         } catch (Exception e) {
             throw new CommonException("create gitlab tag failed: " + e.getMessage(), e);
@@ -87,6 +93,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     @Override
     public TagDO updateTag(Integer gitLabProjectId, String tag, String releaseNotes, Integer userId) {
         try {
+            if (releaseNotes == null) {
+                releaseNotes = "";
+            }
             return gitlabServiceClient.updateTagRelease(gitLabProjectId, tag, releaseNotes, userId).getBody();
         } catch (Exception e) {
             throw new CommonException("update gitlab tag failed", e);
