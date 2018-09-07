@@ -238,7 +238,7 @@
         <dependency>
             <groupId>io.choerodon</groupId>
             <artifactId>choerodon-websocket-helper</artifactId>
-            <version>0.6.3.RELEASE</version>
+            <version>0.6.31.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
