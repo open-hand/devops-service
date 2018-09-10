@@ -20,13 +20,16 @@ public class CertificationSpec {
     private CertificationExistCert existCert;
     private Map<String, String> issuerRef;
 
-    @Value("${cert.testCert}")
-    private Boolean testCert;
+    /**
+     * empty construct
+     */
+    public CertificationSpec() {
+    }
 
     /**
      * construct test param
      */
-    public CertificationSpec() {
+    public CertificationSpec(Boolean testCert) {
         if (testCert) {
             issuerRef = new HashMap<>();
             issuerRef.put("name", "localhost");
