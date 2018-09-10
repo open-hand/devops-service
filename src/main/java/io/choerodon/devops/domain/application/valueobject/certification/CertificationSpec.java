@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+
 /**
  * Created by n!Ck
  * Date: 2018/8/20
@@ -18,10 +20,18 @@ public class CertificationSpec {
     private CertificationExistCert existCert;
     private Map<String, String> issuerRef;
 
-    // for test
+    @Value("${cert.testCert}")
+    private Boolean testCert;
+
+    /**
+     * construct test param
+     */
     public CertificationSpec() {
-        issuerRef = new HashMap<>();
-        issuerRef.put("name", "localhost");
+        if (testCert) {
+            issuerRef = new HashMap<>();
+            issuerRef.put("name", "localhost");
+            issuerRef.put("kind", "ClusterIssuer");
+        }
     }
 
     public Map<String, String> getIssuerRef() {

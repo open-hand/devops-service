@@ -95,6 +95,8 @@ feign:
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
+cert:
+  testCert: false
 logging:
   level:
     io.choerodon.event.consumer: debug
