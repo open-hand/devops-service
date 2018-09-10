@@ -65,7 +65,7 @@ public class DevopsEnvGroupRepositoryImpl implements DevopsEnvGroupRepository {
         devopsEnvGroupDO.setName(name);
         devopsEnvGroupDO.setProjectId(projectId);
         List<DevopsEnvGroupDO> devopsEnvGroupDOS = devopsEnvGroupMapper.select(devopsEnvGroupDO);
-        Boolean updateCheck = false;
+        boolean updateCheck = false;
         if (id != null) {
             updateCheck = devopsEnvGroupDOS.size() == 1 && id.equals(devopsEnvGroupDOS.get(0).getId());
         }
