@@ -11,6 +11,7 @@ public enum ResourceType {
     SERVICEACCOUNT("ServiceAccount"),
     DAEMONSET("DaemonSet"),
     STATEFULSET("StatefulSet"),
+    SECRET("SECRET"),
     MISSTYPE("MissType");
 
 
@@ -47,6 +48,8 @@ public enum ResourceType {
                 return ResourceType.STATEFULSET;
             case "MissType":
                 return ResourceType.MISSTYPE;
+            case "Secret":
+                return ResourceType.SECRET;
             default:
                 break;
         }

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,6 +16,8 @@ public class CertificationDTO {
     private List<String> domains;
     private String type;
     private String status;
+    private Date validFrom;
+    private Date validUntil;
     private Long envId;
     private String envName;
     private Boolean envConnected;
@@ -89,5 +92,21 @@ public class CertificationDTO {
 
     public void setEnvConnected(Boolean envConnected) {
         this.envConnected = envConnected;
+    }
+
+    public Date getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(Date validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public Date getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(Date validUntil) {
+        this.validUntil = validUntil;
     }
 }

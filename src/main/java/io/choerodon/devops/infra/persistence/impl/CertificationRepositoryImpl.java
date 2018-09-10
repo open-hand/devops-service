@@ -17,6 +17,7 @@ import io.choerodon.devops.domain.application.entity.CertificationE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -64,7 +65,7 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public Page<CertificationDTO> page(Long projectId, PageRequest pageRequest, String params) {
+    public Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params) {
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
         if (pageRequest.getSort() != null) {
@@ -79,7 +80,7 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         Page<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPage(
                 PageHelper.doPageAndSort(pageRequest,
-                        () -> devopsCertificationMapper.selectCertification(projectId, searchParamMap, param)),
+                        () -> devopsCertificationMapper.selectCertification(projectId, envId, searchParamMap, param)),
                 CertificationDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
@@ -111,6 +112,17 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         devopsCertificationMapper.updateByPrimaryKeySelective(certificationDO);
     }
 
+    @Override
+    public void updateValid(CertificationE certificationE) {
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certificationE.getId());
+        if (certificationE.checkValidity()) {
+            certificationDO.setStatus(CertificationStatus.ACTIVE.getStatus());
+        } else {
+            certificationDO.setStatus(CertificationStatus.OVERDUE.getStatus());
+        }
+        certificationDO.setValid(certificationE.getValidFrom(), certificationE.getValidUntil());
+        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDO);
+    }
 
     @Override
     public void deleteById(Long id) {

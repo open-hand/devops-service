@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dataobject;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -24,6 +25,8 @@ public class CertificationDO {
     private String domains;
     private Long commandId;
     private String status;
+    private Date validFrom;
+    private Date validUntil;
 
     public CertificationDO() {
     }
@@ -52,6 +55,11 @@ public class CertificationDO {
     public CertificationDO(String name, Long envId) {
         this.name = name;
         this.envId = envId;
+    }
+
+    public void setValid(Date from, Date until) {
+        this.setValidFrom(from);
+        this.setValidUntil(until);
     }
 
     public Long getId() {
@@ -100,5 +108,21 @@ public class CertificationDO {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public Date getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(Date validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public Date getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(Date validUntil) {
+        this.validUntil = validUntil;
     }
 }

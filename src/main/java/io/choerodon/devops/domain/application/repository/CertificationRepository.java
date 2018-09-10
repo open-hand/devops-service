@@ -21,13 +21,15 @@ public interface CertificationRepository {
 
     CertificationE queryByEnvAndName(Long envId, String name);
 
-    Page<CertificationDTO> page(Long projectId, PageRequest pageRequest, String params);
+    Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     List<CertificationDTO> getActiveByDomain(Long envId, String domain);
 
     void updateStatus(CertificationE certificationE);
 
     void updateCommandId(CertificationE certificationE);
+
+    void updateValid(CertificationE certificationE);
 
     void deleteById(Long certId);
 

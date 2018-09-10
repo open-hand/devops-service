@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
+import org.springframework.security.access.method.P;
 
 import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.mybatis.common.BaseMapper;
@@ -17,6 +18,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsCertificationMapper extends BaseMapper<CertificationDO> {
     List<CertificationDO> selectCertification(@Param("projectId") Long projectId,
+                                              @Param("envId") Long envId,
                                               @Param("searchParam") Map<String, Object> searchParam,
                                               @Param("param") String param);
 

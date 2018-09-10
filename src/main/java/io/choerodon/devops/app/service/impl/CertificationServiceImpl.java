@@ -190,8 +190,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Page<CertificationDTO> page(Long projectId, PageRequest pageRequest, String params) {
-        return certificationRepository.page(projectId, pageRequest, params);
+    public Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params) {
+        return certificationRepository.page(projectId, envId, pageRequest, params);
     }
 
     @Override
