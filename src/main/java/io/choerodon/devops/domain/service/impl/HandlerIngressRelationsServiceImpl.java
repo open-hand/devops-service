@@ -225,7 +225,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
                     serviceName, devopsEnvironmentE.getCode());
             if (devopsServiceE == null) {
-                throw new CommonException(GitOpsObjectError.SERVICE_RELEATED_INGRESS_NOT_FOUND.getError() + serviceName);
+                throw new CommonException(GitOpsObjectError.SERVICE_RELATED_INGRESS_NOT_FOUND.getError() + serviceName);
             }
             Long servicePort;
             IntOrString backendServicePort = backend.getServicePort();

@@ -20,10 +20,16 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
     }
 
 
-    changeSet(author: 'younger', id: '2018-09-10-add-column')
-            {
-                addColumn(tableName: 'devops_certification') {
-                    column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
-                }
-            }
+    changeSet(author: 'younger', id: '2018-09-10-add-column') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
+        }
+    }
+
+    changeSet(author: 'Runge', id: '2018-09-10-add-column') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: 'valid_from', type: 'DATETIME', remarks: 'cert valid from', afterColumn: 'status')
+            column(name: 'valid_until', type: 'DATETIME', remarks: 'cert valid until', afterColumn: 'valid_from')
+        }
+    }
 }

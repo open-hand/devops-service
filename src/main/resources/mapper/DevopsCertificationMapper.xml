@@ -8,12 +8,17 @@
             dc.`name`,
             dc.env_id envId,
             dc.domains,
+            dc.valid_from,
+            dc.valid_until,
             dc.status
         FROM
             devops_certification dc
         JOIN devops_env AS de ON env_id = de.id
         WHERE
             de.project_id = #{projectId}
+        <if test="envId != null">
+            AND dc.env_id = #{envId}
+        </if>
         <if test='searchParam != null'>
             <if test='searchParam.certName != null and searchParam.certName.size > 0'>
                 AND

@@ -1,5 +1,6 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,6 +16,8 @@ public class CertificationE {
     private List<String> domains;
     private String status;
     private Long commandId;
+    private Date validFrom;
+    private Date validUntil;
 
     public CertificationE() {
     }
@@ -25,6 +28,31 @@ public class CertificationE {
         this.environmentE = environmentE;
         this.domains = domains;
         this.status = status;
+    }
+
+    /**
+     * check weather cert is active on date
+     *
+     * @param date checkDate
+     * @return true if cert is active, else false
+     */
+    public Boolean checkValidity(Date date) {
+        return this.validFrom != null && this.validUntil != null
+                && date.after(this.validFrom) && date.before(this.validUntil);
+    }
+
+    /**
+     * check weather cert is active now
+     *
+     * @return true if cert is active, else false
+     */
+    public Boolean checkValidity() {
+        return this.checkValidity(new Date());
+    }
+
+    public void setValid(Date from, Date until) {
+        this.setValidFrom(from);
+        this.setValidUntil(until);
     }
 
     public Long getId() {
@@ -73,5 +101,21 @@ public class CertificationE {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public Date getValidFrom() {
+        return validFrom;
+    }
+
+    public void setValidFrom(Date validFrom) {
+        this.validFrom = validFrom;
+    }
+
+    public Date getValidUntil() {
+        return validUntil;
+    }
+
+    public void setValidUntil(Date validUntil) {
+        this.validUntil = validUntil;
     }
 }

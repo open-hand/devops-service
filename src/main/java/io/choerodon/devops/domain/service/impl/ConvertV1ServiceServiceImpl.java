@@ -27,7 +27,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
     }
 
 
-    public void checkIfexist(List<V1Service> v1Services, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, V1Service v1Service) {
+    public void checkIfExist(List<V1Service> v1Services, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, V1Service v1Service) {
         String filePath = objectPath.get(TypeUtil.objToString(v1Service.hashCode()));
         DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
         if (devopsServiceE != null &&
@@ -62,7 +62,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
             checkV1ServicePorts(v1Service, filePath);
         }
         if (v1Service.getApiVersion() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_APIVERSION_NOT_FOUND.getError(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_API_VERSION_NOT_FOUND.getError(), filePath);
 
         }
     }

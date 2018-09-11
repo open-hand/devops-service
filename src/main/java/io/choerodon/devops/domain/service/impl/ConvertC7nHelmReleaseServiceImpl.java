@@ -44,17 +44,17 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                 throw new GitOpsExplainException(GitOpsObjectError.RELEASE_CHART_VERSION_NOT_FOUND.getError(), filePath);
             }
             if (c7nHelmRelease.getSpec().getRepoUrl() == null) {
-                throw new GitOpsExplainException(GitOpsObjectError.RELEASE_REPOURL_NOT_FOUND.getError(), filePath);
+                throw new GitOpsExplainException(GitOpsObjectError.RELEASE_REPO_URL_NOT_FOUND.getError(), filePath);
             }
         }
         if (c7nHelmRelease.getApiVersion() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APIVERSION_NOT_FOUND.getError(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_API_VERSION_NOT_FOUND.getError(), filePath);
         }
 
     }
 
 
-    public void checkIfexist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
+    public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
         String instanceCode = c7nHelmRelease.getMetadata().getName();
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(instanceCode, envId);

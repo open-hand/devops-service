@@ -87,6 +87,7 @@ public class CertificationController {
      * 分页查询
      *
      * @param projectId   项目id
+     * @param envId       环境ID
      * @param pageRequest 分页参数
      * @param params      查询参数
      * @return CertificationDTO page
@@ -99,12 +100,14 @@ public class CertificationController {
     public ResponseEntity<Page<CertificationDTO>> listByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境ID")
+            @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.ASC) PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(certificationService.page(projectId, pageRequest, params))
+        return Optional.ofNullable(certificationService.page(projectId, envId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.page"));
     }

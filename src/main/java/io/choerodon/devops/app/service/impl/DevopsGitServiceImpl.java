@@ -561,7 +561,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验参数校验参数是否合法
                             convertC7nHelmRelease.checkParameters(c7nHelmRelease, objectPath);
                             //校验对象是否在其它文件中已经定义
-                            convertC7nHelmRelease.checkIfexist(c7nHelmReleases, envId, beforeSyncDelete, objectPath, c7nHelmRelease);
+                            convertC7nHelmRelease.checkIfExist(c7nHelmReleases, envId, beforeSyncDelete, objectPath, c7nHelmRelease);
                             break;
                         case INGRESS:
                             //反序列文件为V1beta1ingress对象,
@@ -571,7 +571,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验参数校验参数是否合法
                             convertV1beta1Ingress.checkParameters(v1beta1Ingress, objectPath);
                             //校验对象是否在其它文件中已经定义
-                            convertV1beta1Ingress.checkIfexist(v1beta1Ingresses, envId, beforeSyncDelete, objectPath, v1beta1Ingress);
+                            convertV1beta1Ingress.checkIfExist(v1beta1Ingresses, envId, beforeSyncDelete, objectPath, v1beta1Ingress);
                             break;
                         case SERVICE:
                             //反序列文件为V1service对象,
@@ -581,7 +581,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验参数校验参数是否合法
                             convertV1Service.checkParameters(v1Service, objectPath);
                             //校验对象是否在其它文件中已经定义
-                            convertV1Service.checkIfexist(v1Services, envId, beforeSyncDelete, objectPath, v1Service);
+                            convertV1Service.checkIfExist(v1Services, envId, beforeSyncDelete, objectPath, v1Service);
                             break;
                         case CERTIFICATE:
                             //反序列文件为C7nCertification对象,
@@ -591,7 +591,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验参数校验参数是否合法
                             convertC7nCertification.checkParameters(c7nCertification, objectPath);
                             //校验对象是否在其它文件中已经定义
-                            convertC7nCertification.checkIfexist(c7nCertifications, envId, beforeSyncDelete, objectPath, c7nCertification);
+                            convertC7nCertification.checkIfExist(c7nCertifications, envId, beforeSyncDelete, objectPath, c7nCertification);
                             break;
                         default:
                             break;

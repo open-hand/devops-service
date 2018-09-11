@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -23,9 +25,7 @@ import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.K8sUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
@@ -336,6 +336,21 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         }
                     }
                     break;
+                case SECRET:
+                    String certName = ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get("name").toString();
+
+                    CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+                    if (certificationE != null) {
+                        String crt = ((LinkedHashMap) ((LinkedHashMap) obj).get("data")).get("tls.crt").toString();
+                        X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
+                        Date validFrom = certificate.getNotBefore();
+                        Date validUntil = certificate.getNotAfter();
+
+                        certificationE.setValid(validFrom, validUntil);
+
+                        certificationRepository.updateValid(certificationE);
+                    }
+                    break;
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
                     applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
@@ -353,6 +368,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             }
         } catch (IOException e) {
             logger.info(e.toString());
+        } catch (CertificateException e) {
+            logger.info(e.getMessage(), e);
         }
     }
 

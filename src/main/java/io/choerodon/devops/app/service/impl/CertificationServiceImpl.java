@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -39,6 +40,9 @@ public class CertificationServiceImpl implements CertificationService {
 
     private static final String CERT_PREFIX = "cert-";
     private static final String FILE_SEPARATOR = System.getProperty("file.separator");
+
+    @Value("${cert.testCert}")
+    private Boolean testCert;
 
     @Autowired
     private CertificationRepository certificationRepository;
@@ -103,7 +107,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         c7nCertification.setMetadata(new CertificationMetadata(name,
                 envCode));
-        CertificationSpec spec = new CertificationSpec();
+        CertificationSpec spec = new CertificationSpec(testCert);
         if (type.equals(CertificationType.REQUEST.getType())) {
             CertificationAcme acme = new CertificationAcme();
             acme.initConfig(new CertificationConfig(domains));
@@ -186,8 +190,11 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Page<CertificationDTO> page(Long projectId, PageRequest pageRequest, String params) {
-        return certificationRepository.page(projectId, pageRequest, params);
+    public Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params) {
+        if (params == null) {
+            params = "{}";
+        }
+        return certificationRepository.page(projectId, envId, pageRequest, params);
     }
 
     @Override
