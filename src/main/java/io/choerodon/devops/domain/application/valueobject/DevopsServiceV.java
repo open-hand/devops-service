@@ -26,6 +26,9 @@ public class DevopsServiceV {
     private String appName;
     private Map<String, String> labels;
     private List<ServiceInstanceDO> appInstance;
+    private String commandType;
+    private String commandStatus;
+    private String error;
 
     public Long getId() {
         return id;
@@ -145,5 +148,29 @@ public class DevopsServiceV {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

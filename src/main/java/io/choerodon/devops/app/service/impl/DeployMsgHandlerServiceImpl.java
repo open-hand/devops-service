@@ -235,6 +235,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 .query(applicationInstanceE.getCommandId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+        applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
+        applicationInstanceRepository.update(applicationInstanceE);
         installResource(resources, applicationInstanceE);
     }
 
@@ -864,7 +866,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     .selectByCode(objects[1], envId);
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
-                            updateEnvCommandStatus(envId, resourceCommit, applicationInstanceE.getCommandId(), devopsEnvFileResourceE, "c7nhelmrelease", applicationInstanceE.getCode());
+                            if (updateEnvCommandStatus(envId, resourceCommit, applicationInstanceE.getCommandId(), devopsEnvFileResourceE, "c7nhelmrelease", applicationInstanceE.getCode())) {
+                                applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
+                                applicationInstanceRepository.update(applicationInstanceE);
+                            }
                             break;
                         }
                         case "ingress": {
@@ -872,7 +877,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     .selectByEnvAndName(envId, objects[1]);
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
-                            updateEnvCommandStatus(envId, resourceCommit, devopsIngressE.getCommandId(), devopsEnvFileResourceE, "ingress", devopsIngressE.getName());
+                            if (updateEnvCommandStatus(envId, resourceCommit, devopsIngressE.getCommandId(), devopsEnvFileResourceE, "ingress", devopsIngressE.getName())) {
+                                devopsIngressRepository.setStatus(envId, devopsIngressE.getName(), IngressStatus.FAILED.getStatus());
+                            } else {
+                                devopsIngressRepository.setStatus(envId, devopsIngressE.getName(), IngressStatus.RUNNING.getStatus());
+                            }
                             break;
                         }
                         case "service": {
@@ -880,8 +889,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     .selectByNameAndNamespace(objects[1], devopsEnvironmentE.getCode());
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
-                            updateEnvCommandStatus(envId, resourceCommit, devopsServiceE.getCommandId(), devopsEnvFileResourceE, "service", devopsServiceE.getName());
-
+                            if (updateEnvCommandStatus(envId, resourceCommit, devopsServiceE.getCommandId(), devopsEnvFileResourceE, "service", devopsServiceE.getName())) {
+                                devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
+                            } else {
+                                devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
+                            }
+                            devopsServiceRepository.update(devopsServiceE);
                             break;
                         }
                         case "certificate": {
@@ -890,7 +903,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(
                                             envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
-                            updateEnvCommandStatus(envId, resourceCommit, certificationE.getCommandId(), devopsEnvFileResourceE, "certificate", certificationE.getName());
+                            if (updateEnvCommandStatus(envId, resourceCommit, certificationE.getCommandId(), devopsEnvFileResourceE, "certificate", certificationE.getName())) {
+                                certificationE.setStatus(CertificationStatus.FAILED.getStatus());
+                                certificationRepository.updateStatus(certificationE);
+                            }
                             break;
                         }
                         default:
@@ -899,7 +915,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 });
     }
 
-    private void updateEnvCommandStatus(Long envId, ResourceCommit resourceCommit, Long commandId, DevopsEnvFileResourceE devopsEnvFileResourceE, String objectType, String objectName) {
+    private boolean updateEnvCommandStatus(Long envId, ResourceCommit resourceCommit, Long commandId, DevopsEnvFileResourceE devopsEnvFileResourceE, String objectType, String objectName) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
         if (devopsEnvCommandE.getSha().equals(resourceCommit.getCommit())) {
             devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
@@ -910,9 +926,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             if (objects[0].equals(objectType) && objects[1].equals(objectName)) {
                 devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
                 devopsEnvCommandE.setError(devopsEnvFileErrorE.getError());
+                return true;
             }
         }
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+        return false;
     }
 
     private void saveOrUpdateResource(DevopsEnvResourceE devopsEnvResourceE,

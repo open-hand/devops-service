@@ -123,6 +123,10 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                        }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
@@ -161,6 +165,10 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                             throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                        }
                         if (!isNotChange) {
                             devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressDTO, projectId);
                             DevopsIngressE newdevopsIngressE = devopsIngressRepository
@@ -247,6 +255,19 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         }
         devopsIngressDTO.setPathList(devopsIngressPathDTOS);
         return devopsIngressDTO;
+    }
+
+
+    private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        if (type.equals("create")) {
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+        } else {
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        }
+        devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        return devopsEnvCommandRepository.create(devopsEnvCommandE);
     }
 
 }

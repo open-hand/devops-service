@@ -114,6 +114,10 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
                         }
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                            devopsEnvCommandE = createDevopsEnvCommandE("update");
+                        }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         devopsServiceService.updateDevopsServiceByGitOps(
@@ -151,6 +155,10 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     devopsServiceReqDTO.getName(), envId);
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                        }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
@@ -258,5 +266,17 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 || (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
                 && !StringUtils.isEmpty(devopsServiceE.getExternalIp())
                 && devopsServiceReqDTO.getExternalIp().equals(devopsServiceE.getExternalIp())));
+    }
+
+    private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        if (type.equals("create")) {
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+        } else {
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        }
+        devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        return devopsEnvCommandRepository.create(devopsEnvCommandE);
     }
 }

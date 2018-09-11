@@ -24,7 +24,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command.groovy') {
             {
                 addColumn(tableName: 'devops_env_command') {
                     column(name: 'sha', type: 'VARCHAR(128)', remarks: 'commit sha', afterColumn: 'status')
-                    column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: 'env id', afterColumn: 'id')
                 }
             }
 }
