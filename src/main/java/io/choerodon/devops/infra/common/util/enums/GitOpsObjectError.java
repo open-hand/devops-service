@@ -38,6 +38,22 @@ public enum GitOpsObjectError {
     INGRESS_PATH_IS_EMPTY("the ingress path is empty!"),
     INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE("the ingress path's port '{}' does not belong to service '{}'"),
 
+    CERT_ACME_OR_EXIST_CERT_NOT_FOUND("The certification does not contain 'acme' or 'existCert'"),
+    CERT_DOMAINS_ILLEGAL("The certification's domain is illegal"),
+    CERT_NAMESPACE_NOT_FOUND("Can't find certification's 'namespace'"),
+    CERT_API_VERSION_NOT_FOUND("Can't find certification's 'apiVersion'"),
+    CERT_META_DATA_NOT_FOUND("Can't find certification's 'metadata'"),
+    CERT_NAME_NOT_FOUND("Can't find certification's 'name"),
+    CERT_SPEC_NOT_FOUND("Can't find certification's 'spec'"),
+    CERT_COMMON_NAME_NOT_FOUND("Can't find certification's 'commonName'"),
+    CERT_CRT_NOT_FOUND("Can't find certification's 'cert' in 'existCert"),
+    CERT_KEY_NOT_FOUND("Can't find certification's 'key' in 'existCert"),
+    CERT_ACME_CONFIG_NOT_FOUND("Can't find certification's 'config' in 'acme'"),
+    CERT_HTTP_NOT_FOUND("Can't find certification's 'http' config"),
+    CERT_INGRESS_CLASS_ERROR("The value of certification's ingressClass is not 'nginx'"),
+    CERT_DOMAINS_NOT_FOUND("Can't find certification's 'domains'"),
+    CERT_CHANGED("The certification can not be changed"),
+
     INSTANCE_APP_ID_NOT_SAME("The instance is not belong to the same application"),
     INSTANCE_RELATED_SERVICE_NOT_FOUND("The related instance of the service not found: "),
 

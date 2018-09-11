@@ -19,6 +19,8 @@ import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
 import io.choerodon.devops.infra.dataobject.CertificationDO;
+import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -35,6 +37,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
 
     @Autowired
     private DevopsCertificationMapper devopsCertificationMapper;
+    @Autowired
+    private DevopsCertificationFileMapper devopsCertificationFileMapper;
 
     private Gson gson = new Gson();
 
@@ -127,10 +131,28 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     @Override
     public void deleteById(Long id) {
         devopsCertificationMapper.deleteByPrimaryKey(id);
+        deleteCertFile(id);
     }
 
     @Override
     public Boolean checkCertNameUniqueInEnv(Long envId, String certName) {
         return devopsCertificationMapper.select(new CertificationDO(certName, envId)).isEmpty();
+    }
+
+    @Override
+    public void storeCertFile(CertificationFileDO certificationFileDO) {
+        devopsCertificationFileMapper.insert(certificationFileDO);
+    }
+
+    @Override
+    public CertificationFileDO getCertFile(Long certId) {
+        return devopsCertificationFileMapper.selectOne(new CertificationFileDO(certId));
+    }
+
+    private void deleteCertFile(Long certId) {
+        CertificationFileDO certificationFileDO = new CertificationFileDO(certId);
+        if (!devopsCertificationFileMapper.select(certificationFileDO).isEmpty()) {
+            devopsCertificationFileMapper.delete(certificationFileDO);
+        }
     }
 }

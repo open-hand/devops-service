@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.valueobject;
 
+import java.util.Objects;
+
 import io.choerodon.devops.domain.application.valueobject.certification.CertificationMetadata;
 import io.choerodon.devops.domain.application.valueobject.certification.CertificationSpec;
 
@@ -50,5 +52,25 @@ public class C7nCertification {
 
     public void setSpec(CertificationSpec spec) {
         this.spec = spec;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof C7nCertification)) {
+            return false;
+        }
+        C7nCertification that = (C7nCertification) o;
+        return Objects.equals(getApiVersion(), that.getApiVersion())
+                && Objects.equals(getKind(), that.getKind())
+                && Objects.equals(getMetadata(), that.getMetadata())
+                && Objects.equals(getSpec(), that.getSpec());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getApiVersion(), getKind(), getMetadata(), getSpec());
     }
 }
