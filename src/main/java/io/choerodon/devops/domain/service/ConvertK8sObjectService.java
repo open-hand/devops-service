@@ -24,7 +24,7 @@ public abstract class ConvertK8sObjectService<T> {
     }
 
 
-    public void checkIfexist(List<T> ts, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, T t) {
+    public void checkIfExist(List<T> ts, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, T t) {
     }
 
     public T getT() {

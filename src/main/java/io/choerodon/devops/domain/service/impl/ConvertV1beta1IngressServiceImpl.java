@@ -27,7 +27,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
     }
 
-    public void checkIfexist(List<V1beta1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, V1beta1Ingress v1beta1Ingress) {
+    public void checkIfExist(List<V1beta1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, V1beta1Ingress v1beta1Ingress) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
         DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
         if (devopsIngressE != null

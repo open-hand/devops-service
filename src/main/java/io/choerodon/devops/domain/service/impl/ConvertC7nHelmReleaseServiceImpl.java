@@ -54,7 +54,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
     }
 
 
-    public void checkIfexist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
+    public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
         String instanceCode = c7nHelmRelease.getMetadata().getName();
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(instanceCode, envId);

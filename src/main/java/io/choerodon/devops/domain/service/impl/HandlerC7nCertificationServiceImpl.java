@@ -26,7 +26,7 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 @Service
 public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRelationsService<C7nCertification> {
 
-    public static final String CERTIFICATE = "Certificate";
+    private static final String CERTIFICATE = "Certificate";
 
     @Autowired
     private CertificationRepository certificationRepository;
@@ -36,7 +36,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nCertification> c7nCertifications, Long envId, Long projectId, String path) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
+                                 List<C7nCertification> c7nCertifications, Long envId, Long projectId, String path) {
         //todo command操作
         beforeSync.parallelStream().filter(devopsEnvFileResourceE ->
                 devopsEnvFileResourceE.getResourceType().equals(CERTIFICATE))

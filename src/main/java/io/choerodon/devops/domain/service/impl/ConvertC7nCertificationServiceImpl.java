@@ -24,13 +24,16 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
         this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
     }
 
+    @Override
     public void checkParameters(C7nCertification c7nCertification, Map<String, String> objectPath) {
     }
 
-    public void checkIfexist(List<C7nCertification> c7nCertifications, Long envId,
+    @Override
+    public void checkIfExist(List<C7nCertification> c7nCertifications, Long envId,
                              List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nCertification c7nCertification) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
-        CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, c7nCertification.getMetadata().getName());
+        String certName = c7nCertification.getMetadata().getName();
+        CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
         if (certificationE != null) {
             Long certId = certificationE.getId();
             if (beforeSyncDelete.parallelStream()
@@ -39,16 +42,18 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
                     .noneMatch(devopsEnvFileResourceE ->
                             devopsEnvFileResourceE.getResourceId()
                                     .equals(certId))) {
-                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, certificationE.getId(), c7nCertification.getKind());
-                if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())))) {
-                    throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + c7nCertification.getMetadata().getName(), filePath);
+                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                        .queryByEnvIdAndResource(envId, certificationE.getId(), c7nCertification.getKind());
+                if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath()
+                        .equals(objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())))) {
+                    throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + certName, filePath);
                 }
             }
         }
         if (c7nCertifications.parallelStream()
                 .anyMatch(certification -> certification.getMetadata().getName()
-                        .equals(certificationE.getName()))) {
-            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + c7nCertification.getMetadata().getName(), filePath);
+                        .equals(certName))) {
+            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + certName, filePath);
         } else {
             c7nCertifications.add(c7nCertification);
         }
