@@ -126,6 +126,9 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         if (devopsEnvCommandE == null) {
                             devopsEnvCommandE = createDevopsEnvCommandE("create");
                             devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
+                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
+                            devopsIngressRepository.updateIngress(devopsIngressDO);
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -168,6 +171,9 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         if (devopsEnvCommandE == null) {
                             devopsEnvCommandE = createDevopsEnvCommandE("create");
                             devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
+                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
+                            devopsIngressRepository.updateIngress(devopsIngressDO);
                         }
                         if (!isNotChange) {
                             devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressDTO, projectId);
