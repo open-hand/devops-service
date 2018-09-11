@@ -231,10 +231,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<Resource> resources = JSONArray.parseArray(releasePayload.getResources(), Resource.class);
         String releaseName = releasePayload.getName();
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-        applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
-        applicationInstanceRepository.update(applicationInstanceE);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+                .query(applicationInstanceE.getCommandId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
         installResource(resources, applicationInstanceE);
@@ -273,13 +271,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         applicationInstanceE);
             }
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-            if (type.equals("update")) {
-                devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-            }
-            applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-            applicationInstanceRepository.update(applicationInstanceE);
+                    .query(applicationInstanceE.getCommandId());
             devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
             devopsEnvCommandRepository.update(devopsEnvCommandE);
         } catch (Exception e) {
