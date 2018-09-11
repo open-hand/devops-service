@@ -115,8 +115,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
                         }
                         if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                             devopsEnvCommandE = createDevopsEnvCommandE("update");
+                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -156,8 +156,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
                         if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                             devopsEnvCommandE = createDevopsEnvCommandE("create");
+                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
