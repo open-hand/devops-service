@@ -26,6 +26,7 @@ import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -79,30 +80,66 @@ public class CertificationServiceImpl implements CertificationService {
 
         Long envId = certificationDTO.getEnvId();
         devopsCertificationValidator.checkCertification(envId, certName);
+
         // agent certification
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CommandType.CREATE.getType());
+
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
                 certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus());
         // create
+        C7nCertification c7nCertification = null;
         if (!isGitOps) {
-            C7nCertification c7nCertification = getC7nCertification(
-                    projectId, certName, type, domains, key, cert, devopsEnvironmentE.getCode());
+            String envCode = devopsEnvironmentE.getCode();
+            String path = fileTmpPath(projectId, envCode);
 
+            c7nCertification = getC7nCertification(
+                    certName, type, domains, getFileContent(path, key), getFileContent(path, cert), envCode);
+            removeFiles(path, key);
+            removeFiles(path, cert);
             // sent certification to agent
             ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
             certificationOperation.setType(c7nCertification);
             operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
         }
-        devopsEnvCommandE.setObjectId(certificationRepository.create(certificationE).getId());
-        certificationE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        certificationE = certificationRepository.create(certificationE);
+        Long certId = certificationE.getId();
+
+        // cert command
+        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId));
         certificationRepository.updateCommandId(certificationE);
+
+        // store crt & key if type is upload
+        storeCertFile(c7nCertification, certId);
     }
 
-    private C7nCertification getC7nCertification(Long projectId, String name, String type, List<String> domains,
-                                                 MultipartFile key, MultipartFile cert, String envCode) {
+    private void removeFiles(String path, MultipartFile multipartFile) {
+        new File(path + FILE_SEPARATOR + multipartFile.getOriginalFilename()).deleteOnExit();
+    }
+
+    private void storeCertFile(C7nCertification c7nCertification, Long certId) {
+        if (c7nCertification != null) {
+            CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
+            if (existCert != null) {
+                certificationRepository.storeCertFile(
+                        new CertificationFileDO(certId, existCert.getCert(), existCert.getKey()));
+            }
+        }
+    }
+
+    private String fileTmpPath(Long projectId, String envCode) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        return String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, envCode);
+    }
+
+    private String getFileContent(String path, MultipartFile file) {
+        return FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, file)));
+    }
+
+    @Override
+    public C7nCertification getC7nCertification(String name, String type, List<String> domains,
+                                                String keyContent, String certContent, String envCode) {
         C7nCertification c7nCertification = new C7nCertification();
 
         c7nCertification.setMetadata(new CertificationMetadata(name,
@@ -113,17 +150,6 @@ public class CertificationServiceImpl implements CertificationService {
             acme.initConfig(new CertificationConfig(domains));
             spec.setAcme(acme);
         } else if (type.equals(CertificationType.UPLOAD.getType())) {
-
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
-            String path = String.format("tmp%s%s%s%s",
-                    FILE_SEPARATOR,
-                    projectE.getCode(),
-                    FILE_SEPARATOR,
-                    envCode);
-
-            String keyContent = FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, key)));
-            String certContent = FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, cert)));
-
             CertificationExistCert existCert = new CertificationExistCert(keyContent, certContent);
             spec.setExistCert(existCert);
         }
@@ -183,9 +209,7 @@ public class CertificationServiceImpl implements CertificationService {
                         devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
             }
         }
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CommandType.DELETE.getType());
-        devopsEnvCommandE.setObjectId(certId);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        createCertCommandE(CommandType.DELETE.getType(), certId);
         certificationRepository.deleteById(certId);
     }
 
@@ -207,12 +231,14 @@ public class CertificationServiceImpl implements CertificationService {
         return certificationRepository.checkCertNameUniqueInEnv(envId, certName);
     }
 
-    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
+    @Override
+    public Long createCertCommandE(String type, Long certId) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         devopsEnvCommandE.setCommandType(type);
         devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        return devopsEnvCommandE;
+        devopsEnvCommandE.setObjectId(certId);
+        return devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
     }
 
 }

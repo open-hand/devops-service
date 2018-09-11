@@ -3,8 +3,7 @@ package io.choerodon.devops.domain.application.valueobject.certification;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.springframework.beans.factory.annotation.Value;
+import java.util.Objects;
 
 /**
  * Created by n!Ck
@@ -75,5 +74,26 @@ public class CertificationSpec {
 
     public void setExistCert(CertificationExistCert existCert) {
         this.existCert = existCert;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CertificationSpec)) {
+            return false;
+        }
+        CertificationSpec that = (CertificationSpec) o;
+        return Objects.equals(getCommonName(), that.getCommonName())
+                && Objects.equals(getDnsNames(), that.getDnsNames())
+                && Objects.equals(getAcme(), that.getAcme())
+                && Objects.equals(getExistCert(), that.getExistCert())
+                && Objects.equals(getIssuerRef(), that.getIssuerRef());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCommonName(), getDnsNames(), getAcme(), getExistCert(), getIssuerRef());
     }
 }

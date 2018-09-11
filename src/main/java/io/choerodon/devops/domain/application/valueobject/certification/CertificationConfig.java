@@ -1,9 +1,6 @@
 package io.choerodon.devops.domain.application.valueobject.certification;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by n!Ck
@@ -41,5 +38,24 @@ public class CertificationConfig {
 
     public void setDomains(List<String> domains) {
         this.domains = domains;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CertificationConfig)) {
+            return false;
+        }
+        CertificationConfig config = (CertificationConfig) o;
+        return Objects.equals(getHttp01(), config.getHttp01())
+                && Objects.equals(getDomains(), config.getDomains());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(getHttp01(), getDomains());
     }
 }

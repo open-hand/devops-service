@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.valueobject.certification;
 
+import java.util.Objects;
+
 /**
  * Created by n!Ck
  * Date: 2018/8/20
@@ -32,5 +34,24 @@ public class CertificationMetadata {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CertificationMetadata)) {
+            return false;
+        }
+        CertificationMetadata that = (CertificationMetadata) o;
+        return Objects.equals(getName(), that.getName())
+                && Objects.equals(getNamespace(), that.getNamespace());
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(getName(), getNamespace());
     }
 }

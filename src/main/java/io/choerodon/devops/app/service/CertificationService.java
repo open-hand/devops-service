@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
+import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -28,6 +29,9 @@ public interface CertificationService {
     void create(Long projectId, C7nCertificationDTO certificationDTO,
                 MultipartFile key, MultipartFile cert, Boolean isGitOps);
 
+    C7nCertification getC7nCertification(String name, String type, List<String> domains,
+                                         String keyContent, String certContent, String envCode);
+
     void deleteById(Long certId, Boolean isGitOps);
 
     Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
@@ -35,4 +39,6 @@ public interface CertificationService {
     List<CertificationDTO> getActiveByDomain(Long envId, String domain);
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
+
+    Long createCertCommandE(String type, Long certId);
 }
