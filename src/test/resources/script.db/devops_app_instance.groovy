@@ -26,4 +26,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_instance.groovy') {
             column(name: "status")
         }
     }
+
+
+    changeSet(author: 'younger', id: '2018-09-10-add-column')
+            {
+                addColumn(tableName: 'devops_app_instance') {
+                    column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
+                }
+            }
+
 }
