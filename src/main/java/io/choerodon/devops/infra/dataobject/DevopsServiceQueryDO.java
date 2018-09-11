@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.List;
 import javax.persistence.Transient;
+import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -24,6 +24,13 @@ public class DevopsServiceQueryDO {
 
     @Transient
     private Long appProjectId;
+    @Transient
+    private String commandType;
+    @Transient
+    private String commandStatus;
+    @Transient
+    private String error;
+
 
     public Long getId() {
         return id;
@@ -135,5 +142,29 @@ public class DevopsServiceQueryDO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

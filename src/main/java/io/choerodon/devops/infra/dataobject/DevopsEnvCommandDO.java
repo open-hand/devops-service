@@ -15,7 +15,6 @@ public class DevopsEnvCommandDO {
     @Id
     @GeneratedValue
     private Long id;
-    private Long envId;
     private String object;
     private Long objectId;
     private Long valueId;
@@ -96,13 +95,5 @@ public class DevopsEnvCommandDO {
 
     public void setSha(String sha) {
         this.sha = sha;
-    }
-
-    public Long getEnvId() {
-        return envId;
-    }
-
-    public void setEnvId(Long envId) {
-        this.envId = envId;
     }
 }

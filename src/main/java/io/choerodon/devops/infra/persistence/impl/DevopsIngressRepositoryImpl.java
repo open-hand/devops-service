@@ -147,6 +147,9 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),
                             t.getEnvId(), t.getUsable(), t.getEnvName());
             devopsIngressDTO.setStatus(t.getStatus());
+            devopsIngressDTO.setCommandStatus(t.getCommandStatus());
+            devopsIngressDTO.setCommandType(t.getCommandType());
+            devopsIngressDTO.setError(t.getError());
             setIngressDTOCert(t.getCertId(), devopsIngressDTO);
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
