@@ -107,8 +107,7 @@ public class CertificationServiceImpl implements CertificationService {
         Long certId = certificationE.getId();
 
         // cert command
-        DevopsEnvCommandE devopsEnvCommandE = initCertCommandE(CommandType.CREATE.getType(), certId);
-        certificationE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId));
         certificationRepository.updateCommandId(certificationE);
 
         // store crt & key if type is upload
@@ -210,8 +209,7 @@ public class CertificationServiceImpl implements CertificationService {
                         devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
             }
         }
-        DevopsEnvCommandE devopsEnvCommandE = initCertCommandE(CommandType.DELETE.getType(), certId);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        createCertCommandE(CommandType.DELETE.getType(), certId);
         certificationRepository.deleteById(certId);
     }
 
@@ -233,13 +231,14 @@ public class CertificationServiceImpl implements CertificationService {
         return certificationRepository.checkCertNameUniqueInEnv(envId, certName);
     }
 
-    private DevopsEnvCommandE initCertCommandE(String type, Long certId) {
+    @Override
+    public Long createCertCommandE(String type, Long certId) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         devopsEnvCommandE.setCommandType(type);
         devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         devopsEnvCommandE.setObjectId(certId);
-        return devopsEnvCommandE;
+        return devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
     }
 
 }

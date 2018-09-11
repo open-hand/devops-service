@@ -39,4 +39,6 @@ public interface CertificationService {
     List<CertificationDTO> getActiveByDomain(Long envId, String domain);
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
+
+    Long createCertCommandE(String type, Long certId);
 }
