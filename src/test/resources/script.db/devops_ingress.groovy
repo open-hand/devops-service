@@ -31,4 +31,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_ingress.groovy') {
             column(name: 'cert_id', type: 'BIGINT UNSIGNED', remarks: '证书ID', afterColumn: 'env_id')
         }
     }
+
+
+    changeSet(author: 'younger', id: '2018-09-10-add-column')
+            {
+                addColumn(tableName: 'devops_ingress') {
+                    column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
+                }
+            }
 }
