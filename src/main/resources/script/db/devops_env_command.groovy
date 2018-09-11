@@ -19,4 +19,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'younger', id: '2018-09-10-add-column')
+            {
+                addColumn(tableName: 'devops_env_command') {
+                    column(name: 'sha', type: 'VARCHAR(128)', remarks: 'commit sha', afterColumn: 'status')
+                    column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: 'env id', afterColumn: 'id')
+                }
+            }
 }

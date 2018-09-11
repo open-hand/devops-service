@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.models.V1Service;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,17 +18,20 @@ import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CommandStatus;
+import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.GitOpsObjectError;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
 
 @Service
 public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRelationsService<V1Service> {
 
     public static final String SERVICE = "Service";
+    private static final String GIT_SUFFIX = "/.git";
 
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
@@ -39,6 +43,10 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1Service> v1Services, Long envId, Long projectId, String path) {
@@ -64,23 +72,30 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             }
         });
         //新增service
-        addService(objectPath, envId, projectId, addV1Service);
+        addService(objectPath, envId, projectId, addV1Service, path);
         //更新service
-        updateService(objectPath, envId, projectId, updateV1Service);
+        updateService(objectPath, envId, projectId, updateV1Service, path);
         //删除service,和文件对象关联关系
         beforeService.stream().forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
+            if (devopsServiceE != null) {
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+                devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                devopsEnvCommandRepository.create(devopsEnvCommandE);
+            }
             devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE);
         });
     }
 
 
-    private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service) {
+    private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service, String path) {
         updateV1Service.stream()
                 .forEach(v1Service -> {
                     String filePath = "";
-
                     try {
                         filePath = objectPath.get(TypeUtil.objToString(v1Service.hashCode()));
 
@@ -91,6 +106,16 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
                                 v1Service,
                                 envId);
+                        Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqDTO);
+                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                        if (!isNotChange) {
+                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceE.getId(), devopsServiceReqDTO);
+                            DevopsServiceE newDevopsServiceE = devopsServiceRepository
+                                    .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+                            devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
+                        }
+                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandRepository.update(devopsEnvCommandE);
                         devopsServiceService.updateDevopsServiceByGitOps(
                                 projectId, devopsServiceE.getId(), devopsServiceReqDTO);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -105,7 +130,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 });
     }
 
-    private void addService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> addV1Service) {
+    private void addService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> addV1Service, String path) {
         addV1Service.stream()
                 .forEach(v1Service -> {
                     String filePath = "";
@@ -125,6 +150,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                             devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                                     devopsServiceReqDTO.getName(), envId);
                         }
+                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
                         devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
                         devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1Service.hashCode())));
@@ -203,5 +231,32 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         }
     }
 
+    private Boolean checkIsNotChange(DevopsServiceE devopsServiceE, DevopsServiceReqDTO devopsServiceReqDTO) {
+        List<PortMapE> oldPort = devopsServiceE.getPorts();
+        if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
+            //查询网络对应的实例
+            List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
+                    devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+            Boolean isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
+                    .sorted().collect(Collectors.toList())
+                    .equals(devopsServiceInstanceEList.stream()
+                            .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
+                            .collect(Collectors.toList()));
 
+            if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+                    .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
+                    && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Boolean isUpdateExternalIp(DevopsServiceReqDTO devopsServiceReqDTO, DevopsServiceE devopsServiceE) {
+        return !((StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
+                && StringUtils.isEmpty(devopsServiceE.getExternalIp()))
+                || (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
+                && !StringUtils.isEmpty(devopsServiceE.getExternalIp())
+                && devopsServiceReqDTO.getExternalIp().equals(devopsServiceE.getExternalIp())));
+    }
 }

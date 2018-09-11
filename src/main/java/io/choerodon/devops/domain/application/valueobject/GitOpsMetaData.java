@@ -6,6 +6,7 @@ public class GitOpsMetaData {
     private String commit;
     private List<Error> errors;
     private List<FileCommit> filesCommit;
+    private List<ResourceCommit> resourceCommits;
 
     public String getCommit() {
         return commit;
@@ -29,5 +30,13 @@ public class GitOpsMetaData {
 
     public void setFilesCommit(List<FileCommit> filesCommit) {
         this.filesCommit = filesCommit;
+    }
+
+    public List<ResourceCommit> getResourceCommits() {
+        return resourceCommits;
+    }
+
+    public void setResourceCommits(List<ResourceCommit> resourceCommits) {
+        this.resourceCommits = resourceCommits;
     }
 }

@@ -15,12 +15,14 @@ public class DevopsEnvCommandDO {
     @Id
     @GeneratedValue
     private Long id;
+    private Long envId;
     private String object;
     private Long objectId;
     private Long valueId;
     private String commandType;
     private String status;
     private String error;
+    private String sha;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -85,5 +87,22 @@ public class DevopsEnvCommandDO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+
+    public String getSha() {
+        return sha;
+    }
+
+    public void setSha(String sha) {
+        this.sha = sha;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

@@ -22,6 +22,7 @@ public class CertificationDO {
     private String name;
     private Long envId;
     private String domains;
+    private Long commandId;
     private String status;
 
     public CertificationDO() {
@@ -41,11 +42,12 @@ public class CertificationDO {
         this.domains = domains;
         this.status = status;
     }
+
     /**
      * Certification constructor
      *
-     * @param name    Certification's name
-     * @param envId   Certification's enviroment ID
+     * @param name  Certification's name
+     * @param envId Certification's enviroment ID
      */
     public CertificationDO(String name, Long envId) {
         this.name = name;
@@ -90,5 +92,13 @@ public class CertificationDO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

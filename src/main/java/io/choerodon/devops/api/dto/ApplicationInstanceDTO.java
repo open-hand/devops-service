@@ -18,6 +18,7 @@ public class ApplicationInstanceDTO {
     private String envCode;
     private String envName;
     private String status;
+    private Long commandId;
     private Long podCount;
     private Long podRunningCount;
     private String commandStatus;
@@ -193,5 +194,13 @@ public class ApplicationInstanceDTO {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

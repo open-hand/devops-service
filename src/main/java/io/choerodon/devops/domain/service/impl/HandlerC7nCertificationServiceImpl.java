@@ -37,6 +37,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nCertification> c7nCertifications, Long envId, Long projectId, String path) {
+        //todo command操作
         beforeSync.parallelStream().filter(devopsEnvFileResourceE ->
                 devopsEnvFileResourceE.getResourceType().equals(CERTIFICATE))
                 .map(devopsEnvFileResourceE -> {

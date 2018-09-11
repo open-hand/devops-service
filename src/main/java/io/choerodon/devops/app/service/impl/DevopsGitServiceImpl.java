@@ -430,12 +430,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), filePath);
                 if (devopsEnvFileE == null) {
                     devopsEnvFileE = new DevopsEnvFileE();
-                    devopsEnvFileE.setDevopsCommit(getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                    devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                     devopsEnvFileE.setFilePath(filePath);
                     devopsEnvFileE.setEnvId(devopsEnvCommitE.getEnvId());
                     devopsEnvFileRepository.create(devopsEnvFileE);
                 } else {
-                    devopsEnvFileE.setDevopsCommit(getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                    devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                     devopsEnvFileRepository.update(devopsEnvFileE);
                 }
             }
@@ -668,21 +668,16 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    public String getFileLatestCommit(String path, String filePath) {
-        String[] fileName = filePath.split("/");
-        return GitUtil.getLog(path, fileName[fileName.length - 1]);
-    }
-
     public DevopsEnvFileErrorE getDevopsFileError(Long envId, String filePath, String path) {
         DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository.queryByEnvIdAndFilePath(envId, filePath);
         if (devopsEnvFileErrorE == null) {
             devopsEnvFileErrorE = new DevopsEnvFileErrorE();
             devopsEnvFileErrorE.setFilePath(filePath);
             devopsEnvFileErrorE.setEnvId(envId);
-            devopsEnvFileErrorE.setCommit(getFileLatestCommit(path + GIT_SUFFIX, filePath));
+            devopsEnvFileErrorE.setCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
         } else {
             devopsEnvFileErrorE.setFilePath(filePath);
-            devopsEnvFileErrorE.setCommit(getFileLatestCommit(path + GIT_SUFFIX, filePath));
+            devopsEnvFileErrorE.setCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
         }
         return devopsEnvFileErrorE;
     }

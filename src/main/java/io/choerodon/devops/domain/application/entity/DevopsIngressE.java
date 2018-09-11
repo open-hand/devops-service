@@ -13,6 +13,7 @@ public class DevopsIngressE {
     private Long certId;
     private String certName;
     private String certStatus;
+    private Long commandId;
 
     public DevopsIngressE() {
     }
@@ -107,5 +108,13 @@ public class DevopsIngressE {
 
     public void setCertStatus(String certStatus) {
         this.certStatus = certStatus;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

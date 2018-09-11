@@ -36,6 +36,7 @@ public class GitUtil {
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPONAME = "devops-service-repo";
+    private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
     private ResourceLoader resourceLoader = new DefaultResourceLoader();
     private String classPath;
@@ -85,6 +86,11 @@ public class GitUtil {
         return latestCommit;
     }
 
+    public static String getFileLatestCommit(String path, String filePath) {
+        String[] fileName = filePath.split("/");
+        return GitUtil.getLog(path, fileName[fileName.length - 1]);
+    }
+
     public void cloneBySsh(String path, String url) {
         SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
             @Override
@@ -111,7 +117,7 @@ public class GitUtil {
             cloneCommand.setDirectory(new File(path));
             cloneCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException(e.getMessage(),e);
+            throw new CommonException(e.getMessage(), e);
         }
     }
 
@@ -159,7 +165,6 @@ public class GitUtil {
 
         }
     }
-
 
     /**
      * Git克隆
@@ -253,13 +258,11 @@ public class GitUtil {
         }
     }
 
-    public String getSshKey()
-    {
+    public String getSshKey() {
         return sshKey;
     }
 
-    public void setSshKey(String sshKey)
-    {
+    public void setSshKey(String sshKey) {
         this.sshKey = sshKey;
     }
 

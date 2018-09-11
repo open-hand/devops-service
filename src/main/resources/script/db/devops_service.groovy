@@ -66,4 +66,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
         addUniqueConstraint(tableName: 'devops_service',
                 constraintName: 'devops_service_uk_namespace_name', columnNames: 'namespace,name')
     }
+
+
+    changeSet(author: 'younger', id: '2018-09-10-add-column')
+            {
+                addColumn(tableName: 'devops_service') {
+                    column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
+                }
+            }
 }

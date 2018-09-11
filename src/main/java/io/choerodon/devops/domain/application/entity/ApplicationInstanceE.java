@@ -20,7 +20,7 @@ public class ApplicationInstanceE {
     private DevopsEnvironmentE devopsEnvironmentE;
     private Long objectVersionNumber;
     private String status;
-
+    private Long commandId;
     private Long podCount;
     private Long podRunningCount;
     private String commandStatus;
@@ -194,5 +194,13 @@ public class ApplicationInstanceE {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

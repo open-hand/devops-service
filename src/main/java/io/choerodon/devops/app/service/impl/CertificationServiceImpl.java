@@ -24,9 +24,7 @@ import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
-import io.choerodon.devops.infra.common.util.enums.CertificationType;
-import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -64,6 +62,8 @@ public class CertificationServiceImpl implements CertificationService {
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
 
     @Override
@@ -77,6 +77,7 @@ public class CertificationServiceImpl implements CertificationService {
         devopsCertificationValidator.checkCertification(envId, certName);
         // agent certification
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CommandType.CREATE.getType());
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
@@ -91,7 +92,9 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.setType(c7nCertification);
             operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
         }
-        certificationRepository.create(certificationE);
+        devopsEnvCommandE.setObjectId(certificationRepository.create(certificationE).getId());
+        certificationE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        certificationRepository.updateCommandId(certificationE);
     }
 
     private C7nCertification getC7nCertification(Long projectId, String name, String type, List<String> domains,
@@ -176,6 +179,9 @@ public class CertificationServiceImpl implements CertificationService {
                         devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
             }
         }
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CommandType.DELETE.getType());
+        devopsEnvCommandE.setObjectId(certId);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
         certificationRepository.deleteById(certId);
     }
 
@@ -193,4 +199,13 @@ public class CertificationServiceImpl implements CertificationService {
     public Boolean checkCertNameUniqueInEnv(Long envId, String certName) {
         return certificationRepository.checkCertNameUniqueInEnv(envId, certName);
     }
+
+    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        devopsEnvCommandE.setCommandType(type);
+        devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        return devopsEnvCommandE;
+    }
+
 }

@@ -51,6 +51,8 @@ public class FileUtil {
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
     private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
+//    private static final String EXEC_PATH = "/home/zzy/file/java/devops-service/dist/values_yaml/values_yaml";
+
 
     private FileUtil() {
     }
@@ -326,8 +328,12 @@ public class FileUtil {
 
     public static List<String> getFilesPath(String filepath) {
         File file = new File(filepath);
-        return getFilesPath(file).parallelStream()
-                .map(t -> t.replaceFirst(filepath + "/", "")).collect(Collectors.toList());
+        List<String> filepaths = getFilesPath(file);
+        if (!filepaths.isEmpty()) {
+            return filepaths.parallelStream()
+                    .map(t -> t.replaceFirst(filepath + "/", "")).collect(Collectors.toList());
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -444,7 +450,7 @@ public class FileUtil {
                     stdInput.close();
                 }
             } catch (IOException e) {
-                logger.info(e.getMessage(),e);
+                logger.info(e.getMessage(), e);
             }
         }
         return replaceResult;

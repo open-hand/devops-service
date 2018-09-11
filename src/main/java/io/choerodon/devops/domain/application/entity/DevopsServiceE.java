@@ -18,6 +18,7 @@ public class DevopsServiceE {
     private String type;
     private String labels;
     private String annotations;
+    private Long commandId;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -114,5 +115,13 @@ public class DevopsServiceE {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

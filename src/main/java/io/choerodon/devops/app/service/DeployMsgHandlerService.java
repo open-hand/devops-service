@@ -60,4 +60,6 @@ public interface DeployMsgHandlerService {
     void gitOpsSyncEvent(Long envId, String msg);
 
     ApplicationE getApplication(String appName, Long projectId, Long orgId);
+
+    void gitOpsCommandSyncEvent(Long envId, String msg);
 }

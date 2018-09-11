@@ -12,6 +12,7 @@ public class DevopsEnvFileErrorE {
     private String error;
     private String commitUrl;
     private Date errorTime;
+    private String resource;
 
     public Long getId() {
         return id;
@@ -75,5 +76,13 @@ public class DevopsEnvFileErrorE {
 
     public void setCommitUrl(String commitUrl) {
         this.commitUrl = commitUrl;
+    }
+
+    public String getResource() {
+        return resource;
+    }
+
+    public void setResource(String resource) {
+        this.resource = resource;
     }
 }

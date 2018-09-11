@@ -24,6 +24,7 @@ public class ApplicationInstanceDO extends AuditDomain {
     private Long appId;
     private Long appVersionId;
     private Long envId;
+    private Long commandId;
     private String status;
 
     @Transient
@@ -203,5 +204,13 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

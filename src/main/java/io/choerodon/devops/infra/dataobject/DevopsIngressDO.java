@@ -7,8 +7,6 @@ import javax.persistence.Transient;
 import java.util.List;
 import java.util.Objects;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
@@ -28,6 +26,7 @@ public class DevopsIngressDO extends AuditDomain {
     private Long id;
     private Long projectId;
     private Long envId;
+    private Long commandId;
     private String name;
     private String domain;
     private Boolean isUsable;
@@ -40,7 +39,6 @@ public class DevopsIngressDO extends AuditDomain {
     private String namespace;
     @Transient
     private List<DevopsIngressPathDO> devopsIngressPathDOS;
-
 
 
     public DevopsIngressDO() {
@@ -174,6 +172,14 @@ public class DevopsIngressDO extends AuditDomain {
 
     public void setDevopsIngressPathDOS(List<DevopsIngressPathDO> devopsIngressPathDOS) {
         this.devopsIngressPathDOS = devopsIngressPathDOS;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 
     @Override
