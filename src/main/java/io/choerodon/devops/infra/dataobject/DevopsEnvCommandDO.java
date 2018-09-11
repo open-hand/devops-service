@@ -4,6 +4,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import java.util.Date;
+
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
 
@@ -23,6 +25,7 @@ public class DevopsEnvCommandDO {
     private String error;
     private String sha;
     private Long objectVersionNumber;
+    private Date lastUpdateDate;
 
     public Long getId() {
         return id;
@@ -95,5 +98,13 @@ public class DevopsEnvCommandDO {
 
     public void setSha(String sha) {
         this.sha = sha;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 }

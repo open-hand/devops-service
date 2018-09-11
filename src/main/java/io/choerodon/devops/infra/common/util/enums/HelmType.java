@@ -45,7 +45,8 @@ public enum HelmType {
     JOB_EVENT("job_event"),
     RELEASE_POD_EVENT("release_pod_event"),
     GIT_OPS_SYNC_EVENT("git_ops_sync_event"),
-    GIT_OPS_COMMAND_SYNC_EVENT("git_ops_command_sync_event");
+    GIT_OPS_COMMAND_SYNC_EVENT("git_ops_command_sync_event"),
+    GIT_OPS_COMMAND_SYNC_EVENT_RESULT("git_ops_command_sync_event_result");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
 
@@ -150,6 +151,8 @@ public enum HelmType {
                 return HelmType.GIT_OPS_SYNC_EVENT;
             case "git_ops_command_sync_event":
                 return HelmType.GIT_OPS_COMMAND_SYNC_EVENT;
+            case "git_ops_command_sync_event_result":
+                return HelmType.GIT_OPS_COMMAND_SYNC_EVENT_RESULT;
             default:
                 break;
         }

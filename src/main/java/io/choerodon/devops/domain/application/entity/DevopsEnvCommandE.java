@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +17,7 @@ public class DevopsEnvCommandE {
     private String error;
     private String sha;
     private DevopsEnvCommandValueE devopsEnvCommandValueE;
-
+    private Date lastUpdateDate;
 
     public DevopsEnvCommandE() {
     }
@@ -89,4 +91,11 @@ public class DevopsEnvCommandE {
         this.sha = sha;
     }
 
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
 }
