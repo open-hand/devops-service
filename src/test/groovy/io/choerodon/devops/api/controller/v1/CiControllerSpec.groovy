@@ -61,7 +61,7 @@ class CiControllerSpec extends Specification {
         applicationRepository.create(applicationE)
 
         when:
-        String str = restTemplate.getForObject("/ci?token=token", String.class)
+        restTemplate.getForObject("/ci?token=token", String.class)
 
         then:
         iamRepository.queryIamProject(_ as Long) >> projectE
@@ -98,9 +98,9 @@ class CiControllerSpec extends Specification {
         applicationVersionRepository.create(applicationVersionE)
         applicationVersionRepository.create(applicationVersionE1)
 
-        FileSystemResource resource = new FileSystemResource(new File("test/resources/key.tar.gz"));
-        MultiValueMap<String, Object> file = new LinkedMultiValueMap<>();
-        file.add("file", resource);
+        FileSystemResource resource = new FileSystemResource(new File("src/test/resources/key.tar.gz"))
+        MultiValueMap<String, Object> file = new LinkedMultiValueMap<>()
+        file.add("file", resource)
 
         when:
         restTemplate.postForObject("/ci?image=iamge&token=token&version=version&commit=commit", file, String.class)

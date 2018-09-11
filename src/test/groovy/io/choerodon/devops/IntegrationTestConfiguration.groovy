@@ -6,7 +6,6 @@ import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
-import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import io.choerodon.websocket.helper.EnvListener

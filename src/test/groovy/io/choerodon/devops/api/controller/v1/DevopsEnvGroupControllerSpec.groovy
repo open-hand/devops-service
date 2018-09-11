@@ -2,7 +2,6 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsEnvGroupDTO
-import io.choerodon.devops.domain.application.entity.DevopsEnvGroupE
 import io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper
@@ -70,7 +69,6 @@ class DevopsEnvGroupControllerSpec extends Specification {
 
     def "Update"() {
         given:
-
         DevopsEnvGroupDTO devopsEnvGroupDTO = new DevopsEnvGroupDTO()
         devopsEnvGroupDTO.setId(1L)
         devopsEnvGroupDTO.setName("name")

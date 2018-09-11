@@ -6,15 +6,22 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO
-import io.choerodon.devops.app.service.*
+import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO
+import io.choerodon.devops.app.service.ApplicationTemplateService
+import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.repository.UserAttrRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.infra.common.util.enums.Visibility
+import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.mapper.ApplicationTemplateMapper
+import io.choerodon.devops.infra.persistence.impl.ApplicationTemplateRepositoryImpl
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,239 +29,176 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
-import spock.lang.Shared
+import org.springframework.http.*
 import spock.lang.Specification
 import spock.lang.Stepwise
-import spock.mock.DetachedMockFactory
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
+/**
+ * Created by n!Ck
+ * Date: 2018/9/11
+ * Time: 10:30
+ * Description: 
+ */
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
 @Stepwise
 class ApplicationTemplateControllerSpec extends Specification {
 
-    private final detachedMockFactory = new DetachedMockFactory()
-
     @Autowired
     TestRestTemplate restTemplate
-
-    @Shared
-    private static final String TEMPLATE = "template"
-    @Shared
-    private static final String MASTER = "master"
-    @Shared
-    private String applicationName
-    @Shared
-    private String gitlabUrl
-
     @Autowired
     private DevopsGitService devopsGitService
-
     @Autowired
-    private UserAttrRepository userAttrRepository
-
+    private ApplicationTemplateMapper applicationTemplateMapper
     @Autowired
     private ApplicationTemplateService applicationTemplateService
-
-    SagaClient sagaClient = Mockito.mock(SagaClient.class)
-    ApplicationInstanceService applicationInstanceService = Mockito.mock(ApplicationInstanceService.class)
-    DevopsServiceService devopsServiceService = Mockito.mock(DevopsServiceService.class)
-    DevopsIngressService devopsIngressService = Mockito.mock(DevopsIngressService.class)
+    @Autowired
+    private ApplicationTemplateRepositoryImpl applicationTemplateRepository
 
     @Autowired
     @Qualifier("mockIamRepository")
     private IamRepository iamRepository
-
     @Autowired
     @Qualifier("mockGitlabRepository")
     private GitlabRepository gitlabRepository
-
     @Autowired
-    @Qualifier("mockApplicationTemplateRepository")
-    private ApplicationTemplateRepository applicationTemplateRepository
+    @Qualifier("mockUserAttrRepository")
+    private UserAttrRepository userAttrRepository
+
+    SagaClient sagaClient = Mockito.mock(SagaClient.class)
+    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     def "Create"() {
         given:
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
-        applicationTemplateDTO.setCode("test")
-        applicationTemplateDTO.setName("test")
-        applicationTemplateDTO.setDescription("test")
+        applicationTemplateDTO.setCode("code")
+        applicationTemplateDTO.setName("app")
+        applicationTemplateDTO.setDescription("des")
         applicationTemplateDTO.setOrganizationId(1L)
 
         Organization organization = new Organization()
         organization.setId(1L)
-        organization.setCode("test")
+        organization.setCode("org")
+
+        OrganizationDO organizationDO = new OrganizationDO()
+        organizationDO.setCode("orgDO")
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
+        gitlabGroupE.setName("org_template")
+        gitlabGroupE.setPath("org_template")
+        gitlabGroupE.setGitlabGroupId(1)
+        gitlabGroupE.setVisibility(Visibility.PUBLIC)
 
         UserAttrE userAttrE = new UserAttrE()
+        userAttrE.setId(1L)
         userAttrE.setGitlabUserId(1L)
-        userAttrRepository.insert(userAttrE)
 
-        devopsGitService.initMockService(sagaClient, applicationInstanceService, devopsServiceService, devopsIngressService)
+        // mock SagaClient
+        applicationTemplateService.initMockService(sagaClient)
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(null, null)
 
+        // mock FeignClient
+        applicationTemplateRepository.initMockService(iamServiceClient)
+        Mockito.doReturn(new ResponseEntity<OrganizationDO>(organizationDO, HttpStatus.OK)).when(iamServiceClient).queryOrganizationById(1)
+
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE()
+        applicationTemplateE.setOrganization(organization)
 
         when:
-        def entity = restTemplate.postForEntity('/v1/organizations/{organization_id}/app_templates', applicationTemplateDTO, ApplicationTemplateRepDTO, 1L)
+        def dto = restTemplate.postForEntity("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateRepDTO.class)
 
         then:
-        1 * userAttrRepository.queryById(_) >> userAttrE
-        1 * iamRepository.queryOrganizationById(_) >> organization
-        1 * gitlabRepository.queryGroupByName(_, _) >> null
-        1 * gitlabRepository.createGroup(_, _) >> gitlabGroupE
-        1 * applicationTemplateRepository.create(_) >> applicationTemplateE
+        userAttrRepository.queryById(_ as Long) >> userAttrE
+        iamRepository.queryOrganizationById(_ as Long) >> organization
+        gitlabRepository.queryGroupByName(_ as String, _ as Integer) >> null
+        gitlabRepository.createGroup(_ as GitlabGroupE, _ as Integer) >> gitlabGroupE
+        dto != null
     }
 
     def "Update"() {
         given:
-        ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
-        applicationTemplateDTO.setCode("test")
-        applicationTemplateDTO.setName("test")
-        applicationTemplateDTO.setDescription("test")
-        applicationTemplateDTO.setOrganizationId(1L)
+        ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO = new ApplicationTemplateUpdateDTO()
+        applicationTemplateUpdateDTO.setId(1L)
 
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE();
-        applicationTemplateE.setName("test")
-        applicationTemplateE.setCode("test")
-        applicationTemplateE.setDescription("test")
-
-        Organization organization = new Organization();
-        organization.setId(1L)
-        applicationTemplateE.setOrganization(organization)
-        applicationTemplateRepository.create(applicationTemplateE)
+        ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
+        applicationTemplateDO.setObjectVersionNumber(1L)
+        applicationTemplateMapper.insert(applicationTemplateDO)
 
         when:
-        def entity = restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateDTO, 1)
+        restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateUpdateDTO, ApplicationTemplateRepDTO.class)
 
         then:
-        1 * applicationTemplateRepository.update(_) >> applicationTemplateE
+        true
     }
 
     def "Delete"() {
         given:
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE();
-        applicationTemplateE.setName("test")
-        applicationTemplateE.setCode("test")
-        applicationTemplateE.setDescription("test")
-        applicationTemplateE.initGitlabProjectE(1)
-
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setGitlabUserId(1L)
         userAttrE.setId(1L)
 
         when:
-        def entity = restTemplate.delete("/v1/organizations/1/app_templates/1")
+        restTemplate.delete("/v1/organizations/1/app_templates/1")
 
         then:
-        1 * gitlabRepository.deleteProject(_, _) >> null
-        1 * applicationTemplateRepository.delete(_) >> null
-        1 * applicationTemplateRepository.query(_) >> applicationTemplateE
-        1 * userAttrRepository.queryById(_) >> userAttrE
+        userAttrRepository.queryById(_ as Long) >> userAttrE
+        gitlabRepository.deleteProject(_ as Integer, _ as Integer) >> null
     }
 
     def "QueryByAppTemplateId"() {
         given:
-        Organization organization = new Organization();
-        organization.setId(1L)
-
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE();
-        applicationTemplateE.setName("test")
-        applicationTemplateE.setCode("test")
-        applicationTemplateE.setDescription("test")
-        applicationTemplateE.initGitlabProjectE(1)
-        applicationTemplateE.setRepoUrl("/test/test")
-        applicationTemplateE.setOrganization(organization)
+        ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
+        applicationTemplateDO.setOrganizationId(1L)
+        applicationTemplateDO.setRepoUrl("/test/repoUrl/")
+        applicationTemplateMapper.insert(applicationTemplateDO)
 
         when:
-        def entity = restTemplate.getForObject("/v1/organizations/1/app_templates/1", Object.class)
+        def dto = restTemplate.getForObject("/v1/organizations/1/app_templates/4", ApplicationTemplateRepDTO.class)
 
         then:
-        1 * applicationTemplateRepository.query(_) >> applicationTemplateE
+        dto != null
     }
 
     def "ListByOptions"() {
         given:
-        String infra = "{\"name\":\"testlist\"}";
-        PageRequest pageRequest = new PageRequest(0, 20)
+        String infra = null
+        PageRequest pageRequest = new PageRequest(1, 20)
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.valueOf("application/json;UTF-8"));
-        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers);
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
+        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
 
-        Organization organization = new Organization();
-        organization.setId(1L)
-
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE()
-        applicationTemplateE.setId(1L)
-        applicationTemplateE.setName("testlist")
-        applicationTemplateE.setRepoUrl("/test/test")
-        applicationTemplateE.setOrganization(organization)
-        ApplicationTemplateE applicationTemplateE1 = new ApplicationTemplateE()
-        applicationTemplateE1.setId(2L)
-        applicationTemplateE1.setName("testlist")
-        applicationTemplateE1.setRepoUrl("/test/test")
-        applicationTemplateE1.setOrganization(organization)
-        applicationTemplateRepository.create(applicationTemplateE)
-        applicationTemplateRepository.create(applicationTemplateE1)
-
-        List<ApplicationTemplateE> applicationTemplateEList = new ArrayList<>()
-        applicationTemplateEList.add(applicationTemplateE)
-        applicationTemplateEList.add(applicationTemplateE1)
-
-        Page<ApplicationTemplateE> applicationTemplateEPage = new Page<>()
-        applicationTemplateEPage.setContent(applicationTemplateEList)
         when:
-        def entity = restTemplate.postForObject("/v1/organizations/1/app_templates/list_by_options", strEntity, String.class)
+        def page = restTemplate.postForObject("/v1/organizations/1/app_templates/list_by_options", strEntity, Page.class)
+
         then:
-        1 * applicationTemplateRepository.listByOptions(_, _, _) >> applicationTemplateEPage
-        applicationTemplateRepository.create(_) >> applicationTemplateE
-        applicationTemplateRepository.create(_) >> applicationTemplateE1
+        !page.isEmpty()
     }
 
     def "ListByOrgId"() {
-
-        Organization organization = new Organization()
-        organization.setId(1L)
-
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE()
-        applicationTemplateE.setId(1L)
-        applicationTemplateE.setName("test")
-        applicationTemplateE.setRepoUrl("/test/test")
-        applicationTemplateE.setOrganization(organization)
-        ApplicationTemplateE applicationTemplateE1 = new ApplicationTemplateE()
-        applicationTemplateE1.setId(2L)
-        applicationTemplateE1.setName("test")
-        applicationTemplateE1.setRepoUrl("/test/test")
-        applicationTemplateE1.setOrganization(organization)
-
-        List<ApplicationTemplateE> applicationTemplateEList = new ArrayList<>()
-        applicationTemplateEList.add(applicationTemplateE)
-        applicationTemplateEList.add(applicationTemplateE1)
-
         when:
-        def entity = restTemplate.getForObject("/v1/organizations/1/app_templates", Object.class)
+        def list = restTemplate.getForObject("/v1/organizations/1/app_templates", List.class)
 
         then:
-        1 * applicationTemplateRepository.list(_) >> applicationTemplateEList
+        !list.isEmpty()
     }
 
     def "CheckName"() {
         when:
-        def entity = restTemplate.getForObject("/v1/organizations/1/app_templates/checkName?name=test", Object.class)
+        restTemplate.getForObject("/v1/organizations/1/app_templates/checkName?name=test", Object.class)
+
         then:
-        applicationTemplateService.checkName(_, _) >> null
+        true
     }
 
     def "CheckCode"() {
         when:
-        def entity = restTemplate.getForObject("/v1/organizations/1/app_templates/checkCode?code=test", Object.class)
+        restTemplate.getForObject("/v1/organizations/1/app_templates/checkCode?code=test", Object.class)
+
         then:
-        applicationTemplateService.checkCode(_, _) >> null
+        true
     }
 }

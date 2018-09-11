@@ -8,15 +8,15 @@ import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO
 import io.choerodon.devops.api.dto.EnvSyncStatusDTO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommitE
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
-import io.choerodon.devops.domain.application.entity.DevopsServiceE
-import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.domain.application.entity.*
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO
+import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO
+import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
 import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -41,12 +41,16 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Stepwise
 class DevopsEnvironmentControllerSpec extends Specification {
 
-    private static boolean initFlag = true
+    private static flag = 0
 
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
     private DevopsGitService devopsGitService
+    @Autowired
+    private DevopsEnvGroupMapper devopsEnvGroupMapper
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
     private DevopsServiceRepository devopsServiceRepository
     @Autowired
@@ -71,18 +75,18 @@ class DevopsEnvironmentControllerSpec extends Specification {
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
 
     def setup() {
-        if (initFlag) {
-            initFlag = false
+        if (flag == 0) {
             Organization organization = initOrg(1L, "testOrganization")
             ProjectE projectE = initProj(1L, "testProject", organization)
 
-            DevopsEnvironmentE devopsEnvironmentE = initEnv(
-                    "testName", "testCode", projectE, true, 1L, "testToken")
-            DevopsEnvironmentE devopsEnvironmentE1 = initEnv(
-                    "testName1", "testCode1", projectE, true, 2L, "testToken1")
+            DevopsEnvironmentDO devopsEnvironmentDO = initEnv(
+                    "testNameEnv", "testCodeEnv", projectE, true, 1L, "testToken")
+            DevopsEnvironmentDO devopsEnvironmentDO1 = initEnv(
+                    "testNameEnv1", "testCodeEnv1", projectE, true, 2L, "testToken1")
 
-            devopsEnvironmentRepository.create(devopsEnvironmentE)
-            devopsEnvironmentRepository.create(devopsEnvironmentE1)
+            devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+            devopsEnvironmentMapper.insert(devopsEnvironmentDO1)
+            flag = 1
         }
     }
 
@@ -162,6 +166,28 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
     }
 
+    def "ListByProjectIdAndActiveWithGroup"() {
+        given:
+        List<Long> envList = new ArrayList<>()
+        envList.add(1L)
+        envList.add(2L)
+
+        DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO()
+        devopsEnvGroupDO.setProjectId(1L)
+        DevopsEnvGroupDO devopsEnvGroupDO1 = new DevopsEnvGroupDO()
+        devopsEnvGroupDO1.setProjectId(1L)
+        devopsEnvGroupMapper.insert(devopsEnvGroupDO)
+        devopsEnvGroupMapper.insert(devopsEnvGroupDO1)
+
+        when:
+        def list = restTemplate.getForObject("/v1/projects/1/envs/groups?active=true", List.class)
+
+        then:
+        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
+        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+        !list.isEmpty()
+    }
+
     def "QueryShell"() {
         when:
         String shell = restTemplate.getForObject("/v1/projects/1/envs/1/shell", String.class)
@@ -181,7 +207,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         then:
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
-
     }
 
     def "Query"() {
@@ -290,14 +315,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
         projectE
     }
 
-    private static DevopsEnvironmentE initEnv(String testName, String testCode, ProjectE projectE, Boolean active, Long sequence, String testToken) {
-        DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
-        devopsEnvironmentE.setName(testName)
-        devopsEnvironmentE.setCode(testCode)
-        devopsEnvironmentE.setProjectE(projectE)
-        devopsEnvironmentE.setActive(active)
-        devopsEnvironmentE.setSequence(sequence)
-        devopsEnvironmentE.setToken(testToken)
-        devopsEnvironmentE
+    private static DevopsEnvironmentDO initEnv(String name, String code, ProjectE projectE, Boolean active, Long sequence, String token) {
+        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+        devopsEnvironmentDO.setName(name)
+        devopsEnvironmentDO.setCode(code)
+        devopsEnvironmentDO.setProjectId(projectE.getId())
+        devopsEnvironmentDO.setActive(active)
+        devopsEnvironmentDO.setSequence(sequence)
+        devopsEnvironmentDO.setToken(token)
+        devopsEnvironmentDO
     }
 }
