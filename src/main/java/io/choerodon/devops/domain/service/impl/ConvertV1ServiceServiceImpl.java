@@ -62,7 +62,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
             checkV1ServicePorts(v1Service, filePath);
         }
         if (v1Service.getApiVersion() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_APIVERSION_NOT_FOUND.getError(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_API_VERSION_NOT_FOUND.getError(), filePath);
 
         }
     }

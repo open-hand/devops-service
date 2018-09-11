@@ -44,11 +44,11 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                 throw new GitOpsExplainException(GitOpsObjectError.RELEASE_CHART_VERSION_NOT_FOUND.getError(), filePath);
             }
             if (c7nHelmRelease.getSpec().getRepoUrl() == null) {
-                throw new GitOpsExplainException(GitOpsObjectError.RELEASE_REPOURL_NOT_FOUND.getError(), filePath);
+                throw new GitOpsExplainException(GitOpsObjectError.RELEASE_REPO_URL_NOT_FOUND.getError(), filePath);
             }
         }
         if (c7nHelmRelease.getApiVersion() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_APIVERSION_NOT_FOUND.getError(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.RELEASE_API_VERSION_NOT_FOUND.getError(), filePath);
         }
 
     }

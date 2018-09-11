@@ -217,7 +217,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             }
             return instanceE.getId();
         } catch (Exception e) {
-            throw new CommonException(GitOpsObjectError.INSTANCE_RELEATED_SERVICE_NOT_FOUND.getError() + instanceCode);
+            throw new CommonException(GitOpsObjectError.INSTANCE_RELATED_SERVICE_NOT_FOUND.getError() + instanceCode);
         }
 
     }
