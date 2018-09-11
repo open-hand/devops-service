@@ -168,19 +168,19 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                             throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
-                        if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE = createDevopsEnvCommandE("create");
-                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
-                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
-                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
-                            devopsIngressRepository.updateIngress(devopsIngressDO);
-                        }
                         if (!isNotChange) {
                             devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressDTO, projectId);
                             DevopsIngressE newdevopsIngressE = devopsIngressRepository
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newdevopsIngressE.getCommandId());
 
+                        }
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
+                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
+                            devopsIngressRepository.updateIngress(devopsIngressDO);
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);

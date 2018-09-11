@@ -1175,10 +1175,20 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void gitOpsCommandSyncEvent(Long envId, String msg) {
-//        List<DevopsEnvCommandE> devopsEnvCommandES = devopsEnvCommandRepository.listByEnvId(envId).
-//    parallelStream().filter(devopsEnvCommandE ->!devopsEnvCommandE.getStatus().equals(CommandStatus.SUCCESS.getStatus())).collect(Collectors.toList());
-//        devopsEnvCommandES.contains(containerRepository.get(""));
+    public void gitOpsCommandSyncEvent(Long envId) {
+        List<Long> commandIds = new ArrayList<>();
+        commandIds.addAll(applicationInstanceRepository.selectByEnvId(envId).parallelStream().map(ApplicationInstanceE::getCommandId).collect(Collectors.toList()));
+        commandIds.addAll(devopsServiceRepository.selectByEnvId(envId).parallelStream().map(DevopsServiceE::getCommandId).collect(Collectors.toList()));
+        commandIds.addAll(devopsIngressRepository.listByEnvId(envId).parallelStream().map(DevopsIngressE::getCommandId).collect(Collectors.toList()));
+        List<DevopsEnvCommandE> devopsEnvCommandES = new ArrayList<>();
+        Date d = new Date();
+        commandIds.parallelStream().forEach(commandId->{
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
+            if(!CommandStatus.SUCCESS.getStatus().equals(devopsEnvCommandE.getStatus())&&d.getTime()-devopsEnvCommandE.getLastUpdateDate().getTime() > 180) {
+                devopsEnvCommandES.add(devopsEnvCommandE);
+            }
+        });
+
     }
 }
 
