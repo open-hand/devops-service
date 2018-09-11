@@ -6,6 +6,7 @@ import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
+import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import io.choerodon.websocket.helper.EnvListener
@@ -59,25 +60,25 @@ class IntegrationTestConfiguration {
     @Bean("mockUserAttrRepository")
     @Primary
     UserAttrRepository userAttrRepository() {
-        detachedMockFactory.Mock(UserAttrRepository);
+        detachedMockFactory.Mock(UserAttrRepository)
     }
 
     @Bean("mockGitlabGroupMemberRepository")
     @Primary
     GitlabGroupMemberRepository gitlabGroupMemberRepository() {
-        detachedMockFactory.Mock(GitlabGroupMemberRepository);
+        detachedMockFactory.Mock(GitlabGroupMemberRepository)
     }
 
     @Primary
     @Bean("mockEnvUtil")
     EnvUtil envUtil() {
-        detachedMockFactory.Mock(EnvUtil);
+        detachedMockFactory.Mock(EnvUtil)
     }
 
     @Primary
     @Bean("mockEnvListener")
     EnvListener envListener() {
-        detachedMockFactory.Mock(EnvListener);
+        detachedMockFactory.Mock(EnvListener)
     }
 
     @Bean("mockIamRepository")
@@ -86,13 +87,11 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(IamRepository)
     }
 
-
     @Bean("mockGitUtil")
     @Primary
     GitUtil gitUtil() {
         detachedMockFactory.Mock(GitUtil)
     }
-
 
     @Bean("mockDevopsGitRepository")
     @Primary
@@ -100,20 +99,11 @@ class IntegrationTestConfiguration {
         detachedMockFactory.Mock(DevopsGitRepository)
     }
 
-
     @Bean("mockDeployService")
     @Primary
     DeployService deployService() {
         detachedMockFactory.Mock(DeployService)
     }
-
-
-    @Bean("mockApplicationTemplateRepository")
-    @Primary
-    ApplicationTemplateRepository applicationTemplateRepository() {
-        detachedMockFactory.Mock(ApplicationTemplateRepository)
-    }
-
 
     @PostConstruct
     void init() {

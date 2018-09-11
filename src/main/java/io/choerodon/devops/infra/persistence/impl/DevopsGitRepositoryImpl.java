@@ -513,4 +513,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             return a.getName().compareToIgnoreCase(b.getName());
         }
     }
+
+    @Override
+    public List<CommitDO> getCommits(Integer gitLabProjectId, String branchName, String date) {
+        return gitlabServiceClient.getCommits(gitLabProjectId, branchName, date).getBody();
+    }
 }

@@ -83,7 +83,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否启用", required = true)
-            @RequestParam Boolean active) {
+            @RequestParam(value = "active") Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.listByProjectIdAndActive(projectId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.get"));
@@ -146,13 +146,13 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "项目下启用停用环境")
     @PutMapping("/{environmentId}/active")
-    public ResponseEntity<Boolean> queryByEnvIdAndActive(
+    public ResponseEntity<Boolean> enableOrDisableEnv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable Long environmentId,
             @ApiParam(value = "是否启用", required = true)
-            @RequestParam Boolean active) {
+            @RequestParam(value = "active") Boolean active) {
         return Optional.ofNullable(devopsEnvironmentService.activeEnvironment(projectId, environmentId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.active"));
@@ -235,7 +235,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境名", required = true)
-            @RequestParam String name) {
+            @RequestParam(value = "name") String name) {
         devopsEnvironmentService.checkName(projectId, name);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -254,7 +254,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境编码", required = true)
-            @RequestParam String code) {
+            @RequestParam(value = "code") String code) {
         devopsEnvironmentService.checkCode(projectId, code);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

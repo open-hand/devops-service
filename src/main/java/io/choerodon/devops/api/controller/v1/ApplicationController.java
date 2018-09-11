@@ -170,7 +170,7 @@ public class ApplicationController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
-            @RequestParam Long envId,
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
         return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, pageRequest))

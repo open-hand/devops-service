@@ -6,7 +6,7 @@ import io.choerodon.devops.api.dto.DevopsEnvGroupDTO;
 
 public interface DevopsEnvGroupService {
 
-    DevopsEnvGroupDTO create(String devopsEnvGroupDTO, Long projectId);
+    DevopsEnvGroupDTO create(String name, Long projectId);
 
     DevopsEnvGroupDTO update(DevopsEnvGroupDTO devopsEnvGroupDTO, Long projectId);
 

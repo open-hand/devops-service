@@ -74,7 +74,7 @@ public class DevopsEnvGroupController {
 
 
     /**
-     * 项目下更新环境组
+     * 项目下排序环境组
      *
      * @param projectId         项目id
      * @param devopsEnvGroupIds 环境组id序列

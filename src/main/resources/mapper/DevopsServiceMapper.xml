@@ -140,7 +140,7 @@
         FROM
         devops_service
         WHERE
-        `status` = "running";
+        `status` = 'running';
     </select>
 
     <resultMap id="devopsServiceResult" type="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
