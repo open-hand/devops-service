@@ -42,7 +42,8 @@ import io.choerodon.websocket.helper.EnvSession;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
     public static final String C7NHELM_RELEASE = "C7NHelmRelease";
-    public static final String CREATE_TYPE = "create";
+    public static final String CREATE = "create";
+    public static final String UPDATE = "update";
     private static final String RELEASE_NAME = "ReleaseName";
 
     private static Gson gson = new Gson();
@@ -355,12 +356,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE();
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO.getType());
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
         //初始化实例名
         String code = "";
-        if (applicationDeployDTO.getType().equals(CREATE_TYPE)) {
+        if (applicationDeployDTO.getType().equals(CREATE)) {
             code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
         } else {
             code = applicationInstanceE.getCode();
@@ -395,7 +396,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
 
         //实例相关对象数据库操作
-        if (applicationDeployDTO.getType().equals(CREATE_TYPE)) {
+        if (applicationDeployDTO.getType().equals(CREATE)) {
             applicationInstanceE.setCode(code);
             applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
         } else {
@@ -404,7 +405,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
         devopsEnvCommandE.initDevopsEnvCommandValueE(
                 devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        applicationInstanceRepository.update(applicationInstanceE);
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
 
@@ -418,11 +420,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE();
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO.getType());
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
         //实例相关对象数据库操作
-        if (applicationDeployDTO.getType().equals(CREATE_TYPE)) {
+        if (applicationDeployDTO.getType().equals(CREATE)) {
             applicationInstanceE.setCode(applicationDeployDTO.getInstanceName());
             applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
         } else {
@@ -431,7 +433,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
         devopsEnvCommandE.initDevopsEnvCommandValueE(
                 devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        applicationInstanceRepository.update(applicationInstanceE);
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
 
@@ -442,7 +445,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
         applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-        if (applicationDeployDTO.getType().equals("update")) {
+        if (applicationDeployDTO.getType().equals(UPDATE)) {
             ApplicationInstanceE newApplicationInstanceE = applicationInstanceRepository.selectById(
                     applicationDeployDTO.getAppInstanceId());
             applicationInstanceE.setCode(newApplicationInstanceE.getCode());
@@ -451,9 +454,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return applicationInstanceE;
     }
 
-    private DevopsEnvCommandE initDevopsEnvCommandE() {
+    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        devopsEnvCommandE.setCommandType(CommandType.SYNC.getType());
+        if (type.equals(CREATE)) {
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+        } else if (type.equals(UPDATE)) {
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        } else {
+            devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+        }
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         return devopsEnvCommandE;
@@ -572,7 +581,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
+                .query(instanceE.getCommandId());
 
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
@@ -616,7 +625,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //实例相关对象数据库操作
         devopsEnvCommandRepository.create(devopsEnvCommandE);
-        updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+        applicationInstanceRepository.deleteById(instanceId);
     }
 
     @Override
@@ -628,12 +637,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
+                .query(instanceId);
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
         devopsEnvCommandE.setId(null);
         devopsEnvCommandRepository.create(devopsEnvCommandE);
-        updateInstanceStatus(instanceId, InstanceStatus.OPERATIING.getStatus());
+        applicationInstanceRepository.deleteById(instanceId);
     }
 
     private String getNameSpace(Long envId) {

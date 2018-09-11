@@ -31,4 +31,5 @@ public class GitOpsSync {
     public void setMetadata(GitOpsMetaData metadata) {
         this.metadata = metadata;
     }
+
 }

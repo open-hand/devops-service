@@ -119,4 +119,9 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     public String queryValueByInstanceId(Long instanceId) {
         return applicationInstanceMapper.queryByInstanceId(instanceId);
     }
+
+    @Override
+    public void deleteById(Long id) {
+        applicationInstanceMapper.deleteByPrimaryKey(id);
+    }
 }

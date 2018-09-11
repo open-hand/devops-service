@@ -71,7 +71,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public void createIngress(DevopsIngressDO devopsIngressDO) {
+    public DevopsIngressDO createIngress(DevopsIngressDO devopsIngressDO) {
         if (!checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
         }
@@ -80,6 +80,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             t.setIngressId(devopsIngressDO.getId());
             devopsIngressPathMapper.insert(t);
         });
+        return devopsIngressDO;
     }
 
     @Override
@@ -118,16 +119,15 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
                 && !checkIngressName(devopsIngressDO.getEnvId(), devopsIngressDO.getName())) {
             throw new CommonException(DOMAIN_NAME_EXIST_ERROR);
         }
-        if (!ingressDO.equals(devopsIngressDO)) {
-            devopsIngressDO.setObjectVersionNumber(ingressDO.getObjectVersionNumber());
-            devopsIngressMapper.updateByPrimaryKey(devopsIngressDO);
-        }
+        devopsIngressDO.setObjectVersionNumber(ingressDO.getObjectVersionNumber());
+        devopsIngressMapper.updateByPrimaryKeySelective(devopsIngressDO);
     }
 
     @Override
     public Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, PageRequest pageRequest, String params) {
         List<DevopsIngressDTO> devopsIngressDTOS = new ArrayList<>();
-        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {}.getType());
+        Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
+        }.getType());
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
 

@@ -26,8 +26,7 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
-import io.choerodon.devops.infra.common.util.enums.IngressStatus;
+import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -45,11 +44,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public static final String ERROR_DOMAIN_PATH_EXIST = "error.domain.path.exist";
     public static final String INGRESS = "Ingress";
     public static final String ERROR_FILE_RESOURCE_NOT_EXIST = "error.fileResource.not.exist";
+    public static final String CREATE = "create";
+    public static final String UPDATE = "update";
+    public static final String DELETE = "delete";
     private static final String PATH_ERROR = "error.path.empty";
     private static final String PATH_DUPLICATED = "error.path.duplicated";
     private static final String ERROR_SERVICE_NOT_CONTAIN_PORT = "error.service.notContain.port";
     private static final String CERT_NOT_ACTIVE = "error.cert.notActive";
-
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
 
@@ -92,10 +93,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(),certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
         //处理创建域名数据
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDTO.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -104,8 +106,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, true, null, devopsIngressDO, userAttrE);
-        }
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, true, null, devopsIngressDO, userAttrE, devopsEnvCommandE);
+    }
 
     private String getCertName(Long certId) {
         String certName = null;
@@ -126,11 +128,18 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(),certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
         //处理域名数据
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
+
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
+
         //创建域名
-        devopsIngressRepository.createIngress(devopsIngressDO);
+        Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
+        devopsEnvCommandE.setObjectId(ingressId);
+        devopsIngressDO.setId(ingressId);
+        devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        devopsIngressRepository.updateIngress(devopsIngressDO);
     }
 
     @Override
@@ -145,8 +154,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             return;
         }
 
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+
         //初始化V1beta1Ingress对象
-        Long certId  = devopsIngressDTO.getCertId();
+        Long certId = devopsIngressDTO.getCertId();
         String certName = devopsIngressDTO.getCertName();
         V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
 
@@ -154,7 +165,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDTO.setId(id);
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
-                DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDTO.getEnvId());
+        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDTO.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -165,7 +176,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, false, path, devopsIngressDO, userAttrE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1beta1Ingress, false, path, devopsIngressDO, userAttrE, devopsEnvCommandE);
     }
 
     @Override
@@ -181,13 +192,17 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //初始化V1beta1Ingress对象
         String certName = devopsIngressDTO.getCertName();
-        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(),certName);
+        V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
 
         //处理域名数据
         devopsIngressDTO.setId(id);
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+
         //更新域名域名
+        devopsEnvCommandE.setObjectId(id);
+        devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
     }
 
@@ -223,6 +238,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //校验环境是否连接
         envUtil.checkEnvConnection(ingressDO.getEnvId(), envListener);
+
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -264,9 +281,10 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     ingressDO.getId(), INGRESS, devopsEnvironmentE.getId(), path);
         }
 
-        //更新ingress状态
-        ingressDO.setStatus(IngressStatus.OPERATING.getStatus());
-        devopsIngressRepository.updateIngress(ingressDO);
+        //更新ingress
+        devopsEnvCommandE.setObjectId(ingressId);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsIngressRepository.deleteIngress(ingressId);
 
 
     }
@@ -275,9 +293,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void deleteIngressByGitOps(Long ingressId) {
         envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
+
+        devopsEnvCommandE.setObjectId(ingressId);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
         devopsIngressRepository.deleteIngress(ingressId);
     }
-
 
 
     @Override
@@ -368,15 +389,21 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       Boolean isCreate,
                                       String path,
                                       DevopsIngressDO devopsIngressDO,
-                                      UserAttrE userAttrE) {
+                                      UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE) {
         ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
         objectOperation.setType(ingress);
         objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? "create" : "update",
                 userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, devopsIngressDO.getEnvId(), path);
         //文件操作成功后才创建或更新数据,避免文件数据不一致
         if (isCreate) {
-            devopsIngressRepository.createIngress(devopsIngressDO);
+            Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
+            devopsEnvCommandE.setObjectId(ingressId);
+            devopsIngressDO.setId(ingressId);
+            devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsIngressRepository.updateIngress(devopsIngressDO);
         } else {
+            devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
+            devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
         }
     }
@@ -440,5 +467,20 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                     createPath(hostPath, serviceId, servicePort));
         });
         return devopsIngressPathDOS;
+    }
+
+
+    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        if (type.equals(CREATE)) {
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+        } else if (type.equals(UPDATE)) {
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        } else {
+            devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+        }
+        devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        return devopsEnvCommandE;
     }
 }

@@ -14,6 +14,7 @@ public class CertificationE {
     private DevopsEnvironmentE environmentE;
     private List<String> domains;
     private String status;
+    private Long commandId;
 
     public CertificationE() {
     }
@@ -64,5 +65,13 @@ public class CertificationE {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

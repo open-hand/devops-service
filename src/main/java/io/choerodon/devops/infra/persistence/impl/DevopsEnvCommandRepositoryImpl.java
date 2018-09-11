@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -51,6 +53,13 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     public DevopsEnvCommandE query(Long id) {
         DevopsEnvCommandDO devopsEnvCommandDO = devopsEnvCommandMapper.selectByPrimaryKey(id);
         return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandE.class);
+    }
+
+    @Override
+    public List<DevopsEnvCommandE> listByEnvId(Long envId) {
+        DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO();
+        devopsEnvCommandDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandE.class);
     }
 
 }

@@ -36,4 +36,6 @@ public interface ApplicationInstanceRepository {
     List<ApplicationInstanceE> list();
 
     String queryValueByInstanceId(Long instanceId);
+
+    void deleteById(Long id);
 }

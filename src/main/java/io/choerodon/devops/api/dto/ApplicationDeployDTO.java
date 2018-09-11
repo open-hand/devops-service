@@ -7,6 +7,7 @@ public class ApplicationDeployDTO {
     private Long appId;
     private String type;
     private Long appInstanceId;
+    private Long commandId;
     private String instanceName;
     private boolean isNotChange;
 
@@ -72,5 +73,13 @@ public class ApplicationDeployDTO {
 
     public void setIsNotChange(boolean isNotChange) {
         this.isNotChange = isNotChange;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

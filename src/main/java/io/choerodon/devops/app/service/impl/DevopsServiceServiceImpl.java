@@ -31,6 +31,9 @@ import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CommandStatus;
+import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
@@ -43,6 +46,9 @@ import io.choerodon.websocket.helper.EnvListener;
 public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     public static final String SERVICE = "Service";
+    public static final String CREATE = "create";
+    public static final String UPDATE = "update";
+    public static final String DELETE = "delete";
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE_LABLE_VALUE = "service";
     private Gson gson = new Gson();
@@ -87,6 +93,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private CertificationRepository certificationRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
@@ -136,13 +144,16 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理创建service对象数据
         DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
+        //s
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
+
         //初始化V1Service对象
         V1Service v1Service = initV1Service(
                 devopsServiceReqDTO,
                 gson.fromJson(devopsServiceE.getAnnotations(), Map.class));
 
         //在gitops库处理service文件
-        operateEnvGitLabFile(v1Service, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
+        operateEnvGitLabFile(v1Service, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
         return true;
     }
 
@@ -157,11 +168,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理创建service对象数据
         DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
+
         //存储service对象到数据库
         devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
 
         //存储service和instance对象关系到数据库
         Long serviceEId = devopsServiceE.getId();
+        devopsEnvCommandE.setObjectId(serviceEId);
+        devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        devopsServiceRepository.update(devopsServiceE);
+
         devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
             devopsServiceAppInstanceE.setServiceId(serviceEId);
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
@@ -263,6 +280,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
 
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+
         //处理更新service对象数据
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<Long> beforeDevopsServiceAppInstanceES = devopsServiceInstanceRepository
@@ -277,7 +296,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     devopsServiceReqDTO,
                     gson.fromJson(devopsServiceE.getAnnotations(), Map.class));
             //在gitops库处理service文件
-            operateEnvGitLabFile(v1Service, false, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
+            operateEnvGitLabFile(v1Service, false, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
         }
         return true;
     }
@@ -289,6 +308,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
 
+
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
+
         //处理更新service对象数据
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<Long> beforeDevopsServiceAppInstanceES = devopsServiceInstanceRepository
@@ -299,7 +321,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             return false;
         }
         //更新service对象到数据库
+        devopsEnvCommandE.setObjectId(id);
+        devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsServiceRepository.update(devopsServiceE);
+
 
         //更新service和instance关联关系数据到数据库
         beforeDevopsServiceAppInstanceES.parallelStream().forEach(instanceId ->
@@ -323,6 +348,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
 
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
@@ -360,7 +386,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     userAttrE.getGitlabUserId(),
                     devopsServiceE.getId(), SERVICE, devopsEnvironmentE.getId(), path);
         }
-        devopsServiceRepository.update(devopsServiceE);
+        devopsEnvCommandE.setObjectId(id);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsServiceRepository.delete(id);
     }
 
 
@@ -370,9 +398,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
 
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+
         //更新数据
-        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceRepository.update(devopsServiceE);
+        devopsEnvCommandE.setObjectId(id);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsServiceRepository.delete(id);
     }
 
     /**
@@ -516,7 +547,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private void operateEnvGitLabFile(V1Service service, Boolean isCreate,
                                       DevopsServiceE devopsServiceE,
                                       List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES,
-                                      List<Long> beforeDevopsServiceAppInstanceES) {
+                                      List<Long> beforeDevopsServiceAppInstanceES,
+                                      DevopsEnvCommandE devopsEnvCommandE) {
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -534,8 +566,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //操作文件成功后进行Service的数据库操作
         if (isCreate) {
-            devopsServiceE = devopsServiceRepository.insert(devopsServiceE);
+            Long serviceId = devopsServiceRepository.insert(devopsServiceE).getId();
+            devopsEnvCommandE.setObjectId(serviceId);
+            devopsServiceE.setId(serviceId);
+            devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsServiceRepository.update(devopsServiceE);
         } else {
+            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+            devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsServiceRepository.update(devopsServiceE);
         }
         Long serviceId = devopsServiceE.getId();
@@ -548,6 +586,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceAppInstanceE.setServiceId(serviceId);
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });
+
 
     }
 
@@ -565,5 +604,20 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     return portMapE;
                 })
                 .collect(Collectors.toList()));
+    }
+
+
+    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        if (type.equals(CREATE)) {
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+        } else if (type.equals(UPDATE)) {
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        } else {
+            devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+        }
+        devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        return devopsEnvCommandE;
     }
 }

@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -104,6 +103,14 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         certificationDO.setStatus(certificationE.getStatus());
         devopsCertificationMapper.updateByPrimaryKeySelective(certificationDO);
     }
+
+    @Override
+    public void updateCommandId(CertificationE certificationE) {
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certificationE.getId());
+        certificationDO.setCommandId(certificationE.getCommandId());
+        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDO);
+    }
+
 
     @Override
     public void deleteById(Long id) {

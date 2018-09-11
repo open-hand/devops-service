@@ -20,7 +20,9 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 
@@ -28,7 +30,7 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
 
     public static final String C7NHELM_RELEASE = "C7NHelmRelease";
-
+    private static final String GIT_SUFFIX = "/.git";
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
@@ -72,14 +74,19 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         });
 
         //新增instance
-        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease);
+        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease, path);
         //更新instance
-        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease);
+        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease, path);
         //删除instance,和文件对象关联关系
         beforeC7nRelease.stream().forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
-            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+            if (applicationInstanceE != null) {
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandRepository.create(devopsEnvCommandE);
                 applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());
             }
             devopsEnvFileResourceRepository
@@ -88,7 +95,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     }
 
 
-    private void updateC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> updateC7nHelmRelease) {
+    private void updateC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> updateC7nHelmRelease, String path) {
         updateC7nHelmRelease.stream()
                 .forEach(c7nHelmRelease -> {
                             String filePath = "";
@@ -103,12 +110,15 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                 if (applicationDeployDTO == null) {
                                     return;
                                 }
-                                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationDeployDTO.getAppInstanceId());
 
-                                if (!devopsEnvCommandE.getCommandType().equals(CommandType.SYNC.getType()) && !applicationDeployDTO.getIsNotChange()) {
-                                    applicationInstanceService
+                                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationDeployDTO.getCommandId());
+                                if (!applicationDeployDTO.getIsNotChange()) {
+                                    ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
                                             .createOrUpdateByGitOps(applicationDeployDTO);
+                                    devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceDTO.getCommandId());
                                 }
+                                devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                                devopsEnvCommandRepository.update(devopsEnvCommandE);
                                 DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                         .queryByEnvIdAndResource(envId, applicationDeployDTO.getAppInstanceId(), c7nHelmRelease.getKind());
                                 devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
@@ -122,7 +132,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 );
     }
 
-    private void addC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> addC7nHelmRelease) {
+    private void addC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> addC7nHelmRelease, String path) {
         addC7nHelmRelease.stream()
                 .forEach(c7nHelmRelease -> {
                     String filePath = "";
@@ -146,7 +156,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                             applicationInstanceDTO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO);
                         } else {
                             applicationInstanceDTO.setId(applicationInstanceE.getId());
+                            applicationInstanceDTO.setCommandId(applicationInstanceE.getCommandId());
                         }
+                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceDTO.getCommandId());
+                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
                         devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
                         devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())));
@@ -189,6 +203,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 applicationDeployDTO.setIsNotChange(true);
             }
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());
+            applicationDeployDTO.setCommandId(applicationInstanceE.getCommandId());
         }
         return applicationDeployDTO;
     }

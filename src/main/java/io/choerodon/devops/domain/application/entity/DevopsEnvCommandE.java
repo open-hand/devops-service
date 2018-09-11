@@ -8,11 +8,13 @@ import org.springframework.stereotype.Component;
 public class DevopsEnvCommandE {
 
     private Long id;
+    private Long envId;
     private String object;
     private Long objectId;
     private String commandType;
     private String status;
     private String error;
+    private String sha;
     private DevopsEnvCommandValueE devopsEnvCommandValueE;
 
 
@@ -78,5 +80,21 @@ public class DevopsEnvCommandE {
 
     public void initDevopsEnvCommandValueE(Long id) {
         this.devopsEnvCommandValueE = new DevopsEnvCommandValueE(id);
+    }
+
+    public String getSha() {
+        return sha;
+    }
+
+    public void setSha(String sha) {
+        this.sha = sha;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
     }
 }

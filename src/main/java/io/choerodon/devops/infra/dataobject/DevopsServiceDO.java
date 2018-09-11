@@ -21,6 +21,7 @@ public class DevopsServiceDO extends AuditDomain {
     private Long id;
     private Long envId;
     private Long appId;
+    private Long commandId;
     private String name;
     private String namespace;
     private String status;
@@ -116,5 +117,13 @@ public class DevopsServiceDO extends AuditDomain {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }
