@@ -100,7 +100,7 @@ public class CertificationController {
     public ResponseEntity<Page<CertificationDTO>> listByOptions(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境ID", required = false)
+            @ApiParam(value = "环境ID")
             @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore
