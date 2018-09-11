@@ -163,4 +163,9 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
         applicationTemplateDO.setUuid(uuid);
         return !applicationTemplateMapper.select(applicationTemplateDO).isEmpty();
     }
+
+    @Override
+    public void initMockService(IamServiceClient iamServiceClient) {
+        this.iamServiceClient = iamServiceClient;
+    }
 }

@@ -46,13 +46,10 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
 
     def setup() {
         if (flag == 0) {
-            Date date = new Date(2018, 9, 7, 15, 20, 0)
             DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO()
             devopsEnvFileErrorDO.setEnvId(1L)
-            devopsEnvFileErrorDO.setCreationDate(date)
             DevopsEnvFileErrorDO devopsEnvFileErrorDO1 = new DevopsEnvFileErrorDO()
             devopsEnvFileErrorDO1.setEnvId(1L)
-            devopsEnvFileErrorDO1.setCreationDate(date)
             devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO)
             devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO1)
 

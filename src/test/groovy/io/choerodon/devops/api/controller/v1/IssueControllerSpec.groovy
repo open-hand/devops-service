@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1
 
-
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.IssueDTO
 import io.choerodon.devops.app.service.IssueService
@@ -47,10 +46,9 @@ class IssueControllerSpec extends Specification {
     @Autowired
     private IssueService issueService
     @Autowired
-    private ApplicationRepository applicationRepository
-
-    @Autowired
     private DevopsBranchMapper devopsBranchMapper
+    @Autowired
+    private ApplicationRepository applicationRepository
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper
     @Autowired
@@ -59,7 +57,6 @@ class IssueControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockDevopsGitRepository")
     private DevopsGitRepository devopsGitRepository
-
     @Autowired
     @Qualifier("mockIamRepository")
     private IamRepository iamRepository

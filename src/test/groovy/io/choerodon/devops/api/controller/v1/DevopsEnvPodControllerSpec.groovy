@@ -2,25 +2,10 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.entity.ApplicationMarketE
-import io.choerodon.devops.domain.application.entity.DevopsServiceAppInstanceE
-import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.gitlab.AbstractUserDO
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper
-import io.choerodon.devops.infra.mapper.ApplicationMapper
-import io.choerodon.devops.infra.mapper.ApplicationMarketMapper
-import io.choerodon.devops.infra.mapper.ApplicationVersionMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.devops.infra.dataobject.*
+import io.choerodon.devops.infra.mapper.*
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
-import io.choerodon.mybatis.pagehelper.domain.Sort
 import io.choerodon.websocket.helper.EnvListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -48,6 +33,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class DevopsEnvPodControllerSpec extends Specification {
 
     private static flag = 0
+
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
@@ -65,7 +51,7 @@ class DevopsEnvPodControllerSpec extends Specification {
 
     @Autowired
     @Qualifier("mockEnvUtil")
-    private EnvUtil envUtil;
+    private EnvUtil envUtil
 
     def setup() {
         if (flag == 0) {
@@ -77,6 +63,8 @@ class DevopsEnvPodControllerSpec extends Specification {
             DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
             devopsEnvironmentDO.setId(1L)
             devopsEnvironmentDO.setProjectId(1L)
+            devopsEnvironmentDO.setName("testName")
+            devopsEnvironmentDO.setCode("testCode")
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
             ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()

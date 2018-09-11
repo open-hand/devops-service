@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
@@ -95,4 +96,6 @@ public interface ApplicationTemplateService {
      * @return boolean
      */
     Boolean applicationTemplateExist(String uuid);
+
+    void initMockService(SagaClient sagaClient);
 }

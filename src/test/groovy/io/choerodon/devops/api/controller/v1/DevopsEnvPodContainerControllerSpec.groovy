@@ -26,8 +26,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Stepwise
 class DevopsEnvPodContainerControllerSpec extends Specification {
 
-    private static flag = 0
-
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
