@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.domain.application.entity.CertificationE;
+import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -34,4 +35,8 @@ public interface CertificationRepository {
     void deleteById(Long certId);
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
+
+    void storeCertFile(CertificationFileDO certificationFileDO);
+
+    CertificationFileDO getCertFile(Long certId);
 }
