@@ -479,15 +479,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private void handleTag(PushWebHookDTO pushWebHookDTO, Integer gitLabProjectId, Integer gitLabUserId, DevopsEnvCommitE devopsEnvCommitE, Boolean tagNotExist) {
         if (tagNotExist) {
             devopsGitRepository.createTag(
-                    gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
+                    gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
                     "", "", gitLabUserId);
         } else {
             try {
-                devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, gitLabUserId);
+                devopsGitRepository.deleteTag(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, gitLabUserId);
             } catch (CommonException e) {
                 if (getDevopsSyncTag(pushWebHookDTO)) {
                     devopsGitRepository.createTag(
-                            gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
+                            gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
                             "", "", gitLabUserId);
                 } else {
                     throw new GitOpsExplainException(e.getMessage(), e);
@@ -496,7 +496,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             //创建新tag
             if (getDevopsSyncTag(pushWebHookDTO)) {
                 devopsGitRepository.createTag(
-                        gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha(),
+                        gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha(),
                         "", "", gitLabUserId);
             }
         }
@@ -505,7 +505,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private void handleDiffs(Integer gitLabProjectId, List<String> operationFiles, List<String> deletedFiles, Set<DevopsEnvFileResourceE> beforeSync, Set<DevopsEnvFileResourceE> beforeSyncDelete, DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitE devopsEnvCommitE) {
         //获取将此次最新提交与tag作比价得到diff
         CompareResultsE compareResultsE = devopsGitRepository
-                .getCompareResults(gitLabProjectId, GitUtil.DEVOPS_GITOPS_TAG, devopsEnvCommitE.getCommitSha());
+                .getCompareResults(gitLabProjectId, GitUtil.DEV_OPS_SYNC_TAG, devopsEnvCommitE.getCommitSha());
         compareResultsE.getDiffs().forEach(t -> {
             if (t.getNewPath().contains("yaml") || t.getNewPath().contains("yml")) {
                 if (t.getDeletedFile()) {
@@ -683,7 +683,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private boolean getDevopsSyncTag(PushWebHookDTO pushWebHookDTO) {
-        return devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId()).parallelStream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEVOPS_GITOPS_TAG));
+        return devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId()).parallelStream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
 
     }
 
