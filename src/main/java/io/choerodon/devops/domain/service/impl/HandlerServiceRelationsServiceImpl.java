@@ -78,12 +78,13 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         //删除service,和文件对象关联关系
         beforeService.stream().forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
-            if (devopsServiceE != null) {
-                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-                devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-                devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
+                devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
+                devopsEnvCommandE1.setStatus(CommandStatus.DOING.getStatus());
+                devopsEnvCommandE1.setObjectId(devopsServiceE.getId());
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
             devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
@@ -113,6 +114,12 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                             DevopsServiceE newDevopsServiceE = devopsServiceRepository
                                     .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
+                        }
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE = createDevopsEnvCommandE("update");
+                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                            devopsServiceE.setCommandId(devopsEnvCommandE.getId());
+                            devopsServiceRepository.update(devopsServiceE);
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -151,6 +158,12 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     devopsServiceReqDTO.getName(), envId);
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                            devopsServiceE.setCommandId(devopsEnvCommandE.getId());
+                            devopsServiceRepository.update(devopsServiceE);
+                        }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
@@ -258,5 +271,17 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 || (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
                 && !StringUtils.isEmpty(devopsServiceE.getExternalIp())
                 && devopsServiceReqDTO.getExternalIp().equals(devopsServiceE.getExternalIp())));
+    }
+
+    private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
+        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        if (type.equals("create")) {
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+        } else {
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+        }
+        devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        return devopsEnvCommandRepository.create(devopsEnvCommandE);
     }
 }

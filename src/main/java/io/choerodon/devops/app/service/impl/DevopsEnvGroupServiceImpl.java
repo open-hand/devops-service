@@ -81,12 +81,15 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
         //删除环境组，将原环境组内所有环境放到默认组内，环境sequence在默认组环境递增
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.queryByprojectAndActive(devopsEnvGroupE.getProjectE().getId(), true);
 
-        LongSummaryStatistics stats = devopsEnvironmentES
-                .parallelStream()
-                .filter(devopsEnvironmentE -> devopsEnvironmentE.getDevopsEnvGroupId() == null)
-                .mapToLong(DevopsEnvironmentE::getSequence)
-                .summaryStatistics();
-        Long sequence = stats.getMax() + 1;
+        List<DevopsEnvironmentE> defaultDevopsEnvironmentES = devopsEnvironmentES.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getDevopsEnvGroupId() == null).collect(Collectors.toList());
+        Long sequence = 1L;
+        if (!defaultDevopsEnvironmentES.isEmpty()) {
+            LongSummaryStatistics stats = devopsEnvironmentES
+                    .parallelStream()
+                    .mapToLong(DevopsEnvironmentE::getSequence)
+                    .summaryStatistics();
+            sequence = stats.getMax() + 1;
+        }
         List<DevopsEnvironmentE> deletes = devopsEnvironmentES.stream().filter(devopsEnvironmentE -> id.equals(devopsEnvironmentE.getDevopsEnvGroupId())).collect(Collectors.toList());
         for (DevopsEnvironmentE devopsEnvironmentE : deletes) {
             devopsEnvironmentE.setDevopsEnvGroupId(null);

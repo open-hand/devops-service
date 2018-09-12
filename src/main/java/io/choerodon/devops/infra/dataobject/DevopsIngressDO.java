@@ -39,7 +39,12 @@ public class DevopsIngressDO extends AuditDomain {
     private String namespace;
     @Transient
     private List<DevopsIngressPathDO> devopsIngressPathDOS;
-
+    @Transient
+    private String commandType;
+    @Transient
+    private String commandStatus;
+    @Transient
+    private String error;
 
     public DevopsIngressDO() {
     }
@@ -180,6 +185,30 @@ public class DevopsIngressDO extends AuditDomain {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 
     @Override

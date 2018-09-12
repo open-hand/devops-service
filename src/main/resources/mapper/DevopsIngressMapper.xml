@@ -33,11 +33,15 @@
         di.is_usable isUsable,
         di.cert_id certId,
         de.`name` envName,
+        cmd.`status` commandStatus,
+        cmd.command_type  commandType,
+        cmd.error  error,
         de.`code` namespace
         FROM
         devops_ingress di
         JOIN devops_ingress_path dip ON dip.ingress_id = di.id
         JOIN devops_env de on de.id = di.env_id
+        LEFT JOIN devops_env_command cmd on di.command_id = cmd.id
         LEFT JOIN devops_service ds on ds.id = dip.service_id
         WHERE di.project_id = #{projectId}
         <if test="envId != null">

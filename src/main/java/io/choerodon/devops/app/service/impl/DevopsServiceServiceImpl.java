@@ -345,7 +345,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
-        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
 
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
@@ -386,9 +385,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     userAttrE.getGitlabUserId(),
                     devopsServiceE.getId(), SERVICE, devopsEnvironmentE.getId(), path);
         }
+        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
+        devopsServiceRepository.update(devopsServiceE);
         devopsEnvCommandE.setObjectId(id);
         devopsEnvCommandRepository.create(devopsEnvCommandE);
-        devopsServiceRepository.delete(id);
     }
 
 
@@ -398,11 +398,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
 
-        DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
 
         //更新数据
-        devopsEnvCommandE.setObjectId(id);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
         devopsServiceRepository.delete(id);
     }
 

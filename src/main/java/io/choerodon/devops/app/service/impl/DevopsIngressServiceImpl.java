@@ -282,10 +282,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
 
         //更新ingress
+        devopsIngressRepository.setStatus(devopsEnvironmentE.getId(),ingressDO.getName(),IngressStatus.OPERATING.getStatus());
         devopsEnvCommandE.setObjectId(ingressId);
         devopsEnvCommandRepository.create(devopsEnvCommandE);
-        devopsIngressRepository.deleteIngress(ingressId);
-
 
     }
 
@@ -293,10 +292,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void deleteIngressByGitOps(Long ingressId) {
         envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
+        DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(ingressId);
 
-        devopsEnvCommandE.setObjectId(ingressId);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressDO.getCommandId());
+
+        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
         devopsIngressRepository.deleteIngress(ingressId);
     }
 

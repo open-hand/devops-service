@@ -24,6 +24,9 @@ public class DevopsIngressDTO {
     private String certName;
     private String certStatus;
     private List<DevopsIngressPathDTO> pathList;
+    private String commandType;
+    private String commandStatus;
+    private String error;
 
     public DevopsIngressDTO() {
     }
@@ -145,6 +148,30 @@ public class DevopsIngressDTO {
 
     public void setCertStatus(String certStatus) {
         this.certStatus = certStatus;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 
     @Override
