@@ -66,13 +66,18 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String MASTER = "master";
     private static final String YAML_FILE = ".yaml";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
+
+    private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(), new DefaultThreadFactory("devops-upgrade", false));
+
     private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
     private Gson gson = new Gson();
+
     @Value("${services.gateway.url}")
     private String gatewayUrl;
     @Value("${services.helm.url}")
     private String helmUrl;
-
 
     @Autowired
     private ApplicationMapper applicationMapper;
@@ -117,10 +122,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
-    private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(), new DefaultThreadFactory("devops-upgrade", false));
-
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
@@ -155,103 +156,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsCheckLogE.setEndCheckDate(new Date());
         devopsCheckLogRepository.create(devopsCheckLogE);
     }
-
-
-    private void syncWebHook(ApplicationDO applicationDO, List<CheckLog> logs) {
-        CheckLog checkLog = new CheckLog();
-        checkLog.setContent("app: " + applicationDO.getName() + " create gitlab webhook");
-        try {
-            ProjectHook projectHook = ProjectHook.allHook();
-            projectHook.setEnableSslVerification(true);
-            projectHook.setProjectId(applicationDO.getGitlabProjectId());
-            projectHook.setToken(applicationDO.getToken());
-            String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-            uri += "devops/webhook";
-            projectHook.setUrl(uri);
-            applicationDO.setHookId(TypeUtil.objToLong(
-                    gitlabRepository.createWebHook(applicationDO.getGitlabProjectId(), ADMIN, projectHook).getId()));
-            applicationMapper.updateByPrimaryKey(applicationDO);
-            checkLog.setResult(SUCCESS);
-        } catch (Exception e) {
-            checkLog.setResult(FAILED + e.getMessage());
-        }
-        logs.add(checkLog);
-    }
-
-
-    private void syncBranches(ApplicationDO applicationDO, List<CheckLog> logs) {
-        CheckLog checkLog = new CheckLog();
-        checkLog.setContent("app: " + applicationDO.getName() + " sync branches");
-        try {
-            Optional<List<BranchDO>> branchDOS = Optional.ofNullable(
-                    gitlabServiceClient.listBranches(applicationDO.getGitlabProjectId(), ADMIN).getBody());
-            List<String> branchNames =
-                    devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).parallelStream()
-                            .map(DevopsBranchE::getBranchName).collect(Collectors.toList());
-            branchDOS.ifPresent(branchDOS1 -> branchDOS1.parallelStream()
-                    .filter(branchDO -> !branchNames.contains(branchDO.getName()))
-                    .forEach(branchDO -> {
-                        DevopsBranchE newDevopsBranchE = new DevopsBranchE();
-                        newDevopsBranchE.initApplicationE(applicationDO.getId());
-                        newDevopsBranchE.setLastCommitDate(branchDO.getCommit().getCommittedDate());
-                        newDevopsBranchE.setLastCommit(branchDO.getCommit().getId());
-                        newDevopsBranchE.setBranchName(branchDO.getName());
-                        newDevopsBranchE.setCheckoutCommit(branchDO.getCommit().getId());
-                        newDevopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
-                        newDevopsBranchE.setLastCommitMsg(branchDO.getCommit().getMessage());
-                        UserE userE = iamRepository.queryByLoginName(branchDO.getCommit().getAuthorName());
-                        newDevopsBranchE.setLastCommitUser(userE.getId());
-                        devopsGitRepository.createDevopsBranch(newDevopsBranchE);
-                        checkLog.setResult(SUCCESS);
-                    }));
-        } catch (Exception e) {
-            checkLog.setResult(FAILED + e.getMessage());
-        }
-        logs.add(checkLog);
-    }
-
-
-    private void syncNonEnvGroupProject(List<CheckLog> logs) {
-        List<DevopsProjectDO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
-        LOGGER.info("{} projects need to upgrade", projectDOList.size());
-        final String groupCodeSuffix = "gitops";
-        projectDOList.forEach(t -> {
-            CheckLog checkLog = new CheckLog();
-            try {
-                Long projectId = t.getId();
-                ProjectE projectE = iamRepository.queryIamProject(projectId);
-                checkLog.setContent("project: " + projectE.getName() + " create gitops group");
-                Organization organization = iamRepository
-                        .queryOrganizationById(projectE.getOrganization().getId());
-                //创建gitlab group
-                GroupDO group = new GroupDO();
-                // name: orgName-projectName
-                group.setName(String.format("%s-%s-%s",
-                        organization.getName(), projectE.getName(), groupCodeSuffix));
-                // path: orgCode-projectCode
-                group.setPath(String.format("%s-%s-%s",
-                        organization.getCode(), projectE.getCode(), groupCodeSuffix));
-                ResponseEntity<GroupDO> responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
-                if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
-                    group = responseEntity.getBody();
-                    DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
-                    devopsProjectDO.setEnvGroupId(group.getId());
-                    devopsProjectRepository.updateProjectAttr(devopsProjectDO);
-                    checkLog.setResult(SUCCESS);
-                } else {
-                    checkLog.setResult(FAILED + "create group response error! Header:"
-                            + responseEntity.getHeaders() + "    Body: " + responseEntity.getBody().toString());
-                }
-            } catch (Exception e) {
-                LOGGER.info("create project GitOps group error");
-                checkLog.setResult(FAILED + e.getMessage());
-            }
-            LOGGER.info(checkLog.toString());
-            logs.add(checkLog);
-                });
-
-    }
-
 
     private void syncEnvProject(List<CheckLog> logs) {
         LOGGER.info("start to sync env project");
@@ -320,14 +224,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
     }
 
-    public List<V1ServicePort> getServicePort(DevopsServiceE devopsServiceE) {
+    private List<V1ServicePort> getServicePort(DevopsServiceE devopsServiceE) {
         final Integer[] serialNumber = {0};
         List<V1ServicePort> ports;
         if (devopsServiceE.getPorts() == null) {
-            List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = devopsServiceInstanceRepository.queryByServiceId(devopsServiceE.getId());
+            List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES =
+                    devopsServiceInstanceRepository.queryByServiceId(devopsServiceE.getId());
             if (!devopsServiceAppInstanceES.isEmpty()) {
-                DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(devopsServiceAppInstanceES.get(0).getAppInstanceId(), ResourceType.SERVICE.getType(), devopsServiceE.getName());
-                DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository.query(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
+                DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
+                                devopsServiceAppInstanceES.get(0).getAppInstanceId(),
+                                ResourceType.SERVICE.getType(),
+                                devopsServiceE.getName());
+                DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository
+                        .query(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
                 V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
                         V1Service.class);
                 String port = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getPort());
@@ -418,7 +327,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             }
                             LOGGER.info(checkLog.toString());
                         } catch (Exception e) {
-                            LOGGER.info("{}:{} instance/{} sync failed {}", env.getCode(), env.getId(), applicationInstanceE.getCode(), e);
+                            LOGGER.info("{}:{} instance/{} sync failed {}",
+                                    env.getCode(), env.getId(), applicationInstanceE.getCode(), e);
                             checkLog.setResult(FAILED + e.getMessage());
                         }
                         logs.add(checkLog);
@@ -476,7 +386,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             }
                             LOGGER.info(checkLog.toString());
                         } catch (Exception e) {
-                            LOGGER.info("{}:{} service/{} sync failed {}", env.getCode(), env.getId(), devopsServiceE.getName(), e);
+                            LOGGER.info("{}:{} service/{} sync failed {}",
+                                    env.getCode(), env.getId(), devopsServiceE.getName(), e);
                             checkLog.setResult(FAILED + e.getMessage());
                         }
                         logs.add(checkLog);
@@ -563,7 +474,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             }
                             LOGGER.info(checkLog.toString());
                         } catch (Exception e) {
-                            LOGGER.info("{}:{} ingress/{} sync failed {}", env.getCode(), env.getId(), devopsIngressE.getName(), e);
+                            LOGGER.info("{}:{} ingress/{} sync failed {}",
+                                    env.getCode(), env.getId(), devopsIngressE.getName(), e);
                             checkLog.setResult(FAILED + e.getMessage());
                         }
                         logs.add(checkLog);
@@ -571,8 +483,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private V1beta1Ingress getV1beta1Ingress(DevopsIngressE devopsIngressE) {
-            V1beta1Ingress v1beta1Ingress = devopsIngressService
-                    .initV1beta1Ingress(devopsIngressE.getDomain(), devopsIngressE.getName(),   devopsIngressE.getCertName());
+            V1beta1Ingress v1beta1Ingress = devopsIngressService.initV1beta1Ingress(
+                    devopsIngressE.getDomain(), devopsIngressE.getName(), devopsIngressE.getCertName());
             List<DevopsIngressPathE> devopsIngressPathES =
                     devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
             devopsIngressPathES.parallelStream()
@@ -587,12 +499,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
     }
 
-    class UpgradeTask implements Runnable{
+    class UpgradeTask implements Runnable {
         private String version;
 
-        UpgradeTask(String version){
+        UpgradeTask(String version) {
             this.version = version;
         }
+
         @Override
         public void run() {
             DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
@@ -620,6 +533,99 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogE.setLog(JSON.toJSONString(logs));
             devopsCheckLogE.setEndCheckDate(new Date());
             devopsCheckLogRepository.create(devopsCheckLogE);
+        }
+
+        private void syncWebHook(ApplicationDO applicationDO, List<CheckLog> logs) {
+            CheckLog checkLog = new CheckLog();
+            checkLog.setContent("app: " + applicationDO.getName() + " create gitlab webhook");
+            try {
+                ProjectHook projectHook = ProjectHook.allHook();
+                projectHook.setEnableSslVerification(true);
+                projectHook.setProjectId(applicationDO.getGitlabProjectId());
+                projectHook.setToken(applicationDO.getToken());
+                String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+                uri += "devops/webhook";
+                projectHook.setUrl(uri);
+                applicationDO.setHookId(TypeUtil.objToLong(gitlabRepository
+                        .createWebHook(applicationDO.getGitlabProjectId(), ADMIN, projectHook).getId()));
+                applicationMapper.updateByPrimaryKey(applicationDO);
+                checkLog.setResult(SUCCESS);
+            } catch (Exception e) {
+                checkLog.setResult(FAILED + e.getMessage());
+            }
+            logs.add(checkLog);
+        }
+
+        private void syncBranches(ApplicationDO applicationDO, List<CheckLog> logs) {
+            CheckLog checkLog = new CheckLog();
+            checkLog.setContent("app: " + applicationDO.getName() + " sync branches");
+            try {
+                Optional<List<BranchDO>> branchDOS = Optional.ofNullable(
+                        gitlabServiceClient.listBranches(applicationDO.getGitlabProjectId(), ADMIN).getBody());
+                List<String> branchNames =
+                        devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).parallelStream()
+                                .map(DevopsBranchE::getBranchName).collect(Collectors.toList());
+                branchDOS.ifPresent(branchDOS1 -> branchDOS1.parallelStream()
+                        .filter(branchDO -> !branchNames.contains(branchDO.getName()))
+                        .forEach(branchDO -> {
+                            DevopsBranchE newDevopsBranchE = new DevopsBranchE();
+                            newDevopsBranchE.initApplicationE(applicationDO.getId());
+                            newDevopsBranchE.setLastCommitDate(branchDO.getCommit().getCommittedDate());
+                            newDevopsBranchE.setLastCommit(branchDO.getCommit().getId());
+                            newDevopsBranchE.setBranchName(branchDO.getName());
+                            newDevopsBranchE.setCheckoutCommit(branchDO.getCommit().getId());
+                            newDevopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
+                            newDevopsBranchE.setLastCommitMsg(branchDO.getCommit().getMessage());
+                            UserE userE = iamRepository.queryByLoginName(branchDO.getCommit().getAuthorName());
+                            newDevopsBranchE.setLastCommitUser(userE.getId());
+                            devopsGitRepository.createDevopsBranch(newDevopsBranchE);
+                            checkLog.setResult(SUCCESS);
+                        }));
+            } catch (Exception e) {
+                checkLog.setResult(FAILED + e.getMessage());
+            }
+            logs.add(checkLog);
+        }
+
+        private void syncNonEnvGroupProject(List<CheckLog> logs) {
+            List<DevopsProjectDO> projectDOList = devopsCheckLogRepository.queryNonEnvGroupProject();
+            LOGGER.info("{} projects need to upgrade", projectDOList.size());
+            final String groupCodeSuffix = "gitops";
+            projectDOList.forEach(t -> {
+                CheckLog checkLog = new CheckLog();
+                try {
+                    Long projectId = t.getId();
+                    ProjectE projectE = iamRepository.queryIamProject(projectId);
+                    checkLog.setContent("project: " + projectE.getName() + " create gitops group");
+                    Organization organization = iamRepository
+                            .queryOrganizationById(projectE.getOrganization().getId());
+                    //创建gitlab group
+                    GroupDO group = new GroupDO();
+                    // name: orgName-projectName
+                    group.setName(String.format("%s-%s-%s",
+                            organization.getName(), projectE.getName(), groupCodeSuffix));
+                    // path: orgCode-projectCode
+                    group.setPath(String.format("%s-%s-%s",
+                            organization.getCode(), projectE.getCode(), groupCodeSuffix));
+                    ResponseEntity<GroupDO> responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
+                    if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                        group = responseEntity.getBody();
+                        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
+                        devopsProjectDO.setEnvGroupId(group.getId());
+                        devopsProjectRepository.updateProjectAttr(devopsProjectDO);
+                        checkLog.setResult(SUCCESS);
+                    } else {
+                        checkLog.setResult(FAILED + "create group response error! Header:"
+                                + responseEntity.getHeaders() + "    Body: " + responseEntity.getBody().toString());
+                    }
+                } catch (Exception e) {
+                    LOGGER.info("create project GitOps group error");
+                    checkLog.setResult(FAILED + e.getMessage());
+                }
+                LOGGER.info(checkLog.toString());
+                logs.add(checkLog);
+            });
+
         }
     }
 }
