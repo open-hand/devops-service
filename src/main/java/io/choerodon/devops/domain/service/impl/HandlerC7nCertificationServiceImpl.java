@@ -100,18 +100,16 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
     private void updateC7nCertificationPath(C7nCertification c7nCertification,
                                             Long envId, Map<String, String> objectPath) {
-        CertificationE certificationE = checkC7nCertificationChanges(c7nCertification, envId, objectPath);
+        Long  certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath);
 
         String kind = c7nCertification.getKind();
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(envId, certificationE.getId(), kind);
+                .queryByEnvIdAndResource(envId, certId, kind);
         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
-                devopsEnvFileResourceE,
-                c7nCertification.hashCode(), certificationE.getId(),
-                kind);
+                devopsEnvFileResourceE, c7nCertification.hashCode(), certId, kind);
     }
 
-    private CertificationE checkC7nCertificationChanges(C7nCertification c7nCertification, Long envId, Map<String, String> objectPath) {
+    private Long checkC7nCertificationChanges(C7nCertification c7nCertification, Long envId, Map<String, String> objectPath) {
         DevopsEnvironmentE environmentE = devopsEnvironmentRepository.queryById(envId);
         String certName = c7nCertification.getMetadata().getName();
         CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
@@ -132,7 +130,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         if (!c7nCertification.equals(oldC7nCertification)) {
             throw new GitOpsExplainException(GitOpsObjectError.CERT_CHANGED.getError(), filePath);
         }
-        return certificationE;
+        return certificationE.getId();
     }
 
     private Long createCertificationAndGetId(Long envId, C7nCertification c7nCertification, String certName) {

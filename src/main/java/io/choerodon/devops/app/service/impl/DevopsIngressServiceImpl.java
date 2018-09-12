@@ -481,7 +481,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         }
         devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
     }
 }

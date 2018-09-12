@@ -4,7 +4,7 @@ public enum CommandStatus {
 
     SUCCESS("success"),
     FAILED("failed"),
-    DOING("doing");
+    OPERATING("operating");
 
     private String status;
 

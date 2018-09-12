@@ -464,7 +464,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         }
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
     }
 
@@ -536,7 +536,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandE.setCommandType(CommandType.STOP.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
         devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
         String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
@@ -559,7 +559,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandE.setCommandType(CommandType.RESTART.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
         devopsEnvCommandE = devopsEnvCommandRepository.create(devopsEnvCommandE);
         String namespace = getNameSpace(instanceE.getDevopsEnvironmentE().getId());
@@ -584,7 +584,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .query(instanceE.getCommandId());
 
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -639,8 +639,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .query(instanceId);
+<<<<<<< HEAD
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+=======
+        devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
+        devopsEnvCommandE.setId(null);
+        devopsEnvCommandRepository.create(devopsEnvCommandE);
+>>>>>>> [IMP] change command status from doing to operating, change cert command status
         applicationInstanceRepository.deleteById(instanceId);
     }
 
