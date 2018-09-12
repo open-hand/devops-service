@@ -78,24 +78,15 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         //更新instance
         updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease, path);
         //删除instance,和文件对象关联关系
-        beforeC7nRelease.stream().forEach(releaseName -> {
+        beforeC7nRelease.forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-<<<<<<< HEAD
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
             if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                 devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
                 devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
-                devopsEnvCommandE1.setStatus(CommandStatus.DOING.getStatus());
+                devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
                 devopsEnvCommandE1.setObjectId(applicationInstanceE.getId());
-=======
-            if (applicationInstanceE != null) {
-                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
-                devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
->>>>>>> [IMP] change command status from doing to operating, change cert command status
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
             applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());

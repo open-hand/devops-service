@@ -639,15 +639,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .query(instanceId);
-<<<<<<< HEAD
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
-=======
-        devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
-        devopsEnvCommandE.setId(null);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
->>>>>>> [IMP] change command status from doing to operating, change cert command status
         applicationInstanceRepository.deleteById(instanceId);
     }
 
