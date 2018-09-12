@@ -85,7 +85,9 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                 devopsEnvCommandE1.setObject(ObjectType.INGRESS.getType());
                 devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
                 devopsEnvCommandE1.setObjectId(devopsIngressE.getId());
-                devopsEnvCommandRepository.create(devopsEnvCommandE);
+                DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
+                devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
+                devopsIngressRepository.updateIngress(devopsIngressDO);
             }
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
         });
