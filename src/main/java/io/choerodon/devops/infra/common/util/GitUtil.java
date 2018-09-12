@@ -102,38 +102,17 @@ public class GitUtil {
      * @param path target path
      * @param url  git repo url
      */
-    public void cloneBySsh(String path, String url) {
-        SshSessionFactory sshSessionFactory = sshSessionFactor();
+    public Git cloneBySsh(String path, String url) {
         CloneCommand cloneCommand = Git.cloneRepository();
         cloneCommand.setURI(url);
         cloneCommand.setBranch(MASTER);
-        TransportConfigCallback transportConfigCallback = transport -> {
-            SshTransport sshTransport = (SshTransport) transport;
-            sshTransport.setSshSessionFactory(sshSessionFactory);
-        };
-        cloneCommand.setTransportConfigCallback(transportConfigCallback);
+        cloneCommand.setTransportConfigCallback(getTransportConfigCallback());
         try {
             cloneCommand.setDirectory(new File(path));
-            cloneCommand.call();
+            return cloneCommand.call();
         } catch (GitAPIException e) {
             throw new CommonException(e.getMessage(), e);
         }
-    }
-
-    private SshSessionFactory sshSessionFactor() {
-        return new JschConfigSessionFactory() {
-            @Override
-            protected void configure(OpenSshConfig.Host host, Session session) {
-                session.setConfig("StrictHostKeyChecking", "no");
-            }
-
-            @Override
-            protected JSch createDefaultJSch(FS fs) throws JSchException {
-                JSch defaultJSch = super.createDefaultJSch(fs);
-                defaultJSch.getIdentityRepository().add(sshKey.getBytes());
-                return defaultJSch;
-            }
-        };
     }
 
     /**
@@ -166,28 +145,46 @@ public class GitUtil {
      * @param path git repo
      */
     public void pullBySsh(String path) {
-        SshSessionFactory sshSessionFactory = sshSessionFactor();
         File repoGitDir = new File(path);
         try (Repository repository = new FileRepository(repoGitDir.getAbsolutePath())) {
-            pullBySsh(sshSessionFactory, repository);
+            pullBySsh(repository);
         } catch (IOException e) {
             LOGGER.info("Get repository error", e);
         }
     }
 
-    private void pullBySsh(SshSessionFactory sshSessionFactory, Repository repository) {
+    private void pullBySsh(Repository repository) {
         try (Git git = new Git(repository)) {
-            git
-                    .pull()
-                    .setTransportConfigCallback(transport -> {
-                        SshTransport sshTransport = (SshTransport) transport;
-                        sshTransport.setSshSessionFactory(sshSessionFactory);
-                    })
+            git.pull()
+                    .setTransportConfigCallback(getTransportConfigCallback())
                     .setRemoteBranchName(MASTER)
                     .call();
         } catch (GitAPIException e) {
             LOGGER.info("Pull error", e);
         }
+    }
+
+    private TransportConfigCallback getTransportConfigCallback() {
+        return transport -> {
+            SshTransport sshTransport = (SshTransport) transport;
+            sshTransport.setSshSessionFactory(sshSessionFactor());
+        };
+    }
+
+    private SshSessionFactory sshSessionFactor() {
+        return new JschConfigSessionFactory() {
+            @Override
+            protected void configure(OpenSshConfig.Host host, Session session) {
+                session.setConfig("StrictHostKeyChecking", "no");
+            }
+
+            @Override
+            protected JSch createDefaultJSch(FS fs) throws JSchException {
+                JSch defaultJSch = super.createDefaultJSch(fs);
+                defaultJSch.getIdentityRepository().add(sshKey.getBytes());
+                return defaultJSch;
+            }
+        };
     }
 
     /**
@@ -285,5 +282,48 @@ public class GitUtil {
                 throw new CommonException("error.directory.delete");
             }
         }
+    }
+
+    /**
+     * push current git repo
+     *
+     * @param git git repo
+     * @throws GitAPIException push error
+     */
+    public void gitPush(Git git) throws GitAPIException {
+        List<Ref> refs = git.branchList().call();
+        PushCommand pushCommand = git.push();
+        for (Ref ref : refs) {
+            pushCommand.add(ref);
+        }
+        pushCommand.setTransportConfigCallback(getTransportConfigCallback()).call();
+    }
+
+    /**
+     * create a file in git repo, and then commit it
+     *
+     * @param repoPath     git repo path
+     * @param git          git repo
+     * @param relativePath file relative path
+     * @param fileContent  file content
+     * @param commitMsg    commit msg, if null, commit msg will be '[ADD] add ' + file relative path
+     * @throws IOException     if target repo is not found
+     * @throws GitAPIException if target repo is not a git repo
+     */
+    public void createFileInRepo(String repoPath, Git git, String relativePath, String fileContent, String commitMsg)
+            throws IOException, GitAPIException {
+        FileUtil.saveDataToFile(repoPath, relativePath, fileContent);
+        git = git == null ? Git.open(new File(repoPath)) : git;
+        addFile(git, relativePath);
+        commitChanges(git, commitMsg == null || commitMsg.isEmpty() ? "[ADD] add " + relativePath : commitMsg);
+    }
+
+    private void addFile(Git git, String relativePath) throws GitAPIException {
+        git.add().setUpdate(true).addFilepattern(relativePath).call();
+    }
+
+
+    private void commitChanges(Git git, String commitMsg) throws GitAPIException {
+        git.commit().setMessage(commitMsg).call();
     }
 }
