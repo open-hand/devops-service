@@ -348,21 +348,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         }
                     }
                     break;
-                case SECRET:
-                    String certName = ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get("name").toString();
-
-                    CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-                    if (certificationE != null) {
-                        String crt = ((LinkedHashMap) ((LinkedHashMap) obj).get("data")).get("tls.crt").toString();
-                        X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
-                        Date validFrom = certificate.getNotBefore();
-                        Date validUntil = certificate.getNotAfter();
-
-                        certificationE.setValid(validFrom, validUntil);
-
-                        certificationRepository.updateValid(certificationE);
-                    }
-                    break;
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
                     applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
@@ -380,8 +365,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             }
         } catch (IOException e) {
             logger.info(e.toString());
-        } catch (CertificateException e) {
-            logger.info(e.getMessage(), e);
         }
     }
 
@@ -1213,6 +1196,47 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandES.add(devopsEnvCommandE);
             }
         });
+
+    }
+
+    @Override
+    public void certIssued(String key, Long envId, String msg) {
+
+        try {
+            ResourceType resourceType = ResourceType.forString(KeyParseTool.getResourceType(key));
+            if (resourceType == ResourceType.SECRET) {
+                Object obj = objectMapper.readValue(msg, Object.class);
+                String certName = ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get("name").toString();
+                CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+                if (certificationE != null) {
+                    String crt = ((LinkedHashMap) ((LinkedHashMap) obj).get("data")).get("tls.crt").toString();
+                    X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
+                    Date validFrom = certificate.getNotBefore();
+                    Date validUntil = certificate.getNotAfter();
+
+                    certificationE.setValid(validFrom, validUntil);
+
+                    certificationRepository.updateValid(certificationE);
+
+                    DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                    devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
+                    devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+                    devopsEnvCommandE.setObjectId(certificationE.getId());
+                    devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                    devopsEnvCommandRepository.create(devopsEnvCommandE);
+                    certificationE.setId(devopsEnvCommandE.getObjectId());
+                    certificationRepository.updateCommandId(certificationE);
+                }
+            }
+        } catch (IOException e) {
+            logger.info(e.toString());
+        } catch (CertificateException e) {
+            logger.info(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void certFailed(String key, Long envId, String msg) {
 
     }
 }
