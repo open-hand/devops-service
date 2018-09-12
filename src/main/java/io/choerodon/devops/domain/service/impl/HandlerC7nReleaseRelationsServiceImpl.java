@@ -19,6 +19,7 @@ import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -56,7 +57,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                             .selectById(devopsEnvFileResourceE.getResourceId());
                     if (applicationInstanceE == null) {
-                        throw new CommonException("the applicationInstance in the file is not exist in devops database");
+                        throw new GitOpsExplainException("instance.not.exist.in.database", null, applicationInstanceE.getCode(), null);
                     }
                     return applicationInstanceE.getCode();
                 }).collect(Collectors.toList());
@@ -108,11 +109,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                         c7nHelmRelease,
                                         projectId,
                                         envId,
+                                        filePath,
                                         "update");
                                 if (applicationDeployDTO == null) {
                                     return;
                                 }
-
                                 DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationDeployDTO.getCommandId());
                                 if (!applicationDeployDTO.getIsNotChange()) {
                                     ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
@@ -134,7 +135,11 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                         c7nHelmRelease.hashCode(), applicationDeployDTO.getAppInstanceId(),
                                         c7nHelmRelease.getKind());
                             } catch (CommonException e) {
-                                throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                                String errorCode = "";
+                                if (e instanceof GitOpsExplainException) {
+                                    errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                                }
+                                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
                             }
                         }
                 );
@@ -157,6 +162,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                     c7nHelmRelease,
                                     projectId,
                                     envId,
+                                    filePath,
                                     "create");
                             if (applicationDeployDTO == null) {
                                 return;
@@ -181,24 +187,28 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                         devopsEnvFileResourceE.setResourceType(c7nHelmRelease.getKind());
                         devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
                     } catch (CommonException e) {
-                        throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                        String errorCode = "";
+                        if (e instanceof GitOpsExplainException) {
+                            errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                        }
+                        throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
                     }
                 });
     }
 
 
     private ApplicationDeployDTO getApplicationDeployDTO(C7nHelmRelease c7nHelmRelease,
-                                                         Long projectId, Long envId, String type) {
+                                                         Long projectId, Long envId, String filePath, String type) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
         if (applicationE == null) {
-            throw new CommonException("the App: " + c7nHelmRelease.getSpec().getChartName() + "not exist in the devops-service");
+            throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName(), null);
         }
         ApplicationVersionE applicationVersionE = applicationVersionRepository
                 .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
         if (applicationVersionE == null) {
-            throw new CommonException("the AppVersion:" + c7nHelmRelease.getSpec().getChartVersion() + "not exist in the devops-service");
+            throw new CommonException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion(), null);
         }
 
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
@@ -212,7 +222,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                     .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
-            if (deployValue != null && deployValue.equals(applicationDeployDTO.getValues()) && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
+            ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(deployValue, applicationDeployDTO.getValues());
+            if (deployValue != null && replaceResult.getHighlightMarkers().size() == 0 && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
                 applicationDeployDTO.setIsNotChange(true);
             }
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());

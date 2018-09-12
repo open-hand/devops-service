@@ -323,7 +323,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 .get("choerodon.io/network-service-instances");
                         if (releaseNames != null) {
                             List<String> releases = Arrays.asList(releaseNames.split("\\+"));
-
+                            List<Long> beforeInstanceIdS = devopsEnvResourceRepository.listByEnvAndType(envId, "Service").parallelStream().filter(devopsEnvResourceE1 -> devopsEnvResourceE1.getName().equals(v1Service.getMetadata().getName())).map(devopsEnvResourceE1 ->
+                                    devopsEnvResourceE1.getApplicationInstanceE().getId()
+                            ).collect(Collectors.toList());
+                            List<Long> afterInstanceIds = new ArrayList<>();
                             for (String release : releases) {
                                 applicationInstanceE = applicationInstanceRepository
                                         .selectByCode(release, envId);
@@ -334,6 +337,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                                 KeyParseTool.getResourceName(key));
                                 saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
                                         devopsEnvResourceDetailE, applicationInstanceE);
+                                afterInstanceIds.add(applicationInstanceE.getId());
+                            }
+                            //网络更新实例删除网络以前实例网络关联的resource
+                            for (Long instanceId : beforeInstanceIdS) {
+                                if (!afterInstanceIds.contains(instanceId)) {
+                                    devopsEnvResourceRepository.deleteByKindAndNameAndInstanceId("Service", v1Service.getMetadata().getName(), instanceId);
+                                }
                             }
                         }
                     }
@@ -841,12 +851,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsEnvFileErrorE.setError(error.getError());
                     devopsEnvFileErrorE.setFilePath(error.getPath());
                     devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
-                    devopsEnvFileErrorE.setResource(error.getId());
                     devopsEnvFileErrorE = devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
+                    devopsEnvFileErrorE.setResource(error.getId());
                 } else {
                     devopsEnvFileErrorE.setError(devopsEnvFileErrorE.getError() + error.getError());
-                    devopsEnvFileErrorE.setResource(error.getId());
                     devopsEnvFileErrorE = devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
+                    devopsEnvFileErrorE.setResource(error.getId());
                 }
                 errorDevopsFiles.add(devopsEnvFileErrorE);
             });
@@ -867,7 +877,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
                             if (updateEnvCommandStatus(envId, resourceCommit, applicationInstanceE.getCommandId(),
-                                    devopsEnvFileResourceE, "c7nhelmrelease", applicationInstanceE.getCode(), null)) {
+                                    devopsEnvFileResourceE, "c7nhelmrelease", applicationInstanceE.getCode(), CommandStatus.OPERATING.getStatus(), errorDevopsFiles)) {
                                 applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
                                 applicationInstanceRepository.update(applicationInstanceE);
                             }
@@ -879,7 +889,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
                             if (updateEnvCommandStatus(envId, resourceCommit, devopsIngressE.getCommandId(),
-                                    devopsEnvFileResourceE, "ingress", devopsIngressE.getName(), null)) {
+                                    devopsEnvFileResourceE, "ingress", devopsIngressE.getName(), null, errorDevopsFiles)) {
                                 devopsIngressRepository.setStatus(envId, devopsIngressE.getName(), IngressStatus.FAILED.getStatus());
                             } else {
                                 devopsIngressRepository.setStatus(envId, devopsIngressE.getName(), IngressStatus.RUNNING.getStatus());
@@ -892,7 +902,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                     .queryByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
                             if (updateEnvCommandStatus(envId, resourceCommit, devopsServiceE.getCommandId(),
-                                    devopsEnvFileResourceE, "service", devopsServiceE.getName(), null)) {
+                                    devopsEnvFileResourceE, "service", devopsServiceE.getName(), null, errorDevopsFiles)) {
                                 devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
                             } else {
                                 devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
@@ -908,7 +918,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                             envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
                             if (updateEnvCommandStatus(envId, resourceCommit, certificationE.getCommandId(),
                                     devopsEnvFileResourceE, "certificate", certificationE.getName(),
-                                    CommandStatus.OPERATING.getStatus())) {
+                                    CommandStatus.OPERATING.getStatus(), errorDevopsFiles)) {
                                 certificationE.setStatus(CertificationStatus.FAILED.getStatus());
                             } else {
                                 certificationE.setStatus(CertificationStatus.APPLYING.getStatus());
@@ -924,7 +934,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     private boolean updateEnvCommandStatus(Long envId, ResourceCommit resourceCommit, Long commandId,
                                            DevopsEnvFileResourceE devopsEnvFileResourceE,
-                                           String objectType, String objectName, String passStatus) {
+                                           String objectType, String objectName, String passStatus,
+                                           List<DevopsEnvFileErrorE> envFileErrorES) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
         if (devopsEnvCommandE.getSha().equals(resourceCommit.getCommit())) {
             devopsEnvCommandE.setStatus(passStatus == null ? CommandStatus.SUCCESS.getStatus() : passStatus);
@@ -932,11 +943,15 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository
                 .queryByEnvIdAndFilePath(envId, devopsEnvFileResourceE.getFilePath());
         if (devopsEnvFileErrorE != null) {
-            String[] objects = devopsEnvFileErrorE.getResource().split("/");
-            if (objects[0].equals(objectType) && objects[1].equals(objectName)) {
-                devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
-                devopsEnvCommandE.setError(devopsEnvFileErrorE.getError());
-                return true;
+            List<DevopsEnvFileErrorE> devopsEnvFileErrorES = envFileErrorES.parallelStream().filter(devopsEnvFileErrorE1 -> devopsEnvFileErrorE1.getId().equals(devopsEnvFileErrorE.getId())).collect(Collectors.toList());
+            if (!devopsEnvFileErrorES.isEmpty()) {
+                String[] objects = devopsEnvFileErrorES.get(0).getResource().split("/");
+                if (objects[0].equals(objectType) && objects[1].equals(objectName)) {
+                    devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
+                    devopsEnvCommandE.setError(devopsEnvFileErrorE.getError());
+                    devopsEnvCommandRepository.update(devopsEnvCommandE);
+                    return true;
+                }
             }
         }
         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -1192,9 +1207,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         commandIds.addAll(devopsIngressRepository.listByEnvId(envId).parallelStream().map(DevopsIngressE::getCommandId).collect(Collectors.toList()));
         List<DevopsEnvCommandE> devopsEnvCommandES = new ArrayList<>();
         Date d = new Date();
-        commandIds.parallelStream().forEach(commandId->{
+        commandIds.parallelStream().forEach(commandId -> {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
-            if(!CommandStatus.SUCCESS.getStatus().equals(devopsEnvCommandE.getStatus())&&d.getTime()-devopsEnvCommandE.getLastUpdateDate().getTime() > 180) {
+            if (!CommandStatus.SUCCESS.getStatus().equals(devopsEnvCommandE.getStatus()) && d.getTime() - devopsEnvCommandE.getLastUpdateDate().getTime() > 180) {
                 devopsEnvCommandES.add(devopsEnvCommandE);
             }
         });

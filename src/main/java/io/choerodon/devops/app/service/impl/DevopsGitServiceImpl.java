@@ -36,6 +36,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
+import io.choerodon.devops.domain.application.handler.ResourceBundleHandler;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
@@ -457,11 +458,19 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             devopsEnvironmentRepository.update(devopsEnvironmentE);
         } catch (CommonException e) {
             String filePath = "";
+            String errorCode = "";
             if (e instanceof GitOpsExplainException) {
                 filePath = ((GitOpsExplainException) e).getFilePath();
+                errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
             }
             DevopsEnvFileErrorE devopsEnvFileErrorE = getDevopsFileError(envId, filePath, path);
-            devopsEnvFileErrorE.setError(e.getMessage());
+            String error = "";
+            try {
+                error = ResourceBundleHandler.getInstance().getValue(e.getMessage());
+            } catch (Exception e1) {
+                error = e.getMessage();
+            }
+            devopsEnvFileErrorE.setError(error + ":" + errorCode);
             devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
             LOGGER.info(e.getMessage(), e);
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();

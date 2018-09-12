@@ -54,7 +54,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     CertificationE certificationE = certificationRepository
                             .queryById(devopsEnvFileResourceE.getResourceId());
                     if (certificationE == null) {
-                        throw new CommonException("the certification in the file is not exist in devops database");
+                        throw new CommonException("certification.not.exist.in.database", null, certificationE.getName(), null);
                     }
                     return certificationE.getName();
                 })
@@ -100,7 +100,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
     private void updateC7nCertificationPath(C7nCertification c7nCertification,
                                             Long envId, Map<String, String> objectPath) {
-        Long  certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath);
+        Long certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath);
 
         String kind = c7nCertification.getKind();
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository

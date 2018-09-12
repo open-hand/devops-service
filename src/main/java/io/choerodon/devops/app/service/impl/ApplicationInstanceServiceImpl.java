@@ -638,7 +638,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .query(instanceId);
+                .query(instanceE.getCommandId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
         applicationInstanceRepository.deleteById(instanceId);

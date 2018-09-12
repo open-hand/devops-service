@@ -60,7 +60,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                     DevopsIngressDO devopsIngressDO = devopsIngressRepository
                             .getIngress(devopsEnvFileResourceE.getResourceId());
                     if (devopsIngressDO == null) {
-                        throw new CommonException("the ingress in the file is not exist in devops database");
+                        throw new CommonException("ingress.not.exist.in.database", null, devopsIngressDO.getName(), null);
                     }
                     return devopsIngressDO.getName();
                 }).collect(Collectors.toList());
@@ -89,6 +89,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                 devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
                 devopsIngressRepository.updateIngress(devopsIngressDO);
             }
+            devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
         });
         //新增ingress
@@ -113,7 +114,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         if (devopsIngressE == null) {
                             devopsIngressDTO = getDevopsIngressDTO(
                                     v1beta1Ingress,
-                                    envId);
+                                    envId, filePath);
                             if (!devopsIngressDTO.getPathList().stream()
                                     .allMatch(t ->
                                             devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
@@ -140,7 +141,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         devopsEnvFileResourceE.setResourceType(v1beta1Ingress.getKind());
                         devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
                     } catch (CommonException e) {
-                        throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                        String errorCode = "";
+                        if (e instanceof GitOpsExplainException) {
+                            errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                        }
+                        throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
                     }
                 });
     }
@@ -158,7 +163,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         //初始化ingress对象参数,更新ingress并更新文件对象关联关系
                         DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(
                                 v1beta1Ingress,
-                                envId);
+                                envId, filePath);
                         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, devopsIngressE.getId());
                         if (devopsIngressDTO.equals(ingressDTO)) {
                             isNotChange = true;
@@ -193,7 +198,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                 v1beta1Ingress.hashCode(), devopsIngressE.getId(), v1beta1Ingress.getKind());
 
                     } catch (CommonException e) {
-                        throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                        String errorCode = "";
+                        if (e instanceof GitOpsExplainException) {
+                            errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                        }
+                        throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
                     }
                 });
     }
@@ -210,7 +219,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
 
     private DevopsIngressDTO getDevopsIngressDTO(V1beta1Ingress v1beta1Ingress,
-                                                 Long envId) {
+                                                 Long envId, String filePath) {
         DevopsIngressDTO devopsIngressDTO = new DevopsIngressDTO();
         devopsIngressDTO.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost()
         );
@@ -220,19 +229,19 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         List<DevopsIngressPathDTO> devopsIngressPathDTOS = new ArrayList<>();
         List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules().get(0).getHttp().getPaths();
         if (paths == null) {
-            throw new CommonException(GitOpsObjectError.INGRESS_PATH_IS_EMPTY.getError());
+            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_IS_EMPTY.getError(), filePath);
         }
         for (V1beta1HTTPIngressPath v1beta1HTTPIngressPath : paths) {
             String path = v1beta1HTTPIngressPath.getPath();
             try {
                 DevopsIngressValidator.checkPath(path);
                 if (pathCheckList.contains(path)) {
-                    throw new CommonException(GitOpsObjectError.INGRESS_PATH_DUPLICATED.getError());
+                    throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_DUPLICATED.getError(), filePath);
                 } else {
                     pathCheckList.add(path);
                 }
             } catch (Exception e) {
-                throw new CommonException(e.getMessage());
+                throw new GitOpsExplainException(e.getMessage(), filePath);
             }
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
             V1beta1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
@@ -240,7 +249,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
                     serviceName, devopsEnvironmentE.getCode());
             if (devopsServiceE == null) {
-                throw new CommonException(GitOpsObjectError.SERVICE_RELATED_INGRESS_NOT_FOUND.getError() + serviceName);
+                throw new GitOpsExplainException(GitOpsObjectError.SERVICE_RELATED_INGRESS_NOT_FOUND.getError(), filePath, serviceName, null);
             }
             Long servicePort;
             IntOrString backendServicePort = backend.getServicePort();
@@ -249,7 +258,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                 if (devopsServiceE.getPorts().parallelStream()
                         .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
                     throw new CommonException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
-                            serviceName, servicePort);
+                            filePath, serviceName, null);
                 }
             } else {
                 servicePort = devopsServiceE.getPorts().get(0).getPort();

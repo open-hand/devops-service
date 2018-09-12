@@ -56,7 +56,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     DevopsServiceE devopsServiceE = devopsServiceRepository
                             .query(devopsEnvFileResourceE.getResourceId());
                     if (devopsServiceE == null) {
-                        throw new CommonException("the service in the file is not exist in devops database");
+                        throw new CommonException("service.not.exist.in.database", null, devopsServiceE.getName(), null);
                     }
                     return devopsServiceE.getName();
                 }).collect(Collectors.toList());
@@ -107,7 +107,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         //初始化网络参数,更新网络和网络关联关系
                         DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
                                 v1Service,
-                                envId);
+                                envId,
+                                filePath);
                         Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqDTO);
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
                         if (!isNotChange) {
@@ -133,7 +134,11 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 devopsEnvFileResourceE,
                                 v1Service.hashCode(), devopsServiceE.getId(), v1Service.getKind());
                     } catch (CommonException e) {
-                        throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                        String errorCode = "";
+                        if (e instanceof GitOpsExplainException) {
+                            errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                        }
+                        throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
                     }
                 });
     }
@@ -153,7 +158,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         if (devopsServiceE == null) {
                             devopsServiceReqDTO = getDevopsServiceDTO(
                                     v1Service,
-                                    envId);
+                                    envId,
+                                    filePath);
                             devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO);
                             devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                                     devopsServiceReqDTO.getName(), envId);
@@ -174,14 +180,18 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         devopsEnvFileResourceE.setResourceType(v1Service.getKind());
                         devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
                     } catch (CommonException e) {
-                        throw new GitOpsExplainException(e.getMessage(), filePath, e);
+                        String errorCode = "";
+                        if (e instanceof GitOpsExplainException) {
+                            errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                        }
+                        throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
                     }
                 });
     }
 
 
     private DevopsServiceReqDTO getDevopsServiceDTO(V1Service v1Service,
-                                                    Long envId) {
+                                                    Long envId, String filePath) {
         DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO();
         if (v1Service.getSpec().getExternalIPs() != null) {
             devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
@@ -209,7 +219,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     .get("choerodon.io/network-service-instances");
             if (!instancesCode.isEmpty()) {
                 List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
-                        .map(t -> getInstanceId(t, envId, devopsServiceReqDTO))
+                        .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, filePath))
                         .collect(Collectors.toList());
                 devopsServiceReqDTO.setAppInstance(instanceIdList);
             }
@@ -220,18 +230,18 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         return devopsServiceReqDTO;
     }
 
-    private Long getInstanceId(String instanceCode, Long envId, DevopsServiceReqDTO devopsServiceReqDTO) {
+    private Long getInstanceId(String instanceCode, Long envId, DevopsServiceReqDTO devopsServiceReqDTO, String filePath) {
         try {
             ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(instanceCode, envId);
             if (devopsServiceReqDTO.getAppId() == null) {
                 devopsServiceReqDTO.setAppId(instanceE.getApplicationE().getId());
             }
             if (!devopsServiceReqDTO.getAppId().equals(instanceE.getApplicationE().getId())) {
-                throw new CommonException(GitOpsObjectError.INSTANCE_APP_ID_NOT_SAME.getError());
+                throw new GitOpsExplainException(GitOpsObjectError.INSTANCE_APP_ID_NOT_SAME.getError(), filePath);
             }
             return instanceE.getId();
         } catch (Exception e) {
-            throw new CommonException(GitOpsObjectError.INSTANCE_RELATED_SERVICE_NOT_FOUND.getError() + instanceCode);
+            throw new GitOpsExplainException(GitOpsObjectError.INSTANCE_RELATED_SERVICE_NOT_FOUND.getError(), filePath, instanceCode, e);
         }
 
     }

@@ -25,4 +25,6 @@ public interface DevopsEnvResourceRepository {
 
     DevopsEnvResourceE queryLatestJob(String kind, String name);
 
+    void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId);
+
 }
