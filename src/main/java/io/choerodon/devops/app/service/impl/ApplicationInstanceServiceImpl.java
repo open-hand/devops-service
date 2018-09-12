@@ -624,8 +624,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
 
         //实例相关对象数据库操作
+        instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        applicationInstanceRepository.update(instanceE);
         devopsEnvCommandRepository.create(devopsEnvCommandE);
-        applicationInstanceRepository.deleteById(instanceId);
     }
 
     @Override
@@ -638,10 +639,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .query(instanceId);
-        devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-        devopsEnvCommandE.setId(null);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
         applicationInstanceRepository.deleteById(instanceId);
     }
 
