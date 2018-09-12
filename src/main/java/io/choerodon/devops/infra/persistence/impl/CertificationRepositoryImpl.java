@@ -82,9 +82,20 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         }
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        List<CertificationDO> certificationDOS = devopsCertificationMapper
+                .selectCertification(projectId, envId, searchParamMap, param);
+        // check if cert is overdue
+        certificationDOS.forEach(certificationDO -> {
+            if (CertificationStatus.ACTIVE.getStatus().equals(certificationDO.getStatus())) {
+                CertificationE certificationE = ConvertHelper.convert(certificationDO, CertificationE.class);
+                if (!certificationE.checkValidity()) {
+                    certificationDO.setStatus(CertificationStatus.OVERDUE.getStatus());
+                    devopsCertificationMapper.updateByPrimaryKey(certificationDO);
+                }
+            }
+        });
         Page<CertificationDTO> certificationDTOPage = ConvertPageHelper.convertPage(
-                PageHelper.doPageAndSort(pageRequest,
-                        () -> devopsCertificationMapper.selectCertification(projectId, envId, searchParamMap, param)),
+                PageHelper.doPageAndSort(pageRequest, () -> certificationDOS),
                 CertificationDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
