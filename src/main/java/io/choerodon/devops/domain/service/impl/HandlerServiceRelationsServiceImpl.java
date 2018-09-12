@@ -78,12 +78,13 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         //删除service,和文件对象关联关系
         beforeService.stream().forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
-            if (devopsServiceE != null) {
-                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-                devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
-                devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
+                devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
+                devopsEnvCommandE1.setStatus(CommandStatus.DOING.getStatus());
+                devopsEnvCommandE1.setObjectId(devopsServiceE.getId());
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
             devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
