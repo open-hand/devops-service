@@ -271,7 +271,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
         }
         devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandRepository.create(devopsEnvCommandE);
     }
 

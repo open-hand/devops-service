@@ -281,7 +281,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
         }
         devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandRepository.create(devopsEnvCommandE);
     }
 }
