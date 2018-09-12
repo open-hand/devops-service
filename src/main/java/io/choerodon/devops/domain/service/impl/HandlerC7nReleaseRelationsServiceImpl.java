@@ -80,6 +80,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         //删除instance,和文件对象关联关系
         beforeC7nRelease.stream().forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
+<<<<<<< HEAD
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
             if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
@@ -87,6 +88,14 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
                 devopsEnvCommandE1.setStatus(CommandStatus.DOING.getStatus());
                 devopsEnvCommandE1.setObjectId(applicationInstanceE.getId());
+=======
+            if (applicationInstanceE != null) {
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+>>>>>>> [IMP] change command status from doing to operating, change cert command status
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
             applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());

@@ -236,7 +236,7 @@ public class CertificationServiceImpl implements CertificationService {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         devopsEnvCommandE.setCommandType(type);
         devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setObjectId(certId);
         return devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
     }

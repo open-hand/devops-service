@@ -78,6 +78,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         //删除service,和文件对象关联关系
         beforeService.stream().forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
+<<<<<<< HEAD
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
             if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
@@ -85,6 +86,14 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
                 devopsEnvCommandE1.setStatus(CommandStatus.DOING.getStatus());
                 devopsEnvCommandE1.setObjectId(devopsServiceE.getId());
+=======
+            if (devopsServiceE != null) {
+                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
+                devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
+                devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+>>>>>>> [IMP] change command status from doing to operating, change cert command status
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
             }
             devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());

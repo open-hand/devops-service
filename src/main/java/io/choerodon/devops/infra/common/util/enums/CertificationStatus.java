@@ -8,6 +8,7 @@ package io.choerodon.devops.infra.common.util.enums;
  */
 public enum CertificationStatus {
     OPERATING("operating"),
+    APPLYING("applying"),
     ACTIVE("active"),
     FAILED("failed"),
     OVERDUE("overdue");

@@ -617,7 +617,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         }
         devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
-        devopsEnvCommandE.setStatus(CommandStatus.DOING.getStatus());
+        devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
     }
 }
