@@ -282,10 +282,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         }
 
         //更新ingress
-        devopsIngressRepository.setStatus(devopsEnvironmentE.getId(),ingressDO.getName(),IngressStatus.OPERATING.getStatus());
         devopsEnvCommandE.setObjectId(ingressId);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
-
+        DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(ingressId);
+        devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
+        devopsIngressRepository.updateIngress(devopsIngressDO);
     }
 
 

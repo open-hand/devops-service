@@ -625,8 +625,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //实例相关对象数据库操作
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        instanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         applicationInstanceRepository.update(instanceE);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
     }
 
     @Override

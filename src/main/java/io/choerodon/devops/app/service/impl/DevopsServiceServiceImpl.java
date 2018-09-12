@@ -385,10 +385,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     userAttrE.getGitlabUserId(),
                     devopsServiceE.getId(), SERVICE, devopsEnvironmentE.getId(), path);
         }
-        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceRepository.update(devopsServiceE);
+
         devopsEnvCommandE.setObjectId(id);
-        devopsEnvCommandRepository.create(devopsEnvCommandE);
+        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
+        devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        devopsServiceRepository.update(devopsServiceE);
     }
 
 
