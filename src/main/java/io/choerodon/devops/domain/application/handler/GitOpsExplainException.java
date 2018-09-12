@@ -13,6 +13,7 @@ public class GitOpsExplainException extends CommonException {
     private final transient Object[] parameters;
     private String code;
     private String filePath;
+    private String errorCode;
 
     public GitOpsExplainException(String code, Object... parameters) {
         super(code);
@@ -23,7 +24,7 @@ public class GitOpsExplainException extends CommonException {
     public GitOpsExplainException(String code, String filePath) {
         super(code);
         this.code = code;
-        this.filePath =filePath;
+        this.filePath = filePath;
         this.parameters = new Object[0];
     }
 
@@ -31,7 +32,15 @@ public class GitOpsExplainException extends CommonException {
         super(code);
         this.parameters = parameters;
         this.code = code;
-        this.filePath =filePath;
+        this.filePath = filePath;
+    }
+
+    public GitOpsExplainException(String code, String filePath, String errorCode, Object... parameters) {
+        super(code);
+        this.parameters = parameters;
+        this.errorCode = errorCode;
+        this.code = code;
+        this.filePath = filePath;
     }
 
     public GitOpsExplainException(String code, Throwable cause, Object... parameters) {
@@ -80,5 +89,13 @@ public class GitOpsExplainException extends CommonException {
 
     public void setFilePath(String filePath) {
         this.filePath = filePath;
+    }
+
+    public String getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(String errorCode) {
+        this.errorCode = errorCode;
     }
 }

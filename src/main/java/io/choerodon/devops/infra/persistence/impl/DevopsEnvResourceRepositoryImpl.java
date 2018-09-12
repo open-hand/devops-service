@@ -86,4 +86,13 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
         return ConvertHelper.convert(devopsEnvResourceMapper.queryLatestJob(kind, name), DevopsEnvResourceE.class);
     }
 
+    @Override
+    public void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId) {
+        DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO();
+        devopsEnvResourceDO.setKind(kind);
+        devopsEnvResourceDO.setName(name);
+        devopsEnvResourceDO.setAppInstanceId(instanceId);
+        devopsEnvResourceMapper.delete(devopsEnvResourceDO);
+    }
+
 }
