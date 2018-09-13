@@ -208,7 +208,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         ApplicationVersionE applicationVersionE = applicationVersionRepository
                 .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
         if (applicationVersionE == null) {
-            throw new CommonException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion(), null);
+            throw new GitOpsExplainException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion(), null);
         }
 
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();

@@ -36,11 +36,11 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
                 .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsIngressE.getId()))) {
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
             if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())))) {
-                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + v1beta1Ingress.getMetadata().getName(), filePath);
+                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(),null);
             }
         }
         if (v1beta1Ingresses.parallelStream().anyMatch(v1beta1Ingress1 -> v1beta1Ingress1.getMetadata().getName().equals(v1beta1Ingress.getMetadata().getName()))) {
-            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + v1beta1Ingress.getMetadata().getName(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(),null);
         } else {
             v1beta1Ingresses.add(v1beta1Ingress);
         }

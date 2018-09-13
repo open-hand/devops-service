@@ -60,7 +60,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                     DevopsIngressDO devopsIngressDO = devopsIngressRepository
                             .getIngress(devopsEnvFileResourceE.getResourceId());
                     if (devopsIngressDO == null) {
-                        throw new CommonException("ingress.not.exist.in.database", null, devopsIngressDO.getName(), null);
+                        throw new GitOpsExplainException("ingress.not.exist.in.database", null, devopsIngressDO.getName(), null);
                     }
                     return devopsIngressDO.getName();
                 }).collect(Collectors.toList());
@@ -118,7 +118,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                             if (!devopsIngressDTO.getPathList().stream()
                                     .allMatch(t ->
                                             devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
-                                throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
+                                throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(),filePath);
                             }
                             devopsIngressService.addIngressByGitOps(devopsIngressDTO, projectId);
                             devopsIngressE = devopsIngressRepository
@@ -171,7 +171,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         if (!devopsIngressDTO.getPathList().stream()
                                 .allMatch(t ->
                                         devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
-                            throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
+                            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(),filePath);
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
                         if (!isNotChange) {
@@ -257,7 +257,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                 servicePort = backendServicePort.getIntValue().longValue();
                 if (devopsServiceE.getPorts().parallelStream()
                         .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
-                    throw new CommonException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
+                    throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
                             filePath, serviceName, null);
                 }
             } else {

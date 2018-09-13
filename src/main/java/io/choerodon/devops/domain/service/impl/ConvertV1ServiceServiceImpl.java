@@ -36,11 +36,11 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
                         .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsServiceE.getId()))) {
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
             if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1Service.hashCode())))) {
-                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + v1Service.getMetadata().getName(), filePath);
+                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1Service.getMetadata().getName(),null);
             }
         }
         if (v1Services.parallelStream().anyMatch(v1Service1 -> v1Service1.getMetadata().getName().equals(v1Service.getMetadata().getName()))) {
-            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + v1Service.getMetadata().getName(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1Service.getMetadata().getName(),null);
         } else {
             v1Services.add(v1Service);
         }
