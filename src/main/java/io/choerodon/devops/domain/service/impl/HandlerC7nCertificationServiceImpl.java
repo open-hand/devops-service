@@ -157,7 +157,11 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 certificationRepository.storeCertFile(
                         new CertificationFileDO(certificationE.getId(), existCert.getCert(), existCert.getKey()));
             }
-            certificationService.createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
+            Long commandId = certificationService
+                    .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
+            certificationE.setCommandId(commandId);
+            certificationRepository.updateCommandId(certificationE);
+
         }
         return certificationE.getId();
     }
