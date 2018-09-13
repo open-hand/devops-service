@@ -99,11 +99,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnviromentDTO.setCode("testCodeChange")
         devopsEnviromentDTO.setName("testNameChange")
 
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
-        devopsProjectDO.setId(1L)
-        devopsProjectDO.setGitlabGroupId(1)
-        devopsProjectDO.setEnvGroupId(1)
-        devopsProjectRepository.createProject(devopsProjectDO)
+//        DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
+//        devopsProjectDO.setGitlabGroupId(1)
+//        devopsProjectDO.setEnvGroupId(1)
+//        devopsProjectRepository.createProject(devopsProjectDO)
 
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setId(1L)
