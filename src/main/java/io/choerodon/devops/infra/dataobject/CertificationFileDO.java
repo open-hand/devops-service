@@ -13,7 +13,7 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
  * Description:
  */
 @ModifyAudit
-@Table(name = "devops_certification")
+@Table(name = "devops_certification_file")
 public class CertificationFileDO {
     @Id
     @GeneratedValue
