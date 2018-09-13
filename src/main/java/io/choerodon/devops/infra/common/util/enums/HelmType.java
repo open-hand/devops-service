@@ -155,6 +155,10 @@ public enum HelmType {
                 return HelmType.GIT_OPS_COMMAND_SYNC_EVENT;
             case "git_ops_command_sync_event_result":
                 return HelmType.GIT_OPS_COMMAND_SYNC_EVENT_RESULT;
+            case "cert_issued":
+                return CERT_ISSUED;
+            case "cert_failed":
+                return CERT_FAILED;
             default:
                 break;
         }

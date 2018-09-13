@@ -115,7 +115,9 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     private void removeFiles(String path, MultipartFile multipartFile) {
-        new File(path + FILE_SEPARATOR + multipartFile.getOriginalFilename()).deleteOnExit();
+        if (multipartFile != null) {
+            new File(path + FILE_SEPARATOR + multipartFile.getOriginalFilename()).deleteOnExit();
+        }
     }
 
     private void storeCertFile(C7nCertification c7nCertification, Long certId) {
@@ -134,7 +136,7 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     private String getFileContent(String path, MultipartFile file) {
-        return FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, file)));
+        return file == null ? null : FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, file)));
     }
 
     @Override

@@ -12,16 +12,19 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.entity.CertificationE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.certification.CertificationExistCert;
 import io.choerodon.devops.domain.application.valueobject.certification.CertificationSpec;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
@@ -31,6 +34,7 @@ import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRelationsService<C7nCertification> {
 
     private static final String CERTIFICATE = "Certificate";
+    private static final String GIT_SUFFIX = "/.git";
 
     @Autowired
     private CertificationRepository certificationRepository;
@@ -42,6 +46,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
@@ -72,7 +78,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     }
                 });
         updateC7nCertification.forEach(c7nCertification1 ->
-                updateC7nCertificationPath(c7nCertification1, envId, objectPath));
+                updateC7nCertificationPath(c7nCertification1, envId, objectPath, path));
         beforeC7nCertification
                 .forEach(certName -> {
                     CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
@@ -87,9 +93,10 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 filePath = objectPath.get(TypeUtil.objToString(c7nCertification.hashCode()));
                 DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
                 devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nCertification.hashCode())));
+                devopsEnvFileResourceE.setFilePath(filePath);
                 devopsEnvFileResourceE.setResourceId(
-                        createCertificationAndGetId(envId, c7nCertification, c7nCertification.getMetadata().getName()));
+                        createCertificationAndGetId(
+                                envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path));
                 devopsEnvFileResourceE.setResourceType(c7nCertification.getKind());
                 devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
             } catch (Exception e) {
@@ -99,17 +106,19 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     }
 
     private void updateC7nCertificationPath(C7nCertification c7nCertification,
-                                            Long envId, Map<String, String> objectPath) {
-        Long certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath);
+                                            Long envId, Map<String, String> objectPath, String path) {
+        Long certId = checkC7nCertificationChanges(c7nCertification, envId, objectPath, path);
 
         String kind = c7nCertification.getKind();
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(envId, certId, kind);
         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId,
                 devopsEnvFileResourceE, c7nCertification.hashCode(), certId, kind);
+
     }
 
-    private Long checkC7nCertificationChanges(C7nCertification c7nCertification, Long envId, Map<String, String> objectPath) {
+    private Long checkC7nCertificationChanges(C7nCertification c7nCertification, Long envId,
+                                              Map<String, String> objectPath, String path) {
         DevopsEnvironmentE environmentE = devopsEnvironmentRepository.queryById(envId);
         String certName = c7nCertification.getMetadata().getName();
         CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
@@ -130,30 +139,49 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         if (!c7nCertification.equals(oldC7nCertification)) {
             throw new GitOpsExplainException(GitOpsObjectError.CERT_CHANGED.getError(), filePath);
         }
+        updateCommandSha(filePath, path, certificationE.getCommandId());
         return certificationE.getId();
     }
 
-    private Long createCertificationAndGetId(Long envId, C7nCertification c7nCertification, String certName) {
-        CertificationE certificationE = new CertificationE();
-        CertificationSpec certificationSpec = c7nCertification.getSpec();
-        String domain = certificationSpec.getCommonName();
-        List<String> dnsDomain = certificationSpec.getDnsNames();
-        List<String> domains = new ArrayList<>();
-        domains.add(domain);
-        if (dnsDomain != null && !dnsDomain.isEmpty()) {
-            domains.addAll(dnsDomain);
+    private Long createCertificationAndGetId(Long envId, C7nCertification c7nCertification, String certName,
+                                             String filePath, String path) {
+        CertificationE certificationE = certificationRepository
+                .queryByEnvAndName(envId, certName);
+        if (certificationE == null) {
+            certificationE = new CertificationE();
+
+            CertificationSpec certificationSpec = c7nCertification.getSpec();
+            String domain = certificationSpec.getCommonName();
+            List<String> dnsDomain = certificationSpec.getDnsNames();
+            List<String> domains = new ArrayList<>();
+            domains.add(domain);
+            if (dnsDomain != null && !dnsDomain.isEmpty()) {
+                domains.addAll(dnsDomain);
+            }
+            certificationE.setDomains(domains);
+            certificationE.setEnvironmentE(new DevopsEnvironmentE(envId));
+            certificationE.setName(certName);
+            certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
+            certificationE = certificationRepository.create(certificationE);
+            CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
+            if (existCert != null) {
+                certificationRepository.storeCertFile(
+                        new CertificationFileDO(certificationE.getId(), existCert.getCert(), existCert.getKey()));
+            }
+            Long commandId = certificationService
+                    .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
+            certificationE.setCommandId(commandId);
+            certificationRepository.updateCommandId(certificationE);
+
+            updateCommandSha(filePath, path, certificationE.getCommandId());
+
         }
-        certificationE.setDomains(domains);
-        certificationE.setEnvironmentE(new DevopsEnvironmentE(envId));
-        certificationE.setName(certName);
-        certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
-        certificationE = certificationRepository.create(certificationE);
-        CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
-        if (existCert != null) {
-            certificationRepository.storeCertFile(
-                    new CertificationFileDO(certificationE.getId(), existCert.getCert(), existCert.getKey()));
-        }
-        certificationService.createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
         return certificationE.getId();
+    }
+
+    private void updateCommandSha(String filePath, String path, Long commandId) {
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
+        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
     }
 }
