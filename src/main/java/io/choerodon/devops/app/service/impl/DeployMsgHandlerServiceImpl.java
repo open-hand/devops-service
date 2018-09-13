@@ -1201,19 +1201,17 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void certIssued(String key, Long envId, String msg) {
-
         try {
-            ResourceType resourceType = ResourceType.forString(KeyParseTool.getResourceType(key));
-            if (resourceType == ResourceType.SECRET) {
+            String certName = KeyParseTool.getValue(key, "Cert");
+            CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+            if (certificationE != null) {
                 Object obj = objectMapper.readValue(msg, Object.class);
-                String certName = ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get("name").toString();
-                CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-                if (certificationE != null) {
-                    String crt = ((LinkedHashMap) ((LinkedHashMap) obj).get("data")).get("tls.crt").toString();
-                    X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
-                    Date validFrom = certificate.getNotBefore();
-                    Date validUntil = certificate.getNotAfter();
-
+                String crt = ((LinkedHashMap) ((LinkedHashMap) obj).get("data")).get("tls.crt").toString();
+                X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
+                Date validFrom = certificate.getNotBefore();
+                Date validUntil = certificate.getNotAfter();
+                if (!(validFrom.equals(certificationE.getValidFrom())
+                        && validUntil.equals(certificationE.getValidUntil()))) {
                     certificationE.setValid(validFrom, validUntil);
 
                     certificationRepository.updateValid(certificationE);
