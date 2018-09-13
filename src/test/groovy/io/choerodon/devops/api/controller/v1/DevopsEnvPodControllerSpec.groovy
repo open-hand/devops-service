@@ -61,15 +61,16 @@ class DevopsEnvPodControllerSpec extends Specification {
             devopsEnvPodMapper.insert(devopsEnvPodDO)
 
             DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-            devopsEnvironmentDO.setId(1L)
+            devopsEnvironmentDO.setCode("env")
             devopsEnvironmentDO.setProjectId(1L)
             devopsEnvironmentDO.setName("testName")
-            devopsEnvironmentDO.setCode("testCode")
+            devopsEnvironmentDO.setEnvIdRsa("EnvIdRsa")
+            devopsEnvironmentDO.setGitlabEnvProjectId(1L)
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
             ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
-            applicationInstanceDO.setId(1L)
             applicationInstanceDO.setEnvId(1L)
+            applicationInstanceDO.setAppId(1L)
             applicationInstanceDO.setAppVersionId(1L)
             applicationInstanceMapper.insert(applicationInstanceDO)
 
