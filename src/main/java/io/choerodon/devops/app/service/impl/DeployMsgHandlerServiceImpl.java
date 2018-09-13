@@ -1252,6 +1252,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvCommandRepository.create(devopsEnvCommandE);
             certificationE.setId(devopsEnvCommandE.getObjectId());
             certificationRepository.updateCommandId(certificationE);
+            certificationE.setStatus(CertificationStatus.FAILED.getStatus());
+            certificationRepository.updateStatus(certificationE);
         }
 
     }
