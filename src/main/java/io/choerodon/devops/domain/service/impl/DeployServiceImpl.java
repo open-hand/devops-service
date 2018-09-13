@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.valueobject.Command;
 import io.choerodon.devops.domain.application.valueobject.CommandPayLoad;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.domain.service.DeployService;
@@ -69,20 +70,4 @@ public class DeployServiceImpl implements DeployService {
         commandSender.sendMsg(msg);
     }
 
-    @Override
-    public void sendCommandSyncEvent(Long envId, String envCode, List<DevopsEnvCommandE> devopsEnvCommandES) {
-        Msg msg = new Msg();
-        CommandPayLoad payload = new CommandPayLoad(
-                devopsEnvCommandES);
-        msg.setKey(String.format("env:%s.envId:%d",
-                envCode,
-                envId));
-        msg.setType(HelmType.GIT_OPS_COMMAND_SYNC_EVENT_RESULT.toValue());
-        try {
-            msg.setPayload(mapper.writeValueAsString(payload));
-        } catch (IOException e) {
-            throw new CommonException("error.payload.error");
-        }
-        commandSender.sendMsg(msg);
-    }
 }

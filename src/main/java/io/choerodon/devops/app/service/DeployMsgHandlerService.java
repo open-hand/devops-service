@@ -66,4 +66,7 @@ public interface DeployMsgHandlerService {
     void certIssued(String key, Long envId, String msg);
 
     void certFailed(String key, Long envId, String msg);
+
+    void gitOpsCommandSyncEventResult(Long envId, String msg);
+
 }

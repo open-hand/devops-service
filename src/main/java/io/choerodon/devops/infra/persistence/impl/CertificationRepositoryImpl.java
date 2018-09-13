@@ -172,6 +172,13 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         return devopsCertificationFileMapper.selectOne(new CertificationFileDO(certId));
     }
 
+    @Override
+    public List<CertificationE> listByEnvId(Long envId) {
+        CertificationDO certificationDO = new CertificationDO();
+        certificationDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsCertificationMapper.select(certificationDO),CertificationE.class);
+    }
+
     private void deleteCertFile(Long certId) {
         CertificationFileDO certificationFileDO = new CertificationFileDO(certId);
         if (!devopsCertificationFileMapper.select(certificationFileDO).isEmpty()) {

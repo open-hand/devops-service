@@ -41,4 +41,6 @@ public interface CertificationRepository {
     void storeCertFile(CertificationFileDO certificationFileDO);
 
     CertificationFileDO getCertFile(Long certId);
+
+    List<CertificationE> listByEnvId(Long envId);
 }

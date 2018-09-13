@@ -25,6 +25,7 @@ import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
@@ -335,8 +336,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                                 applicationInstanceE.getId(),
                                                 KeyParseTool.getResourceType(key),
                                                 KeyParseTool.getResourceName(key));
+                                DevopsEnvResourceDetailE newDevopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
+                                devopsEnvResourceDetailE.setMessage(msg);
                                 saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
-                                        devopsEnvResourceDetailE, applicationInstanceE);
+                                        newDevopsEnvResourceDetailE, applicationInstanceE);
                                 afterInstanceIds.add(applicationInstanceE.getId());
                             }
                             //网络更新实例删除网络以前实例网络关联的resource
@@ -1184,18 +1187,61 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void gitOpsCommandSyncEvent(Long envId) {
-        List<Long> commandIds = new ArrayList<>();
-        commandIds.addAll(applicationInstanceRepository.selectByEnvId(envId).parallelStream().map(ApplicationInstanceE::getCommandId).collect(Collectors.toList()));
-        commandIds.addAll(devopsServiceRepository.selectByEnvId(envId).parallelStream().map(DevopsServiceE::getCommandId).collect(Collectors.toList()));
-        commandIds.addAll(devopsIngressRepository.listByEnvId(envId).parallelStream().map(DevopsIngressE::getCommandId).collect(Collectors.toList()));
-        List<DevopsEnvCommandE> devopsEnvCommandES = new ArrayList<>();
+        List<Command> commands = new ArrayList<>();
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        applicationInstanceRepository.selectByEnvId(envId).parallelStream().forEach(applicationInstanceE -> {
+            Command command = new Command();
+            command.setId(applicationInstanceE.getCommandId());
+            command.setObjectType("Instance");
+            command.setObjectName(applicationInstanceE.getCode());
+            commands.add(command);
+            });
+       devopsServiceRepository.selectByEnvId(envId).parallelStream().forEach(devopsServiceE -> {
+           Command command = new Command();
+           command.setId(devopsServiceE.getCommandId());
+           command.setObjectType("Service");
+           command.setObjectName(devopsServiceE.getName());
+           commands.add(command);
+       });
+        devopsIngressRepository.listByEnvId(envId).parallelStream().forEach(devopsIngressE -> {
+            Command command   = new Command();
+            command.setId(devopsIngressE.getCommandId());
+            command.setObjectType("Ingress");
+            command.setObjectName(devopsIngressE.getName());
+            commands.add(command);
+        });
+        certificationRepository.listByEnvId(envId).parallelStream().forEach(certificationE -> {
+            Command command = new Command();
+            command.setId(certificationE.getCommandId());
+            command.setObjectType("Certification");
+            command.setObjectName(certificationE.getName());
+            commands.add(command);
+        });
         Date d = new Date();
-        commandIds.parallelStream().forEach(commandId -> {
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
-            if (!CommandStatus.SUCCESS.getStatus().equals(devopsEnvCommandE.getStatus()) && d.getTime() - devopsEnvCommandE.getLastUpdateDate().getTime() > 180) {
-                devopsEnvCommandES.add(devopsEnvCommandE);
+        commands.parallelStream().forEach(command -> {
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(command.getId());
+            if (CommandStatus.SUCCESS.getStatus().equals(devopsEnvCommandE.getStatus()) || d.getTime() - devopsEnvCommandE.getLastUpdateDate().getTime() <= 180) {
+                commands.remove(command);
             }
         });
+        Msg msg = new Msg();
+        CommandPayLoad payload = new CommandPayLoad(
+                commands);
+        msg.setKey(String.format("env:%s.envId:%d",
+                devopsEnvironmentE.getCode(),
+                envId));
+        msg.setType(HelmType.GIT_OPS_COMMAND_SYNC_EVENT_RESULT.toValue());
+        try {
+            msg.setPayload(mapper.writeValueAsString(payload));
+        } catch (IOException e) {
+            throw new CommonException("error.payload.error");
+        }
+            socketMsgDispatcher.dispatcher(msg);
+    }
+
+
+    @Override
+    public void gitOpsCommandSyncEventResult(Long envId, String msg) {
 
     }
 
