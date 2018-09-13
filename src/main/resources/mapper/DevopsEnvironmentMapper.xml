@@ -9,7 +9,7 @@
     </update>
 
 
-    <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+    <update id="updateDevopsEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
         UPDATE devops_env de set de.git_commit = #{gitCommit} , de.devops_sync_commit = #{devopsSyncCommit} ,
         de.agent_sync_commit = #{agentSyncCommit} where de.id = #{envId}
 
