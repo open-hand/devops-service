@@ -920,7 +920,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                            String objectType, String objectName, String passStatus,
                                            List<DevopsEnvFileErrorE> envFileErrorES) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(commandId);
-        if (devopsEnvCommandE.getSha().equals(resourceCommit.getCommit())) {
+        if (resourceCommit.getCommit().equals(devopsEnvCommandE.getSha())) {
             devopsEnvCommandE.setStatus(passStatus == null ? CommandStatus.SUCCESS.getStatus() : passStatus);
         }
         DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository
