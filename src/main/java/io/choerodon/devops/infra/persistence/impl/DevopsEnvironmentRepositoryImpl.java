@@ -122,4 +122,9 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     public List<DevopsEnvironmentE> list() {
         return ConvertHelper.convertList(devopsEnvironmentMapper.selectAll(), DevopsEnvironmentE.class);
     }
+
+    @Override
+    public void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(), devopsEnvironmentE.getGitCommit(), devopsEnvironmentE.getDevopsSyncCommit(), devopsEnvironmentE.getAgentSyncCommit());
+    }
 }

@@ -80,12 +80,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                         "");
                 break;
             case HELM_RELEASE_DELETE:
-                deployMsgHandlerService.updateInstanceStatus(
-                        KeyParseTool.getResourceName(msg.getKey()),
-                        TypeUtil.objToLong(msg.getEnvId()),
-                        InstanceStatus.DELETED.getStatus(),
-                        CommandStatus.SUCCESS.getStatus(),
-                        "");
+                deployMsgHandlerService.helmReleaseDelete(KeyParseTool.getResourceName(msg.getKey()), TypeUtil.objToLong(msg.getEnvId()));
                 break;
             case HELM_RELEASE_PRE_UPGRADE:
                 deployMsgHandlerService.helmReleasePreUpgrade(
@@ -187,7 +182,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                         msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             case GIT_OPS_COMMAND_SYNC_EVENT_RESULT:
-                deployMsgHandlerService.gitOpsCommandSyncEventResult(TypeUtil.objToLong(msg.getEnvId()),msg.getPayload());
+                deployMsgHandlerService.gitOpsCommandSyncEventResult(TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             default:
                 break;

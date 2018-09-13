@@ -25,7 +25,6 @@ import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
@@ -391,8 +390,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                 KeyParseTool.getNamespace(msg));
                 //更新网络数据
                 if (devopsServiceE != null) {
-                    devopsServiceE.setStatus(ServiceStatus.DELETED.getStatus());
-                    devopsServiceRepository.update(devopsServiceE);
+                    DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                    devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                    devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                    devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+                    devopsEnvCommandE.setObject("service");
+                    devopsEnvCommandRepository.create(devopsEnvCommandE);
+                    devopsServiceRepository.delete(devopsServiceE.getId());
                 }
             }
             if (KeyParseTool.getResourceType(msg).equals(ResourceType.INGRESS.getType())) {
@@ -400,6 +404,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
                         devopsEnvironmentE.getId(), KeyParseTool.getResourceName(msg));
                 if (devopsIngressE != null) {
+                    DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+                    devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                    devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                    devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                    devopsEnvCommandE.setObject("ingress");
+                    devopsEnvCommandRepository.create(devopsEnvCommandE);
                     devopsIngressRepository.deleteIngress(devopsIngressE.getId());
                     devopsIngressRepository.deleteIngressPath(devopsIngressE.getId());
                 }
@@ -434,6 +444,20 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvCommandE.setStatus(commandStatus);
             devopsEnvCommandE.setError(msg);
             devopsEnvCommandRepository.update(devopsEnvCommandE);
+        }
+    }
+
+    @Override
+    public void helmReleaseDelete(String key, Long envId) {
+        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key, envId);
+        if (instanceE != null) {
+            DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+            devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+            devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+            devopsEnvCommandE.setObjectId(instanceE.getId());
+            devopsEnvCommandE.setObject("instance");
+            devopsEnvCommandRepository.create(devopsEnvCommandE);
+            applicationInstanceRepository.deleteById(instanceE.getId());
         }
     }
 
@@ -823,7 +847,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             }
         }
         devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
-        devopsEnvironmentRepository.update(devopsEnvironmentE);
+        devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
         if (gitOpsSync.getResourceIDs().isEmpty()) {
             return;
         }
@@ -1195,16 +1219,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             command.setObjectType("Instance");
             command.setObjectName(applicationInstanceE.getCode());
             commands.add(command);
-            });
-       devopsServiceRepository.selectByEnvId(envId).parallelStream().forEach(devopsServiceE -> {
-           Command command = new Command();
-           command.setId(devopsServiceE.getCommandId());
-           command.setObjectType("Service");
-           command.setObjectName(devopsServiceE.getName());
-           commands.add(command);
-       });
+        });
+        devopsServiceRepository.selectByEnvId(envId).parallelStream().forEach(devopsServiceE -> {
+            Command command = new Command();
+            command.setId(devopsServiceE.getCommandId());
+            command.setObjectType("Service");
+            command.setObjectName(devopsServiceE.getName());
+            commands.add(command);
+        });
         devopsIngressRepository.listByEnvId(envId).parallelStream().forEach(devopsIngressE -> {
-            Command command   = new Command();
+            Command command = new Command();
             command.setId(devopsIngressE.getCommandId());
             command.setObjectType("Ingress");
             command.setObjectName(devopsIngressE.getName());
@@ -1236,7 +1260,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         } catch (IOException e) {
             throw new CommonException("error.payload.error");
         }
-            socketMsgDispatcher.dispatcher(msg);
+        socketMsgDispatcher.dispatcher(msg);
     }
 
 
