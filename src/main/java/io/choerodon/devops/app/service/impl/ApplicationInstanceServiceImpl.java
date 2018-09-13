@@ -719,6 +719,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (versionValue.equals(deployValue)) {
             ReplaceResult replaceResult = new ReplaceResult();
             replaceResult.setDeltaYaml("");
+            replaceResult.setHighlightMarkers(new ArrayList<>());
             return replaceResult;
         }
 
@@ -729,7 +730,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         try {
             replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
-            throw new CommonException(e.getMessage(),e);
+            throw new CommonException(e.getMessage(), e);
+        }
+        if (replaceResult.getHighlightMarkers() == null) {
+            replaceResult.setHighlightMarkers(new ArrayList<>());
         }
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
         FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
