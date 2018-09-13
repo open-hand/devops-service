@@ -1223,6 +1223,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
                     devopsEnvCommandE.setObjectId(certificationE.getId());
                     devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                    devopsEnvCommandE.setSha(KeyParseTool.getValue(key, "commit"));
                     devopsEnvCommandRepository.create(devopsEnvCommandE);
                     certificationE.setId(devopsEnvCommandE.getObjectId());
                     certificationRepository.updateCommandId(certificationE);
@@ -1237,6 +1238,21 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void certFailed(String key, Long envId, String msg) {
+        String commitSha = KeyParseTool.getValue(key, "commit");
+        String certName = KeyParseTool.getValue(key, "Cert");
+        CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
+        if (certificationE != null) {
+            DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
+            devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
+            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+            devopsEnvCommandE.setObjectId(certificationE.getId());
+            devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
+            devopsEnvCommandE.setSha(commitSha);
+            devopsEnvCommandE.setError(msg);
+            devopsEnvCommandRepository.create(devopsEnvCommandE);
+            certificationE.setId(devopsEnvCommandE.getObjectId());
+            certificationRepository.updateCommandId(certificationE);
+        }
 
     }
 }
