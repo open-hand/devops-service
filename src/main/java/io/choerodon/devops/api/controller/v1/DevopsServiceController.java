@@ -215,6 +215,7 @@ public class DevopsServiceController {
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "envId") Long envId,
             @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
