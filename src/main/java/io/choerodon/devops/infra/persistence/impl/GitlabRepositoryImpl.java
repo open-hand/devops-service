@@ -161,5 +161,4 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             throw new CommonException("error.deploykey.create");
         }
     }
-
 }

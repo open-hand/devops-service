@@ -1,0 +1,17 @@
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations: {}
+  labels:
+    choerodon.io/network: ingress
+  name: devops-service
+spec:
+  rules:
+  - host: devops-service-front.staging.saas.hand-china.com
+    http:
+      paths:
+      - backend:
+          serviceName: devops-service-zfes
+          servicePort: 8060
+        path: /

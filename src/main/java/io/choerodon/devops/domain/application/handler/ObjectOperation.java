@@ -62,7 +62,8 @@ public class ObjectOperation<T> {
             if (devopsEnvFileResourceE == null) {
                 throw new CommonException("error.fileResource.not.exist");
             }
-            gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
+            gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type,
+                    devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
         }
     }
