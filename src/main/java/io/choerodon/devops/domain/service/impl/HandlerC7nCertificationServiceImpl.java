@@ -134,26 +134,31 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     }
 
     private Long createCertificationAndGetId(Long envId, C7nCertification c7nCertification, String certName) {
-        CertificationE certificationE = new CertificationE();
-        CertificationSpec certificationSpec = c7nCertification.getSpec();
-        String domain = certificationSpec.getCommonName();
-        List<String> dnsDomain = certificationSpec.getDnsNames();
-        List<String> domains = new ArrayList<>();
-        domains.add(domain);
-        if (dnsDomain != null && !dnsDomain.isEmpty()) {
-            domains.addAll(dnsDomain);
+        CertificationE certificationE = certificationRepository
+                .queryByEnvAndName(envId, certName);
+        if (certificationE == null) {
+            certificationE = new CertificationE();
+
+            CertificationSpec certificationSpec = c7nCertification.getSpec();
+            String domain = certificationSpec.getCommonName();
+            List<String> dnsDomain = certificationSpec.getDnsNames();
+            List<String> domains = new ArrayList<>();
+            domains.add(domain);
+            if (dnsDomain != null && !dnsDomain.isEmpty()) {
+                domains.addAll(dnsDomain);
+            }
+            certificationE.setDomains(domains);
+            certificationE.setEnvironmentE(new DevopsEnvironmentE(envId));
+            certificationE.setName(certName);
+            certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
+            certificationE = certificationRepository.create(certificationE);
+            CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
+            if (existCert != null) {
+                certificationRepository.storeCertFile(
+                        new CertificationFileDO(certificationE.getId(), existCert.getCert(), existCert.getKey()));
+            }
+            certificationService.createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
         }
-        certificationE.setDomains(domains);
-        certificationE.setEnvironmentE(new DevopsEnvironmentE(envId));
-        certificationE.setName(certName);
-        certificationE.setStatus(CertificationStatus.OPERATING.getStatus());
-        certificationE = certificationRepository.create(certificationE);
-        CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
-        if (existCert != null) {
-            certificationRepository.storeCertFile(
-                    new CertificationFileDO(certificationE.getId(), existCert.getCert(), existCert.getKey()));
-        }
-        certificationService.createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
         return certificationE.getId();
     }
 }
