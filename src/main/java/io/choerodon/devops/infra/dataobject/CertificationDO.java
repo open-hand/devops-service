@@ -4,6 +4,7 @@ import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 
@@ -27,6 +28,13 @@ public class CertificationDO {
     private String status;
     private Date validFrom;
     private Date validUntil;
+
+    @Transient
+    private String commandType;
+    @Transient
+    private String commandStatus;
+    @Transient
+    private String error;
 
     public CertificationDO() {
     }
@@ -124,5 +132,29 @@ public class CertificationDO {
 
     public void setValidUntil(Date validUntil) {
         this.validUntil = validUntil;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
+    }
+
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

@@ -62,4 +62,8 @@ public interface DeployMsgHandlerService {
     ApplicationE getApplication(String appName, Long projectId, Long orgId);
 
     void gitOpsCommandSyncEvent(Long envId);
+
+    void certIssued(String key, Long envId, String msg);
+
+    void certFailed(String key, Long envId, String msg);
 }

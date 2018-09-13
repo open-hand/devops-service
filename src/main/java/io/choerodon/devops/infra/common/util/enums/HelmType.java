@@ -46,7 +46,9 @@ public enum HelmType {
     RELEASE_POD_EVENT("release_pod_event"),
     GIT_OPS_SYNC_EVENT("git_ops_sync_event"),
     GIT_OPS_COMMAND_SYNC_EVENT("git_ops_command_sync_event"),
-    GIT_OPS_COMMAND_SYNC_EVENT_RESULT("git_ops_command_sync_event_result");
+    GIT_OPS_COMMAND_SYNC_EVENT_RESULT("git_ops_command_sync_event_result"),
+    CERT_ISSUED("cert_issued"),
+    CERT_FAILED("cert_failed");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
 
