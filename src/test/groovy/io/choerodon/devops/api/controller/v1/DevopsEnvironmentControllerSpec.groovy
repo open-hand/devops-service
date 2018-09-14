@@ -14,7 +14,6 @@ import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO
 import io.choerodon.devops.infra.mapper.DevopsEnvGroupMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
 import io.choerodon.websocket.helper.EnvListener
@@ -98,12 +97,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         DevopsEnviromentDTO devopsEnviromentDTO = new DevopsEnviromentDTO()
         devopsEnviromentDTO.setCode("testCodeChange")
         devopsEnviromentDTO.setName("testNameChange")
-
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
-        devopsProjectDO.setId(1L)
-        devopsProjectDO.setGitlabGroupId(1)
-        devopsProjectDO.setEnvGroupId(1)
-        devopsProjectRepository.createProject(devopsProjectDO)
 
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setId(1L)

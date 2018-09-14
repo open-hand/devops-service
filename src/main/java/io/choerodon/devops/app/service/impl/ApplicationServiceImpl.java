@@ -395,4 +395,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 ApplicationDTO.class);
     }
 
+    @Override
+    public void initMockService(SagaClient sagaClient) {
+        this.sagaClient = sagaClient;
+    }
 }

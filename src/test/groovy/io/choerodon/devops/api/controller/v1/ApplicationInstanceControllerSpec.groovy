@@ -53,7 +53,7 @@ package io.choerodon.devops.api.controller.v1
 //    private static int initLabel = 0;
 //
 //    @Autowired
-//    TestRestTemplate testRestTemplate;
+//    TestRestTemplate restTemplate;
 //    @Autowired
 //    private ApplicationVersionRepository applicationVersionRepository;
 //    @Autowired
@@ -266,7 +266,7 @@ package io.choerodon.devops.api.controller.v1
 //        devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
 //
 //        when:
-//        def e = testRestTemplate.postForEntity("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO);
+//        def e = restTemplate.postForEntity("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO);
 //
 //        then:
 //        userAttrRepository.queryById(_) >> userAttrE
@@ -335,7 +335,7 @@ package io.choerodon.devops.api.controller.v1
 //        devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
 //
 //        when:
-//        def e = testRestTemplate.postForEntity("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO);
+//        def e = restTemplate.postForEntity("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO);
 //
 //        then:
 //        userAttrRepository.queryById(_) >> userAttrE
@@ -383,7 +383,7 @@ package io.choerodon.devops.api.controller.v1
 //
 //
 //        when:
-//        testRestTemplate.delete("/v1/projects/1/app_instances/1/delete");
+//        restTemplate.delete("/v1/projects/1/app_instances/1/delete");
 //
 //        then:
 //        userAttrRepository.queryById(_) >> userAttrE
@@ -429,7 +429,7 @@ package io.choerodon.devops.api.controller.v1
 //
 //
 //        when:
-//        testRestTemplate.delete("/v1/projects/1/app_instances/2/delete");
+//        restTemplate.delete("/v1/projects/1/app_instances/2/delete");
 //
 //        then:
 //        userAttrRepository.queryById(_) >> userAttrE;

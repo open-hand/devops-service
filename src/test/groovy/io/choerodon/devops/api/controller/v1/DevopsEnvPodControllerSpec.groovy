@@ -41,6 +41,10 @@ class DevopsEnvPodControllerSpec extends Specification {
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper
     @Autowired
+    private DevopsServiceMapper devopsServiceMapper
+    @Autowired
+    private DevopsProjectMapper devopsProjectMapper
+    @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
     private ApplicationMarketMapper applicationMarketMapper
@@ -61,30 +65,59 @@ class DevopsEnvPodControllerSpec extends Specification {
             devopsEnvPodMapper.insert(devopsEnvPodDO)
 
             DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-            devopsEnvironmentDO.setId(1L)
+            devopsEnvironmentDO.setCode("env")
             devopsEnvironmentDO.setProjectId(1L)
             devopsEnvironmentDO.setName("testName")
-            devopsEnvironmentDO.setCode("testCode")
+            devopsEnvironmentDO.setEnvIdRsa("EnvIdRsa")
+            devopsEnvironmentDO.setGitlabEnvProjectId(1L)
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
             ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
-            applicationInstanceDO.setId(1L)
+            applicationInstanceDO.setAppId(2L)
             applicationInstanceDO.setEnvId(1L)
             applicationInstanceDO.setAppVersionId(1L)
+            applicationInstanceDO.setStatus("deleted")
+            ApplicationInstanceDO applicationInstanceDO1 = new ApplicationInstanceDO()
+            applicationInstanceDO1.setAppId(1L)
+            applicationInstanceDO1.setEnvId(1L)
+            applicationInstanceDO1.setAppVersionId(1L)
+            applicationInstanceDO1.setStatus("running")
             applicationInstanceMapper.insert(applicationInstanceDO)
+            applicationInstanceMapper.insert(applicationInstanceDO1)
 
             ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
-            applicationVersionDO.setId(1L)
             applicationVersionDO.setAppId(1L)
             applicationVersionMapper.insert(applicationVersionDO)
+            ApplicationVersionDO applicationVersionDO1 = new ApplicationVersionDO()
+            applicationVersionDO1.setAppId(2L)
+            applicationVersionMapper.insert(applicationVersionDO1)
 
             ApplicationDO applicationDO = new ApplicationDO()
-            applicationDO.setId(1L)
+            ApplicationDO applicationDO1 = new ApplicationDO()
+            applicationDO.setActive(true)
+            applicationDO1.setActive(true)
+            applicationDO.setSynchro(true)
+            applicationDO1.setSynchro(true)
+            applicationDO.setCode("app")
+            applicationDO1.setCode("app1")
+            applicationDO.setProjectId(1L)
+            applicationDO1.setProjectId(1L)
+            applicationDO.setName("appname")
+            applicationDO1.setName("appname1")
+            applicationDO.setGitlabProjectId(1)
+            applicationDO1.setGitlabProjectId(1)
+            applicationDO.setAppTemplateId(1L)
+            applicationDO1.setAppTemplateId(1L)
+            applicationDO.setObjectVersionNumber(1L)
+            applicationDO1.setObjectVersionNumber(1L)
             applicationMapper.insert(applicationDO)
+            applicationMapper.insert(applicationDO1)
 
             DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
-            devopsAppMarketDO.setId(1L)
             devopsAppMarketDO.setAppId(1L)
+            devopsAppMarketDO.setPublishLevel("organization")
+            devopsAppMarketDO.setContributor("testman")
+            devopsAppMarketDO.setDescription("I Love Test")
             applicationMarketMapper.insert(devopsAppMarketDO)
 
             flag = 1

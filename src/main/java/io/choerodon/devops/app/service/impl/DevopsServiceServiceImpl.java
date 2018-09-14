@@ -254,12 +254,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             //查询网络对应的实例
             List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                     devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-            Boolean isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
-                    .sorted().collect(Collectors.toList())
-                    .equals(devopsServiceInstanceEList.stream()
-                            .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
-                            .collect(Collectors.toList()));
-
+            Boolean isUpdate = false;
+            if (devopsServiceReqDTO.getAppInstance() != null) {
+                isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
+                        .sorted().collect(Collectors.toList())
+                        .equals(devopsServiceInstanceEList.stream()
+                                .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
+                                .collect(Collectors.toList()));
+            }
             if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
                     .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
                     && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
