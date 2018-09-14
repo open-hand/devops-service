@@ -1364,7 +1364,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 }
             }
         } catch (IOException e) {
-            logger.info(e.toString());
+            logger.info(e.toString(), e);
         } catch (CertificateException e) {
             logger.info(e.getMessage(), e);
         }
@@ -1376,19 +1376,36 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         String certName = KeyParseTool.getValue(key, "Cert");
         CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
         if (certificationE != null) {
-            DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-            devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-            devopsEnvCommandE.setObjectId(certificationE.getId());
-            devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
-            devopsEnvCommandE.setSha(commitSha);
-            devopsEnvCommandE.setError(msg);
-            devopsEnvCommandRepository.create(devopsEnvCommandE);
-            certificationE.setId(devopsEnvCommandE.getObjectId());
-            certificationRepository.updateCommandId(certificationE);
+            DevopsEnvCommandE commandE = devopsEnvCommandRepository.query(certificationE.getCommandId());
+            String createType = CommandType.CREATE.getType();
+            String commandFailedStatus = CommandStatus.FAILED.getStatus();
+            boolean commandNotExist = commandE == null;
+            if (commandNotExist) {
+                commandE = new DevopsEnvCommandE();
+            }
+            if (!createType.equals(commandE.getCommandType())
+                    || !commandFailedStatus.equals(commandE.getStatus())
+                    || (!msg.isEmpty() && !msg.equals(commandE.getError()))) {
+                commandE.setObject(ObjectType.CERTIFICATE.getType());
+                commandE.setCommandType(createType);
+                commandE.setObjectId(certificationE.getId());
+                commandE.setStatus(commandFailedStatus);
+                commandE.setSha(commitSha);
+                commandE.setError(msg);
+                if (commandNotExist) {
+                    commandE = devopsEnvCommandRepository.create(commandE);
+                } else {
+                    devopsEnvCommandRepository.update(commandE);
+                }
+                certificationE.setCommandId(commandE.getId());
+                certificationRepository.updateCommandId(certificationE);
+            }
             certificationRepository.clearValid(certificationE.getId());
-            certificationE.setStatus(CertificationStatus.FAILED.getStatus());
-            certificationRepository.updateStatus(certificationE);
+            String failedStatus = CertificationStatus.FAILED.getStatus();
+            if (failedStatus.equals(certificationE.getStatus())) {
+                certificationE.setStatus(failedStatus);
+                certificationRepository.updateStatus(certificationE);
+            }
         }
 
     }
