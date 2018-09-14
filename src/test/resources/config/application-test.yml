@@ -29,3 +29,9 @@ choerodon:
   event:
     consumer:
       enabled: false # 是否开启，不设置默认开启
+
+# docker mysql
+#datasource:
+#  username: root
+#  password: root
+#  url: jdbc:mysql://192.168.99.100:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
