@@ -68,14 +68,14 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                                     .equals(instanceId))) {
                 DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, instanceId, c7nHelmRelease.getKind());
                 if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())))) {
-                    throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + instanceCode, filePath);
+                    throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode,null);
                 }
             }
         }
         if (c7nHelmReleases.parallelStream()
                 .anyMatch(c7nHelmRelease1 -> c7nHelmRelease1.getMetadata().getName()
                         .equals(instanceCode))) {
-            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + instanceCode, filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode,null);
         } else {
             c7nHelmReleases.add(c7nHelmRelease);
         }

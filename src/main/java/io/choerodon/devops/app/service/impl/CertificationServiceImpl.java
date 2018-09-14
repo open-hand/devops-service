@@ -176,42 +176,57 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public void deleteById(Long certId, Boolean isGitOps) {
+    public void deleteById(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
         Long certEnvId = certificationE.getEnvironmentE().getId();
         envUtil.checkEnvConnection(certEnvId, envListener);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
 
-        if (!isGitOps) {
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-            Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-            String certificateType = ObjectType.CERTIFICATE.getType();
-            String certName = certificationE.getName();
-            DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                    .queryByEnvIdAndResource(certEnvId, certId, certificateType);
-            if (devopsEnvFileResourceE != null && devopsEnvFileResourceE.getFilePath() != null
-                    && devopsEnvFileResourceRepository
-                    .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
-                gitlabRepository.deleteFile(
-                        gitLabEnvProjectId,
-                        devopsEnvFileResourceE.getFilePath(),
-                        "DELETE FILE " + certName,
-                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-            } else {
-                ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
-                C7nCertification c7nCertification = new C7nCertification();
-                CertificationMetadata certificationMetadata = new CertificationMetadata();
-                certificationMetadata.setName(certName);
-                c7nCertification.setMetadata(certificationMetadata);
-                certificationOperation.setType(c7nCertification);
-                certificationOperation.operationEnvGitlabFile(
-                        null, gitLabEnvProjectId,
-                        "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
-                        devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
-            }
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        Integer gitLabEnvProjectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+        String certificateType = ObjectType.CERTIFICATE.getType();
+        String certName = certificationE.getName();
+        DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(certEnvId, certId, certificateType);
+        if (devopsEnvFileResourceE != null && devopsEnvFileResourceE.getFilePath() != null
+                && devopsEnvFileResourceRepository
+                .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
+            gitlabRepository.deleteFile(
+                    gitLabEnvProjectId,
+                    devopsEnvFileResourceE.getFilePath(),
+                    "DELETE FILE " + certName,
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        } else {
+            ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
+            C7nCertification c7nCertification = new C7nCertification();
+            CertificationMetadata certificationMetadata = new CertificationMetadata();
+            certificationMetadata.setName(certName);
+            c7nCertification.setMetadata(certificationMetadata);
+            certificationOperation.setType(c7nCertification);
+            certificationOperation.operationEnvGitlabFile(
+                    null, gitLabEnvProjectId,
+                    "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
+                    devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
         }
-        createCertCommandE(CommandType.DELETE.getType(), certId);
+        certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId));
+        certificationRepository.updateCommandId(certificationE);
+        certificationE.setStatus(CertificationStatus.DELETING.getStatus());
+        certificationRepository.updateStatus(certificationE);
+    }
+
+    @Override
+    public void certDeleteByGitOps(Long certId) {
+        CertificationE certificationE = certificationRepository.queryById(certId);
+
+        //校验环境是否连接
+        envUtil.checkEnvConnection(certificationE.getEnvironmentE().getId(), envListener);
+
+        //实例相关对象数据库操作
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .query(certificationE.getCommandId());
+        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+        devopsEnvCommandRepository.update(devopsEnvCommandE);
         certificationRepository.deleteById(certId);
     }
 

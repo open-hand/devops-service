@@ -19,6 +19,8 @@ public interface DeployMsgHandlerService {
 
     void updateInstanceStatus(String key, Long envId, String instanceStatus, String commandStatus, String commandMsg);
 
+    void helmReleaseDelete(String key, Long envId);
+
     void handlerDomainCreateMessage(String key, String msg, Long envId);
 
     void helmReleasePreUpgrade(String msg, Long envId, String type);
@@ -66,4 +68,7 @@ public interface DeployMsgHandlerService {
     void certIssued(String key, Long envId, String msg);
 
     void certFailed(String key, Long envId, String msg);
+
+    void gitOpsCommandSyncEventResult(Long envId, String msg);
+
 }

@@ -5,21 +5,19 @@ import  java.util.List;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 
 public class CommandPayLoad {
-    List<DevopsEnvCommandE> devopsEnvCommandES;
+    List<Command> commands;
 
 
-
-    public CommandPayLoad( List<DevopsEnvCommandE> devopsEnvCommandES){
-
-        this.devopsEnvCommandES = devopsEnvCommandES;
+    public CommandPayLoad(List<Command> commands) {
+        this.commands = commands;
     }
 
 
-    public List<DevopsEnvCommandE> getDevopsEnvCommandES() {
-        return devopsEnvCommandES;
+    public List<Command> getCommands() {
+        return commands;
     }
 
-    public void setDevopsEnvCommandES(List<DevopsEnvCommandE> devopsEnvCommandES) {
-        this.devopsEnvCommandES = devopsEnvCommandES;
+    public void setCommands(List<Command> commands) {
+        this.commands = commands;
     }
 }

@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.application.handler;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class ResourceBundleHandler {
@@ -11,7 +12,7 @@ public class ResourceBundleHandler {
 
     private ResourceBundleHandler() {
 
-        this.bundle = ResourceBundle.getBundle("messages/messages");
+        this.bundle = ResourceBundle.getBundle("messages/messages",Locale.SIMPLIFIED_CHINESE);
     }
 
     public static ResourceBundleHandler getInstance() {

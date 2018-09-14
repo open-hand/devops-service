@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.entity.CertificationE;
@@ -60,7 +59,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     CertificationE certificationE = certificationRepository
                             .queryById(devopsEnvFileResourceE.getResourceId());
                     if (certificationE == null) {
-                        throw new CommonException("certification.not.exist.in.database", null, certificationE.getName(), null);
+                        throw new GitOpsExplainException("certification.not.exist.in.database",
+                                null, devopsEnvFileResourceE.getFilePath(), null);
                     }
                     return certificationE.getName();
                 })
@@ -82,10 +82,14 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         beforeC7nCertification
                 .forEach(certName -> {
                     CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-                    certificationService.deleteById(certificationE.getId(), true);
+                    if (!CommandType.DELETE.getType().equals(certificationE.getCommandType())) {
+                        certificationE.setCommandId(certificationService
+                                .createCertCommandE(CommandType.DELETE.getType(), certificationE.getId()));
+                        certificationRepository.updateCommandId(certificationE);
+                    }
+                    certificationService.certDeleteByGitOps(certificationE.getId());
                     devopsEnvFileResourceRepository
                             .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
-                    certificationService.createCertCommandE(CommandType.DELETE.getType(), certificationE.getId());
                 });
         addC7nCertification.parallelStream().forEach(c7nCertification -> {
             String filePath = "";
@@ -172,10 +176,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
             certificationE.setCommandId(commandId);
             certificationRepository.updateCommandId(certificationE);
-
-            updateCommandSha(filePath, path, certificationE.getCommandId());
-
         }
+        updateCommandSha(filePath, path, certificationE.getCommandId());
         return certificationE.getId();
     }
 

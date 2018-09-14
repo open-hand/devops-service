@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.custom.IntOrString;
@@ -34,6 +35,7 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
 
 
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
     @Autowired
@@ -60,7 +62,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                     DevopsIngressDO devopsIngressDO = devopsIngressRepository
                             .getIngress(devopsEnvFileResourceE.getResourceId());
                     if (devopsIngressDO == null) {
-                        throw new CommonException("ingress.not.exist.in.database", null, devopsIngressDO.getName(), null);
+                        throw new GitOpsExplainException("ingress.not.exist.in.database", null, devopsIngressDO.getName(), null);
                     }
                     return devopsIngressDO.getName();
                 }).collect(Collectors.toList());
@@ -118,7 +120,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                             if (!devopsIngressDTO.getPathList().stream()
                                     .allMatch(t ->
                                             devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
-                                throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
+                                throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(),filePath);
                             }
                             devopsIngressService.addIngressByGitOps(devopsIngressDTO, projectId);
                             devopsIngressE = devopsIngressRepository
@@ -171,7 +173,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         if (!devopsIngressDTO.getPathList().stream()
                                 .allMatch(t ->
                                         devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
-                            throw new CommonException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError());
+                            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(),filePath);
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
                         if (!isNotChange) {
@@ -253,11 +255,11 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             }
             Long servicePort;
             IntOrString backendServicePort = backend.getServicePort();
-            if (backendServicePort.isInteger()) {
-                servicePort = backendServicePort.getIntValue().longValue();
+            if (backendServicePort.isInteger()||pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
+                servicePort = TypeUtil.objToLong(backendServicePort);
                 if (devopsServiceE.getPorts().parallelStream()
                         .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
-                    throw new CommonException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
+                    throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
                             filePath, serviceName, null);
                 }
             } else {

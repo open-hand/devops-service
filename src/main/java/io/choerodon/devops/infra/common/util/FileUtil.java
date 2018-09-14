@@ -882,6 +882,9 @@ public class FileUtil {
      */
     public static String jungeValueFormat(String value) {
         try {
+            if(value.equals("")) {
+                return "{}";
+            }
             JSONObject.parseObject(value);
             value = FileUtil.jsonToYaml(value);
             return value;

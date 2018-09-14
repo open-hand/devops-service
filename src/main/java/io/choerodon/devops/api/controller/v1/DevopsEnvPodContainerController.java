@@ -54,4 +54,25 @@ public class DevopsEnvPodContainerController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.get"));
     }
+
+    /**
+     * 操作 shell By Pod
+     *
+     * @param projectId 项目ID
+     * @param podId     pod ID
+     * @return List of DevopsEnvPodContainerLogDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取日志shell信息 By Pod")
+    @GetMapping(value = "/logs/shell")
+    public ResponseEntity<List<DevopsEnvPodContainerLogDTO>> handleShellByPod(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "pod ID", required = true)
+            @PathVariable Long podId) {
+        return Optional.ofNullable(containerService.logByPodId(podId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.shell.get"));
+    }
 }

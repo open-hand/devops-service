@@ -32,7 +32,9 @@ public interface CertificationService {
     C7nCertification getC7nCertification(String name, String type, List<String> domains,
                                          String keyContent, String certContent, String envCode);
 
-    void deleteById(Long certId, Boolean isGitOps);
+    void deleteById(Long certId);
+
+    void certDeleteByGitOps(Long certId);
 
     Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
 

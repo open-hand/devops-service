@@ -56,7 +56,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     DevopsServiceE devopsServiceE = devopsServiceRepository
                             .query(devopsEnvFileResourceE.getResourceId());
                     if (devopsServiceE == null) {
-                        throw new CommonException("service.not.exist.in.database", null, devopsServiceE.getName(), null);
+                        throw new GitOpsExplainException("service.not.exist.in.database", null, devopsServiceE.getName(), null);
                     }
                     return devopsServiceE.getName();
                 }).collect(Collectors.toList());

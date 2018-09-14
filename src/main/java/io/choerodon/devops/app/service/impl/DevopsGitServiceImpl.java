@@ -350,7 +350,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         });
         DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
         devopsEnvironmentE.setGitCommit(devopsEnvCommitE.getId());
-        devopsEnvironmentRepository.update(devopsEnvironmentE);
+        devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
             sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString()));
@@ -451,11 +451,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handleTag(pushWebHookDTO, gitLabProjectId, gitLabUserId, devopsEnvCommitE, tagNotExist);
 
 
-            //向agent发送同步指令
-            deployService.sendCommand(devopsEnvironmentE);
             devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
             //更新环境 解释commit
-            devopsEnvironmentRepository.update(devopsEnvironmentE);
+            devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+            //向agent发送同步指令
+            deployService.sendCommand(devopsEnvironmentE);
         } catch (CommonException e) {
             String filePath = "";
             String errorCode = "";
