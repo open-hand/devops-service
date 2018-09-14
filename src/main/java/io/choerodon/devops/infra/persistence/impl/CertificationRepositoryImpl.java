@@ -145,7 +145,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     @Override
     public void clearValid(Long certId) {
         CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certId);
-        if (certificationDO != null) {
+        if (certificationDO != null
+                && (certificationDO.getValidFrom() != null || certificationDO.getValidUntil() != null)) {
             certificationDO.setValid(null, null);
             devopsCertificationMapper.updateByPrimaryKey(certificationDO);
         }
