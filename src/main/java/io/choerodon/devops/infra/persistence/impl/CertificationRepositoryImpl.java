@@ -143,6 +143,15 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
+    public void clearValid(Long certId) {
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certId);
+        if (certificationDO != null) {
+            certificationDO.setValid(null, null);
+            devopsCertificationMapper.updateByPrimaryKey(certificationDO);
+        }
+    }
+
+    @Override
     public void deleteById(Long id) {
         devopsCertificationMapper.deleteByPrimaryKey(id);
         deleteCertFile(id);
