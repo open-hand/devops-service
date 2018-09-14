@@ -11,7 +11,8 @@ public enum CertificationStatus {
     APPLYING("applying"),
     ACTIVE("active"),
     FAILED("failed"),
-    OVERDUE("overdue");
+    OVERDUE("overdue"),
+    DELETING("deleting");
 
     private String status;
 

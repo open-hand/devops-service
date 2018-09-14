@@ -78,7 +78,7 @@ public class CertificationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书id", required = true)
             @RequestParam(value = "cert_id") Long certId) {
-        certificationService.deleteById(certId, false);
+        certificationService.deleteById(certId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

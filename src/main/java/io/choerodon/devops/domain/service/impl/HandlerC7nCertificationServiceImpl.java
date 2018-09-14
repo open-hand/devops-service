@@ -59,7 +59,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     CertificationE certificationE = certificationRepository
                             .queryById(devopsEnvFileResourceE.getResourceId());
                     if (certificationE == null) {
-                        throw new GitOpsExplainException("certification.not.exist.in.database", null, certificationE.getName(), null);
+                        throw new GitOpsExplainException("certification.not.exist.in.database",
+                                null, devopsEnvFileResourceE.getFilePath(), null);
                     }
                     return certificationE.getName();
                 })
@@ -81,10 +82,14 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         beforeC7nCertification
                 .forEach(certName -> {
                     CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-                    certificationService.deleteById(certificationE.getId(), true);
+                    if (!CommandType.DELETE.getType().equals(certificationE.getCommandType())) {
+                        certificationE.setCommandId(certificationService
+                                .createCertCommandE(CommandType.DELETE.getType(), certificationE.getId()));
+                        certificationRepository.updateCommandId(certificationE);
+                    }
+                    certificationService.certDeleteByGitOps(certificationE.getId());
                     devopsEnvFileResourceRepository
                             .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
-                    certificationService.createCertCommandE(CommandType.DELETE.getType(), certificationE.getId());
                 });
         addC7nCertification.parallelStream().forEach(c7nCertification -> {
             String filePath = "";
