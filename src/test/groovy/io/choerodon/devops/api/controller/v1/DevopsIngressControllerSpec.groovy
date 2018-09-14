@@ -47,7 +47,7 @@ class DevopsIngressControllerSpec extends Specification {
     private static flag = 0
 
     @Autowired
-    private TestRestTemplate testRestTemplate
+    private TestRestTemplate restTemplate
     @Autowired
     private DevopsIngressMapper devopsIngressMapper
     @Autowired
@@ -121,12 +121,6 @@ class DevopsIngressControllerSpec extends Specification {
             devopsServiceDO.setPorts("[{\"port\":7777}]")
             devopsServiceMapper.insert(devopsServiceDO)
 
-            DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
-            devopsProjectDO.setId(1L)
-            devopsProjectDO.setEnvGroupId(1)
-            devopsProjectDO.setGitlabGroupId(1)
-            devopsProjectMapper.insert(devopsProjectDO)
-
             DevopsIngressDO devopsIngressDO = new DevopsIngressDO()
             devopsIngressDO.setEnvId(1L)
             devopsIngressDO.setCertId(1L)
@@ -153,7 +147,6 @@ class DevopsIngressControllerSpec extends Specification {
             devopsIngressPathMapper.insert(devopsIngressPathDO)
 
             DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
-            devopsEnvFileResourceDO.setId(1L)
             devopsEnvFileResourceDO.setEnvId(1L)
             devopsEnvFileResourceDO.setResourceId(1L)
             devopsEnvFileResourceDO.setResourceType("Ingress")
@@ -173,15 +166,14 @@ class DevopsIngressControllerSpec extends Specification {
         certificationDO.setName("cert")
         devopsCertificationMapper.insert(certificationDO)
 
-        GitlabGroupMemberE groupMemberE
-        groupMemberE = new GitlabGroupMemberE()
+        GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE()
         groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
         gitlabGroupE.setEnvGroupId(1)
 
         when:
-        testRestTemplate.postForEntity("/v1/projects/1/ingress", devopsIngressDTO, Object.class)
+        restTemplate.postForEntity("/v1/projects/1/ingress", devopsIngressDTO, Object.class)
 
         then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
@@ -230,7 +222,7 @@ class DevopsIngressControllerSpec extends Specification {
         gitlabGroupE.setEnvGroupId(1)
 
         when:
-        testRestTemplate.put("/v1/projects/1/ingress/1", newDevopsIngressDTO, Object.class)
+        restTemplate.put("/v1/projects/1/ingress/1", newDevopsIngressDTO, Object.class)
 
         then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
@@ -261,7 +253,7 @@ class DevopsIngressControllerSpec extends Specification {
         envList.add(1L)
         envList.add(2L)
         when:
-        testRestTemplate.postForObject("/v1/projects/1/ingress/list_by_options", strEntity, Object.class)
+        restTemplate.postForObject("/v1/projects/1/ingress/list_by_options", strEntity, Object.class)
 
         then:
         envListener.connectedEnv() >> envs
@@ -271,7 +263,7 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "QueryDomainId"() {
         when:
-        def dto = testRestTemplate.getForObject("/v1/projects/1/ingress/1", DevopsIngressDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/ingress/1", DevopsIngressDTO.class)
 
         then:
         dto != null
@@ -298,7 +290,7 @@ class DevopsIngressControllerSpec extends Specification {
         gitlabGroupE.setEnvGroupId(1)
 
         when:
-        testRestTemplate.delete("/v1/projects/1/ingress/1")
+        restTemplate.delete("/v1/projects/1/ingress/1")
 
         then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
@@ -311,7 +303,7 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "CheckName"() {
         when:
-        testRestTemplate.getForObject("/v1/projects/1/ingress/check_name?name=test&envId=1", Boolean.class)
+        restTemplate.getForObject("/v1/projects/1/ingress/check_name?name=test&envId=1", Boolean.class)
 
         then:
         true
@@ -319,7 +311,7 @@ class DevopsIngressControllerSpec extends Specification {
 
     def "CheckDomain"() {
         when:
-        testRestTemplate.getForObject("/v1/projects/1/ingress/check_domain?domain=test.test&path=testpath&id=1", Boolean.class)
+        restTemplate.getForObject("/v1/projects/1/ingress/check_domain?domain=test.test&path=testpath&id=1", Boolean.class)
 
         then:
         true
@@ -344,7 +336,7 @@ class DevopsIngressControllerSpec extends Specification {
         envList.add(2L)
 
         when:
-        testRestTemplate.postForObject("/v1/projects/1/ingress/1/listByEnv", strEntity, Page.class)
+        restTemplate.postForObject("/v1/projects/1/ingress/1/listByEnv", strEntity, Page.class)
 
         then:
         envListener.connectedEnv() >> envs
