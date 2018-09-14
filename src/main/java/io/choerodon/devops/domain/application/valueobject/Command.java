@@ -3,25 +3,9 @@ package io.choerodon.devops.domain.application.valueobject;
 public class Command {
 
     private Long id;
-    private String objectType;
-    private String objectName;
-
-    public String getObjectType() {
-        return objectType;
-    }
-
-    public void setObjectType(String objectType) {
-        this.objectType = objectType;
-    }
-
-    public String getObjectName() {
-        return objectName;
-    }
-
-    public void setObjectName(String objectName) {
-        this.objectName = objectName;
-    }
-
+    private String resourceType;
+    private String resourceName;
+    private String commit;
 
     public Long getId() {
         return id;
@@ -29,5 +13,30 @@ public class Command {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    public String getResourceName() {
+        return resourceName;
+    }
+
+    public void setResourceName(String resourceName) {
+        this.resourceName = resourceName;
+    }
+
+    public String getCommit() {
+        return commit;
+    }
+
+    public void setCommit(String commit) {
+        this.commit = commit;
     }
 }

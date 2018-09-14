@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.custom.IntOrString;
@@ -34,6 +35,7 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
 
 
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
     @Autowired
@@ -253,8 +255,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             }
             Long servicePort;
             IntOrString backendServicePort = backend.getServicePort();
-            if (backendServicePort.isInteger()) {
-                servicePort = backendServicePort.getIntValue().longValue();
+            if (backendServicePort.isInteger()||pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
+                servicePort = TypeUtil.objToLong(backendServicePort);
                 if (devopsServiceE.getPorts().parallelStream()
                         .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
                     throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
