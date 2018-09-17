@@ -3,10 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
-import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper
 import io.choerodon.devops.infra.mapper.ApplicationMapper
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper
