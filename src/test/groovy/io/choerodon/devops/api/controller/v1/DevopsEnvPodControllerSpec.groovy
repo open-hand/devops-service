@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
@@ -141,6 +142,11 @@ class DevopsEnvPodControllerSpec extends Specification {
             devopsAppMarketDO.setContributor("testman")
             devopsAppMarketDO.setDescription("I Love Test")
             applicationMarketMapper.insert(devopsAppMarketDO)
+
+            // 创建测试用的gitops目录
+            FileUtil.copyFile("src/test/gitops/org/pro/env/test-ing.yaml", "gitops/org/pro/env")
+            FileUtil.copyFile("src/test/gitops/org/pro/env/test-rel.yaml", "gitops/org/pro/env")
+            FileUtil.copyFile("src/test/gitops/org/pro/env/test-svc.yaml", "gitops/org/pro/env")
 
             flag = 1
         }

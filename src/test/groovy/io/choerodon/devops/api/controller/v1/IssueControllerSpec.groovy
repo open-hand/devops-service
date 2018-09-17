@@ -12,6 +12,7 @@ import io.choerodon.devops.domain.application.repository.DevopsGitRepository
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
@@ -195,5 +196,14 @@ class IssueControllerSpec extends Specification {
         iamRepository.queryUserByUserId(1L) >> userE
         devopsGitRepository.getUserIdByGitlabUserId(_ as Long) >> Long.valueOf(1)
         issueDTO != null
+    }
+
+    /**
+     * 清理中间目录
+     */
+    def cleanupSpec() {
+        FileUtil.deleteDirectory(new File("gitops"))
+        FileUtil.deleteDirectory(new File("Charts"))
+        FileUtil.deleteDirectory(new File("devopsversion"))
     }
 }
