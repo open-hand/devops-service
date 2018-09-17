@@ -1,4 +1,5 @@
-package io.choerodon.devops.app.assember;
+package io.choerodon.devops.domain.application.convertor;
+
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -7,11 +8,8 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.ApplicationRepDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 
-/**
- * Created by younger on 2018/3/30.
- */
 @Component
-public class ApplicaitonRepAssember implements ConvertorI<ApplicationE, Object, ApplicationRepDTO> {
+public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object, ApplicationRepDTO> {
 
     @Override
     public ApplicationRepDTO entityToDto(ApplicationE applicationE) {

@@ -1,4 +1,4 @@
-package io.choerodon.devops.app.assember;
+package io.choerodon.devops.domain.application.convertor;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -8,11 +8,8 @@ import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 
-/**
- * Created by younger on 2018/4/10.
- */
 @Component
-public class ApplicationUpdateAssember implements ConvertorI<ApplicationE, Object, ApplicationUpdateDTO> {
+public class ApplicationUpdateConvertor implements ConvertorI<ApplicationE, Object, ApplicationUpdateDTO> {
 
     @Override
     public ApplicationE dtoToEntity(ApplicationUpdateDTO applicationUpdateDTO) {
