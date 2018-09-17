@@ -50,4 +50,12 @@ class DevopsEnvPodContainerControllerSpec extends Specification {
         then:
         !list.isEmpty()
     }
+
+    def "HandleShellByPod"() {
+        when:
+        def list = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs/shell", List.class)
+
+        then:
+        !list.isEmpty()
+    }
 }

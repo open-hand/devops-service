@@ -156,7 +156,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         applicationTemplateMapper.insert(applicationTemplateDO)
 
         when:
-        def dto = restTemplate.getForObject("/v1/organizations/1/app_templates/4", ApplicationTemplateRepDTO.class)
+        def dto = restTemplate.getForObject("/v1/organizations/1/app_templates/3", ApplicationTemplateRepDTO.class)
 
         then:
         dto != null

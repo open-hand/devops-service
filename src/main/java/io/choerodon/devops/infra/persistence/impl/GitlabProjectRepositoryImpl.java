@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
@@ -106,5 +107,10 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
             return Collections.emptyList();
         }
         return commitStatuse.getBody();
+    }
+
+    @Override
+    public void initMockService(GitlabServiceClient gitlabServiceClient) {
+        this.gitlabServiceClient = gitlabServiceClient;
     }
 }

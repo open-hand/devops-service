@@ -151,14 +151,16 @@ class ApplicationControllerSpec extends Specification {
 
         Organization organization = new Organization()
         organization.setId(1L)
+        organization.setCode("org")
 
         ProjectE projectE = new ProjectE()
         projectE.setId(1L)
+        projectE.setCode("pro")
         projectE.setOrganization(organization)
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setProjectE(projectE)
         gitlabGroupE.setGitlabGroupId(1)
+        gitlabGroupE.setProjectE(projectE)
 
         GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE()
         groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
