@@ -202,15 +202,23 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         devopsEnvironmentES.parallelStream().forEach(env -> {
             if (env.getGitlabEnvProjectId() != null) {
                 LOGGER.info("{}:{}  begin to upgrade!", env.getCode(), env.getId());
-                new SyncInstanceByEnv(logs, env).invoke();
-                new SynServiceByEnv(logs, env).invoke();
-                new SyncIngressByEnv(logs, env).invoke();
+                // todo cloneProject()
+                new SyncInstanceByEnv(logs, env).invoke(); // todo use createGitFile()
+                new SynServiceByEnv(logs, env).invoke(); // todo use createGitFile()
+                new SyncIngressByEnv(logs, env).invoke(); // todo use createGitFile()
+                // todo delete
                 devopsGitRepository.createTag(
                         TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, "", "", ADMIN);
+                // todo git tag
+                // todo git push
+                // todo delete file
                 LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
             }
         });
     }
+
+    // todo Func: create file / git add / git commit
+    // private void createGitFile()
 
     @Saga(code = "devops-upgrade-0.9",
             description = "devops smooth upgrade to 0.9", inputSchema = "{}")
