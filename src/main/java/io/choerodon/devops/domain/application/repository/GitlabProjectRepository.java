@@ -2,11 +2,13 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
 /**
  * Created by Zenger on 2018/4/9.
@@ -30,4 +32,6 @@ public interface GitlabProjectRepository {
     List<BranchE> listBranches(Integer projectId, Integer userId);
 
     List<CommitStatuseDO> getCommitStatuse(Integer projectId, String sha, Integer useId);
+
+    void initMockService(GitlabServiceClient gitlabServiceClient);
 }

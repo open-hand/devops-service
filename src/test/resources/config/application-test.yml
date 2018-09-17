@@ -29,8 +29,7 @@ choerodon:
   event:
     consumer:
       enabled: false # 是否开启，不设置默认开启
-
-# docker mysql
+# 使用本地docker里的mysql
 #datasource:
 #  username: root
 #  password: root
