@@ -313,9 +313,13 @@ public class GitUtil {
     public void createFileInRepo(String repoPath, Git git, String relativePath, String fileContent, String commitMsg)
             throws IOException, GitAPIException {
         FileUtil.saveDataToFile(repoPath, relativePath, fileContent);
-        git = git == null ? Git.open(new File(repoPath)) : git;
+        boolean gitProvided = git != null;
+        git = gitProvided ? git : Git.open(new File(repoPath));
         addFile(git, relativePath);
         commitChanges(git, commitMsg == null || commitMsg.isEmpty() ? "[ADD] add " + relativePath : commitMsg);
+        if (!gitProvided) {
+            git.close();
+        }
     }
 
     private void addFile(Git git, String relativePath) throws GitAPIException {
