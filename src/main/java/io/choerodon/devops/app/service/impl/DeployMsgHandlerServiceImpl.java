@@ -1341,6 +1341,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             String certName = KeyParseTool.getValue(key, "Cert");
             CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
             if (certificationE != null) {
+                DevopsEnvCommandE commandE = devopsEnvCommandRepository.query(certificationE.getCommandId());
                 Object obj = objectMapper.readValue(msg, Object.class);
                 String crt = ((LinkedHashMap) ((LinkedHashMap) obj).get("data")).get("tls.crt").toString();
                 X509Certificate certificate = CertificateUtil.decodeCert(Base64Util.base64Decoder(crt));
@@ -1349,19 +1350,24 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 if (!(validFrom.equals(certificationE.getValidFrom())
                         && validUntil.equals(certificationE.getValidUntil()))) {
                     certificationE.setValid(validFrom, validUntil);
-
                     certificationRepository.updateValid(certificationE);
-
-                    DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-                    devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
-                    devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-                    devopsEnvCommandE.setObjectId(certificationE.getId());
-                    devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-                    devopsEnvCommandE.setSha(KeyParseTool.getValue(key, "commit"));
-                    devopsEnvCommandRepository.create(devopsEnvCommandE);
-                    certificationE.setId(devopsEnvCommandE.getObjectId());
-                    certificationRepository.updateCommandId(certificationE);
                 }
+                boolean commandNotExist = commandE == null;
+                if (commandNotExist) {
+                    commandE = new DevopsEnvCommandE();
+                }
+                commandE.setObject(ObjectType.CERTIFICATE.getType());
+                commandE.setCommandType(CommandType.CREATE.getType());
+                commandE.setObjectId(certificationE.getId());
+                commandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                commandE.setSha(KeyParseTool.getValue(key, "commit"));
+                if (commandNotExist) {
+                    commandE = devopsEnvCommandRepository.create(commandE);
+                } else {
+                    devopsEnvCommandRepository.update(commandE);
+                }
+                certificationE.setCommandId(commandE.getId());
+                certificationRepository.updateCommandId(certificationE);
             }
         } catch (IOException e) {
             logger.info(e.toString(), e);

@@ -45,6 +45,7 @@ import io.choerodon.websocket.helper.EnvSession;
 public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     private static final String DOMAIN_NAME_EXIST_ERROR = "error.domain.name.exist";
     private static final Gson gson = new Gson();
+
     @Value("${agent.version}")
     private String agentExpectVersion;
     private DevopsIngressMapper devopsIngressMapper;
@@ -52,6 +53,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     private DevopsEnvironmentRepository environmentRepository;
     private DevopsServiceRepository devopsServiceRepository;
     private EnvListener envListener;
+
     @Autowired
     private CertificationRepository certificationRepository;
 
@@ -187,20 +189,20 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         return null;
     }
 
+    @Override
+    public DevopsIngressDO getIngress(Long ingressId) {
+        return devopsIngressMapper.selectByPrimaryKey(ingressId);
+    }
+
     private void setIngressDTOCert(Long certId, DevopsIngressDTO devopsIngressDTO) {
         if (certId != null) {
+            devopsIngressDTO.setCertId(certId);
             CertificationE certificationE = certificationRepository.queryById(certId);
             if (certificationE != null) {
                 devopsIngressDTO.setCertName(certificationE.getName());
                 devopsIngressDTO.setCertStatus(certificationE.getStatus());
-                devopsIngressDTO.setCertId(certId);
             }
         }
-    }
-
-    @Override
-    public DevopsIngressDO getIngress(Long ingressId) {
-        return devopsIngressMapper.selectByPrimaryKey(ingressId);
     }
 
     @Override
