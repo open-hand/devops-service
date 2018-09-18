@@ -1,10 +1,10 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -34,7 +34,7 @@ public interface ApplicationInstanceService {
      * @param appId     应用id
      * @return page of ApplicationInstancesDTO
      */
-    List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId);
+    List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId, Long envGroupId);
 
     /**
      * 查询value列表
@@ -160,4 +160,11 @@ public interface ApplicationInstanceService {
     ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
 
 
+    DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
+
+    DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
+
+    Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
+
+    Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
 }

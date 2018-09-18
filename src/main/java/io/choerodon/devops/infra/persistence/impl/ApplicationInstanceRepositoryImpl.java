@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepo
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -106,8 +108,8 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId) {
-        return applicationInstanceMapper.listApplicationInstances(projectId, appId);
+    public List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId, Long envGroupId) {
+        return applicationInstanceMapper.listApplicationInstances(projectId, appId, envGroupId);
     }
 
     @Override
@@ -123,5 +125,31 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     @Override
     public void deleteById(Long id) {
         applicationInstanceMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public List<DeployDO> listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime) {
+        return applicationInstanceMapper.listDeployTime(projectId, envId, appIds, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime()));
+    }
+
+    @Override
+    public List<DeployDO> listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime) {
+        return applicationInstanceMapper.listDeployFrequency(projectId, envIds, appId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime()));
+    }
+
+    @Override
+    public Page<DeployDO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime) {
+        Page<DeployDO> deployDOS = PageHelper.doPageAndSort(pageRequest, () ->
+                applicationInstanceMapper
+                        .listDeployFrequency(projectId, envIds, appId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
+        return deployDOS;
+    }
+
+    @Override
+    public Page<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds, Date startTime, Date endTime) {
+        Page<DeployDO> deployDOS = PageHelper.doPageAndSort(pageRequest, () ->
+                applicationInstanceMapper
+                        .listDeployTime(projectId, envId, appIds, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
+        return deployDOS;
     }
 }

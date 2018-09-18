@@ -1270,7 +1270,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             if (commandId != null) {
                 Command command = new Command();
                 command.setId(certificationE.getCommandId());
-                command.setResourceType("certification");
+                command.setResourceType("certificate");
                 command.setResourceName(certificationE.getName());
                 commands.add(command);
             }

@@ -169,43 +169,51 @@ public class ApplicationServiceImpl implements ApplicationService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationES.getContent().parallelStream()
-                .forEach(t -> {
-                    if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
-                        t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                                + organization.getCode() + "-" + projectE.getCode() + "/"
-                                + t.getCode() + ".git");
-                        if (!sonarqubeUrl.equals("")) {
-                            Integer result = 0;
-                            try {
-                                result = HttpClientUtil.getSonar(
-                                        sonarqubeUrl.endsWith("/")
-                                                ? sonarqubeUrl
-                                                : String.format(
-                                                "%s/api/project_links/search?projectKey=%s-%s:%s",
-                                                sonarqubeUrl,
-                                                organization.getCode(),
-                                                projectE.getCode(),
-                                                t.getCode()
-                                        ));
-                                if (result.equals(HttpStatus.OK.value())) {
-                                    t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
-                                            + "dashboard?id="
-                                            + organization.getCode() + "-" + projectE.getCode() + ":"
-                                            + t.getCode());
-                                }
-                            } catch (Exception e) {
-                                t.initSonarUrl(null);
-                            }
-                        }
-                    }
-                });
+                .forEach(t ->
+                        getSonarUrl(projectE, organization, urlSlash, t)
+                );
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
+    }
+
+    private void getSonarUrl(ProjectE projectE, Organization organization, String urlSlash, ApplicationE t) {
+        if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
+            t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
+                    + organization.getCode() + "-" + projectE.getCode() + "/"
+                    + t.getCode() + ".git");
+            if (!sonarqubeUrl.equals("")) {
+                Integer result = 0;
+                try {
+                    result = HttpClientUtil.getSonar(
+                            sonarqubeUrl.endsWith("/")
+                                    ? sonarqubeUrl
+                                    : String.format(
+                                    "%s/api/project_links/search?projectKey=%s-%s:%s",
+                                    sonarqubeUrl,
+                                    organization.getCode(),
+                                    projectE.getCode(),
+                                    t.getCode()
+                            ));
+                    if (result.equals(HttpStatus.OK.value())) {
+                        t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
+                                + "dashboard?id="
+                                + organization.getCode() + "-" + projectE.getCode() + ":"
+                                + t.getCode());
+                    }
+                } catch (Exception e) {
+                    t.initSonarUrl(null);
+                }
+            }
+        }
     }
 
     @Override
     public Page<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES = applicationRepository.listCodeRepository(projectId, pageRequest, params);
-        applicationES.forEach(t -> t.initGitlabProjectEByUrl(devopsGitRepository.getGitlabUrl(projectId, t.getId())));
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        applicationES.forEach(t -> getSonarUrl(projectE, organization, urlSlash, t)
+        );
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
 

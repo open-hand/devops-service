@@ -256,11 +256,91 @@
         <if test="appId != null">
             AND da.id = #{appId}
         </if>
+        <if test="envGroupId != null">
+            AND de.devops_env_group_id = #{envGroupId}
+        </if>
+        <if test="envGroupId == null">
+            AND de.devops_env_group_id is null
+        </if>
         ORDER BY
         da.last_update_date DESC,
         de.sequence ASC,
         dav.creation_date DESC,
         dai.last_update_date DESC;
+    </select>
+
+
+    <select id="listDeployTime" resultType="io.choerodon.devops.infra.dataobject.DeployDO">
+        select
+        dai.code appInstanceCode,
+        da.code appCode,
+        da.name appName,
+        dav.version appVersion,
+        cmd.creation_date,
+        cmd.status status,
+        cmd.last_update_date,
+        cmd.last_updated_by
+        from devops_app_instance dai
+        JOIN devops_application da ON dai.app_id = da.id
+        JOIN devops_app_version dav ON dai.app_version_id = dav.id
+        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
+        where da.project_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
+        ('doing','operating')
+        <if test="startTime != null">
+            AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND cmd.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        <if test="envId != null">
+            AND de.id = #{envId}
+        </if>
+        <if test="appIds != null">
+            AND da.id in
+            <foreach collection="appIds" item="appIds" index="index"
+                     open="(" close=")" separator=",">
+                #{appIds}
+            </foreach>
+        </if>
+        order by cmd.last_update_date DESC
+    </select>
+
+    <select id="listDeployFrequency" resultType="io.choerodon.devops.infra.dataobject.DeployDO">
+        select
+        dai.code appInstanceCode,
+        da.code appCode,
+        da.name appName,
+        dav.version appVersion,
+        cmd.creation_date,
+        cmd.status status,
+        cmd.last_update_date,
+        cmd.last_updated_by
+        from devops_app_instance dai
+        JOIN devops_application da ON dai.app_id = da.id
+        JOIN devops_app_version dav ON dai.app_version_id = dav.id
+        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
+        where da.project_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
+        ('doing','operating')
+        <if test="startTime != null">
+            AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND cmd.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        <if test="appId != null">
+            AND da.id = #{appId}
+        </if>
+        <if test="envIds != null">
+            AND de.id in
+            <foreach collection="envIds" item="envIds" index="index"
+                     open="(" close=")" separator=",">
+                #{envIds}
+            </foreach>
+        </if>
+        order by cmd.creation_date DESC
+
     </select>
 
 
