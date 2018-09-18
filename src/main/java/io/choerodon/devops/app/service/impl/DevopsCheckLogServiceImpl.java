@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -14,6 +16,8 @@ import com.zaxxer.hikari.util.DefaultThreadFactory;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +45,7 @@ import io.choerodon.devops.domain.application.valueobject.CheckLog;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
@@ -200,25 +205,43 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
         LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
         devopsEnvironmentES.parallelStream().forEach(env -> {
+            GitUtil gitUtil = new GitUtil(env.getEnvIdRsa());
             if (env.getGitlabEnvProjectId() != null) {
                 LOGGER.info("{}:{}  begin to upgrade!", env.getCode(), env.getId());
-                // todo cloneProject()
-                new SyncInstanceByEnv(logs, env).invoke(); // todo use createGitFile()
-                new SynServiceByEnv(logs, env).invoke(); // todo use createGitFile()
-                new SyncIngressByEnv(logs, env).invoke(); // todo use createGitFile()
-                // todo delete
-                devopsGitRepository.createTag(
-                        TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, "", "", ADMIN);
-                // todo git tag
-                // todo git push
-                // todo delete file
-                LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
+                String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(env);
+                Git git;
+                try {
+                    git = Git.open(new File(filePath));
+                    new SyncInstanceByEnv(logs, env).invoke(); // todo use createGitFile()
+                    new SynServiceByEnv(logs, env).invoke(); // todo use createGitFile()
+                    new SyncIngressByEnv(logs, env).invoke(); // todo use createGitFile()
+//                    devopsGitRepository.createTag(
+//                            TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, "", "", ADMIN);
+                    git.tag().setName("agent-sync").call();
+                    gitUtil.gitPush(git);
+                    FileUtil.deleteDirectory(new File(filePath));
+                    LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
+                } catch (IOException e) {
+                    LOGGER.info("error.git.open: " + filePath, e);
+                } catch (GitAPIException e) {
+                    LOGGER.info("error.git.push: " + filePath, e);
+                }
             }
         });
     }
 
     // todo Func: create file / git add / git commit
-    // private void createGitFile()
+    private void createGitFile(String repoPath, Git git, String relativePath, String fileContent, String commitMsg) {
+        GitUtil gitUtil = new GitUtil();
+        try {
+            gitUtil.createFileInRepo(repoPath, git, relativePath, fileContent, commitMsg);
+        } catch (IOException e) {
+            LOGGER.info("error.file.open: " + relativePath, e);
+        } catch (GitAPIException e) {
+            LOGGER.info("error.git.commit: " + relativePath, e);
+        }
+
+    }
 
     @Saga(code = "devops-upgrade-0.9",
             description = "devops smooth upgrade to 0.9", inputSchema = "{}")
