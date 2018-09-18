@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -28,6 +29,7 @@ import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
+import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.Msg;
@@ -119,8 +121,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
-        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId);
+    public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId, Long envGroupId) {
+        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId, envGroupId);
         List<ApplicationLatestVersionDO> appLatestVersionList =
                 applicationVersionRepository.listAppLatestVersion(projectId);
         Map<Long, ApplicationLatestVersionDO> latestVersionList = appLatestVersionList.stream()
@@ -141,7 +143,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                             latestVersionList.get(t.getAppId()).getVersion());
                     instancesDTO.setProjectId(t.getProjectId());
                     if (t.getInstanceId() != null) {
-                        addAppInstance(instancesDTO, t);
+                        addAppInstance(instancesDTO, t, latestVersionList.get(t.getAppId()).getVersionId());
                     }
                     appInstancesListMap.put(t.getAppId(), appInstancesList.size());
                     appInstancesList.add(instancesDTO);
@@ -158,7 +160,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return appInstancesList;
     }
 
-    private void addAppInstance(ApplicationInstancesDTO instancesDTO, ApplicationInstancesDO instancesDO) {
+    private void addAppInstance(ApplicationInstancesDTO instancesDTO, ApplicationInstancesDO instancesDO, Long latestVersionId) {
         EnvVersionDTO envVersionDTO = new EnvVersionDTO(
                 instancesDO.getVersionId(),
                 instancesDO.getVersion(),
@@ -166,6 +168,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 instancesDO.getInstanceCode(),
                 instancesDO.getInstanceStatus());
         EnvInstanceDTO envInstanceDTO = new EnvInstanceDTO(instancesDO.getEnvId());
+        if (instancesDO.getVersionId().equals(latestVersionId)) {
+            envVersionDTO.setLatest(true);
+        }
         envInstanceDTO.addEnvVersionDTOS(envVersionDTO);
         instancesDTO.appendEnvInstanceDTOS(envInstanceDTO);
         if (instancesDTO.getLatestVersionId().equals(instancesDO.getVersionId())) {
@@ -204,6 +209,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     instancesDO.getInstanceCode(),
                     instancesDO.getInstanceStatus());
             envInstanceDTO = new EnvInstanceDTO(instancesDO.getEnvId());
+            if (instancesDO.getVersionId().equals(instancesDTO.getLatestVersionId())) {
+                envVersionDTO.setLatest(true);
+            }
             envInstanceDTO.addEnvVersionDTOS(envVersionDTO);
             instancesDTO.appendEnvInstanceDTOS(envInstanceDTO);
         }
@@ -237,6 +245,111 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String versionValue = applicationVersionRepository
                 .queryValue(versionId);
         return getReplaceResult(versionValue, yaml);
+    }
+
+    @Override
+    public DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime) {
+        if (appIds.length == 0) {
+            appIds = null;
+        }
+        List<DeployDO> deployDOS = applicationInstanceRepository.listDeployTime(projectId, envId, appIds, startTime, endTime);
+        DeployTimeDTO deployTimeDTO = new DeployTimeDTO();
+        List<Date> creationDates = deployDOS.parallelStream().map(DeployDO::getCreationDate).collect(Collectors.toList());
+        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        List<DeployAppDTO> deployAppDTOS = new ArrayList<>();
+        Map<String, List<DeployDO>> resultMaps = deployDOS.stream()
+                .collect(Collectors.groupingBy(t -> t.getAppName()));
+        resultMaps.forEach((key, value) -> {
+            DeployAppDTO deployAppDTO = new DeployAppDTO();
+            List<DeployAppDetail> deployAppDetails = new ArrayList<>();
+            deployAppDTO.setAppName(key);
+            value.forEach(deployDO -> {
+                DeployAppDetail deployAppDetail = new DeployAppDetail();
+                deployAppDetail.setDeployDate(deployDO.getCreationDate());
+                deployAppDetail.setDeployTime(getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
+                deployAppDetails.add(deployAppDetail);
+            });
+            deployAppDTO.setDeployAppDetails(deployAppDetails);
+            deployAppDTOS.add(deployAppDTO);
+        });
+        deployTimeDTO.setCreationDates(creationDates);
+        deployTimeDTO.setDeployAppDTOS(deployAppDTOS);
+        return deployTimeDTO;
+    }
+
+    @Override
+    public DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime) {
+        if (envIds.length == 0) {
+            envIds = null;
+        }
+        List<DeployDO> deployFrequencyDOS = applicationInstanceRepository.listDeployFrequency(projectId, envIds, appId, startTime, endTime);
+        Map<String, List<DeployDO>> resultMaps = deployFrequencyDOS.stream()
+                .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getCreationDate().getTime()).toString()));
+        List<Long> deployFrequencys = new LinkedList<>();
+        List<Long> deploySuccessFrequency = new LinkedList<>();
+        List<Long> deployFailFrequency = new LinkedList<>();
+        List<String> creationDates = deployFrequencyDOS.parallelStream().map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString()).collect(Collectors.toList());
+        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        creationDates.stream().forEach(date -> {
+            Long[] newDeployFrequencys = {0L};
+            Long[] newDeploySuccessFrequency = {0L};
+            Long[] newDeployFailFrequency = {0L};
+            resultMaps.get(date).stream().forEach(deployFrequencyDO -> {
+                newDeployFrequencys[0] = newDeployFrequencys[0] + 1L;
+                if (deployFrequencyDO.getStatus().equals(CommandStatus.SUCCESS.getStatus())) {
+                    newDeploySuccessFrequency[0] = newDeploySuccessFrequency[0] + 1L;
+                } else {
+                    newDeployFailFrequency[0] = newDeployFailFrequency[0] + 1L;
+                }
+            });
+            deployFrequencys.add(newDeployFrequencys[0]);
+            deploySuccessFrequency.add(newDeploySuccessFrequency[0]);
+            deployFailFrequency.add(newDeployFailFrequency[0]);
+        });
+        DeployFrequencyDTO deployFrequencyDTO = new DeployFrequencyDTO();
+        deployFrequencyDTO.setCreationDates(creationDates);
+        deployFrequencyDTO.setDeployFailFrequency(deployFailFrequency);
+        deployFrequencyDTO.setDeploySuccessFrequency(deploySuccessFrequency);
+        deployFrequencyDTO.setDeployFrequencys(deployFrequencys);
+        return deployFrequencyDTO;
+    }
+
+    @Override
+    public Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime) {
+        if (envIds.length == 0) {
+            envIds = null;
+        }
+        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployFrequencyDetail(projectId, pageRequest, envIds, appId, startTime, endTime);
+        Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
+        return pageDeployDetailDTOS;
+    }
+
+    @Override
+    public Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime) {
+        if (appIds.length == 0) {
+            appIds = null;
+        }
+        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployTimeDetail(projectId, pageRequest, envId, appIds, startTime, endTime);
+        Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
+        return pageDeployDetailDTOS;
+    }
+
+    private Page<DeployDetailDTO> getDeployDetailDTOS(Page<DeployDO> deployDOS) {
+        Page<DeployDetailDTO> pageDeployDetailDTOS = new Page<>();
+        List<DeployDetailDTO> deployDetailDTOS = new ArrayList<>();
+        BeanUtils.copyProperties(deployDOS, pageDeployDetailDTOS);
+        deployDOS.getContent().stream().forEach(deployDO -> {
+            DeployDetailDTO deployDetailDTO = new DeployDetailDTO();
+            BeanUtils.copyProperties(deployDO, deployDetailDTO);
+            deployDetailDTO.setDeployTime(getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
+            if (deployDO.getLastUpdatedBy() != 0) {
+                UserE userE = iamRepository.queryById(deployDO.getLastUpdatedBy());
+                deployDetailDTO.setLastUpdatedName(userE.getRealName());
+            }
+            deployDetailDTOS.add(deployDetailDTO);
+        });
+        pageDeployDetailDTOS.setContent(deployDetailDTOS);
+        return pageDeployDetailDTOS;
     }
 
 
@@ -740,4 +853,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return replaceResult;
     }
 
+
+    public String getDeployTime(Long diff) {
+        float num = (float) diff / (60 * 1000);
+        DecimalFormat df = new DecimalFormat("0.0");
+        return df.format(num);
+    }
 }

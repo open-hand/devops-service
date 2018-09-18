@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,8 +91,10 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
-            @RequestParam(required = false) Long appId) {
-        return Optional.ofNullable(applicationInstanceService.listApplicationInstances(projectId, appId))
+            @RequestParam(required = false) Long appId,
+            @ApiParam(value = "应用组id")
+            @RequestParam(required = false) Long envGroupId) {
+        return Optional.ofNullable(applicationInstanceService.listApplicationInstances(projectId, appId, envGroupId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.version.query"));
     }
@@ -430,4 +433,140 @@ public class ApplicationInstanceController {
     }
 
 
+    /**
+     * 获取部署时长报表
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param appIds    应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取部署时长报表")
+    @PostMapping(value = "/env_commands/time")
+    public ResponseEntity<DeployTimeDTO> listDeployTime(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "envId")
+            @RequestParam(required = false) Long envId,
+            @ApiParam(value = "appIds")
+            @RequestBody(required = false) Long[] appIds,
+            @ApiParam(value = "startTime")
+            @RequestParam(required = true) Date startTime,
+            @ApiParam(value = "endTime")
+            @RequestParam(required = true) Date endTime) {
+        return Optional.ofNullable(applicationInstanceService.listDeployTime(projectId, envId, appIds, startTime, endTime))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.deploy.time.get"));
+    }
+
+
+    /**
+     * 获取部署次数报表
+     *
+     * @param projectId 项目id
+     * @param envIds    环境id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取部署次数报表")
+    @PostMapping(value = "/env_commands/frequency")
+    public ResponseEntity<DeployFrequencyDTO> listDeployFrequency(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "appId")
+            @RequestParam(required = false) Long appId,
+            @ApiParam(value = "envIds")
+            @RequestBody(required = false) Long[] envIds,
+            @ApiParam(value = "startTime")
+            @RequestParam(required = true) Date startTime,
+            @ApiParam(value = "endTime")
+            @RequestParam(required = true) Date endTime) {
+        return Optional.ofNullable(applicationInstanceService.listDeployFrequency(projectId, envIds, appId, startTime, endTime))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
+    }
+
+
+    /**
+     * 获取部署次数报表table
+     *
+     * @param projectId 项目id
+     * @param envIds    环境id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取部署次数报表table")
+    @CustomPageRequest
+    @PostMapping(value = "/env_commands/frequencyDetail")
+    public ResponseEntity<Page<DeployDetailDTO>> pageDeployFrequencyDetail(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+                    PageRequest pageRequest,
+            @ApiParam(value = "appId")
+            @RequestParam(required = false) Long appId,
+            @ApiParam(value = "envIds")
+            @RequestBody(required = false) Long[] envIds,
+            @ApiParam(value = "startTime")
+            @RequestParam(required = true) Date startTime,
+            @ApiParam(value = "endTime")
+            @RequestParam(required = true) Date endTime) {
+        return Optional.ofNullable(applicationInstanceService.pageDeployFrequencyDetail(projectId, pageRequest, envIds, appId, startTime, endTime))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.deploy.frequency.get"));
+    }
+
+
+    /**
+     * 获取部署时长报表table
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param appIds    应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取部署时长报表table")
+    @CustomPageRequest
+    @PostMapping(value = "/env_commands/timeDetail")
+    public ResponseEntity<Page<DeployDetailDTO>> pageDeployTimeDetail(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+                    PageRequest pageRequest,
+            @ApiParam(value = "envId")
+            @RequestParam(required = false) Long envId,
+            @ApiParam(value = "appIds")
+            @RequestBody(required = false) Long[] appIds,
+            @ApiParam(value = "startTime")
+            @RequestParam(required = true) Date startTime,
+            @ApiParam(value = "endTime")
+            @RequestParam(required = true) Date endTime) {
+        return Optional.ofNullable(applicationInstanceService.pageDeployTimeDetail(projectId, pageRequest, appIds, envId, startTime, endTime))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.deploy.time.get"));
+    }
 }

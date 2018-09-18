@@ -1,10 +1,12 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.Date;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -31,11 +33,20 @@ public interface ApplicationInstanceRepository {
 
     List<ApplicationInstanceE> selectByEnvId(Long envId);
 
-    List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId);
+    List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId, Long envGroupId);
 
     List<ApplicationInstanceE> list();
 
     String queryValueByInstanceId(Long instanceId);
 
     void deleteById(Long id);
+
+    List<DeployDO> listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
+
+
+    List<DeployDO> listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
+
+    Page<DeployDO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
+
+    Page<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds, Date startTime, Date endTime);
 }
