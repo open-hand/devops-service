@@ -296,6 +296,7 @@ public class GitUtil {
         for (Ref ref : refs) {
             pushCommand.add(ref);
         }
+        pushCommand.setPushTags();
         pushCommand.setTransportConfigCallback(getTransportConfigCallback()).call();
     }
 
@@ -323,6 +324,7 @@ public class GitUtil {
     }
 
     private void addFile(Git git, String relativePath) throws GitAPIException {
+        git.add().setUpdate(false).addFilepattern(relativePath).call();
         git.add().setUpdate(true).addFilepattern(relativePath).call();
     }
 

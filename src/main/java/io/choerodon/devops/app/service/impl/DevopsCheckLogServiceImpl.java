@@ -26,6 +26,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -46,6 +49,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
+import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
@@ -209,14 +213,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             if (env.getGitlabEnvProjectId() != null) {
                 LOGGER.info("{}:{}  begin to upgrade!", env.getCode(), env.getId());
                 String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(env);
-                Git git;
-                try {
-                    git = Git.open(new File(filePath));
-                    new SyncInstanceByEnv(logs, env).invoke(); // todo use createGitFile()
-                    new SynServiceByEnv(logs, env).invoke(); // todo use createGitFile()
-                    new SyncIngressByEnv(logs, env).invoke(); // todo use createGitFile()
-//                    devopsGitRepository.createTag(
-//                            TypeUtil.objToInteger(env.getGitlabEnvProjectId()), "agent-sync", MASTER, "", "", ADMIN);
+                try (Git git = Git.open(new File(filePath))) {
+
+                    new SyncInstanceByEnv(logs, env, filePath, git).invoke(); // todo use createGitFile()
+//                    new SynServiceByEnv(logs, env, filePath, git).invoke(); // todo use createGitFile()
+//                    new SyncIngressByEnv(logs, env, filePath, git).invoke(); // todo use createGitFile()
                     git.tag().setName("agent-sync").call();
                     gitUtil.gitPush(git);
                     FileUtil.deleteDirectory(new File(filePath));
@@ -230,17 +231,27 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         });
     }
 
-    // todo Func: create file / git add / git commit
-    private void createGitFile(String repoPath, Git git, String relativePath, String fileContent, String commitMsg) {
+    private void createGitFile(String repoPath, Git git, String relativePath, String content) {
         GitUtil gitUtil = new GitUtil();
         try {
-            gitUtil.createFileInRepo(repoPath, git, relativePath, fileContent, commitMsg);
+            gitUtil.createFileInRepo(repoPath, git, relativePath, content, null);
         } catch (IOException e) {
             LOGGER.info("error.file.open: " + relativePath, e);
         } catch (GitAPIException e) {
             LOGGER.info("error.git.commit: " + relativePath, e);
         }
 
+    }
+
+    private String getObjectYaml(Object type) {
+        Tag tag = new Tag(type.getClass().toString());
+        SkipNullRepresenterUtil skipNullRepresenter = new SkipNullRepresenterUtil();
+        skipNullRepresenter.addClassTag(type.getClass(), tag);
+        DumperOptions options = new DumperOptions();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setAllowReadOnlyProperties(true);
+        Yaml yaml = new Yaml(skipNullRepresenter, options);
+        return yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
     }
 
     @Saga(code = "devops-upgrade-0.9",
@@ -329,10 +340,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private class SyncInstanceByEnv {
         private List<CheckLog> logs;
         private DevopsEnvironmentE env;
+        private String filePath;
+        private Git git;
 
-        SyncInstanceByEnv(List<CheckLog> logs, DevopsEnvironmentE env) {
+        SyncInstanceByEnv(List<CheckLog> logs, DevopsEnvironmentE env, String filePath, Git git) {
             this.logs = logs;
             this.env = env;
+            this.filePath = filePath;
+            this.git = git;
         }
 
         void invoke() {
@@ -342,20 +357,28 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         CheckLog checkLog = new CheckLog();
                         try {
                             checkLog.setContent("instance: " + applicationInstanceE.getCode() + SERIAL_STRING);
-                            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                                    .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
-                            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
-                            objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
-                            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
-                            String filePath = "release-" + applicationInstanceE.getCode();
-                            if (!gitlabRepository.getFile(projectId, MASTER, filePath + YAML_FILE)) {
-                                objectOperation.operationEnvGitlabFile(
-                                        filePath,
-                                        projectId,
-                                        CREATE,
-                                        TypeUtil.objToLong(ADMIN), null, null, null, null);
+//                            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+//                                    .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+//                            ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
+//                            objectOperation.setType(getC7NHelmRelease(applicationInstanceE));
+//                            Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
+                            String fileRelativePath = "release-" + applicationInstanceE.getCode() + YAML_FILE;
+
+                            if (!new File(filePath + File.separator + fileRelativePath).exists()) {
+                                createGitFile(filePath, git, fileRelativePath,
+                                        getObjectYaml(getC7NHelmRelease(applicationInstanceE)));
                                 checkLog.setResult(SUCCESS);
                             }
+
+//                            if (!gitlabRepository.getFile(projectId, MASTER, fileRelativePath + YAML_FILE)) {
+//                                objectOperation.operationEnvGitlabFile(
+//                                        fileRelativePath,
+//                                        projectId,
+//                                        CREATE,
+//                                        TypeUtil.objToLong(ADMIN), null, null, null, null);
+//                                checkLog.setResult(SUCCESS);
+//                            }
+
                             LOGGER.info(checkLog.toString());
                         } catch (Exception e) {
                             LOGGER.info("{}:{} instance/{} sync failed {}",
