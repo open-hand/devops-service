@@ -210,7 +210,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private void syncObjects(List<CheckLog> logs) {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
         LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
-        devopsEnvironmentES.parallelStream().forEach(env -> {
+        devopsEnvironmentES.stream().forEach(env -> {
             GitUtil gitUtil = new GitUtil(env.getEnvIdRsa());
             if (env.getGitlabEnvProjectId() != null) {
                 LOGGER.info("{}:{}  begin to upgrade!", env.getCode(), env.getId());
