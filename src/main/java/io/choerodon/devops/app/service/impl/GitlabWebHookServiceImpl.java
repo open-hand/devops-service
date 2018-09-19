@@ -5,13 +5,13 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.app.service.GitlabWebHookService;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
@@ -23,10 +23,13 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
     private DevopsMergeRequestRepository devopsMergeRequestRepository;
     private DevopsGitService devopsGitService;
+    private DevopsGitlabCommitService devopsGitlabCommitService;
 
-    public GitlabWebHookServiceImpl(DevopsMergeRequestRepository devopsMergeRequestRepository, DevopsGitService devopsGitService){
-        this.devopsMergeRequestRepository  = devopsMergeRequestRepository;
+
+    public GitlabWebHookServiceImpl(DevopsMergeRequestRepository devopsMergeRequestRepository, DevopsGitService devopsGitService, DevopsGitlabCommitService devopsGitlabCommitService) {
+        this.devopsMergeRequestRepository = devopsMergeRequestRepository;
         this.devopsGitService = devopsGitService;
+        this.devopsGitlabCommitService = devopsGitlabCommitService;
     }
 
     @Override
@@ -49,6 +52,7 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                     LOGGER.info(pushWebHookDTO.toString());
                 }
                 devopsGitService.branchSync(pushWebHookDTO, token);
+                devopsGitlabCommitService.create(pushWebHookDTO, token);
                 break;
             default:
                 break;

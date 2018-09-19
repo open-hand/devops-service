@@ -279,4 +279,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<ProjectHook> createProjectHook(Integer projectId, Integer userId, ProjectHook projectHook) {
         return new ResponseEntity("error.projecthook.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity<ProjectHook> updateProjectHook(Integer projectId, Integer hookId, Integer userId) {
+        return new ResponseEntity("error.projecthook.update", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
