@@ -5,7 +5,6 @@ import java.util.List;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 
 /**
  * Created by younger on 2018/3/29.
@@ -43,5 +42,7 @@ public interface GitlabRepository {
     void createDeployKey(Integer projectId, String title, String key, boolean canPush, Integer userId);
 
     Boolean getFile(Integer projectId, String branch, String filePath);
+
+    ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId);
 
 }

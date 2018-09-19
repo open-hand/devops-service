@@ -41,7 +41,7 @@ public class ProjectHook {
     }
 
     public static ProjectHook allHook() {
-        return new ProjectHook(false, false, true, false, false, false, true, false, false);
+        return new ProjectHook(false, false, true, false, false, true, true, false, false);
     }
 
     public Boolean getBuildEvents() {
