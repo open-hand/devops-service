@@ -8,7 +8,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
             }
             column(name: 'app_id', type: 'BIGINT UNSIGNED', remarks: '应用id')
             column(name: 'user_id', type: 'BIGINT UNSIGNED', remarks: '用户id')
-            column(name: 'commit_sha', type: 'VARCHAR(256)', remarks: 'commit sha') {
+            column(name: 'commit_sha', type: 'VARCHAR(128)', remarks: 'commit sha') {
                         constraints(unique: true)
                     }
             column(name: 'commit_content', type: 'VARCHAR(2000)', remarks: '提交内容')
