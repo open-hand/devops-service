@@ -12,7 +12,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface ApplicationVersionRepository {
 
-    Page<ApplicationVersionE> listApplicationVersion(Long projectId, Long appId ,PageRequest pageRequest, String searchParam);
+    Page<ApplicationVersionE> listApplicationVersion(Long projectId, Long appId, PageRequest pageRequest, String searchParam);
 
     List<ApplicationLatestVersionDO> listAppLatestVersion(Long projectId);
 
@@ -50,4 +50,6 @@ public interface ApplicationVersionRepository {
     List<ApplicationVersionE> selectUpgradeVersions(Long appVersionId);
 
     void checkProIdAndVerId(Long projectId, Long appVersionId);
+
+    ApplicationVersionE queryByCommitSha(String sha);
 }

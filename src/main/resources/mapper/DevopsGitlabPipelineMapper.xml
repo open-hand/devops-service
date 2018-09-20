@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper">
+    <select id="listDevopsGitlabPipeline" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO">
+        select
+        dgp.pipeline_id,
+        dgp.app_id,
+        dgp.pipeline_create_user_id,
+        dgp.commit_id,
+        dgp.status,
+        dgp.stage,
+        dgp.pipeline_creation_date,
+        dgc.user_id commitUserId,
+        dgc.commit_sha sha,
+        dgc.commit_content content,
+        dgc.ref
+        from devops_gitlab_pipeline dgp
+        LEFT JOIN devops_gitlab_commit dgc on dgp.commit_id = dgc.id
+        where dgp.app_id = #{appId} and dgp.status in ('passed','failed')
+        <if test="startTime != null">
+            AND dgp.pipeline_creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND dgp.pipeline_creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        order by dgp.pipeline_creation_date DESC
+    </select>
+
+
+</mapper>

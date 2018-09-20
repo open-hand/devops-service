@@ -48,4 +48,8 @@ public interface IamServiceClient {
 
     @PostMapping(value = "/v1/users/ids")
     ResponseEntity<List<UserDO>> listUsersByIds(@RequestBody Long[] ids);
+
+    @GetMapping(value = "/v1/projects/{project_id}/users")
+    ResponseEntity<Page<UserDO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+
 }

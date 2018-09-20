@@ -12,6 +12,22 @@ public class DevopsGitlabCommitE {
     private String ref;
     private Date commitDate;
 
+    public DevopsGitlabCommitE() {
+    }
+
+
+    public DevopsGitlabCommitE(Long id) {
+        this.id = id;
+    }
+
+
+    public DevopsGitlabCommitE(Long id, String sha, String ref, String content, Long userId) {
+        this.id = id;
+        this.commitSha = sha;
+        this.commitContent = content;
+        this.ref = ref;
+        this.userId = userId;
+    }
 
     public Long getId() {
         return id;

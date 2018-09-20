@@ -11,11 +11,9 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.ApplicationTemplateService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 
 /**
@@ -41,6 +39,8 @@ public class DevopsSagaHandler {
     private ApplicationTemplateService applicationTemplateService;
     @Autowired
     private ApplicationService applicationService;
+    @Autowired
+    private DevopsGitlabPipelineService devopsGitlabPipelineService;
 
     /**
      * devops创建环境
@@ -109,4 +109,25 @@ public class DevopsSagaHandler {
         return data;
     }
 
+
+    /**
+     * GitOps 事件处理
+     */
+    @SagaTask(code = "devopsGitlabPipeline",
+            description = "gitlab-pipeline",
+            sagaCode = "devops-gitlab-pipeline",
+            concurrentLimitNum = 1,
+            maxRetryCount = 0,
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
+            seq = 1)
+    public String gitlabPipeline(String data) {
+        PipelineWebHookDTO pipelineWebHookDTO = null;
+        try {
+            pipelineWebHookDTO = objectMapper.readValue(data, PipelineWebHookDTO.class);
+        } catch (IOException e) {
+            LOGGER.info(e.getMessage());
+        }
+        devopsGitlabPipelineService.handleCreate(pipelineWebHookDTO);
+        return data;
+    }
 }

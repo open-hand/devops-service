@@ -28,4 +28,6 @@ public interface IamRepository {
     List<UserE> listUsersByIds(List<Long> ids);
 
     UserE queryUserByUserId(Long id);
+
+    UserE queryByEmail(Long projectId, String email);
 }
