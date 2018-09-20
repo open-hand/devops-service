@@ -97,7 +97,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 String imgUrl = user.getImageUrl();
                 List<Date> date = new ArrayList<>();
                 date.add(e.getCommitDate());
-                map.put(userId, new CommitFormUserDTO(name, imgUrl, date));
+                map.put(userId, new CommitFormUserDTO(e.getId(), name, imgUrl, date));
             } else {
                 map.get(userId).getCommitDates().add(e.getCommitDate());
             }

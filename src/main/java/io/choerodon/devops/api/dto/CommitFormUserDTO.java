@@ -10,14 +10,24 @@ import java.util.List;
  * Description:
  */
 public class CommitFormUserDTO {
+    private Long id;
     private String name;
     private String imgUrl;
     private List<Date> commitDates;
 
-    public CommitFormUserDTO(String name, String imgUrl, List<Date> commitDates) {
+    public CommitFormUserDTO(Long id, String name, String imgUrl, List<Date> commitDates) {
+        this.id = id;
         this.name = name;
         this.imgUrl = imgUrl;
         this.commitDates = commitDates;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getName() {
