@@ -3,8 +3,10 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabPipelineE;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabPipelineRepository {
 
@@ -16,5 +18,8 @@ public interface DevopsGitlabPipelineRepository {
 
     DevopsGitlabPipelineE queryByCommitId(Long commitId);
 
-    List<DevopsGitlabPipelineDO> pipelineTime(Long appId, Date startTime, Date endTime);
+    List<DevopsGitlabPipelineDO> listPipeline(Long appId, Date startTime, Date endTime);
+
+    Page<DevopsGitlabPipelineDO> pagePipeline(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
+
 }

@@ -2,10 +2,9 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 
-import io.choerodon.devops.api.dto.JobWebHookDTO;
-import io.choerodon.devops.api.dto.PipelineFrequencyDTO;
-import io.choerodon.devops.api.dto.PipelineTimeDTO;
-import io.choerodon.devops.api.dto.PipelineWebHookDTO;
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabPipelineService {
 
@@ -18,4 +17,6 @@ public interface DevopsGitlabPipelineService {
     PipelineFrequencyDTO getPipelineFrequency(Long appId, Date startTime, Date endTime);
 
     void handleCreate(PipelineWebHookDTO pipelineWebHookDTO);
+
+    Page<DevopsGitlabPipelineDTO> pagePipelines(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
 }
