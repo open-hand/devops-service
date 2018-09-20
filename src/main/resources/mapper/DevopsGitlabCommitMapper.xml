@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper">
+    <select id="listCommitsByAppId" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO">
+        SELECT
+        dac.id,
+        dac.user_id,
+        dac.app_id,
+        dac.commit_date,
+        dac.commit_content
+        FROM
+        devops_gitlab_commit dac
+        WHERE
+        <if test="appIds != null">
+            dac.app_id IN
+            <foreach collection="appIds" item="appId" open="(" close=")" separator=",">
+                #{appId}
+            </foreach>
+        </if>
+        <if test="appIds == null">
+            1
+        </if>
+    </select>
+</mapper>

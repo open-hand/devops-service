@@ -1,8 +1,16 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.CommitFormRecordDTO;
+import io.choerodon.devops.api.dto.CommitFormUserDTO;
+import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
@@ -12,19 +20,25 @@ import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.dataobject.iam.UserDO;
+import io.choerodon.devops.infra.feign.IamServiceClient;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService {
 
     @Autowired
-    DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+    private UserAttrRepository userAttrRepository;
     @Autowired
-    ApplicationRepository applicationRepository;
+    private ApplicationRepository applicationRepository;
     @Autowired
-    UserAttrRepository userAttrRepository;
+    private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+
     @Autowired
     IamRepository iamRepository;
+    @Autowired
+    IamServiceClient iamServiceClient;
 
     @Override
     public void create(PushWebHookDTO pushWebHookDTO, String token) {
@@ -39,9 +53,73 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             if (userE != null) {
                 devopsGitlabCommitE.setUserId(userE.getId());
             }
+            devopsGitlabCommitE.setUserId(userAttrRepository.queryUserIdByGitlabUserId(
+                    TypeUtil.objToLong(commitDTO.getAuthor().getId())));
             devopsGitlabCommitE.setCommitDate(commitDTO.getTimestamp());
             devopsGitlabCommitRepository.create(devopsGitlabCommitE);
         });
     }
-}
 
+    @Override
+    public DevopsGitlabCommitDTO getCommits(Long[] appId, PageRequest pageRequest) {
+        if (appId.length == 0) {
+            appId = null;
+        }
+        // 查询应用列表下所有commit记录
+        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(appId);
+
+        // 获得去重后的所有用户信息
+        Map<Long, UserDO> userMap = getUserDOMap(devopsGitlabCommitES);
+
+        // 获取用户分别的commit
+        List<CommitFormUserDTO> commitFormUserDTOS = getCommitFormUserInfo(devopsGitlabCommitES, userMap);
+
+        // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
+        Page<CommitFormRecordDTO> commitFormRecordDTOPage = getCommitFormRecordDTOS(appId, pageRequest, userMap);
+
+        // 获取总的commit(将所有用户的commit_date放入一个数组)，按照时间先后排序
+        List<Date> totalCommitsDate = getTotalDates(commitFormUserDTOS);
+        Collections.sort(totalCommitsDate);
+
+        return new DevopsGitlabCommitDTO(commitFormUserDTOS, totalCommitsDate, commitFormRecordDTOPage);
+    }
+
+    private Map<Long, UserDO> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {
+        // userIds去重
+        Long[] userIds = devopsGitlabCommitES.stream().map(
+                DevopsGitlabCommitE::getUserId).distinct().toArray(Long[]::new);
+        ResponseEntity<List<UserDO>> response = iamServiceClient.listUsersByIds(userIds);
+        return response.getBody().stream().collect(
+                Collectors.toMap(UserDO::getId, u -> u, (u1, u2) -> u1));
+    }
+
+    private List<CommitFormUserDTO> getCommitFormUserInfo(List<DevopsGitlabCommitE> devopsGitlabCommitES,
+                                                          Map<Long, UserDO> userMap) {
+        Map<Long, CommitFormUserDTO> map = new HashMap<>();
+        devopsGitlabCommitES.forEach(e -> {
+            Long userId = e.getUserId();
+            UserDO user = userMap.get(userId);
+            if (!map.containsKey(userId)) {
+                String name = user.getLoginName() + user.getRealName();
+                String imgUrl = user.getImageUrl();
+                List<Date> date = new ArrayList<>();
+                date.add(e.getCommitDate());
+                map.put(userId, new CommitFormUserDTO(name, imgUrl, date));
+            } else {
+                map.get(userId).getCommitDates().add(e.getCommitDate());
+            }
+        });
+        return new ArrayList<>(map.values());
+    }
+
+    private Page<CommitFormRecordDTO> getCommitFormRecordDTOS(Long[] appId, PageRequest pageRequest,
+                                                              Map<Long, UserDO> userMap) {
+        return devopsGitlabCommitRepository.pageCommitRecord(appId, pageRequest, userMap);
+    }
+
+    private List<Date> getTotalDates(List<CommitFormUserDTO> commitFormUserDTOS) {
+        List<Date> totalCommitsDate = new ArrayList<>();
+        commitFormUserDTOS.forEach(e -> totalCommitsDate.addAll(e.getCommitDates()));
+        return totalCommitsDate;
+    }
+}
