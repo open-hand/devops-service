@@ -250,7 +250,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime) {
         if (appIds.length == 0) {
-            appIds = null;
+            return new DeployTimeDTO();
         }
         List<DeployDO> deployDOS = applicationInstanceRepository.listDeployTime(projectId, envId, appIds, startTime, endTime);
         DeployTimeDTO deployTimeDTO = new DeployTimeDTO();
@@ -280,7 +280,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
-            envIds = null;
+            return new DeployFrequencyDTO();
         }
         List<DeployDO> deployFrequencyDOS = applicationInstanceRepository.listDeployFrequency(projectId, envIds, appId, startTime, endTime);
         Map<String, List<DeployDO>> resultMaps = deployFrequencyDOS.stream()
@@ -317,7 +317,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
-            envIds = null;
+            return  new Page<>();
         }
         Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployFrequencyDetail(projectId, pageRequest, envIds, appId, startTime, endTime);
         Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
@@ -327,7 +327,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime) {
         if (appIds.length == 0) {
-            appIds = null;
+            return new Page<>();
         }
         Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployTimeDetail(projectId, pageRequest, envId, appIds, startTime, endTime);
         Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
