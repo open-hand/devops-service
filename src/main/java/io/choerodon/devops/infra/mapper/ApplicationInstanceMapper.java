@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -7,6 +8,7 @@ import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
+import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 
@@ -33,7 +35,11 @@ public interface ApplicationInstanceMapper extends BaseMapper<ApplicationInstanc
 
     String queryValueByEnvIdAndAppId(@Param("envId") Long envId, @Param("appId") Long appId);
 
-    List<ApplicationInstancesDO> listApplicationInstances(@Param("projectId") Long projectId, @Param("appId") Long appId);
+    List<ApplicationInstancesDO> listApplicationInstances(@Param("projectId") Long projectId, @Param("appId") Long appId, @Param("envGroupId") Long envGroupId);
 
     String queryByInstanceId(@Param("instanceId") Long instanceId);
+
+    List<DeployDO> listDeployTime(@Param("projectId") Long projectId, @Param("envId") Long envId, @Param("appIds") Long[] appIds, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
+
+    List<DeployDO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 }

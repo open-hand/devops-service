@@ -13,6 +13,7 @@ public class EnvVersionDTO {
     private Long versionId;
     private String version;
     private Integer runningCount;
+    private Boolean isLatest;
     private List<EnvInstancesDTO> instances;
 
     public EnvVersionDTO() {
@@ -64,5 +65,13 @@ public class EnvVersionDTO {
     public void appendInstanceList(Long instanceId, String instanceName, String instanceStatus) {
         this.instances.add(new EnvInstancesDTO(instanceId, instanceName, instanceStatus));
         this.runningCount += 1;
+    }
+
+    public Boolean getLatest() {
+        return isLatest;
+    }
+
+    public void setLatest(Boolean latest) {
+        isLatest = latest;
     }
 }
