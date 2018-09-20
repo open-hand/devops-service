@@ -11,12 +11,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.DevopsGitlabPipelineDTO;
 import io.choerodon.devops.api.dto.PipelineFrequencyDTO;
 import io.choerodon.devops.api.dto.PipelineTimeDTO;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 @RestController
@@ -86,5 +90,37 @@ public class DevopsGitlabPipelineController {
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }
 
+
+    /**
+     * 分页获取pipeline
+     *
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "分页获取pipeline")
+    @CustomPageRequest
+    @GetMapping(value = "/page")
+    public ResponseEntity<Page<DevopsGitlabPipelineDTO>> pagePipeline(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+                    PageRequest pageRequest,
+            @ApiParam(value = "appId")
+            @RequestParam(required = false) Long appId,
+            @ApiParam(value = "startTime")
+            @RequestParam(required = false) Date startTime,
+            @ApiParam(value = "endTime")
+            @RequestParam(required = false) Date endTime) {
+        return Optional.ofNullable(devopsGitlabPipelineService.pagePipelines(appId, pageRequest, startTime, endTime))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
+    }
 
 }

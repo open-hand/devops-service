@@ -9,34 +9,34 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.JobWebHookDTO;
-import io.choerodon.devops.api.dto.PipelineFrequencyDTO;
-import io.choerodon.devops.api.dto.PipelineTimeDTO;
-import io.choerodon.devops.api.dto.PipelineWebHookDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsGitlabPipelineE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineService {
 
     private static final Integer ADMIN = 1;
     private ObjectMapper objectMapper = new ObjectMapper();
-
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
 
     @Autowired
     private DevopsGitlabPipelineRepository devopsGitlabPipelineRepository;
@@ -134,7 +134,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         }
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         PipelineTimeDTO pipelineTimeDTO = new PipelineTimeDTO();
-        List<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.pipelineTime(appId, startTime, endTime);
+        List<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.listPipeline(appId, startTime, endTime);
         List<String> pipelineTimes = new LinkedList<>();
         List<String> refs = new LinkedList<>();
         List<String> versions = new LinkedList<>();
@@ -149,17 +149,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 versions.add("");
             }
             List<CommitStatuseDO> commitStatuseDOS = JSONArray.parseArray(devopsGitlabPipelineDO.getStage(), CommitStatuseDO.class);
-            Long diff = 0L;
-            for (CommitStatuseDO commitStatuseDO : commitStatuseDOS) {
-                try {
-                    if (commitStatuseDO.getFinished_at() != null && commitStatuseDO.getStarted_at() != null) {
-                        diff = diff + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").parse(commitStatuseDO.getFinished_at()).getTime() - new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(commitStatuseDO.getStarted_at()).getTime();
-                    }
-                } catch (ParseException e) {
-                    throw new CommonException(e);
-                }
-            }
-            pipelineTimes.add(getDeployTime(diff));
+            pipelineTimes.add(getPipelineTime(commitStatuseDOS));
         });
         pipelineTimeDTO.setCreateDates(createDates);
         pipelineTimeDTO.setPipelineTime(pipelineTimes);
@@ -168,13 +158,27 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         return pipelineTimeDTO;
     }
 
+    private String getPipelineTime(List<CommitStatuseDO> commitStatuseDOS) {
+        Long diff = 0L;
+        for (CommitStatuseDO commitStatuseDO : commitStatuseDOS) {
+            try {
+                if (commitStatuseDO.getFinished_at() != null && commitStatuseDO.getStarted_at() != null) {
+                    diff = diff + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").parse(commitStatuseDO.getFinished_at()).getTime() - new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(commitStatuseDO.getStarted_at()).getTime();
+                }
+            } catch (ParseException e) {
+                throw new CommonException(e);
+            }
+        }
+        return getDeployTime(diff);
+    }
+
     @Override
     public PipelineFrequencyDTO getPipelineFrequency(Long appId, Date startTime, Date endTime) {
         if (appId == null) {
             return new PipelineFrequencyDTO();
         }
         PipelineFrequencyDTO pipelineFrequencyDTO = new PipelineFrequencyDTO();
-        List<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.pipelineTime(appId, startTime, endTime);
+        List<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.listPipeline(appId, startTime, endTime);
         Map<String, List<DevopsGitlabPipelineDO>> resultMaps = devopsGitlabPipelineDOS.stream()
                 .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getPipelineCreationDate().getTime()).toString()));
         List<String> creationDates = devopsGitlabPipelineDOS.parallelStream().map(deployDO -> new java.sql.Date(deployDO.getPipelineCreationDate().getTime()).toString()).collect(Collectors.toList());
@@ -204,6 +208,61 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         pipelineFrequencyDTO.setPipelineFrequencys(PipelineFrequencys);
         pipelineFrequencyDTO.setPipelineSuccessFrequency(PipelineSuccessFrequency);
         return pipelineFrequencyDTO;
+    }
+
+
+    @Override
+    public Page<DevopsGitlabPipelineDTO> pagePipelines(Long appId, PageRequest pageRequest, Date startTime, Date endTime) {
+        if (appId == null) {
+            return new Page<>();
+        }
+        Page<DevopsGitlabPipelineDTO> pageDevopsGitlabPipelineDTOS = new Page<>();
+        List<DevopsGitlabPipelineDTO> devopsGiltabPipelineDTOS = new ArrayList<>();
+        Page<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.pagePipeline(appId, pageRequest, startTime, endTime);
+        BeanUtils.copyProperties(devopsGitlabPipelineDOS, pageDevopsGitlabPipelineDTOS);
+        Map<String, List<DevopsGitlabPipelineDO>> refWithPipelines = devopsGitlabPipelineDOS.stream()
+                .collect(Collectors.groupingBy(t -> t.getRef()));
+        Map<String, Long> refWithPipelineIds = new HashMap<>();
+        refWithPipelines.forEach((key, value) -> {
+            Long pipeLineId = Collections.max(value.parallelStream().map(DevopsGitlabPipelineDO::getPipelineId).collect(Collectors.toList()));
+            refWithPipelineIds.put(key, pipeLineId);
+        });
+        ApplicationE applicationE = applicationRepository.query(appId);
+        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        devopsGitlabPipelineDOS.getContent().forEach(devopsGitlabPipelineDO -> {
+            DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = new DevopsGitlabPipelineDTO();
+            if (devopsGitlabPipelineDO.getPipelineId().equals(refWithPipelineIds.get(devopsGitlabPipelineDO.getRef()))) {
+                devopsGitlabPipelineDTO.setLatest(true);
+            }
+            devopsGitlabPipelineDTO.setCommit(devopsGitlabPipelineDO.getSha());
+            devopsGitlabPipelineDTO.setCommitContent(devopsGitlabPipelineDO.getContent());
+            UserE userE = iamRepository.queryById(devopsGitlabPipelineDO.getCommitUserId());
+            if (userE != null) {
+                devopsGitlabPipelineDTO.setCommitUserUrl(userE.getImageUrl());
+            }
+            UserE newUserE = iamRepository.queryById(devopsGitlabPipelineDO.getPipelineCreateUserId());
+            if (newUserE != null) {
+                devopsGitlabPipelineDTO.setPipelineUserUrl(newUserE.getImageUrl());
+            }
+            devopsGitlabPipelineDTO.setCreationDate(devopsGitlabPipelineDO.getPipelineCreationDate());
+            devopsGitlabPipelineDTO.setPipelineId(devopsGitlabPipelineDO.getPipelineId());
+            devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
+            devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
+            ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(devopsGitlabPipelineDO.getSha());
+            if (applicationVersionE != null) {
+                devopsGitlabPipelineDTO.setVersion(applicationVersionE.getVersion());
+            }
+            List<CommitStatuseDO> commitStatuseDOS = JSONArray.parseArray(devopsGitlabPipelineDO.getStage(), CommitStatuseDO.class);
+            devopsGitlabPipelineDTO.setPipelineTime(getPipelineTime(commitStatuseDOS));
+            devopsGitlabPipelineDTO.setStages(commitStatuseDOS);
+            devopsGitlabPipelineDTO.setGitlabUrl(gitlabUrl + "/"
+                    + organization.getCode() + "-" + projectE.getCode() + "/"
+                    + applicationE.getCode() + ".git");
+            devopsGiltabPipelineDTOS.add(devopsGitlabPipelineDTO);
+        });
+        pageDevopsGitlabPipelineDTOS.setContent(devopsGiltabPipelineDTOS);
+        return pageDevopsGitlabPipelineDTOS;
     }
 
 
