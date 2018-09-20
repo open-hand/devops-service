@@ -22,7 +22,6 @@ public class DevopsGitlabCommitConvertor implements ConvertorI<DevopsGitlabCommi
     public DevopsGitlabCommitDO entityToDo(DevopsGitlabCommitE devopsGitlabCommitE) {
         DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO();
         BeanUtils.copyProperties(devopsGitlabCommitE, devopsGitlabCommitDO);
-        ;
         return devopsGitlabCommitDO;
     }
 }

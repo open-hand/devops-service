@@ -9,9 +9,12 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.DevopsMergeRequestDTO;
+import io.choerodon.devops.api.dto.JobWebHookDTO;
+import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
+import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.devops.app.service.GitlabWebHookService;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
@@ -24,11 +27,13 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
     private DevopsMergeRequestRepository devopsMergeRequestRepository;
     private DevopsGitService devopsGitService;
     private DevopsGitlabCommitService devopsGitlabCommitService;
+    private DevopsGitlabPipelineService devopsGitlabPipelineService;
 
-
-    public GitlabWebHookServiceImpl(DevopsMergeRequestRepository devopsMergeRequestRepository, DevopsGitService devopsGitService, DevopsGitlabCommitService devopsGitlabCommitService) {
+    public GitlabWebHookServiceImpl(DevopsMergeRequestRepository devopsMergeRequestRepository, DevopsGitService devopsGitService, DevopsGitlabCommitService devopsGitlabCommitService,
+                                    DevopsGitlabPipelineService devopsGitlabPipelineService) {
         this.devopsMergeRequestRepository = devopsMergeRequestRepository;
         this.devopsGitService = devopsGitService;
+        this.devopsGitlabPipelineService = devopsGitlabPipelineService;
         this.devopsGitlabCommitService = devopsGitlabCommitService;
     }
 
@@ -53,6 +58,14 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 }
                 devopsGitService.branchSync(pushWebHookDTO, token);
                 devopsGitlabCommitService.create(pushWebHookDTO, token);
+                break;
+            case "pipeline":
+                PipelineWebHookDTO pipelineWebHookDTO = JSONArray.parseObject(body, PipelineWebHookDTO.class);
+                devopsGitlabPipelineService.create(pipelineWebHookDTO, token);
+                break;
+            case "build":
+                JobWebHookDTO jobWebHookDTO = JSONArray.parseObject(body, JobWebHookDTO.class);
+                devopsGitlabPipelineService.updateStages(jobWebHookDTO);
                 break;
             default:
                 break;

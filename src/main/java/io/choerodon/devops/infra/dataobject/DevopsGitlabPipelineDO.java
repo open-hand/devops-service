@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dataobject;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -12,21 +13,28 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_gitlab_pipeline")
-public class DevopsPipelineDO {
+public class DevopsGitlabPipelineDO {
 
     @Id
     @GeneratedValue
     private Long id;
+    private Long appId;
     private Long pipelineId;
     private Long pipelineCreateUserId;
-    private Long commitUserId;
-    private String commmitContent;
-    private String sha;
-    private String ref;
+    private Long commitId;
     private String stage;
     private String status;
     private Date pipelineCreationDate;
+    private Long objectVersionNumber;
 
+    @Transient
+    private String ref;
+    @Transient
+    private String sha;
+    @Transient
+    private String content;
+    @Transient
+    private Long commitUserId;
 
     public Long getId() {
         return id;
@@ -52,36 +60,20 @@ public class DevopsPipelineDO {
         this.pipelineCreateUserId = pipelineCreateUserId;
     }
 
-    public Long getCommitUserId() {
-        return commitUserId;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setCommitUserId(Long commitUserId) {
-        this.commitUserId = commitUserId;
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 
-    public String getCommmitContent() {
-        return commmitContent;
+    public Long getCommitId() {
+        return commitId;
     }
 
-    public void setCommmitContent(String commmitContent) {
-        this.commmitContent = commmitContent;
-    }
-
-    public String getSha() {
-        return sha;
-    }
-
-    public void setSha(String sha) {
-        this.sha = sha;
-    }
-
-    public String getRef() {
-        return ref;
-    }
-
-    public void setRef(String ref) {
-        this.ref = ref;
+    public void setCommitId(Long commitId) {
+        this.commitId = commitId;
     }
 
     public String getStage() {
@@ -106,5 +98,45 @@ public class DevopsPipelineDO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
+    }
+
+    public String getSha() {
+        return sha;
+    }
+
+    public void setSha(String sha) {
+        this.sha = sha;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public Long getCommitUserId() {
+        return commitUserId;
+    }
+
+    public void setCommitUserId(Long commitUserId) {
+        this.commitUserId = commitUserId;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

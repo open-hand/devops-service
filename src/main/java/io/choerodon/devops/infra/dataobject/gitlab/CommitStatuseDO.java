@@ -1,11 +1,10 @@
 package io.choerodon.devops.infra.dataobject.gitlab;
 
-import java.util.Date;
 
 public class CommitStatuseDO {
     private String status;
-    private Date created_at;
-    private Date started_at;
+    private String created_at;
+    private String started_at;
     private String name;
     private Boolean allow_failure;
     private String description;
@@ -23,19 +22,19 @@ public class CommitStatuseDO {
         this.status = status;
     }
 
-    public Date getCreated_at() {
+    public String getCreated_at() {
         return created_at;
     }
 
-    public void setCreated_at(Date created_at) {
+    public void setCreated_at(String created_at) {
         this.created_at = created_at;
     }
 
-    public Date getStarted_at() {
+    public String getStarted_at() {
         return started_at;
     }
 
-    public void setStarted_at(Date started_at) {
+    public void setStarted_at(String started_at) {
         this.started_at = started_at;
     }
 
