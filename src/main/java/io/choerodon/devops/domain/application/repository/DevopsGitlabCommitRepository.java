@@ -6,7 +6,7 @@ import java.util.Map;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-import io.choerodon.devops.infra.dataobject.iam.UserDO;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabCommitRepository {
@@ -17,6 +17,6 @@ public interface DevopsGitlabCommitRepository {
 
     List<DevopsGitlabCommitE> listCommitsByAppId(Long[] appIds);
 
-    Page<CommitFormRecordDTO> pageCommitRecord(Long[] appId, PageRequest pageRequest, Map<Long, UserDO> userMap);
+    Page<CommitFormRecordDTO> pageCommitRecord(Long[] appId, PageRequest pageRequest, Map<Long, UserE> userMap);
 
 }

@@ -12,9 +12,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
-import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -52,7 +52,7 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public Page<CommitFormRecordDTO> pageCommitRecord(Long[] appId, PageRequest pageRequest, Map<Long, UserDO> userMap) {
+    public Page<CommitFormRecordDTO> pageCommitRecord(Long[] appId, PageRequest pageRequest, Map<Long, UserE> userMap) {
         List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
 
         Page<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.doPageAndSort(pageRequest,
@@ -60,7 +60,7 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
 
         devopsGitlabCommitDOPage.getContent().forEach(e -> {
             Long userId = e.getUserId();
-            UserDO user = userMap.get(userId);
+            UserE user = userMap.get(userId);
             CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(userId, e.getAppId(), user.getImageUrl(),
                     e.getCommitContent(), user.getLoginName() + " " + user.getRealName(), e.getCommitDate());
             commitFormRecordDTOList.add(commitFormRecordDTO);
