@@ -232,9 +232,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     devopsServiceInstanceRepository.queryByServiceId(devopsServiceE.getId());
             if (!devopsServiceAppInstanceES.isEmpty()) {
                 DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                devopsServiceAppInstanceES.get(0).getAppInstanceId(),
-                                ResourceType.SERVICE.getType(),
-                                devopsServiceE.getName());
+                        devopsServiceAppInstanceES.get(0).getAppInstanceId(),
+                        ResourceType.SERVICE.getType(),
+                        devopsServiceE.getName());
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository
                         .query(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
                 V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
@@ -293,6 +293,24 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     }).collect(Collectors.toList());
         }
         return ports;
+    }
+
+    void updateWebHook(List<CheckLog> logs) {
+        List<ApplicationDO> applications = applicationMapper.selectAll();
+        applications.parallelStream()
+                .filter(applicationDO ->
+                        applicationDO.getHookId() != null)
+                .forEach(applicationDO -> {
+                    CheckLog checkLog = new CheckLog();
+                    checkLog.setContent("app: " + applicationDO.getName() + "update gitlab webhook");
+                    try {
+                        gitlabRepository.updateWebHook(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(applicationDO.getHookId()), ADMIN);
+                        checkLog.setResult(SUCCESS);
+                    } catch (Exception e) {
+                        checkLog.setResult(FAILED + e.getMessage());
+                    }
+                    logs.add(checkLog);
+                });
     }
 
     private class SyncInstanceByEnv {
@@ -527,6 +545,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 gitOpsUserAccess();
                 syncEnvProject(logs);
                 syncObjects(logs);
+            } else if ("1.0".equals(version)) {
+                updateWebHook(logs);
             } else {
                 LOGGER.info("version not matched");
             }

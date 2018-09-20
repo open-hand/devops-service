@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -140,6 +141,19 @@ public class GitlabRepositoryImpl implements GitlabRepository {
                 .createProjectHook(projectId, userId, projectHook);
         if (!projectHookResponseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
             throw new CommonException("error.projecthook.create");
+        }
+        return projectHookResponseEntity.getBody();
+    }
+
+
+    @Override
+    public ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId) {
+        ResponseEntity<ProjectHook> projectHookResponseEntity;
+        try {
+            projectHookResponseEntity = gitlabServiceClient
+                    .updateProjectHook(projectId, hookId, userId);
+        } catch (FeignException e) {
+            throw new CommonException(e.getMessage(), e);
         }
         return projectHookResponseEntity.getBody();
     }

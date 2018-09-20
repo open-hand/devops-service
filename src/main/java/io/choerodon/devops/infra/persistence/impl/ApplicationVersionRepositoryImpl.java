@@ -43,7 +43,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     private IamRepository iamRepository;
 
     @Override
-    public Page<ApplicationVersionE> listApplicationVersion(Long projectId, Long appId ,PageRequest pageRequest, String searchParam) {
+    public Page<ApplicationVersionE> listApplicationVersion(Long projectId, Long appId, PageRequest pageRequest, String searchParam) {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("version", "dav.version");
@@ -246,5 +246,12 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         if (index == 0) {
             throw new CommonException("error.project.AppVersion.notExist");
         }
+    }
+
+    @Override
+    public ApplicationVersionE queryByCommitSha(String sha) {
+        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO();
+        applicationVersionDO.setCommit(sha);
+        return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
     }
 }

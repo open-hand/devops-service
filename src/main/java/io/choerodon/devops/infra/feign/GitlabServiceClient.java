@@ -1,8 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -377,4 +377,10 @@ public interface GitlabServiceClient {
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId,
             @RequestBody ProjectHook projectHook);
+
+    @PutMapping("/v1/hook")
+    ResponseEntity<ProjectHook> updateProjectHook(
+            @RequestParam("projectId") Integer projectId,
+            @RequestParam("hookId") Integer hookId,
+            @RequestParam("userId") Integer userId);
 }

@@ -144,4 +144,16 @@ public class IamRepositoryImpl implements IamRepository {
         }
         return null;
     }
+
+    @Override
+    public UserE queryByEmail(Long projectId, String email) {
+        try {
+            ResponseEntity<Page<UserDO>> userDOResponseEntity = iamServiceClient.listUsersByEmail(projectId, 0, 10, email);
+            return ConvertHelper.convert(userDOResponseEntity.getBody().getContent().get(0), UserE.class);
+
+        } catch (Exception e) {
+
+            return null;
+        }
+    }
 }
