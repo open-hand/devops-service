@@ -185,6 +185,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.gitOpsCommandSyncEventResult(TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             default:
+                msg.setDispatch(false);
                 break;
         }
 
