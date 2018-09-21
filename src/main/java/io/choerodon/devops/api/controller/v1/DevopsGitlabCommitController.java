@@ -46,7 +46,6 @@ public class DevopsGitlabCommitController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @CustomPageRequest
     @ApiOperation(value = "获取应用下的commits")
     @PostMapping("/commits")
     public ResponseEntity<DevopsGitlabCommitDTO> getCommits(
@@ -69,6 +68,7 @@ public class DevopsGitlabCommitController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @CustomPageRequest
     @ApiOperation(value = "获取应用下的commits")
     @PostMapping("/commits/record")
     public ResponseEntity<Page<CommitFormRecordDTO>> get(
