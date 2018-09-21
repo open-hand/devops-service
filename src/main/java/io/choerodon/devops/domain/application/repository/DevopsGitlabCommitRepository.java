@@ -15,8 +15,8 @@ public interface DevopsGitlabCommitRepository {
 
     DevopsGitlabCommitE queryBySha(String sha);
 
-    List<DevopsGitlabCommitE> listCommitsByAppId(Long[] appIds);
+    List<DevopsGitlabCommitE> listCommitsByAppId(List<Long> appIds);
 
-    Page<CommitFormRecordDTO> pageCommitRecord(Long[] appId, PageRequest pageRequest, Map<Long, UserE> userMap);
+    Page<CommitFormRecordDTO> pageCommitRecord(List<Long> appId, PageRequest pageRequest, Map<Long, UserE> userMap);
 
 }

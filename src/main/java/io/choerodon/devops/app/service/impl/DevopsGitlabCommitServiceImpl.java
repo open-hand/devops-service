@@ -54,12 +54,18 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public DevopsGitlabCommitDTO getCommits(Long[] appIds) {
-        if (appIds.length == 0) {
-            appIds = null;
+    public DevopsGitlabCommitDTO getCommits(String[] appId) {
+        List<Long> listStrings;
+        if ("null".equals(appId[0])) {
+            listStrings = null;
+        } else {
+            listStrings = Arrays.stream(appId).map(e -> Long.valueOf(e)).collect(Collectors.toList());
         }
         // 查询应用列表下所有commit记录
-        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(appIds);
+        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(listStrings);
+        if (devopsGitlabCommitES.isEmpty()) {
+            return new DevopsGitlabCommitDTO();
+        }
 
         // 获得去重后的所有用户信息
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
@@ -75,15 +81,18 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public Page<CommitFormRecordDTO> getRecordCommits(Long[] appIds, PageRequest pageRequest) {
-        if (appIds.length == 0) {
-            appIds = null;
+    public Page<CommitFormRecordDTO> getRecordCommits(String[] appIds, PageRequest pageRequest) {
+        List<Long> listStrings;
+        if ("null".equals(appIds[0])) {
+            listStrings = null;
+        } else {
+            listStrings = Arrays.stream(appIds).map(e -> Long.valueOf(e)).collect(Collectors.toList());
         }
         // 查询应用列表下所有commit记录
-        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(appIds);
+        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(listStrings);
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        return getCommitFormRecordDTOS(appIds, pageRequest, userMap);
+        return getCommitFormRecordDTOS(listStrings, pageRequest, userMap);
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {
@@ -112,7 +121,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return commitFormUserDTOS;
     }
 
-    private Page<CommitFormRecordDTO> getCommitFormRecordDTOS(Long[] appId, PageRequest pageRequest,
+    private Page<CommitFormRecordDTO> getCommitFormRecordDTOS(List<Long> appId, PageRequest pageRequest,
                                                               Map<Long, UserE> userMap) {
         return devopsGitlabCommitRepository.pageCommitRecord(appId, pageRequest, userMap);
     }

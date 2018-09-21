@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,16 +45,16 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public List<DevopsGitlabCommitE> listCommitsByAppId(Long[] appId) {
+    public List<DevopsGitlabCommitE> listCommitsByAppId(List<Long> appId) {
         List<DevopsGitlabCommitDO> devopsGitlabCommitDOList = devopsGitlabCommitMapper.listCommitsByAppId(appId);
         if (devopsGitlabCommitDOList == null || devopsGitlabCommitDOList.isEmpty()) {
-            throw new CommonException("error.commit.empty");
+            return new ArrayList<>();
         }
         return ConvertHelper.convertList(devopsGitlabCommitDOList, DevopsGitlabCommitE.class);
     }
 
     @Override
-    public Page<CommitFormRecordDTO> pageCommitRecord(Long[] appId, PageRequest pageRequest, Map<Long, UserE> userMap) {
+    public Page<CommitFormRecordDTO> pageCommitRecord(List<Long> appId, PageRequest pageRequest, Map<Long, UserE> userMap) {
         List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
 
         Page<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.doPageAndSort(pageRequest,
@@ -67,7 +68,9 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
             commitFormRecordDTOList.add(commitFormRecordDTO);
         });
         Page<CommitFormRecordDTO> commitFormRecordDTOPagee = new Page<>();
+        BeanUtils.copyProperties(devopsGitlabCommitDOPage,commitFormRecordDTOPagee);
         commitFormRecordDTOPagee.setContent(commitFormRecordDTOList);
+
         return commitFormRecordDTOPagee;
     }
 }

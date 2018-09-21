@@ -8,5 +8,5 @@ import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsGitlabCommitMapper extends BaseMapper<DevopsGitlabCommitDO> {
-    List<DevopsGitlabCommitDO> listCommitsByAppId(@Param("appIds") Long[] appId);
+    List<DevopsGitlabCommitDO> listCommitsByAppId(@Param("appIds") List<Long> appId);
 }
