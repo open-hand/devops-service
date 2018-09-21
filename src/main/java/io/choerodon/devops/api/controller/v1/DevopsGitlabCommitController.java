@@ -10,9 +10,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -38,10 +40,9 @@ public class DevopsGitlabCommitController {
     /**
      * 应用下commit记录报表
      *
-     * @param projectId   项目id
-     * @param appIds      应用id
-     * @param pageRequest 分页参数
-     * @return devopsGitlabCommitDTO
+     * @param projectId 项目id
+     * @param appIds    应用id
+     * @return DevopsGitlabCommitDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
@@ -52,12 +53,34 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
+            @RequestParam(value = "app_ids") Long[] appIds) {
+        return Optional.ofNullable(devopsGitlabCommitService.getCommits(appIds))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.commits.get"));
+    }
+
+    /**
+     * 应用获取下最近的commit记录
+     *
+     * @param projectId   项目id
+     * @param appIds      应用id
+     * @param pageRequest 分页参数
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取应用下的commits")
+    @PostMapping("/commits/record")
+    public ResponseEntity<Page<CommitFormRecordDTO>> get(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
             @RequestParam(value = "app_ids") Long[] appIds,
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return Optional.ofNullable(devopsGitlabCommitService.getCommits(appIds, pageRequest))
+        return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(appIds, pageRequest))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.commits.get"));
+                .orElseThrow(() -> new CommonException("error.record.commit.get"));
     }
 }

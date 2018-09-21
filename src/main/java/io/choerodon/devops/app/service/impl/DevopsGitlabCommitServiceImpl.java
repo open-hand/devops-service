@@ -19,7 +19,6 @@ import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -34,6 +33,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Autowired
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
 
+    private Map<Long, UserE> userMap;
+
     @Override
     public void create(PushWebHookDTO pushWebHookDTO, String token) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
@@ -47,35 +48,36 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             if (userE != null) {
                 devopsGitlabCommitE.setUserId(userE.getId());
             }
-            devopsGitlabCommitE.setUserId(userAttrRepository.queryUserIdByGitlabUserId(
-                    TypeUtil.objToLong(commitDTO.getAuthor().getId())));
             devopsGitlabCommitE.setCommitDate(commitDTO.getTimestamp());
             devopsGitlabCommitRepository.create(devopsGitlabCommitE);
         });
     }
 
     @Override
-    public DevopsGitlabCommitDTO getCommits(Long[] appId, PageRequest pageRequest) {
-        if (appId.length == 0) {
-            appId = null;
+    public DevopsGitlabCommitDTO getCommits(Long[] appIds) {
+        if (appIds.length == 0) {
+            appIds = null;
         }
         // 查询应用列表下所有commit记录
-        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(appId);
+        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(appIds);
 
         // 获得去重后的所有用户信息
-        Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
+        userMap = getUserDOMap(devopsGitlabCommitES);
 
         // 获取用户分别的commit
         List<CommitFormUserDTO> commitFormUserDTOS = getCommitFormUserInfo(devopsGitlabCommitES, userMap);
-
-        // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        Page<CommitFormRecordDTO> commitFormRecordDTOPage = getCommitFormRecordDTOS(appId, pageRequest, userMap);
 
         // 获取总的commit(将所有用户的commit_date放入一个数组)，按照时间先后排序
         List<Date> totalCommitsDate = getTotalDates(commitFormUserDTOS);
         Collections.sort(totalCommitsDate);
 
-        return new DevopsGitlabCommitDTO(commitFormUserDTOS, totalCommitsDate, commitFormRecordDTOPage);
+        return new DevopsGitlabCommitDTO(commitFormUserDTOS, totalCommitsDate);
+    }
+
+    @Override
+    public Page<CommitFormRecordDTO> getRecordCommits(Long[] appIds, PageRequest pageRequest) {
+        // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
+        return getCommitFormRecordDTOS(appIds, pageRequest, userMap);
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {

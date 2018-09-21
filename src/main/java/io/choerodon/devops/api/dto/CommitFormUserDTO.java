@@ -17,7 +17,7 @@ public class CommitFormUserDTO {
 
     public CommitFormUserDTO(Long id, String name, String imgUrl, List<Date> commitDates) {
         this.id = id;
-        this.name = name;
+        this.name = name == null ? "" : name;
         this.imgUrl = imgUrl;
         this.commitDates = commitDates;
     }
