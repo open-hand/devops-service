@@ -30,8 +30,6 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Autowired
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
 
-    private Map<Long, UserE> userMap;
-
     @Override
     public void create(PushWebHookDTO pushWebHookDTO, String token) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
@@ -41,10 +39,14 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             devopsGitlabCommitE.setCommitContent(commitDTO.getMessage());
             devopsGitlabCommitE.setCommitSha(commitDTO.getId());
             devopsGitlabCommitE.setRef(pushWebHookDTO.getRef().split("/")[2]);
-            UserE userE = iamRepository.queryByEmail(applicationE.getProjectE().getId(),
-                    commitDTO.getAuthor().getEmail());
-            if (userE != null) {
-                devopsGitlabCommitE.setUserId(userE.getId());
+            if ("root".equals(commitDTO.getAuthor().getName())) {
+                devopsGitlabCommitE.setUserId(1L);
+            } else {
+                UserE userE = iamRepository.queryByEmail(applicationE.getProjectE().getId(),
+                        commitDTO.getAuthor().getEmail());
+                if (userE != null) {
+                    devopsGitlabCommitE.setUserId(userE.getId());
+                }
             }
             devopsGitlabCommitE.setCommitDate(commitDTO.getTimestamp());
             devopsGitlabCommitRepository.create(devopsGitlabCommitE);
@@ -60,10 +62,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(appIds);
 
         // 获得去重后的所有用户信息
-        userMap = getUserDOMap(devopsGitlabCommitES);
+        Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
 
         // 获取用户分别的commit
-        List<CommitFormUserDTO> commitFormUserDTOS = getCommitFormUserInfo(devopsGitlabCommitES, userMap);
+        List<CommitFormUserDTO> commitFormUserDTOS = getCommitFormUserDTOList(devopsGitlabCommitES, userMap);
 
         // 获取总的commit(将所有用户的commit_date放入一个数组)，按照时间先后排序
         List<Date> totalCommitsDate = getTotalDates(commitFormUserDTOS);
@@ -74,6 +76,12 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
     @Override
     public Page<CommitFormRecordDTO> getRecordCommits(Long[] appIds, PageRequest pageRequest) {
+        if (appIds.length == 0) {
+            appIds = null;
+        }
+        // 查询应用列表下所有commit记录
+        List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository.listCommitsByAppId(appIds);
+        Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
         return getCommitFormRecordDTOS(appIds, pageRequest, userMap);
     }
@@ -86,23 +94,22 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         return userEList.stream().collect(Collectors.toMap(UserE::getId, u -> u, (u1, u2) -> u1));
     }
 
-    private List<CommitFormUserDTO> getCommitFormUserInfo(List<DevopsGitlabCommitE> devopsGitlabCommitES,
-                                                          Map<Long, UserE> userMap) {
-        Map<Long, CommitFormUserDTO> map = new HashMap<>();
-        devopsGitlabCommitES.forEach(e -> {
-            Long userId = e.getUserId();
-            UserE user = userMap.get(userId);
-            if (!map.containsKey(userId)) {
-                String name = user.getLoginName() + user.getRealName();
-                String imgUrl = user.getImageUrl();
-                List<Date> date = new ArrayList<>();
-                date.add(e.getCommitDate());
-                map.put(userId, new CommitFormUserDTO(e.getId(), name, imgUrl, date));
-            } else {
-                map.get(userId).getCommitDates().add(e.getCommitDate());
-            }
+    private List<CommitFormUserDTO> getCommitFormUserDTOList(List<DevopsGitlabCommitE> devopsGitlabCommitES,
+                                                             Map<Long, UserE> userMap) {
+        List<CommitFormUserDTO> commitFormUserDTOS = new ArrayList<>();
+        // 遍历map，key为userid，value为list
+        Map<Long, List<DevopsGitlabCommitE>> groupByUserIdCommitsMap = devopsGitlabCommitES.stream()
+                .collect(Collectors.groupingBy(DevopsGitlabCommitE::getUserId));
+        groupByUserIdCommitsMap.forEach((userId, list) -> {
+            UserE userE = userMap.get(userId);
+            String name = userE == null ? "" : userE.getLoginName() + userE.getRealName();
+            String imgUrl = userE == null ? "" : userE.getImageUrl();
+            // 遍历list，将每个用户的所有commitdate取出放入List<Date>，然后保存为DTO
+            List<Date> date = new ArrayList<>();
+            list.forEach(e -> date.add(e.getCommitDate()));
+            commitFormUserDTOS.add(new CommitFormUserDTO(userId, name, imgUrl, date));
         });
-        return new ArrayList<>(map.values());
+        return commitFormUserDTOS;
     }
 
     private Page<CommitFormRecordDTO> getCommitFormRecordDTOS(Long[] appId, PageRequest pageRequest,
