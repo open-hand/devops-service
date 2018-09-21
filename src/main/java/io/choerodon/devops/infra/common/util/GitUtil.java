@@ -181,6 +181,7 @@ public class GitUtil {
             @Override
             protected JSch createDefaultJSch(FS fs) throws JSchException {
                 JSch defaultJSch = super.createDefaultJSch(fs);
+                defaultJSch.getIdentityRepository().removeAll();
                 defaultJSch.getIdentityRepository().add(sshKey.getBytes());
                 return defaultJSch;
             }
@@ -291,6 +292,16 @@ public class GitUtil {
      * @throws GitAPIException push error
      */
     public void gitPush(Git git) throws GitAPIException {
+        git.push().setTransportConfigCallback(getTransportConfigCallback()).call();
+    }
+
+    /**
+     * push current git repo
+     *
+     * @param git git repo
+     * @throws GitAPIException push error
+     */
+    public void gitPushTag(Git git) throws GitAPIException {
         List<Ref> refs = git.branchList().call();
         PushCommand pushCommand = git.push();
         for (Ref ref : refs) {

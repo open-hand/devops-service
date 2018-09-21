@@ -9,5 +9,5 @@ public interface DevopsCheckLogService {
      */
     void checkLog(String version);
 
-    void updateUserMemberRole(String version);
+    void checkLogByEnv(String version, Long envI);
 }

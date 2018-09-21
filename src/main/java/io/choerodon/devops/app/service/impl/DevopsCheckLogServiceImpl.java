@@ -21,6 +21,7 @@ import org.eclipse.jgit.api.errors.ConcurrentRefUpdateException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidTagNameException;
 import org.eclipse.jgit.api.errors.NoHeadException;
+import org.eclipse.jgit.lib.Ref;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -139,34 +140,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         executorService.submit(new UpgradeTask(version));
     }
 
-    @Override
-    @Async
-    public void updateUserMemberRole(String version) {
-        DevopsCheckLogE devopsCheckLogE = new DevopsCheckLogE();
-        List<CheckLog> logs = new ArrayList<>();
-        devopsCheckLogE.setBeginCheckDate(new Date());
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(" update start");
-        }
-        if ("0.9".equals(version)) {
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(" update member role start");
-            }
-            gitOpsUserAccess();
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(" sync env start");
-            }
-            syncEnvProject(logs);
-            if (LOGGER.isInfoEnabled()) {
-                LOGGER.info(" sync object start");
-            }
-            syncObjects(logs);
 
-        }
-        devopsCheckLogE.setLog(JSON.toJSONString(logs));
-        devopsCheckLogE.setEndCheckDate(new Date());
-        devopsCheckLogRepository.create(devopsCheckLogE);
+    @Override
+    public void checkLogByEnv(String version, Long envId) {
+        LOGGER.info("start upgrade task on env {}", envId);
+        executorService.submit(new UpgradeTask(version, envId));
     }
+
 
     private void syncEnvProject(List<CheckLog> logs) {
         LOGGER.info("start to sync env project");
@@ -207,30 +187,46 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
 
-    private void syncObjects(List<CheckLog> logs) {
-        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
+    private void syncObjects(List<CheckLog> logs , Long envId) {
+        List<DevopsEnvironmentE> devopsEnvironmentES;
+        if (envId != null) {
+            devopsEnvironmentES = new ArrayList<>();
+            devopsEnvironmentES.add(devopsEnvironmentRepository.queryById(envId));
+        } else {
+            devopsEnvironmentES = devopsEnvironmentRepository.list();
+        }
         LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
-        devopsEnvironmentES.stream().forEach(env -> {
+        devopsEnvironmentES.forEach(env -> {
             GitUtil gitUtil = new GitUtil(env.getEnvIdRsa());
             if (env.getGitlabEnvProjectId() != null) {
                 LOGGER.info("{}:{}  begin to upgrade!", env.getCode(), env.getId());
-                String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(env);
+                String filePath;
+                try {
+                     filePath = devopsEnvironmentService.handDevopsEnvGitRepository(env);
+                } catch (Exception e) {
+                    LOGGER.info("clone git  env repo error {}", e);
+                    return;
+                }
                 try (Git git = Git.open(new File(filePath))) {
+                    new SyncInstanceByEnv(logs, env, filePath, git).invoke();
+                    new SynServiceByEnv(logs, env, filePath, git).invoke();
+                    new SyncIngressByEnv(logs, env, filePath, git).invoke();
 
-                    new SyncInstanceByEnv(logs, env, filePath, git).invoke(); // todo use createGitFile()
-                    new SynServiceByEnv(logs, env, filePath, git).invoke(); // todo use createGitFile()
-                    new SyncIngressByEnv(logs, env, filePath, git).invoke(); // todo use createGitFile()
-
-                    if (git.tagList().call().parallelStream().map(t -> t.getName()).noneMatch(t -> "agent-sync".equals(t))) {
-                        git.tag().setName("agent-sync").call();
+                    try{
+                        if (git.tagList().call().parallelStream().map(Ref::getName).noneMatch("agent-sync"::equals)) {
+                            git.tag().setName("agent-sync").call();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.warn("already have agent tag",e.getMessage());
                     }
                     gitUtil.gitPush(git);
-                    FileUtil.deleteDirectory(new File(filePath));
+
+                    gitUtil.gitPushTag(git);
                     LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
                 } catch (IOException e) {
                     LOGGER.info("error.git.open: " + filePath, e);
                 } catch (GitAPIException e) {
-                    LOGGER.info("error.git.push: " + filePath, e);
+                    LOGGER.info("error.git.push: " + filePath, e.getMessage());
                 }
             }
         });
@@ -553,9 +549,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     class UpgradeTask implements Runnable {
         private String version;
+        private Long env;
 
         UpgradeTask(String version) {
             this.version = version;
+        }
+
+
+        UpgradeTask(String version, Long env) {
+            this.version = version;
+            this.env = env;
         }
 
         @Override
@@ -578,7 +581,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncNonEnvGroupProject(logs);
                 gitOpsUserAccess();
                 syncEnvProject(logs);
-                syncObjects(logs);
+                syncObjects(logs, this.env);
             } else if ("1.0".equals(version)) {
                 updateWebHook(logs);
             } else {
