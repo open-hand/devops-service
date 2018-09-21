@@ -1,15 +1,21 @@
 package io.choerodon.devops.app.service.impl;
 
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.GitlabGroupService;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
@@ -31,11 +37,19 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     private DevopsProjectRepository devopsProjectRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
+    private IamRepository iamRepository;
 
 
     @Override
     public void createGroup(GitlabGroupPayload gitlabGroupPayload, String groupCodeSuffix) {
 
+        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupPayload.getProjectId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        List<ProjectE> projectES = iamRepository.listIamProjectByOrgId(organization.getId(), gitlabGroupPayload.getProjectName());
+        if (projectES.size() > 1) {
+            gitlabGroupPayload.setProjectName(gitlabGroupPayload.getProjectName() + (projectES.size() - 1));
+        }
         //创建gitlab group
         GroupDO group = new GroupDO();
         // name: orgName-projectName
