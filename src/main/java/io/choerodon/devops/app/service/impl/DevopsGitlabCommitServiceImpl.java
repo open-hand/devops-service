@@ -18,7 +18,6 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -26,8 +25,6 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
     @Autowired
     IamRepository iamRepository;
-    @Autowired
-    private UserAttrRepository userAttrRepository;
     @Autowired
     private ApplicationRepository applicationRepository;
     @Autowired
@@ -44,7 +41,8 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             devopsGitlabCommitE.setCommitContent(commitDTO.getMessage());
             devopsGitlabCommitE.setCommitSha(commitDTO.getId());
             devopsGitlabCommitE.setRef(pushWebHookDTO.getRef().split("/")[2]);
-            UserE userE = iamRepository.queryByEmail(applicationE.getProjectE().getId(), commitDTO.getAuthor().getEmail());
+            UserE userE = iamRepository.queryByEmail(applicationE.getProjectE().getId(),
+                    commitDTO.getAuthor().getEmail());
             if (userE != null) {
                 devopsGitlabCommitE.setUserId(userE.getId());
             }
