@@ -64,11 +64,12 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
             Long userId = e.getUserId();
             UserE user = userMap.get(userId);
             CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(userId, e.getAppId(), user.getImageUrl(),
-                    e.getCommitContent(), user.getLoginName() + " " + user.getRealName(), e.getCommitDate());
+                    e.getCommitContent(), user.getLoginName() + " " + user.getRealName(), e.getCommitDate(),
+                    e.getCommitSha(), e.getAppName());
             commitFormRecordDTOList.add(commitFormRecordDTO);
         });
         Page<CommitFormRecordDTO> commitFormRecordDTOPagee = new Page<>();
-        BeanUtils.copyProperties(devopsGitlabCommitDOPage,commitFormRecordDTOPagee);
+        BeanUtils.copyProperties(devopsGitlabCommitDOPage, commitFormRecordDTOPagee);
         commitFormRecordDTOPagee.setContent(commitFormRecordDTOList);
 
         return commitFormRecordDTOPagee;

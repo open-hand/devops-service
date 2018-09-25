@@ -11,22 +11,30 @@ public class DevopsGitlabCommitE {
     private String commitContent;
     private String ref;
     private Date commitDate;
+    private String appName;
 
     public DevopsGitlabCommitE() {
     }
-
 
     public DevopsGitlabCommitE(Long id) {
         this.id = id;
     }
 
+    public DevopsGitlabCommitE(Long id, String ref, String sha, String commitContent, Long userId) {
+        this.id = id;
+        this.userId = userId;
+        this.commitContent = commitContent;
+        this.ref = ref;
+        this.commitSha = sha;
+    }
 
-    public DevopsGitlabCommitE(Long id, String sha, String ref, String content, Long userId) {
+    public DevopsGitlabCommitE(Long id, String sha, String ref, String content, Long userId, String appName) {
         this.id = id;
         this.commitSha = sha;
         this.commitContent = content;
         this.ref = ref;
         this.userId = userId;
+        this.appName = appName;
     }
 
     public Long getId() {
@@ -83,5 +91,13 @@ public class DevopsGitlabCommitE {
 
     public void setCommitDate(Date commitDate) {
         this.commitDate = commitDate;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
     }
 }

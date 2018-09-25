@@ -7,10 +7,14 @@
         dac.id,
         dac.user_id,
         dac.app_id,
+        dac.ref,
         dac.commit_date,
-        dac.commit_content
+        dac.commit_sha,
+        dac.commit_content,
+        da.`name` appName
         FROM
         devops_gitlab_commit dac
+        JOIN devops_application da ON dac.id = da.id
         WHERE
         <if test="appIds != null">
             dac.app_id IN
