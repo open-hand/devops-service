@@ -44,7 +44,7 @@ public class DevopsCheckController {
     @Permission(level = ResourceLevel.SITE,
             roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平滑升级")
-    @GetMapping(value = "/v1/upgrade/env")
+    @GetMapping(value = "/env")
     public ResponseEntity<String> checkLogByEnv(
             @ApiParam(value = "version")
             @RequestParam(value = "version") String version,
