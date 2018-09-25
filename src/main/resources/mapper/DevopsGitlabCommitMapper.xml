@@ -30,7 +30,11 @@
         AND dgc.app_id = da.id
         AND dp.id = #{projectId}
         AND da.project_id = dp.id
-        AND dgc.commit_date &gt;= #{startDate}
-        AND dgc.commit_date &lt;= #{endDate}
+        <if test="startDate != null">
+            <if test="endDate != null">
+                AND Date(dgc.commit_date) &gt;= #{startDate}
+                AND Date(dgc.commit_date) &lt;= #{endDate}
+            </if>
+        </if>
     </select>
 </mapper>
