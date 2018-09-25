@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -61,6 +62,14 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         } else {
             listStrings = Arrays.stream(appId).map(e -> Long.valueOf(e)).collect(Collectors.toList());
         }
+        // 如果传入的时间为null，表示查询至今所有的commit记录
+        if ("null".equals(startDate)) {
+            // 设置日期格式
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            // new Date()为获取当前系统时间
+            startDate = df.format(new Date());
+            endDate = df.format(new Date());
+        }
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
                 .listCommits(projectId, listStrings, startDate, endDate);
@@ -89,6 +98,14 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             listStrings = null;
         } else {
             listStrings = Arrays.stream(appIds).map(e -> Long.valueOf(e)).collect(Collectors.toList());
+        }
+        // 如果传入的时间为null，表示查询至今所有的commit记录
+        if ("null".equals(startDate)) {
+            // 设置日期格式
+            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+            // new Date()为获取当前系统时间
+            startDate = df.format(new Date());
+            endDate = df.format(new Date());
         }
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
