@@ -12,6 +12,7 @@ public class DevopsGitlabCommitE {
     private String ref;
     private Date commitDate;
     private String appName;
+    private String url;
 
     public DevopsGitlabCommitE() {
     }
@@ -99,5 +100,13 @@ public class DevopsGitlabCommitE {
 
     public void setAppName(String appName) {
         this.appName = appName;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

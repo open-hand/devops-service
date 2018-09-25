@@ -69,11 +69,11 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
             if (user != null) {
                 CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(userId, e.getAppId(), user.getImageUrl(),
                         e.getCommitContent(), user.getRealName() + " " + user.getLoginName(), e.getCommitDate(),
-                        e.getCommitSha(), e.getAppName());
+                        e.getCommitSha(), e.getAppName(), e.getUrl());
                 commitFormRecordDTOList.add(commitFormRecordDTO);
             } else {
                 CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(null, e.getAppId(), null, e.getCommitContent(),
-                        null, e.getCommitDate(), e.getCommitSha(), e.getAppName());
+                        null, e.getCommitDate(), e.getCommitSha(), e.getAppName(), e.getUrl());
                 commitFormRecordDTOList.add(commitFormRecordDTO);
             }
         });

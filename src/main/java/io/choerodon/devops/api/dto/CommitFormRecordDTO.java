@@ -17,13 +17,14 @@ public class CommitFormRecordDTO {
     private Date commitDate;
     private String commitSHA;
     private String appName;
+    private String url;
 
     public CommitFormRecordDTO() {
     }
 
     public CommitFormRecordDTO(Long userId, Long appId, String imgUrl,
                                String commitContent, String userName, Date commitDate,
-                               String commitSHA, String appName) {
+                               String commitSHA, String appName,String url) {
         this.userId = userId;
         this.appId = appId;
         this.imgUrl = imgUrl;
@@ -32,6 +33,7 @@ public class CommitFormRecordDTO {
         this.commitDate = commitDate;
         this.commitSHA = commitSHA;
         this.appName = appName;
+        this.url=url;
     }
 
     public Long getUserId() {
@@ -96,5 +98,13 @@ public class CommitFormRecordDTO {
 
     public void setAppName(String appName) {
         this.appName = appName;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

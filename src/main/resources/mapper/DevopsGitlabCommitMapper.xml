@@ -11,6 +11,7 @@
         dgc.commit_date,
         dgc.commit_sha,
         dgc.commit_content,
+        dgc.url,
         da.`name` appName
         FROM
         devops_gitlab_commit dgc,
