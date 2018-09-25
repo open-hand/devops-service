@@ -52,8 +52,12 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
-            @RequestParam(value = "app_ids") String[] appIds) {
-        return Optional.ofNullable(devopsGitlabCommitService.getCommits(projectId,appIds))
+            @RequestParam(value = "app_ids") String[] appIds,
+            @ApiParam(value = "开始时间start_date", required = true)
+            @RequestParam(value = "start_date") String startDate,
+            @ApiParam(value = "结束时间end_date", required = true)
+            @RequestParam(value = "end_date") String endDate) {
+        return Optional.ofNullable(devopsGitlabCommitService.getCommits(projectId, appIds, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
@@ -78,8 +82,13 @@ public class DevopsGitlabCommitController {
             @RequestParam(value = "app_ids") String[] appIds,
             @ApiParam(value = "分页参数")
             @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(projectId,appIds, pageRequest))
+            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiParam(value = "开始时间start_date", required = true)
+            @RequestParam(value = "start_date") String startDate,
+            @ApiParam(value = "结束时间end_date", required = true)
+            @RequestParam(value = "end_date") String endDate) {
+        return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(projectId, appIds, pageRequest,
+                startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));
     }

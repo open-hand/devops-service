@@ -45,8 +45,9 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public List<DevopsGitlabCommitE> listCommitsByProjectIdAndAppId(Long projectId, List<Long> appIds) {
-        List<DevopsGitlabCommitDO> devopsGitlabCommitDOList = devopsGitlabCommitMapper.listCommitsByProjectIdAndAppId(projectId, appIds);
+    public List<DevopsGitlabCommitE> listCommits(Long projectId, List<Long> appIds, String startDate, String endDate) {
+        List<DevopsGitlabCommitDO> devopsGitlabCommitDOList = devopsGitlabCommitMapper
+                .listCommits(projectId, appIds, startDate, endDate);
         if (devopsGitlabCommitDOList == null || devopsGitlabCommitDOList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -54,11 +55,13 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public Page<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId, PageRequest pageRequest, Map<Long, UserE> userMap) {
+    public Page<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId,
+                                                      PageRequest pageRequest, Map<Long, UserE> userMap,
+                                                      String startDate, String endDate) {
         List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
 
         Page<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.doPageAndSort(pageRequest,
-                () -> devopsGitlabCommitMapper.listCommitsByProjectIdAndAppId(projectId, appId));
+                () -> devopsGitlabCommitMapper.listCommits(projectId, appId, startDate, endDate));
 
         devopsGitlabCommitDOPage.getContent().forEach(e -> {
             Long userId = e.getUserId();

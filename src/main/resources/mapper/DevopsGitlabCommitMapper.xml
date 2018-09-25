@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper">
-    <select id="listCommitsByProjectIdAndAppId" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO">
+    <select id="listCommits" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO">
         SELECT
         dgc.id,
         dgc.user_id,
@@ -30,5 +30,7 @@
         AND dgc.app_id = da.id
         AND dp.id = #{projectId}
         AND da.project_id = dp.id
+        AND dgc.commit_date &gt;= #{startDate}
+        AND dgc.commit_date &lt;= #{endDate}
     </select>
 </mapper>
