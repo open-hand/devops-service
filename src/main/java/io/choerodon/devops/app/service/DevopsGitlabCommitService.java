@@ -10,7 +10,7 @@ public interface DevopsGitlabCommitService {
 
     void create(PushWebHookDTO pushWebHookDTO, String token);
 
-    DevopsGitlabCommitDTO getCommits(String[] appIds);
+    DevopsGitlabCommitDTO getCommits(Long projectId, String[] appIds);
 
-    Page<CommitFormRecordDTO> getRecordCommits(String[] appIds, PageRequest pageRequest);
+    Page<CommitFormRecordDTO> getRecordCommits(Long projectId,String[] appIds, PageRequest pageRequest);
 }

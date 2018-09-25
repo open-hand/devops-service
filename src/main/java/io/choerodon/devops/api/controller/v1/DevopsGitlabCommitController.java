@@ -53,7 +53,7 @@ public class DevopsGitlabCommitController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @RequestParam(value = "app_ids") String[] appIds) {
-        return Optional.ofNullable(devopsGitlabCommitService.getCommits(appIds))
+        return Optional.ofNullable(devopsGitlabCommitService.getCommits(projectId,appIds))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.commits.get"));
     }
@@ -79,7 +79,7 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest) {
-        return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(appIds, pageRequest))
+        return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(projectId,appIds, pageRequest))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.record.commit.get"));
     }

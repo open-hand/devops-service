@@ -2,22 +2,23 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper">
-    <select id="listCommitsByAppId" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO">
+    <select id="listCommitsByProjectIdAndAppId" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO">
         SELECT
-        dac.id,
-        dac.user_id,
-        dac.app_id,
-        dac.ref,
-        dac.commit_date,
-        dac.commit_sha,
-        dac.commit_content,
+        dgc.id,
+        dgc.user_id,
+        dgc.app_id,
+        dgc.ref,
+        dgc.commit_date,
+        dgc.commit_sha,
+        dgc.commit_content,
         da.`name` appName
         FROM
-        devops_gitlab_commit dac
-        JOIN devops_application da ON dac.id = da.id
+        devops_gitlab_commit dgc,
+        devops_application da,
+        devops_project dp
         WHERE
         <if test="appIds != null">
-            dac.app_id IN
+            dgc.app_id IN
             <foreach collection="appIds" item="appId" open="(" close=")" separator=",">
                 #{appId}
             </foreach>
@@ -25,5 +26,9 @@
         <if test="appIds == null">
             1
         </if>
+        AND da.is_active = 1
+        AND dgc.app_id = da.id
+        AND dp.id = #{projectId}
+        AND da.project_id = dp.id
     </select>
 </mapper>

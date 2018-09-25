@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,8 +46,8 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public List<DevopsGitlabCommitE> listCommitsByAppId(List<Long> appId) {
-        List<DevopsGitlabCommitDO> devopsGitlabCommitDOList = devopsGitlabCommitMapper.listCommitsByAppId(appId);
+    public List<DevopsGitlabCommitE> listCommitsByProjectIdAndAppId(Long projectId, List<Long> appIds) {
+        List<DevopsGitlabCommitDO> devopsGitlabCommitDOList = devopsGitlabCommitMapper.listCommitsByProjectIdAndAppId(projectId, appIds);
         if (devopsGitlabCommitDOList == null || devopsGitlabCommitDOList.isEmpty()) {
             return new ArrayList<>();
         }
@@ -54,11 +55,11 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public Page<CommitFormRecordDTO> pageCommitRecord(List<Long> appId, PageRequest pageRequest, Map<Long, UserE> userMap) {
+    public Page<CommitFormRecordDTO> pageCommitRecord(Long projectId, List<Long> appId, PageRequest pageRequest, Map<Long, UserE> userMap) {
         List<CommitFormRecordDTO> commitFormRecordDTOList = new ArrayList<>();
 
         Page<DevopsGitlabCommitDO> devopsGitlabCommitDOPage = PageHelper.doPageAndSort(pageRequest,
-                () -> devopsGitlabCommitMapper.listCommitsByAppId(appId));
+                () -> devopsGitlabCommitMapper.listCommitsByProjectIdAndAppId(projectId, appId));
 
         devopsGitlabCommitDOPage.getContent().forEach(e -> {
             Long userId = e.getUserId();
