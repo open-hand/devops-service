@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,10 +63,16 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
         devopsGitlabCommitDOPage.getContent().forEach(e -> {
             Long userId = e.getUserId();
             UserE user = userMap.get(userId);
-            CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(userId, e.getAppId(), user.getImageUrl(),
-                    e.getCommitContent(), user.getLoginName() + " " + user.getRealName(), e.getCommitDate(),
-                    e.getCommitSha(), e.getAppName());
-            commitFormRecordDTOList.add(commitFormRecordDTO);
+            if (user != null) {
+                CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(userId, e.getAppId(), user.getImageUrl(),
+                        e.getCommitContent(), user.getRealName() + " " + user.getLoginName(), e.getCommitDate(),
+                        e.getCommitSha(), e.getAppName());
+                commitFormRecordDTOList.add(commitFormRecordDTO);
+            } else {
+                CommitFormRecordDTO commitFormRecordDTO = new CommitFormRecordDTO(null, e.getAppId(), null, e.getCommitContent(),
+                        null, e.getCommitDate(), e.getCommitSha(), e.getAppName());
+                commitFormRecordDTOList.add(commitFormRecordDTO);
+            }
         });
         Page<CommitFormRecordDTO> commitFormRecordDTOPagee = new Page<>();
         BeanUtils.copyProperties(devopsGitlabCommitDOPage, commitFormRecordDTOPagee);

@@ -106,13 +106,28 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private List<CommitFormUserDTO> getCommitFormUserDTOList(List<DevopsGitlabCommitE> devopsGitlabCommitES,
                                                              Map<Long, UserE> userMap) {
         List<CommitFormUserDTO> commitFormUserDTOS = new ArrayList<>();
-        // 遍历map，key为userid，value为list
-        Map<Long, List<DevopsGitlabCommitE>> groupByUserIdCommitsMap = devopsGitlabCommitES.stream()
-                .collect(Collectors.groupingBy(DevopsGitlabCommitE::getUserId));
-        groupByUserIdCommitsMap.forEach((userId, list) -> {
+        // 遍历list，key为userid，value为list
+        Map<Long, List<DevopsGitlabCommitE>> map = new HashMap<>();
+        for (DevopsGitlabCommitE commitE : devopsGitlabCommitES) {
+            Long userId = commitE.getUserId();
+            if (userId == null && !map.containsKey(0L)) {
+                List<DevopsGitlabCommitE> commitES = new ArrayList<>();
+                commitES.add(commitE);
+                map.put(0L, commitES);
+            } else if (userId == null && map.containsKey(0L)) {
+                map.get(0L).add(commitE);
+            } else if (userId != null && !map.containsKey(userId)) {
+                List<DevopsGitlabCommitE> commitES = new ArrayList<>();
+                commitES.add(commitE);
+                map.put(userId, commitES);
+            } else {
+                map.get(userId).add(commitE);
+            }
+        }
+        map.forEach((userId, list) -> {
             UserE userE = userMap.get(userId);
-            String name = userE == null ? "" : userE.getLoginName() + userE.getRealName();
-            String imgUrl = userE == null ? "" : userE.getImageUrl();
+            String name = userE == null ? null : userE.getRealName() + userE.getLoginName();
+            String imgUrl = userE == null ? null : userE.getImageUrl();
             // 遍历list，将每个用户的所有commitdate取出放入List<Date>，然后保存为DTO
             List<Date> date = new ArrayList<>();
             list.forEach(e -> date.add(e.getCommitDate()));
