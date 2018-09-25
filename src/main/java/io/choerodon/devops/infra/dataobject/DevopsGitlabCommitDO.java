@@ -23,8 +23,6 @@ public class DevopsGitlabCommitDO {
     private String commitContent;
     private String ref;
     private Date commitDate;
-
-   // @Transient
     private String appName;
 
     public Long getId() {
