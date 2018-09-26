@@ -9,16 +9,28 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
+import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
 
+/**
+ * @author crcokitwood
+ */
 @Service
 public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepository {
+    private static final String INSTANCE_TYPE = "instance";
 
     private DevopsEnvCommandMapper devopsEnvCommandMapper;
+    private DevopsEnvCommandLogMapper devopsEnvCommandLogMapper;
+    private DevopsCommandEventMapper commandEventMapper;
 
 
-    public DevopsEnvCommandRepositoryImpl(DevopsEnvCommandMapper devopsEnvCommandMapper) {
+    public DevopsEnvCommandRepositoryImpl(DevopsEnvCommandMapper devopsEnvCommandMapper,
+                                          DevopsEnvCommandLogMapper devopsEnvCommandLogMapper,
+                                          DevopsCommandEventMapper commandEventMapper) {
         this.devopsEnvCommandMapper = devopsEnvCommandMapper;
+        this.devopsEnvCommandLogMapper = devopsEnvCommandLogMapper;
+        this.commandEventMapper = commandEventMapper;
     }
 
 
@@ -27,6 +39,12 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
         DevopsEnvCommandDO devopsEnvCommandDO = ConvertHelper.convert(devopsEnvCommandE, DevopsEnvCommandDO.class);
         if (devopsEnvCommandMapper.insert(devopsEnvCommandDO) != 1) {
             throw new CommonException("error.env.command.insert");
+        }
+
+        // 删除实例历史日志以及事件记录
+        if (INSTANCE_TYPE.equals(devopsEnvCommandDO.getObject())) {
+            commandEventMapper.deletePreInstanceCommandEvent(devopsEnvCommandDO.getObjectId());
+            devopsEnvCommandLogMapper.deletePreInstanceCommandLog(devopsEnvCommandDO.getObjectId());
         }
         return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandE.class);
     }
