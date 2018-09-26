@@ -22,5 +22,14 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
-
+    changeSet(author: 'n1ck', id: '2018-09-25-add-column') {
+        addColumn(tableName: 'devops_gitlab_commit') {
+            column(name: 'app_name', type: 'VARCHAR(128)', remarks: '应用名称', afterColumn: 'commit_date')
+        }
+    }
+    changeSet(author: 'n1ck', id: '2018-09-25-add-column-url') {
+        addColumn(tableName: 'devops_gitlab_commit') {
+            column(name: 'url', type: 'VARCHAR(512)', remarks: 'commit url', afterColumn: 'app_name')
+        }
+    }
 }

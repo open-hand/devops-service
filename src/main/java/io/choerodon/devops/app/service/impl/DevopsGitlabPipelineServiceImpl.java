@@ -240,12 +240,15 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             UserE userE = iamRepository.queryById(devopsGitlabPipelineDO.getCommitUserId());
             if (userE != null) {
                 devopsGitlabPipelineDTO.setCommitUserUrl(userE.getImageUrl());
+                devopsGitlabPipelineDTO.setCommitUserName(userE.getRealName());
             }
             UserE newUserE = iamRepository.queryById(devopsGitlabPipelineDO.getPipelineCreateUserId());
             if (newUserE != null) {
                 devopsGitlabPipelineDTO.setPipelineUserUrl(newUserE.getImageUrl());
+                devopsGitlabPipelineDTO.setPipelineUserName(newUserE.getRealName());
             }
             devopsGitlabPipelineDTO.setCreationDate(devopsGitlabPipelineDO.getPipelineCreationDate());
+            devopsGitlabPipelineDTO.setGitlabProjectId(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()));
             devopsGitlabPipelineDTO.setPipelineId(devopsGitlabPipelineDO.getPipelineId());
             devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());

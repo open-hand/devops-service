@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper">
+    <select id="listCommits" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO">
+        SELECT
+        dgc.id,
+        dgc.user_id,
+        dgc.app_id,
+        dgc.ref,
+        dgc.commit_date,
+        dgc.commit_sha,
+        dgc.commit_content,
+        dgc.url,
+        da.`name` appName
+        FROM
+        devops_gitlab_commit dgc,
+        devops_application da,
+        devops_project dp
+        WHERE
+        <if test="appIds != null">
+            dgc.app_id IN
+            <foreach collection="appIds" item="appId" open="(" close=")" separator=",">
+                #{appId}
+            </foreach>
+        </if>
+        <if test="appIds == null">
+            1
+        </if>
+        AND da.is_active = 1
+        AND dgc.app_id = da.id
+        AND dp.id = #{projectId}
+        AND da.project_id = dp.id
+        <if test="startDate != null">
+            <if test="endDate != null">
+                AND Date(dgc.commit_date) &gt;= #{startDate}
+                AND Date(dgc.commit_date) &lt;= #{endDate}
+            </if>
+        </if>
+    </select>
+</mapper>

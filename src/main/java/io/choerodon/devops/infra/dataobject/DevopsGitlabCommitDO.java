@@ -1,9 +1,9 @@
 package io.choerodon.devops.infra.dataobject;
 
+import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -22,7 +22,8 @@ public class DevopsGitlabCommitDO {
     private String commitContent;
     private String ref;
     private Date commitDate;
-
+    private String appName;
+    private String url;
 
     public Long getId() {
         return id;
@@ -78,5 +79,21 @@ public class DevopsGitlabCommitDO {
 
     public void setCommitDate(Date commitDate) {
         this.commitDate = commitDate;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
     }
 }

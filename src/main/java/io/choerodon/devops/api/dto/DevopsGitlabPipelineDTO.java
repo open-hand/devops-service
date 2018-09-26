@@ -10,11 +10,14 @@ public class DevopsGitlabPipelineDTO {
     private String status;
     private String version;
     private Long pipelineId;
+    private Long gitlabProjectId;
     private String pipelineUserUrl;
+    private String pipelineUserName;
     private String gitlabUrl;
     private String ref;
     private String commit;
     private String CommitUserUrl;
+    private String CommitUserName;
     private String commitContent;
     private Boolean latest;
     private String pipelineTime;
@@ -124,5 +127,29 @@ public class DevopsGitlabPipelineDTO {
 
     public void setGitlabUrl(String gitlabUrl) {
         this.gitlabUrl = gitlabUrl;
+    }
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
+    }
+
+    public String getPipelineUserName() {
+        return pipelineUserName;
+    }
+
+    public void setPipelineUserName(String pipelineUserName) {
+        this.pipelineUserName = pipelineUserName;
+    }
+
+    public String getCommitUserName() {
+        return CommitUserName;
+    }
+
+    public void setCommitUserName(String commitUserName) {
+        CommitUserName = commitUserName;
     }
 }

@@ -856,7 +856,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     public String getDeployTime(Long diff) {
         float num = (float) diff / (60 * 1000);
-        DecimalFormat df = new DecimalFormat("0.0");
+        DecimalFormat df = new DecimalFormat("0.00");
         return df.format(num);
     }
 }

@@ -70,12 +70,12 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public List<ProjectE> listIamProjectByOrgId(Long organizationId) {
+    public List<ProjectE> listIamProjectByOrgId(Long organizationId, String name) {
         List<ProjectE> returnList = new ArrayList<>();
         int page = 0;
         int size = 200;
         ResponseEntity<Page<ProjectDO>> pageResponseEntity =
-                iamServiceClient.queryProjectByOrgId(organizationId, page, size);
+                iamServiceClient.queryProjectByOrgId(organizationId, page, size, name);
         Page<ProjectDO> projectDOPage = pageResponseEntity.getBody();
         List<ProjectE> projectEList = ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class);
         if (ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class) != null) {
@@ -86,7 +86,7 @@ public class IamRepositoryImpl implements IamRepository {
             for (int i = 1; i < totalPages; i++) {
                 page = i;
                 ResponseEntity<Page<ProjectDO>> entity = iamServiceClient
-                        .queryProjectByOrgId(organizationId, page, size);
+                        .queryProjectByOrgId(organizationId, page, size, name);
                 if (entity != null) {
                     Page<ProjectDO> project = entity.getBody();
                     List<ProjectE> projectE = ConvertHelper.convertList(project.getContent(), ProjectE.class);

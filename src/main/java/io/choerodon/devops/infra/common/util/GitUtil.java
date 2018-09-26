@@ -212,11 +212,13 @@ public class GitUtil {
                 break;
         }
         try {
-            git = Git.cloneRepository()
+            Git.cloneRepository()
                     .setURI(remoteUrl)
                     .setBranch(branch)
                     .setDirectory(localPathFile)
                     .call();
+            FileUtil.deleteDirectory(new File(localPathFile + "/.git"));
+            git = Git.init().setDirectory(localPathFile).call();
         } catch (GitAPIException e) {
             throw new CommonException("error.git.clone");
         }
@@ -232,9 +234,10 @@ public class GitUtil {
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage("Render Variables[skip ci]").call();
-            if (templateType) {
-                git.branchCreate().setName(MASTER).call();
-            }
+//            if (templateType) {
+//                git.branchDelete().setBranchNames(MASTER).call();
+//                git.branchCreate().setName(MASTER).call();
+//            }
             List<Ref> refs = git.branchList().call();
             PushCommand pushCommand = git.push();
             for (Ref ref : refs) {
@@ -245,7 +248,7 @@ public class GitUtil {
                     userName, accessToken));
             pushCommand.call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.push");
+            throw new CommonException("error.git.push", e);
         } finally {
             //删除模板
             deleteWorkingDirectory(name);
