@@ -383,4 +383,12 @@ public interface GitlabServiceClient {
             @RequestParam("projectId") Integer projectId,
             @RequestParam("hookId") Integer hookId,
             @RequestParam("userId") Integer userId);
+
+    @PutMapping("/{groupId}")
+    ResponseEntity updateGroup(@PathVariable("groupId") Integer groupId,
+                               @RequestParam("userId") Integer userId,
+                               @RequestBody @Valid GroupDO group
+    );
+
+
 }
