@@ -8,6 +8,11 @@ public class Project {
     @JsonProperty("public")
     private Integer isPublic;
 
+    public Project(String name, Integer isPublic) {
+        this.name = name;
+        this.isPublic = isPublic;
+    }
+
     public String getName() {
         return name;
     }

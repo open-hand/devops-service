@@ -70,8 +70,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private GitUtil gitUtil;
     @Autowired
-    private CiYamlConfig ciYamlConfig;
-    @Autowired
     private GitlabUserRepository gitlabUserRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
@@ -181,7 +179,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     + organization.getCode() + "-" + projectE.getCode() + "/"
                     + t.getCode() + ".git");
             if (!sonarqubeUrl.equals("")) {
-                Integer result = 0;
+                Integer result;
                 try {
                     result = HttpClientUtil.getSonar(
                             sonarqubeUrl.endsWith("/")
@@ -272,7 +270,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             String type = applicationTemplateE.getCode();
             boolean teamplateType = true;
             if (applicationTemplateE.getOrganization().getId() != null) {
-                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1, repoUrl.length()) : repoUrl;
+                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
                 type = MASTER;
                 teamplateType = false;
@@ -294,7 +292,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
                     applicationDir, gitlabProjectPayload.getUserId());
-            String accessToken = "";
+            String accessToken;
             if (tokens.isEmpty()) {
                 accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
                         applicationDir, gitlabProjectPayload.getUserId());
