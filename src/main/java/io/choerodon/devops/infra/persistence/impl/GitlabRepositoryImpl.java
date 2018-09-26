@@ -108,11 +108,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     public Boolean getFile(Integer projectId, String branch, String filePath) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient.getFile(projectId, branch, filePath);
-        if (result.getBody().getFilePath() == null) {
-            return false;
-        }
-        return true;
+        return gitlabServiceClient.getFile(projectId, branch, filePath).getBody().getFilePath() == null ? false : true;
     }
 
     @Override

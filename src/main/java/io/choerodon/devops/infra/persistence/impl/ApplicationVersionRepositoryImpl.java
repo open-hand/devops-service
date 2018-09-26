@@ -43,33 +43,6 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     private IamRepository iamRepository;
 
     @Override
-    public Page<ApplicationVersionE> listApplicationVersion(Long projectId, Long appId, PageRequest pageRequest, String searchParam) {
-        if (pageRequest.getSort() != null) {
-            Map<String, String> map = new HashMap<>();
-            map.put("version", "dav.version");
-            map.put(APP_CODE, APP_CODE);
-            map.put(APP_NAME, APP_NAME);
-            map.put("creationDate", "dav.creation_date");
-            pageRequest.resetOrder("dav", map);
-        }
-
-        Page<ApplicationVersionDO> applicationVersionQueryDOPage;
-        if (!StringUtils.isEmpty(searchParam)) {
-            Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
-            applicationVersionQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationVersionMapper.listApplicationVersion(
-                            projectId,
-                            appId,
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
-        } else {
-            applicationVersionQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationVersionMapper.listApplicationVersion(projectId, appId, null, null));
-        }
-        return ConvertPageHelper.convertPage(applicationVersionQueryDOPage, ApplicationVersionE.class);
-    }
-
-    @Override
     public List<ApplicationLatestVersionDO> listAppLatestVersion(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Long organizationId = projectE.getOrganization().getId();
@@ -203,7 +176,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
 
     @Override
     public String getReadme(Long versionId) {
-        String readme = "";
+        String readme;
         try {
             readme = applicationVersionReadmeMapper.selectOne(new ApplicationVersionReadmeDO(versionId)).getReadme();
         } catch (Exception ignore) {

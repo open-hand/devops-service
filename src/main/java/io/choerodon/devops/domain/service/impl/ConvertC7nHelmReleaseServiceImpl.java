@@ -24,7 +24,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
         this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
     }
 
-
+    @Override
     public void checkParameters(C7nHelmRelease c7nHelmRelease, Map<String, String> objectPath) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
         if (c7nHelmRelease.getMetadata() == null) {
@@ -53,7 +53,7 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
 
     }
 
-
+    @Override
     public void checkIfExist(List<C7nHelmRelease> c7nHelmReleases, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, C7nHelmRelease c7nHelmRelease) {
         String filePath = objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode()));
         String instanceCode = c7nHelmRelease.getMetadata().getName();
@@ -68,17 +68,16 @@ public class ConvertC7nHelmReleaseServiceImpl extends ConvertK8sObjectService<C7
                                     .equals(instanceId))) {
                 DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, instanceId, c7nHelmRelease.getKind());
                 if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(c7nHelmRelease.hashCode())))) {
-                    throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode,null);
+                    throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode, null);
                 }
             }
         }
         if (c7nHelmReleases.parallelStream()
                 .anyMatch(c7nHelmRelease1 -> c7nHelmRelease1.getMetadata().getName()
                         .equals(instanceCode))) {
-            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode,null);
+            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, instanceCode, null);
         } else {
             c7nHelmReleases.add(c7nHelmRelease);
         }
     }
-
 }

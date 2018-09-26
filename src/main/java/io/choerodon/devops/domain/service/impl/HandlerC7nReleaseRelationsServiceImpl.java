@@ -30,7 +30,7 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 @Service
 public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
 
-    public static final String C7NHELM_RELEASE = "C7NHelmRelease";
+    private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String GIT_SUFFIX = "/.git";
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
@@ -99,7 +99,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
 
     private void updateC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> updateC7nHelmRelease, String path) {
-        updateC7nHelmRelease.stream()
+        updateC7nHelmRelease
                 .forEach(c7nHelmRelease -> {
                             String filePath = "";
                             try {
@@ -146,7 +146,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     }
 
     private void addC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> addC7nHelmRelease, String path) {
-        addC7nHelmRelease.stream()
+        addC7nHelmRelease
                 .forEach(c7nHelmRelease -> {
                     String filePath = "";
                     try {
@@ -223,7 +223,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
             ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(deployValue, applicationDeployDTO.getValues());
-            if (deployValue != null && replaceResult.getHighlightMarkers().size() == 0 && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
+            if (deployValue != null && replaceResult.getHighlightMarkers().isEmpty() && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
                 applicationDeployDTO.setIsNotChange(true);
             }
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());

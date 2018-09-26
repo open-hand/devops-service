@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
 import java.util.List;
+import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
@@ -30,7 +30,7 @@ public interface IamServiceClient {
     @GetMapping("/v1/organizations/{organizationId}")
     ResponseEntity<OrganizationDO> queryOrganizationById(@PathVariable("organizationId") Long organizationId);
 
-    @RequestMapping(value = "/v1/project/{projectId}/memberRoles/single", method = RequestMethod.POST)
+    @PostMapping(value = "/v1/project/{projectId}/memberRoles/single")
     ResponseEntity<MemberRoleV> addMemberRole(@PathVariable("projectId") Long projectId, @RequestBody @Valid MemberRoleV memberRoleVo);
 
     @GetMapping(value = "/v1/users")
@@ -42,7 +42,6 @@ public interface IamServiceClient {
     @GetMapping(value = "v1/projects/{project_id}/users?id={id}")
     ResponseEntity<Page<UserDO>> queryInProjectById(@PathVariable("project_id") Long projectId, @PathVariable("id") Long id);
 
-
     @GetMapping(value = "/v1/organizations/{id}/projects")
     ResponseEntity<Page<ProjectDO>> queryProjectByOrgId(@PathVariable("id") Long id, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("name") String name);
 
@@ -51,6 +50,4 @@ public interface IamServiceClient {
 
     @GetMapping(value = "/v1/projects/{project_id}/users")
     ResponseEntity<Page<UserDO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
-
-
 }

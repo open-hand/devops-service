@@ -33,7 +33,6 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
-import io.choerodon.devops.infra.config.CiYamlConfig;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
