@@ -111,7 +111,7 @@ public class SagaHandler {
         return msg;
     }
 
-    @SagaTask(code = "devopsUpdateGitLabGroup",
+    @SagaTask(code = "devopsUpdateGitOpsGroup",
             description = "devops  更新 GitLab Group",
             sagaCode = "iam-update-project",
             maxRetryCount = 0,
