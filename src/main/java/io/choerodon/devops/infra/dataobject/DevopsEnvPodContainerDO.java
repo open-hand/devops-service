@@ -5,6 +5,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: Runge
@@ -13,8 +15,9 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
  * Description:
  */
 @ModifyAudit
+@VersionAudit
 @Table(name = "devops_env_pod_container")
-public class DevopsEnvPodContainerDO {
+public class DevopsEnvPodContainerDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;

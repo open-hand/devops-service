@@ -7,6 +7,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by n!Ck
@@ -15,8 +17,9 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
  * Description:
  */
 @ModifyAudit
+@VersionAudit
 @Table(name = "devops_certification")
-public class CertificationDO {
+public class CertificationDO  extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;

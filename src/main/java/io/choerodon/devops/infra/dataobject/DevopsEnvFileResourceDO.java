@@ -6,6 +6,7 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Creator: Runge
@@ -16,7 +17,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @ModifyAudit
 @Table(name = "devops_env_file_resource")
 @VersionAudit
-public class DevopsEnvFileResourceDO {
+public class DevopsEnvFileResourceDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
@@ -24,7 +25,6 @@ public class DevopsEnvFileResourceDO {
     private String filePath;
     private String resourceType;
     private Long resourceId;
-    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -66,11 +66,4 @@ public class DevopsEnvFileResourceDO {
         this.resourceId = resourceId;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
 }

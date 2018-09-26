@@ -8,12 +8,13 @@ import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_gitlab_pipeline")
-public class DevopsGitlabPipelineDO {
+public class DevopsGitlabPipelineDO extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -25,7 +26,6 @@ public class DevopsGitlabPipelineDO {
     private String stage;
     private String status;
     private Date pipelineCreationDate;
-    private Long objectVersionNumber;
 
     @Transient
     private String ref;
@@ -132,11 +132,4 @@ public class DevopsGitlabPipelineDO {
         this.commitUserId = commitUserId;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
 }

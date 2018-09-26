@@ -6,11 +6,12 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @Table(name = "devops_env_file")
 @VersionAudit
-public class DevopsEnvFileDO {
+public class DevopsEnvFileDO extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -19,7 +20,6 @@ public class DevopsEnvFileDO {
     private String filePath;
     private String devopsCommit;
     private String agentCommit;
-    private Long objectVersionNumber;
 
 
     public Long getId() {
@@ -62,11 +62,5 @@ public class DevopsEnvFileDO {
         this.agentCommit = agentCommit;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
 
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
 }
