@@ -49,7 +49,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1Service> v1Services, Long envId, Long projectId, String path) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1Service> v1Services, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeService = beforeSync.parallelStream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SERVICE))
                 .map(devopsEnvFileResourceE -> {
@@ -72,9 +72,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             }
         });
         //新增service
-        addService(objectPath, envId, projectId, addV1Service, path);
+        addService(objectPath, envId, projectId, addV1Service, path, userId);
         //更新service
-        updateService(objectPath, envId, projectId, updateV1Service, path);
+        updateService(objectPath, envId, projectId, updateV1Service, path, userId);
         //删除service,和文件对象关联关系
         beforeService.forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
@@ -82,6 +82,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                 devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                devopsEnvCommandE1.setCreatedBy(userId);
                 devopsEnvCommandE1.setObject(ObjectType.SERVICE.getType());
                 devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
                 devopsEnvCommandE1.setObjectId(devopsServiceE.getId());
@@ -94,7 +95,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
 
-    private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service, String path) {
+    private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service, String path, Long userId) {
         updateV1Service.stream()
                 .forEach(v1Service -> {
                     String filePath = "";
@@ -112,7 +113,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqDTO);
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
                         if (!isNotChange) {
-                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceE.getId(), devopsServiceReqDTO);
+                            devopsServiceService.updateDevopsServiceByGitOps(projectId, devopsServiceE.getId(), devopsServiceReqDTO, userId);
                             DevopsServiceE newDevopsServiceE = devopsServiceRepository
                                     .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
@@ -126,7 +127,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         devopsServiceService.updateDevopsServiceByGitOps(
-                                projectId, devopsServiceE.getId(), devopsServiceReqDTO);
+                                projectId, devopsServiceE.getId(), devopsServiceReqDTO, userId);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                 .queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
@@ -143,7 +144,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 });
     }
 
-    private void addService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> addV1Service, String path) {
+    private void addService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> addV1Service, String path, Long userId) {
         addV1Service.stream()
                 .forEach(v1Service -> {
                     String filePath = "";
@@ -160,7 +161,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     v1Service,
                                     envId,
                                     filePath);
-                            devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO);
+                            devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO, userId);
                             devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                                     devopsServiceReqDTO.getName(), envId);
                         }

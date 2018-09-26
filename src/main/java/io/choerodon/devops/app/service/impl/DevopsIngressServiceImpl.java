@@ -122,7 +122,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId) {
+    public void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId) {
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
 
@@ -137,6 +137,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //创建域名
         Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
         devopsEnvCommandE.setObjectId(ingressId);
+        devopsEnvCommandE.setCreatedBy(userId);
         devopsIngressDO.setId(ingressId);
         devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsIngressRepository.updateIngress(devopsIngressDO);
@@ -179,7 +180,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
+    public void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId) {
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
 
@@ -201,6 +202,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //更新域名域名
         devopsEnvCommandE.setObjectId(id);
+        devopsEnvCommandE.setCreatedBy(userId);
         devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
     }

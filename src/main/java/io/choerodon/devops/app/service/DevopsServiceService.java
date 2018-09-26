@@ -29,7 +29,7 @@ public interface DevopsServiceService {
      * @param devopsServiceReqDTO 部署网络参数
      * @return Boolean
      */
-    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO);
+    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
 
     /**
      * 更新网络
@@ -49,13 +49,13 @@ public interface DevopsServiceService {
      * @param devopsServiceReqDTO 部署网络参数
      * @return boolean
      */
-    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
+    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
 
 
     /**
      * 删除网络
      *
-     * @param id       网络ID
+     * @param id 网络ID
      */
     void deleteDevopsService(Long id);
 
@@ -63,7 +63,7 @@ public interface DevopsServiceService {
     /**
      * 删除网络
      *
-     * @param id       网络ID
+     * @param id 网络ID
      */
     void deleteDevopsServiceByGitOps(Long id);
 

@@ -53,7 +53,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, Long envId, Long projectId, String path) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeIngress = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                 .map(devopsEnvFileResourceE -> {
@@ -83,6 +83,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                 devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
                 devopsEnvCommandE1.setObject(ObjectType.INGRESS.getType());
+                devopsEnvCommandE1.setCreatedBy(userId);
                 devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
                 devopsEnvCommandE1.setObjectId(devopsIngressE.getId());
                 DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
@@ -93,84 +94,90 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
         });
         //新增ingress
-        addIngress(objectPath, envId, projectId, addV1beta1Ingress, path);
+        addIngress(objectPath, envId, projectId, addV1beta1Ingress, path, userId);
         //更新ingress
-        updateIngress(objectPath, envId, projectId, updateV1beta1Ingress, path);
+        updateIngress(objectPath, envId, projectId, updateV1beta1Ingress, path, userId);
     }
 
-    private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> addV1beta1Ingress, String path) {
-        addV1beta1Ingress.forEach(v1beta1Ingress -> {
-            String filePath = "";
-            try {
-                filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
+    private void addIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> addV1beta1Ingress, String path, Long userId) {
+        addV1beta1Ingress.stream()
+                .forEach(v1beta1Ingress -> {
+                    String filePath = "";
+                    try {
+                        filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
 
-                checkIngressAppVersion(v1beta1Ingress);
-                DevopsIngressE devopsIngressE = devopsIngressRepository
-                        .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-                DevopsIngressDTO devopsIngressDTO;
-                //初始化ingress对象参数,存在ingress则直接创建文件对象关联关系
-                if (devopsIngressE == null) {
-                    devopsIngressDTO = getDevopsIngressDTO(
-                            v1beta1Ingress,
-                            envId, filePath);
-                    if (!devopsIngressDTO.getPathList().stream()
-                            .allMatch(t ->
-                                    devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
-                        throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
-                    }
-                    devopsIngressService.addIngressByGitOps(devopsIngressDTO, projectId);
-                    devopsIngressE = devopsIngressRepository
-                            .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-                }
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
-                devopsEnvCommandE = getDevopsEnvCommandE(devopsIngressE, devopsEnvCommandE);
-                devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                devopsEnvCommandRepository.update(devopsEnvCommandE);
-                DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
-                devopsEnvFileResourceE.setResourceId(devopsIngressE.getId());
-                devopsEnvFileResourceE.setResourceType(v1beta1Ingress.getKind());
-                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-            } catch (CommonException e) {
-                String errorCode = "";
-                if (e instanceof GitOpsExplainException) {
-                    errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
-                }
-                throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
-            }
+                        checkIngressAppVersion(v1beta1Ingress);
+                        DevopsIngressE devopsIngressE = devopsIngressRepository
+                                .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                        DevopsIngressDTO devopsIngressDTO;
+                        //初始化ingress对象参数,存在ingress则直接创建文件对象关联关系
+                        if (devopsIngressE == null) {
+                            devopsIngressDTO = getDevopsIngressDTO(
+                                    v1beta1Ingress,
+                                    envId, filePath);
+                            if (!devopsIngressDTO.getPathList().stream()
+                                    .allMatch(t ->
+                                            devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
+                                throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
+                            }
+                            devopsIngressService.addIngressByGitOps(devopsIngressDTO, projectId, userId);
+                            devopsIngressE = devopsIngressRepository
+                                    .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                        }
+                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
+                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
+                            devopsIngressRepository.updateIngress(devopsIngressDO);
+                        }
+                        devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                        devopsEnvCommandRepository.update(devopsEnvCommandE);
+                        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
+                        devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
+                        devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())));
+                        devopsEnvFileResourceE.setResourceId(devopsIngressE.getId());
+                        devopsEnvFileResourceE.setResourceType(v1beta1Ingress.getKind());
+                        devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                    } catch (CommonException e) {
+                        String errorCode = "";
+                        if (e instanceof GitOpsExplainException) {
+                            errorCode = ((GitOpsExplainException) e).getErrorCode() == null ? "" : ((GitOpsExplainException) e).getErrorCode();
+                        }
+                        throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e); }
         });
     }
 
-    private void updateIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> updateV1beta1Ingress, String path) {
-        updateV1beta1Ingress.forEach(v1beta1Ingress -> {
-            String filePath = "";
-            try {
-                boolean isNotChange = false;
-                filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
-                DevopsIngressE devopsIngressE = devopsIngressRepository
-                        .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-                checkIngressAppVersion(v1beta1Ingress);
-                //初始化ingress对象参数,更新ingress并更新文件对象关联关系
-                DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(
-                        v1beta1Ingress,
-                        envId, filePath);
-                DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, devopsIngressE.getId());
-                if (devopsIngressDTO.equals(ingressDTO)) {
-                    isNotChange = true;
-                }
-                if (!devopsIngressDTO.getPathList().stream()
-                        .allMatch(t ->
-                                devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
-                    throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
-                }
-                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
-                if (!isNotChange) {
-                    devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressDTO, projectId);
-                    DevopsIngressE newdevopsIngressE = devopsIngressRepository
-                            .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
-                    devopsEnvCommandE = devopsEnvCommandRepository.query(newdevopsIngressE.getCommandId());
-
+    private void updateIngress(Map<String, String> objectPath, Long envId, Long projectId, List<V1beta1Ingress> updateV1beta1Ingress, String path, Long userId) {
+        updateV1beta1Ingress.stream()
+                .forEach(v1beta1Ingress -> {
+                    String filePath = "";
+                    try {
+                        Boolean isNotChange = false;
+                        filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
+                        DevopsIngressE devopsIngressE = devopsIngressRepository
+                                .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                        checkIngressAppVersion(v1beta1Ingress);
+                        //初始化ingress对象参数,更新ingress并更新文件对象关联关系
+                        DevopsIngressDTO devopsIngressDTO = getDevopsIngressDTO(
+                                v1beta1Ingress,
+                                envId, filePath);
+                        DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, devopsIngressE.getId());
+                        if (devopsIngressDTO.equals(ingressDTO)) {
+                            isNotChange = true;
+                        }
+                        if (!devopsIngressDTO.getPathList().stream()
+                                .allMatch(t ->
+                                        devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
+                            throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
+                        }
+                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        if (!isNotChange) {
+                            devopsIngressService.updateIngressByGitOps(devopsIngressE.getId(), devopsIngressDTO, projectId, userId);
+                            DevopsIngressE newdevopsIngressE = devopsIngressRepository
+                                    .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
+                            devopsEnvCommandE = devopsEnvCommandRepository.query(newdevopsIngressE.getCommandId());
                 }
                 devopsEnvCommandE = getDevopsEnvCommandE(devopsIngressE, devopsEnvCommandE);
                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));

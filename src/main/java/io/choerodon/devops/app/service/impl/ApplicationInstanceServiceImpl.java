@@ -341,7 +341,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             BeanUtils.copyProperties(deployDO, deployDetailDTO);
             deployDetailDTO.setDeployTime(getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
             if (deployDO.getLastUpdatedBy() != 0) {
-                UserE userE = iamRepository.queryById(deployDO.getLastUpdatedBy());
+                UserE userE = iamRepository.queryUserByUserId(deployDO.getLastUpdatedBy());
                 deployDetailDTO.setLastUpdatedName(userE.getRealName());
             }
             deployDetailDTOS.add(deployDetailDTO);
@@ -521,7 +521,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO) {
+    public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
         //校验环境是否连接
         envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
 
@@ -540,6 +540,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         } else {
             applicationInstanceRepository.update(applicationInstanceE);
         }
+        devopsEnvCommandE.setCreatedBy(userId);
         devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
         devopsEnvCommandE.initDevopsEnvCommandValueE(
                 devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());

@@ -50,7 +50,9 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
-                                 List<C7nCertification> c7nCertifications, Long envId, Long projectId, String path) {
+
+                                 List<C7nCertification> c7nCertifications, Long envId, Long projectId, String path, Long userId) {
+        //todo command操作
         List<C7nCertification> updateC7nCertification = new ArrayList<>();
         List<String> beforeC7nCertification = beforeSync.parallelStream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CERTIFICATE))
@@ -83,7 +85,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
                     if (!CommandType.DELETE.getType().equals(certificationE.getCommandType())) {
                         certificationE.setCommandId(certificationService
-                                .createCertCommandE(CommandType.DELETE.getType(), certificationE.getId()));
+                                .createCertCommandE(CommandType.DELETE.getType(), certificationE.getId(), userId));
                         certificationRepository.updateCommandId(certificationE);
                     }
                     certificationService.certDeleteByGitOps(certificationE.getId());
@@ -99,7 +101,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                 devopsEnvFileResourceE.setFilePath(filePath);
                 devopsEnvFileResourceE.setResourceId(
                         createCertificationAndGetId(
-                                envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path));
+                                envId, c7nCertification, c7nCertification.getMetadata().getName(), filePath, path, userId));
                 devopsEnvFileResourceE.setResourceType(c7nCertification.getKind());
                 devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
             } catch (Exception e) {
@@ -147,7 +149,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     }
 
     private Long createCertificationAndGetId(Long envId, C7nCertification c7nCertification, String certName,
-                                             String filePath, String path) {
+                                             String filePath, String path, Long userId) {
         CertificationE certificationE = certificationRepository
                 .queryByEnvAndName(envId, certName);
         if (certificationE == null) {
@@ -172,7 +174,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                         new CertificationFileDO(certificationE.getId(), existCert.getCert(), existCert.getKey()));
             }
             Long commandId = certificationService
-                    .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId());
+                    .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId(), userId);
             certificationE.setCommandId(commandId);
             certificationRepository.updateCommandId(certificationE);
         }

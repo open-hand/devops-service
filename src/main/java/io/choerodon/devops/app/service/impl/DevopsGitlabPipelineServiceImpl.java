@@ -82,13 +82,16 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         if (userE != null) {
             gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(userE.getId()).getGitlabUserId());
         }
+        //查询pipeline最新阶段信息
         List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository
                 .getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), gitlabUserId);
+
         DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(pipelineWebHookDTO.getObjectAttributes().getSha());
+        //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsGitlabPipelineE == null) {
             devopsGitlabPipelineE = new DevopsGitlabPipelineE();
             devopsGitlabPipelineE.setAppId(applicationE.getId());
-            devopsGitlabPipelineE.setPipelineCreateUserId(userE.getId());
+            devopsGitlabPipelineE.setPipelineCreateUserId(userE == null ? null : userE.getId());
             devopsGitlabPipelineE.setPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
             devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes()
                     .getDetailedStatus());
@@ -111,6 +114,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
     @Override
     public void updateStages(JobWebHookDTO jobWebHookDTO) {
+        //按照job的状态实时更新pipeline阶段的状态
         DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(jobWebHookDTO.getSha());
         if (devopsGitlabCommitE != null && !"created".equals(jobWebHookDTO.getBuildStatus())) {
             DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByCommitId(devopsGitlabCommitE.getId());
@@ -146,6 +150,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 versions.add("");
             }
             List<CommitStatuseDO> commitStatuseDOS = JSONArray.parseArray(devopsGitlabPipelineDO.getStage(), CommitStatuseDO.class);
+            //获取pipeline执行时间
             pipelineTimes.add(getPipelineTime(commitStatuseDOS));
         });
         pipelineTimeDTO.setCreateDates(createDates);
@@ -176,8 +181,10 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         }
         PipelineFrequencyDTO pipelineFrequencyDTO = new PipelineFrequencyDTO();
         List<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.listPipeline(appId, startTime, endTime);
+        //按照创建时间分组
         Map<String, List<DevopsGitlabPipelineDO>> resultMaps = devopsGitlabPipelineDOS.stream()
                 .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getPipelineCreationDate().getTime()).toString()));
+        //将创建时间排序
         List<String> creationDates = devopsGitlabPipelineDOS.parallelStream().map(deployDO -> new java.sql.Date(deployDO.getPipelineCreationDate().getTime()).toString()).collect(Collectors.toList());
         List<Long> pipelineFrequencys = new LinkedList<>();
         List<Long> pipelineSuccessFrequency = new LinkedList<>();
@@ -217,16 +224,23 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         List<DevopsGitlabPipelineDTO> devopsGiltabPipelineDTOS = new ArrayList<>();
         Page<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.pagePipeline(appId, pageRequest, startTime, endTime);
         BeanUtils.copyProperties(devopsGitlabPipelineDOS, pageDevopsGitlabPipelineDTOS);
+
+        //按照ref分组
         Map<String, List<DevopsGitlabPipelineDO>> refWithPipelines = devopsGitlabPipelineDOS.stream()
                 .collect(Collectors.groupingBy(DevopsGitlabPipelineDO::getRef));
         Map<String, Long> refWithPipelineIds = new HashMap<>();
+
+        //获取每个分支上最新的一条pipeline记录，用于后续标记latest
         refWithPipelines.forEach((key, value) -> {
             Long pipeLineId = Collections.max(value.parallelStream().map(DevopsGitlabPipelineDO::getPipelineId).collect(Collectors.toList()));
             refWithPipelineIds.put(key, pipeLineId);
         });
+
         ApplicationE applicationE = applicationRepository.query(appId);
         ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        //获取pipeline记录
         devopsGitlabPipelineDOS.getContent().forEach(devopsGitlabPipelineDO -> {
             DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = new DevopsGitlabPipelineDTO();
             if (devopsGitlabPipelineDO.getPipelineId().equals(refWithPipelineIds.get(devopsGitlabPipelineDO.getRef()))) {
@@ -234,12 +248,12 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
             devopsGitlabPipelineDTO.setCommit(devopsGitlabPipelineDO.getSha());
             devopsGitlabPipelineDTO.setCommitContent(devopsGitlabPipelineDO.getContent());
-            UserE userE = iamRepository.queryById(devopsGitlabPipelineDO.getCommitUserId());
+            UserE userE = iamRepository.queryUserByUserId(devopsGitlabPipelineDO.getCommitUserId());
             if (userE != null) {
                 devopsGitlabPipelineDTO.setCommitUserUrl(userE.getImageUrl());
                 devopsGitlabPipelineDTO.setCommitUserName(userE.getRealName());
             }
-            UserE newUserE = iamRepository.queryById(devopsGitlabPipelineDO.getPipelineCreateUserId());
+            UserE newUserE = iamRepository.queryUserByUserId(devopsGitlabPipelineDO.getPipelineCreateUserId());
             if (newUserE != null) {
                 devopsGitlabPipelineDTO.setPipelineUserUrl(newUserE.getImageUrl());
                 devopsGitlabPipelineDTO.setPipelineUserName(newUserE.getRealName());
@@ -253,6 +267,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             if (applicationVersionE != null) {
                 devopsGitlabPipelineDTO.setVersion(applicationVersionE.getVersion());
             }
+            //pipeline阶段信息
             List<CommitStatuseDO> commitStatuseDOS = JSONArray.parseArray(devopsGitlabPipelineDO.getStage(), CommitStatuseDO.class);
             devopsGitlabPipelineDTO.setPipelineTime(getPipelineTime(commitStatuseDOS));
             devopsGitlabPipelineDTO.setStages(commitStatuseDOS);

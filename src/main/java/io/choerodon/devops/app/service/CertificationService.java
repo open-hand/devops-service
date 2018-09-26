@@ -42,5 +42,5 @@ public interface CertificationService {
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 
-    Long createCertCommandE(String type, Long certId);
+    Long createCertCommandE(String type, Long certId, Long userId);
 }

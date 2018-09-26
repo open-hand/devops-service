@@ -50,7 +50,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     private DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, Long envId, Long projectId, String path) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeC7nRelease = beforeSync.parallelStream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(C7NHELM_RELEASE))
                 .map(devopsEnvFileResourceE -> {
@@ -75,9 +75,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         });
 
         //新增instance
-        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease, path);
+        addC7nHelmRelease(objectPath, envId, projectId, addC7nHelmRelease, path, userId);
         //更新instance
-        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease, path);
+        updateC7nHelmRelease(objectPath, envId, projectId, updateC7nHelmRelease, path, userId);
         //删除instance,和文件对象关联关系
         beforeC7nRelease.forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
@@ -86,6 +86,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                 devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
                 devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
+                devopsEnvCommandE1.setCreatedBy(userId);
                 devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
                 devopsEnvCommandE1.setObjectId(applicationInstanceE.getId());
                 applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
@@ -98,8 +99,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
     }
 
 
-    private void updateC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> updateC7nHelmRelease, String path) {
-        updateC7nHelmRelease
+    private void updateC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> updateC7nHelmRelease, String path, Long userId) {
+        updateC7nHelmRelease.stream()
                 .forEach(c7nHelmRelease -> {
                             String filePath = "";
                             try {
@@ -117,7 +118,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                 DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationDeployDTO.getCommandId());
                                 if (!applicationDeployDTO.getIsNotChange()) {
                                     ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService
-                                            .createOrUpdateByGitOps(applicationDeployDTO);
+                                            .createOrUpdateByGitOps(applicationDeployDTO, userId);
                                     devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceDTO.getCommandId());
                                 }
                                 if (devopsEnvCommandE == null) {
@@ -145,8 +146,8 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                 );
     }
 
-    private void addC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> addC7nHelmRelease, String path) {
-        addC7nHelmRelease
+    private void addC7nHelmRelease(Map<String, String> objectPath, Long envId, Long projectId, List<C7nHelmRelease> addC7nHelmRelease, String path, Long userId) {
+        addC7nHelmRelease.stream()
                 .forEach(c7nHelmRelease -> {
                     String filePath = "";
                     try {
@@ -164,7 +165,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                     envId,
                                     filePath,
                                     "create");
-                            applicationInstanceDTO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO);
+                            applicationInstanceDTO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO, userId);
                         } else {
                             applicationInstanceDTO.setId(applicationInstanceE.getId());
                             applicationInstanceDTO.setCommandId(applicationInstanceE.getCommandId());
