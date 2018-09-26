@@ -4,7 +4,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -119,7 +118,6 @@ public class ApplicationDO extends AuditDomain {
         this.token = token;
     }
 
-
     public String getPublishLevel() {
         return publishLevel;
     }
@@ -143,7 +141,6 @@ public class ApplicationDO extends AuditDomain {
     public void setDescription(String description) {
         this.description = description;
     }
-
 
     public Long getHookId() {
         return hookId;

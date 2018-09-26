@@ -112,7 +112,7 @@ public class SagaHandler {
     }
 
     @SagaTask(code = "devopsUpdateGitOpsGroup",
-            description = "devops  更新 GitLab Group",
+            description = "devops  更新 GitOps Group",
             sagaCode = "iam-update-project",
             maxRetryCount = 0,
             seq = 1)

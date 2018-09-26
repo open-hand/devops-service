@@ -384,7 +384,7 @@ public interface GitlabServiceClient {
             @RequestParam("hookId") Integer hookId,
             @RequestParam("userId") Integer userId);
 
-    @PutMapping("/{groupId}")
+    @PutMapping("/v1/groups/{groupId}")
     ResponseEntity updateGroup(@PathVariable("groupId") Integer groupId,
                                @RequestParam("userId") Integer userId,
                                @RequestBody @Valid GroupDO group

@@ -84,7 +84,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         List<ProjectE> projectES = iamRepository.listIamProjectByOrgId(organization.getId(), gitlabGroupPayload.getProjectName());
         if (!projectES.isEmpty()) {
             if (projectES.size() > 1) {
-                return gitlabGroupPayload.getProjectName() + (projectES.size() - 1);
+                return gitlabGroupPayload.getProjectName() + "-" + (projectES.size() - 1);
             }
         }
         return gitlabGroupPayload.getProjectName();
@@ -108,8 +108,14 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 groupCodeSuffix));
         UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupPayload.getProjectId());
+        Integer groupId;
+        if (groupCodeSuffix.isEmpty()) {
+            groupId = gitlabGroupE.getGitlabGroupId();
+        } else {
+            groupId = gitlabGroupE.getEnvGroupId();
+        }
         try {
-            gitlabServiceClient.updateGroup(gitlabGroupE.getGitlabGroupId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()), group);
+            gitlabServiceClient.updateGroup(groupId, TypeUtil.objToInteger(userAttrE.getGitlabUserId()), group);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
