@@ -64,16 +64,15 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             listStrings = Arrays.stream(appId).map(e -> Long.valueOf(e)).collect(Collectors.toList());
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
-        if ("null".equals(startDate)) {
-            // 设置日期格式
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            // new Date()为获取当前系统时间
-            startDate = df.format(new Date());
-            endDate = df.format(new Date());
-        }
+        startDate = "null".equals(startDate) ? String.valueOf(System.currentTimeMillis()) : startDate;
+        endDate = "null".equals(endDate) ? String.valueOf(System.currentTimeMillis()) : endDate;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String sd = sdf.format(new Date(Long.valueOf(startDate)));
+        String ed = sdf.format(new Date(Long.valueOf(endDate)));
+
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, listStrings, startDate, endDate);
+                .listCommits(projectId, listStrings, sd, ed);
         if (devopsGitlabCommitES.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
@@ -101,19 +100,17 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             listStrings = Arrays.stream(appIds).map(e -> Long.valueOf(e)).collect(Collectors.toList());
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
-        if ("null".equals(startDate)) {
-            // 设置日期格式
-            SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-            // new Date()为获取当前系统时间
-            startDate = df.format(new Date());
-            endDate = df.format(new Date());
-        }
+        startDate = "null".equals(startDate) ? String.valueOf(System.currentTimeMillis()) : startDate;
+        endDate = "null".equals(endDate) ? String.valueOf(System.currentTimeMillis()) : endDate;
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        String sd = sdf.format(new Date(Long.valueOf(startDate)));
+        String ed = sdf.format(new Date(Long.valueOf(endDate)));
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, listStrings, startDate, endDate);
+                .listCommits(projectId, listStrings, sd, ed);
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        return getCommitFormRecordDTOS(projectId, listStrings, pageRequest, userMap, startDate, endDate);
+        return getCommitFormRecordDTOS(projectId, listStrings, pageRequest, userMap, sd, ed);
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {
