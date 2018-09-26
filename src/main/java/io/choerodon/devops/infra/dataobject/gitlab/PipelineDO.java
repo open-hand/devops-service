@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.dataobject.gitlab;
 import java.util.Date;
 
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus;
+import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Created by Zenger on 2018/1/10.
@@ -17,13 +18,40 @@ public class PipelineDO {
     private Boolean tag;
     private String yamlErrors;
     private UserDO user;
-    private String created_at;
+    @JsonProperty(value = "created_at")
+    private String createdAt;
     private Date updatedAt;
-    private Date started_at;
-    private Date finished_at;
+    @JsonProperty(value = "started_at")
+    private Date startedAt;
+    @JsonProperty(value = "finished_at")
+    private Date finishedAt;
     private Date committedAt;
     private String coverage;
     private Integer duration;
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(Date startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public Date getFinishedAt() {
+        return finishedAt;
+    }
+
+    public void setFinishedAt(Date finishedAt) {
+        this.finishedAt = finishedAt;
+    }
 
     public Integer getId() {
         return id;
@@ -89,13 +117,6 @@ public class PipelineDO {
         this.user = user;
     }
 
-    public String getCreated_at() {
-        return created_at;
-    }
-
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
-    }
 
     public Date getUpdatedAt() {
         return updatedAt;
@@ -103,22 +124,6 @@ public class PipelineDO {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public Date getStarted_at() {
-        return started_at;
-    }
-
-    public void setStarted_at(Date started_at) {
-        this.started_at = started_at;
-    }
-
-    public Date getFinished_at() {
-        return finished_at;
-    }
-
-    public void setFinished_at(Date finished_at) {
-        this.finished_at = finished_at;
     }
 
     public Date getCommittedAt() {

@@ -19,6 +19,17 @@ public class K8sUtil {
     private K8sUtil() {
     }
 
+
+    private static String getPodStatus(V1ContainerStateTerminated containerStateTerminated) {
+        if (containerStateTerminated.getReason().length() == 0) {
+            return containerStateTerminated.getSignal() != 0
+                    ? INIT + SIGNAL + containerStateTerminated.getSignal()
+                    : INIT + EXIT_CODE + containerStateTerminated.getExitCode();
+        } else {
+            return INIT + containerStateTerminated.getReason();
+        }
+    }
+
     /**
      * pod状态生成规则
      *
@@ -26,52 +37,33 @@ public class K8sUtil {
      * @return string
      */
     public static String changePodStatus(V1Pod pod) {
-        String status = pod.getStatus().getPhase();
-        if (pod.getStatus().getReason() != null) {
-            status = pod.getStatus().getReason();
-        }
+        String podStatusPhase = pod.getStatus().getPhase();
+        String podStatusReason = pod.getStatus().getReason();
+        String status = podStatusReason != null ? podStatusReason : podStatusPhase;
         List<V1ContainerStatus> initContainerStatuses = pod.getStatus().getInitContainerStatuses();
-        if (initContainerStatuses != null && !initContainerStatuses.isEmpty()) {
-            V1ContainerStatus containerStatus = initContainerStatuses.get(0);
-            V1ContainerState containerState = containerStatus.getState();
+        List<V1ContainerStatus> containerStatusList = pod.getStatus().getContainerStatuses();
+        if (!ArrayUtil.isEmpty(initContainerStatuses)) {
+            V1ContainerState containerState = initContainerStatuses.get(0).getState();
             V1ContainerStateTerminated containerStateTerminated = containerState.getTerminated();
             V1ContainerStateWaiting containerStateWaiting = containerState.getWaiting();
             if (containerStateTerminated != null) {
-                if (containerStateTerminated.getReason().length() == 0) {
-                    status = containerStateTerminated.getSignal() != 0
-                            ? INIT + SIGNAL + containerStateTerminated.getSignal()
-                            : INIT + EXIT_CODE + containerStateTerminated.getExitCode();
-
-                } else {
-                    status = INIT + containerStateTerminated.getReason();
-                }
+                status = getPodStatus(containerStateTerminated);
             } else if (containerStateWaiting != null
-                    && containerStateWaiting.getReason().length() > 0
+                    && !containerStateWaiting.getReason().isEmpty()
                     && !"PodInitializing".equals(containerStateWaiting.getReason())) {
                 status = INIT + containerStateWaiting.getReason();
             } else {
                 status = INIT + pod.getSpec().getInitContainers().size();
             }
-        } else {
-            if (pod.getStatus().getContainerStatuses() != null) {
-                if (!"Pending".equals(pod.getStatus().getPhase()) && !pod.getStatus().getContainerStatuses().isEmpty()) {
-                    V1ContainerStatus containerStatus = pod.getStatus().getContainerStatuses().get(0);
-                    V1ContainerState containerState = containerStatus.getState();
-                    V1ContainerStateWaiting containerStateWaiting = containerState.getWaiting();
-                    V1ContainerStateTerminated containerStateTerminated = containerState.getTerminated();
+        } else if (!ArrayUtil.isEmpty(containerStatusList) && !"Pending".equals(podStatusPhase)) {
+            V1ContainerState containerState = containerStatusList.get(0).getState();
+            V1ContainerStateWaiting containerStateWaiting = containerState.getWaiting();
+            V1ContainerStateTerminated containerStateTerminated = containerState.getTerminated();
 
-                    if (containerStateWaiting != null && containerStateWaiting.getReason().length() != 0) {
-                        status = containerStateWaiting.getReason();
-                    } else if (containerStateTerminated != null) {
-                        if (containerStateTerminated.getReason().length() != 0) {
-                            status = containerStateTerminated.getReason();
-                        } else {
-                            status = containerStateTerminated.getSignal() != 0
-                                    ? SIGNAL + containerStateTerminated.getSignal()
-                                    : EXIT_CODE + containerStateTerminated.getExitCode();
-                        }
-                    }
-                }
+            if (containerStateWaiting != null && !containerStateWaiting.getReason().isEmpty()) {
+                status = containerStateWaiting.getReason();
+            } else if (containerStateTerminated != null) {
+                status = getPodStatus(containerStateTerminated);
             }
         }
         return status;

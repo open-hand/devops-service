@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.common.util;
 
-import java.util.Arrays;
 import java.util.Base64;
 
 import org.nutz.lang.util.ByteInputStream;
@@ -21,5 +20,9 @@ public class Base64Util {
      */
     public static ByteInputStream base64Decoder(String encodedString) {
         return new ByteInputStream(Base64.getDecoder().decode(encodedString));
+    }
+
+    private Base64Util() {
+
     }
 }

@@ -14,13 +14,13 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface DevopsEnvFileErrorRepository {
 
-    DevopsEnvFileErrorE createOrUpdate(DevopsEnvFileErrorE DevopsEnvFileErrorE);
+    DevopsEnvFileErrorE createOrUpdate(DevopsEnvFileErrorE devopsEnvFileErrorE);
 
     List<DevopsEnvFileErrorE> listByEnvId(Long envId);
 
     Page<DevopsEnvFileErrorE> pageByEnvId(Long envId, PageRequest pageRequest);
 
-    void delete(DevopsEnvFileErrorE DevopsEnvFileErrorE);
+    void delete(DevopsEnvFileErrorE devopsEnvFileErrorE);
 
     DevopsEnvFileErrorE queryByEnvIdAndFilePath(Long envId, String filePath);
 

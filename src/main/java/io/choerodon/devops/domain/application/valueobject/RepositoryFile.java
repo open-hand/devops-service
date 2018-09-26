@@ -11,9 +11,6 @@ public class RepositoryFile {
     private String commitId;
     private String lastCommitId;
 
-    public RepositoryFile() {
-    }
-
     public String getFileName() {
         return this.fileName;
     }

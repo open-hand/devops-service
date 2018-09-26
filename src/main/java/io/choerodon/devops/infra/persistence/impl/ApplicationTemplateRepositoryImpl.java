@@ -117,12 +117,8 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
         ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO();
         applicationTemplateDO.setCode(code);
         applicationTemplateDO.setOrganizationId(organizationId);
-        List<ApplicationTemplateDO> applicationTemplates = applicationTemplateMapper.select(applicationTemplateDO);
-        if (!applicationTemplates.isEmpty()) {
-            return ConvertHelper.convert(applicationTemplates.get(0), ApplicationTemplateE.class);
-        } else {
-            throw new CommonException("error.appTemplate.select");
-        }
+        ApplicationTemplateDO applicationTemplate = applicationTemplateMapper.selectOne(applicationTemplateDO);
+        return ConvertHelper.convert(applicationTemplate, ApplicationTemplateE.class);
     }
 
     @Override

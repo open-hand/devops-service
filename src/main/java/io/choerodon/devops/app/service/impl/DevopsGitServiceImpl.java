@@ -566,7 +566,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //反序列文件为c7nHelmRelease对象,
                             ConvertK8sObjectService<C7nHelmRelease> convertC7nHelmRelease = new ConvertC7nHelmReleaseServiceImpl();
                             convertC7nHelmRelease.setT(new C7nHelmRelease());
-                            C7nHelmRelease c7nHelmRelease = convertC7nHelmRelease.SerializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                            C7nHelmRelease c7nHelmRelease = convertC7nHelmRelease.serializableObject(jsonObject.toJSONString(), filePath, objectPath);
                             //校验参数校验参数是否合法
                             convertC7nHelmRelease.checkParameters(c7nHelmRelease, objectPath);
                             //校验对象是否在其它文件中已经定义
@@ -576,7 +576,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //反序列文件为V1beta1ingress对象,
                             ConvertK8sObjectService<V1beta1Ingress> convertV1beta1Ingress = new ConvertV1beta1IngressServiceImpl();
                             convertV1beta1Ingress.setT(new V1beta1Ingress());
-                            V1beta1Ingress v1beta1Ingress = convertV1beta1Ingress.SerializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                            V1beta1Ingress v1beta1Ingress = convertV1beta1Ingress.serializableObject(jsonObject.toJSONString(), filePath, objectPath);
                             //校验参数校验参数是否合法
                             convertV1beta1Ingress.checkParameters(v1beta1Ingress, objectPath);
                             //校验对象是否在其它文件中已经定义
@@ -586,7 +586,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //反序列文件为V1service对象,
                             ConvertK8sObjectService<V1Service> convertV1Service = new ConvertV1ServiceServiceImpl();
                             convertV1Service.setT(new V1Service());
-                            V1Service v1Service = convertV1Service.SerializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                            V1Service v1Service = convertV1Service.serializableObject(jsonObject.toJSONString(), filePath, objectPath);
                             //校验参数校验参数是否合法
                             convertV1Service.checkParameters(v1Service, objectPath);
                             //校验对象是否在其它文件中已经定义
@@ -596,7 +596,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //反序列文件为C7nCertification对象,
                             ConvertK8sObjectService<C7nCertification> convertC7nCertification = new ConvertC7nCertificationServiceImpl();
                             convertC7nCertification.setT(new C7nCertification());
-                            C7nCertification c7nCertification = convertC7nCertification.SerializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                            C7nCertification c7nCertification = convertC7nCertification.serializableObject(jsonObject.toJSONString(), filePath, objectPath);
                             //校验参数校验参数是否合法
                             convertC7nCertification.checkParameters(c7nCertification, objectPath);
                             //校验对象是否在其它文件中已经定义

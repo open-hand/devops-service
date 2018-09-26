@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
-import org.springframework.security.access.method.P;
 
 import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.mybatis.common.BaseMapper;

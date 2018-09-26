@@ -258,7 +258,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
         List<DeployAppDTO> deployAppDTOS = new ArrayList<>();
         Map<String, List<DeployDO>> resultMaps = deployDOS.stream()
-                .collect(Collectors.groupingBy(t -> t.getAppName()));
+                .collect(Collectors.groupingBy(DeployDO::getAppName));
         resultMaps.forEach((key, value) -> {
             DeployAppDTO deployAppDTO = new DeployAppDTO();
             List<DeployAppDetail> deployAppDetails = new ArrayList<>();
@@ -320,8 +320,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             return  new Page<>();
         }
         Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployFrequencyDetail(projectId, pageRequest, envIds, appId, startTime, endTime);
-        Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
-        return pageDeployDetailDTOS;
+        return getDeployDetailDTOS(deployDOS);
     }
 
     @Override
@@ -330,8 +329,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             return new Page<>();
         }
         Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployTimeDetail(projectId, pageRequest, envId, appIds, startTime, endTime);
-        Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
-        return pageDeployDetailDTOS;
+        return getDeployDetailDTOS(deployDOS);
     }
 
     private Page<DeployDetailDTO> getDeployDetailDTOS(Page<DeployDO> deployDOS) {

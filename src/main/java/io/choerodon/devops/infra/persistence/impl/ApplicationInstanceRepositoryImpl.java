@@ -139,17 +139,13 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
 
     @Override
     public Page<DeployDO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime) {
-        Page<DeployDO> deployDOS = PageHelper.doPageAndSort(pageRequest, () ->
-                applicationInstanceMapper
-                        .listDeployFrequency(projectId, envIds, appId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
-        return deployDOS;
+        return PageHelper.doPageAndSort(pageRequest, () ->
+                applicationInstanceMapper.listDeployFrequency(projectId, envIds, appId, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
     }
 
     @Override
     public Page<DeployDO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long envId, Long[] appIds, Date startTime, Date endTime) {
-        Page<DeployDO> deployDOS = PageHelper.doPageAndSort(pageRequest, () ->
-                applicationInstanceMapper
-                        .listDeployTime(projectId, envId, appIds, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
-        return deployDOS;
+        return PageHelper.doPageAndSort(pageRequest, () ->
+                applicationInstanceMapper.listDeployTime(projectId, envId, appIds, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
     }
 }

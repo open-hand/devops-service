@@ -64,10 +64,7 @@ public class DevopsGitlabPipelineRepositoryImpl implements DevopsGitlabPipelineR
 
     @Override
     public Page<DevopsGitlabPipelineDO> pagePipeline(Long appId, PageRequest pageRequest, Date startTime, Date endTime) {
-
-        Page<DevopsGitlabPipelineDO> pipelineDOS = PageHelper.doPageAndSort(pageRequest, () ->
-                devopsGitlabPipelineMapper
-                        .listDevopsGitlabPipeline(appId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
-        return pipelineDOS;
+        return PageHelper.doPageAndSort(pageRequest, () ->
+                devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
 }
