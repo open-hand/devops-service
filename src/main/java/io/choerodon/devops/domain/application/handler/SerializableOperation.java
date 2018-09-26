@@ -4,7 +4,6 @@ import java.util.Map;
 
 import org.yaml.snakeyaml.Yaml;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 
 public class SerializableOperation<T> {

@@ -1,16 +1,23 @@
 package io.choerodon.devops.infra.dataobject.gitlab;
 
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 public class CommitStatuseDO {
     private String status;
-    private String created_at;
-    private String started_at;
+    @JsonProperty(value = "created_at")
+    private String createdAt;
+    @JsonProperty(value = "started_at")
+    private String startedAt;
     private String name;
-    private Boolean allow_failure;
+    @JsonProperty(value = "allow_failure")
+    private Boolean allowFailure;
     private String description;
     private String sha;
-    private String target_url;
-    private String finished_at;
+    @JsonProperty(value = "target_url")
+    private String targetUrl;
+    @JsonProperty(value = "finished_at")
+    private String finishedAt;
     private Integer id;
     private String ref;
 
@@ -22,20 +29,20 @@ public class CommitStatuseDO {
         this.status = status;
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public String getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public String getStarted_at() {
-        return started_at;
+    public String getStartedAt() {
+        return startedAt;
     }
 
-    public void setStarted_at(String started_at) {
-        this.started_at = started_at;
+    public void setStartedAt(String startedAt) {
+        this.startedAt = startedAt;
     }
 
     public String getName() {
@@ -46,12 +53,12 @@ public class CommitStatuseDO {
         this.name = name;
     }
 
-    public Boolean getAllow_failure() {
-        return allow_failure;
+    public Boolean getAllowFailure() {
+        return allowFailure;
     }
 
-    public void setAllow_failure(Boolean allow_failure) {
-        this.allow_failure = allow_failure;
+    public void setAllowFailure(Boolean allowFailure) {
+        this.allowFailure = allowFailure;
     }
 
     public String getDescription() {
@@ -70,20 +77,20 @@ public class CommitStatuseDO {
         this.sha = sha;
     }
 
-    public String getTarget_url() {
-        return target_url;
+    public String getTargetUrl() {
+        return targetUrl;
     }
 
-    public void setTarget_url(String target_url) {
-        this.target_url = target_url;
+    public void setTargetUrl(String targetUrl) {
+        this.targetUrl = targetUrl;
     }
 
-    public String getFinished_at() {
-        return finished_at;
+    public String getFinishedAt() {
+        return finishedAt;
     }
 
-    public void setFinished_at(String finished_at) {
-        this.finished_at = finished_at;
+    public void setFinishedAt(String finishedAt) {
+        this.finishedAt = finishedAt;
     }
 
     public Integer getId() {

@@ -24,6 +24,7 @@ import io.choerodon.devops.infra.common.util.enums.ResourceType;
 public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
     private static final String LINE_SEPARATOR = "line.separator";
+    private static final String NONE_LABEL = "<none>";
     private static JSON json = new JSON();
     @Autowired
     private DevopsEnvResourceRepository devopsEnvResourceRepository;
@@ -242,18 +243,18 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         serviceDTO.setName(v1Service.getMetadata().getName());
         serviceDTO.setType(v1Service.getSpec().getType());
         if (v1Service.getSpec().getClusterIP().length() == 0) {
-            serviceDTO.setClusterIp("<none>");
+            serviceDTO.setClusterIp(NONE_LABEL);
         } else {
             serviceDTO.setClusterIp(v1Service.getSpec().getClusterIP());
         }
         serviceDTO.setExternalIp(K8sUtil.getServiceExternalIp(v1Service));
         String port = K8sUtil.makePortString(v1Service.getSpec().getPorts());
         if (port.length() == 0) {
-            port = "<none>";
+            port = NONE_LABEL;
         }
         String targetPort = K8sUtil.makeTargetPortString(v1Service.getSpec().getPorts());
         if (targetPort.length() == 0) {
-            targetPort = "<none>";
+            targetPort = NONE_LABEL;
         }
         serviceDTO.setPort(port);
         serviceDTO.setTargetPort(targetPort);

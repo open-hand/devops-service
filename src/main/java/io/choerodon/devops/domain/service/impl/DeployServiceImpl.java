@@ -1,7 +1,6 @@
 package io.choerodon.devops.domain.service.impl;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +9,6 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.valueobject.Command;
-import io.choerodon.devops.domain.application.valueobject.CommandPayLoad;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.enums.HelmType;

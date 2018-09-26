@@ -23,9 +23,9 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 
 public class ObjectOperation<T> {
 
-    private String C7NTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nHelmRelease";
-    private String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
-    private String SVCTAG = "!!io.kubernetes.client.models.V1Service";
+    private static final String C7NTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nHelmRelease";
+    private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
+    private static final String SVCTAG = "!!io.kubernetes.client.models.V1Service";
 
     private T type;
 

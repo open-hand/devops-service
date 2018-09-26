@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -166,7 +165,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         });
         //按照环境组分组查询，有环境的环境组放前面，没环境的环境组放后面
         Map<Long, List<DevopsEnviromentRepDTO>> resultMaps = devopsEnviromentRepDTOS.stream()
-                .collect(Collectors.groupingBy(t -> t.getDevopsEnvGroupId()));
+                .collect(Collectors.groupingBy(DevopsEnviromentRepDTO::getDevopsEnvGroupId));
         List<Long> envGroupIds = new ArrayList<>();
         resultMaps.forEach((key, value) -> {
             envGroupIds.add(key);
