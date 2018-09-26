@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCommandEventMapper">
 
     <!--删除实例event记录-->
-    <select id="deletePreInstanceCommandEvent" resultType="int">
+    <delete id="deletePreInstanceCommandEvent">
           DELETE
           FROM
           devops_command_event
@@ -17,6 +17,6 @@
              where
              d.object = 'instance' and d.object_id = #{instanceId}
           )
-    </select>
+    </delete>
 
 </mapper>
