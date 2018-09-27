@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsCommandEventMapper">
+
+    <!--删除实例event记录-->
+    <delete id="deletePreInstanceCommandEvent">
+          DELETE
+          FROM
+          devops_command_event
+          where
+          devops_command_event.command_id  IN (
+             SELECT
+             d.id
+             FROM
+             devops_env_command d
+             where
+             d.object = 'instance' and d.object_id = #{instanceId}
+          )
+    </delete>
+
+</mapper>

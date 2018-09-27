@@ -16,4 +16,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command_log.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'crockitwood', id: '2018-09-26-create-command-log-index') {
+        createIndex(indexName: "idx_command_id", tableName: "devops_env_command_log") {
+            column(name: "command_id")
+        }
+    }
 }
