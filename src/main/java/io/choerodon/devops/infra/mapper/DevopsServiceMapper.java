@@ -8,7 +8,6 @@ import org.apache.ibatis.annotations.Param;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
 import io.choerodon.mybatis.common.BaseMapper;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 
 /**
  * Created by Zenger on 2018/4/15.

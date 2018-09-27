@@ -3,7 +3,6 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.DevopsMergeRequestDTO;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 

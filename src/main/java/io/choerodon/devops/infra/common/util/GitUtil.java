@@ -228,16 +228,12 @@ public class GitUtil {
     /**
      * 将代码推到目标库
      */
-    public void push(Git git, String name, String repoUrl, String userName, String accessToken, Boolean templateType) {
+    public void push(Git git, String name, String repoUrl, String userName, String accessToken) {
         try {
             String[] url = repoUrl.split("://");
             git.add().addFilepattern(".").call();
             git.add().setUpdate(true).addFilepattern(".").call();
             git.commit().setMessage("Render Variables[skip ci]").call();
-//            if (templateType) {
-//                git.branchDelete().setBranchNames(MASTER).call();
-//                git.branchCreate().setName(MASTER).call();
-//            }
             List<Ref> refs = git.branchList().call();
             PushCommand pushCommand = git.push();
             for (Ref ref : refs) {

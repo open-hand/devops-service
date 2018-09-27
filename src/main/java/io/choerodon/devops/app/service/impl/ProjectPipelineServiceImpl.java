@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,27 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.ProjectPipelineResultTotalDTO;
 import io.choerodon.devops.app.service.ProjectPipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.PipelineResultV;
-import io.choerodon.devops.domain.application.valueobject.ProjectPipelineResultTotalV;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.JobStatus;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
-import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by Zenger on 2018/4/10.
@@ -57,64 +41,6 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
         return TypeUtil.objToInteger(userAttrE.getGitlabUserId());
     }
 
-    @Override
-    public ProjectPipelineResultTotalDTO listPipelines(Long projectId, Long appId, PageRequest pageRequest) {
-        ProjectPipelineResultTotalV projectPipelineResultTotalV = new ProjectPipelineResultTotalV();
-        ApplicationE app = applicationRepository.query(appId);
-        if (app == null) {
-            throw new CommonException("error.application.query");
-        }
-        Integer userId = getGitlabUserId();
-        String userName = GitUserNameUtil.getUsername();
-        Integer gitlabProjectId = app.getGitlabProjectE().getId();
-        List<BranchE> branchES = gitlabProjectRepository.listBranches(
-                gitlabProjectId, getGitlabUserId());
-        List<TagDO> tagTotalList = devopsGitRepository.getGitLabTags(gitlabProjectId, userId);
-        if (branchES == null) {
-            return new ProjectPipelineResultTotalDTO();
-        }
-        int page = pageRequest.getPage();
-        int size = pageRequest.getSize();
-        List<GitlabPipelineE> gitlabPipelineEList =
-                gitlabProjectRepository.listPipeline(gitlabProjectId, getGitlabUserId());
-        List<GitlabPipelineE> gitlabPipelineEListByPage = gitlabProjectRepository.listPipelines(
-                gitlabProjectId, page + 1, size, getGitlabUserId());
-        List<String> branchNames = branchES.stream().map(BranchE::getName).collect(Collectors.toList());
-        List<String> tagNames = tagTotalList.stream().map(TagDO::getName).collect(Collectors.toList());
-        branchNames.addAll(tagNames);
-        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
-        if (gitlabPipelineEListByPage != null && !gitlabPipelineEListByPage.isEmpty()) {
-            listPipelineResultV(
-                    gitlabPipelineEListByPage,
-                    pipelineResultVS,
-                    app,
-                    gitlabProjectId,
-                    userId,
-                    projectId,
-                    userName);
-            branchNames.forEach(branchName -> {
-                final long[] id = {0};
-                gitlabPipelineEList.parallelStream()
-                        .filter(p -> branchName.contains(p.getRef()) && p.getId() > id[0])
-                        .forEach(r -> id[0] = r.getId());
-                pipelineResultVS.parallelStream().filter(p -> p.getId() == id[0]).forEach(r -> r.setLatest(true));
-            });
-            Collections.sort(pipelineResultVS);
-            int allIndex = gitlabPipelineEList.size();
-            int totalPages = 0;
-            if (size != 0) {
-                totalPages = allIndex % size == 0 ? allIndex / size : allIndex / size + 1;
-            }
-            projectPipelineResultTotalV.setTotalElements(allIndex);
-            projectPipelineResultTotalV.setTotalPages(totalPages);
-            projectPipelineResultTotalV.setNumberOfElements(gitlabPipelineEListByPage.size());
-            projectPipelineResultTotalV.setNumber(page);
-            projectPipelineResultTotalV.setSize(size);
-            projectPipelineResultTotalV.setContent(pipelineResultVS);
-        }
-        return ConvertHelper.convert(projectPipelineResultTotalV,
-                ProjectPipelineResultTotalDTO.class);
-    }
 
     @Override
     public Boolean retry(Long gitlabProjectId, Long pipelineId) {
@@ -126,77 +52,6 @@ public class ProjectPipelineServiceImpl implements ProjectPipelineService {
     public Boolean cancel(Long gitlabProjectId, Long pipelineId) {
         return gitlabProjectRepository.cancel(gitlabProjectId.intValue(),
                 pipelineId.intValue(), getGitlabUserId());
-    }
-
-
-    private void listPipelineResultV(List<GitlabPipelineE> gitlabPipelineEListByPage,
-                                     List<PipelineResultV> pipelineResultVS,
-                                     ApplicationE applicationE,
-                                     Integer gitlabProjectId,
-                                     Integer userId,
-                                     Long projectId,
-                                     String userName) {
-
-        gitlabPipelineEListByPage.parallelStream().forEach(gitlabPipeline -> {
-            GitlabPipelineE gitlabPipelineE =
-                    gitlabProjectRepository.getPipeline(gitlabProjectId, gitlabPipeline.getId(), userId);
-            PipelineResultV pipelineResultV = new PipelineResultV();
-            pipelineResultV.setGitlabProjectId(gitlabProjectId.longValue());
-            pipelineResultV.setAppCode(applicationE.getCode());
-            pipelineResultV.setAppName(applicationE.getName());
-            pipelineResultV.setAppStatus(applicationE.getActive());
-            pipelineResultV.setLatest(false);
-            pipelineResultV.setId(gitlabPipelineE.getId().longValue());
-            pipelineResultV.setStatus(gitlabPipelineE.getStatus().toString());
-            pipelineResultV.setCreateUser(gitlabPipelineE.getUser().getUsername());
-            pipelineResultV.setRef(gitlabPipelineE.getRef());
-            pipelineResultV.setSha(gitlabPipelineE.getSha());
-            pipelineResultV.setCreatedAt(gitlabPipelineE.getCreated_at());
-
-            List<GitlabJobE> jobs =
-                    gitlabProjectRepository.listJobs(gitlabProjectId, gitlabPipelineE.getId(), userId);
-            List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository
-                    .getCommitStatuse(gitlabProjectId, gitlabPipelineE.getSha(), userId);
-            commitStatuseDOS.stream()
-                    .filter(commitStatuseDO ->
-                            commitStatuseDO.getRef().equals(pipelineResultV.getRef())
-                                    && commitStatuseDO.getName().equals(SONAR_QUBE))
-                    .forEach(commitStatuseDO -> {
-                        GitlabJobE gitlabJobE = new GitlabJobE();
-                        gitlabJobE.setName(commitStatuseDO.getName());
-                        gitlabJobE.setStatus(JobStatus.SUCCESS);
-                        gitlabJobE.setStage(commitStatuseDO.getName());
-                        if (commitStatuseDO.getStatus().equals(JobStatus.FAILED.toString())) {
-                            gitlabJobE.setStatus(JobStatus.FAILED);
-                        }
-                        gitlabJobE.setDescription(commitStatuseDO.getDescription());
-                        jobs.add(gitlabJobE);
-                    });
-
-            if (!jobs.isEmpty()) {
-                List<GitlabJobE> realJobs = getRealJobs(jobs);
-                pipelineResultV.setJobs(realJobs);
-                Long diffs = 0L;
-                for (Long diff : realJobs.stream().map(GitlabJobE::getJobTime).collect(Collectors.toList())) {
-                    diffs = diff + diffs;
-                }
-                pipelineResultV.setTime(getStageTime(diffs));
-            }
-
-            UserE userE = iamRepository.queryByLoginName(userName);
-            if (userE != null) {
-                pipelineResultV.setImageUrl(userE.getImageUrl());
-            }
-
-            ProjectE projectE = iamRepository.queryIamProject(projectId);
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            pipelineResultV.setGitlabUrl(gitlabUrl + "/"
-                    + organization.getCode() + "-" + projectE.getCode() + "/"
-                    + applicationE.getCode() + ".git");
-            pipelineResultVS.add(pipelineResultV);
-        });
-
-
     }
 
 

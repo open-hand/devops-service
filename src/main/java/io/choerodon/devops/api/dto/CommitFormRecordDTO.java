@@ -2,6 +2,8 @@ package io.choerodon.devops.api.dto;
 
 import java.util.Date;
 
+import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
+
 /**
  * Created by n!Ck
  * Date: 2018/9/19
@@ -22,18 +24,18 @@ public class CommitFormRecordDTO {
     public CommitFormRecordDTO() {
     }
 
-    public CommitFormRecordDTO(Long userId, Long appId, String imgUrl,
-                               String commitContent, String userName, Date commitDate,
-                               String commitSHA, String appName,String url) {
+    public CommitFormRecordDTO(Long userId, String imgUrl,
+                               String userName,
+                               DevopsGitlabCommitDO devopsGitlabCommitDO) {
         this.userId = userId;
-        this.appId = appId;
+        this.appId = devopsGitlabCommitDO.getAppId();
         this.imgUrl = imgUrl;
-        this.commitContent = commitContent;
+        this.commitContent = devopsGitlabCommitDO.getCommitContent();
         this.userName = userName;
-        this.commitDate = commitDate;
-        this.commitSHA = commitSHA;
-        this.appName = appName;
-        this.url=url;
+        this.commitDate = devopsGitlabCommitDO.getCommitDate();
+        this.commitSHA = devopsGitlabCommitDO.getCommitSha();
+        this.appName = devopsGitlabCommitDO.getAppName();
+        this.url = devopsGitlabCommitDO.getUrl();
     }
 
     public Long getUserId() {

@@ -46,9 +46,9 @@ import io.choerodon.websocket.helper.EnvSession;
  */
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
-    private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
+    private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
 
     private static Gson gson = new Gson();
@@ -629,7 +629,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
         }
 
-        Collections.sort(pipelineResultVList);
         return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
 
     }

@@ -61,7 +61,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         if ("null".equals(appId[0])) {
             listStrings = null;
         } else {
-            listStrings = Arrays.stream(appId).map(e -> Long.valueOf(e)).collect(Collectors.toList());
+            listStrings = Arrays.stream(appId).map(Long::valueOf).collect(Collectors.toList());
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
         startDate = "null".equals(startDate) ? String.valueOf(System.currentTimeMillis()) : startDate;
@@ -97,7 +97,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         if ("null".equals(appIds[0])) {
             listStrings = null;
         } else {
-            listStrings = Arrays.stream(appIds).map(e -> Long.valueOf(e)).collect(Collectors.toList());
+            listStrings = Arrays.stream(appIds).map(Long::valueOf).collect(Collectors.toList());
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
         startDate = "null".equals(startDate) ? String.valueOf(System.currentTimeMillis()) : startDate;

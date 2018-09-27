@@ -60,14 +60,17 @@ public class GitOpsExplainException extends CommonException {
         this.parameters = parameters;
     }
 
+    @Override
     public Object[] getParameters() {
         return this.parameters;
     }
 
+    @Override
     public String getCode() {
         return this.code;
     }
 
+    @Override
     public String getTrace() {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         PrintStream ps = new PrintStream(baos);
@@ -76,6 +79,7 @@ public class GitOpsExplainException extends CommonException {
         return new String(baos.toByteArray());
     }
 
+    @Override
     public Map<String, Object> toMap() {
         HashMap<String, Object> map = new LinkedHashMap();
         map.put("code", this.code);
@@ -87,15 +91,10 @@ public class GitOpsExplainException extends CommonException {
         return filePath;
     }
 
-    public void setFilePath(String filePath) {
-        this.filePath = filePath;
-    }
 
     public String getErrorCode() {
         return errorCode;
     }
 
-    public void setErrorCode(String errorCode) {
-        this.errorCode = errorCode;
-    }
+
 }

@@ -1,10 +1,13 @@
 package io.choerodon.devops.domain.application.valueobject;
 
+import org.codehaus.jackson.annotate.JsonProperty;
+
 public class Error {
     private String id;
     private String path;
     private String commit;
-    private String error;
+    @JsonProperty(value = "error")
+    private String errors;
 
     public String getId() {
         return id;
@@ -22,12 +25,12 @@ public class Error {
         this.path = path;
     }
 
-    public String getError() {
-        return error;
+    public String getErrors() {
+        return errors;
     }
 
-    public void setError(String error) {
-        this.error = error;
+    public void setErrors(String errors) {
+        this.errors = errors;
     }
 
     public String getCommit() {

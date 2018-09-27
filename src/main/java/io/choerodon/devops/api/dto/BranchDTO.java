@@ -3,6 +3,8 @@ package io.choerodon.devops.api.dto;
 import java.util.Date;
 
 import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.valueobject.Issue;
 
 public class BranchDTO {
     private String branchName;
@@ -27,24 +29,23 @@ public class BranchDTO {
     /**
      * construct
      */
-    public BranchDTO(DevopsBranchE branchE, String lastCommitUrl, Date createDate,
-                     String createUserUrl, Long issueId,
-                     String issueCode, String issueName,
-                     String commitUserUrl, String typeCode,
-                     String commitUserName, String createUserName, String realName) {
+    public BranchDTO(DevopsBranchE branchE, String lastCommitUrl,
+                     String createUserUrl,
+                     Issue issue,
+                     UserE commitUserE, String createUserName, String realName) {
         this.branchName = branchE.getBranchName();
         this.sha = branchE.getLastCommit();
         this.commitContent = branchE.getLastCommitMsg();
-        this.commitUserUrl = commitUserUrl;
-        this.creationDate = createDate;
+        this.commitUserUrl = commitUserE.getImageUrl();
+        this.creationDate = branchE.getCreationDate();
         this.commitUrl = lastCommitUrl;
-        this.issueId = issueId;
-        this.issueCode = issueCode;
-        this.issueName = issueName;
+        this.issueId = branchE.getIssueId();
+        this.issueCode = issue == null ? null : issue.getIssueNum();
+        this.issueName = issue == null ? null : issue.getSummary();
         this.commitDate = branchE.getLastCommitDate();
         this.createUserUrl = createUserUrl;
-        this.typeCode = typeCode;
-        this.commitUserName = commitUserName;
+        this.typeCode = issue == null ? null : issue.getTypeCode();
+        this.commitUserName = commitUserE.getRealName();
         this.createUserName = createUserName;
         this.createUserRealName = realName;
     }

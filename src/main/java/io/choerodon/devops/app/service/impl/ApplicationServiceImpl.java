@@ -166,39 +166,41 @@ public class ApplicationServiceImpl implements ApplicationService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationES.getContent().parallelStream()
-                .forEach(t ->
-                        getSonarUrl(projectE, organization, urlSlash, t)
+                .forEach(t -> {
+                            if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
+                                t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
+                                        + organization.getCode() + "-" + projectE.getCode() + "/"
+                                        + t.getCode() + ".git");
+                                getSonarUrl(projectE, organization, t);
+                            }
+                        }
                 );
+
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
 
-    private void getSonarUrl(ProjectE projectE, Organization organization, String urlSlash, ApplicationE t) {
-        if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
-            t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                    + organization.getCode() + "-" + projectE.getCode() + "/"
-                    + t.getCode() + ".git");
-            if (!sonarqubeUrl.equals("")) {
-                Integer result;
-                try {
-                    result = HttpClientUtil.getSonar(
-                            sonarqubeUrl.endsWith("/")
-                                    ? sonarqubeUrl
-                                    : String.format(
-                                    "%s/api/project_links/search?projectKey=%s-%s:%s",
-                                    sonarqubeUrl,
-                                    organization.getCode(),
-                                    projectE.getCode(),
-                                    t.getCode()
-                            ));
-                    if (result.equals(HttpStatus.OK.value())) {
-                        t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
-                                + "dashboard?id="
-                                + organization.getCode() + "-" + projectE.getCode() + ":"
-                                + t.getCode());
-                    }
-                } catch (Exception e) {
-                    t.initSonarUrl(null);
+    private void getSonarUrl(ProjectE projectE, Organization organization, ApplicationE t) {
+        if (!sonarqubeUrl.equals("")) {
+            Integer result;
+            try {
+                result = HttpClientUtil.getSonar(
+                        sonarqubeUrl.endsWith("/")
+                                ? sonarqubeUrl
+                                : String.format(
+                                "%s/api/project_links/search?projectKey=%s-%s:%s",
+                                sonarqubeUrl,
+                                organization.getCode(),
+                                projectE.getCode(),
+                                t.getCode()
+                        ));
+                if (result.equals(HttpStatus.OK.value())) {
+                    t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
+                            + "dashboard?id="
+                            + organization.getCode() + "-" + projectE.getCode() + ":"
+                            + t.getCode());
                 }
+            } catch (Exception e) {
+                t.initSonarUrl(null);
             }
         }
     }
@@ -209,7 +211,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        applicationES.forEach(t -> getSonarUrl(projectE, organization, urlSlash, t)
+        applicationES.forEach(t -> {
+                    if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
+                        t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
+                                + organization.getCode() + "-" + projectE.getCode() + "/"
+                                + t.getCode() + ".git");
+                        getSonarUrl(projectE, organization, t);
+                    }
+                }
         );
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
@@ -267,66 +276,29 @@ public class ApplicationServiceImpl implements ApplicationService {
             //拉取模板
             String repoUrl = applicationTemplateE.getRepoUrl();
             String type = applicationTemplateE.getCode();
-            boolean teamplateType = true;
             if (applicationTemplateE.getOrganization().getId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
                 type = MASTER;
-                teamplateType = false;
             }
             Git git = gitUtil.clone(applicationDir, type,
                     repoUrl);
             //渲染模板里面的参数
-            try {
-                File file = new File(gitUtil.getWorkingDirectory(applicationDir));
-                Map<String, String> params = new HashMap<>();
-                params.put("{{group.name}}", organization.getCode() + "-" + projectE.getCode());
-                params.put("{{service.code}}", applicationE.getCode());
-                FileUtil.replaceReturnFile(file, params);
-            } catch (Exception e) {
-                //删除模板
-                gitUtil.deleteWorkingDirectory(applicationDir);
-                throw new CommonException(e.getMessage());
-            }
+            replaceParams(applicationE, projectE, organization, applicationDir);
 
-            List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
-                    applicationDir, gitlabProjectPayload.getUserId());
-            String accessToken;
-            if (tokens.isEmpty()) {
-                accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
-                        applicationDir, gitlabProjectPayload.getUserId());
-            } else {
-                accessToken = tokens.get(tokens.size() - 1);
-            }
+            String accessToken = getToken(gitlabProjectPayload, applicationDir);
+
             repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             applicationE.initGitlabProjectEByUrl(repoUrl
                     + organization.getCode() + "-" + projectE.getCode() + "/"
                     + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
             gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
-                    gitlabUserE.getUsername(), accessToken, teamplateType);
+                    gitlabUserE.getUsername(), accessToken);
             gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
                     AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
-            CommitE commitE;
-            try {
-                commitE = devopsGitRepository.getCommit(
-                        gitlabProjectPayload.getGitlabProjectId(), MASTER, gitlabProjectPayload.getUserId());
-            } catch (Exception e) {
-                commitE = new CommitE();
-            }
-            DevopsBranchE devopsBranchE = new DevopsBranchE();
-            devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
-            devopsBranchE.setApplicationE(applicationE);
-            devopsBranchE.setBranchName(MASTER);
-            devopsBranchE.setCheckoutCommit(commitE.getId());
-            Date date = DateUtil.changeTimeZone(
-                    commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
-            devopsBranchE.setCheckoutDate(date);
-            devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
-            devopsBranchE.setLastCommitMsg(commitE.getMessage());
-            devopsBranchE.setLastCommitDate(date);
-            devopsBranchE.setLastCommit(commitE.getId());
-            devopsGitRepository.createDevopsBranch(devopsBranchE);
+
+            initMasterBranch(gitlabProjectPayload, applicationE);
         }
         try {
             String token = GenerateUUID.generateUUID();
@@ -351,8 +323,58 @@ public class ApplicationServiceImpl implements ApplicationService {
                 throw new CommonException("error.application.update");
             }
         } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+    private void initMasterBranch(GitlabProjectPayload gitlabProjectPayload, ApplicationE applicationE) {
+        CommitE commitE;
+        try {
+            commitE = devopsGitRepository.getCommit(
+                    gitlabProjectPayload.getGitlabProjectId(), MASTER, gitlabProjectPayload.getUserId());
+        } catch (Exception e) {
+            commitE = new CommitE();
+        }
+        DevopsBranchE devopsBranchE = new DevopsBranchE();
+        devopsBranchE.setUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+        devopsBranchE.setApplicationE(applicationE);
+        devopsBranchE.setBranchName(MASTER);
+        devopsBranchE.setCheckoutCommit(commitE.getId());
+        Date date = DateUtil.changeTimeZone(
+                commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
+        devopsBranchE.setCheckoutDate(date);
+        devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+        devopsBranchE.setLastCommitMsg(commitE.getMessage());
+        devopsBranchE.setLastCommitDate(date);
+        devopsBranchE.setLastCommit(commitE.getId());
+        devopsGitRepository.createDevopsBranch(devopsBranchE);
+    }
+
+    private void replaceParams(ApplicationE applicationE, ProjectE projectE, Organization organization, String applicationDir) {
+        try {
+            File file = new File(gitUtil.getWorkingDirectory(applicationDir));
+            Map<String, String> params = new HashMap<>();
+            params.put("{{group.name}}", organization.getCode() + "-" + projectE.getCode());
+            params.put("{{service.code}}", applicationE.getCode());
+            FileUtil.replaceReturnFile(file, params);
+        } catch (Exception e) {
+            //删除模板
+            gitUtil.deleteWorkingDirectory(applicationDir);
             throw new CommonException(e.getMessage());
         }
+    }
+
+    private String getToken(GitlabProjectPayload gitlabProjectPayload, String applicationDir) {
+        List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
+                applicationDir, gitlabProjectPayload.getUserId());
+        String accessToken;
+        if (tokens.isEmpty()) {
+            accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
+                    applicationDir, gitlabProjectPayload.getUserId());
+        } else {
+            accessToken = tokens.get(tokens.size() - 1);
+        }
+        return accessToken;
     }
 
     @Override

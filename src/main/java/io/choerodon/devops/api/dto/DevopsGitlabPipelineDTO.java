@@ -16,8 +16,8 @@ public class DevopsGitlabPipelineDTO {
     private String gitlabUrl;
     private String ref;
     private String commit;
-    private String CommitUserUrl;
-    private String CommitUserName;
+    private String commitUserUrl;
+    private String commitUserName;
     private String commitContent;
     private Boolean latest;
     private String pipelineTime;
@@ -73,13 +73,6 @@ public class DevopsGitlabPipelineDTO {
         this.commit = commit;
     }
 
-    public String getCommitUserUrl() {
-        return CommitUserUrl;
-    }
-
-    public void setCommitUserUrl(String commitUserUrl) {
-        CommitUserUrl = commitUserUrl;
-    }
 
     public String getCommitContent() {
         return commitContent;
@@ -145,11 +138,19 @@ public class DevopsGitlabPipelineDTO {
         this.pipelineUserName = pipelineUserName;
     }
 
+    public String getCommitUserUrl() {
+        return commitUserUrl;
+    }
+
+    public void setCommitUserUrl(String commitUserUrl) {
+        this.commitUserUrl = commitUserUrl;
+    }
+
     public String getCommitUserName() {
-        return CommitUserName;
+        return commitUserName;
     }
 
     public void setCommitUserName(String commitUserName) {
-        CommitUserName = commitUserName;
+        this.commitUserName = commitUserName;
     }
 }

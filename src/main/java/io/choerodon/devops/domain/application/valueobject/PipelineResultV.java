@@ -5,7 +5,7 @@ import java.util.List;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 
 
-public class PipelineResultV implements Comparable<PipelineResultV> {
+public class PipelineResultV {
 
     private Long id;
     private String status;
@@ -143,15 +143,5 @@ public class PipelineResultV implements Comparable<PipelineResultV> {
         this.jobs = jobs;
     }
 
-    @Override
-    public int compareTo(PipelineResultV o) {
-        if (id < o.getId()) {
-            return 1;
-        }
-        if (id > o.getId()) {
-            return -1;
-        }
-        return 0;
-    }
 }
 

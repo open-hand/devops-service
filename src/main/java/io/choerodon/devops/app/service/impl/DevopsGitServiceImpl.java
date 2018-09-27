@@ -257,12 +257,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
 
-    private BranchDTO getBranchDTO(DevopsBranchE t, String lastCommitUrl, UserE commitUserE, UserE userE,
+    private BranchDTO getBranchDTO(DevopsBranchE devopsBranchE, String lastCommitUrl, UserE commitUserE, UserE userE,
                                    Issue issue) {
         String createUserUrl = null;
         String createUserName = null;
         String createUserRealName = null;
-        Long issueId = t.getIssueId();
         if (userE != null) {
             createUserName = userE.getLoginName();
             createUserUrl = userE.getImageUrl();
@@ -272,16 +271,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             commitUserE = new UserE();
         }
         return new BranchDTO(
-                t,
+                devopsBranchE,
                 lastCommitUrl,
-                t.getCreationDate(),
                 createUserUrl,
-                issueId,
-                issue == null ? null : issue.getIssueNum(),
-                issue == null ? null : issue.getSummary(),
-                commitUserE.getImageUrl(),
-                issue == null ? null : issue.getTypeCode(),
-                commitUserE.getLoginName(),
+                issue,
+                commitUserE,
                 createUserName,
                 createUserRealName);
     }
@@ -426,27 +420,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handlerIngressRelationsService.handlerRelations(objectPath, beforeSyncFileResource, v1beta1Ingresses, envId, projectId, path);
             handlerC7nCertificationRelationsService.handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, envId, projectId, path);
 
-            //新增解释文件记录
-            for (String filePath : operationFiles) {
-                DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), filePath);
-                if (devopsEnvFileE == null) {
-                    devopsEnvFileE = new DevopsEnvFileE();
-                    devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                    devopsEnvFileE.setFilePath(filePath);
-                    devopsEnvFileE.setEnvId(devopsEnvCommitE.getEnvId());
-                    devopsEnvFileRepository.create(devopsEnvFileE);
-                } else {
-                    devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
-                    devopsEnvFileRepository.update(devopsEnvFileE);
-                }
-            }
+            //处理文件
+            handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
 
-            for (String filePath : deletedFiles) {
-                DevopsEnvFileE devopsEnvFileE = new DevopsEnvFileE();
-                devopsEnvFileE.setEnvId(devopsEnvironmentE.getId());
-                devopsEnvFileE.setFilePath(filePath);
-                devopsEnvFileRepository.delete(devopsEnvFileE);
-            }
+
             //删除tag
             handleTag(pushWebHookDTO, gitLabProjectId, gitLabUserId, devopsEnvCommitE, tagNotExist);
 
@@ -483,6 +460,30 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
         devopsEnvFileErrorRepository.delete(devopsEnvFileErrorE);
         // do sth to files
+    }
+
+    private void handleFiles(List<String> operationFiles, List<String> deletedFiles, DevopsEnvironmentE devopsEnvironmentE, DevopsEnvCommitE devopsEnvCommitE, String path) {
+        //新增解释文件记录
+        for (String filePath : operationFiles) {
+            DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), filePath);
+            if (devopsEnvFileE == null) {
+                devopsEnvFileE = new DevopsEnvFileE();
+                devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                devopsEnvFileE.setFilePath(filePath);
+                devopsEnvFileE.setEnvId(devopsEnvCommitE.getEnvId());
+                devopsEnvFileRepository.create(devopsEnvFileE);
+            } else {
+                devopsEnvFileE.setDevopsCommit(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
+                devopsEnvFileRepository.update(devopsEnvFileE);
+            }
+        }
+
+        for (String filePath : deletedFiles) {
+            DevopsEnvFileE devopsEnvFileE = new DevopsEnvFileE();
+            devopsEnvFileE.setEnvId(devopsEnvironmentE.getId());
+            devopsEnvFileE.setFilePath(filePath);
+            devopsEnvFileRepository.delete(devopsEnvFileE);
+        }
     }
 
     private void handleTag(PushWebHookDTO pushWebHookDTO, Integer gitLabProjectId, Integer gitLabUserId, DevopsEnvCommitE devopsEnvCommitE, Boolean tagNotExist) {

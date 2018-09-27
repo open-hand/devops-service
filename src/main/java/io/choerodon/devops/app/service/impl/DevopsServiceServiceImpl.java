@@ -383,7 +383,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             objectOperation.operationEnvGitlabFile(
                     "release-" + devopsServiceE.getName(),
                     projectId,
-                    "delete",
+                    DELETE,
                     userAttrE.getGitlabUserId(),
                     devopsServiceE.getId(), SERVICE, devopsEnvironmentE.getId(), path);
         }
@@ -564,7 +564,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理文件
         ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
         objectOperation.setType(service);
-        objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? "create" : "update",
+        objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
                 userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, devopsServiceE.getEnvId(), path);
 
         //操作文件成功后进行Service的数据库操作

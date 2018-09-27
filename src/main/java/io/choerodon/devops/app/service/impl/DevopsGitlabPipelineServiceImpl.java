@@ -116,9 +116,9 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByCommitId(devopsGitlabCommitE.getId());
             if (devopsGitlabPipelineE != null) {
                 List<CommitStatuseDO> commitStatuseDOS = JSONArray.parseArray(devopsGitlabPipelineE.getStage(), CommitStatuseDO.class);
-                commitStatuseDOS.parallelStream().filter(commitStatuseDO -> jobWebHookDTO.getBuildName().equals(commitStatuseDO.getName())).forEach(commitStatuseDO -> {
-                    commitStatuseDO.setStatus(jobWebHookDTO.getBuildStatus());
-                });
+                commitStatuseDOS.parallelStream().filter(commitStatuseDO -> jobWebHookDTO.getBuildName().equals(commitStatuseDO.getName())).forEach(commitStatuseDO ->
+                        commitStatuseDO.setStatus(jobWebHookDTO.getBuildStatus())
+                );
                 devopsGitlabPipelineE.setStage(JSONArray.toJSONString(commitStatuseDOS));
                 devopsGitlabPipelineRepository.update(devopsGitlabPipelineE);
             }

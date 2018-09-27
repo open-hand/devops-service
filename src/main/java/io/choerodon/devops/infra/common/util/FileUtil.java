@@ -882,7 +882,7 @@ public class FileUtil {
      */
     public static String jungeValueFormat(String value) {
         try {
-            if(value.equals("")) {
+            if (value.equals("")) {
                 return "{}";
             }
             JSONObject.parseObject(value);
@@ -1152,18 +1152,8 @@ public class FileUtil {
                                  boolean keepDirStructure) {
         byte[] buf = new byte[BUFFER_SIZE];
         if (sourceFile.isFile()) {
-            // copy文件到zip输出流中
-            int len;
-            try (FileInputStream in = new FileInputStream(sourceFile)) {
-                // 向zip输出流中添加一个zip实体，构造器中name为zip实体的文件的名字
-                zos.putNextEntry(new ZipEntry(name));
-                while ((len = in.read(buf)) != -1) {
-                    zos.write(buf, 0, len);
-                }
-                zos.closeEntry();
-            } catch (IOException e) {
-                throw new CommonException(e.getMessage());
-            }
+            isFile(sourceFile, zos, name, buf);
+
         } else {
             File[] listFiles = sourceFile.listFiles();
             if (listFiles == null || listFiles.length == 0) {
@@ -1189,6 +1179,21 @@ public class FileUtil {
                                         : file.getName(), keepDirStructure)
                 );
             }
+        }
+    }
+
+    private static void isFile(File sourceFile, ZipOutputStream zos, String name, byte[] buf) {
+        // copy文件到zip输出流中
+        int len;
+        try (FileInputStream in = new FileInputStream(sourceFile)) {
+            // 向zip输出流中添加一个zip实体，构造器中name为zip实体的文件的名字
+            zos.putNextEntry(new ZipEntry(name));
+            while ((len = in.read(buf)) != -1) {
+                zos.write(buf, 0, len);
+            }
+            zos.closeEntry();
+        } catch (IOException e) {
+            throw new CommonException(e.getMessage());
         }
     }
 
@@ -1367,10 +1372,8 @@ public class FileUtil {
         int type = KeyPair.RSA;
         String strPath = "id_rsa";
         JSch jsch = new JSch();
-        String passphrase = "";
         try {
             KeyPair kpair = KeyPair.genKeyPair(jsch, type);
-            kpair.setPassphrase(passphrase);
             kpair.writePrivateKey(strPath);
             kpair.writePublicKey(strPath + ".pub", path);
             kpair.dispose();
