@@ -30,6 +30,7 @@ import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
  */
 @Service
 public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
+    public static final String ERROR_GITLAB_GROUP_ID_SELECT = "error.gitlab.groupId.select";
     private static final String PROJECT = "project";
     private static final String TEMPLATE = "template";
     private static final String SITE = "site";
@@ -99,7 +100,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 organization.getCode() + "_" + TEMPLATE,
                                 TypeUtil.objToInteger(userId));
                         if (gitlabGroupE == null) {
-                            LOGGER.error("error.gitlab.groupId.select");
+                            LOGGER.error(ERROR_GITLAB_GROUP_ID_SELECT);
                             return;
                         }
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
@@ -159,7 +160,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 try {
                     gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
                 } catch (Exception e) {
-                    LOGGER.info("error.gitlab.groupId.select");
+                    LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                     return;
                 }
             } else {
@@ -168,7 +169,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         organization.getCode() + "_" + TEMPLATE,
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
                 if (gitlabGroupE == null) {
-                    LOGGER.info("error.gitlab.groupId.select");
+                    LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                     return;
                 }
             }
@@ -181,7 +182,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             try {
                 gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
             } catch (Exception e) {
-                LOGGER.info("error.gitlab.groupId.select");
+                LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                 return;
             }
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(

@@ -10,11 +10,11 @@ public class DiffE {
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("a_mode")
-    private String a_mode;
+    private String aMode;
 
     @JsonInclude(JsonInclude.Include.ALWAYS)
     @JsonProperty("b_mode")
-    private String b_mode;
+    private String bMode;
 
     private Boolean deletedFile;
     private String diff;
@@ -23,24 +23,20 @@ public class DiffE {
     private String oldPath;
     private Boolean renamedFile;
 
-    @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("a_mode")
-    public String getAMode() {
-        return this.a_mode;
+    public String getaMode() {
+        return aMode;
     }
 
-    public void setAMode(String aMode) {
-        this.a_mode = aMode;
+    public void setaMode(String aMode) {
+        this.aMode = aMode;
     }
 
-    @JsonInclude(JsonInclude.Include.ALWAYS)
-    @JsonProperty("b_mode")
-    public String getBMode() {
-        return this.b_mode;
+    public String getbMode() {
+        return bMode;
     }
 
-    public void setBMode(String bMode) {
-        this.b_mode = bMode;
+    public void setbMode(String bMode) {
+        this.bMode = bMode;
     }
 
     public Boolean getDeletedFile() {

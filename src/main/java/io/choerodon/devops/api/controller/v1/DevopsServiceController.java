@@ -31,6 +31,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RequestMapping(value = "/v1/projects/{project_id}/service")
 public class DevopsServiceController {
 
+    public static final String ERROR_APP_K8S_SERVICE_QUERY = "error.app.k8s.service.query";
     private DevopsServiceService devopsServiceService;
 
     public DevopsServiceController(DevopsServiceService devopsServiceService) {
@@ -146,7 +147,7 @@ public class DevopsServiceController {
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.listDevopsServiceByPage(projectId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.k8s.service.query"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }
 
     /**
@@ -189,7 +190,7 @@ public class DevopsServiceController {
             @PathVariable Long id) {
         return Optional.ofNullable(devopsServiceService.query(id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.k8s.service.query"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }
 
 
@@ -221,6 +222,6 @@ public class DevopsServiceController {
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsServiceService.listByEnv(projectId, envId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.k8s.service.query"));
+                .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
     }
 }

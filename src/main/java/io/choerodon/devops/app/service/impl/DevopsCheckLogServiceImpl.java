@@ -63,15 +63,14 @@ import io.choerodon.devops.infra.mapper.ApplicationMapper;
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
+    public static final String APP = "app: ";
     private static final Integer ADMIN = 1;
     private static final String ENV = "ENV";
-    private static final String CREATE = "create";
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String SERVICE = "service";
     private static final String SUCCESS = "success";
     private static final String FAILED = "failed: ";
     private static final String SERIAL_STRING = " serializable to yaml";
-    private static final String MASTER = "master";
     private static final String YAML_FILE = ".yaml";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
 
@@ -144,90 +143,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
 
-    private void syncEnvProject(List<CheckLog> logs) {
-        LOGGER.info("start to sync env project");
-        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
-        devopsEnvironmentES
-                .stream()
-                .filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() == null)
-                .forEach(devopsEnvironmentE -> {
-                    CheckLog checkLog = new CheckLog();
-                    try {
-                        //generate git project code
-                        checkLog.setContent("env: " + devopsEnvironmentE.getName() + " create gitops project");
-                        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-                        Organization organization = iamRepository
-                                .queryOrganizationById(projectE.getOrganization().getId());
-                        //generate rsa key
-                        List<String> sshKeys = FileUtil.getSshKey(String.format("%s/%s/%s",
-                                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
-                        devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
-                        devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-                        devopsEnvironmentRepository.update(devopsEnvironmentE);
-                        GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
-                        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectE.getId());
-                        gitlabProjectPayload.setGroupId(gitlabGroupE.getEnvGroupId());
-                        gitlabProjectPayload.setUserId(ADMIN);
-                        gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());
-                        gitlabProjectPayload.setOrganizationId(null);
-                        gitlabProjectPayload.setType(ENV);
-                        devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
-                        checkLog.setResult(SUCCESS);
-                    } catch (Exception e) {
-                        LOGGER.info("create env git project error", e);
-                        checkLog.setResult(FAILED + e.getMessage());
-                    }
-                    LOGGER.info(checkLog.toString());
-                    logs.add(checkLog);
-                });
-    }
-
-
-    private void syncObjects(List<CheckLog> logs , Long envId) {
-        List<DevopsEnvironmentE> devopsEnvironmentES;
-        if (envId != null) {
-            devopsEnvironmentES = new ArrayList<>();
-            devopsEnvironmentES.add(devopsEnvironmentRepository.queryById(envId));
-        } else {
-            devopsEnvironmentES = devopsEnvironmentRepository.list();
-        }
-        LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
-        devopsEnvironmentES.forEach(env -> {
-            GitUtil gitUtil = new GitUtil(env.getEnvIdRsa());
-            if (env.getGitlabEnvProjectId() != null) {
-                LOGGER.info("{}:{}  begin to upgrade!", env.getCode(), env.getId());
-                String filePath;
-                try {
-                     filePath = devopsEnvironmentService.handDevopsEnvGitRepository(env);
-                } catch (Exception e) {
-                    LOGGER.info("clone git  env repo error {}", e);
-                    return;
-                }
-                try (Git git = Git.open(new File(filePath))) {
-                    new SyncInstanceByEnv(logs, env, filePath, git).invoke();
-                    new SynServiceByEnv(logs, env, filePath, git).invoke();
-                    new SyncIngressByEnv(logs, env, filePath, git).invoke();
-
-                    try{
-                        if (git.tagList().call().parallelStream().map(Ref::getName).noneMatch("agent-sync"::equals)) {
-                            git.tag().setName("agent-sync").call();
-                        }
-                    } catch (Exception e) {
-                        LOGGER.warn("already have agent tag",e.getMessage());
-                    }
-                    gitUtil.gitPush(git);
-
-                    gitUtil.gitPushTag(git);
-                    LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
-                } catch (IOException e) {
-                    LOGGER.info("error.git.open: " + filePath, e);
-                } catch (GitAPIException e) {
-                    LOGGER.info("error.git.push: " + filePath, e.getMessage());
-                }
-            }
-        });
-    }
-
     private void createGitFile(String repoPath, Git git, String relativePath, String content) {
         GitUtil gitUtil = new GitUtil();
         try {
@@ -251,88 +166,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         return yaml.dump(object).replace("!<" + tag.getValue() + ">", "---");
     }
 
-    @Saga(code = "devops-upgrade-0.9",
-            description = "devops smooth upgrade to 0.9", inputSchema = "{}")
-    private void gitOpsUserAccess() {
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(" saga start");
-        }
-        sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", ""));
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info(" saga start success");
-        }
-    }
-
-    private List<V1ServicePort> getServicePort(DevopsServiceE devopsServiceE) {
-        final Integer[] serialNumber = {0};
-        List<V1ServicePort> ports;
-        if (devopsServiceE.getPorts() == null) {
-            List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES =
-                    devopsServiceInstanceRepository.queryByServiceId(devopsServiceE.getId());
-            if (!devopsServiceAppInstanceES.isEmpty()) {
-                DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                        devopsServiceAppInstanceES.get(0).getAppInstanceId(),
-                        ResourceType.SERVICE.getType(),
-                        devopsServiceE.getName());
-                DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository
-                        .query(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
-                V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
-                        V1Service.class);
-                String port = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getPort());
-                if (port == null) {
-                    port = "<none>";
-                }
-                String targetPort = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getTargetPort());
-                if (targetPort == null) {
-                    targetPort = "<none>";
-                }
-                String name = v1Service.getSpec().getPorts().get(0).getName();
-                String protocol = v1Service.getSpec().getPorts().get(0).getProtocol();
-                List<PortMapE> portMapES = new ArrayList<>();
-                PortMapE portMapE = new PortMapE();
-                portMapE.setName(name);
-                portMapE.setPort(TypeUtil.objToLong(port));
-                portMapE.setProtocol(protocol);
-                portMapE.setTargetPort(targetPort);
-                portMapES.add(portMapE);
-                ports = portMapES.parallelStream()
-                        .map(t -> {
-                            V1ServicePort v1ServicePort = new V1ServicePort();
-                            if (t.getPort() != null) {
-                                v1ServicePort.setPort(TypeUtil.objToInteger(t.getPort()));
-                            }
-                            if (t.getTargetPort() != null) {
-                                v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
-                            }
-                            v1ServicePort.setName(t.getName());
-                            v1ServicePort.setProtocol(t.getProtocol());
-                            return v1ServicePort;
-                        }).collect(Collectors.toList());
-                devopsServiceE.setPorts(portMapES);
-                devopsServiceRepository.update(devopsServiceE);
-            } else {
-                ports = null;
-            }
-        } else {
-            ports = devopsServiceE.getPorts().parallelStream()
-                    .map(t -> {
-                        V1ServicePort v1ServicePort = new V1ServicePort();
-                        if (t.getNodePort() != null) {
-                            v1ServicePort.setNodePort(t.getNodePort().intValue());
-                        }
-                        if (t.getPort() != null) {
-                            v1ServicePort.setPort(t.getPort().intValue());
-                        }
-                        if (t.getTargetPort() != null) {
-                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
-                        }
-                        v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
-                        v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
-                        return v1ServicePort;
-                    }).collect(Collectors.toList());
-        }
-        return ports;
-    }
 
     void updateWebHook(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
@@ -341,7 +174,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         applicationDO.getHookId() != null)
                 .forEach(applicationDO -> {
                     CheckLog checkLog = new CheckLog();
-                    checkLog.setContent("app: " + applicationDO.getName() + "update gitlab webhook");
+                    checkLog.setContent(APP + applicationDO.getName() + "update gitlab webhook");
                     try {
                         gitlabRepository.updateWebHook(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(applicationDO.getHookId()), ADMIN);
                         checkLog.setResult(SUCCESS);
@@ -387,6 +220,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         logs.add(checkLog);
                     });
         }
+
 
         private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE) {
             ApplicationVersionE applicationVersionE = applicationVersionRepository
@@ -489,6 +323,86 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             return service;
         }
 
+        private List<V1ServicePort> getServicePort(DevopsServiceE devopsServiceE) {
+            final Integer[] serialNumber = {0};
+            List<V1ServicePort> ports;
+            if (devopsServiceE.getPorts() == null) {
+                List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES =
+                        devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+                if (!devopsServiceAppInstanceES.isEmpty()) {
+                    DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
+                            devopsServiceAppInstanceES.get(0).getAppInstanceId(),
+                            ResourceType.SERVICE.getType(),
+                            devopsServiceE.getName());
+                    DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository
+                            .query(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
+                    ports = getV1ServicePortsWithNoPorts(devopsServiceE, devopsEnvResourceDetailE);
+                    devopsServiceRepository.update(devopsServiceE);
+                } else {
+                    ports = null;
+                }
+            } else {
+                ports = getV1ServicePortsWithPorts(devopsServiceE, serialNumber);
+            }
+            return ports;
+        }
+
+        private List<V1ServicePort> getV1ServicePortsWithPorts(DevopsServiceE devopsServiceE, Integer[] serialNumber) {
+            return devopsServiceE.getPorts().parallelStream()
+                    .map(t -> {
+                        V1ServicePort v1ServicePort = new V1ServicePort();
+                        if (t.getNodePort() != null) {
+                            v1ServicePort.setNodePort(t.getNodePort().intValue());
+                        }
+                        if (t.getPort() != null) {
+                            v1ServicePort.setPort(t.getPort().intValue());
+                        }
+                        if (t.getTargetPort() != null) {
+                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
+                        }
+                        v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
+                        v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
+                        return v1ServicePort;
+                    }).collect(Collectors.toList());
+        }
+
+        private List<V1ServicePort> getV1ServicePortsWithNoPorts(DevopsServiceE devopsServiceE, DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
+            List<V1ServicePort> ports;
+            V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
+                    V1Service.class);
+            String port = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getPort());
+            if (port == null) {
+                port = "<none>";
+            }
+            String targetPort = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getTargetPort());
+            if (targetPort == null) {
+                targetPort = "<none>";
+            }
+            String name = v1Service.getSpec().getPorts().get(0).getName();
+            String protocol = v1Service.getSpec().getPorts().get(0).getProtocol();
+            List<PortMapE> portMapES = new ArrayList<>();
+            PortMapE portMapE = new PortMapE();
+            portMapE.setName(name);
+            portMapE.setPort(TypeUtil.objToLong(port));
+            portMapE.setProtocol(protocol);
+            portMapE.setTargetPort(targetPort);
+            portMapES.add(portMapE);
+            ports = portMapES.parallelStream()
+                    .map(t -> {
+                        V1ServicePort v1ServicePort = new V1ServicePort();
+                        if (t.getPort() != null) {
+                            v1ServicePort.setPort(TypeUtil.objToInteger(t.getPort()));
+                        }
+                        if (t.getTargetPort() != null) {
+                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
+                        }
+                        v1ServicePort.setName(t.getName());
+                        v1ServicePort.setProtocol(t.getProtocol());
+                        return v1ServicePort;
+                    }).collect(Collectors.toList());
+            devopsServiceE.setPorts(portMapES);
+            return ports;
+        }
     }
 
     private class SyncIngressByEnv {
@@ -588,9 +502,94 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             devopsCheckLogRepository.create(devopsCheckLogE);
         }
 
+
+        private void syncObjects(List<CheckLog> logs, Long envId) {
+            List<DevopsEnvironmentE> devopsEnvironmentES;
+            if (envId != null) {
+                devopsEnvironmentES = new ArrayList<>();
+                devopsEnvironmentES.add(devopsEnvironmentRepository.queryById(envId));
+            } else {
+                devopsEnvironmentES = devopsEnvironmentRepository.list();
+            }
+            LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
+            devopsEnvironmentES.forEach(devopsEnvironmentE -> {
+                GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
+                if (devopsEnvironmentE.getGitlabEnvProjectId() != null) {
+                    LOGGER.info("{}:{}  begin to upgrade!", devopsEnvironmentE.getCode(), devopsEnvironmentE.getId());
+                    String filePath;
+                    try {
+                        filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+                    } catch (Exception e) {
+                        LOGGER.info("clone git  env repo error {}", e);
+                        return;
+                    }
+                    syncFiles(logs, devopsEnvironmentE, gitUtil, filePath);
+                }
+            });
+        }
+
+        private void syncEnvProject(List<CheckLog> logs) {
+            LOGGER.info("start to sync env project");
+            List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.list();
+            devopsEnvironmentES
+                    .stream()
+                    .filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() == null)
+                    .forEach(devopsEnvironmentE -> {
+                        CheckLog checkLog = new CheckLog();
+                        try {
+                            //generate git project code
+                            checkLog.setContent("env: " + devopsEnvironmentE.getName() + " create gitops project");
+                            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+                            Organization organization = iamRepository
+                                    .queryOrganizationById(projectE.getOrganization().getId());
+                            //generate rsa key
+                            List<String> sshKeys = FileUtil.getSshKey(String.format("%s/%s/%s",
+                                    organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
+                            devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
+                            devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
+                            devopsEnvironmentRepository.update(devopsEnvironmentE);
+                            GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
+                            GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectE.getId());
+                            gitlabProjectPayload.setGroupId(gitlabGroupE.getEnvGroupId());
+                            gitlabProjectPayload.setUserId(ADMIN);
+                            gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());
+                            gitlabProjectPayload.setOrganizationId(null);
+                            gitlabProjectPayload.setType(ENV);
+                            devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
+                            checkLog.setResult(SUCCESS);
+                        } catch (Exception e) {
+                            LOGGER.info("create env git project error", e);
+                            checkLog.setResult(FAILED + e.getMessage());
+                        }
+                        LOGGER.info(checkLog.toString());
+                        logs.add(checkLog);
+                    });
+        }
+
+        private void syncFiles(List<CheckLog> logs, DevopsEnvironmentE env, GitUtil gitUtil, String filePath) {
+            try (Git git = Git.open(new File(filePath))) {
+                new SyncInstanceByEnv(logs, env, filePath, git).invoke();
+                new SynServiceByEnv(logs, env, filePath, git).invoke();
+                new SyncIngressByEnv(logs, env, filePath, git).invoke();
+
+                if (git.tagList().call().parallelStream().map(Ref::getName).noneMatch("agent-sync"::equals)) {
+                    git.tag().setName("agent-sync").call();
+                }
+
+                gitUtil.gitPush(git);
+
+                gitUtil.gitPushTag(git);
+                LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
+            } catch (IOException e) {
+                LOGGER.info("error.git.open: " + filePath, e);
+            } catch (GitAPIException e) {
+                LOGGER.info("error.git.push: {},{}", filePath, e.getMessage());
+            }
+        }
+
         private void syncWebHook(ApplicationDO applicationDO, List<CheckLog> logs) {
             CheckLog checkLog = new CheckLog();
-            checkLog.setContent("app: " + applicationDO.getName() + " create gitlab webhook");
+            checkLog.setContent(APP + applicationDO.getName() + " create gitlab webhook");
             try {
                 ProjectHook projectHook = ProjectHook.allHook();
                 projectHook.setEnableSslVerification(true);
@@ -611,7 +610,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncBranches(ApplicationDO applicationDO, List<CheckLog> logs) {
             CheckLog checkLog = new CheckLog();
-            checkLog.setContent("app: " + applicationDO.getName() + " sync branches");
+            checkLog.setContent(APP + applicationDO.getName() + " sync branches");
             try {
                 Optional<List<BranchDO>> branchDOS = Optional.ofNullable(
                         gitlabServiceClient.listBranches(applicationDO.getGitlabProjectId(), ADMIN).getBody());
@@ -638,6 +637,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 checkLog.setResult(FAILED + e.getMessage());
             }
             logs.add(checkLog);
+        }
+
+
+        @Saga(code = "devops-upgrade-0.9",
+                description = "devops smooth upgrade to 0.9", inputSchema = "{}")
+        private void gitOpsUserAccess() {
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(" saga start");
+            }
+            sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", ""));
+            if (LOGGER.isInfoEnabled()) {
+                LOGGER.info(" saga start success");
+            }
         }
 
         private void syncNonEnvGroupProject(List<CheckLog> logs) {

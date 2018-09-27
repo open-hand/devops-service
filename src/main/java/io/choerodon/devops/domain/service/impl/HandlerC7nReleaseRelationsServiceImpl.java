@@ -164,9 +164,6 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                     envId,
                                     filePath,
                                     "create");
-                            if (applicationDeployDTO == null) {
-                                return;
-                            }
                             applicationInstanceDTO = applicationInstanceService.createOrUpdateByGitOps(applicationDeployDTO);
                         } else {
                             applicationInstanceDTO.setId(applicationInstanceE.getId());

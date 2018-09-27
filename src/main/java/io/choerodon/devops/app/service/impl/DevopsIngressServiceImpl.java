@@ -157,7 +157,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
         //初始化V1beta1Ingress对象
-        Long certId = devopsIngressDTO.getCertId();
         String certName = devopsIngressDTO.getCertName();
         V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
 
@@ -276,7 +275,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             objectOperation.operationEnvGitlabFile(
                     null,
                     projectId,
-                    "delete",
+                    DELETE,
                     userAttrE.getGitlabUserId(),
                     ingressDO.getId(), INGRESS, devopsEnvironmentE.getId(), path);
         }
@@ -394,7 +393,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE) {
         ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
         objectOperation.setType(ingress);
-        objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? "create" : "update",
+        objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
                 userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, devopsIngressDO.getEnvId(), path);
         //文件操作成功后才创建或更新数据,避免文件数据不一致
         if (isCreate) {

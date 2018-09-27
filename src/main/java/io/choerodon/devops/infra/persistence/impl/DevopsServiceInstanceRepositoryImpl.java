@@ -60,11 +60,4 @@ public class DevopsServiceInstanceRepositoryImpl implements DevopsServiceInstanc
     public void deleteById(Long id) {
         devopsServiceAppInstanceMapper.deleteByPrimaryKey(id);
     }
-
-    @Override
-    public List<DevopsServiceAppInstanceE> queryByServiceId(Long serviceId) {
-        DevopsServiceAppInstanceDO devopsServiceAppInstanceDO = new DevopsServiceAppInstanceDO();
-        devopsServiceAppInstanceDO.setServiceId(serviceId);
-        return ConvertHelper.convertList(devopsServiceAppInstanceMapper.select(devopsServiceAppInstanceDO),DevopsServiceAppInstanceE.class);
-    }
 }

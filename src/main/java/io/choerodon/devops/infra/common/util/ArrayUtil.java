@@ -9,7 +9,8 @@ import java.util.Map;
  * @Date: Create in 11:55 2018/9/26
  */
 public class ArrayUtil {
-    public ArrayUtil() {
+
+    private ArrayUtil() {
     }
 
     //判断集合是否为空

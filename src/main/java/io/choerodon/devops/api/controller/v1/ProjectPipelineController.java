@@ -7,16 +7,15 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.devops.api.dto.ProjectPipelineResultTotalDTO;
 import io.choerodon.devops.app.service.ProjectPipelineService;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -32,29 +31,6 @@ public class ProjectPipelineController {
 
     public ProjectPipelineController(ProjectPipelineService projectPipelineService) {
         this.projectPipelineService = projectPipelineService;
-    }
-
-    /**
-     * 查询应用下的Pipeline信息
-     *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @return ProjectPipelineResultTotalDTO
-     */
-    @Permission(roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询应用下的Pipeline信息")
-    @CustomPageRequest
-    @GetMapping(value = "/applications/{appId}/pipelines")
-    public ResponseEntity<ProjectPipelineResultTotalDTO> list(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用ID", required = true)
-            @PathVariable Long appId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(projectPipelineService.listPipelines(projectId, appId, pageRequest))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.query"));
     }
 
     /**

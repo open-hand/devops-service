@@ -199,19 +199,15 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             //拉取模板
             String repoUrl = templateRepDTO.getRepoUrl();
             String type = templateRepDTO.getCode();
-            boolean teamplateType = true;
             if (templateRepDTO.getOrganizationId() != null) {
                 repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
                 type = MASTER;
-                teamplateType = false;
             }
             Git git = gitUtil.clone(applicationDir, type, repoUrl);
-            List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
-                    applicationDir, gitlabProjectPayload.getUserId());
-            String accessToken;
-            accessToken = tokens.isEmpty() ? gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
-                    applicationDir, gitlabProjectPayload.getUserId()) : tokens.get(tokens.size() - 1);
+
+            String accessToken = getToken(gitlabProjectPayload, applicationDir);
+
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
             repoUrl = applicationTemplateE.getRepoUrl();
             repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
@@ -220,13 +216,21 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                     applicationDir,
                     !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl,
                     gitlabUserE.getUsername(),
-                    accessToken,
-                    teamplateType);
+                    accessToken);
         } else {
             gitlabRepository.createFile(gitlabProjectPayload.getGitlabProjectId(),
                     README, README_CONTENT, "ADD README",
                     gitlabProjectPayload.getUserId());
         }
+    }
+
+    private String getToken(GitlabProjectPayload gitlabProjectPayload, String applicationDir) {
+        List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
+                applicationDir, gitlabProjectPayload.getUserId());
+        String accessToken;
+        accessToken = tokens.isEmpty() ? gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
+                applicationDir, gitlabProjectPayload.getUserId()) : tokens.get(tokens.size() - 1);
+        return accessToken;
     }
 
     @Override
