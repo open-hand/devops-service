@@ -11,6 +11,7 @@ image:
 preJob:
   preConfig:
     enable: true
+    timeout: 300
     configFile: application.yml
     mysql:
       host: 192.168.12.175
@@ -20,6 +21,7 @@ preJob:
       password: choerodon
   preInitDB:
     enable: true
+    timeout: 300
     mysql:
       host: 192.168.12.175
       port: 3306
