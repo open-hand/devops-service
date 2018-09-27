@@ -265,7 +265,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqDTO.getAppId() != null) {
+        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
             if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
@@ -276,15 +276,13 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
                                 .collect(Collectors.toList()));
             }
-        } else {
+        }
+        if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
             isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
         }
-        if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+        return !isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
                 .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
-                && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
-            return true;
-        }
-        return false;
+                && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE);
     }
 
     private Boolean isUpdateExternalIp(DevopsServiceReqDTO devopsServiceReqDTO, DevopsServiceE devopsServiceE) {

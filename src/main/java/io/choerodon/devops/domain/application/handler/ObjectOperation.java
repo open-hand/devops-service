@@ -17,6 +17,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -27,6 +28,7 @@ public class ObjectOperation<T> {
     private static final String C7NTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nHelmRelease";
     private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
     private static final String SVCTAG = "!!io.kubernetes.client.models.V1Service";
+    private static final String CERTTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nCertification";
     private T type;
 
     public T getType() {
@@ -94,6 +96,9 @@ public class ObjectOperation<T> {
                     case "Service":
                         handleService((V1Service) t, objectType, operationType, resultBuilder, jsonObject);
                         break;
+                    case "C7nCertification":
+                        handleC7nCertification((C7nCertification)t, objectType,operationType,resultBuilder,jsonObject);
+                        break;
                     default:
                         break;
                 }
@@ -144,5 +149,20 @@ public class ObjectOperation<T> {
         }
         Tag tag1 = new Tag(C7NTAG);
         resultBuilder.append("\n").append(getYamlObject(tag1).dump(c7nHelmRelease).replace(C7NTAG, "---"));
+    }
+
+
+    private void handleC7nCertification(C7nCertification t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+        Yaml yaml4 = new Yaml();
+        C7nCertification c7nCertification = yaml4.loadAs(jsonObject.toJSONString(), C7nCertification.class);
+        if (objectType.equals("C7nCertification") && c7nCertification.getMetadata().getName().equals(t.getMetadata().getName())) {
+            if (operationType.equals(UPDATE)) {
+                c7nCertification = t;
+            } else {
+                return;
+            }
+        }
+        Tag tag1 = new Tag(CERTTAG);
+        resultBuilder.append("\n").append(getYamlObject(tag1).dump(c7nCertification).replace(CERTTAG, "---"));
     }
 }

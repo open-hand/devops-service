@@ -250,7 +250,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqDTO.getAppId() != null) {
+        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
             if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
@@ -261,7 +261,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                 .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
                                 .collect(Collectors.toList()));
             }
-        } else {
+        }
+        if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
             isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
         }
         if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
