@@ -31,11 +31,9 @@
         AND dgc.app_id = da.id
         AND dp.id = #{projectId}
         AND da.project_id = dp.id
-        <if test="startDate != null">
-            <if test="endDate != null">
-                AND Date(dgc.commit_date) &gt;= #{startDate}
-                AND Date(dgc.commit_date) &lt;= #{endDate}
-            </if>
-        </if>
+        AND Date(dgc.commit_date) &gt;= #{startDate}
+        AND Date(dgc.commit_date) &lt;= #{endDate}
     </select>
 </mapper>
+
+        <!--CURDATE()-->
