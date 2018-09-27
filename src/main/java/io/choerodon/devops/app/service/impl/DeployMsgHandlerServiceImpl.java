@@ -1322,7 +1322,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         if (command.getCommit().equals(command1.getCommit())) {
                             devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                             updateResourceStatus(envId, devopsEnvCommandE, InstanceStatus.RUNNING, ServiceStatus.RUNNING, IngressStatus.RUNNING, CertificationStatus.ACTIVE);
-
                         } else {
                             devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
                             updateResourceStatus(envId, devopsEnvCommandE, InstanceStatus.FAILED, ServiceStatus.FAILED, IngressStatus.FAILED, CertificationStatus.FAILED);

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import io.kubernetes.client.models.V1Service;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
 
     public static final String SERVICE = "Service";
     private static final String GIT_SUFFIX = "/.git";
+    private Gson gson = new Gson();
+
 
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
@@ -258,21 +261,28 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
 
     private Boolean checkIsNotChange(DevopsServiceE devopsServiceE, DevopsServiceReqDTO devopsServiceReqDTO) {
         List<PortMapE> oldPort = devopsServiceE.getPorts();
-        if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
-            //查询网络对应的实例
-            List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
-                    devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-            Boolean isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
-                    .sorted().collect(Collectors.toList())
-                    .equals(devopsServiceInstanceEList.stream()
-                            .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
-                            .collect(Collectors.toList()));
-
-            if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
-                    .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
-                    && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
-                return true;
+        //查询网络对应的实例
+        List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
+                devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+        Boolean isUpdate = false;
+        if (devopsServiceReqDTO.getAppId() != null) {
+            if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
+                checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
+            if (devopsServiceReqDTO.getAppInstance() != null) {
+                isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
+                        .sorted().collect(Collectors.toList())
+                        .equals(devopsServiceInstanceEList.stream()
+                                .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
+                                .collect(Collectors.toList()));
+            }
+        } else {
+            isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
+        }
+        if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+                .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
+                && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
+            return true;
         }
         return false;
     }
@@ -295,5 +305,12 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         devopsEnvCommandE.setObject(ObjectType.SERVICE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandRepository.create(devopsEnvCommandE);
+    }
+
+
+    private void checkOptions(Long envId, Long appId, Long appInstanceId) {
+        if (applicationInstanceRepository.checkOptions(envId, appId, appInstanceId) == 0) {
+            throw new CommonException("error.instances.query");
+        }
     }
 }

@@ -121,7 +121,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return ConvertPageHelper.convertPage(devopsServiceByPage, DevopsServiceDTO.class);
     }
 
-
     @Override
     public List<DevopsServiceDTO> listDevopsService(Long envId) {
         return ConvertHelper.convertList(
@@ -133,7 +132,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return ConvertHelper.convert(devopsServiceRepository.selectById(id), DevopsServiceDTO.class);
     }
 
-
     @Override
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
         //校验环境是否链接
@@ -144,7 +142,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理创建service对象数据
         DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
-        //s
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
 
         //初始化V1Service对象
@@ -156,7 +153,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         operateEnvGitLabFile(v1Service, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
         return true;
     }
-
 
     @Override
     public Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId) {
@@ -186,7 +182,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         });
         return true;
     }
-
 
     private DevopsServiceE handlerCreateService(DevopsServiceReqDTO devopsServiceReqDTO, Long projectId, List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES, List<Long> beforeDevopsServiceAppInstanceES) {
 
@@ -251,11 +246,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //验证网络是否需要更新
         List<PortMapE> oldPort = devopsServiceE.getPorts();
-        if (devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
-            //查询网络对应的实例
-            List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
-                    devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-            Boolean isUpdate = false;
+        //查询网络对应的实例
+        List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
+                devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+        Boolean isUpdate = false;
+        if (devopsServiceReqDTO.getAppId() != null) {
+            if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
+                checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
+            }
             if (devopsServiceReqDTO.getAppInstance() != null) {
                 isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
                         .sorted().collect(Collectors.toList())
@@ -263,19 +261,20 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                 .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
                                 .collect(Collectors.toList()));
             }
-            if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
-                    .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
-                    && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
-                return null;
-            }
         } else {
-            checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
+            isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
         }
+        if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+                .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
+                && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
+            return null;
+        }
+
 
         //初始化DevopsService对象
         return initDevopsService(devopsServiceE, devopsServiceReqDTO, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
-
     }
+
 
     @Override
     public Boolean updateDevopsService(Long projectId, Long id,

@@ -132,4 +132,13 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     public void initMockService(GitlabServiceClient gitlabServiceClient) {
         this.gitlabServiceClient = gitlabServiceClient;
     }
+
+    @Override
+    public List<CommitDO> listCommits(Integer projectId, String ref, Integer userId) {
+        try {
+            return gitlabServiceClient.listCommits(projectId, ref, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
 }

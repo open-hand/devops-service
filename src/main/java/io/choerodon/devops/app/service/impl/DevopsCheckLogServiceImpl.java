@@ -2,6 +2,8 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -10,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.DefaultThreadFactory;
@@ -32,13 +35,16 @@ import org.yaml.snakeyaml.nodes.Tag;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.*;
@@ -56,6 +62,8 @@ import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -128,6 +136,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvResourceRepository devopsEnvResourceRepository;
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository;
+    @Autowired
+    private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+    @Autowired
+    private DevopsGitlabPipelineRepository devopsGitlabPipelineRepository;
 
     @Override
     public void checkLog(String version) {
@@ -184,6 +198,84 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     logs.add(checkLog);
                 });
     }
+
+    void syncCommit(List<CheckLog> logs) {
+        List<ApplicationDO> applications = applicationMapper.selectAll();
+        applications.parallelStream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
+                .forEach(applicationDO -> {
+                    CheckLog checkLog = new CheckLog();
+                    checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
+                    List<BranchE> branches = gitlabProjectRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN);
+                    branches.forEach(branchE -> {
+                        List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), branchE.getName(), ADMIN);
+                        commitDOS.parallelStream().forEach(commitDO -> {
+                            try {
+                                DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
+                                devopsGitlabCommitE.setAppId(applicationDO.getId());
+                                devopsGitlabCommitE.setCommitContent(commitDO.getMessage());
+                                devopsGitlabCommitE.setCommitSha(commitDO.getId());
+                                devopsGitlabCommitE.setUrl(commitDO.getUrl());
+                                if ("root".equals(commitDO.getAuthorName())) {
+                                    devopsGitlabCommitE.setUserId(1L);
+                                } else {
+                                    UserE userE = iamRepository.queryByEmail(applicationDO.getProjectId(),
+                                            commitDO.getAuthorEmail());
+                                    if (userE != null) {
+                                        devopsGitlabCommitE.setUserId(userE.getId());
+                                    }
+                                }
+                                devopsGitlabCommitE.setCommitDate(commitDO.getCommittedDate());
+                                devopsGitlabCommitRepository.create(devopsGitlabCommitE);
+                            } catch (Exception e) {
+                                checkLog.setResult(FAILED + e.getMessage());
+                            }
+                        });
+                    });
+                    logs.add(checkLog);
+
+                });
+    }
+
+
+    void syncPipelines(List<CheckLog> logs) {
+        List<ApplicationDO> applications = applicationMapper.selectAll();
+        applications.parallelStream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
+                .forEach(applicationDO -> {
+                    List<GitlabPipelineE> pipelineDOS = gitlabProjectRepository.listPipeline(applicationDO.getGitlabProjectId(), ADMIN);
+                    pipelineDOS.parallelStream().forEach(pipelineE -> {
+                        GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), pipelineE.getId(), ADMIN);
+                        CheckLog checkLog = new CheckLog();
+                        checkLog.setContent(APP + applicationDO.getName() + "sync gitlab pipeline");
+                        try {
+                            DevopsGitlabPipelineE devopsGitlabPipelineE = new DevopsGitlabPipelineE();
+                            devopsGitlabPipelineE.setAppId(applicationDO.getId());
+                            Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser().getId()));
+                            devopsGitlabPipelineE.setPipelineCreateUserId(userId == null ? null : userId);
+                            devopsGitlabPipelineE.setPipelineId(TypeUtil.objToLong(gitlabPipelineE.getId()));
+                            devopsGitlabPipelineE.setStatus(gitlabPipelineE.getStatus().toString());
+                            try {
+                                devopsGitlabPipelineE.setPipelineCreationDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(gitlabPipelineE.getCreatedAt()));
+                            } catch (ParseException e) {
+                                throw new CommonException(e);
+                            }
+                            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(gitlabPipelineE.getSha());
+                            if (devopsGitlabCommitE != null) {
+                                devopsGitlabCommitE.setRef(gitlabPipelineE.getRef());
+                                devopsGitlabCommitRepository.update(devopsGitlabCommitE);
+                                devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
+                            }
+                            List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository
+                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN);
+                            devopsGitlabPipelineE.setStage(JSONArray.toJSONString(commitStatuseDOS));
+                            devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
+                        } catch (Exception e) {
+                            checkLog.setResult(FAILED + e.getMessage());
+                        }
+                        logs.add(checkLog);
+                    });
+                });
+    }
+
 
     private class SyncInstanceByEnv {
         private List<CheckLog> logs;
@@ -493,7 +585,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncEnvProject(logs);
                 syncObjects(logs, this.env);
             } else if ("1.0".equals(version)) {
+                LOGGER.info("Start to execute upgrade task 1.0");
                 updateWebHook(logs);
+                syncCommit(logs);
+                syncPipelines(logs);
             } else {
                 LOGGER.info("version not matched");
             }

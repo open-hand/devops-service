@@ -161,6 +161,11 @@ public interface GitlabServiceClient {
                                        @RequestParam("sha") String sha,
                                        @RequestParam("userId") Integer userId);
 
+    @GetMapping(value = "/v1/projects/{projectId}/repository/commits/project")
+    ResponseEntity<List<CommitDO>> listCommits(@PathVariable("projectId") Integer projectId,
+                                               @RequestParam("ref") String ref,
+                                               @RequestParam("userId") Integer userId);
+
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
     ResponseEntity<List<CommitStatuseDO>> getCommitStatuse(@PathVariable("projectId") Integer projectId,
                                                            @RequestParam("sha") String sha,

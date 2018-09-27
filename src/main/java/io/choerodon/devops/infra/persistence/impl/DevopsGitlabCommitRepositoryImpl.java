@@ -83,4 +83,14 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
 
         return commitFormRecordDTOPagee;
     }
+
+    @Override
+    public void update(DevopsGitlabCommitE devopsGitlabCommitE) {
+        DevopsGitlabCommitDO oldDevopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabCommitE.getId());
+        DevopsGitlabCommitDO newDevopsGitlabCommitDO = ConvertHelper.convert(devopsGitlabCommitE, DevopsGitlabCommitDO.class);
+        newDevopsGitlabCommitDO.setObjectVersionNumber(oldDevopsGitlabCommitDO.getObjectVersionNumber());
+        if (devopsGitlabCommitMapper.updateByPrimaryKeySelective(newDevopsGitlabCommitDO) != 1) {
+            throw new CommonException("error.gitlab.commit.update");
+        }
+    }
 }

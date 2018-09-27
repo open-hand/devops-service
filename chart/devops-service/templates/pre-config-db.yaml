@@ -10,7 +10,7 @@ metadata:
     "helm.sh/hook-weight": "1"
 spec:
   backoffLimit: 1
-  activeDeadlineSeconds: 240
+  activeDeadlineSeconds: {{ .Values.preJob.timeout | default 300 }}
   template:
     metadata:
       name: {{ .Release.Name }}-init-db
