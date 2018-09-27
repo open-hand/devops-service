@@ -81,8 +81,6 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     private SagaClient sagaClient;
 
 
-
-
     @Override
     @Saga(code = "devops-create-gitlab-template-project",
             description = "devops create GitLab template project", inputSchema = "{}")
@@ -166,6 +164,12 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                         pageRequest, organizationId, searchParam),
                         ApplicationTemplateRepDTO.class);
         List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = applicationTemplateRepDTOPage.getContent();
+        setAppTemplateRepoUrl(applicationTemplateRepDTOList);
+        applicationTemplateRepDTOPage.setContent(applicationTemplateRepDTOList);
+        return applicationTemplateRepDTOPage;
+    }
+
+    private void setAppTemplateRepoUrl(List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList) {
         for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
             String repoUrl = applicationTemplateRepDTO.getRepoUrl();
             if (applicationTemplateRepDTO.getOrganizationId() != null) {
@@ -174,10 +178,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             }
             applicationTemplateRepDTO.setRepoUrl(repoUrl);
         }
-        applicationTemplateRepDTOPage.setContent(applicationTemplateRepDTOList);
-        return applicationTemplateRepDTOPage;
     }
-
 
     @Override
     public void operationApplicationTemplate(GitlabProjectPayload gitlabProjectPayload) {
@@ -233,14 +234,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         List<ApplicationTemplateRepDTO> applicationTemplateRepDTOList = ConvertHelper.convertList(
                 applicationTemplateRepository.list(organizationId),
                 ApplicationTemplateRepDTO.class);
-        for (ApplicationTemplateRepDTO applicationTemplateRepDTO : applicationTemplateRepDTOList) {
-            String repoUrl = applicationTemplateRepDTO.getRepoUrl();
-            if (applicationTemplateRepDTO.getOrganizationId() != null) {
-                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
-                repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
-            }
-            applicationTemplateRepDTO.setRepoUrl(repoUrl);
-        }
+        setAppTemplateRepoUrl(applicationTemplateRepDTOList);
         return applicationTemplateRepDTOList;
     }
 

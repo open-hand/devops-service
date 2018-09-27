@@ -58,7 +58,7 @@ public class ApplicationVersionController {
             @RequestParam(required = false) Long appId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(applicationVersionService.listApplicationVersion(
+        return Optional.ofNullable(applicationVersionService.listApplicationVersionInApp(
                 projectId, appId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));

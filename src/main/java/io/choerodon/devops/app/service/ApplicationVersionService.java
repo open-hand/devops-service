@@ -14,17 +14,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface ApplicationVersionService {
 
     /**
-     * 分页查询应用版本
-     *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param appId 应用Id
-     * @param searchParam 查询参数
-     * @return ApplicationVersionRepDTO
-     */
-    Page<ApplicationVersionRepDTO> listApplicationVersion(Long projectId, Long appId, PageRequest pageRequest, String searchParam);
-
-    /**
      * 创建应用版本信息
      *
      * @param token   token

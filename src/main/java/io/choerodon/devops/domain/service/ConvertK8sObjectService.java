@@ -10,8 +10,7 @@ public abstract class ConvertK8sObjectService<T> {
 
     private T t;
 
-
-    public T SerializableObject(String jsonString, String filePath, Map<String, String> objectPath) {
+    public T serializableObject(String jsonString, String filePath, Map<String, String> objectPath) {
         SerializableOperation<T> serializableOperation
                 = new SerializableOperation<>();
         serializableOperation.setT(t);

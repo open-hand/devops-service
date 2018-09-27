@@ -27,6 +27,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         this.devopsEnvFileResourceRepository = ApplicationContextHelper.getSpringFactory().getBean(DevopsEnvFileResourceRepository.class);
     }
 
+    @Override
     public void checkIfExist(List<V1beta1Ingress> v1beta1Ingresses, Long envId, List<DevopsEnvFileResourceE> beforeSyncDelete, Map<String, String> objectPath, V1beta1Ingress v1beta1Ingress) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
         DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
@@ -36,18 +37,17 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
                 .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsIngressE.getId()))) {
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
             if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode())))) {
-                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(),null);
+                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(), null);
             }
         }
         if (v1beta1Ingresses.parallelStream().anyMatch(v1beta1Ingress1 -> v1beta1Ingress1.getMetadata().getName().equals(v1beta1Ingress.getMetadata().getName()))) {
-            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(),null);
+            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(), null);
         } else {
             v1beta1Ingresses.add(v1beta1Ingress);
         }
-
     }
 
-
+    @Override
     public void checkParameters(V1beta1Ingress v1beta1Ingress, Map<String, String> objectPath) {
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
         if (v1beta1Ingress.getMetadata() == null) {
@@ -64,7 +64,6 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         }
         if (v1beta1Ingress.getApiVersion() == null) {
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_API_VERSION_NOT_FOUND.getError(), filePath);
-
         }
     }
 
@@ -113,5 +112,4 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_BACKEND_SERVICE_PORT_NOT_FOUND.getError(), filePath);
         }
     }
-
 }

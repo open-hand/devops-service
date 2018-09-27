@@ -16,7 +16,10 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -43,7 +46,7 @@ import io.choerodon.websocket.helper.EnvSession;
  */
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
-    public static final String C7NHELM_RELEASE = "C7NHelmRelease";
+    private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     private static final String RELEASE_NAME = "ReleaseName";
@@ -59,7 +62,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private String gitlabUrl;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-
 
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
@@ -98,16 +100,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DevopsEnvFileRepository devopsEnvFileRepository;
     @Autowired
-    private DeployMsgHandlerService deployMsgHandlerService;
-    @Autowired
-    private DevopsEnvCommitRepository devopsEnvCommitRepository;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
-    @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -160,7 +155,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return appInstancesList;
     }
 
-    private void addAppInstance(ApplicationInstancesDTO instancesDTO, ApplicationInstancesDO instancesDO, Long latestVersionId) {
+    private void addAppInstance(ApplicationInstancesDTO instancesDTO, ApplicationInstancesDO instancesDO,
+                                Long latestVersionId) {
         EnvVersionDTO envVersionDTO = new EnvVersionDTO(
                 instancesDO.getVersionId(),
                 instancesDO.getVersion(),
@@ -258,7 +254,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
         List<DeployAppDTO> deployAppDTOS = new ArrayList<>();
         Map<String, List<DeployDO>> resultMaps = deployDOS.stream()
-                .collect(Collectors.groupingBy(t -> t.getAppName()));
+                .collect(Collectors.groupingBy(DeployDO::getAppName));
         resultMaps.forEach((key, value) -> {
             DeployAppDTO deployAppDTO = new DeployAppDTO();
             List<DeployAppDetail> deployAppDetails = new ArrayList<>();
@@ -290,11 +286,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<Long> deployFailFrequency = new LinkedList<>();
         List<String> creationDates = deployFrequencyDOS.parallelStream().map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString()).collect(Collectors.toList());
         creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
-        creationDates.stream().forEach(date -> {
+        creationDates.forEach(date -> {
             Long[] newDeployFrequencys = {0L};
             Long[] newDeploySuccessFrequency = {0L};
             Long[] newDeployFailFrequency = {0L};
-            resultMaps.get(date).stream().forEach(deployFrequencyDO -> {
+            resultMaps.get(date).forEach(deployFrequencyDO -> {
                 newDeployFrequencys[0] = newDeployFrequencys[0] + 1L;
                 if (deployFrequencyDO.getStatus().equals(CommandStatus.SUCCESS.getStatus())) {
                     newDeploySuccessFrequency[0] = newDeploySuccessFrequency[0] + 1L;
@@ -315,30 +311,32 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime) {
+    public Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds,
+                                                           Long appId, Date startTime, Date endTime) {
         if (envIds.length == 0) {
-            return  new Page<>();
+            return new Page<>();
         }
-        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployFrequencyDetail(projectId, pageRequest, envIds, appId, startTime, endTime);
-        Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
-        return pageDeployDetailDTOS;
+        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployFrequencyDetail(projectId, pageRequest,
+                envIds, appId, startTime, endTime);
+        return getDeployDetailDTOS(deployDOS);
     }
 
     @Override
-    public Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime) {
+    public Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId,
+                                                      Date startTime, Date endTime) {
         if (appIds.length == 0) {
             return new Page<>();
         }
-        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployTimeDetail(projectId, pageRequest, envId, appIds, startTime, endTime);
-        Page<DeployDetailDTO> pageDeployDetailDTOS = getDeployDetailDTOS(deployDOS);
-        return pageDeployDetailDTOS;
+        Page<DeployDO> deployDOS = applicationInstanceRepository.pageDeployTimeDetail(projectId, pageRequest, envId,
+                appIds, startTime, endTime);
+        return getDeployDetailDTOS(deployDOS);
     }
 
     private Page<DeployDetailDTO> getDeployDetailDTOS(Page<DeployDO> deployDOS) {
         Page<DeployDetailDTO> pageDeployDetailDTOS = new Page<>();
         List<DeployDetailDTO> deployDetailDTOS = new ArrayList<>();
         BeanUtils.copyProperties(deployDOS, pageDeployDetailDTOS);
-        deployDOS.getContent().stream().forEach(deployDO -> {
+        deployDOS.getContent().forEach(deployDO -> {
             DeployDetailDTO deployDetailDTO = new DeployDetailDTO();
             BeanUtils.copyProperties(deployDO, deployDetailDTO);
             deployDetailDTO.setDeployTime(getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
@@ -405,7 +403,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
             List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();
-            applicationInstanceDTOS.stream().forEach(applicationInstanceDTO -> {
+            applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
                 DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
                 BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
                 List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
@@ -441,11 +439,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         Page<DevopsEnvFileE> devopsEnvFilePages = devopsEnvFileRepository.pageByEnvId(envId, pageRequest);
-        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFilePages.parallelStream().map(devopsEnvFileE -> {
-            devopsEnvFileE.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/%s",
-                    gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(), devopsEnvFileE.getDevopsCommit()));
-            return devopsEnvFileE;
-        }).collect(Collectors.toList());
+        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFilePages.parallelStream().peek(devopsEnvFileE ->
+                devopsEnvFileE.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/%s",
+                        gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(),
+                        devopsEnvFileE.getDevopsCommit()))).collect(Collectors.toList());
         Page<DevopsEnvFileE> pages = new Page<>();
         BeanUtils.copyProperties(devopsEnvFilePages, pages);
         pages.setContent(devopsEnvFileES);
@@ -473,7 +470,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
         //初始化实例名
-        String code = "";
+        String code;
         if (applicationDeployDTO.getType().equals(CREATE)) {
             code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
         } else {
@@ -569,12 +566,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        if (type.equals(CREATE)) {
-            devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-        } else if (type.equals(UPDATE)) {
-            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
-        } else {
-            devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+        switch (type) {
+            case CREATE:
+                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
+                break;
+            case UPDATE:
+                devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+                break;
+            default:
+                devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
+                break;
         }
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
@@ -769,7 +770,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
+    private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
         Msg msg = new Msg();
         msg.setKey("env:" + namespace + ".envId:" + envId + ".release:" + name);
         msg.setType(type);
@@ -854,7 +855,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
 
-    public String getDeployTime(Long diff) {
+    private String getDeployTime(Long diff) {
         float num = (float) diff / (60 * 1000);
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(num);

@@ -2,8 +2,6 @@ package io.choerodon.devops.domain.application.valueobject;
 
 import  java.util.List;
 
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-
 public class CommandPayLoad {
     List<Command> commands;
 

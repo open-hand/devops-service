@@ -4,10 +4,10 @@ import java.util.List;
 
 public class PipelineFrequencyDTO {
 
-    List<String> createDates;
-    List<Long> pipelineSuccessFrequency;
-    List<Long> pipelineFailFrequency;
-    List<Long> PipelineFrequencys;
+    private List<String> createDates;
+    private List<Long> pipelineSuccessFrequency;
+    private List<Long> pipelineFailFrequency;
+    private List<Long> pipelineFrequencys;
 
     public List<String> getCreateDates() {
         return createDates;
@@ -34,10 +34,10 @@ public class PipelineFrequencyDTO {
     }
 
     public List<Long> getPipelineFrequencys() {
-        return PipelineFrequencys;
+        return pipelineFrequencys;
     }
 
     public void setPipelineFrequencys(List<Long> pipelineFrequencys) {
-        PipelineFrequencys = pipelineFrequencys;
+        this.pipelineFrequencys = pipelineFrequencys;
     }
 }

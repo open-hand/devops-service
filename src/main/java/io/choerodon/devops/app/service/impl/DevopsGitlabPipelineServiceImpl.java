@@ -74,7 +74,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void handleCreate(PipelineWebHookDTO pipelineWebHookDTO) {
         ApplicationE applicationE = applicationRepository.queryByToken(pipelineWebHookDTO.getToken());
         DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByGitlabPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
-        if (pipelineWebHookDTO.getUser().getUsername().equals("admin1")) {
+        if ("admin1".equals(pipelineWebHookDTO.getUser().getUsername())) {
             pipelineWebHookDTO.getUser().setUsername("admin");
         }
         UserE userE = iamRepository.queryByLoginName(pipelineWebHookDTO.getUser().getUsername());
@@ -112,17 +112,15 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Override
     public void updateStages(JobWebHookDTO jobWebHookDTO) {
         DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(jobWebHookDTO.getSha());
-        if (!jobWebHookDTO.getBuildStatus().equals("created")) {
-            if (devopsGitlabCommitE != null) {
-                DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByCommitId(devopsGitlabCommitE.getId());
-                if (devopsGitlabPipelineE != null) {
-                    List<CommitStatuseDO> commitStatuseDOS = JSONArray.parseArray(devopsGitlabPipelineE.getStage(), CommitStatuseDO.class);
-                    commitStatuseDOS.parallelStream().filter(commitStatuseDO -> jobWebHookDTO.getBuildName().equals(commitStatuseDO.getName())).forEach(commitStatuseDO -> {
-                        commitStatuseDO.setStatus(jobWebHookDTO.getBuildStatus());
-                    });
-                    devopsGitlabPipelineE.setStage(JSONArray.toJSONString(commitStatuseDOS));
-                    devopsGitlabPipelineRepository.update(devopsGitlabPipelineE);
-                }
+        if (devopsGitlabCommitE != null && !"created".equals(jobWebHookDTO.getBuildStatus())) {
+            DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByCommitId(devopsGitlabCommitE.getId());
+            if (devopsGitlabPipelineE != null) {
+                List<CommitStatuseDO> commitStatuseDOS = JSONArray.parseArray(devopsGitlabPipelineE.getStage(), CommitStatuseDO.class);
+                commitStatuseDOS.parallelStream().filter(commitStatuseDO -> jobWebHookDTO.getBuildName().equals(commitStatuseDO.getName())).forEach(commitStatuseDO -> {
+                    commitStatuseDO.setStatus(jobWebHookDTO.getBuildStatus());
+                });
+                devopsGitlabPipelineE.setStage(JSONArray.toJSONString(commitStatuseDOS));
+                devopsGitlabPipelineRepository.update(devopsGitlabPipelineE);
             }
         }
     }
@@ -132,14 +130,13 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         if (appId == null) {
             return new PipelineTimeDTO();
         }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         PipelineTimeDTO pipelineTimeDTO = new PipelineTimeDTO();
         List<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.listPipeline(appId, startTime, endTime);
         List<String> pipelineTimes = new LinkedList<>();
         List<String> refs = new LinkedList<>();
         List<String> versions = new LinkedList<>();
         List<Date> createDates = new LinkedList<>();
-        devopsGitlabPipelineDOS.stream().forEach(devopsGitlabPipelineDO -> {
+        devopsGitlabPipelineDOS.forEach(devopsGitlabPipelineDO -> {
             refs.add(devopsGitlabPipelineDO.getRef() + "-" + devopsGitlabPipelineDO.getSha());
             createDates.add(devopsGitlabPipelineDO.getPipelineCreationDate());
             ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(devopsGitlabPipelineDO.getSha());
@@ -162,8 +159,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         Long diff = 0L;
         for (CommitStatuseDO commitStatuseDO : commitStatuseDOS) {
             try {
-                if (commitStatuseDO.getFinished_at() != null && commitStatuseDO.getStarted_at() != null) {
-                    diff = diff + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").parse(commitStatuseDO.getFinished_at()).getTime() - new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(commitStatuseDO.getStarted_at()).getTime();
+                if (commitStatuseDO.getFinishedAt() != null && commitStatuseDO.getStartedAt() != null) {
+                    diff = diff + new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").parse(commitStatuseDO.getFinishedAt()).getTime() - new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(commitStatuseDO.getStartedAt()).getTime();
                 }
             } catch (ParseException e) {
                 throw new CommonException(e);
@@ -182,31 +179,31 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         Map<String, List<DevopsGitlabPipelineDO>> resultMaps = devopsGitlabPipelineDOS.stream()
                 .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getPipelineCreationDate().getTime()).toString()));
         List<String> creationDates = devopsGitlabPipelineDOS.parallelStream().map(deployDO -> new java.sql.Date(deployDO.getPipelineCreationDate().getTime()).toString()).collect(Collectors.toList());
-        List<Long> PipelineFrequencys = new LinkedList<>();
-        List<Long> PipelineSuccessFrequency = new LinkedList<>();
-        List<Long> PipelineFailFrequency = new LinkedList<>();
+        List<Long> pipelineFrequencys = new LinkedList<>();
+        List<Long> pipelineSuccessFrequency = new LinkedList<>();
+        List<Long> pipelineFailFrequency = new LinkedList<>();
         creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
-        creationDates.stream().forEach(date -> {
+        creationDates.forEach(date -> {
             Long[] newPipelineFrequencys = {0L};
             Long[] newPipelineSuccessFrequency = {0L};
             Long[] newPipelineFailFrequency = {0L};
-            resultMaps.get(date).stream().forEach(devopsGitlabPipelineDO -> {
-                if (devopsGitlabPipelineDO.getStatus().equals("passed")) {
+            resultMaps.get(date).forEach(devopsGitlabPipelineDO -> {
+                if ("passed".equals(devopsGitlabPipelineDO.getStatus())) {
                     newPipelineSuccessFrequency[0] = newPipelineSuccessFrequency[0] + 1L;
                 }
-                if (devopsGitlabPipelineDO.getStatus().equals("failed")) {
+                if ("failed".equals(devopsGitlabPipelineDO.getStatus())) {
                     newPipelineFailFrequency[0] = newPipelineFailFrequency[0] + 1L;
                 }
                 newPipelineFrequencys[0] = newPipelineSuccessFrequency[0] + newPipelineFailFrequency[0];
             });
-            PipelineFrequencys.add(newPipelineFrequencys[0]);
-            PipelineSuccessFrequency.add(newPipelineSuccessFrequency[0]);
-            PipelineFailFrequency.add(newPipelineFailFrequency[0]);
+            pipelineFrequencys.add(newPipelineFrequencys[0]);
+            pipelineSuccessFrequency.add(newPipelineSuccessFrequency[0]);
+            pipelineFailFrequency.add(newPipelineFailFrequency[0]);
         });
         pipelineFrequencyDTO.setCreateDates(creationDates);
-        pipelineFrequencyDTO.setPipelineFailFrequency(PipelineFailFrequency);
-        pipelineFrequencyDTO.setPipelineFrequencys(PipelineFrequencys);
-        pipelineFrequencyDTO.setPipelineSuccessFrequency(PipelineSuccessFrequency);
+        pipelineFrequencyDTO.setPipelineFailFrequency(pipelineFailFrequency);
+        pipelineFrequencyDTO.setPipelineFrequencys(pipelineFrequencys);
+        pipelineFrequencyDTO.setPipelineSuccessFrequency(pipelineSuccessFrequency);
         return pipelineFrequencyDTO;
     }
 
@@ -221,7 +218,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         Page<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.pagePipeline(appId, pageRequest, startTime, endTime);
         BeanUtils.copyProperties(devopsGitlabPipelineDOS, pageDevopsGitlabPipelineDTOS);
         Map<String, List<DevopsGitlabPipelineDO>> refWithPipelines = devopsGitlabPipelineDOS.stream()
-                .collect(Collectors.groupingBy(t -> t.getRef()));
+                .collect(Collectors.groupingBy(DevopsGitlabPipelineDO::getRef));
         Map<String, Long> refWithPipelineIds = new HashMap<>();
         refWithPipelines.forEach((key, value) -> {
             Long pipeLineId = Collections.max(value.parallelStream().map(DevopsGitlabPipelineDO::getPipelineId).collect(Collectors.toList()));
@@ -269,7 +266,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     }
 
 
-    public String getDeployTime(Long diff) {
+    private String getDeployTime(Long diff) {
         float num = (float) diff / (60 * 1000);
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(num);

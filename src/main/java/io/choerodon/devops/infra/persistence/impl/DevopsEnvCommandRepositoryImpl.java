@@ -58,7 +58,6 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     @Override
     public List<DevopsEnvCommandE> listByEnvId(Long envId) {
         DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO();
-//        devopsEnvCommandDO.setEnvId(envId);
         return ConvertHelper.convertList(devopsEnvCommandMapper.select(devopsEnvCommandDO), DevopsEnvCommandE.class);
     }
 

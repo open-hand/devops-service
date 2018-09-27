@@ -13,7 +13,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepository;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
