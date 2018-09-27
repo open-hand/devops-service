@@ -15,6 +15,9 @@ public class CommitFormUserDTO {
     private String imgUrl;
     private List<Date> commitDates;
 
+    public CommitFormUserDTO() {
+    }
+
     public CommitFormUserDTO(Long id, String name, String imgUrl, List<Date> commitDates) {
         this.id = id;
         this.name = name;
