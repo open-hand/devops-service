@@ -903,7 +903,7 @@ public class FileUtil {
             Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
             composer.getSingleNode();
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 

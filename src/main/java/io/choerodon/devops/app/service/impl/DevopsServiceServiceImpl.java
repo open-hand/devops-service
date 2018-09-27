@@ -159,7 +159,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
-    public Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
+    public Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId) {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
@@ -176,6 +176,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //存储service和instance对象关系到数据库
         Long serviceEId = devopsServiceE.getId();
         devopsEnvCommandE.setObjectId(serviceEId);
+        devopsEnvCommandE.setCreatedBy(userId);
         devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsServiceRepository.update(devopsServiceE);
 
@@ -306,7 +307,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public Boolean updateDevopsServiceByGitOps(Long projectId, Long id,
-                                               DevopsServiceReqDTO devopsServiceReqDTO) {
+                                               DevopsServiceReqDTO devopsServiceReqDTO, Long userId) {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
 
@@ -324,6 +325,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         //更新service对象到数据库
         devopsEnvCommandE.setObjectId(id);
+        devopsEnvCommandE.setCreatedBy(userId);
         devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsServiceRepository.update(devopsServiceE);
 

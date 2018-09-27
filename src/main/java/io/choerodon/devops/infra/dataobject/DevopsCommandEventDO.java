@@ -7,11 +7,12 @@ import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_command_event")
-public class DevopsCommandEventDO {
+public class DevopsCommandEventDO extends AuditDomain {
 
     @Id
     @GeneratedValue

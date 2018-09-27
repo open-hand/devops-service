@@ -7,11 +7,12 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_gitlab_commit")
-public class DevopsGitlabCommitDO {
+public class DevopsGitlabCommitDO extends AuditDomain {
 
     @Id
     @GeneratedValue

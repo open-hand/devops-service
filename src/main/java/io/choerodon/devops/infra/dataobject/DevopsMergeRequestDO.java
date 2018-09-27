@@ -6,6 +6,8 @@ import javax.persistence.Table;
 import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,8 +17,9 @@ import io.choerodon.mybatis.annotation.ModifyAudit;
  * Description:
  */
 @ModifyAudit
+@VersionAudit
 @Table(name = "devops_merge_request")
-public class DevopsMergeRequestDO {
+public class DevopsMergeRequestDO extends AuditDomain {
 
     @Id
     @GeneratedValue

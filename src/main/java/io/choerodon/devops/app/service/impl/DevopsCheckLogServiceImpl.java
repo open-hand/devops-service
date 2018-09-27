@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.DumperOptions;
@@ -33,6 +32,7 @@ import org.yaml.snakeyaml.nodes.Tag;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -613,7 +613,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             checkLog.setContent(APP + applicationDO.getName() + " sync branches");
             try {
                 Optional<List<BranchDO>> branchDOS = Optional.ofNullable(
-                        gitlabServiceClient.listBranches(applicationDO.getGitlabProjectId(), ADMIN).getBody());
+                        devopsGitRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN));
                 List<String> branchNames =
                         devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).parallelStream()
                                 .map(DevopsBranchE::getBranchName).collect(Collectors.toList());
@@ -672,16 +672,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     // path: orgCode-projectCode
                     group.setPath(String.format("%s-%s-%s",
                             organization.getCode(), projectE.getCode(), groupCodeSuffix));
-                    ResponseEntity<GroupDO> responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
-                    if (responseEntity.getStatusCode().equals(HttpStatus.CREATED)) {
+                    ResponseEntity<GroupDO> responseEntity;
+                    try {
+                        responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
                         group = responseEntity.getBody();
                         DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
                         devopsProjectDO.setEnvGroupId(group.getId());
                         devopsProjectRepository.updateProjectAttr(devopsProjectDO);
                         checkLog.setResult(SUCCESS);
-                    } else {
-                        checkLog.setResult(FAILED + "create group response error! Header:"
-                                + responseEntity.getHeaders() + "    Body: " + responseEntity.getBody().toString());
+                    } catch (FeignException e) {
+                        checkLog.setResult(e.getMessage());
                     }
                 } catch (Exception e) {
                     LOGGER.info("create project GitOps group error");

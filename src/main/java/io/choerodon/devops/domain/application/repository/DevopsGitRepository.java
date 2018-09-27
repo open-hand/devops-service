@@ -77,4 +77,6 @@ public interface DevopsGitRepository {
     CommitE getCommit(Integer gitLabProjectId, String commit, Integer userId);
 
     List<CommitDO> getCommits(Integer gitLabProjectId, String branchName, String date);
+
+    List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId);
 }

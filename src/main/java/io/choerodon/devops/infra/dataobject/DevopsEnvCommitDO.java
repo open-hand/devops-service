@@ -8,11 +8,12 @@ import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @Table(name = "devops_env_commit")
 @VersionAudit
-public class DevopsEnvCommitDO {
+public class DevopsEnvCommitDO extends AuditDomain {
 
     @Id
     @GeneratedValue

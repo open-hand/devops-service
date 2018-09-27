@@ -60,7 +60,7 @@ public interface ApplicationInstanceService {
      * @param applicationDeployDTO 部署信息
      * @return ApplicationInstanceDTO
      */
-    ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO);
+    ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId);
 
 
     /**

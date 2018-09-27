@@ -29,7 +29,8 @@ public interface DevopsIngressService {
      * @param devopsIngressDTO 域名参数
      * @param projectId        项目Id
      */
-    void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
+
     /**
      * 项目下更新域名
      *
@@ -47,7 +48,7 @@ public interface DevopsIngressService {
      * @param devopsIngressDTO 域名参数
      * @param projectId        项目Id
      */
-    void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId);
+    void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
 
 
     /**
@@ -111,7 +112,7 @@ public interface DevopsIngressService {
      * @param certName 证书名称
      * @return V1beta1Ingress
      */
-    V1beta1Ingress initV1beta1Ingress(String host, String name,String certName);
+    V1beta1Ingress initV1beta1Ingress(String host, String name, String certName);
 
 
     /**

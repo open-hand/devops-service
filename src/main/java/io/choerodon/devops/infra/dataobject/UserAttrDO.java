@@ -5,13 +5,16 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by zzy on 2018/3/26.
  */
 @ModifyAudit
+@VersionAudit
 @Table(name = "devops_user")
-public class UserAttrDO {
+public class UserAttrDO extends AuditDomain {
 
     @Id
     private Long id;

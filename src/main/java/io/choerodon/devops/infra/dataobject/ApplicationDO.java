@@ -4,10 +4,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by younger on 2018/3/28.
@@ -15,7 +15,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_application")
-public class ApplicationDO {
+public class ApplicationDO extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -29,8 +29,6 @@ public class ApplicationDO {
     private Boolean isSynchro;
     private String uuid;
     private String token;
-    private Long objectVersionNumber;
-    private Date lastUpdateDate;
     private Long hookId;
 
     @Transient
@@ -120,14 +118,6 @@ public class ApplicationDO {
         this.token = token;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
     public String getPublishLevel() {
         return publishLevel;
     }
@@ -150,14 +140,6 @@ public class ApplicationDO {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
     }
 
     public Long getHookId() {

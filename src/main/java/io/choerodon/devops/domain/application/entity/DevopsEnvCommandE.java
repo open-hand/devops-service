@@ -18,6 +18,7 @@ public class DevopsEnvCommandE {
     private String sha;
     private DevopsEnvCommandValueE devopsEnvCommandValueE;
     private Date lastUpdateDate;
+    private Long createdBy;
 
     public DevopsEnvCommandE() {
     }
@@ -97,5 +98,13 @@ public class DevopsEnvCommandE {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }

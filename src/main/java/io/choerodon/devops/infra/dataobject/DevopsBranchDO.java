@@ -7,11 +7,12 @@ import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_branch")
-public class DevopsBranchDO {
+public class DevopsBranchDO extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -24,8 +25,6 @@ public class DevopsBranchDO {
     private Date checkoutDate;
     private String checkoutCommit;
     private Boolean isDeleted;
-    private Date creationDate;
-    private Long objectVersionNumber;
     private String lastCommit;
     private String lastCommitMsg;
     private Long lastCommitUser;
@@ -86,22 +85,6 @@ public class DevopsBranchDO {
 
     public void setCheckoutDate(Date checkoutDate) {
         this.checkoutDate = checkoutDate;
-    }
-
-    public Date getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
-    }
-
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
     }
 
     public String getCheckoutCommit() {

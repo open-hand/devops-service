@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
@@ -25,9 +25,11 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
 
     @Override
     public GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
-        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.createGitLabUser(
-                password, projectsLimit, gitlabUserEvent);
-        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.createGitLabUser(
+                    password, projectsLimit, gitlabUserEvent);
+        } catch (FeignException e) {
             return null;
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
@@ -35,9 +37,11 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
 
     @Override
     public GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
-        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.updateGitLabUser(
-                userId, projectsLimit, gitlabUserEvent);
-        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.updateGitLabUser(
+                    userId, projectsLimit, gitlabUserEvent);
+        } catch (FeignException e) {
             return null;
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
@@ -55,8 +59,10 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
 
     @Override
     public GitlabUserE getGitlabUserByUserId(Integer userId) {
-        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.queryUserByUserId(userId);
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.queryUserByUserId(userId);
+        } catch (FeignException e) {
             return null;
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);

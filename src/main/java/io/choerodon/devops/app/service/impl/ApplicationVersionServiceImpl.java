@@ -48,6 +48,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Value("${services.helm.url}")
     private String helmUrl;
 
+
     @Override
     public void create(String image, String token, String version, String commit, MultipartFile files) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
@@ -75,9 +76,16 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         String destFilePath = DESTPATH + version;
         try {
             FileUtil.unTarGZ(path, destFilePath);
+            String values = FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
+                    new File(destFilePath), "values.yaml").getAbsolutePath())), null);
+            try {
+                FileUtil.jungeYamlFormat(values);
+            } catch (CommonException e) {
+                throw new CommonException("The format of the values.yaml in the chart is invalid!", e);
+            }
             applicationVersionValueE.setValue(
-                    FileUtil.replaceReturnString(new FileInputStream(new File(Objects.requireNonNull(FileUtil.queryFileFromFiles(
-                            new File(destFilePath), "values.yaml")).getAbsolutePath())), null));
+                    values);
+
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());
         } catch (Exception e) {

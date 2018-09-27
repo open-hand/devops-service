@@ -6,11 +6,12 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_app_version_value")
-public class ApplicationVersionValueDO {
+public class ApplicationVersionValueDO extends AuditDomain {
 
     @Id
     @GeneratedValue

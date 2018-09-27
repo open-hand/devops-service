@@ -10,6 +10,6 @@ public interface HandlerObjectFileRelationsService<T> {
     void handlerRelations(Map<String, String> objectPath,
                           List<DevopsEnvFileResourceE> beforeSync,
                           List<T> ts,
-                          Long envId, Long projectId, String path);
+                          Long envId, Long projectId, String path, Long userId);
 
 }

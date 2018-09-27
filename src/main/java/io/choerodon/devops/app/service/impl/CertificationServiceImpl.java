@@ -107,7 +107,7 @@ public class CertificationServiceImpl implements CertificationService {
         Long certId = certificationE.getId();
 
         // cert command
-        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId));
+        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
         certificationRepository.updateCommandId(certificationE);
 
         // store crt & key if type is upload
@@ -209,7 +209,7 @@ public class CertificationServiceImpl implements CertificationService {
                     "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
                     devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
         }
-        certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId));
+        certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId, null));
         certificationRepository.updateCommandId(certificationE);
         certificationE.setStatus(CertificationStatus.DELETING.getStatus());
         certificationRepository.updateStatus(certificationE);
@@ -249,9 +249,10 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public Long createCertCommandE(String type, Long certId) {
+    public Long createCertCommandE(String type, Long certId, Long userId) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
         devopsEnvCommandE.setCommandType(type);
+        devopsEnvCommandE.setCreatedBy(userId);
         devopsEnvCommandE.setObject(ObjectType.CERTIFICATE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setObjectId(certId);

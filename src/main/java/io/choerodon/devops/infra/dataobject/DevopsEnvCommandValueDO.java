@@ -6,11 +6,12 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @Table(name = "devops_env_command_value")
 @VersionAudit
-public class DevopsEnvCommandValueDO {
+public class DevopsEnvCommandValueDO  extends AuditDomain {
 
     @Id
     @GeneratedValue

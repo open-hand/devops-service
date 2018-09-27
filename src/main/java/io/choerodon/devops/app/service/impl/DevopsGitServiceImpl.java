@@ -358,7 +358,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         final Integer gitLabUserId = pushWebHookDTO.getUserId();
-
+        Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
 
         List<String> operationFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();
@@ -415,10 +415,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     c7nCertifications);
             List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
             //将k8s对象初始化为实例，网络，域名，证书对象,处理对象文件关系
-            handlerC7nReleaseRelationsService.handlerRelations(objectPath, beforeSyncFileResource, c7nHelmReleases, envId, projectId, path);
-            handlerServiceRelationsService.handlerRelations(objectPath, beforeSyncFileResource, v1Services, envId, projectId, path);
-            handlerIngressRelationsService.handlerRelations(objectPath, beforeSyncFileResource, v1beta1Ingresses, envId, projectId, path);
-            handlerC7nCertificationRelationsService.handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, envId, projectId, path);
+            handlerC7nReleaseRelationsService.handlerRelations(objectPath, beforeSyncFileResource, c7nHelmReleases, envId, projectId, path, userId);
+            handlerServiceRelationsService.handlerRelations(objectPath, beforeSyncFileResource, v1Services, envId, projectId, path, userId);
+            handlerIngressRelationsService.handlerRelations(objectPath, beforeSyncFileResource, v1beta1Ingresses, envId, projectId, path, userId);
+            handlerC7nCertificationRelationsService.handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, envId, projectId, path, userId);
 
             //处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);

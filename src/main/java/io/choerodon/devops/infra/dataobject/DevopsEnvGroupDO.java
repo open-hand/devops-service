@@ -6,17 +6,17 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @Table(name = "devops_env_group")
 @VersionAudit
-public class DevopsEnvGroupDO {
+public class DevopsEnvGroupDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
     private Long projectId;
     private String name;
-    private Long objectVersionNumber;
     private Long sequence;
 
     public Long getId() {
@@ -43,13 +43,6 @@ public class DevopsEnvGroupDO {
         this.name = name;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
 
     public Long getSequence() {
         return sequence;

@@ -7,11 +7,12 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 @ModifyAudit
 @Table(name = "devops_env_file_error")
 @VersionAudit
-public class DevopsEnvFileErrorDO {
+public class DevopsEnvFileErrorDO extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -20,8 +21,7 @@ public class DevopsEnvFileErrorDO {
     private String filePath;
     private String commit;
     private String error;
-    private Long objectVersionNumber;
-    private Date lastUpdateDate;
+
 
 
     public Long getId() {
@@ -64,19 +64,4 @@ public class DevopsEnvFileErrorDO {
         this.error = error;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
 }

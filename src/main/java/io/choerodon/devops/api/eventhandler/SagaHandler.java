@@ -65,9 +65,6 @@ public class SagaHandler {
         return msg;
     }
 
-    /**
-     * 创建组事件
-     */
     @SagaTask(code = "devopsCreateGitLabGroup",
             description = "devops 创建 GitLab Group",
             sagaCode = "iam-create-project",
@@ -96,6 +93,35 @@ public class SagaHandler {
         BeanUtils.copyProperties(projectEvent, gitlabGroupPayload);
         loggerInfo(gitlabGroupPayload);
         gitlabGroupService.createGroup(gitlabGroupPayload, "-gitops");
+        return msg;
+    }
+
+
+    @SagaTask(code = "devopsUpdateGitLabGroup",
+            description = "devops  更新 GitLab Group",
+            sagaCode = "iam-update-project",
+            maxRetryCount = 0,
+            seq = 1)
+    public String handleUpdateGitlabGroupEvent(String msg) {
+        ProjectEvent projectEvent = gson.fromJson(msg, ProjectEvent.class);
+        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
+        BeanUtils.copyProperties(projectEvent, gitlabGroupPayload);
+        loggerInfo(gitlabGroupPayload);
+        gitlabGroupService.updateGroup(gitlabGroupPayload, "");
+        return msg;
+    }
+
+    @SagaTask(code = "devopsUpdateGitOpsGroup",
+            description = "devops  更新 GitOps Group",
+            sagaCode = "iam-update-project",
+            maxRetryCount = 0,
+            seq = 1)
+    public String handleUpdateGitOpsGroupEvent(String msg) {
+        ProjectEvent projectEvent = gson.fromJson(msg, ProjectEvent.class);
+        GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();
+        BeanUtils.copyProperties(projectEvent, gitlabGroupPayload);
+        loggerInfo(gitlabGroupPayload);
+        gitlabGroupService.updateGroup(gitlabGroupPayload, "-gitops");
         return msg;
     }
 
