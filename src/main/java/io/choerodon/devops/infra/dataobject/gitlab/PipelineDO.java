@@ -2,8 +2,9 @@ package io.choerodon.devops.infra.dataobject.gitlab;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus;
-import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * Created by Zenger on 2018/1/10.
@@ -20,11 +21,13 @@ public class PipelineDO {
     private UserDO user;
     @JsonProperty(value = "created_at")
     private String createdAt;
+    @JsonProperty(value = "updated_at")
     private Date updatedAt;
     @JsonProperty(value = "started_at")
     private Date startedAt;
     @JsonProperty(value = "finished_at")
     private Date finishedAt;
+    @JsonProperty(value = "committed_at")
     private Date committedAt;
     private String coverage;
     private Integer duration;

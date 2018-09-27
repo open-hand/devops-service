@@ -46,20 +46,27 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     @Override
     public void updateGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(gitlabUserReqDTO.getExternUid()));
-        gitlabUserRepository.updateGitLabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
-                gitlabConfigurationProperties.getProjectLimit(),
-                ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+        if (userAttrE != null) {
+
+            gitlabUserRepository.updateGitLabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+                    gitlabConfigurationProperties.getProjectLimit(),
+                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+        }
     }
 
     @Override
     public void isEnabledGitlabUser(Integer userId) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
-        gitlabUserRepository.isEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (userAttrE != null) {
+            gitlabUserRepository.isEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        }
     }
 
     @Override
     public void disEnabledGitlabUser(Integer userId) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(userId));
-        gitlabUserRepository.disEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (userAttrE != null) {
+            gitlabUserRepository.disEnabledGitlabUser(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        }
     }
 }

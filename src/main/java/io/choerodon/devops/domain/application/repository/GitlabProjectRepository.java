@@ -6,6 +6,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
@@ -33,4 +34,6 @@ public interface GitlabProjectRepository {
     List<CommitStatuseDO> getCommitStatuse(Integer projectId, String sha, Integer useId);
 
     void initMockService(GitlabServiceClient gitlabServiceClient);
+
+    List<CommitDO> listCommits(Integer projectId, String ref, Integer userId);
 }

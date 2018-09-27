@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.entity.gitlab;
 
 import java.util.Date;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus;
 
@@ -19,10 +19,14 @@ public class GitlabPipelineE {
 
     @JsonProperty(value = "created_at")
     private String createdAt;
+    @JsonProperty(value = "updated_at")
+    private Date updatedAt;
     @JsonProperty(value = "started_at")
     private Date startedAt;
     @JsonProperty(value = "finished_at")
     private Date finishedAt;
+    @JsonProperty(value = "committed_at")
+    private Date committedAt;
 
     public Integer getId() {
         return id;
@@ -77,6 +81,14 @@ public class GitlabPipelineE {
         this.createdAt = createdAt;
     }
 
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
     public Date getStartedAt() {
         return startedAt;
     }
@@ -91,6 +103,14 @@ public class GitlabPipelineE {
 
     public void setFinishedAt(Date finishedAt) {
         this.finishedAt = finishedAt;
+    }
+
+    public Date getCommittedAt() {
+        return committedAt;
+    }
+
+    public void setCommittedAt(Date committedAt) {
+        this.committedAt = committedAt;
     }
 }
 

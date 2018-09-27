@@ -21,4 +21,6 @@ public interface DevopsGitlabCommitRepository {
                                                PageRequest pageRequest, Map<Long, UserE> userMap,
                                                String startDate, String endDate);
 
+    void update(DevopsGitlabCommitE devopsGitlabCommitE);
+
 }
