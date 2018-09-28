@@ -195,6 +195,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO.getBranchName(),
                 devopsBranchDTO.getOriginBranch(),
                 getGitlabUserId());
+        if (branchDO.getCommit() == null) {
+            throw new CommonException("error.branch.exist");
+        }
         CommitE commitE = branchDO.getCommit();
         Date checkoutDate = commitE.getCommittedDate();
         String checkoutSha = commitE.getId();
