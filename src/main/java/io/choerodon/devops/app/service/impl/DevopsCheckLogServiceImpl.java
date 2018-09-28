@@ -201,7 +201,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     void syncCommit(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
-        applications.parallelStream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
+        applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
                     CheckLog checkLog = new CheckLog();
                     checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");

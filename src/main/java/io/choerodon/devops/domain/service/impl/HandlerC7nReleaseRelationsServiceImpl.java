@@ -57,7 +57,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                             .selectById(devopsEnvFileResourceE.getResourceId());
                     if (applicationInstanceE == null) {
-                        throw new GitOpsExplainException("instance.not.exist.in.database", null, applicationInstanceE.getCode(), null);
+                        devopsEnvFileResourceRepository
+                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), C7NHELM_RELEASE);
+                        return null;
                     }
                     return applicationInstanceE.getCode();
                 }).collect(Collectors.toList());

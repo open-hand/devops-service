@@ -60,8 +60,9 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     CertificationE certificationE = certificationRepository
                             .queryById(devopsEnvFileResourceE.getResourceId());
                     if (certificationE == null) {
-                        throw new GitOpsExplainException("certification.not.exist.in.database",
-                                null, devopsEnvFileResourceE.getFilePath(), null);
+                        devopsEnvFileResourceRepository
+                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), ObjectType.CERTIFICATE.getType());
+                      return null;
                     }
                     return certificationE.getName();
                 })
