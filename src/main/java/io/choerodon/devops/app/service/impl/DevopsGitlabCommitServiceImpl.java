@@ -62,9 +62,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Override
     public DevopsGitlabCommitDTO getCommits(Long projectId, String appIds, String startDate, String endDate) {
 
-        Map<String, List<Long>> appIdsMap = gson.fromJson(appIds, new TypeToken<Map<String, List<Long>>>() {
+        List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
         }.getType());
-        if (appIdsMap.get("appIds").isEmpty()) {
+        if (appIdsMap.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
@@ -76,7 +76,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, appIdsMap.get("appIds"), sd, ed);
+                .listCommits(projectId, appIdsMap, sd, ed);
         if (devopsGitlabCommitES.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
@@ -98,9 +98,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     public Page<CommitFormRecordDTO> getRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
                                                       String startDate, String endDate) {
 
-        Map<String, List<Long>> appIdsMap = gson.fromJson(appIds, new TypeToken<Map<String, List<Long>>>() {
+        List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
         }.getType());
-        if (appIdsMap.get("appIds").isEmpty()) {
+        if (appIdsMap.isEmpty()) {
             return new Page<>();
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
@@ -111,10 +111,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 sdf.format(new Date(Long.valueOf(endDate)));
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, appIdsMap.get("appIds"), sd, ed);
+                .listCommits(projectId, appIdsMap, sd, ed);
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        return getCommitFormRecordDTOS(projectId, appIdsMap.get("appIds"), pageRequest, userMap, sd, ed);
+        return getCommitFormRecordDTOS(projectId, appIdsMap, pageRequest, userMap, sd, ed);
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {
