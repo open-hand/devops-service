@@ -47,4 +47,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_branch.groovy') {
             column(name: 'last_commit_date', type: 'DATETIME', remarks: '最新提交时间', afterColumn: 'last_commit_user')
         }
     }
+
+    changeSet(author: 'crockitwood', id: '2018-09-28-drop-branch-constraint') {
+        dropUniqueConstraint(constraintName: "uk_branch_name_commit",tableName: "devops_branch")
+    }
 }
