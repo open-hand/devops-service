@@ -203,50 +203,52 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         List<ApplicationDO> applications = applicationMapper.selectAll();
         applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
-                    CheckLog checkLog = new CheckLog();
-                    checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
-                    List<BranchE> branches = gitlabProjectRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN);
-                    branches.forEach(branchE -> {
-                        List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), branchE.getName(), ADMIN);
-                        commitDOS.parallelStream().forEach(commitDO -> {
+                            CheckLog checkLog = new CheckLog();
+                            checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
                             try {
-                                DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
-                                devopsGitlabCommitE.setAppId(applicationDO.getId());
-                                devopsGitlabCommitE.setCommitContent(commitDO.getMessage());
-                                devopsGitlabCommitE.setCommitSha(commitDO.getId());
-                                devopsGitlabCommitE.setUrl(commitDO.getUrl());
-                                if ("root".equals(commitDO.getAuthorName())) {
-                                    devopsGitlabCommitE.setUserId(1L);
-                                } else {
-                                    UserE userE = iamRepository.queryByEmail(applicationDO.getProjectId(),
-                                            commitDO.getAuthorEmail());
-                                    if (userE != null) {
-                                        devopsGitlabCommitE.setUserId(userE.getId());
-                                    }
-                                }
-                                devopsGitlabCommitE.setCommitDate(commitDO.getCommittedDate());
-                                devopsGitlabCommitRepository.create(devopsGitlabCommitE);
+                                List<BranchE> branches = gitlabProjectRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN);
+                                branches.forEach(branchE -> {
+                                    List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), branchE.getName(), ADMIN);
+                                    commitDOS.parallelStream().forEach(commitDO -> {
+                                        DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
+                                        devopsGitlabCommitE.setAppId(applicationDO.getId());
+                                        devopsGitlabCommitE.setCommitContent(commitDO.getMessage());
+                                        devopsGitlabCommitE.setCommitSha(commitDO.getId());
+                                        devopsGitlabCommitE.setUrl(commitDO.getUrl());
+                                        if ("root".equals(commitDO.getAuthorName())) {
+                                            devopsGitlabCommitE.setUserId(1L);
+                                        } else {
+                                            UserE userE = iamRepository.queryByEmail(applicationDO.getProjectId(),
+                                                    commitDO.getAuthorEmail());
+                                            if (userE != null) {
+                                                devopsGitlabCommitE.setUserId(userE.getId());
+                                            }
+                                        }
+                                        devopsGitlabCommitE.setCommitDate(commitDO.getCommittedDate());
+                                        devopsGitlabCommitRepository.create(devopsGitlabCommitE);
+
+                                    });
+                                });
+                                logs.add(checkLog);
+
                             } catch (Exception e) {
                                 checkLog.setResult(FAILED + e.getMessage());
                             }
-                        });
-                    });
-                    logs.add(checkLog);
-
-                });
+                        }
+                );
     }
 
 
     void syncPipelines(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
-        applications.parallelStream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
+        applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
-                    List<GitlabPipelineE> pipelineDOS = gitlabProjectRepository.listPipeline(applicationDO.getGitlabProjectId(), ADMIN);
-                    pipelineDOS.parallelStream().forEach(pipelineE -> {
-                        GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), pipelineE.getId(), ADMIN);
-                        CheckLog checkLog = new CheckLog();
-                        checkLog.setContent(APP + applicationDO.getName() + "sync gitlab pipeline");
-                        try {
+                    CheckLog checkLog = new CheckLog();
+                    checkLog.setContent(APP + applicationDO.getName() + "sync gitlab pipeline");
+                    try {
+                        List<GitlabPipelineE> pipelineDOS = gitlabProjectRepository.listPipeline(applicationDO.getGitlabProjectId(), ADMIN);
+                        pipelineDOS.stream().forEach(pipelineE -> {
+                            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), pipelineE.getId(), ADMIN);
                             DevopsGitlabPipelineE devopsGitlabPipelineE = new DevopsGitlabPipelineE();
                             devopsGitlabPipelineE.setAppId(applicationDO.getId());
                             Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser().getId()));
@@ -268,11 +270,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN);
                             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(commitStatuseDOS));
                             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
-                        } catch (Exception e) {
-                            checkLog.setResult(FAILED + e.getMessage());
-                        }
-                        logs.add(checkLog);
-                    });
+                            logs.add(checkLog);
+                        });
+                    } catch (Exception e) {
+                        checkLog.setResult(FAILED + e.getMessage());
+                    }
                 });
     }
 
