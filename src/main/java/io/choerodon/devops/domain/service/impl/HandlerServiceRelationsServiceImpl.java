@@ -223,7 +223,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         if (v1Service.getMetadata().getAnnotations() != null) {
             String instancesCode = v1Service.getMetadata().getAnnotations()
                     .get("choerodon.io/network-service-instances");
-            if (!instancesCode.isEmpty()) {
+            if (instancesCode!=null) {
                 List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
                         .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, filePath))
                         .collect(Collectors.toList());
