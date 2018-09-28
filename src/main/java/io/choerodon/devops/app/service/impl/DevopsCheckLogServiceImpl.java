@@ -258,7 +258,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             try {
                                 devopsGitlabPipelineE.setPipelineCreationDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(gitlabPipelineE.getCreatedAt()));
                             } catch (ParseException e) {
-                                throw new CommonException(e);
+                                checkLog.setResult(FAILED + e.getMessage());
                             }
                             DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(gitlabPipelineE.getSha());
                             if (devopsGitlabCommitE != null) {
