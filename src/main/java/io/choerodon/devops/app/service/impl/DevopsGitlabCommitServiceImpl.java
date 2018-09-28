@@ -69,7 +69,6 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        // TODO 考虑将startDate从1970改为所有应用中最早的commit记录
         String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
         String ed = "null".equals(endDate) ?
                 sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
