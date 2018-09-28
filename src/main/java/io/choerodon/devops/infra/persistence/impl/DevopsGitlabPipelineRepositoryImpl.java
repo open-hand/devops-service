@@ -67,4 +67,9 @@ public class DevopsGitlabPipelineRepositoryImpl implements DevopsGitlabPipelineR
         return PageHelper.doPageAndSort(pageRequest, () ->
                 devopsGitlabPipelineMapper.listDevopsGitlabPipeline(appId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
     }
+
+    @Override
+    public void deleteWithoutCommit() {
+        devopsGitlabPipelineMapper.deleteWithoutCommit();
+    }
 }

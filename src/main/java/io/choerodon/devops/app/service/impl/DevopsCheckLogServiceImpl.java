@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.DefaultThreadFactory;
+import feign.FeignException;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
@@ -35,8 +36,6 @@ import org.yaml.snakeyaml.nodes.Tag;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.exception.CommonException;
-import feign.FeignException;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -48,10 +47,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.CheckLog;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
@@ -63,7 +59,6 @@ import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -266,9 +261,26 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 devopsGitlabCommitRepository.update(devopsGitlabCommitE);
                                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
                             }
-                            List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository
-                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN);
-                            devopsGitlabPipelineE.setStage(JSONArray.toJSONString(commitStatuseDOS));
+                            List<Stage> stages = gitlabProjectRepository
+                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN).stream().map(commitStatuseDO -> {
+                                        Stage stage = new Stage();
+                                        stage.setDescription(commitStatuseDO.getDescription());
+                                        stage.setName(commitStatuseDO.getName());
+                                        stage.setStatus(commitStatuseDO.getStatus());
+                                        if (commitStatuseDO.getFinishedAt() != null) {
+                                            stage.setFinishedAt(commitStatuseDO.getFinishedAt());
+                                        }
+                                        if (commitStatuseDO.getStartedAt() != null) {
+                                            stage.setStartedAt(commitStatuseDO.getStartedAt());
+                                        }
+                                        if (gitlabPipelineE.getRef().equals(commitStatuseDO.getRef())) {
+                                            return stage;
+                                        } else {
+                                            return null;
+                                        }
+                                    }).collect(Collectors.toList());
+                            stages.removeAll(Collections.singleton(null));
+                            devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
                             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
                             logs.add(checkLog);
                         });
@@ -276,6 +288,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         checkLog.setResult(FAILED + e.getMessage());
                     }
                 });
+        devopsGitlabPipelineRepository.deleteWithoutCommit();
     }
 
 

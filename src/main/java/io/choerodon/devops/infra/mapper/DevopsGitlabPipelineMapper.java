@@ -12,4 +12,6 @@ public interface DevopsGitlabPipelineMapper extends BaseMapper<DevopsGitlabPipel
 
     List<DevopsGitlabPipelineDO> listDevopsGitlabPipeline(@Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
+    void deleteWithoutCommit();
+
 }

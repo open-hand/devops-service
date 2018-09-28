@@ -22,4 +22,6 @@ public interface DevopsGitlabPipelineRepository {
 
     Page<DevopsGitlabPipelineDO> pagePipeline(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
 
+    void deleteWithoutCommit();
+
 }

@@ -6,6 +6,7 @@ public class PipelineWebHookAttributesDTO {
     private Long id;
     private String detailedStatus;
     private String sha;
+    private String ref;
     private Date createdAt;
 
     public Long getId() {
@@ -38,5 +39,13 @@ public class PipelineWebHookAttributesDTO {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 }
