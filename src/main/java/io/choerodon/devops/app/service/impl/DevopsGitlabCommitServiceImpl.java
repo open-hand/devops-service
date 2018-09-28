@@ -4,6 +4,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService {
+
+    private static final Gson gson = new Gson();
 
     @Autowired
     IamRepository iamRepository;
@@ -56,15 +60,16 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public DevopsGitlabCommitDTO getCommits(Long projectId, String[] appId, String startDate, String endDate) {
-        List<Long> listStrings;
-        if ("null".equals(appId[0])) {
+    public DevopsGitlabCommitDTO getCommits(Long projectId, String appIds, String startDate, String endDate) {
+
+        Map<String, List<Long>> appIdsMap = gson.fromJson(appIds, new TypeToken<Map<String, List<Long>>>() {
+        }.getType());
+        if (appIdsMap.get("appIds").isEmpty()) {
             return new DevopsGitlabCommitDTO();
-        } else {
-            listStrings = Arrays.stream(appId).map(Long::valueOf).collect(Collectors.toList());
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        // TODO 考虑将startDate从1970改为所有应用中最早的commit记录
         String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
         String ed = "null".equals(endDate) ?
                 sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
@@ -72,7 +77,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, listStrings, sd, ed);
+                .listCommits(projectId, appIdsMap.get("appIds"), sd, ed);
         if (devopsGitlabCommitES.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
@@ -91,13 +96,13 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public Page<CommitFormRecordDTO> getRecordCommits(Long projectId, String[] appIds, PageRequest pageRequest,
+    public Page<CommitFormRecordDTO> getRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
                                                       String startDate, String endDate) {
-        List<Long> listStrings;
-        if ("null".equals(appIds[0])) {
+
+        Map<String, List<Long>> appIdsMap = gson.fromJson(appIds, new TypeToken<Map<String, List<Long>>>() {
+        }.getType());
+        if (appIdsMap.get("appIds").isEmpty()) {
             return new Page<>();
-        } else {
-            listStrings = Arrays.stream(appIds).map(Long::valueOf).collect(Collectors.toList());
         }
         // 如果传入的时间为null，表示查询至今所有的commit记录
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -107,10 +112,10 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 sdf.format(new Date(Long.valueOf(endDate)));
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, listStrings, sd, ed);
+                .listCommits(projectId, appIdsMap.get("appIds"), sd, ed);
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        return getCommitFormRecordDTOS(projectId, listStrings, pageRequest, userMap, sd, ed);
+        return getCommitFormRecordDTOS(projectId, appIdsMap.get("appIds"), pageRequest, userMap, sd, ed);
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {
