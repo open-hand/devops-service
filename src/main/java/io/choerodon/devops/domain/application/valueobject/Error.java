@@ -6,8 +6,7 @@ public class Error {
     private String id;
     private String path;
     private String commit;
-    @JsonProperty(value = "error")
-    private String errors;
+    private String error;
 
     public String getId() {
         return id;
@@ -25,12 +24,12 @@ public class Error {
         this.path = path;
     }
 
-    public String getErrors() {
-        return errors;
+    public String getError() {
+        return error;
     }
 
-    public void setErrors(String errors) {
-        this.errors = errors;
+    public void setError(String error) {
+        this.error = error;
     }
 
     public String getCommit() {

@@ -943,13 +943,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 if (devopsEnvFileErrorE == null) {
                     devopsEnvFileErrorE = new DevopsEnvFileErrorE();
                     devopsEnvFileErrorE.setCommit(error.getCommit());
-                    devopsEnvFileErrorE.setError(error.getErrors());
+                    devopsEnvFileErrorE.setError(error.getError());
                     devopsEnvFileErrorE.setFilePath(error.getPath());
                     devopsEnvFileErrorE.setEnvId(devopsEnvironmentE.getId());
                     devopsEnvFileErrorE = devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
                     devopsEnvFileErrorE.setResource(error.getId());
                 } else {
-                    devopsEnvFileErrorE.setError(devopsEnvFileErrorE.getError() + error.getErrors());
+                    devopsEnvFileErrorE.setError(devopsEnvFileErrorE.getError() + error.getError());
                     devopsEnvFileErrorE = devopsEnvFileErrorRepository.createOrUpdate(devopsEnvFileErrorE);
                     devopsEnvFileErrorE.setResource(error.getId());
                 }
