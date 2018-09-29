@@ -204,7 +204,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 List<BranchE> branches = gitlabProjectRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN);
                                 branches.forEach(branchE -> {
                                     List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), branchE.getName(), ADMIN);
-                                    commitDOS.parallelStream().forEach(commitDO -> {
+                                    commitDOS.stream().forEach(commitDO -> {
                                         DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
                                         devopsGitlabCommitE.setAppId(applicationDO.getId());
                                         devopsGitlabCommitE.setCommitContent(commitDO.getMessage());

@@ -15,6 +15,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
+import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
@@ -199,6 +200,33 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         } catch (FeignException e) {
             throw new CommonException("error.gitlab.project.create", e);
 
+        }
+    }
+
+    @Override
+    public GitlabProjectDO getProjectByName(String groupName, String projectName, Integer userId) {
+        try {
+            return gitlabServiceClient.getProjectByName(userId, groupName, projectName).getBody();
+        }catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public List<ProjectHook> getHooks(Integer projectId, Integer userId) {
+        try{
+            return gitlabServiceClient.getProjectHook(projectId,userId).getBody();
+        }catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public List<Variable> getVariable(Integer projectId, Integer userId) {
+        try{
+            return gitlabServiceClient.getVariable(projectId,userId).getBody();
+        }catch (FeignException e) {
+            throw new CommonException(e);
         }
     }
 

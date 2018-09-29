@@ -27,7 +27,7 @@ import io.choerodon.swagger.annotation.Permission;
  */
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/apps")
-public class ApplicationController {
+public class    ApplicationController {
 
     private ApplicationService applicationService;
 
@@ -232,7 +232,8 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {
             InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER
+            InitRoleCode.PROJECT_MEMBER,
+            InitRoleCode.DEPLOY_ADMINISTRATOR
     })
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
