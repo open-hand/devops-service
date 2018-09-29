@@ -45,7 +45,7 @@ public class DevopsGitlabCommitController {
      * @return DevopsGitlabCommitDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取应用下的代码提交")
     @PostMapping("/commits")
     public ResponseEntity<DevopsGitlabCommitDTO> getCommits(
@@ -71,7 +71,7 @@ public class DevopsGitlabCommitController {
      * @return List
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @CustomPageRequest
     @ApiOperation(value = "获取应用下的代码提交历史记录")
     @PostMapping("/commits/record")
