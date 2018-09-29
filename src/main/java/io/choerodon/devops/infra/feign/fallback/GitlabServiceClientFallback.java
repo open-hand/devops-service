@@ -87,6 +87,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     }
 
+    @Override
     public ResponseEntity<GitlabProjectDO> getProjectByName(Integer userId, String groupName, String projectName) {
         return new ResponseEntity("error.project.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -147,7 +148,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<CommitDO>> listCommits(Integer projectId, String ref, Integer userId) {
+    public ResponseEntity<List<CommitDO>> listCommits(Integer projectId, Integer page, Integer size, Integer userId) {
         return new ResponseEntity("error.commit.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

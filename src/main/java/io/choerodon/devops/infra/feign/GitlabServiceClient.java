@@ -179,7 +179,8 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/project")
     ResponseEntity<List<CommitDO>> listCommits(@PathVariable("projectId") Integer projectId,
-                                               @RequestParam("ref") String ref,
+                                               @RequestParam("page") Integer page,
+                                               @RequestParam("size") Integer size,
                                                @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/repository/commits/statuse")
