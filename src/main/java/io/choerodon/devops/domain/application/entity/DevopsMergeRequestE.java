@@ -4,26 +4,17 @@ import java.util.Date;
 
 public class DevopsMergeRequestE {
     private Long id;
-
     private Long projectId;
-
     private Long gitlabMergeRequestId;
-
     private Long authorId;
-
     private Long assigneeId;
-
     private String sourceBranch;
-
     private String targetBranch;
-
     private String state;
-
     private String title;
-
     private Date createdAt;
-
     private Date updatedAt;
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -111,6 +102,14 @@ public class DevopsMergeRequestE {
 
     public void setUpdatedAt(Date updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 
     @Override

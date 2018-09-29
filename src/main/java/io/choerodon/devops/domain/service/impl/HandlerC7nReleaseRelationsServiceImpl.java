@@ -57,7 +57,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                             .selectById(devopsEnvFileResourceE.getResourceId());
                     if (applicationInstanceE == null) {
-                        throw new GitOpsExplainException("instance.not.exist.in.database", null, applicationInstanceE.getCode(), null);
+                        devopsEnvFileResourceRepository
+                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), C7NHELM_RELEASE);
+                        return null;
                     }
                     return applicationInstanceE.getCode();
                 }).collect(Collectors.toList());
@@ -221,7 +223,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
             ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(deployValue, applicationDeployDTO.getValues());
-            if (deployValue != null && replaceResult.getHighlightMarkers().isEmpty() && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
+            if (deployValue != null && replaceResult.getNewLines().isEmpty() && applicationVersionE.getId().equals(applicationInstanceE.getApplicationVersionE().getId())) {
                 applicationDeployDTO.setIsNotChange(true);
             }
             applicationDeployDTO.setAppInstanceId(applicationInstanceE.getId());

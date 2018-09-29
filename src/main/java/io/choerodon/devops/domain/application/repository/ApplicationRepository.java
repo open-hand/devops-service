@@ -57,4 +57,6 @@ public interface ApplicationRepository {
 
     ApplicationE getAppByGitLabId(Long gitLabProjectId);
 
+    void delete(Long appId);
+
 }

@@ -28,4 +28,8 @@
     </select>
 
 
+    <delete id="deleteWithoutCommit">
+        DELETE FROM devops_gitlab_pipeline WHERE commit_id is null
+    </delete>
+
 </mapper>

@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import io.swagger.annotations.ApiParam;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,10 +17,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.DevopsEnvResourceService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -103,6 +101,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -340,8 +340,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             DeployDetailDTO deployDetailDTO = new DeployDetailDTO();
             BeanUtils.copyProperties(deployDO, deployDetailDTO);
             deployDetailDTO.setDeployTime(getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
-            if (deployDO.getLastUpdatedBy() != 0) {
-                UserE userE = iamRepository.queryUserByUserId(deployDO.getLastUpdatedBy());
+            if (deployDO.getCreatedBy() != 0) {
+                UserE userE = iamRepository.queryUserByUserId(deployDO.getCreatedBy());
                 deployDetailDTO.setLastUpdatedName(userE.getRealName());
             }
             deployDetailDTOS.add(deployDetailDTO);
@@ -834,6 +834,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             ReplaceResult replaceResult = new ReplaceResult();
             replaceResult.setDeltaYaml("");
             replaceResult.setHighlightMarkers(new ArrayList<>());
+            replaceResult.setNewLines(new ArrayList<>());
             return replaceResult;
         }
 

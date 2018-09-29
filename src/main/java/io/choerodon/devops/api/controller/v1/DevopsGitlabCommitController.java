@@ -45,14 +45,14 @@ public class DevopsGitlabCommitController {
      * @return DevopsGitlabCommitDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取应用下的代码提交")
     @PostMapping("/commits")
     public ResponseEntity<DevopsGitlabCommitDTO> getCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用id", required = true)
-            @RequestParam(value = "app_ids") String[] appIds,
+            @ApiParam(value = "应用ids", required = true)
+            @RequestBody String appIds,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") String startDate,
             @ApiParam(value = "结束时间end_date", required = true)
@@ -71,15 +71,15 @@ public class DevopsGitlabCommitController {
      * @return List
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @CustomPageRequest
     @ApiOperation(value = "获取应用下的代码提交历史记录")
     @PostMapping("/commits/record")
     public ResponseEntity<Page<CommitFormRecordDTO>> getRecordCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用id", required = true)
-            @RequestParam(value = "app_ids") String[] appIds,
+            @ApiParam(value = "应用ids", required = true)
+            @RequestBody String appIds,
             @ApiParam(value = "分页参数")
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,

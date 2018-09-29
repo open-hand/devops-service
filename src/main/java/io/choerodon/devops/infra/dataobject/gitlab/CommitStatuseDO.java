@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.dataobject.gitlab;
 
-
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class CommitStatuseDO {
     private String status;

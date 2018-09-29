@@ -76,6 +76,7 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.query"));
     }
 
+
     /**
      * 项目下更新应用信息
      *
@@ -118,6 +119,25 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.active(applicationId, active))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.active"));
+    }
+
+    /**
+     * 项目下删除创建失败应用
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用id
+     * @return Boolean
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下删除创建失败应用")
+    @DeleteMapping("/{applicationId}")
+    public ResponseEntity deleteByAppId(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable Long applicationId) {
+        applicationService.delete(projectId,applicationId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -212,7 +232,8 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {
             InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER
+            InitRoleCode.PROJECT_MEMBER,
+            InitRoleCode.DEPLOY_ADMINISTRATOR
     })
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping

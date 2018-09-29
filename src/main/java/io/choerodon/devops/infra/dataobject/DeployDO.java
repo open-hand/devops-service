@@ -12,6 +12,7 @@ public class DeployDO {
     private String status;
     private Date lastUpdateDate;
     private Long lastUpdatedBy;
+    private Long createdBy;
 
     public String getAppInstanceCode() {
         return appInstanceCode;
@@ -75,5 +76,13 @@ public class DeployDO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }

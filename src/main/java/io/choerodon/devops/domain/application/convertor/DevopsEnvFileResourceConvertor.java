@@ -24,7 +24,7 @@ public class DevopsEnvFileResourceConvertor implements ConvertorI<DevopsEnvFileR
         DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
         BeanUtils.copyProperties(devopsEnvFileResourceDO, devopsEnvFileResourceE);
         DevopsEnvironmentE environmentE = new DevopsEnvironmentE();
-        environmentE.setId(devopsEnvFileResourceDO.getId());
+        environmentE.setId(devopsEnvFileResourceDO.getEnvId());
         devopsEnvFileResourceE.setEnvironment(environmentE);
         devopsEnvFileResourceE.setFile(new File(devopsEnvFileResourceDO.getFilePath()));
         return devopsEnvFileResourceE;

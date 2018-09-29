@@ -160,12 +160,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         applicationRepository.checkApp(projectId, appId);
         Integer gitLabProjectId = devopsGitRepository.getGitLabId(appId);
         Integer gitLabUserId = devopsGitRepository.getGitlabUserId();
-        if (msg == null) {
-            msg = "";
-        }
-        if (releaseNotes == null) {
-            releaseNotes = "";
-        }
         devopsGitRepository.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, gitLabUserId);
     }
 
@@ -195,6 +189,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchDTO.getBranchName(),
                 devopsBranchDTO.getOriginBranch(),
                 getGitlabUserId());
+        if (branchDO.getCommit() == null) {
+            throw new CommonException("error.branch.exist");
+        }
         CommitE commitE = branchDO.getCommit();
         Date checkoutDate = commitE.getCommittedDate();
         String checkoutSha = commitE.getId();

@@ -14,7 +14,10 @@ import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 
 /**
  * Creator: Runge
@@ -41,6 +44,8 @@ public class DevopsSagaHandler {
     private ApplicationService applicationService;
     @Autowired
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
     /**
      * devops创建环境
@@ -83,12 +88,39 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsOperationGitlabProject",
             description = "devops create GitLab project",
             sagaCode = "devops-create-gitlab-project",
-            maxRetryCount = 0,
+            maxRetryCount = 1,
             seq = 1)
     public String createApp(String data) {
-        GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);
-        if (gitlabProjectEventDTO.getType().equals(APPLICATION)) {
-            applicationService.operationApplication(gitlabProjectEventDTO);
+        DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
+        if (devOpsAppPayload.getType().equals(APPLICATION)) {
+           try {
+               applicationService.operationApplication(devOpsAppPayload);
+           } catch (Exception e){
+               applicationService.setAppErrStatus(data);
+               throw e;
+           }
+           ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
+           if (applicationE.getFailed() != null && applicationE.getFailed()) {
+               applicationE.setFailed(false);
+               if (1 != applicationRepository.update(applicationE)) {
+                   LOGGER.error("update application set create success status error");
+               }
+           }
+        }
+        return data;
+    }
+
+    @SagaTask(code = "devopsCreateGitlabProjectErr",
+            description = "set  DevOps app status error",
+            sagaCode = "devops-set-app-err",
+            maxRetryCount = 0,
+            seq = 1)
+    public String setAppErr(String data) {
+        DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
+        ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
+        applicationE.setFailed(true);
+        if (1 != applicationRepository.update(applicationE)) {
+            LOGGER.error("update application {} set create failed status error", applicationE.getCode());
         }
         return data;
     }

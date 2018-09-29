@@ -3,6 +3,7 @@ package io.choerodon.devops.api.dto;
 import java.util.Date;
 import java.util.List;
 
+import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 
 public class DevopsGitlabPipelineDTO {
@@ -22,7 +23,7 @@ public class DevopsGitlabPipelineDTO {
     private Boolean latest;
     private String pipelineTime;
     private Date creationDate;
-    private List<CommitStatuseDO> stages;
+    private List<Stage> stages;
 
 
     public String getStatus() {
@@ -106,11 +107,11 @@ public class DevopsGitlabPipelineDTO {
         this.creationDate = creationDate;
     }
 
-    public List<CommitStatuseDO> getStages() {
+    public List<Stage> getStages() {
         return stages;
     }
 
-    public void setStages(List<CommitStatuseDO> stages) {
+    public void setStages(List<Stage> stages) {
         this.stages = stages;
     }
 

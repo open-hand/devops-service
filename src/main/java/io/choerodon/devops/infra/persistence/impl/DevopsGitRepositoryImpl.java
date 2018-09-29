@@ -18,7 +18,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.FeignException;
+import feign.FeignException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
@@ -79,10 +79,10 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public void createTag(Integer gitLabProjectId, String tag, String ref, String msg, String releaseNotes, Integer userId) {
         try {
             if (msg == null) {
-                msg = "";
+                msg = "No ReleaseNote";
             }
             if (releaseNotes == null) {
-                releaseNotes = "";
+                releaseNotes = "No ReleaseNote";
             }
             gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
         } catch (FeignException e) {

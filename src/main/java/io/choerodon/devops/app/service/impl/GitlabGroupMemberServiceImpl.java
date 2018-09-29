@@ -57,7 +57,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
                     List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                    if (userMemberRoleList.isEmpty()) {
+                    if (userMemberRoleList==null) {
+                        userMemberRoleList = new ArrayList<>();
                         LOGGER.info("user member role is empty");
                     }
                     MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
@@ -153,7 +154,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         GitlabGroupMemberE groupMemberE;
         Integer[] roles = {
                 memberHelper.getProjectDevelopAccessLevel().toValue(),
-                memberHelper.getProjectOwnerAccessLevel().toValue()};
+                memberHelper.getProjectOwnerAccessLevel().toValue(),
+                memberHelper.getOrganizationAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
         if (!accessLevel.equals(AccessLevel.NONE)) {
             if (resourceType.equals(PROJECT)) {

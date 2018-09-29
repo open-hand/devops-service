@@ -60,7 +60,9 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                     DevopsIngressDO devopsIngressDO = devopsIngressRepository
                             .getIngress(devopsEnvFileResourceE.getResourceId());
                     if (devopsIngressDO == null) {
-                        throw new GitOpsExplainException("ingress.not.exist.in.database", null, devopsIngressDO.getName(), null);
+                        devopsEnvFileResourceRepository
+                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), INGRESS);
+                        return null;
                     }
                     return devopsIngressDO.getName();
                 }).collect(Collectors.toList());

@@ -59,7 +59,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     DevopsServiceE devopsServiceE = devopsServiceRepository
                             .query(devopsEnvFileResourceE.getResourceId());
                     if (devopsServiceE == null) {
-                        throw new GitOpsExplainException("service.not.exist.in.database", null, devopsServiceE.getName(), null);
+                        devopsEnvFileResourceRepository
+                                .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), SERVICE);
+                        return null;
                     }
                     return devopsServiceE.getName();
                 }).collect(Collectors.toList());
@@ -221,7 +223,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         if (v1Service.getMetadata().getAnnotations() != null) {
             String instancesCode = v1Service.getMetadata().getAnnotations()
                     .get("choerodon.io/network-service-instances");
-            if (!instancesCode.isEmpty()) {
+            if (instancesCode!=null) {
                 List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
                         .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, filePath))
                         .collect(Collectors.toList());
@@ -265,7 +267,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqDTO.getAppId() != null) {
+        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
             if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
@@ -276,15 +278,13 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                 .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
                                 .collect(Collectors.toList()));
             }
-        } else {
+        }
+        if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
             isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
         }
-        if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
+        return !isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
                 .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
-                && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE)) {
-            return true;
-        }
-        return false;
+                && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE);
     }
 
     private Boolean isUpdateExternalIp(DevopsServiceReqDTO devopsServiceReqDTO, DevopsServiceE devopsServiceE) {

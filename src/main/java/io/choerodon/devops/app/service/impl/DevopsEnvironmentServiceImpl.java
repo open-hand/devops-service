@@ -157,6 +157,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsDTO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
         List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOS = listByProjectIdAndActive(projectId, active);
+        if (!active) {
+            DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnviromentRepDTOS);
+            devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+            return devopsEnvGroupEnvsDTOS;
+        }
         List<DevopsEnvGroupE> devopsEnvGroupES = devopsEnvGroupRepository.listByProjectId(projectId);
         devopsEnviromentRepDTOS.stream().forEach(devopsEnviromentRepDTO -> {
             if (devopsEnviromentRepDTO.getDevopsEnvGroupId() == null) {

@@ -48,4 +48,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             column(name: "project_id")
         }
     }
+
+    changeSet(author: 'crockitwood', id: '2018-09-29-add-column') {
+        addColumn(tableName: 'devops_application') {
+            column(name: 'is_failed', type: 'TINYINT UNSIGNED', remarks: '是否创建失败', afterColumn: 'is_synchro')
+        }
+
+    }
 }

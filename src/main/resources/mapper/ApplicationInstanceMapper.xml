@@ -279,7 +279,8 @@
         cmd.creation_date,
         cmd.status status,
         cmd.last_update_date,
-        cmd.last_updated_by
+        cmd.last_updated_by,
+        cmd.created_by
         from devops_app_instance dai
         JOIN devops_application da ON dai.app_id = da.id
         JOIN devops_app_version dav ON dai.app_version_id = dav.id
@@ -315,7 +316,8 @@
         cmd.creation_date,
         cmd.status status,
         cmd.last_update_date,
-        cmd.last_updated_by
+        cmd.last_updated_by,
+        cmd.created_by
         from devops_app_instance dai
         JOIN devops_application da ON dai.app_id = da.id
         JOIN devops_app_version dav ON dai.app_version_id = dav.id

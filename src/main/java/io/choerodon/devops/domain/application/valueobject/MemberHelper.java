@@ -8,12 +8,14 @@ public class MemberHelper {
     private AccessLevel deployAdminAccessLevel;
     private AccessLevel projectOwnerAccessLevel;
     private AccessLevel projectDevelopAccessLevel;
+    private AccessLevel organizationAccessLevel;
 
 
     public MemberHelper() {
         this.projectDevelopAccessLevel = AccessLevel.NONE;
         this.projectOwnerAccessLevel = AccessLevel.NONE;
         this.deployAdminAccessLevel = AccessLevel.NONE;
+        this.organizationAccessLevel = AccessLevel.NONE;
     }
 
     public boolean isDeploy() {
@@ -47,4 +49,14 @@ public class MemberHelper {
     public void setProjectDevelopAccessLevel(AccessLevel projectDevelopAccessLevel) {
         this.projectDevelopAccessLevel = projectDevelopAccessLevel;
     }
+
+
+    public AccessLevel getOrganizationAccessLevel() {
+        return organizationAccessLevel;
+    }
+
+    public void setOrganizationAccessLevel(AccessLevel organizationAccessLevel) {
+        this.organizationAccessLevel = organizationAccessLevel;
+    }
+
 }

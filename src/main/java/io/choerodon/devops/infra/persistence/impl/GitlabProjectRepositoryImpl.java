@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.FeignException;
+import feign.FeignException;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
@@ -134,9 +135,12 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public List<CommitDO> listCommits(Integer projectId, String ref, Integer userId) {
+    public List<CommitDO> listCommits(Integer projectId, Integer userId) {
         try {
-            return gitlabServiceClient.listCommits(projectId, ref, userId).getBody();
+            List<CommitDO> commitDOS = new LinkedList<>();
+            commitDOS.addAll(gitlabServiceClient.listCommits(projectId,1,100,userId).getBody());
+            commitDOS.addAll(gitlabServiceClient.listCommits(projectId,2,100,userId).getBody());
+            return commitDOS;
         } catch (FeignException e) {
             throw new CommonException(e.getMessage(), e);
         }

@@ -3,16 +3,17 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import feign.FeignException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
+import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
@@ -121,6 +122,16 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         }
     }
 
+    @Override
+    public void deleteDevOpsApp(String groupName, String projectName, Integer userId) {
+        try {
+            gitlabServiceClient.deleteProjectByProjectName(groupName, projectName, userId);
+        } catch (FeignException e) {
+            throw new CommonException("error.app.delete", e);
+        }
+    }
+
+    @Override
     public Boolean getFile(Integer projectId, String branch, String filePath) {
         return gitlabServiceClient.getFile(projectId, branch, filePath).getBody().getFilePath() == null ? false : true;
     }
@@ -187,6 +198,33 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         } catch (FeignException e) {
             throw new CommonException("error.gitlab.project.create", e);
 
+        }
+    }
+
+    @Override
+    public GitlabProjectDO getProjectByName(String groupName, String projectName, Integer userId) {
+        try {
+            return gitlabServiceClient.getProjectByName(userId, groupName, projectName).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public List<ProjectHook> getHooks(Integer projectId, Integer userId) {
+        try {
+            return gitlabServiceClient.getProjectHook(projectId, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public List<Variable> getVariable(Integer projectId, Integer userId) {
+        try {
+            return gitlabServiceClient.getVariable(projectId, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
         }
     }
 

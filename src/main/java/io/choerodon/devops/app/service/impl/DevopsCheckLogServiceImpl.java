@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.DefaultThreadFactory;
+import feign.FeignException;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
@@ -35,23 +36,17 @@ import org.yaml.snakeyaml.nodes.Tag;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.CheckLog;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
@@ -63,7 +58,6 @@ import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -201,62 +195,65 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     void syncCommit(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
-        applications.parallelStream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
+        applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
-                    CheckLog checkLog = new CheckLog();
-                    checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
-                    List<BranchE> branches = gitlabProjectRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN);
-                    branches.forEach(branchE -> {
-                        List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), branchE.getName(), ADMIN);
-                        commitDOS.parallelStream().forEach(commitDO -> {
+                            CheckLog checkLog = new CheckLog();
+                            checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
                             try {
-                                DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
-                                devopsGitlabCommitE.setAppId(applicationDO.getId());
-                                devopsGitlabCommitE.setCommitContent(commitDO.getMessage());
-                                devopsGitlabCommitE.setCommitSha(commitDO.getId());
-                                devopsGitlabCommitE.setUrl(commitDO.getUrl());
-                                if ("root".equals(commitDO.getAuthorName())) {
-                                    devopsGitlabCommitE.setUserId(1L);
-                                } else {
-                                    UserE userE = iamRepository.queryByEmail(applicationDO.getProjectId(),
-                                            commitDO.getAuthorEmail());
-                                    if (userE != null) {
-                                        devopsGitlabCommitE.setUserId(userE.getId());
+                                List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), ADMIN);
+                                commitDOS.stream().forEach(commitDO -> {
+                                    DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
+                                    devopsGitlabCommitE.setAppId(applicationDO.getId());
+                                    devopsGitlabCommitE.setCommitContent(commitDO.getMessage());
+                                    devopsGitlabCommitE.setCommitSha(commitDO.getId());
+                                    devopsGitlabCommitE.setUrl(commitDO.getUrl());
+                                    if ("root".equals(commitDO.getAuthorName())) {
+                                        devopsGitlabCommitE.setUserId(1L);
+                                    } else {
+                                        UserE userE = iamRepository.queryByEmail(applicationDO.getProjectId(),
+                                                commitDO.getAuthorEmail());
+                                        if (userE != null) {
+                                            devopsGitlabCommitE.setUserId(userE.getId());
+                                        }
                                     }
-                                }
-                                devopsGitlabCommitE.setCommitDate(commitDO.getCommittedDate());
-                                devopsGitlabCommitRepository.create(devopsGitlabCommitE);
+                                    devopsGitlabCommitE.setCommitDate(commitDO.getCommittedDate());
+                                    devopsGitlabCommitRepository.create(devopsGitlabCommitE);
+
+                                });
+                                logs.add(checkLog);
+
                             } catch (Exception e) {
                                 checkLog.setResult(FAILED + e.getMessage());
                             }
-                        });
-                    });
-                    logs.add(checkLog);
-
-                });
+                        }
+                );
     }
 
 
     void syncPipelines(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
-        applications.parallelStream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
+        applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
-                    List<GitlabPipelineE> pipelineDOS = gitlabProjectRepository.listPipeline(applicationDO.getGitlabProjectId(), ADMIN);
-                    pipelineDOS.parallelStream().forEach(pipelineE -> {
-                        GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), pipelineE.getId(), ADMIN);
-                        CheckLog checkLog = new CheckLog();
-                        checkLog.setContent(APP + applicationDO.getName() + "sync gitlab pipeline");
-                        try {
+                    CheckLog checkLog = new CheckLog();
+                    checkLog.setContent(APP + applicationDO.getName() + "sync gitlab pipeline");
+                    try {
+                        List<GitlabPipelineE> pipelineDOS = gitlabProjectRepository.listPipeline(applicationDO.getGitlabProjectId(), ADMIN);
+                        pipelineDOS.stream().forEach(pipelineE -> {
+                            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), pipelineE.getId(), ADMIN);
                             DevopsGitlabPipelineE devopsGitlabPipelineE = new DevopsGitlabPipelineE();
                             devopsGitlabPipelineE.setAppId(applicationDO.getId());
                             Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser().getId()));
                             devopsGitlabPipelineE.setPipelineCreateUserId(userId == null ? null : userId);
                             devopsGitlabPipelineE.setPipelineId(TypeUtil.objToLong(gitlabPipelineE.getId()));
-                            devopsGitlabPipelineE.setStatus(gitlabPipelineE.getStatus().toString());
+                            if (gitlabPipelineE.getStatus().toString().equals("success")) {
+                                devopsGitlabPipelineE.setStatus("passed");
+                            } else {
+                                devopsGitlabPipelineE.setStatus(gitlabPipelineE.getStatus().toString());
+                            }
                             try {
                                 devopsGitlabPipelineE.setPipelineCreationDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(gitlabPipelineE.getCreatedAt()));
                             } catch (ParseException e) {
-                                throw new CommonException(e);
+                                checkLog.setResult(FAILED + e.getMessage());
                             }
                             DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(gitlabPipelineE.getSha());
                             if (devopsGitlabCommitE != null) {
@@ -264,16 +261,34 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 devopsGitlabCommitRepository.update(devopsGitlabCommitE);
                                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
                             }
-                            List<CommitStatuseDO> commitStatuseDOS = gitlabProjectRepository
-                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN);
-                            devopsGitlabPipelineE.setStage(JSONArray.toJSONString(commitStatuseDOS));
+                            List<Stage> stages = gitlabProjectRepository
+                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN).stream().map(commitStatuseDO -> {
+                                        Stage stage = new Stage();
+                                        stage.setDescription(commitStatuseDO.getDescription());
+                                        stage.setName(commitStatuseDO.getName());
+                                        stage.setStatus(commitStatuseDO.getStatus());
+                                        if (commitStatuseDO.getFinishedAt() != null) {
+                                            stage.setFinishedAt(commitStatuseDO.getFinishedAt());
+                                        }
+                                        if (commitStatuseDO.getStartedAt() != null) {
+                                            stage.setStartedAt(commitStatuseDO.getStartedAt());
+                                        }
+                                        if (gitlabPipelineE.getRef().equals(commitStatuseDO.getRef())) {
+                                            return stage;
+                                        } else {
+                                            return null;
+                                        }
+                                    }).collect(Collectors.toList());
+                            stages.removeAll(Collections.singleton(null));
+                            devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
                             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
-                        } catch (Exception e) {
-                            checkLog.setResult(FAILED + e.getMessage());
-                        }
-                        logs.add(checkLog);
-                    });
+                            logs.add(checkLog);
+                        });
+                    } catch (Exception e) {
+                        checkLog.setResult(FAILED + e.getMessage());
+                    }
                 });
+        devopsGitlabPipelineRepository.deleteWithoutCommit();
     }
 
 

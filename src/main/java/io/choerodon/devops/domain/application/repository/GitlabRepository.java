@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 
 /**
@@ -28,6 +29,8 @@ public interface GitlabRepository {
 
     void deleteFile(Integer projectId, String path, String commitMessage, Integer userId);
 
+    void deleteDevOpsApp(String groupName, String projectName, Integer userId);
+
     void createProtectBranch(Integer projectId, String name, String mergeAccessLevel,
                              String pushAccessLevel, Integer userId);
 
@@ -44,5 +47,12 @@ public interface GitlabRepository {
     Boolean getFile(Integer projectId, String branch, String filePath);
 
     ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId);
+
+    GitlabProjectDO getProjectByName(String groupName, String projectName, Integer userId);
+
+    List<ProjectHook> getHooks(Integer projectId, Integer userId);
+
+    List<Variable> getVariable(Integer projectId, Integer userId);
+
 
 }

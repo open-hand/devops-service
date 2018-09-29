@@ -227,4 +227,9 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
             return null;
         }
     }
+
+    @Override
+    public void delete(Long appId) {
+        applicationMapper.deleteByPrimaryKey(appId);
+    }
 }
