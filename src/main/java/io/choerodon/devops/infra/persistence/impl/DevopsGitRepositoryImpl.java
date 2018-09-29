@@ -79,10 +79,10 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     public void createTag(Integer gitLabProjectId, String tag, String ref, String msg, String releaseNotes, Integer userId) {
         try {
             if (msg == null) {
-                msg = "";
+                msg = "No ReleaseNote";
             }
             if (releaseNotes == null) {
-                releaseNotes = "";
+                releaseNotes = "No ReleaseNote";
             }
             gitlabServiceClient.createTag(gitLabProjectId, tag, ref, msg, releaseNotes, userId);
         } catch (FeignException e) {
