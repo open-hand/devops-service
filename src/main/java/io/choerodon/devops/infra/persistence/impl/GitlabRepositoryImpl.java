@@ -3,14 +3,12 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import feign.FeignException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-
-import feign.FeignException;
-
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -207,25 +205,25 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public GitlabProjectDO getProjectByName(String groupName, String projectName, Integer userId) {
         try {
             return gitlabServiceClient.getProjectByName(userId, groupName, projectName).getBody();
-        }catch (FeignException e) {
+        } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
     @Override
     public List<ProjectHook> getHooks(Integer projectId, Integer userId) {
-        try{
-            return gitlabServiceClient.getProjectHook(projectId,userId).getBody();
-        }catch (FeignException e) {
+        try {
+            return gitlabServiceClient.getProjectHook(projectId, userId).getBody();
+        } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
 
     @Override
     public List<Variable> getVariable(Integer projectId, Integer userId) {
-        try{
-            return gitlabServiceClient.getVariable(projectId,userId).getBody();
-        }catch (FeignException e) {
+        try {
+            return gitlabServiceClient.getVariable(projectId, userId).getBody();
+        } catch (FeignException e) {
             throw new CommonException(e);
         }
     }

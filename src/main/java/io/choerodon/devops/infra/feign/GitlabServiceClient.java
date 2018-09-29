@@ -92,16 +92,13 @@ public interface GitlabServiceClient {
 
     @GetMapping(value = "/v1/projects/queryByName")
     ResponseEntity<GitlabProjectDO> getProjectByName(@RequestParam("userId") Integer userId,
-                                 @RequestParam("groupName") String groupName,
-                                    @RequestParam("projectName") String projectName);
-
+                                                     @RequestParam("groupName") String groupName,
+                                                     @RequestParam("projectName") String projectName);
 
 
     @GetMapping(value = "/v1/projects/{projectId}/variable")
     ResponseEntity<List<Variable>> getVariable(@PathVariable("projectId") Integer projectId,
                                                @RequestParam("userId") Integer userId);
-
-
 
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
@@ -413,9 +410,6 @@ public interface GitlabServiceClient {
     ResponseEntity<List<ProjectHook>> getProjectHook(
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId);
-
-
-
 
 
     @PutMapping("/v1/groups/{groupId}")
