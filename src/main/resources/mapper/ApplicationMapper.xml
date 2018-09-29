@@ -12,7 +12,8 @@
         da.is_synchro,
         da.gitlab_project_id,
         da.app_template_id,
-        da.uuid
+        da.uuid,
+        da.is_failed
         FROM devops_application da
         where da.project_id = #{projectId}
         <if test="isActive != null">
