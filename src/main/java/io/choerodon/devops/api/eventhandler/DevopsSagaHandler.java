@@ -88,7 +88,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsOperationGitlabProject",
             description = "devops create GitLab project",
             sagaCode = "devops-create-gitlab-project",
-            maxRetryCount = 0,
+            maxRetryCount = 1,
             seq = 1)
     public String createApp(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
