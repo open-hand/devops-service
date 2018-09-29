@@ -31,6 +31,7 @@ public class ApplicationE {
     private Date lastUpdateDate;
     private String sonarUrl;
     private Long hookId;
+    private Boolean isFailed;
 
     public ApplicationE() {
     }
@@ -221,5 +222,13 @@ public class ApplicationE {
 
     public void initHookId(Long hookId) {
         this.hookId = hookId;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 }

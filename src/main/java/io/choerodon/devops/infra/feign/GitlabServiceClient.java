@@ -84,6 +84,10 @@ public interface GitlabServiceClient {
     ResponseEntity deleteProject(@PathVariable("projectId") Integer projectId,
                                  @RequestParam("userId") Integer userId);
 
+    @DeleteMapping(value = "/v1/projects/{groupName}/{projectName}")
+    ResponseEntity deleteProjectByProjectName(@PathVariable("groupName") String groupName,
+                                 @PathVariable("projectName") String projectName,
+                                              @RequestParam("userId") Integer userId);
 
     @PostMapping(value = "/v1/users/{userId}/impersonation_tokens")
     ResponseEntity<ImpersonationTokenDO> create(@PathVariable("userId") Integer userId);

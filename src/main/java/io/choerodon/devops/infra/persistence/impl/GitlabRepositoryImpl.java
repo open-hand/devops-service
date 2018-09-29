@@ -123,6 +123,16 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         }
     }
 
+    @Override
+    public void deleteDevOpsApp(String groupName, String projectName, Integer userId) {
+        try {
+            gitlabServiceClient.deleteProjectByProjectName(groupName,projectName, userId);
+        } catch (FeignException e) {
+            throw new CommonException("error.file.delete", e);
+        }
+    }
+
+    @Override
     public Boolean getFile(Integer projectId, String branch, String filePath) {
         return gitlabServiceClient.getFile(projectId, branch, filePath).getBody().getFilePath() == null ? false : true;
     }

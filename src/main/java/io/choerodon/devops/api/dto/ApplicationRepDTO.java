@@ -1,7 +1,9 @@
 package io.choerodon.devops.api.dto;
 
 /**
- * Created by younger on 2018/3/30.
+ *
+ * @author younger
+ * @date 2018/3/30
  */
 public class ApplicationRepDTO {
 
@@ -17,6 +19,7 @@ public class ApplicationRepDTO {
     private String contributor;
     private String description;
     private String sonarUrl;
+    private Boolean isFailed;
 
     public Long getId() {
         return id;
@@ -113,5 +116,13 @@ public class ApplicationRepDTO {
 
     public void setSonarUrl(String sonarUrl) {
         this.sonarUrl = sonarUrl;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 }

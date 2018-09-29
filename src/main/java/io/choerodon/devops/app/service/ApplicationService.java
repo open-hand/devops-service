@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -31,6 +32,15 @@ public interface ApplicationService {
      * @return ApplicationRepDTO
      */
     ApplicationRepDTO query(Long projectId, Long applicationId);
+
+    /**
+     * 项目下删除创建失败应用
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用Id
+     * @return ApplicationRepDTO
+     */
+    void delete(Long projectId, Long applicationId);
 
     /**
      * 项目下更新应用信息
@@ -72,7 +82,7 @@ public interface ApplicationService {
      *
      * @param gitlabProjectEventDTO 应用信息
      */
-    void operationApplication(GitlabProjectPayload gitlabProjectEventDTO);
+    void operationApplication(DevOpsAppPayload gitlabProjectEventDTO);
 
     Boolean applicationExist(String uuid);
 

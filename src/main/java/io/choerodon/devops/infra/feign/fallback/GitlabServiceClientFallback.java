@@ -81,6 +81,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
+    public ResponseEntity deleteProjectByProjectName(String groupName, String projectName, Integer userId) {
+        return new ResponseEntity("error.service.delete", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
     public ResponseEntity<List<PipelineDO>> listPipeline(Integer projectId, Integer userId) {
         return new ResponseEntity("error.pipeline.select", HttpStatus.INTERNAL_SERVER_ERROR);
     }

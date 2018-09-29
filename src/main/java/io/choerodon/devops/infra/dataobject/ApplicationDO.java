@@ -10,7 +10,9 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
- * Created by younger on 2018/3/28.
+ *
+ * @author younger
+ * @date 2018/3/28
  */
 @VersionAudit
 @ModifyAudit
@@ -30,6 +32,7 @@ public class ApplicationDO extends AuditDomain {
     private String uuid;
     private String token;
     private Long hookId;
+    private Boolean isFailed;
 
     @Transient
     private String publishLevel;
@@ -148,5 +151,13 @@ public class ApplicationDO extends AuditDomain {
 
     public void setHookId(Long hookId) {
         this.hookId = hookId;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 }

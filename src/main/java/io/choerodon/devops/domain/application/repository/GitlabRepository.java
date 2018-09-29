@@ -28,6 +28,8 @@ public interface GitlabRepository {
 
     void deleteFile(Integer projectId, String path, String commitMessage, Integer userId);
 
+    void deleteDevOpsApp(String groupName, String projectName, Integer userId);
+
     void createProtectBranch(Integer projectId, String name, String mergeAccessLevel,
                              String pushAccessLevel, Integer userId);
 
