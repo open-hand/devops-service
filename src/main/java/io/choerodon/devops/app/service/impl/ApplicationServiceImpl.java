@@ -30,7 +30,6 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
@@ -48,9 +47,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
 
+    public static final Logger logger = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
-    public static final Logger logger = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private Gson gson = new Gson();
 
     @Value("${services.gitlab.url}")
@@ -106,9 +105,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 gitlabGroupE.getGitlabGroupId(),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
-            throw new CommonException("error.user.not.owner");
-        }
+//        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+//            throw new CommonException("error.user.not.owner");
+//        }
         // 创建sega payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
         devOpsAppPayload.setType(APPLICATION);
@@ -116,7 +115,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppPayload.setOrganizationId(organization.getId());
         devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         devOpsAppPayload.setGroupId(gitlabGroupE.getGitlabGroupId());
-        if ( applicationRepository.create(applicationE).getId() == null) {
+        applicationE = applicationRepository.create(applicationE);
+        if (applicationE.getId() == null) {
             throw new CommonException("error.application.create.insert");
         }
         devOpsAppPayload.setAppId(applicationE.getId());
@@ -144,13 +144,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = applicationRepository.query(applicationId);
-        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        applicationE.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                + organization.getCode() + "-" + projectE.getCode() + "/"
-                + applicationE.getCode() + ".git");
         gitlabRepository.deleteDevOpsApp(organization.getCode() + "-" + projectE.getCode(),
-                projectE.getCode(), DetailsHelper.getUserDetails().getUserId().intValue());
-
+                applicationE.getCode(), DetailsHelper.getUserDetails().getUserId().intValue());
+        applicationRepository.delete(applicationId);
     }
 
     @Override
@@ -285,8 +281,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 gitlabGroupE.getProjectE().getId());
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "_" + projectE.getCode(), applicationE.getCode(), gitlabProjectPayload.getUserId());
-        if (gitlabProjectDO == null) {
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(), gitlabProjectPayload.getUserId());
+        if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getPath(),
                     gitlabProjectPayload.getUserId(), false);
@@ -319,7 +315,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
 
             BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
-            if (branchDO == null) {
+            if (branchDO.getName() == null) {
                 gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                         gitlabUserE.getUsername(), accessToken);
                 gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
@@ -353,7 +349,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             uri += "devops/webhook";
             projectHook.setUrl(uri);
             List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
-            if (projectHooks.isEmpty()) {
+            if (projectHooks == null) {
                 applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                         gitlabProjectPayload.getGitlabProjectId(), gitlabProjectPayload.getUserId(), projectHook)
                         .getId()));

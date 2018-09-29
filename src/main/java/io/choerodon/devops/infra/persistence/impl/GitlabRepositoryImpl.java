@@ -125,9 +125,9 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     @Override
     public void deleteDevOpsApp(String groupName, String projectName, Integer userId) {
         try {
-            gitlabServiceClient.deleteProjectByProjectName(groupName,projectName, userId);
+            gitlabServiceClient.deleteProjectByProjectName(groupName, projectName, userId);
         } catch (FeignException e) {
-            throw new CommonException("error.file.delete", e);
+            throw new CommonException("error.app.delete", e);
         }
     }
 
