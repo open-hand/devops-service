@@ -6,6 +6,8 @@ import java.util.*;
 
 import com.google.gson.Gson;
 import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -46,7 +48,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
-
+    public static final Logger logger = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private Gson gson = new Gson();
 
     @Value("${services.gitlab.url}")
@@ -342,6 +344,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
         }
+    }
+
+    @Override
+    @Saga(code = "devops-set-app-err",
+            description = "devops set app status create err", inputSchema = "{}")
+    public void setAppErrStatus(String input) {
+        sagaClient.startSaga("devops-set-app-err", new StartInstanceDTO(input, "", ""));
     }
 
     private void initMasterBranch(DevOpsAppPayload gitlabProjectPayload, ApplicationE applicationE) {

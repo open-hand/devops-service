@@ -96,16 +96,7 @@ public class DevopsSagaHandler {
            try {
                applicationService.operationApplication(devOpsAppPayload);
            } catch (Exception e){
-               try {
-                   ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
-                   applicationE.setFailed(true);
-                   if (1 != applicationRepository.update(applicationE)) {
-                       LOGGER.error("update application {} set create failed status error", applicationE.getCode());
-                   }
-               } catch (Exception e1) {
-                   LOGGER.error("update application set create failed status error", e1);
-               }
-
+               applicationService.setAppErrStatus(data);
                throw e;
            }
            ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
@@ -115,6 +106,21 @@ public class DevopsSagaHandler {
                    LOGGER.error("update application set create success status error");
                }
            }
+        }
+        return data;
+    }
+
+    @SagaTask(code = "devopsCreateGitlabProjectErr",
+            description = "set  DevOps app status error",
+            sagaCode = "devops-set-app-err",
+            maxRetryCount = 0,
+            seq = 1)
+    public String setAppErr(String data) {
+        DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
+        ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
+        applicationE.setFailed(true);
+        if (1 != applicationRepository.update(applicationE)) {
+            LOGGER.error("update application {} set create failed status error", applicationE.getCode());
         }
         return data;
     }

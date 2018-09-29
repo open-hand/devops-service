@@ -84,6 +84,13 @@ public interface ApplicationService {
      */
     void operationApplication(DevOpsAppPayload gitlabProjectEventDTO);
 
+
+    /**
+     * 设置应用创建失败状态
+     * @param gitlabProjectEventDTO 应用信息
+     */
+    void setAppErrStatus(String gitlabProjectEventDTO);
+
     Boolean applicationExist(String uuid);
 
     /**
