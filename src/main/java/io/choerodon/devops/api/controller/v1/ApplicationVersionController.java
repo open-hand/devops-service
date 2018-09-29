@@ -100,7 +100,7 @@ public class ApplicationVersionController {
     @ApiOperation(value = "项目下查询应用所有已部署版本")
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+                    InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
     @GetMapping("/apps/{app_id}/version/list_deployed")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryDeployedByAppId(
             @ApiParam(value = "项目ID", required = true)
