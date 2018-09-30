@@ -90,6 +90,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                     Stage stage = new Stage();
                     stage.setDescription(commitStatuseDO.getDescription());
                     stage.setName(commitStatuseDO.getName());
+                    stage.setId(commitStatuseDO.getId());
                     stage.setStatus(commitStatuseDO.getStatus());
                     if(commitStatuseDO.getFinishedAt()!=null) {
                         stage.setFinishedAt(commitStatuseDO.getFinishedAt());

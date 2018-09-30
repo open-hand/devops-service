@@ -7,6 +7,8 @@ public class Stage {
     private String description;
     private String finishedAt;
     private String startedAt;
+    private Integer id;
+
 
     public String getName() {
         return name;
@@ -46,5 +48,13 @@ public class Stage {
 
     public void setStartedAt(String startedAt) {
         this.startedAt = startedAt;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }

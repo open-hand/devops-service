@@ -217,21 +217,21 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void handlerReleaseInstall(String msg, Long envId) {
-        logger.info("TTTTTTTTTTTTTTTTTTTTTTTT"+ msg);
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
         List<Resource> resources = JSONArray.parseArray(releasePayload.getResources(), Resource.class);
         String releaseName = releasePayload.getName();
-        logger.info("RRRRRRRRRRRRRRRRRRRRRRRR"+ releaseName);
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .query(applicationInstanceE.getCommandId());
-        devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-        devopsEnvCommandRepository.update(devopsEnvCommandE);
-        logger.info("ZZZZZZZZZZZZZZZZZZZZZZZ"+ releaseName);
-        applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
-        applicationInstanceRepository.update(applicationInstanceE);
-        logger.info("QQQQQQQQQQQQQQQQQQQQQQ"+ releaseName);
-        installResource(resources, applicationInstanceE);
+        if (applicationInstanceE != null) {
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                    .query(applicationInstanceE.getCommandId());
+            if (devopsEnvCommandE != null) {
+                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+                devopsEnvCommandRepository.update(devopsEnvCommandE);
+                applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
+                applicationInstanceRepository.update(applicationInstanceE);
+                installResource(resources, applicationInstanceE);
+            }
+        }
     }
 
 
@@ -425,12 +425,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void helmReleaseHookLogs(String key, String msg, Long envId) {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                 .selectByCode(KeyParseTool.getReleaseName(key), envId);
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
-        DevopsEnvCommandLogE devopsEnvCommandLogE = new DevopsEnvCommandLogE();
-        devopsEnvCommandLogE.initDevopsEnvCommandE(devopsEnvCommandE.getId());
-        devopsEnvCommandLogE.setLog(msg);
-        devopsEnvCommandLogRepository.create(devopsEnvCommandLogE);
+        if (applicationInstanceE != null) {
+            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            if (devopsEnvCommandE != null) {
+                DevopsEnvCommandLogE devopsEnvCommandLogE = new DevopsEnvCommandLogE();
+                devopsEnvCommandLogE.initDevopsEnvCommandE(devopsEnvCommandE.getId());
+                devopsEnvCommandLogE.setLog(msg);
+                devopsEnvCommandLogRepository.create(devopsEnvCommandLogE);
+            }
+        }
     }
 
     @Override
@@ -746,6 +750,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (resourceType == null) {
             resourceType = ResourceType.forString("MissType");
         }
+        if (resourceSyncPayload.getResources() == null) {
+            return;
+        }
         switch (resourceType) {
             case POD:
                 devopsEnvResourceES = devopsEnvResourceRepository
@@ -846,6 +853,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
         devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+        if (gitOpsSync.getResourceIDs() == null) {
+            return;
+        }
         if (gitOpsSync.getResourceIDs().isEmpty()) {
             return;
         }
