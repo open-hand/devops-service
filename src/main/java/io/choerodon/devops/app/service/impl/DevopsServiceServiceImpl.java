@@ -357,6 +357,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
+        devopsEnvCommandE.setObjectId(id);
+        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
+        devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        devopsServiceRepository.update(devopsServiceE);
+
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -394,10 +399,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     devopsServiceE.getId(), SERVICE, devopsEnvironmentE.getId(), path);
         }
 
-        devopsEnvCommandE.setObjectId(id);
-        devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-        devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-        devopsServiceRepository.update(devopsServiceE);
     }
 
 
@@ -558,22 +559,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES,
                                       List<Long> beforeDevopsServiceAppInstanceES,
                                       DevopsEnvCommandE devopsEnvCommandE) {
-        DevopsEnvironmentE devopsEnvironmentE =
-                devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
-        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
 
-        //处理文件
-        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(service);
-        objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, devopsServiceE.getEnvId(), path);
-
-        //操作文件成功后进行Service的数据库操作
+        //进行Service的数据库操作
         if (isCreate) {
             Long serviceId = devopsServiceRepository.insert(devopsServiceE).getId();
             devopsEnvCommandE.setObjectId(serviceId);
@@ -596,6 +584,20 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });
 
+        DevopsEnvironmentE devopsEnvironmentE =
+                devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+        //处理文件
+        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+        objectOperation.setType(service);
+        objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
+                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, devopsServiceE.getEnvId(), path);
 
     }
 
