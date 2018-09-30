@@ -14,9 +14,9 @@
         dgc.url,
         da.`name` appName
         FROM
-        devops_gitlab_commit dgc,
-        devops_application da,
-        devops_project dp
+        devops_gitlab_commit dgc
+        JOIN devops_application da ON dgc.app_id = da.id
+        JOIN devops_project dp ON da.project_id = dp.id
         WHERE
         <if test="appIds != null">
             dgc.app_id IN
@@ -28,12 +28,8 @@
             1
         </if>
         AND da.is_active = 1
-        AND dgc.app_id = da.id
         AND dp.id = #{projectId}
-        AND da.project_id = dp.id
-        AND Date(dgc.commit_date) &gt;= #{startDate}
-        AND Date(dgc.commit_date) &lt;= #{endDate}
+        AND dgc.commit_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY dgc.commit_date DESC
     </select>
 </mapper>
-
-        <!--CURDATE()-->

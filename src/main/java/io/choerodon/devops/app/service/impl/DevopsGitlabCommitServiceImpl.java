@@ -71,7 +71,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
         String ed = "null".equals(endDate) ?
-                sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
+                sdf.format(new Date(System.currentTimeMillis())) :
                 sdf.format(new Date(Long.valueOf(endDate)));
 
         // 查询应用列表下所有commit记录
@@ -107,7 +107,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
         String ed = "null".equals(endDate) ?
-                sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
+                sdf.format(new Date(System.currentTimeMillis())) :
                 sdf.format(new Date(Long.valueOf(endDate)));
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
