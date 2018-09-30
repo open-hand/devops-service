@@ -27,10 +27,14 @@
         <if test="appIds == null">
             1
         </if>
+        <if test="startDate != null">
+            AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
+        </if>
+        <if test="endDate != null">
+            AND dgc.commit_date <![CDATA[<=]]>  CONCAT('','${endDate}',' 23:59:59')
+        </if>
         AND da.is_active = 1
         AND dp.id = #{projectId}
-        AND dgc.commit_date &gt; #{startDate}
-        AND dgc.commit_date &lt; #{endDate}
         ORDER BY dgc.commit_date DESC
     </select>
 </mapper>
