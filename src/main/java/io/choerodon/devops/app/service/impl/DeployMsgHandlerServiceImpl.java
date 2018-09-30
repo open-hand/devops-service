@@ -217,16 +217,20 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void handlerReleaseInstall(String msg, Long envId) {
+        logger.info("TTTTTTTTTTTTTTTTTTTTTTTT"+ msg);
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
         List<Resource> resources = JSONArray.parseArray(releasePayload.getResources(), Resource.class);
         String releaseName = releasePayload.getName();
+        logger.info("RRRRRRRRRRRRRRRRRRRRRRRR"+ releaseName);
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .query(applicationInstanceE.getCommandId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
+        logger.info("ZZZZZZZZZZZZZZZZZZZZZZZ"+ releaseName);
         applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
         applicationInstanceRepository.update(applicationInstanceE);
+        logger.info("QQQQQQQQQQQQQQQQQQQQQQ"+ releaseName);
         installResource(resources, applicationInstanceE);
     }
 
