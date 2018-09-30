@@ -32,22 +32,26 @@ public class DevopsCheckController {
             @ApiParam(value = "version")
             @RequestParam(value = "version") String version) {
         devopsCheckLogService.checkLog(version);
-        return new ResponseEntity<String>(System.currentTimeMillis()+"",HttpStatus.OK);
+        return new ResponseEntity<>(System.currentTimeMillis() + "", HttpStatus.OK);
     }
 
     /**
-     * 平滑升级
+     * 平滑升级指定环境Id
      *
      * @param version   版本
+     * @param envId     环境id
      */
     @Permission(level = ResourceLevel.SITE,
             roles = {InitRoleCode.SITE_ADMINISTRATOR})
     @ApiOperation(value = "平滑升级")
-    @GetMapping("/fix")
-    public ResponseEntity updateUserMemberRole(
+    @GetMapping(value = "/v1/upgrade/env")
+    public ResponseEntity<String> checkLogByEnv(
             @ApiParam(value = "version")
-            @RequestParam(value = "version") String version) {
-        devopsCheckLogService.updateUserMemberRole(version);
-        return new ResponseEntity<>(HttpStatus.OK);
+            @RequestParam(value = "version") String version,
+            @ApiParam(value = "envId")
+            @RequestParam(value = "envId") Long envId) {
+        devopsCheckLogService.checkLogByEnv(version, envId);
+        return new ResponseEntity<>(System.currentTimeMillis() + "", HttpStatus.OK);
     }
+
 }
