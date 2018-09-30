@@ -71,6 +71,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             return new DevopsGitlabCommitDTO();
         }
 
+
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
                 .listCommits(projectId, appIdsMap, startDate, endDate);
@@ -100,6 +101,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         if (appIdsMap.isEmpty()) {
             return new Page<>();
         }
+
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
                 .listCommits(projectId, appIdsMap, startDate, endDate);
