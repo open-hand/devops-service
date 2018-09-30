@@ -52,9 +52,9 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                 if (userE != null) {
                     devopsGitlabCommitE.setUserId(userE.getId());
                 }
+                devopsGitlabCommitE.setCommitDate(commitDTO.getTimestamp());
+                devopsGitlabCommitRepository.create(devopsGitlabCommitE);
             }
-            devopsGitlabCommitE.setCommitDate(commitDTO.getTimestamp());
-            devopsGitlabCommitRepository.create(devopsGitlabCommitE);
         });
     }
 
