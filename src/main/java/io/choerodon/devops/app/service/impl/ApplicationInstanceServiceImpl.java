@@ -476,6 +476,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             code = applicationInstanceE.getCode();
         }
 
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //实例相关对象数据库操作
         if (applicationDeployDTO.getType().equals(CREATE)) {
@@ -499,9 +502,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
-            //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
@@ -727,14 +727,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
 
-        //实例相关对象数据库操作
-        instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-        instanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-        applicationInstanceRepository.update(instanceE);
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+
+        //实例相关对象数据库操作
+        instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        instanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        applicationInstanceRepository.update(instanceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
