@@ -351,6 +351,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
 
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
         devopsEnvCommandE.setObjectId(id);
@@ -360,9 +364,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -556,6 +557,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                       List<Long> beforeDevopsServiceAppInstanceES,
                                       DevopsEnvCommandE devopsEnvCommandE) {
 
+        DevopsEnvironmentE devopsEnvironmentE =
+                devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //进行Service的数据库操作
         if (isCreate) {
@@ -580,11 +586,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });
 
-        DevopsEnvironmentE devopsEnvironmentE =
-                devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);

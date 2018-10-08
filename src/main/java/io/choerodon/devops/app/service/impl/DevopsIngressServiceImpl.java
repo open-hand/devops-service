@@ -242,6 +242,12 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
+        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
         //更新ingress
         devopsEnvCommandE.setObjectId(ingressId);
         DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(ingressId);
@@ -249,11 +255,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDO.setStatus(IngressStatus.OPERATING.getStatus());
         devopsIngressRepository.updateIngress(devopsIngressDO);
 
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
