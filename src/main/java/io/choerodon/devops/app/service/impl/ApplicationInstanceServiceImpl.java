@@ -839,7 +839,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         .anyMatch(entry -> {
                             EnvSession envSession = entry.getValue();
                             return envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())
-                                    && agentExpectVersion.compareTo(envSession.getVersion()) < 1;
+                                    && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1;
                         })));
     }
 

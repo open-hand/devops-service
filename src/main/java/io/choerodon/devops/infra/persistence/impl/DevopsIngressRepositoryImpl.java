@@ -22,6 +22,7 @@ import io.choerodon.devops.domain.application.repository.CertificationRepository
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.DevopsIngressRepository;
 import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
+import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.IngressStatus;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
@@ -156,8 +157,7 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
                 if (envSession.getEnvId().equals(t.getEnvId())
-                        && agentExpectVersion.compareTo(
-                        envSession.getVersion() == null ? "0" : envSession.getVersion()) < 1) {
+                        && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1) {
                     devopsIngressDTO.setEnvStatus(true);
                 }
             }
