@@ -24,7 +24,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification_file.groovy') {
         preConditions{
             columnExists(tableName: "devops_certification_file",columnName:"cert_id")
         }
-        sqlFile(path: "script/db/devops_certification_file.sql")
+        sql("update devops_certification A,devops_certification_file B set A.certification_file_id=B.id where A.id=B.cert_id")
     }
 
     changeSet(author: 'Younger', id: '2018-10-08-drop-column') {
