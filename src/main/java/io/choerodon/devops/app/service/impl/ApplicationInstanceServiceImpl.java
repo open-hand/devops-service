@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.swagger.annotations.ApiParam;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -641,6 +640,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public List<AppInstanceCodeDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        return ConvertHelper.convertList(applicationInstanceRepository
+                .listByAppIdAndEnvId(projectId, appId, envId), AppInstanceCodeDTO.class);
+    }
+
+    @Override
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
@@ -684,6 +689,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Long envId = instanceE.getDevopsEnvironmentE().getId();
         sentInstance(payload, releaseName, HelmType.HELM_RELEASE_START.toValue(),
                 namespace, devopsEnvCommandE.getId(), envId);
+    }
+
+    @Override
+    public void instanceReStart(Long instanceId) {
+        ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(instanceE.getApplicationVersionE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        String value = applicationInstanceRepository.queryValueByInstanceId(instanceId);
+        instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        applicationInstanceRepository.update(instanceE);
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
+        devopsEnvCommandE.setId(null);
+        deployService.deploy(applicationE, applicationVersionE, instanceE, devopsEnvironmentE, value, devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
     }
 
     @Override

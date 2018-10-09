@@ -83,6 +83,16 @@ public interface ApplicationInstanceService {
     List<AppInstanceCodeDTO> listByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
 
     /**
+     * 环境下某应用运行中或失败的实例
+     *
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param envId     环境id
+     * @return list of AppInstanceCodeDTO
+     */
+    List<AppInstanceCodeDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+
+    /**
      * 实例停止
      *
      * @param instanceId 实例id
@@ -95,6 +105,14 @@ public interface ApplicationInstanceService {
      * @param instanceId 实例id
      */
     void instanceStart(Long instanceId);
+
+
+    /**
+     * 实例重新部署
+     *
+     * @param instanceId 实例id
+     */
+    void instanceReStart(Long instanceId);
 
     /**
      * 实例删除

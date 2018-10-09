@@ -277,6 +277,29 @@ public class ApplicationInstanceController {
                 .orElseThrow(() -> new CommonException("error.appInstance.query"));
     }
 
+    /**
+     * 环境下某应用运行中或失败的实例
+     *
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param envId     环境id
+     * @return list of AppInstanceCodeDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "环境下某应用运行中或失败的实例")
+    @GetMapping("/listByAppIdAndEnvId")
+    public ResponseEntity<List<AppInstanceCodeDTO>> listByAppIdAndEnvId(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境 ID")
+            @RequestParam Long envId,
+            @ApiParam(value = "应用Id")
+            @RequestParam Long appId) {
+        return Optional.ofNullable(applicationInstanceService.listByAppIdAndEnvId(projectId, appId, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appInstance.query"));
+    }
+
 
     /**
      * 获取部署实例资源对象
@@ -355,6 +378,25 @@ public class ApplicationInstanceController {
             @ApiParam(value = "实例ID", required = true)
             @PathVariable Long instanceId) {
         applicationInstanceService.instanceStart(instanceId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 实例重新部署
+     *
+     * @param projectId  项目id
+     * @param instanceId 实例id
+     * @return responseEntity
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "实例重新部署")
+    @PutMapping(value = "/{instanceId}/restart")
+    public ResponseEntity restart(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable Long instanceId) {
+        applicationInstanceService.instanceReStart(instanceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

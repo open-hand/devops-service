@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -60,23 +59,23 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     @Override
-    public DevopsGitlabCommitDTO getCommits(Long projectId, String appIds, String startDate, String endDate) {
+    public DevopsGitlabCommitDTO getCommits(Long projectId, String appIds, Date startDate, Date endDate) {
 
         List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
         }.getType());
         if (appIdsMap.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
-        // 如果传入的时间为null，表示查询至今所有的commit记录
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
-        String ed = "null".equals(endDate) ?
-                sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
-                sdf.format(new Date(Long.valueOf(endDate)));
+//        // 如果传入的时间为null，表示查询至今所有的commit记录
+//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+//        String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
+//        String ed = "null".equals(endDate) ?
+//                sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
+//                sdf.format(new Date(Long.valueOf(endDate)));
 
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, appIdsMap, sd, ed);
+                .listCommits(projectId, appIdsMap, startDate, endDate);
         if (devopsGitlabCommitES.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
@@ -96,25 +95,20 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
 
     @Override
     public Page<CommitFormRecordDTO> getRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
-                                                      String startDate, String endDate) {
+                                                      Date startDate, Date endDate) {
 
         List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
         }.getType());
         if (appIdsMap.isEmpty()) {
             return new Page<>();
         }
-        // 如果传入的时间为null，表示查询至今所有的commit记录
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
-        String ed = "null".equals(endDate) ?
-                sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
-                sdf.format(new Date(Long.valueOf(endDate)));
+
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
-                .listCommits(projectId, appIdsMap, sd, ed);
+                .listCommits(projectId, appIdsMap, startDate, endDate);
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
-        return getCommitFormRecordDTOS(projectId, appIdsMap, pageRequest, userMap, sd, ed);
+        return getCommitFormRecordDTOS(projectId, appIdsMap, pageRequest, userMap, startDate, endDate);
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {
@@ -159,7 +153,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     }
 
     private Page<CommitFormRecordDTO> getCommitFormRecordDTOS(Long projectId, List<Long> appId, PageRequest pageRequest,
-                                                              Map<Long, UserE> userMap, String startDate, String endDate) {
+                                                              Map<Long, UserE> userMap, Date startDate, Date endDate) {
         return devopsGitlabCommitRepository.pageCommitRecord(projectId, appId, pageRequest, userMap, startDate, endDate);
     }
 

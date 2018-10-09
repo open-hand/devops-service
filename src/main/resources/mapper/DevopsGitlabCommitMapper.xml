@@ -31,8 +31,12 @@
         AND dgc.app_id = da.id
         AND dp.id = #{projectId}
         AND da.project_id = dp.id
-        AND Date(dgc.commit_date) &gt;= #{startDate}
-        AND Date(dgc.commit_date) &lt;= #{endDate}
+        <if test="startDate != null">
+            AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
+        </if>
+        <if test="endDate != null">
+            AND dgc.commit_date <![CDATA[<=]]>  CONCAT('','${endDate}',' 23:59:59')
+        </if>
     </select>
 </mapper>
 
