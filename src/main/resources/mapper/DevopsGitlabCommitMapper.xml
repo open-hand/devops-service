@@ -29,8 +29,8 @@
         </if>
         AND da.is_active = 1
         AND dgc.app_id = da.id
-        AND dp.id = #{projectId}
-        AND da.project_id = dp.id
+        AND dp.iam_project_id = #{projectId}
+        AND da.project_id = dp.iam_project_id
         <if test="startDate != null">
             AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
         </if>
