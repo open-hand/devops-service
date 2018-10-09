@@ -1,0 +1,1 @@
+	update devops_certification A,devops_certification_file B set A.certification_file_id=B.id where A.id=B.cert_id;

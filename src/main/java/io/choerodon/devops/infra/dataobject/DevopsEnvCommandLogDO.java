@@ -4,17 +4,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import io.choerodon.mybatis.annotation.ModifyAudit;
-import io.choerodon.mybatis.annotation.VersionAudit;
-import io.choerodon.mybatis.domain.AuditDomain;
-
 /**
  * Created by younger on 2018/4/24.
  */
-@VersionAudit
-@ModifyAudit
 @Table(name = "devops_env_command_log")
-public class DevopsEnvCommandLogDO extends AuditDomain {
+public class DevopsEnvCommandLogDO {
+
     @Id
     @GeneratedValue
     private Long id;

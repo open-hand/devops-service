@@ -14,39 +14,39 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class DevopsProjectDO extends AuditDomain {
 
     @Id
-    private Long id;
-    private Integer gitlabGroupId;
-    private Integer envGroupId;
+    private Long iamProjectId;
+    private Long devopsAppGroupId;
+    private Long devopsEnvGroupId;
 
     public DevopsProjectDO() {
 
     }
 
-    public DevopsProjectDO(Long id) {
-        this.id = id;
+    public DevopsProjectDO(Long iamProjectId) {
+        this.iamProjectId = iamProjectId;
     }
 
-    public Long getId() {
-        return id;
+    public Long getIamProjectId() {
+        return iamProjectId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIamProjectId(Long iamProjectId) {
+        this.iamProjectId = iamProjectId;
     }
 
-    public Integer getGitlabGroupId() {
-        return gitlabGroupId;
+    public Long getDevopsAppGroupId() {
+        return devopsAppGroupId;
     }
 
-    public void setGitlabGroupId(Integer gitlabGroupId) {
-        this.gitlabGroupId = gitlabGroupId;
+    public void setDevopsAppGroupId(Long devopsAppGroupId) {
+        this.devopsAppGroupId = devopsAppGroupId;
     }
 
-    public Integer getEnvGroupId() {
-        return envGroupId;
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
     }
 
-    public void setEnvGroupId(Integer envGroupId) {
-        this.envGroupId = envGroupId;
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
     }
 }

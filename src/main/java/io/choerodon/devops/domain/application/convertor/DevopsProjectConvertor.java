@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
-import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 
 /**
@@ -16,18 +15,18 @@ public class DevopsProjectConvertor implements ConvertorI<GitlabGroupE, DevopsPr
     @Override
     public GitlabGroupE doToEntity(DevopsProjectDO devopsProjectDO) {
         GitlabGroupE gitlabGroupE = new GitlabGroupE();
-        gitlabGroupE.initGitlabGroupId(devopsProjectDO.getGitlabGroupId());
-        gitlabGroupE.initEnvGroupId(devopsProjectDO.getEnvGroupId());
-        gitlabGroupE.initProjectE(devopsProjectDO.getId());
+        gitlabGroupE.setDevopsAppGroupId(devopsProjectDO.getDevopsAppGroupId());
+        gitlabGroupE.setDevopsEnvGroupId(devopsProjectDO.getDevopsEnvGroupId());
+        gitlabGroupE.initProjectE(devopsProjectDO.getIamProjectId());
         return gitlabGroupE;
     }
 
     @Override
     public DevopsProjectDO entityToDo(GitlabGroupE gitlabGroupE) {
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setId(gitlabGroupE.getProjectE().getId());
-        devopsProjectDO.setGitlabGroupId(TypeUtil.objToInteger(gitlabGroupE.getGitlabGroupId()));
-        devopsProjectDO.setEnvGroupId(TypeUtil.objToInteger(gitlabGroupE.getEnvGroupId()));
+        devopsProjectDO.setIamProjectId(gitlabGroupE.getProjectE().getId());
+        devopsProjectDO.setDevopsAppGroupId(gitlabGroupE.getDevopsAppGroupId());
+        devopsProjectDO.setDevopsEnvGroupId(gitlabGroupE.getDevopsEnvGroupId());
         return devopsProjectDO;
     }
 }

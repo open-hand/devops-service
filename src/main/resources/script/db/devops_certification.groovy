@@ -38,4 +38,12 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1", beforeColumn: 'created_by')
         }
     }
+
+
+    changeSet(author: 'Runge', id: '2018-10-09-add-column') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: "certification_file_id", type: "BIGINT UNSIGNED", afterColumn: 'command_id')
+        }
+    }
+
 }

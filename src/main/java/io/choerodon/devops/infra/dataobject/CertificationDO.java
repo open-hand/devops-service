@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.Date;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -19,11 +19,11 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @ModifyAudit
 @VersionAudit
 @Table(name = "devops_certification")
-public class CertificationDO  extends AuditDomain {
+public class CertificationDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
-
+    private Long certificationFileId;
     private String name;
     private Long envId;
     private String domains;
@@ -159,5 +159,13 @@ public class CertificationDO  extends AuditDomain {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getCertificationFileId() {
+        return certificationFileId;
+    }
+
+    public void setCertificationFileId(Long certificationFileId) {
+        this.certificationFileId = certificationFileId;
     }
 }

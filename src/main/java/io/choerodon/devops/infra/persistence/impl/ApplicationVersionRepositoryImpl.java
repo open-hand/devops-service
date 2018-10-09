@@ -57,10 +57,10 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     public ApplicationVersionE create(ApplicationVersionE applicationVersionE) {
         ApplicationVersionDO applicationVersionDO =
                 ConvertHelper.convert(applicationVersionE, ApplicationVersionDO.class);
+        applicationVersionDO.setReadmeValueId(setReadme(applicationVersionE.getApplicationVersionReadmeV().getReadme()));
         if (applicationVersionMapper.insert(applicationVersionDO) != 1) {
             throw new CommonException("error.version.insert");
         }
-        setReadme(applicationVersionDO.getId(), applicationVersionE.getApplicationVersionReadmeV().getReadme());
         return ConvertHelper.convert(applicationVersionDO, ApplicationVersionE.class);
     }
 
@@ -170,15 +170,17 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public void setReadme(Long versionId, String readme) {
-        applicationVersionReadmeMapper.insert(new ApplicationVersionReadmeDO(versionId, readme));
+    public Long setReadme(String readme) {
+        ApplicationVersionReadmeDO applicationVersionReadmeDO = new ApplicationVersionReadmeDO(readme);
+        applicationVersionReadmeMapper.insert(applicationVersionReadmeDO);
+        return applicationVersionReadmeDO.getId();
     }
 
     @Override
-    public String getReadme(Long versionId) {
+    public String getReadme(Long readmeValueId) {
         String readme;
         try {
-            readme = applicationVersionReadmeMapper.selectOne(new ApplicationVersionReadmeDO(versionId)).getReadme();
+            readme = applicationVersionReadmeMapper.selectByPrimaryKey(readmeValueId).getReadme();
         } catch (Exception ignore) {
             readme = "# 暂无";
         }
@@ -192,17 +194,18 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         if (applicationVersionMapper.updateByPrimaryKey(applicationVersionDO) != 1) {
             throw new CommonException("error.version.update");
         }
-        updateReadme(applicationVersionDO.getId(), applicationVersionE.getApplicationVersionReadmeV().getReadme());
+        updateReadme(applicationVersionMapper.selectByPrimaryKey(applicationVersionE.getId()).getReadmeValueId(), applicationVersionE.getApplicationVersionReadmeV().getReadme());
     }
 
-    private void updateReadme(Long versionId, String readme) {
+    private void updateReadme(Long readmeValueId, String readme) {
         ApplicationVersionReadmeDO readmeDO;
         try {
-            readmeDO = applicationVersionReadmeMapper.selectOne(new ApplicationVersionReadmeDO(versionId));
+
+            readmeDO = applicationVersionReadmeMapper.selectByPrimaryKey(readmeValueId);
             readmeDO.setReadme(readme);
             applicationVersionReadmeMapper.updateByPrimaryKey(readmeDO);
         } catch (Exception e) {
-            readmeDO = new ApplicationVersionReadmeDO(versionId, readme);
+            readmeDO = new ApplicationVersionReadmeDO(readme);
             applicationVersionReadmeMapper.insert(readmeDO);
         }
     }

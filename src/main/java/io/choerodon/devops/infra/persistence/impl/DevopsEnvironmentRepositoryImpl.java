@@ -125,6 +125,6 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
 
     @Override
     public void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
-        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(), devopsEnvironmentE.getGitCommit(), devopsEnvironmentE.getDevopsSyncCommit(), devopsEnvironmentE.getAgentSyncCommit());
+        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(), devopsEnvironmentE.getSagaSyncCommit(), devopsEnvironmentE.getDevopsSyncCommit(), devopsEnvironmentE.getAgentSyncCommit());
     }
 }

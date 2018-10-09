@@ -7,27 +7,28 @@ import io.choerodon.devops.infra.common.util.enums.Visibility;
  * Created by younger on 2018/3/29.
  */
 public class GitlabGroupE {
-    private Integer gitlabGroupId;
-    private Integer envGroupId;
+    private Long devopsAppGroupId;
+    private Long devopsEnvGroupId;
     private String path;
     private String name;
     private Visibility visibility;
     private ProjectE projectE;
 
-    public Integer getGitlabGroupId() {
-        return gitlabGroupId;
+
+    public Long getDevopsAppGroupId() {
+        return devopsAppGroupId;
     }
 
-    public void initGitlabGroupId(Integer gitlabGroupId) {
-        this.gitlabGroupId = gitlabGroupId;
+    public void setDevopsAppGroupId(Long devopsAppGroupId) {
+        this.devopsAppGroupId = devopsAppGroupId;
     }
 
-    public Integer getEnvGroupId() {
-        return envGroupId;
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
     }
 
-    public void initEnvGroupId(Integer envGroupId) {
-        this.envGroupId = envGroupId;
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
     }
 
     public String getPath() {
@@ -48,14 +49,6 @@ public class GitlabGroupE {
 
     public ProjectE getProjectE() {
         return projectE;
-    }
-
-    public void setGitlabGroupId(Integer gitlabGroupId) {
-        this.gitlabGroupId = gitlabGroupId;
-    }
-
-    public void setEnvGroupId(Integer envGroupId) {
-        this.envGroupId = envGroupId;
     }
 
     public void setProjectE(ProjectE projectE) {

@@ -20,6 +20,7 @@ public class CertificationE {
     private Date validUntil;
     private String commandType;
     private String commandStatus;
+    private Long certificationFileId;
     private String error;
 
     public CertificationE() {
@@ -144,5 +145,13 @@ public class CertificationE {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Long getCertificationFileId() {
+        return certificationFileId;
+    }
+
+    public void setCertificationFileId(Long certificationFileId) {
+        this.certificationFileId = certificationFileId;
     }
 }

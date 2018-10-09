@@ -382,9 +382,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         if (KeyParseTool.getResourceType(msg).equals(ResourceType.SERVICE.getType())) {
             DevopsServiceE devopsServiceE =
-                    devopsServiceRepository.selectByNameAndNamespace(
+                    devopsServiceRepository.selectByNameAndEnvId(
                             KeyParseTool.getResourceName(msg),
-                            KeyParseTool.getNamespace(msg));
+                            envId);
             //更新网络数据
             if (devopsServiceE != null) {
                 DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
@@ -604,9 +604,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void netWorkServiceFail(String key, String msg) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                KeyParseTool.getValue(key, SERVICE_KIND), KeyParseTool.getValue(key, "env"));
+    public void netWorkServiceFail(String key, Long envId, String msg) {
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                KeyParseTool.getValue(key, SERVICE_KIND), envId);
         devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
         devopsServiceRepository.update(devopsServiceE);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -625,9 +625,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void netWorkServiceDeleteFail(String key, String msg) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                KeyParseTool.getValue(key, SERVICE_KIND), KeyParseTool.getValue(key, "env"));
+    public void netWorkServiceDeleteFail(String key, Long envId, String msg) {
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                KeyParseTool.getValue(key, SERVICE_KIND), envId);
         devopsServiceE.setStatus(ServiceStatus.DELETED.getStatus());
         devopsServiceRepository.update(devopsServiceE);
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
@@ -672,8 +672,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
             String namespace = v1Service.getMetadata().getNamespace();
             if (flag) {
-                DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                        v1Service.getMetadata().getName(), namespace);
+                DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                        v1Service.getMetadata().getName(), envId);
                 if (devopsServiceE == null) {
                     devopsServiceE = new DevopsServiceE();
                     syncService(devopsServiceE, msg, applicationInstanceE);
@@ -896,7 +896,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private void syncService(Long envId, DevopsEnvironmentE devopsEnvironmentE, List<DevopsEnvFileErrorE> errorDevopsFiles, ResourceCommit resourceCommit, String[] objects) {
         DevopsEnvFileResourceE devopsEnvFileResourceE;
         DevopsServiceE devopsServiceE = devopsServiceRepository
-                .selectByNameAndNamespace(objects[1], devopsEnvironmentE.getCode());
+                .selectByNameAndEnvId(objects[1], envId);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE_KIND);
         if (updateEnvCommandStatus(resourceCommit, devopsServiceE.getCommandId(),
@@ -1061,12 +1061,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (lab.get(SERVICE_LABLE) != null && lab.get(SERVICE_LABLE).equals(SERVICE_KIND)) {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(
                     applicationInstanceE.getDevopsEnvironmentE().getId());
-            if (devopsServiceRepository.selectByNameAndNamespace(
-                    v1Service.getMetadata().getName(), devopsEnvironmentE.getCode()) == null) {
+            if (devopsServiceRepository.selectByNameAndEnvId(
+                    v1Service.getMetadata().getName(), devopsEnvironmentE.getId()) == null) {
                 devopsServiceE.setEnvId(devopsEnvironmentE.getId());
                 devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
                 devopsServiceE.setName(v1Service.getMetadata().getName());
-                devopsServiceE.setNamespace(v1Service.getMetadata().getNamespace());
                 devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
                 devopsServiceE.setPorts(gson.fromJson(
                         gson.toJson(v1Service.getSpec().getPorts()),
@@ -1085,7 +1084,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
                     devopsServiceAppInstanceE.setServiceId(devopsServiceE.getId());
                     devopsServiceAppInstanceE.setAppInstanceId(applicationInstanceE.getId());
-                    devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
                     devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
                 }
 
@@ -1161,8 +1159,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsIngressPathE.setDevopsIngressE(devopsIngressE);
                     devopsIngressPathE.setServiceName(path.getBackend().getServiceName());
                     DevopsServiceE devopsServiceE = devopsServiceRepository
-                            .selectByNameAndNamespace(path.getBackend().getServiceName(),
-                                    v1beta1Ingress.getMetadata().getNamespace());
+                            .selectByNameAndEnvId(path.getBackend().getServiceName(),
+                                    envId);
                     if (devopsServiceE != null) {
                         devopsIngressPathE.setServiceId(devopsServiceE.getId());
                     }

@@ -22,4 +22,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command_log.groovy') {
             column(name: "command_id")
         }
     }
+
+
+    changeSet(author: 'Younger', id: '2018-10-08-drop-column') {
+        dropColumn(columnName: "object_version_number", tableName: "devops_env_command_log")
+        dropColumn(columnName: "created_by", tableName: "devops_env_command_log")
+        dropColumn(columnName: "creation_date", tableName: "devops_env_command_log")
+        dropColumn(columnName: "last_updated_by", tableName: "devops_env_command_log")
+        dropColumn(columnName: "last_update_date", tableName: "devops_env_command_log")
+    }
 }

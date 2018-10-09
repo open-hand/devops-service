@@ -37,7 +37,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
         if (gitLabUserId == null) {
             return null;
         }
-        return userAttrMapper.selectOne(userAttrDO).getId();
+        return userAttrMapper.selectOne(userAttrDO).getIamUserId();
     }
 
 }

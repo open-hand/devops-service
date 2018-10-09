@@ -39,7 +39,7 @@
         ) ds
         JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_application da ON da.id = ds.app_id
-        LEFT JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
+        LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         WHERE
         1=1
@@ -75,8 +75,8 @@
         de.`name` AS env_name,
         de.`code` AS namespace,
         cmd.`status` commandStatus,
-        cmd.command_type  commandType,
-        cmd.error  error,
+        cmd.command_type commandType,
+        cmd.error error,
         da.project_id AS appProjectId,
         dsai.app_instance_id AS app_instance_id,
         dsai.`code` AS code,
@@ -104,7 +104,7 @@
         JOIN devops_env de ON ds.env_id = de.id
         LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
         LEFT JOIN devops_application da ON da.id = ds.app_id
-        LEFT JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
+        LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         WHERE 1
         <include refid="sqlparam"/>
@@ -130,7 +130,7 @@
         FROM
         devops_service ds
         INNER JOIN devops_env de ON ds.env_id = de.id
-        LEFT JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
+        LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
         LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
         LEFT JOIN devops_application da ON da.id = dai.app_id
         WHERE

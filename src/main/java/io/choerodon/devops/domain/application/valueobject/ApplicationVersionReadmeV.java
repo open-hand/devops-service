@@ -8,23 +8,22 @@ import org.springframework.stereotype.Component;
 public class ApplicationVersionReadmeV {
 
     private Long id;
-    private Long versionId;
     private String readme;
 
 
     public ApplicationVersionReadmeV() {
     }
 
-    public ApplicationVersionReadmeV(Long versionId) {
-        this.versionId = versionId;
+    public ApplicationVersionReadmeV(Long id) {
+        this.id = id;
+    }
+
+    public ApplicationVersionReadmeV(String readme, Long id) {
+        this.readme = readme;
+        this.id = id;
     }
 
     public ApplicationVersionReadmeV(String readme) {
-        this.readme = readme;
-    }
-
-    public ApplicationVersionReadmeV(Long versionId, String readme) {
-        this.versionId = versionId;
         this.readme = readme;
     }
 
@@ -36,13 +35,6 @@ public class ApplicationVersionReadmeV {
         this.id = id;
     }
 
-    public Long getVersionId() {
-        return versionId;
-    }
-
-    public void setVersionId(Long versionId) {
-        this.versionId = versionId;
-    }
 
     public String getReadme() {
         return readme;

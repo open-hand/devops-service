@@ -12,4 +12,8 @@ databaseChangeLog(logicalFilePath: 'event_producer_record.groovy') {
             column(name: 'create_time', type: 'DATETIME', remarks: '创建时间')
         }
     }
+
+    changeSet(author: 'Younger', id: '2018-10-08-delete-table') {
+        dropTable(tableName: "event_producer_record")
+    }
 }

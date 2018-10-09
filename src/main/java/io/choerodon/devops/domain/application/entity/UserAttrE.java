@@ -5,7 +5,7 @@ package io.choerodon.devops.domain.application.entity;
  */
 public class UserAttrE {
 
-    private Long id;
+    private Long iamUserId;
     private Long gitlabUserId;
 
     public UserAttrE() {
@@ -13,16 +13,16 @@ public class UserAttrE {
     }
 
     public UserAttrE(Long id, Long gitlabUserId) {
-        this.id = id;
+        this.iamUserId = id;
         this.gitlabUserId = gitlabUserId;
     }
 
-    public Long getId() {
-        return id;
+    public Long getIamUserId() {
+        return iamUserId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
     }
 
     public Long getGitlabUserId() {

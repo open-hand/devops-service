@@ -18,4 +18,26 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_readme.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+
+
+    changeSet(author: 'Runge', id: '2018-10-08-move-data') {
+        preConditions{
+            columnExists(tableName: "devops_app_version_readme",columnName:"version_id")
+        }
+        sqlFile(path: "script/db/app_version.sql")
+    }
+
+    changeSet(author: 'Runge', id: '2018-10-08-drop-column') {
+        dropColumn(columnName: "object_version_number", tableName: "devops_app_version_readme")
+        dropColumn(columnName: "created_by", tableName: "devops_app_version_readme")
+        dropColumn(columnName: "creation_date", tableName: "devops_app_version_readme")
+        dropColumn(columnName: "last_updated_by", tableName: "devops_app_version_readme")
+        dropColumn(columnName: "last_update_date", tableName: "devops_app_version_readme")
+        dropColumn(columnName: "version_id", tableName: "devops_app_version_readme")
+
+    }
+
+
+
 }

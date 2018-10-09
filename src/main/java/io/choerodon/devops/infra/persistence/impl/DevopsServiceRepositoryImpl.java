@@ -142,13 +142,6 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         return devopsServiceMapper.selectDeployedEnv();
     }
 
-    @Override
-    public DevopsServiceE selectByNameAndNamespace(String name, String namespace) {
-        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
-        devopsServiceDO.setName(name);
-        devopsServiceDO.setNamespace(namespace);
-        return ConvertHelper.convert(devopsServiceMapper.selectOne(devopsServiceDO), DevopsServiceE.class);
-    }
 
     @Override
     public DevopsServiceE selectByNameAndEnvId(String name, Long envId) {

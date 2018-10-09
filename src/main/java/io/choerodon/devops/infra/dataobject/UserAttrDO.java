@@ -17,17 +17,17 @@ import io.choerodon.mybatis.domain.AuditDomain;
 public class UserAttrDO extends AuditDomain {
 
     @Id
-    private Long id;
+    private Long iamUserId;
 
     @NotNull
     private Long gitlabUserId;
 
-    public Long getId() {
-        return id;
+    public Long getIamUserId() {
+        return iamUserId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
     }
 
     public Long getGitlabUserId() {

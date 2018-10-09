@@ -11,7 +11,6 @@ public class DevopsServiceE {
     private Long envId;
     private Long appId;
     private String name;
-    private String namespace;
     private String status;
     private List<PortMapE> ports;
     private String externalIp;
@@ -53,13 +52,6 @@ public class DevopsServiceE {
         this.name = name;
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
 
     public String getStatus() {
         return status;

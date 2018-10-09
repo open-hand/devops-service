@@ -37,7 +37,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
         if (createOrUpdateGitlabUserE != null) {
             UserAttrE userAttrE = new UserAttrE();
-            userAttrE.setId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+            userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
             userAttrE.setGitlabUserId(createOrUpdateGitlabUserE.getId().longValue());
             userAttrRepository.insert(userAttrE);
         }

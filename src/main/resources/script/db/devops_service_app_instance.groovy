@@ -20,4 +20,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service_app_instance.groovy') {
         addUniqueConstraint(tableName: 'devops_service_app_instance', constraintName: 'uk_service_instance_id',
                 columnNames: 'service_id,app_instance_id')
     }
+
+    changeSet(id: '2018-10-08-rename-table', author: 'younger') {
+        dropColumn(columnName: "code", tableName: "devops_service_app_instance")
+        renameTable(newTableName: 'devops_service_instance', oldTableName: 'devops_service_app_instance')
+
+    }
+
+
 }

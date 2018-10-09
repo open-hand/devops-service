@@ -660,7 +660,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             devopsEnvironmentRepository.update(devopsEnvironmentE);
                             GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
                             GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectE.getId());
-                            gitlabProjectPayload.setGroupId(gitlabGroupE.getEnvGroupId());
+                            gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()));
                             gitlabProjectPayload.setUserId(ADMIN);
                             gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());
                             gitlabProjectPayload.setOrganizationId(null);
@@ -769,7 +769,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             projectDOList.forEach(t -> {
                 CheckLog checkLog = new CheckLog();
                 try {
-                    Long projectId = t.getId();
+                    Long projectId = t.getIamProjectId();
                     ProjectE projectE = iamRepository.queryIamProject(projectId);
                     checkLog.setContent("project: " + projectE.getName() + " create gitops group");
                     Organization organization = iamRepository
@@ -787,7 +787,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         responseEntity = gitlabServiceClient.createGroup(group, ADMIN);
                         group = responseEntity.getBody();
                         DevopsProjectDO devopsProjectDO = new DevopsProjectDO(projectId);
-                        devopsProjectDO.setEnvGroupId(group.getId());
+                        devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(group.getId()));
                         devopsProjectRepository.updateProjectAttr(devopsProjectDO);
                         checkLog.setResult(SUCCESS);
                     } catch (FeignException e) {
