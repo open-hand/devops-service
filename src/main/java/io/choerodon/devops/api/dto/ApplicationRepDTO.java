@@ -19,7 +19,7 @@ public class ApplicationRepDTO {
     private String contributor;
     private String description;
     private String sonarUrl;
-    private Boolean isFailed;
+    private Boolean isFail;
 
     public Long getId() {
         return id;
@@ -118,11 +118,11 @@ public class ApplicationRepDTO {
         this.sonarUrl = sonarUrl;
     }
 
-    public Boolean getFailed() {
-        return isFailed;
+    public Boolean getFail() {
+        return isFail;
     }
 
-    public void setFailed(Boolean failed) {
-        isFailed = failed;
+    public void setFail(Boolean fail) {
+        isFail = fail;
     }
 }

@@ -142,14 +142,14 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.commandNotSend(msg.getCommandId(), msg.getPayload());
                 break;
             case NETWORK_SERVICE_FAILED:
-                deployMsgHandlerService.netWorkServiceFail(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.netWorkServiceFail(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             case NETWORK_INGRESS_FAILED:
                 deployMsgHandlerService.netWorkIngressFail(
                         msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             case NETWORK_SERVICE_DELETE_FAILED:
-                deployMsgHandlerService.netWorkServiceDeleteFail(msg.getKey(), msg.getPayload());
+                deployMsgHandlerService.netWorkServiceDeleteFail(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
                 break;
             case NETWORK_INGRESS_DELETE_FAILED:
                 deployMsgHandlerService.netWorkIngressDeleteFail(

@@ -32,13 +32,15 @@ public interface CertificationRepository {
 
     void updateValid(CertificationE certificationE);
 
+    void updateCertFileId(CertificationE certificationE);
+
     void clearValid(Long certId);
 
     void deleteById(Long certId);
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 
-    void storeCertFile(CertificationFileDO certificationFileDO);
+    Long storeCertFile(CertificationFileDO certificationFileDO);
 
     CertificationFileDO getCertFile(Long certId);
 

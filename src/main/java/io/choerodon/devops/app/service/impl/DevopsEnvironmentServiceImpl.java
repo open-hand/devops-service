@@ -137,7 +137,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
-        gitlabProjectPayload.setGroupId(gitlabGroupE.getEnvGroupId());
+        gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()));
         gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
@@ -475,9 +475,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository
                     .query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
         }
-        if (devopsEnvironmentE.getGitCommit() != null) {
-            envSyncStatusDTO.setGitCommit(devopsEnvCommitRepository
-                    .query(devopsEnvironmentE.getGitCommit()).getCommitSha());
+        if (devopsEnvironmentE.getSagaSyncCommit() != null) {
+            envSyncStatusDTO.setSagaSyncCommit(devopsEnvCommitRepository
+                    .query(devopsEnvironmentE.getSagaSyncCommit()).getCommitSha());
         }
         envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
                 gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));

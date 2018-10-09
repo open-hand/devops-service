@@ -3,12 +3,12 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
+import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.exception.CommonException;
-import feign.FeignException;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
@@ -71,9 +71,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         group = responseEntity.getBody();
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
         if (groupCodeSuffix.isEmpty()) {
-            devopsProjectDO.setGitlabGroupId(group.getId());
+            devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(group.getId()));
         } else if ("-gitops".equals(groupCodeSuffix)) {
-            devopsProjectDO.setEnvGroupId(group.getId());
+            devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(group.getId()));
         }
         devopsProjectRepository.updateProjectAttr(devopsProjectDO);
     }
@@ -110,9 +110,9 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupPayload.getProjectId());
         Integer groupId;
         if (groupCodeSuffix.isEmpty()) {
-            groupId = gitlabGroupE.getGitlabGroupId();
+            groupId = TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId());
         } else {
-            groupId = gitlabGroupE.getEnvGroupId();
+            groupId = TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId());
         }
         try {
             gitlabServiceClient.updateGroup(groupId, TypeUtil.objToInteger(userAttrE.getGitlabUserId()), group);

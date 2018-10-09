@@ -8,6 +8,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 
@@ -27,7 +28,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     @Override
     public GitlabGroupE queryDevopsProject(Long projectId) {
         DevopsProjectDO devopsProjectDO = devopsProjectMapper.selectByPrimaryKey(projectId);
-        if (devopsProjectDO.getGitlabGroupId() == null || devopsProjectDO.getEnvGroupId() == null) {
+        if (devopsProjectDO.getDevopsAppGroupId() == null || devopsProjectDO.getDevopsEnvGroupId() == null) {
             throw new CommonException("error.gitlab.groupId.select");
         }
         return ConvertHelper.convert(devopsProjectDO, GitlabGroupE.class);
@@ -41,7 +42,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     @Override
     public GitlabGroupE queryByEnvGroupId(Integer envGroupId) {
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setEnvGroupId(envGroupId);
+        devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(envGroupId));
         return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), GitlabGroupE.class);
     }
 
@@ -54,7 +55,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
 
     @Override
     public void updateProjectAttr(DevopsProjectDO devopsProjectDO) {
-        DevopsProjectDO oldDevopsProjectDO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDO.getId());
+        DevopsProjectDO oldDevopsProjectDO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDO.getIamProjectId());
         devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
         devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);
     }

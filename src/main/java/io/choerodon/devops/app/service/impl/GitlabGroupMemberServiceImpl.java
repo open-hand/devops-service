@@ -57,7 +57,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
                     List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                    if (userMemberRoleList==null) {
+                    if (userMemberRoleList == null) {
                         userMemberRoleList = new ArrayList<>();
                         LOGGER.info("user member role is empty");
                     }
@@ -87,11 +87,11 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
                         gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                gitlabGroupE.getEnvGroupId(),
+                                TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                                 userId);
                         deleteGilabRole(groupMemberE, gitlabGroupE, userId, true);
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                gitlabGroupE.getGitlabGroupId(),
+                                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                                 userId);
                         deleteGilabRole(groupMemberE, gitlabGroupE, userId, false);
                     } else {
@@ -105,7 +105,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                             return;
                         }
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                gitlabGroupE.getGitlabGroupId(),
+                                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                                 userId);
                         deleteGilabRole(groupMemberE, gitlabGroupE, userId, false);
                     }
@@ -176,9 +176,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 }
             }
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                    gitlabGroupE.getGitlabGroupId(),
+                    TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-            addOrUpdateGilabRole(accessLevel, groupMemberE, gitlabGroupE.getGitlabGroupId(), userAttrE);
+            addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
         }
         if (memberHelper.isDeploy()) {
             try {
@@ -188,12 +188,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 return;
             }
             groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                    gitlabGroupE.getEnvGroupId(),
+                    TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
             addOrUpdateGilabRole(
                     memberHelper.getDeployAdminAccessLevel(),
                     groupMemberE,
-                    gitlabGroupE.getEnvGroupId(),
+                    TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                     userAttrE);
         }
     }
@@ -237,7 +237,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 Integer userId, Boolean isEnvDelete) {
         if (groupMemberE != null) {
             gitlabGroupMemberRepository.deleteMember(
-                    isEnvDelete ? gitlabGroupE.getEnvGroupId() : gitlabGroupE.getGitlabGroupId(),
+                    isEnvDelete ? TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId())
+                            : TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                     userId);
         }
     }
@@ -252,7 +253,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             throw new CommonException("error.env.project.not.exist");
         }
         GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                gitlabGroupE.getEnvGroupId(),
+                TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
             throw new CommonException("error.user.not.env.pro.owner");

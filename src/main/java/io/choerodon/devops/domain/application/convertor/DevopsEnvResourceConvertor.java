@@ -18,7 +18,7 @@ public class DevopsEnvResourceConvertor implements ConvertorI<DevopsEnvResourceE
     public DevopsEnvResourceE doToEntity(DevopsEnvResourceDO devopsEnvResourceDO) {
         DevopsEnvResourceE devopsEnvResourceE = DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
         devopsEnvResourceE.initApplicationInstanceE(devopsEnvResourceDO.getAppInstanceId());
-        devopsEnvResourceE.initDevopsInstanceResourceMessageE(devopsEnvResourceDO.getMessageId());
+        devopsEnvResourceE.initDevopsInstanceResourceMessageE(devopsEnvResourceDO.getResourceDetailId());
         BeanUtils.copyProperties(devopsEnvResourceDO, devopsEnvResourceE);
         return devopsEnvResourceE;
     }
@@ -30,7 +30,7 @@ public class DevopsEnvResourceConvertor implements ConvertorI<DevopsEnvResourceE
         if (devopsEnvResourceE.getApplicationInstanceE() != null) {
             devopsEnvResourceDO.setAppInstanceId(devopsEnvResourceE.getApplicationInstanceE().getId());
         }
-        devopsEnvResourceDO.setMessageId(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
+        devopsEnvResourceDO.setResourceDetailId(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
         return devopsEnvResourceDO;
     }
 }

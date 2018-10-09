@@ -32,7 +32,7 @@ public class DevopsEnvironmentE {
 
     private Long devopsSyncCommit;
     private Long agentSyncCommit;
-    private Long gitCommit;
+    private Long sagaSyncCommit;
 
     /**
      * 重写构造方法
@@ -243,14 +243,21 @@ public class DevopsEnvironmentE {
     }
 
 
-    public Long getGitCommit() {
-        return gitCommit;
+    public Boolean getConnected() {
+        return isConnected;
     }
 
-    public void setGitCommit(Long gitCommit) {
-        this.gitCommit = gitCommit;
+    public void setConnected(Boolean connected) {
+        isConnected = connected;
     }
 
+    public Long getSagaSyncCommit() {
+        return sagaSyncCommit;
+    }
+
+    public void setSagaSyncCommit(Long sagaSyncCommit) {
+        this.sagaSyncCommit = sagaSyncCommit;
+    }
 
     public Long getDevopsEnvGroupId() {
         return devopsEnvGroupId;

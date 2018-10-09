@@ -20,7 +20,7 @@ public class DevopsEnvResourceDO extends AuditDomain {
     @GeneratedValue
     private Long id;
     private Long appInstanceId;
-    private Long messageId;
+    private Long resourceDetailId;
     private String kind;
     private String name;
     private Long weight;
@@ -42,12 +42,12 @@ public class DevopsEnvResourceDO extends AuditDomain {
         this.appInstanceId = appInstanceId;
     }
 
-    public Long getMessageId() {
-        return messageId;
+    public Long getResourceDetailId() {
+        return resourceDetailId;
     }
 
-    public void setMessageId(Long messageId) {
-        this.messageId = messageId;
+    public void setResourceDetailId(Long resourceDetailId) {
+        this.resourceDetailId = resourceDetailId;
     }
 
     public String getKind() {

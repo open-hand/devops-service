@@ -23,7 +23,6 @@ public class DevopsServiceDO extends AuditDomain {
     private Long appId;
     private Long commandId;
     private String name;
-    private String namespace;
     private String status;
     private String ports;
     private String type;
@@ -63,13 +62,6 @@ public class DevopsServiceDO extends AuditDomain {
         this.name = name;
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
 
     public String getExternalIp() {
         return externalIp;

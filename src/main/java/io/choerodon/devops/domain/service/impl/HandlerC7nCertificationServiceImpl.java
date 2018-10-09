@@ -62,7 +62,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                     if (certificationE == null) {
                         devopsEnvFileResourceRepository
                                 .deleteByEnvIdAndResource(envId, devopsEnvFileResourceE.getResourceId(), ObjectType.CERTIFICATE.getType());
-                      return null;
+                        return null;
                     }
                     return certificationE.getName();
                 })
@@ -171,8 +171,8 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
             certificationE = certificationRepository.create(certificationE);
             CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
             if (existCert != null) {
-                certificationRepository.storeCertFile(
-                        new CertificationFileDO(certificationE.getId(), existCert.getCert(), existCert.getKey()));
+                certificationE.setCertificationFileId(certificationRepository.storeCertFile(
+                        new CertificationFileDO(existCert.getCert(), existCert.getKey())));
             }
             Long commandId = certificationService
                     .createCertCommandE(CommandType.CREATE.getType(), certificationE.getId(), userId);

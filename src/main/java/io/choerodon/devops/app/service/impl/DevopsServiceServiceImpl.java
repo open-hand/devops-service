@@ -201,7 +201,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //初始化DevopsService对象
         DevopsServiceE devopsServiceE = new DevopsServiceE();
-        devopsServiceE.setNamespace(devopsEnvironmentE.getCode());
         BeanUtils.copyProperties(devopsServiceReqDTO, devopsServiceE);
         return initDevopsService(devopsServiceE, devopsServiceReqDTO, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
@@ -438,7 +437,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
                 devopsServiceAppInstanceE.setAppInstanceId(appInstance);
-                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
                 addDevopsServiceAppInstanceES.add(devopsServiceAppInstanceE);
             });
         }

@@ -44,8 +44,8 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
 
     @Override
     public void handlerServiceCreateMessage(String key, String msg, Long envId) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                KeyParseTool.getResourceName(key), KeyParseTool.getNamespace(key));
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                KeyParseTool.getResourceName(key), envId);
         try {
             V1Service v1Service = json.deserialize(msg, V1Service.class);
             String releaseNames = v1Service.getMetadata().getAnnotations()

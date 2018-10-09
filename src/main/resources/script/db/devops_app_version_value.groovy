@@ -15,4 +15,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_version_value.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+
+    changeSet(author: 'Younger', id: '2018-10-08-drop-column') {
+        dropColumn(columnName: "object_version_number", tableName: "devops_app_version_value")
+        dropColumn(columnName: "created_by", tableName: "devops_app_version_value")
+        dropColumn(columnName: "creation_date", tableName: "devops_app_version_value")
+        dropColumn(columnName: "last_updated_by", tableName: "devops_app_version_value")
+        dropColumn(columnName: "last_update_date", tableName: "devops_app_version_value")
+    }
+
 }

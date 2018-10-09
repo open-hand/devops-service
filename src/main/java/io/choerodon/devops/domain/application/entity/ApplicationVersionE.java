@@ -123,6 +123,11 @@ public class ApplicationVersionE {
         this.applicationVersionReadmeV = new ApplicationVersionReadmeV(readme);
     }
 
+
+    public void initApplicationVersionReadmeVById(Long id) {
+        this.applicationVersionReadmeV = new ApplicationVersionReadmeV(id);
+    }
+
     public Long getIsPublish() {
         return isPublish;
     }

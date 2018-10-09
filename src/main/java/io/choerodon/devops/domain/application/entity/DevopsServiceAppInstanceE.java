@@ -8,7 +8,6 @@ public class DevopsServiceAppInstanceE {
     private Long id;
     private Long serviceId;
     private Long appInstanceId;
-    private String code;
 
     public Long getId() {
         return id;
@@ -24,14 +23,6 @@ public class DevopsServiceAppInstanceE {
 
     public void setAppInstanceId(Long appInstanceId) {
         this.appInstanceId = appInstanceId;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public Long getServiceId() {

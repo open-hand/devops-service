@@ -22,19 +22,16 @@ public class CertificationFileDO extends AuditDomain {
     @GeneratedValue
     private Long id;
 
-    private Long certId;
     private String certFile;
     private String keyFile;
 
     /**
      * construct cert file
      *
-     * @param certId   certification id
      * @param certFile cert file
      * @param keyFile  private key file
      */
-    public CertificationFileDO(Long certId, String certFile, String keyFile) {
-        this.certId = certId;
+    public CertificationFileDO(String certFile, String keyFile) {
         this.certFile = certFile;
         this.keyFile = keyFile;
     }
@@ -43,9 +40,6 @@ public class CertificationFileDO extends AuditDomain {
 
     }
 
-    public CertificationFileDO(Long certId) {
-        this.certId = certId;
-    }
 
     public Long getId() {
         return id;
@@ -55,13 +49,6 @@ public class CertificationFileDO extends AuditDomain {
         this.id = id;
     }
 
-    public Long getCertId() {
-        return certId;
-    }
-
-    public void setCertId(Long certId) {
-        this.certId = certId;
-    }
 
     public String getCertFile() {
         return certFile;

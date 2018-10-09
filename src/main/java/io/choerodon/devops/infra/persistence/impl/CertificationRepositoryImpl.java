@@ -143,6 +143,13 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
+    public void updateCertFileId(CertificationE certificationE) {
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certificationE.getId());
+        certificationDO.setCertificationFileId(certificationE.getCertificationFileId());
+        devopsCertificationMapper.updateByPrimaryKeySelective(certificationDO);
+    }
+
+    @Override
     public void clearValid(Long certId) {
         CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certId);
         if (certificationDO != null
@@ -164,26 +171,28 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public void storeCertFile(CertificationFileDO certificationFileDO) {
+    public Long storeCertFile(CertificationFileDO certificationFileDO) {
         devopsCertificationFileMapper.insert(certificationFileDO);
+        return certificationFileDO.getId();
     }
 
     @Override
     public CertificationFileDO getCertFile(Long certId) {
-        return devopsCertificationFileMapper.selectOne(new CertificationFileDO(certId));
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certId);
+        return devopsCertificationFileMapper.selectByPrimaryKey(certificationDO.getCertificationFileId());
     }
 
     @Override
     public List<CertificationE> listByEnvId(Long envId) {
         CertificationDO certificationDO = new CertificationDO();
         certificationDO.setEnvId(envId);
-        return ConvertHelper.convertList(devopsCertificationMapper.select(certificationDO),CertificationE.class);
+        return ConvertHelper.convertList(devopsCertificationMapper.select(certificationDO), CertificationE.class);
     }
 
     private void deleteCertFile(Long certId) {
-        CertificationFileDO certificationFileDO = new CertificationFileDO(certId);
-        if (!devopsCertificationFileMapper.select(certificationFileDO).isEmpty()) {
-            devopsCertificationFileMapper.delete(certificationFileDO);
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certId);
+        if (devopsCertificationFileMapper.selectByPrimaryKey(certificationDO.getCertificationFileId()) != null) {
+            devopsCertificationFileMapper.deleteByPrimaryKey(certificationDO.getCertificationFileId());
         }
     }
 }

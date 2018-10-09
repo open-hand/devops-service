@@ -19,6 +19,7 @@ public class ApplicationVersionConverter implements ConvertorI<ApplicationVersio
         applicationVersionE.initApplicationE(applicationVersionDO.getAppId(), applicationVersionDO.getAppCode(),
                 applicationVersionDO.getAppName(), applicationVersionDO.getAppStatus());
         applicationVersionE.initApplicationVersionValueE(applicationVersionDO.getValueId());
+        applicationVersionE.initApplicationVersionReadmeVById(applicationVersionDO.getReadmeValueId());
         return applicationVersionE;
     }
 
@@ -27,7 +28,7 @@ public class ApplicationVersionConverter implements ConvertorI<ApplicationVersio
         ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO();
         BeanUtils.copyProperties(applicationVersionE, applicationVersionDO);
         applicationVersionDO.setAppId(applicationVersionE.getApplicationE().getId());
-        if(applicationVersionE.getApplicationVersionValueE()!=null) {
+        if (applicationVersionE.getApplicationVersionValueE() != null) {
             applicationVersionDO.setValueId(applicationVersionE.getApplicationVersionValueE().getId());
         }
         return applicationVersionDO;

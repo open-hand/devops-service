@@ -176,7 +176,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ? optional.get().getId()
                     : versionId;
         }
-        String readme = applicationVersionRepository.getReadme(latestVersionId);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(latestVersionId);
+        String readme = applicationVersionRepository.getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
 
         applicationReleasingDTO.setReadme(readme);
 
@@ -214,7 +215,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     @Override
     public String getMarketAppVersionReadme(Long appMarketId, Long versionId) {
         applicationMarketRepository.checkMarketVersion(appMarketId, versionId);
-        return applicationVersionRepository.getReadme(versionId);
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(versionId);
+        return applicationVersionRepository.getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
     }
 
     @Override

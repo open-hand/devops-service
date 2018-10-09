@@ -38,9 +38,9 @@ public interface ApplicationVersionRepository {
 
     Boolean checkAppAndVersion(Long appId, List<Long> appVersionIds);
 
-    void setReadme(Long versionId, String readme);
+    Long setReadme(String readme);
 
-    String getReadme(Long versionId);
+    String getReadme(Long readmeValueId);
 
     void updateVersion(ApplicationVersionE applicationVersionE);
 

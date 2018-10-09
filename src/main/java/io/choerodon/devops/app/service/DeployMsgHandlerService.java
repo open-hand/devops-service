@@ -45,11 +45,11 @@ public interface DeployMsgHandlerService {
 
     void commandNotSend(Long commandId, String msg);
 
-    void netWorkServiceFail(String key, String msg);
+    void netWorkServiceFail(String key, Long envId, String msg);
 
     void netWorkIngressFail(String key, Long envId, String msg);
 
-    void netWorkServiceDeleteFail(String key, String value);
+    void netWorkServiceDeleteFail(String key, Long envId, String value);
 
     void netWorkIngressDeleteFail(String key, Long envId, String value);
 

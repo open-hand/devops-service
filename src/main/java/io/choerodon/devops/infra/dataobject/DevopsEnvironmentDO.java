@@ -31,7 +31,7 @@ public class DevopsEnvironmentDO extends AuditDomain {
     private Boolean isConnected;
     private Boolean isActive;
     private Long devopsEnvGroupId;
-    private Long gitCommit;
+    private Long sagaSyncCommit;
     private Long devopsSyncCommit;
     private Long agentSyncCommit;
 
@@ -140,12 +140,13 @@ public class DevopsEnvironmentDO extends AuditDomain {
         this.hookId = hookId;
     }
 
-    public Long getGitCommit() {
-        return gitCommit;
+
+    public Long getSagaSyncCommit() {
+        return sagaSyncCommit;
     }
 
-    public void setGitCommit(Long gitCommit) {
-        this.gitCommit = gitCommit;
+    public void setSagaSyncCommit(Long sagaSyncCommit) {
+        this.sagaSyncCommit = sagaSyncCommit;
     }
 
     public Long getDevopsSyncCommit() {

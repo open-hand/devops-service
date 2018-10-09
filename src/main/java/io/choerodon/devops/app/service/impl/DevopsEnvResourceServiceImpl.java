@@ -40,9 +40,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private DevopsIngressRepository devopsIngressRepository;
     @Autowired
     private DevopsCommandEventRepository devopsCommandEventRepository;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
 
     @Override
     public DevopsEnvResourceDTO listResources(Long instanceId) {
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         List<DevopsEnvResourceE> devopsEnvResourceES =
                 devopsEnvResourceRepository.listByInstanceId(instanceId);
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
@@ -71,8 +74,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 case SERVICE:
                     V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
                             V1Service.class);
-                    DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                            devopsInstanceResourceE.getName(), v1Service.getMetadata().getNamespace());
+                    DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                            devopsInstanceResourceE.getName(), applicationInstanceE.getDevopsEnvironmentE().getId());
                     if (devopsServiceE != null) {
                         List<String> domainNames =
                                 devopsIngressRepository.queryIngressNameByServiceId(

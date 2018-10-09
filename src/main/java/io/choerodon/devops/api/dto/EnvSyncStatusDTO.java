@@ -4,7 +4,7 @@ public class EnvSyncStatusDTO {
 
     private String devopsSyncCommit;
     private String agentSyncCommit;
-    private String gitCommit;
+    private String sagaSyncCommit;
     private String commitUrl;
 
     public String getDevopsSyncCommit() {
@@ -23,12 +23,12 @@ public class EnvSyncStatusDTO {
         this.agentSyncCommit = agentSyncCommit;
     }
 
-    public String getGitCommit() {
-        return gitCommit;
+    public String getSagaSyncCommit() {
+        return sagaSyncCommit;
     }
 
-    public void setGitCommit(String gitCommit) {
-        this.gitCommit = gitCommit;
+    public void setSagaSyncCommit(String sagaSyncCommit) {
+        this.sagaSyncCommit = sagaSyncCommit;
     }
 
     public String getCommitUrl() {

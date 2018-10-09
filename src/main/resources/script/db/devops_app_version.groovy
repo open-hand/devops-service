@@ -35,4 +35,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
             column(name: "app_id")
         }
     }
+
+
+    changeSet(author: 'younger', id: '2018-10-08-add-column') {
+        addColumn(tableName: 'devops_app_version') {
+            column(name: 'readme_value_id', type: 'BIGINT UNSIGNED', remarks: 'readme value id', afterColumn: 'value_id')
+        }
+    }
+
 }

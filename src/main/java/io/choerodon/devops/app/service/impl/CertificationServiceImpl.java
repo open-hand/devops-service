@@ -124,8 +124,11 @@ public class CertificationServiceImpl implements CertificationService {
         if (c7nCertification != null) {
             CertificationExistCert existCert = c7nCertification.getSpec().getExistCert();
             if (existCert != null) {
-                certificationRepository.storeCertFile(
-                        new CertificationFileDO(certId, existCert.getCert(), existCert.getKey()));
+                CertificationE certificationE = new CertificationE();
+                certificationE.setCertificationFileId(certificationRepository.storeCertFile(
+                        new CertificationFileDO(existCert.getCert(), existCert.getKey())));
+                certificationE.setId(certId);
+                certificationRepository.updateCertFileId(certificationE);
             }
         }
     }

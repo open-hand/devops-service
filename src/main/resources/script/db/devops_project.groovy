@@ -33,4 +33,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
         dropColumn(columnName: 'harbor_uuid', tableName: 'devops_project')
         dropColumn(columnName: 'member_uuid', tableName: 'devops_project')
     }
+
+    changeSet(id: '2018-10-08-rename-column', author: 'younger') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'iam_project_id', oldColumnName: 'id', remarks: 'iam project id', tableName: 'devops_project')
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'devops_app_group_id', oldColumnName: 'gitlab_group_id', remarks: 'gitlab app group id', tableName: 'devops_project')
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'devops_env_group_id', oldColumnName: 'env_group_id', remarks: 'gitlab env group id', tableName: 'devops_project')
+    }
 }

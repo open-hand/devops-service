@@ -19,6 +19,7 @@ public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object,
             applicationRepDTO.setApplictionTemplateId(applicationE.getApplicationTemplateE().getId());
         }
         applicationRepDTO.setRepoUrl(applicationE.getGitlabProjectE().getRepoURL());
+        applicationRepDTO.setFail(applicationE.getFailed());
         applicationRepDTO.setProjectId(applicationE.getProjectE().getId());
         return applicationRepDTO;
     }

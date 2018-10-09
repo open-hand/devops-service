@@ -21,6 +21,7 @@ public class ApplicationVersionDO extends AuditDomain {
     private String version;
     private Long appId;
     private Long valueId;
+    private Long readmeValueId;
     private String image;
     private String commit;
     private String repository;
@@ -119,5 +120,13 @@ public class ApplicationVersionDO extends AuditDomain {
 
     public void setIsPublish(Long isPublish) {
         this.isPublish = isPublish;
+    }
+
+    public Long getReadmeValueId() {
+        return readmeValueId;
+    }
+
+    public void setReadmeValueId(Long readmeValueId) {
+        this.readmeValueId = readmeValueId;
     }
 }

@@ -103,7 +103,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.group.not.sync");
         }
         GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                gitlabGroupE.getGitlabGroupId(),
+                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
             throw new CommonException("error.user.not.owner");
@@ -114,7 +114,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppPayload.setPath(applicationDTO.getCode());
         devOpsAppPayload.setOrganizationId(organization.getId());
         devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        devOpsAppPayload.setGroupId(gitlabGroupE.getGitlabGroupId());
+        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
         applicationE = applicationRepository.create(applicationE);
         if (applicationE.getId() == null) {
             throw new CommonException("error.application.create.insert");

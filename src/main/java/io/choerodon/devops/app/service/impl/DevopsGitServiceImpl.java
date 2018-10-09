@@ -340,7 +340,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
         });
         DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
-        devopsEnvironmentE.setGitCommit(devopsEnvCommitE.getId());
+        devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
         devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
@@ -363,7 +363,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         Set<DevopsEnvFileResourceE> beforeSyncDelete = new HashSet<>();
         //根据token查出环境
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
-        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getGitCommit());
+        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.query(devopsEnvironmentE.getSagaSyncCommit());
         Boolean tagNotExist = false;
         Map<String, String> objectPath = new HashMap<>();
         //从iam服务中查出项目和组织code
