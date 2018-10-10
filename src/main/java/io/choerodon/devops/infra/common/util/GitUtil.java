@@ -65,7 +65,7 @@ public class GitUtil {
                 LOGGER.info("create {} success", repositoryPath);
             }
         } catch (IOException io) {
-            throw new CommonException(io.getMessage());
+            throw new CommonException(io.getMessage(), io);
         }
     }
 
@@ -220,7 +220,7 @@ public class GitUtil {
             FileUtil.deleteDirectory(new File(localPathFile + "/.git"));
             git = Git.init().setDirectory(localPathFile).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.clone");
+            throw new CommonException("error.git.clone", e);
         }
         return git;
     }
@@ -279,7 +279,7 @@ public class GitUtil {
             try {
                 FileUtils.deleteDirectory(file);
             } catch (IOException e) {
-                throw new CommonException("error.directory.delete");
+                throw new CommonException("error.directory.delete", e);
             }
         }
     }

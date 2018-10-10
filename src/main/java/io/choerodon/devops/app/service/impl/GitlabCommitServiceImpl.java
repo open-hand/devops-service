@@ -33,7 +33,7 @@ public class GitlabCommitServiceImpl implements GitlabCommitService {
     public List<GitlabCommitDTO> getGitlabCommit(Integer gitlabProjectId, List<String> shas) {
         List<GitlabCommitE> gitlabCommitEList = new ArrayList<>();
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        shas.parallelStream().forEach(sha -> gitlabCommitEList
+        shas.stream().forEach(sha -> gitlabCommitEList
                 .add(gitlabProjectRepository.getCommit(gitlabProjectId,
                         sha, TypeUtil.objToInteger(userAttrE.getGitlabUserId()))));
         return ConvertHelper.convertList(gitlabCommitEList, GitlabCommitDTO.class);

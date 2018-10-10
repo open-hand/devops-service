@@ -32,7 +32,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
         String filePath = objectPath.get(TypeUtil.objToString(v1beta1Ingress.hashCode()));
         DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
         if (devopsIngressE != null
-                && beforeSyncDelete.parallelStream()
+                && beforeSyncDelete.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(v1beta1Ingress.getKind()))
                 .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsIngressE.getId()))) {
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsIngressE.getId(), v1beta1Ingress.getKind());
@@ -40,7 +40,7 @@ public class ConvertV1beta1IngressServiceImpl extends ConvertK8sObjectService<V1
                 throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(), null);
             }
         }
-        if (v1beta1Ingresses.parallelStream().anyMatch(v1beta1Ingress1 -> v1beta1Ingress1.getMetadata().getName().equals(v1beta1Ingress.getMetadata().getName()))) {
+        if (v1beta1Ingresses.stream().anyMatch(v1beta1Ingress1 -> v1beta1Ingress1.getMetadata().getName().equals(v1beta1Ingress.getMetadata().getName()))) {
             throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1beta1Ingress.getMetadata().getName(), null);
         } else {
             v1beta1Ingresses.add(v1beta1Ingress);

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import feign.FeignException;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -18,7 +19,6 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import feign.FeignException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
@@ -203,7 +203,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public void deleteBranch(Integer projectId, String branchName, Integer userId) {
-        gitlabServiceClient.deleteBranch(projectId, branchName, userId);
+        try {
+            gitlabServiceClient.deleteBranch(projectId, branchName, userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override

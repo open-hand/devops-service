@@ -80,7 +80,7 @@ public class FileUtil {
             }
             return stringBuilder.toString();
         } catch (IOException e) {
-            throw new CommonException("error.param.render");
+            throw new CommonException("error.param.render", e);
         }
     }
 
@@ -125,7 +125,7 @@ public class FileUtil {
             try (InputStream inputStream = new FileInputStream(file)) {
                 FileUtils.writeStringToFile(file, replaceReturnString(inputStream, params));
             } catch (IOException e) {
-                throw new CommonException("error.param.replace");
+                throw new CommonException("error.param.replace", e);
             }
         }
     }
@@ -149,7 +149,7 @@ public class FileUtil {
                 out.flush();
             }
         } catch (IOException e) {
-            throw new CommonException("error.file.transfer");
+            throw new CommonException("error.file.transfer", e);
         }
         return path + System.getProperty("file.separator") + files.getOriginalFilename();
     }
@@ -329,7 +329,7 @@ public class FileUtil {
         File file = new File(filepath);
         List<String> filepaths = getFilesPath(file);
         if (!filepaths.isEmpty()) {
-            return filepaths.parallelStream()
+            return filepaths.stream()
                     .map(t -> t.replaceFirst(filepath + "/", "")).collect(Collectors.toList());
         }
         return new ArrayList<>();
@@ -949,7 +949,7 @@ public class FileUtil {
                 }
             }
         } catch (IOException e) {
-            throw new CommonException("error.file.read");
+            throw new CommonException("error.file.read", e);
         }
         return content.toString();
     }
@@ -1081,7 +1081,7 @@ public class FileUtil {
                 getUnZipPath(zip, entry, zipEntryName, descDir);
             }
         } catch (IOException e) {
-            throw new CommonException("error.not.zip");
+            throw new CommonException("error.not.zip", e);
         }
         logger.info("******************解压完毕********************");
     }
@@ -1101,7 +1101,7 @@ public class FileUtil {
             logger.info(outPath);
             outPutUnZipFile(in, outPath);
         } catch (IOException e) {
-            throw new CommonException("error.zip.inputStream");
+            throw new CommonException("error.zip.inputStream", e);
         }
     }
 
@@ -1113,9 +1113,9 @@ public class FileUtil {
                 out.write(buf1, 0, len);
             }
         } catch (FileNotFoundException e) {
-            throw new CommonException("error.outPath");
+            throw new CommonException("error.outPath", e);
         } catch (IOException e) {
-            throw new CommonException("error.zip.outPutStream");
+            throw new CommonException("error.zip.outPutStream", e);
         }
     }
 
@@ -1133,7 +1133,7 @@ public class FileUtil {
             File sourceFile = new File(srcDir);
             compress(sourceFile, zos, sourceFile.getName(), keepDirStructure);
         } catch (Exception e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 
@@ -1164,7 +1164,7 @@ public class FileUtil {
                         zos.putNextEntry(new ZipEntry(name + "/"));
                         zos.closeEntry();
                     } catch (IOException e) {
-                        throw new CommonException(e.getMessage());
+                        throw new CommonException(e.getMessage(), e);
                     }
                 }
 
@@ -1193,7 +1193,7 @@ public class FileUtil {
             }
             zos.closeEntry();
         } catch (IOException e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 
@@ -1218,7 +1218,7 @@ public class FileUtil {
                 i = bis.read(buff);
             }
         } catch (IOException e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
 
     }

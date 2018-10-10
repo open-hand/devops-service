@@ -7,6 +7,7 @@ import io.choerodon.devops.infra.common.util.enums.Visibility;
  * Created by younger on 2018/3/29.
  */
 public class GitlabGroupE {
+    private Integer id;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
     private String path;
@@ -77,5 +78,13 @@ public class GitlabGroupE {
 
     public void initVisibility(Visibility visibility) {
         this.visibility = visibility;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 }

@@ -1,8 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.Arrays;
-import java.util.List;
-
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.V1Service;
 import org.slf4j.Logger;
@@ -50,7 +47,7 @@ public class ServiceMsgHandlerServiceImpl implements ServiceMsgHandlerService {
             V1Service v1Service = json.deserialize(msg, V1Service.class);
             String releaseNames = v1Service.getMetadata().getAnnotations()
                     .get("choerodon.io/network-service-instances");
-            List<String> releases = Arrays.asList(releaseNames.split("\\+"));
+            String[] releases = releaseNames.split("\\+");
             DevopsEnvResourceE devopsEnvResourceE =
                     DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
             DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();

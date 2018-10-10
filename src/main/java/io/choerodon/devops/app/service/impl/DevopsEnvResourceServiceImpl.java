@@ -52,7 +52,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         if (devopsEnvResourceES == null) {
             return devopsEnvResourceDTO;
         }
-        devopsEnvResourceES.parallelStream().forEach(devopsInstanceResourceE -> {
+        devopsEnvResourceES.stream().forEach(devopsInstanceResourceE -> {
             DevopsEnvResourceDetailE devopsEnvResourceDetailE =
                     devopsEnvResourceDetailRepository.query(
                             devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
@@ -80,7 +80,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                         List<String> domainNames =
                                 devopsIngressRepository.queryIngressNameByServiceId(
                                         devopsServiceE.getId());
-                        domainNames.parallelStream().forEach(domainName -> {
+                        domainNames.stream().forEach(domainName -> {
                             DevopsEnvResourceE devopsEnvResourceE1 =
                                     devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                             null,

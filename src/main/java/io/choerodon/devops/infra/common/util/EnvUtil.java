@@ -33,7 +33,7 @@ public class EnvUtil {
      */
     public void checkEnvConnection(Long envId, EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
-        Boolean envConnected = connectedEnv.entrySet().parallelStream()
+        Boolean envConnected = connectedEnv.entrySet().stream()
                 .anyMatch(t -> envId.equals(t.getValue().getEnvId())
                         && agentExpectVersion.compareTo(
                         t.getValue().getVersion() == null ? "0" : t.getValue().getVersion()) < 1);
@@ -50,7 +50,7 @@ public class EnvUtil {
      */
     public List<Long> getConnectedEnvList(EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
-        return connectedEnv.entrySet().parallelStream()
+        return connectedEnv.entrySet().stream()
                 .map(t -> t.getValue().getEnvId())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
@@ -63,7 +63,7 @@ public class EnvUtil {
      */
     public List<Long> getUpdatedEnvList(EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
-        return connectedEnv.entrySet().parallelStream()
+        return connectedEnv.entrySet().stream()
                 .filter(t -> agentExpectVersion.compareTo(
                         t.getValue().getVersion() == null ? "0" : t.getValue().getVersion()) < 1)
                 .map(t -> t.getValue().getEnvId())

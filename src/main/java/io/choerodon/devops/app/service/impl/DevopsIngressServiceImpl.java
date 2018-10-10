@@ -224,7 +224,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 .getIngress(projectId, envId, pageRequest, params);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        devopsIngressDTOS.parallelStream().forEach(devopsIngressDTO -> {
+        devopsIngressDTOS.stream().forEach(devopsIngressDTO -> {
             if (connectedEnvList.contains(devopsIngressDTO.getEnvId())
                     && updatedEnvList.contains(devopsIngressDTO.getEnvId())) {
                 devopsIngressDTO.setEnvStatus(true);
@@ -324,7 +324,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         if (port == null) {
             servicePort = devopsServiceE.getPorts().get(0).getPort().intValue();
         } else {
-            if (devopsServiceE.getPorts().parallelStream()
+            if (devopsServiceE.getPorts().stream()
                     .map(PortMapE::getPort).anyMatch(t -> t.equals(port))) {
                 servicePort = port.intValue();
             } else {
@@ -458,7 +458,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             }
             DevopsServiceE devopsServiceE = getDevopsService(serviceId);
 
-            if (devopsServiceE.getPorts().parallelStream()
+            if (devopsServiceE.getPorts().stream()
                     .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
                 throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
             }

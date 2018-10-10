@@ -5,9 +5,9 @@ import java.util.List;
 
 import feign.FeignException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.GitlabGroupService;
 import io.choerodon.devops.domain.application.entity.ProjectE;
@@ -15,6 +15,7 @@ import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
@@ -41,7 +42,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
     private UserAttrRepository userAttrRepository;
     @Autowired
     private IamRepository iamRepository;
-
+    @Autowired
+    private GitlabRepository gitlabRepository;
 
     @Override
     public void createGroup(GitlabGroupPayload gitlabGroupPayload, String groupCodeSuffix) {
@@ -61,19 +63,20 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));
         UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupPayload.getUserId());
-        ResponseEntity<GroupDO> responseEntity;
+        GitlabGroupE gitlabGroupE = gitlabRepository.queryGroupByName(group.getPath(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         try {
-            responseEntity =
-                    gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabGroupE == null) {
+                gitlabGroupE =
+                        ConvertHelper.convert(gitlabServiceClient.createGroup(group, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getBody(), GitlabGroupE.class);
+            }
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        group = responseEntity.getBody();
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO(gitlabGroupPayload.getProjectId());
         if (groupCodeSuffix.isEmpty()) {
-            devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(group.getId()));
+            devopsProjectDO.setDevopsAppGroupId(TypeUtil.objToLong(gitlabGroupE.getId()));
         } else if ("-gitops".equals(groupCodeSuffix)) {
-            devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(group.getId()));
+            devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(gitlabGroupE.getId()));
         }
         devopsProjectRepository.updateProjectAttr(devopsProjectDO);
     }

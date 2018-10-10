@@ -11,6 +11,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
@@ -51,7 +52,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             throw new CommonException(e);
         }
         List<String> tokens = new ArrayList<>();
-        impersonationTokens.getBody().parallelStream().forEach(impersonationToken ->
+        impersonationTokens.getBody().stream().forEach(impersonationToken ->
                 tokens.add(impersonationToken.getToken())
         );
         return tokens;
@@ -133,7 +134,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public Boolean getFile(Integer projectId, String branch, String filePath) {
-        return gitlabServiceClient.getFile(projectId, branch, filePath).getBody().getFilePath() == null ? false : true;
+        return gitlabServiceClient.getFile(projectId, branch, filePath).getBody().getFilePath() != null;
     }
 
     @Override
@@ -223,6 +224,15 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public List<Variable> getVariable(Integer projectId, Integer userId) {
         try {
             return gitlabServiceClient.getVariable(projectId, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public List<DeployKey> getDeployKeys(Integer projectId, Integer userId) {
+        try {
+            return gitlabServiceClient.getDeploykeys(projectId, userId).getBody();
         } catch (FeignException e) {
             throw new CommonException(e);
         }

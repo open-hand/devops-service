@@ -93,7 +93,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());
         } catch (Exception e) {
-            throw new CommonException("error.version.insert");
+            throw new CommonException("error.version.insert", e);
         }
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
         applicationVersionRepository.create(applicationVersionE);

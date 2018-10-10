@@ -79,6 +79,7 @@
         cmd.error error,
         da.project_id AS appProjectId,
         dsai.app_instance_id AS app_instance_id,
+        dai.code AS code,
         dai.`status` AS instance_status
         FROM
         (

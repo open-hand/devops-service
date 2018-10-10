@@ -35,7 +35,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         Page<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
-        devopsEnvPodEPage.parallelStream().forEach(devopsEnvPodE -> {
+        devopsEnvPodEPage.stream().forEach(devopsEnvPodE -> {
             if (connectedEnvList.contains(devopsEnvPodE.getEnvId())
                     && updatedEnvList.contains(devopsEnvPodE.getEnvId())) {
                 devopsEnvPodE.setConnect(true);

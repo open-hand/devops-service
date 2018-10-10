@@ -249,7 +249,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         }
         List<DeployDO> deployDOS = applicationInstanceRepository.listDeployTime(projectId, envId, appIds, startTime, endTime);
         DeployTimeDTO deployTimeDTO = new DeployTimeDTO();
-        List<Date> creationDates = deployDOS.parallelStream().map(DeployDO::getCreationDate).collect(Collectors.toList());
+        List<Date> creationDates = deployDOS.stream().map(DeployDO::getCreationDate).collect(Collectors.toList());
         creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
         List<DeployAppDTO> deployAppDTOS = new ArrayList<>();
         Map<String, List<DeployDO>> resultMaps = deployDOS.stream()
@@ -283,7 +283,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<Long> deployFrequencys = new LinkedList<>();
         List<Long> deploySuccessFrequency = new LinkedList<>();
         List<Long> deployFailFrequency = new LinkedList<>();
-        List<String> creationDates = deployFrequencyDOS.parallelStream().map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString()).collect(Collectors.toList());
+        List<String> creationDates = deployFrequencyDOS.stream().map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString()).collect(Collectors.toList());
         creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
         creationDates.forEach(date -> {
             Long[] newDeployFrequencys = {0L};
@@ -438,7 +438,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         Page<DevopsEnvFileE> devopsEnvFilePages = devopsEnvFileRepository.pageByEnvId(envId, pageRequest);
-        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFilePages.parallelStream().peek(devopsEnvFileE ->
+        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFilePages.stream().peek(devopsEnvFileE ->
                 devopsEnvFileE.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/%s",
                         gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(),
                         devopsEnvFileE.getDevopsCommit()))).collect(Collectors.toList());
@@ -821,8 +821,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     private void setInstanceConnect(List<ApplicationInstanceE> applicationInstanceES,
                                     Map<String, EnvSession> envSessionMap) {
-        applicationInstanceES.parallelStream().forEach(applicationInstanceE ->
-                applicationInstanceE.setConnect(envSessionMap.entrySet().parallelStream()
+        applicationInstanceES.stream().forEach(applicationInstanceE ->
+                applicationInstanceE.setConnect(envSessionMap.entrySet().stream()
                         .anyMatch(entry -> {
                             EnvSession envSession = entry.getValue();
                             return envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())

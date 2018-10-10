@@ -31,7 +31,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
         String filePath = objectPath.get(TypeUtil.objToString(v1Service.hashCode()));
         DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
         if (devopsServiceE != null &&
-                beforeSyncDelete.parallelStream()
+                beforeSyncDelete.stream()
                         .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(v1Service.getKind()))
                         .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsServiceE.getId()))) {
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
@@ -39,7 +39,7 @@ public class ConvertV1ServiceServiceImpl extends ConvertK8sObjectService<V1Servi
                 throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1Service.getMetadata().getName(), null);
             }
         }
-        if (v1Services.parallelStream().anyMatch(v1Service1 -> v1Service1.getMetadata().getName().equals(v1Service.getMetadata().getName()))) {
+        if (v1Services.stream().anyMatch(v1Service1 -> v1Service1.getMetadata().getName().equals(v1Service.getMetadata().getName()))) {
             throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1Service.getMetadata().getName(), null);
         } else {
             v1Services.add(v1Service);

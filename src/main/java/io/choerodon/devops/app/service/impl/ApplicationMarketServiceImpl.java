@@ -77,7 +77,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 throw new CommonException("error.publishLevel");
             }
             List<AppMarketVersionDTO> appVersions = applicationReleasingDTO.getAppVersions();
-            ids = appVersions.parallelStream().map(AppMarketVersionDTO::getId)
+            ids = appVersions.stream().map(AppMarketVersionDTO::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
         } else {
             throw new CommonException("error.app.check");
@@ -149,7 +149,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 .getVersions(null, appMarketId, true);
         List<AppMarketVersionDTO> appMarketVersionDTOList = ConvertHelper
                 .convertList(versionDOList, AppMarketVersionDTO.class)
-                .parallelStream()
+                .stream()
                 .sorted(this::compareAppMarketVersionDTO)
                 .collect(Collectors.toCollection(ArrayList::new));
         ApplicationReleasingDTO applicationReleasingDTO =
@@ -167,10 +167,10 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 applicationMarketE.getMarketUpdatedDate());
         applicationReleasingDTO.setLastUpdatedDate(latestUpdateDate);
 
-        Boolean versionExist = appMarketVersionDTOList.parallelStream().anyMatch(t -> t.getId().equals(versionId));
+        Boolean versionExist = appMarketVersionDTOList.stream().anyMatch(t -> t.getId().equals(versionId));
         Long latestVersionId = versionId;
         if (!versionExist) {
-            Optional<AppMarketVersionDTO> optional = appMarketVersionDTOList.parallelStream()
+            Optional<AppMarketVersionDTO> optional = appMarketVersionDTOList.stream()
                     .max(this::compareAppMarketVersionDTO);
             latestVersionId = optional.isPresent()
                     ? optional.get().getId()
@@ -276,7 +276,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
         ApplicationReleasingDTO applicationReleasingDTO = getMarketAppInProject(projectId, appMarketId);
 
-        List<Long> ids = versionDTOList.parallelStream()
+        List<Long> ids = versionDTOList.stream()
                 .map(AppMarketVersionDTO::getId).collect(Collectors.toCollection(ArrayList::new));
 
         applicationVersionRepository.checkAppAndVersion(applicationReleasingDTO.getAppId(), ids);
@@ -408,8 +408,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             try {
                 return FileUtil.md5HashCode(imagePath);
             } catch (FileNotFoundException e) {
-                logger.info(e.getMessage());
-                throw new CommonException("error.image.read");
+                throw new CommonException("error.image.read", e);
             }
         } else {
             throw new CommonException("error.images.illegal");
@@ -418,7 +417,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     private void analyzeAppFile(List<ApplicationReleasingDTO> appMarketVersionDTOS,
                                 List<File> appFileList) {
-        appFileList.parallelStream().forEach(t -> {
+        appFileList.stream().forEach(t -> {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
             if (appFiles != null && !appFileList.isEmpty()) {
@@ -442,7 +441,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String orgCode = organization.getCode();
         String projectCode = projectE.getCode();
-        appFileList.parallelStream().forEach(t -> {
+        appFileList.stream().forEach(t -> {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
             if (appFiles != null && !appFileList.isEmpty()) {
@@ -460,7 +459,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     applicationE.setName(applicationReleasingDTO.getName());
                     Long appId = createOrUpdateApp(applicationE, appCode, projectId);
                     Boolean isVersionPublish = isPublic != null;
-                    applicationReleasingDTO.getAppVersions().parallelStream()
+                    applicationReleasingDTO.getAppVersions().stream()
                             .forEach(appVersion -> createVersion(
                                     appVersion, orgCode, projectCode, appCode, appId, appFiles, isVersionPublish
                             ));
@@ -487,13 +486,13 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             applicationReleasingDTO.setAppVersions(
-                    applicationReleasingDTO.getAppVersions().parallelStream()
+                    applicationReleasingDTO.getAppVersions().stream()
                             .filter(t -> appMarketDownloadDTO.getAppVersionIds().contains(t.getId()))
                             .collect(Collectors.toCollection(ArrayList::new))
             );
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
-            appMarketDownloadDTO.getAppVersionIds().parallelStream().forEach(appVersionId -> {
+            appMarketDownloadDTO.getAppVersionIds().stream().forEach(appVersionId -> {
                 ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
                 images.add(applicationVersionE.getImage());
                 String repoUrl = String.format("%s%s%s%s%s%s%s%s%s%s%s%s", helmUrl,
@@ -530,7 +529,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             FileUtil.toZip(CHARTS, outputStream, true);
             FileUtil.deleteDirectory(new File(CHARTS));
         } catch (IOException e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 

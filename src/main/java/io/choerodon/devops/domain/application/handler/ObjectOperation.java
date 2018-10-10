@@ -105,7 +105,7 @@ public class ObjectOperation<T> {
             }
             return resultBuilder.toString();
         } catch (FileNotFoundException e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 

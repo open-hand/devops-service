@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
@@ -74,6 +75,11 @@ public interface GitlabServiceClient {
                                    @RequestParam("canPush") boolean canPush,
                                    @RequestParam("userId") Integer userId);
 
+    @GetMapping("/v1/projects/deploy_key")
+    ResponseEntity<List<DeployKey>> getDeploykeys(@RequestParam("projectId") Integer projectId,
+                                                  @RequestParam("userId") Integer userId);
+
+
     @PostMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<Map<String, Object>> addVariable(@PathVariable("projectId") Integer projectId,
                                                     @RequestParam("key") String key,
@@ -87,7 +93,7 @@ public interface GitlabServiceClient {
 
     @DeleteMapping(value = "/v1/projects/{groupName}/{projectName}")
     ResponseEntity deleteProjectByProjectName(@PathVariable("groupName") String groupName,
-                                 @PathVariable("projectName") String projectName,
+                                              @PathVariable("projectName") String projectName,
                                               @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/queryByName")

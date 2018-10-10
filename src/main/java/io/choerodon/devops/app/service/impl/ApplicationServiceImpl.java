@@ -182,7 +182,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        applicationES.getContent().parallelStream()
+        applicationES.getContent().stream()
                 .forEach(t -> {
                             if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
                                 t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
@@ -353,6 +353,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                         gitlabProjectPayload.getGitlabProjectId(), gitlabProjectPayload.getUserId(), projectHook)
                         .getId()));
+            } else {
+                applicationE.initHookId(TypeUtil.objToLong(projectHooks.get(0).getId()));
             }
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException("error.application.update");
@@ -402,7 +404,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         } catch (Exception e) {
             //删除模板
             gitUtil.deleteWorkingDirectory(applicationDir);
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 

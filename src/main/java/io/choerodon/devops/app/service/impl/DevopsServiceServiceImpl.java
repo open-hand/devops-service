@@ -112,7 +112,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 projectId, envId, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        devopsServiceByPage.parallelStream().forEach(devopsServiceV -> {
+        devopsServiceByPage.stream().forEach(devopsServiceV -> {
             if (connectedEnvList.contains(devopsServiceV.getEnvId())
                     && updatedEnvList.contains(devopsServiceV.getEnvId())) {
                 devopsServiceV.setEnvStatus(true);
@@ -176,7 +176,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsServiceRepository.update(devopsServiceE);
 
-        devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
+        devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
             devopsServiceAppInstanceE.setServiceId(serviceEId);
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });
@@ -287,7 +287,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理更新service对象数据
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<Long> beforeDevopsServiceAppInstanceES = devopsServiceInstanceRepository
-                .selectByServiceId(id).parallelStream().map(DevopsServiceAppInstanceE::getAppInstanceId).collect(Collectors.toList());
+                .selectByServiceId(id).stream().map(DevopsServiceAppInstanceE::getAppInstanceId).collect(Collectors.toList());
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
         devopsServiceE = handlerUpdateService(devopsServiceReqDTO, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
         if (devopsServiceE == null) {
@@ -316,7 +316,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //处理更新service对象数据
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<Long> beforeDevopsServiceAppInstanceES = devopsServiceInstanceRepository
-                .selectByServiceId(id).parallelStream().map(DevopsServiceAppInstanceE::getAppInstanceId).collect(Collectors.toList());
+                .selectByServiceId(id).stream().map(DevopsServiceAppInstanceE::getAppInstanceId).collect(Collectors.toList());
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
         devopsServiceE = handlerUpdateService(devopsServiceReqDTO, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
         if (devopsServiceE == null) {
@@ -330,10 +330,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
         //更新service和instance关联关系数据到数据库
-        beforeDevopsServiceAppInstanceES.parallelStream().forEach(instanceId ->
+        beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
                 devopsServiceInstanceRepository.deleteByOptions(id, instanceId)
         );
-        devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
+        devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
             devopsServiceAppInstanceE.setServiceId(id);
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });
@@ -479,7 +479,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         spec.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
         spec.setSelector(devopsServiceReqDTO.getLabel());
         final Integer[] serialNumber = {0};
-        List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().parallelStream()
+        List<V1ServicePort> ports = devopsServiceReqDTO.getPorts().stream()
                 .map(t -> {
                     V1ServicePort v1ServicePort = new V1ServicePort();
                     if (t.getNodePort() != null) {
@@ -581,11 +581,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
         Long serviceId = devopsServiceE.getId();
         if (beforeDevopsServiceAppInstanceES != null) {
-            beforeDevopsServiceAppInstanceES.parallelStream().forEach(instanceId ->
+            beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
                     devopsServiceInstanceRepository.deleteByOptions(serviceId, instanceId)
             );
         }
-        devopsServiceAppInstanceES.parallelStream().forEach(devopsServiceAppInstanceE -> {
+        devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
             devopsServiceAppInstanceE.setServiceId(serviceId);
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });

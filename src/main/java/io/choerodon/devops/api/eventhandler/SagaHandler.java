@@ -200,7 +200,7 @@ public class SagaHandler {
         List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
         }.getType());
         loggerInfo(gitlabUserDTO);
-        gitlabUserDTO.parallelStream().forEach(t -> {
+        gitlabUserDTO.stream().forEach(t -> {
             GitlabUserRequestDTO gitlabUserReqDTO = new GitlabUserRequestDTO();
             gitlabUserReqDTO.setProvider("oauth2_generic");
             gitlabUserReqDTO.setExternUid(t.getId());

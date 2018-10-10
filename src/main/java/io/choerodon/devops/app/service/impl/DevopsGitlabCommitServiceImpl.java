@@ -37,7 +37,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Override
     public void create(PushWebHookDTO pushWebHookDTO, String token) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
-        pushWebHookDTO.getCommits().parallelStream().forEach(commitDTO -> {
+        pushWebHookDTO.getCommits().stream().forEach(commitDTO -> {
             DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
             devopsGitlabCommitE.setAppId(applicationE.getId());
             devopsGitlabCommitE.setCommitContent(commitDTO.getMessage());
