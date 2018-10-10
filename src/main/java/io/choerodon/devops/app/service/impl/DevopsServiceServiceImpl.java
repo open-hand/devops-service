@@ -225,7 +225,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setAnnotations(gson.toJson(annotations));
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
 
-
         return devopsServiceE;
 
     }
