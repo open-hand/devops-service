@@ -53,7 +53,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void createGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        gitlabGroupMemberDTOList.parallelStream()
+        gitlabGroupMemberDTOList.stream()
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
                     List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
@@ -71,7 +71,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void deleteGitlabGroupMemberRole(List<GitlabGroupMemberDTO> gitlabGroupMemberDTOList) {
-        gitlabGroupMemberDTOList.parallelStream()
+        gitlabGroupMemberDTOList.stream()
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
                     UserAttrE userAttrE = userAttrRepository.queryById(gitlabGroupMemberDTO.getUserId());

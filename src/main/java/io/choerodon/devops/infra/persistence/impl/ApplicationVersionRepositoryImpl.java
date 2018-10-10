@@ -47,7 +47,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Long organizationId = projectE.getOrganization().getId();
         List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null);
-        List<Long> projectIds = projectEList.parallelStream().map(ProjectE::getId)
+        List<Long> projectIds = projectEList.stream().map(ProjectE::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
 
         return applicationVersionMapper.listAppLatestVersion(projectId, projectIds);
@@ -162,7 +162,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
 
         }
         List<Long> versionList = applicationVersionMapper.selectVersionsByAppId(appId);
-        if (appVersionIds.parallelStream().anyMatch(t -> !versionList.contains(t))) {
+        if (appVersionIds.stream().anyMatch(t -> !versionList.contains(t))) {
             throw new CommonException("error.app.version.check");
         }
 

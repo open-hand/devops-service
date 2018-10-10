@@ -128,7 +128,7 @@ public class IamRepositoryImpl implements IamRepository {
                 userES = ConvertHelper.convertList(iamServiceClient
                         .listUsersByIds(ids.toArray(newIds)).getBody(), UserE.class);
             } catch (Exception e) {
-                throw new CommonException("error.users.get");
+                throw new CommonException("error.users.get", e);
             }
         }
         return userES;

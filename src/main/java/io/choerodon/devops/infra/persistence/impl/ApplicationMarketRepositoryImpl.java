@@ -198,7 +198,7 @@ public class ApplicationMarketRepositoryImpl implements ApplicationMarketReposit
             ProjectE projectE = iamRepository.queryIamProject(projectId);
             Long organizationId = projectE.getOrganization().getId();
             List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null);
-            projectIds = projectEList.parallelStream().map(ProjectE::getId)
+            projectIds = projectEList.stream().map(ProjectE::getId)
                     .collect(Collectors.toCollection(ArrayList::new));
         } else {
             projectIds = null;

@@ -69,7 +69,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         //比较已存在域名和新增要处理的域名,获取新增域名，更新域名，删除域名
         List<V1beta1Ingress> addV1beta1Ingress = new ArrayList<>();
         List<V1beta1Ingress> updateV1beta1Ingress = new ArrayList<>();
-        v1beta1Ingresses.parallelStream().forEach(v1beta1Ingress -> {
+        v1beta1Ingresses.stream().forEach(v1beta1Ingress -> {
             if (beforeIngress.contains(v1beta1Ingress.getMetadata().getName())) {
                 updateV1beta1Ingress.add(v1beta1Ingress);
                 beforeIngress.remove(v1beta1Ingress.getMetadata().getName());
@@ -258,7 +258,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             IntOrString backendServicePort = backend.getServicePort();
             if (backendServicePort.isInteger() || pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
                 servicePort = TypeUtil.objToLong(backendServicePort);
-                if (devopsServiceE.getPorts().parallelStream()
+                if (devopsServiceE.getPorts().stream()
                         .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
                     throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
                             filePath, serviceName, null);

@@ -86,6 +86,6 @@ public class DevopsEnvGroupRepositoryImpl implements DevopsEnvGroupRepository {
         DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO();
         devopsEnvGroupDO.setProjectId(projectId);
         List<DevopsEnvGroupDO> devopsEnvGroupDOS = devopsEnvGroupMapper.select(devopsEnvGroupDO);
-        return devopsEnvGroupDOS.parallelStream().map(DevopsEnvGroupDO::getSequence).max(Long::compareTo).orElse(0L);
+        return devopsEnvGroupDOS.stream().map(DevopsEnvGroupDO::getSequence).max(Long::compareTo).orElse(0L);
     }
 }

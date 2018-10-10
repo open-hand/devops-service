@@ -177,7 +177,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     void updateWebHook(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
-        applications.parallelStream()
+        applications.stream()
                 .filter(applicationDO ->
                         applicationDO.getHookId() != null)
                 .forEach(applicationDO -> {
@@ -243,7 +243,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             DevopsGitlabPipelineE devopsGitlabPipelineE = new DevopsGitlabPipelineE();
                             devopsGitlabPipelineE.setAppId(applicationDO.getId());
                             Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser().getId()));
-                            devopsGitlabPipelineE.setPipelineCreateUserId(userId == null ? null : userId);
+                            devopsGitlabPipelineE.setPipelineCreateUserId(userId);
                             devopsGitlabPipelineE.setPipelineId(TypeUtil.objToLong(gitlabPipelineE.getId()));
                             if (gitlabPipelineE.getStatus().toString().equals("success")) {
                                 devopsGitlabPipelineE.setStatus("passed");
@@ -455,7 +455,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         }
 
         private List<V1ServicePort> getV1ServicePortsWithPorts(DevopsServiceE devopsServiceE, Integer[] serialNumber) {
-            return devopsServiceE.getPorts().parallelStream()
+            return devopsServiceE.getPorts().stream()
                     .map(t -> {
                         V1ServicePort v1ServicePort = new V1ServicePort();
                         if (t.getNodePort() != null) {
@@ -494,7 +494,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             portMapE.setProtocol(protocol);
             portMapE.setTargetPort(targetPort);
             portMapES.add(portMapE);
-            ports = portMapES.parallelStream()
+            ports = portMapES.stream()
                     .map(t -> {
                         V1ServicePort v1ServicePort = new V1ServicePort();
                         if (t.getPort() != null) {
@@ -552,7 +552,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     devopsIngressE.getDomain(), devopsIngressE.getName(), devopsIngressE.getCertName());
             List<DevopsIngressPathE> devopsIngressPathES =
                     devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
-            devopsIngressPathES.parallelStream()
+            devopsIngressPathES.stream()
                     .forEach(devopsIngressPathE ->
                             v1beta1Ingress.getSpec().getRules().get(0).getHttp()
                                     .addPathsItem(devopsIngressService.createPath(
@@ -586,7 +586,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             if ("0.8".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 0.8");
                 List<ApplicationDO> applications = applicationMapper.selectAll();
-                applications.parallelStream()
+                applications.stream()
                         .filter(applicationDO ->
                                 applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
                         .forEach(applicationDO -> {
@@ -682,7 +682,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 new SynServiceByEnv(logs, env, filePath, git).invoke();
                 new SyncIngressByEnv(logs, env, filePath, git).invoke();
 
-                if (git.tagList().call().parallelStream().map(Ref::getName).noneMatch("agent-sync"::equals)) {
+                if (git.tagList().call().stream().map(Ref::getName).noneMatch("agent-sync"::equals)) {
                     git.tag().setName("agent-sync").call();
                 }
 
@@ -725,9 +725,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 Optional<List<BranchDO>> branchDOS = Optional.ofNullable(
                         devopsGitRepository.listBranches(applicationDO.getGitlabProjectId(), ADMIN));
                 List<String> branchNames =
-                        devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).parallelStream()
+                        devopsGitRepository.listDevopsBranchesByAppId(applicationDO.getId()).stream()
                                 .map(DevopsBranchE::getBranchName).collect(Collectors.toList());
-                branchDOS.ifPresent(branchDOS1 -> branchDOS1.parallelStream()
+                branchDOS.ifPresent(branchDOS1 -> branchDOS1.stream()
                         .filter(branchDO -> !branchNames.contains(branchDO.getName()))
                         .forEach(branchDO -> {
                             DevopsBranchE newDevopsBranchE = new DevopsBranchE();

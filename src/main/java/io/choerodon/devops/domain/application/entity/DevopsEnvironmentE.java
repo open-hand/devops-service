@@ -274,7 +274,7 @@ public class DevopsEnvironmentE {
         this.sequence = 1L;
         if (!devopsEnvironmentES.isEmpty()) {
             LongSummaryStatistics stats = devopsEnvironmentES
-                    .parallelStream()
+                    .stream()
                     .mapToLong(DevopsEnvironmentE::getSequence)
                     .summaryStatistics();
             this.sequence = stats.getMax() + 1;

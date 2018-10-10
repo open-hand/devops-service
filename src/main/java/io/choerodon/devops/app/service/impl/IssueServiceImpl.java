@@ -58,9 +58,9 @@ public class IssueServiceImpl implements IssueService {
             commitDTOS.addAll(devopsBranchDTO.getCommits());
             customMergeRequestDTOS.addAll(devopsBranchDTO.getMergeRequests());
         });
-        Optional<CommitDTO> commitDTO = commitDTOS.parallelStream().max(
+        Optional<CommitDTO> commitDTO = commitDTOS.stream().max(
                 Comparator.comparing(CommitDTO::getCreatedAt));
-        Optional<CustomMergeRequestDTO> customMergeRequestDTO = customMergeRequestDTOS.parallelStream().max(
+        Optional<CustomMergeRequestDTO> customMergeRequestDTO = customMergeRequestDTOS.stream().max(
                 Comparator.comparing(CustomMergeRequestDTO::getUpdatedAt)
         );
         IssueDTO issueDTO = new IssueDTO();
@@ -95,7 +95,7 @@ public class IssueServiceImpl implements IssueService {
             String sinceDate = simpleDateFormat.format(devopsBranchDO.getCheckoutDate());
             List<CommitDO> commitDOs = devopsGitRepository
                     .getCommits(gitLabProjectId, devopsBranchDO.getBranchName(), sinceDate);
-            commitDOs = commitDOs.parallelStream().filter(commitDO ->
+            commitDOs = commitDOs.stream().filter(commitDO ->
                     !commitDO.getId().equals(devopsBranchDO.getCheckoutCommit()))
                     .collect(Collectors.toList());
             DevopsBranchDTO devopsBranchDTO = ConvertHelper.convert(devopsBranchDO, DevopsBranchDTO.class);

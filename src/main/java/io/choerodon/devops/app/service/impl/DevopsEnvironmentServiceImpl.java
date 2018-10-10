@@ -41,6 +41,7 @@ import io.choerodon.websocket.helper.EnvListener;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
+    private static final String MASTER = "master";
     private static final String README = "README.md";
     private static final String README_CONTENT =
             "# This is gitops env repository!";
@@ -148,7 +149,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", ""));
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (JsonProcessingException e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 
@@ -186,7 +187,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
         });
         if (active) {
-            devopsEnvGroupES.parallelStream().forEach(devopsEnvGroupE -> {
+            devopsEnvGroupES.stream().forEach(devopsEnvGroupE -> {
                 if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
                     DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
                     devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
@@ -203,7 +204,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
-                .queryByprojectAndActive(projectId, active).parallelStream()
+                .queryByprojectAndActive(projectId, active).stream()
                 .peek(t -> {
                     t.setUpdate(false);
                     if (connectedEnvList.contains(t.getId())) {
@@ -252,7 +253,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         else {
             List<Long> environmentIds;
             if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
-                environmentIds = devopsEnvironmentES.parallelStream()
+                environmentIds = devopsEnvironmentES.stream()
                         .filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null)
                         .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                         .collect(Collectors.toList()).stream()
@@ -260,7 +261,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                 -> devopsEnvironmentE1.getId().longValue())
                         .collect(Collectors.toList());
             } else {
-                environmentIds = devopsEnvironmentES.parallelStream()
+                environmentIds = devopsEnvironmentES.stream()
                         .filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
                         .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                         .collect(Collectors.toList()).stream()
@@ -416,13 +417,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         if (appId == null) {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream()
+                    applicationInstanceRepository.selectByEnvId(t.getId()).stream()
                             .anyMatch(applicationInstanceE ->
                                     applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
                     .collect(Collectors.toList());
         } else {
             return devopsEnviromentRepDTOList.stream().filter(t ->
-                    applicationInstanceRepository.selectByEnvId(t.getId()).parallelStream()
+                    applicationInstanceRepository.selectByEnvId(t.getId()).stream()
                             .anyMatch(applicationInstanceE ->
                                     applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus()) && applicationInstanceE.getApplicationE().getId().equals(appId)))
                     .collect(Collectors.toList());
@@ -431,22 +432,29 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.createProject(
-                gitlabProjectPayload.getGroupId(),
-                gitlabProjectPayload.getPath(),
-                gitlabProjectPayload.getUserId(),
-                false);
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
+        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
+        if (gitlabProjectDO.getId() == null) {
+            gitlabProjectDO = gitlabRepository.createProject(
+                    gitlabProjectPayload.getGroupId(),
+                    gitlabProjectPayload.getPath(),
+                    gitlabProjectPayload.getUserId(),
+                    false);
+        }
         devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
-        gitlabRepository.createDeployKey(
-                gitlabProjectDO.getId(),
-                gitlabProjectPayload.getPath(),
-                devopsEnvironmentE.getEnvIdRsaPub(),
-                true,
-                gitlabProjectPayload.getUserId());
+        if (gitlabRepository.getDeployKeys(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId()).isEmpty()) {
+            gitlabRepository.createDeployKey(
+                    gitlabProjectDO.getId(),
+                    gitlabProjectPayload.getPath(),
+                    devopsEnvironmentE.getEnvIdRsaPub(),
+                    true,
+                    gitlabProjectPayload.getUserId());
+        }
         ProjectHook projectHook = ProjectHook.allHook();
         projectHook.setEnableSslVerification(true);
         projectHook.setProjectId(gitlabProjectDO.getId());
@@ -454,10 +462,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
         uri += "devops/webhook/git_ops";
         projectHook.setUrl(uri);
-        devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
-                gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
-        gitlabRepository.createFile(gitlabProjectDO.getId(),
-                README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
+        List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
+        if (projectHooks == null) {
+            devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
+                    gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
+        } else {
+            devopsEnvironmentE.initHookId(TypeUtil.objToLong(projectHooks.get(0).getId()));
+        }
+        if (!gitlabRepository.getFile(gitlabProjectDO.getId(), MASTER, README)) {
+            gitlabRepository.createFile(gitlabProjectDO.getId(),
+                    README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
+        }
         devopsEnviromentRepository.update(devopsEnvironmentE);
     }
 
@@ -479,6 +494,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             envSyncStatusDTO.setSagaSyncCommit(devopsEnvCommitRepository
                     .query(devopsEnvironmentE.getSagaSyncCommit()).getCommitSha());
         }
+
+        gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
         envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
                 gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
         return envSyncStatusDTO;

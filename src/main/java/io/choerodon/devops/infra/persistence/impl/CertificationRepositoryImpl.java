@@ -102,7 +102,7 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         });
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        certificationDTOPage.getContent().parallelStream()
+        certificationDTOPage.getContent().stream()
                 .forEach(certificationDTO ->
                         certificationDTO.setEnvConnected(
                                 connectedEnvList.contains(certificationDTO.getEnvId())

@@ -51,7 +51,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<C7nHelmRelease> c7nHelmReleases, Long envId, Long projectId, String path, Long userId) {
-        List<String> beforeC7nRelease = beforeSync.parallelStream()
+        List<String> beforeC7nRelease = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(C7NHELM_RELEASE))
                 .map(devopsEnvFileResourceE -> {
                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
@@ -67,7 +67,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         //比较已存在实例和新增要处理的实例,获取新增实例，更新实例，删除实例
         List<C7nHelmRelease> addC7nHelmRelease = new ArrayList<>();
         List<C7nHelmRelease> updateC7nHelmRelease = new ArrayList<>();
-        c7nHelmReleases.parallelStream().forEach(c7nHelmRelease -> {
+        c7nHelmReleases.stream().forEach(c7nHelmRelease -> {
             if (beforeC7nRelease.contains(c7nHelmRelease.getMetadata().getName())) {
                 updateC7nHelmRelease.add(c7nHelmRelease);
                 beforeC7nRelease.remove(c7nHelmRelease.getMetadata().getName());

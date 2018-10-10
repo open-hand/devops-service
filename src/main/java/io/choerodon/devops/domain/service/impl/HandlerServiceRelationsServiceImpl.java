@@ -53,7 +53,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1Service> v1Services, Long envId, Long projectId, String path, Long userId) {
-        List<String> beforeService = beforeSync.parallelStream()
+        List<String> beforeService = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SERVICE))
                 .map(devopsEnvFileResourceE -> {
                     DevopsServiceE devopsServiceE = devopsServiceRepository
@@ -68,7 +68,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         //比较已存在网络和新增要处理的网络,获取新增网络，更新网络，删除网络
         List<V1Service> addV1Service = new ArrayList<>();
         List<V1Service> updateV1Service = new ArrayList<>();
-        v1Services.parallelStream().forEach(v1Service -> {
+        v1Services.stream().forEach(v1Service -> {
             if (beforeService.contains(v1Service.getMetadata().getName())) {
                 updateV1Service.add(v1Service);
                 beforeService.remove(v1Service.getMetadata().getName());
@@ -206,7 +206,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         devopsServiceReqDTO.setType(v1Service.getSpec().getType());
         devopsServiceReqDTO.setEnvId(envId);
 
-        List<PortMapE> portMapList = v1Service.getSpec().getPorts().parallelStream()
+        List<PortMapE> portMapList = v1Service.getSpec().getPorts().stream()
                 .map(t -> {
                     PortMapE portMap = new PortMapE();
                     portMap.setName(t.getName());
@@ -223,7 +223,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         if (v1Service.getMetadata().getAnnotations() != null) {
             String instancesCode = v1Service.getMetadata().getAnnotations()
                     .get("choerodon.io/network-service-instances");
-            if (instancesCode!=null) {
+            if (instancesCode != null) {
                 List<Long> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel()
                         .map(t -> getInstanceId(t, envId, devopsServiceReqDTO, filePath))
                         .collect(Collectors.toList());

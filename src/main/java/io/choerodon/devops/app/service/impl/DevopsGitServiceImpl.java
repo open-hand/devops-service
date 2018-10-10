@@ -219,7 +219,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsGitRepository.listBranches(applicationId, pageRequest, params);
         Page<BranchDTO> page = new Page<>();
         BeanUtils.copyProperties(branches, page);
-        page.setContent(branches.parallelStream().map(t -> {
+        page.setContent(branches.stream().map(t -> {
             Issue issue = null;
             if (t.getIssueId() != null) {
                 issue = agileRepository.queryIssue(projectId, t.getIssueId());
@@ -305,7 +305,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public Boolean checkTag(Long projectId, Long applicationId, String tagName) {
-        return devopsGitRepository.getTagList(applicationId, getGitlabUserId()).parallelStream()
+        return devopsGitRepository.getTagList(applicationId, getGitlabUserId()).stream()
                 .noneMatch(t -> tagName.equals(t.getName()));
     }
 
@@ -346,7 +346,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
             sagaClient.startSaga("devops-sync-gitops", new StartInstanceDTO(input, "env", devopsEnvironmentE.getId().toString()));
         } catch (JsonProcessingException e) {
-            throw new CommonException(e.getMessage());
+            throw new CommonException(e.getMessage(), e);
         }
     }
 
@@ -389,7 +389,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             if (tagNotExist) {
                 operationFiles.addAll(FileUtil.getFilesPath(path));
-                operationFiles.parallelStream().forEach(file -> {
+                operationFiles.stream().forEach(file -> {
                     List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                             .queryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
                     if (!devopsEnvFileResourceES.isEmpty()) {
@@ -532,7 +532,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             }
         });
 
-        deletedFiles.parallelStream().forEach(file -> {
+        deletedFiles.stream().forEach(file -> {
             List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                     .queryByEnvIdAndPath(devopsEnvironmentE.getId(), file);
             if (!devopsEnvFileResourceES.isEmpty()) {
@@ -690,7 +690,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     private boolean getDevopsSyncTag(PushWebHookDTO pushWebHookDTO) {
-        return devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId()).parallelStream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
+        return devopsGitRepository.getGitLabTags(pushWebHookDTO.getProjectId(), pushWebHookDTO.getUserId()).stream().noneMatch(tagDO -> tagDO.getName().equals(GitUtil.DEV_OPS_SYNC_TAG));
 
     }
 

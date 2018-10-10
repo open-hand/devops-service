@@ -182,7 +182,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
             devopsEnvPodRepository.insert(devopsEnvPodE);
             Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-            v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+            v1Pod.getSpec().getContainers().stream().forEach(t ->
                     containerRepository.insert(new DevopsEnvPodContainerDO(
                             podId,
                             t.getName())));
@@ -196,7 +196,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         devopsEnvPodE.setObjectVersionNumber(pod.getObjectVersionNumber());
                         devopsEnvPodRepository.update(devopsEnvPodE);
                         containerRepository.deleteByPodId(pod.getId());
-                        v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+                        v1Pod.getSpec().getContainers().stream().forEach(t ->
                                 containerRepository.insert(
                                         new DevopsEnvPodContainerDO(pod.getId(), t.getName())));
                     }
@@ -207,7 +207,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
                 devopsEnvPodRepository.insert(devopsEnvPodE);
                 Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-                v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+                v1Pod.getSpec().getContainers().stream().forEach(t ->
                         containerRepository.insert(new DevopsEnvPodContainerDO(
                                 podId,
                                 t.getName())));
@@ -267,7 +267,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
             devopsEnvCommandRepository.update(devopsEnvCommandE);
         } catch (Exception e) {
-            throw new CommonException("error.resource.insert");
+            throw new CommonException("error.resource.insert", e);
         }
     }
 
@@ -336,8 +336,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             String releaseNames = v1Service.getMetadata().getAnnotations()
                     .get("choerodon.io/network-service-instances");
             if (releaseNames != null) {
-                List<String> releases = Arrays.asList(releaseNames.split("\\+"));
-                List<Long> beforeInstanceIdS = devopsEnvResourceRepository.listByEnvAndType(envId, SERVICE_KIND).parallelStream().filter(devopsEnvResourceE1 -> devopsEnvResourceE1.getName().equals(v1Service.getMetadata().getName())).map(devopsEnvResourceE1 ->
+                String[] releases = releaseNames.split("\\+");
+                List<Long> beforeInstanceIdS = devopsEnvResourceRepository.listByEnvAndType(envId, SERVICE_KIND).stream().filter(devopsEnvResourceE1 -> devopsEnvResourceE1.getName().equals(v1Service.getMetadata().getName())).map(devopsEnvResourceE1 ->
                         devopsEnvResourceE1.getApplicationInstanceE().getId()
                 ).collect(Collectors.toList());
                 List<Long> afterInstanceIds = new ArrayList<>();
@@ -546,7 +546,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 applicationInstanceE.setId(devopsEnvCommandE.getObjectId());
                 return applicationInstanceE;
             } catch (Exception e) {
-                throw new CommonException(e.getMessage());
+                throw new CommonException(e.getMessage(), e);
             }
         }
         return null;
@@ -649,7 +649,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
 
         String releaseNames = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
-        List<String> releases = Arrays.asList(releaseNames.split("\\+"));
+        String[] releases = releaseNames.split("\\+");
 
         DevopsEnvResourceE devopsEnvResourceE =
                 new DevopsEnvResourceE();
@@ -748,7 +748,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         .listByEnvAndType(envId, ResourceType.POD.getType());
                 if (!devopsEnvResourceES.isEmpty()) {
                     List<String> podNames = Arrays.asList(resourceSyncPayload.getResources());
-                    devopsEnvResourceES.parallelStream()
+                    devopsEnvResourceES.stream()
                             .filter(devopsEnvResourceE -> !podNames.contains(devopsEnvResourceE.getName()))
                             .forEach(devopsEnvResourceE -> {
                                 devopsEnvResourceRepository.deleteByKindAndName(
@@ -763,7 +763,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         .listByEnvAndType(envId, ResourceType.DEPLOYMENT.getType());
                 if (!devopsEnvResourceES.isEmpty()) {
                     List<String> deploymentNames = Arrays.asList(resourceSyncPayload.getResources());
-                    devopsEnvResourceES.parallelStream()
+                    devopsEnvResourceES.stream()
                             .filter(devopsEnvResourceE -> !deploymentNames.contains(devopsEnvResourceE.getName()))
                             .forEach(devopsEnvResourceE ->
                                     devopsEnvResourceRepository.deleteByKindAndName(
@@ -775,7 +775,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         .listByEnvAndType(envId, ResourceType.REPLICASET.getType());
                 if (!devopsEnvResourceES.isEmpty()) {
                     List<String> replicaSetNames = Arrays.asList(resourceSyncPayload.getResources());
-                    devopsEnvResourceES.parallelStream()
+                    devopsEnvResourceES.stream()
                             .filter(devopsEnvResourceE -> !replicaSetNames.contains(devopsEnvResourceE.getName()))
                             .forEach(devopsEnvResourceE ->
                                     devopsEnvResourceRepository.deleteByKindAndName(
@@ -786,7 +786,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
                 if (!devopsServiceVS.isEmpty()) {
                     List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
-                    devopsServiceVS.parallelStream()
+                    devopsServiceVS.stream()
                             .filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName()))
                             .forEach(devopsServiceV -> {
                                 devopsServiceRepository.delete(devopsServiceV.getId());
@@ -799,7 +799,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
                 if (!devopsIngressES.isEmpty()) {
                     List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
-                    devopsIngressES.parallelStream()
+                    devopsIngressES.stream()
                             .filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName()))
                             .forEach(devopsIngressE -> {
                                 devopsIngressRepository.deleteIngress(devopsIngressE.getId());
@@ -847,13 +847,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         List<DevopsEnvFileErrorE> errorDevopsFiles = getEnvFileErrors(envId, gitOpsSync, devopsEnvironmentE);
 
-        gitOpsSync.getMetadata().getFilesCommit().parallelStream().forEach(fileCommit -> {
+        gitOpsSync.getMetadata().getFilesCommit().stream().forEach(fileCommit -> {
             DevopsEnvFileE devopsEnvFileE = devopsEnvFileRepository.queryByEnvAndPath(devopsEnvironmentE.getId(), fileCommit.getFile());
             devopsEnvFileE.setAgentCommit(fileCommit.getCommit());
             devopsEnvFileRepository.update(devopsEnvFileE);
         });
         gitOpsSync.getMetadata().getResourceCommits()
-                .parallelStream()
+                .stream()
                 .forEach(resourceCommit -> {
                     String[] objects = resourceCommit.getResourceId().split("/");
                     switch (objects[0]) {
@@ -970,7 +970,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsEnvFileErrorE devopsEnvFileErrorE = devopsEnvFileErrorRepository
                 .queryByEnvIdAndFilePath(devopsEnvFileResourceE.getEnvironment().getId(), devopsEnvFileResourceE.getFilePath());
         if (devopsEnvFileErrorE != null) {
-            List<DevopsEnvFileErrorE> devopsEnvFileErrorES = envFileErrorES.parallelStream().filter(devopsEnvFileErrorE1 -> devopsEnvFileErrorE1.getId().equals(devopsEnvFileErrorE.getId())).collect(Collectors.toList());
+            List<DevopsEnvFileErrorE> devopsEnvFileErrorES = envFileErrorES.stream().filter(devopsEnvFileErrorE1 -> devopsEnvFileErrorE1.getId().equals(devopsEnvFileErrorE.getId())).collect(Collectors.toList());
             if (!devopsEnvFileErrorES.isEmpty()) {
                 String[] objects = devopsEnvFileErrorES.get(0).getResource().split("/");
                 if (objects[0].equals(objectType) && objects[1].equals(objectName)) {
@@ -1120,7 +1120,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
         devopsEnvPodRepository.insert(devopsEnvPodE);
         Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
-        v1Pod.getSpec().getContainers().parallelStream().forEach(t ->
+        v1Pod.getSpec().getContainers().stream().forEach(t ->
                 containerRepository.insert(new DevopsEnvPodContainerDO(
                         podId,
                         t.getName())));
@@ -1199,7 +1199,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 .queryByCode(appName, projectId);
         if (applicationE == null) {
             List<ApplicationE> applicationES = applicationRepository.listByCode(appName);
-            List<ApplicationE> applicationList = applicationES.parallelStream()
+            List<ApplicationE> applicationList = applicationES.stream()
                     .filter(newApplicationE ->
                             iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
                                     .getOrganization().getId().equals(orgId))
@@ -1244,7 +1244,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         try {
             msg.setPayload(JSONArray.toJSONString(commands));
         } catch (Exception e) {
-            throw new CommonException("error.payload.error");
+            throw new CommonException("error.payload.error", e);
         }
         socketMsgDispatcher.dispatcher(msg);
 
@@ -1295,7 +1295,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         });
         Date d = new Date();
         if (!commands.isEmpty()) {
-            commands.parallelStream().forEach(command -> {
+            commands.stream().forEach(command -> {
                 DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(command.getId());
                 command.setCommit(devopsEnvCommandE.getSha());
                 if (!CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandE.getStatus()) || (CommandStatus.OPERATING.getStatus().equals(devopsEnvCommandE.getStatus()) && d.getTime() - devopsEnvCommandE.getLastUpdateDate().getTime() <= 180000)) {

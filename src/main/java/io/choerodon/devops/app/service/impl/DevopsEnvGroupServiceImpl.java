@@ -85,7 +85,7 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
         Long sequence = 1L;
         if (!defaultDevopsEnvironmentES.isEmpty()) {
             LongSummaryStatistics stats = devopsEnvironmentES
-                    .parallelStream()
+                    .stream()
                     .mapToLong(DevopsEnvironmentE::getSequence)
                     .summaryStatistics();
             sequence = stats.getMax() + 1;

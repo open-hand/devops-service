@@ -23,6 +23,8 @@ import io.choerodon.websocket.tool.KeyParseTool;
 @Component
 public class AgentInitConfig implements AgentConfigurer {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private static final String INIT_AGENT = "init_agent";
     @Autowired
     CommandSender commandSender;
     @Autowired
@@ -31,8 +33,6 @@ public class AgentInitConfig implements AgentConfigurer {
     private IamRepository iamRepository;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String INIT_AGENT = "init_agent";
 
     @Override
     public void registerSessionListener(AgentSessionManager agentSessionManager) {
@@ -61,7 +61,7 @@ public class AgentInitConfig implements AgentConfigurer {
                 msg.setKey(session.getRegisterKey());
                 commandSender.sendMsg(msg);
             } catch (Exception e) {
-                throw new CommonException(e, "read envId from agent session failed");
+                throw new CommonException("read envId from agent session failed", e);
             }
         }
 

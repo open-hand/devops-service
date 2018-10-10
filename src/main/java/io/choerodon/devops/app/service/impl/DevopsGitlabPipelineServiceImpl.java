@@ -28,7 +28,6 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -91,13 +90,13 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                     stage.setDescription(commitStatuseDO.getDescription());
                     stage.setName(commitStatuseDO.getName());
                     stage.setStatus(commitStatuseDO.getStatus());
-                    if(commitStatuseDO.getFinishedAt()!=null) {
+                    if (commitStatuseDO.getFinishedAt() != null) {
                         stage.setFinishedAt(commitStatuseDO.getFinishedAt());
                     }
-                    if(commitStatuseDO.getStartedAt()!=null) {
+                    if (commitStatuseDO.getStartedAt() != null) {
                         stage.setStartedAt(commitStatuseDO.getStartedAt());
                     }
-                    if(pipelineWebHookDTO.getObjectAttributes().getRef().equals(commitStatuseDO.getRef())) {
+                    if (pipelineWebHookDTO.getObjectAttributes().getRef().equals(commitStatuseDO.getRef())) {
                         return stage;
                     } else {
                         return null;
@@ -203,7 +202,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         Map<String, List<DevopsGitlabPipelineDO>> resultMaps = devopsGitlabPipelineDOS.stream()
                 .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getPipelineCreationDate().getTime()).toString()));
         //将创建时间排序
-        List<String> creationDates = devopsGitlabPipelineDOS.parallelStream().map(deployDO -> new java.sql.Date(deployDO.getPipelineCreationDate().getTime()).toString()).collect(Collectors.toList());
+        List<String> creationDates = devopsGitlabPipelineDOS.stream().map(deployDO -> new java.sql.Date(deployDO.getPipelineCreationDate().getTime()).toString()).collect(Collectors.toList());
         List<Long> pipelineFrequencys = new LinkedList<>();
         List<Long> pipelineSuccessFrequency = new LinkedList<>();
         List<Long> pipelineFailFrequency = new LinkedList<>();
@@ -245,13 +244,13 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
         //按照ref分组
         Map<String, List<DevopsGitlabPipelineDO>> refWithPipelines = devopsGitlabPipelineDOS.stream()
-                .filter( pageDevopsGitlabPipelineDTO -> pageDevopsGitlabPipelineDTO.getRef() != null)
+                .filter(pageDevopsGitlabPipelineDTO -> pageDevopsGitlabPipelineDTO.getRef() != null)
                 .collect(Collectors.groupingBy(DevopsGitlabPipelineDO::getRef));
         Map<String, Long> refWithPipelineIds = new HashMap<>();
 
         //获取每个分支上最新的一条pipeline记录，用于后续标记latest
         refWithPipelines.forEach((key, value) -> {
-            Long pipeLineId = Collections.max(value.parallelStream().map(DevopsGitlabPipelineDO::getPipelineId).collect(Collectors.toList()));
+            Long pipeLineId = Collections.max(value.stream().map(DevopsGitlabPipelineDO::getPipelineId).collect(Collectors.toList()));
             refWithPipelineIds.put(key, pipeLineId);
         });
 

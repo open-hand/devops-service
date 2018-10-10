@@ -45,7 +45,7 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
         CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
         if (certificationE != null) {
             Long certId = certificationE.getId();
-            if (beforeSyncDelete.parallelStream()
+            if (beforeSyncDelete.stream()
                     .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType()
                             .equals(c7nCertification.getKind()))
                     .noneMatch(devopsEnvFileResourceE ->
@@ -59,7 +59,7 @@ public class ConvertC7nCertificationServiceImpl extends ConvertK8sObjectService<
                 }
             }
         }
-        if (c7nCertifications.parallelStream()
+        if (c7nCertifications.stream()
                 .anyMatch(certification -> certification.getMetadata().getName()
                         .equals(certName))) {
             throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError() + certName, filePath);

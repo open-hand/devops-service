@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
+import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
@@ -69,6 +70,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity createDeploykey(Integer projectId, String title, String key, boolean canPush, Integer userId) {
         return new ResponseEntity("error.deploykey.create", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<DeployKey>> getDeploykeys(Integer projectId, Integer userId) {
+        return new ResponseEntity("error.deploykey.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override

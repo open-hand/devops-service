@@ -30,7 +30,7 @@ public class DevopsEnvironmentValidator {
      * @param envId 环境ID
      */
     public void checkEnvCanDisabled(Long envId) {
-        if (applicationInstanceRepository.selectByEnvId(envId).parallelStream()
+        if (applicationInstanceRepository.selectByEnvId(envId).stream()
                 .anyMatch(applicationInstanceE ->
                         InstanceStatus.RUNNING.getStatus().equals(applicationInstanceE.getStatus()))) {
             throw new CommonException("error.env.stop.instanceExist");
