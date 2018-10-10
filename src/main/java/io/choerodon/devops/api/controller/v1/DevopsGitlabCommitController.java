@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -54,9 +55,9 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "应用ids", required = true)
             @RequestBody String appIds,
             @ApiParam(value = "开始时间start_date", required = true)
-            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
-            @RequestParam(value = "end_date") String endDate) {
+            @RequestParam(value = "end_date") Date endDate) {
         return Optional.ofNullable(devopsGitlabCommitService.getCommits(projectId, appIds, startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.commits.get"));
@@ -84,9 +85,9 @@ public class DevopsGitlabCommitController {
             @ApiIgnore
             @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
             @ApiParam(value = "开始时间start_date", required = true)
-            @RequestParam(value = "start_date") String startDate,
+            @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
-            @RequestParam(value = "end_date") String endDate) {
+            @RequestParam(value = "end_date") Date endDate) {
         return Optional.ofNullable(devopsGitlabCommitService.getRecordCommits(projectId, appIds, pageRequest,
                 startDate, endDate))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))

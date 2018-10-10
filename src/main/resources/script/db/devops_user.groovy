@@ -22,4 +22,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_user.groovy') {
     changeSet(id: '2018-10-08-rename-column', author: 'younger') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'iam_user_id', oldColumnName: 'id', remarks: 'iam user id', tableName: 'devops_user')
     }
+
+    changeSet(id: '2018-10-08-init-column', author: 'younger') {
+
+        preConditions(onFail: 'MARK_RAN'){
+            sqlCheck(expectedResult: 0,sql:"select count(*) from devops_user where iam_user_id=1")
+        }
+        sql("insert into devops_user  (iam_user_id,gitlab_user_id)  values (1,1)")
+    }
+
 }
