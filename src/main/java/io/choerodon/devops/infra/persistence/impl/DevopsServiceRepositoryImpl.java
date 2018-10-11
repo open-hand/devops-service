@@ -130,12 +130,22 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     public void update(DevopsServiceE devopsServiceE) {
         DevopsServiceDO devopsServiceDO = devopsServiceMapper.selectByPrimaryKey(devopsServiceE.getId());
         DevopsServiceDO devopsServiceDOUpdate = ConvertHelper.convert(devopsServiceE, DevopsServiceDO.class);
+        if (devopsServiceE.getLabels() == null) {
+            devopsServiceMapper.setLablesToNull(devopsServiceE.getId());
+        }
         devopsServiceDOUpdate.setObjectVersionNumber(devopsServiceDO.getObjectVersionNumber());
         if (devopsServiceMapper.updateByPrimaryKeySelective(
                 devopsServiceDOUpdate) != 1) {
             throw new CommonException("error.k8s.service.update");
         }
     }
+
+    @Override
+    public void setLablesToNull(Long id) {
+        devopsServiceMapper.setLablesToNull(id);
+
+    }
+
 
     @Override
     public List<Long> selectDeployedEnv() {

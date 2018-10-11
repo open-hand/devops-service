@@ -41,10 +41,10 @@ public class CertificationController {
     /**
      * 项目下创建证书
      *
-     * @param projectId  项目id
+     * @param projectId     项目id
      * @param certification 证书
-     * @param key        key文件
-     * @param cert       cert文件
+     * @param key           key文件
+     * @param cert          cert文件
      * @return 201, "Created"
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
@@ -54,7 +54,7 @@ public class CertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @ModelAttribute C7nCertificationDTO certification,
+            @RequestBody C7nCertificationDTO certification,
             @ApiParam(value = "key文件")
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")

@@ -282,6 +282,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
             isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
         }
+        if ((devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() != null) || (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() == null)) {
+            isUpdate = true;
+        }
         return !isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
                 .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
                 && !isUpdateExternalIp(devopsServiceReqDTO, devopsServiceE);
