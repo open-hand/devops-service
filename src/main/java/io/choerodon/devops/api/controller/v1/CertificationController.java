@@ -3,7 +3,6 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,10 +41,13 @@ public class CertificationController {
     /**
      * 项目下创建证书
      *
-     * @param projectId     项目id
-     * @param certification 证书
-     * @param key           key文件
-     * @param cert          cert文件
+     * @param projectId 项目id
+     * @param certName  证书名
+     * @param domains   域名
+     * @param envId     环境id
+     * @param type      类型
+     * @param key       key文件
+     * @param cert      cert文件
      * @return 201, "Created"
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
