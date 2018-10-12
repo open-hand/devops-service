@@ -99,6 +99,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     }
                     addServiceToResource(devopsEnvResourceDTO, v1Service);
                     break;
+                case INGRESS:
+                    if (devopsInstanceResourceE.getApplicationInstanceE() != null) {
+                        V1beta1Ingress v1beta1Ingress = json.deserialize(
+                                devopsEnvResourceDetailE.getMessage(),
+                                V1beta1Ingress.class);
+                        addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
+                    }
+                    break;
                 case REPLICASET:
                     V1beta2ReplicaSet v1beta2ReplicaSet = json.deserialize(
                             devopsEnvResourceDetailE.getMessage(),

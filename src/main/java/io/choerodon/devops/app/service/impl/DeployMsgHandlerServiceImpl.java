@@ -670,7 +670,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                     .selectByCode(release, envId);
 
-            String namespace = v1Service.getMetadata().getNamespace();
             if (flag) {
                 DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                         v1Service.getMetadata().getName(), envId);
@@ -1040,13 +1039,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 if (resource.getKind().equals(ResourceType.POD.getType())) {
                     syncPod(resource.getObject(), applicationInstanceE);
                 }
-                if (resource.getKind().equals(ResourceType.SERVICE.getType())) {
-                    DevopsServiceE devopsServiceE = new DevopsServiceE();
-                    syncService(devopsServiceE, resource.getObject(), applicationInstanceE);
-                }
-                if (resource.getKind().equals(ResourceType.INGRESS.getType())) {
-                    syncIngress(resource.getObject(), applicationInstanceE.getDevopsEnvironmentE().getId());
-                }
             }
         } catch (Exception e) {
             logger.info(e.getMessage());
@@ -1065,6 +1057,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsServiceE.setEnvId(devopsEnvironmentE.getId());
                 devopsServiceE.setAppId(applicationInstanceE.getApplicationE().getId());
                 devopsServiceE.setName(v1Service.getMetadata().getName());
+                devopsServiceE.setType(v1Service.getSpec().getType());
                 devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
                 devopsServiceE.setPorts(gson.fromJson(
                         gson.toJson(v1Service.getSpec().getPorts()),
