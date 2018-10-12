@@ -79,6 +79,10 @@ public class CertificationServiceImpl implements CertificationService {
         List<String> domains = certificationDTO.getDomains();
 
         Long envId = certificationDTO.getEnvId();
+
+        //校验环境是否链接
+        envUtil.checkEnvConnection(certificationDTO.getEnvId(), envListener);
+
         devopsCertificationValidator.checkCertification(envId, certName);
 
         // agent certification

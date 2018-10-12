@@ -866,7 +866,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         case SERVICE_KIND:
                             syncService(envId, devopsEnvironmentE, errorDevopsFiles, resourceCommit, objects);
                             break;
-
                         case CERTIFICATE_KIND:
                             syncCetificate(envId, errorDevopsFiles, resourceCommit, objects);
                             break;
