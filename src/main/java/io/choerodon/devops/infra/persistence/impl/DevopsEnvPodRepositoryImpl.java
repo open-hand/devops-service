@@ -50,8 +50,13 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
 
     @Override
     public void insert(DevopsEnvPodE devopsEnvPodE) {
-        DevopsEnvPodDO pod = ConvertHelper.convert(devopsEnvPodE, DevopsEnvPodDO.class);
-        devopsEnvPodMapper.insert(pod);
+        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
+        devopsEnvPodDO.setName(devopsEnvPodE.getName());
+        devopsEnvPodDO.setNamespace(devopsEnvPodE.getNamespace());
+        if (devopsEnvPodMapper.selectOne(devopsEnvPodDO) == null) {
+            DevopsEnvPodDO pod = ConvertHelper.convert(devopsEnvPodE, DevopsEnvPodDO.class);
+            devopsEnvPodMapper.insert(pod);
+        }
     }
 
     @Override
@@ -104,5 +109,13 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
         if (!devopsEnvPodDOs.isEmpty()) {
             devopsEnvPodMapper.delete(devopsEnvPodDOs.get(0));
         }
+    }
+
+    @Override
+    public DevopsEnvPodE getByNameAndEnv(String name, String namespace) {
+        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
+        devopsEnvPodDO.setName(name);
+        devopsEnvPodDO.setNamespace(namespace);
+        return ConvertHelper.convert(devopsEnvPodMapper.selectOne(devopsEnvPodDO), DevopsEnvPodE.class);
     }
 }

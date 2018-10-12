@@ -294,7 +294,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             }
             switch (resourceType) {
                 case INGRESS:
-                    syncIngress(msg, envId);
                     newdevopsEnvResourceE =
                             devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                     null,
@@ -987,13 +986,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                       DevopsEnvResourceE newdevopsEnvResourceE,
                                       DevopsEnvResourceDetailE devopsEnvResourceDetailE,
                                       ApplicationInstanceE applicationInstanceE) {
+        if (applicationInstanceE != null) {
+            devopsEnvResourceE.initApplicationInstanceE(applicationInstanceE.getId());
+        }
         if (newdevopsEnvResourceE == null) {
             devopsEnvResourceE.initDevopsInstanceResourceMessageE(
                     devopsEnvResourceDetailRepository.create(devopsEnvResourceDetailE).getId());
-            if (!devopsEnvResourceE.getKind().equals(ResourceType.INGRESS.getType())
-                    && applicationInstanceE != null) {
-                devopsEnvResourceE.initApplicationInstanceE(applicationInstanceE.getId());
-            }
             devopsEnvResourceRepository.create(devopsEnvResourceE);
             return;
         }
@@ -1002,6 +1000,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         if (devopsEnvResourceE.getReversion() == null) {
             devopsEnvResourceE.setReversion(0L);
+        }
+        if (devopsEnvResourceE.getApplicationInstanceE() != null) {
+            newdevopsEnvResourceE.initApplicationInstanceE(devopsEnvResourceE.getApplicationInstanceE().getId());
+            devopsEnvResourceRepository.update(newdevopsEnvResourceE);
         }
         if (!newdevopsEnvResourceE.getReversion().equals(devopsEnvResourceE.getReversion())) {
             newdevopsEnvResourceE.setReversion(devopsEnvResourceE.getReversion());
@@ -1016,9 +1018,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private void installResource(List<Resource> resources, ApplicationInstanceE applicationInstanceE) {
         try {
             for (Resource resource : resources) {
+                Long instanceId = applicationInstanceE.getId();
+                if (resource.getKind().equals(ResourceType.INGRESS.getType())) {
+                    instanceId = null;
+                }
                 DevopsEnvResourceE newdevopsEnvResourceE =
                         devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                applicationInstanceE.getId(),
+                                instanceId,
                                 resource.getKind(),
                                 resource.getName());
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
