@@ -62,7 +62,6 @@ public class CertificationController {
             @RequestParam(value = "key", required = false) MultipartFile key,
             @ApiParam(value = "cert文件")
             @RequestParam(value = "cert", required = false) MultipartFile cert) {
-        System.out.print("testtest");
         certificationService.create(projectId, certification, key, cert, false);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
