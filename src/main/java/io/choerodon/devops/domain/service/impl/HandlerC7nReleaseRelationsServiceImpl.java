@@ -83,7 +83,13 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         //删除instance,和文件对象关联关系
         beforeC7nRelease.forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+            DevopsEnvCommandE devopsEnvCommandE;
+            if (applicationInstanceE.getCommandId() == null) {
+                devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            } else {
+                devopsEnvCommandE = devopsEnvCommandRepository
+                        .query(applicationInstanceE.getCommandId());
+            }
             if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                 devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
