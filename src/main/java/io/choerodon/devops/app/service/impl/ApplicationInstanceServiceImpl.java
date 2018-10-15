@@ -696,9 +696,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .query(instanceE.getCommandId());
-
+        DevopsEnvCommandE devopsEnvCommandE;
+        if (instanceE.getCommandId() == null) {
+            devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
+        } else {
+            devopsEnvCommandE = devopsEnvCommandRepository
+                    .query(instanceE.getCommandId());
+        }
         devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
@@ -756,8 +760,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
 
         //实例相关对象数据库操作
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .query(instanceE.getCommandId());
+        DevopsEnvCommandE devopsEnvCommandE;
+        if (instanceE.getCommandId() == null) {
+            devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
+        } else {
+            devopsEnvCommandE = devopsEnvCommandRepository
+                    .query(instanceE.getCommandId());
+        }
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
         applicationInstanceRepository.deleteById(instanceId);
