@@ -442,6 +442,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
                 devopsServiceAppInstanceE.setAppInstanceId(appInstance);
+                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
                 addDevopsServiceAppInstanceES.add(devopsServiceAppInstanceE);
             });
         }

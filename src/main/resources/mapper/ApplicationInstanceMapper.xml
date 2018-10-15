@@ -304,6 +304,7 @@
         dav.version appVersion,
         cmd.creation_date,
         cmd.status status,
+        cmd.error error,
         cmd.last_update_date,
         cmd.last_updated_by,
         cmd.created_by
@@ -340,6 +341,7 @@
         da.name appName,
         dav.version appVersion,
         cmd.creation_date,
+        cmd.error error,
         cmd.status status,
         cmd.last_update_date,
         cmd.last_updated_by,

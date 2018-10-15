@@ -21,6 +21,7 @@ public class DevopsServiceAppInstanceDO extends AuditDomain {
     private Long id;
     private Long serviceId;
     private Long appInstanceId;
+    private String code;
 
     public Long getId() {
         return id;
@@ -46,4 +47,11 @@ public class DevopsServiceAppInstanceDO extends AuditDomain {
         this.appInstanceId = appInstanceId;
     }
 
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
 }
