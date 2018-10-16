@@ -23,4 +23,6 @@ public interface DevopsEnvPodRepository {
     Page<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam);
 
     void deleteByName(String name, String namespace);
+
+    DevopsEnvPodE getByNameAndEnv(String name, String namespace);
 }

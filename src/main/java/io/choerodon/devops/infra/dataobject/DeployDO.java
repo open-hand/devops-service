@@ -10,6 +10,7 @@ public class DeployDO {
     private String appVersion;
     private Date creationDate;
     private String status;
+    private String error;
     private Date lastUpdateDate;
     private Long lastUpdatedBy;
     private Long createdBy;
@@ -84,5 +85,13 @@ public class DeployDO {
 
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public void setError(String error) {
+        this.error = error;
     }
 }

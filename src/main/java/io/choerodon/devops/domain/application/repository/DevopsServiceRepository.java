@@ -38,4 +38,6 @@ public interface DevopsServiceRepository {
     List<DevopsServiceE> list();
 
     List<DevopsServiceE> selectByEnvId(Long envId);
+
+    void setLablesToNull(Long id);
 }

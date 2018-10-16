@@ -190,8 +190,10 @@ public class K8sUtil {
             if (results.size() == max) {
                 more = true;
             }
-            if (!more && v1beta1IngressRule.getHost().length() != 0) {
-                results.add(v1beta1IngressRule.getHost());
+            if (v1beta1IngressRule.getHost() != null) {
+                if (!more && v1beta1IngressRule.getHost().length() != 0) {
+                    results.add(v1beta1IngressRule.getHost());
+                }
             }
         }
         if (results.isEmpty()) {

@@ -134,7 +134,12 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public Boolean getFile(Integer projectId, String branch, String filePath) {
-        return gitlabServiceClient.getFile(projectId, branch, filePath).getBody().getFilePath() != null;
+        try{
+            gitlabServiceClient.getFile(projectId, branch, filePath);
+        }catch (FeignException e) {
+            return false;
+        }
+        return true;
     }
 
     @Override

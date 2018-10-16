@@ -211,6 +211,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         if (devopsServiceReqDTO.getLabel() != null) {
             devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+        } else {
+            devopsServiceRepository.setLablesToNull(devopsServiceE.getId());
+            devopsServiceE.setLabels(null);
         }
         devopsServiceE.setPorts(devopsServiceReqDTO.getPorts());
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
@@ -224,7 +227,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         devopsServiceE.setAnnotations(gson.toJson(annotations));
         devopsServiceE.setStatus(ServiceStatus.OPERATIING.getStatus());
-
 
         return devopsServiceE;
 
@@ -260,6 +262,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                 .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
                                 .collect(Collectors.toList()));
             }
+        }
+        if ((devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() != null) || (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() == null)) {
+            isUpdate = true;
         }
         if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
             isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
@@ -437,6 +442,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 }
                 DevopsServiceAppInstanceE devopsServiceAppInstanceE = new DevopsServiceAppInstanceE();
                 devopsServiceAppInstanceE.setAppInstanceId(appInstance);
+                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
                 addDevopsServiceAppInstanceES.add(devopsServiceAppInstanceE);
             });
         }

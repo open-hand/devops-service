@@ -79,7 +79,7 @@
         cmd.error error,
         da.project_id AS appProjectId,
         dsai.app_instance_id AS app_instance_id,
-        dai.code AS code,
+        dsai.code AS code,
         dai.`status` AS instance_status
         FROM
         (
@@ -221,4 +221,10 @@
         env_id = #{envId}
         AND `status` != 'deleted';
     </select>
+
+
+    <update id="setLablesToNull">
+        UPDATE devops_service ds set ds.labels = null where ds.id = #{serviceId}
+
+    </update>
 </mapper>

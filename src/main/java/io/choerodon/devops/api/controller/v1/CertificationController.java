@@ -41,10 +41,13 @@ public class CertificationController {
     /**
      * 项目下创建证书
      *
-     * @param projectId  项目id
-     * @param certification 证书
-     * @param key        key文件
-     * @param cert       cert文件
+     * @param projectId 项目id
+     * @param certName  证书名
+     * @param domains   域名
+     * @param envId     环境id
+     * @param type      类型
+     * @param key       key文件
+     * @param cert      cert文件
      * @return 201, "Created"
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
