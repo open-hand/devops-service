@@ -476,6 +476,24 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             code = applicationInstanceE.getCode();
         }
 
+        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+        //实例相关对象数据库操作
+        if (applicationDeployDTO.getType().equals(CREATE)) {
+            applicationInstanceE.setCode(code);
+            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+        } else {
+            applicationInstanceRepository.update(applicationInstanceE);
+        }
+        devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+        devopsEnvCommandE.initDevopsEnvCommandValueE(
+                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+        applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        applicationInstanceRepository.update(applicationInstanceE);
+
+
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
         if (applicationDeployDTO.getIsNotChange()) {
             applicationInstanceRepository.update(applicationInstanceE);
@@ -484,9 +502,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
-            //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
@@ -504,18 +519,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     applicationInstanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), filePath);
         }
 
-        //实例相关对象数据库操作
-        if (applicationDeployDTO.getType().equals(CREATE)) {
-            applicationInstanceE.setCode(code);
-            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-        } else {
-            applicationInstanceRepository.update(applicationInstanceE);
-        }
-        devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-        devopsEnvCommandE.initDevopsEnvCommandValueE(
-                devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-        applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-        applicationInstanceRepository.update(applicationInstanceE);
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
 
@@ -724,9 +727,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
 
+
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+
+
+        //实例相关对象数据库操作
+        instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
+        instanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+        applicationInstanceRepository.update(instanceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
@@ -760,10 +770,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     instanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), path);
         }
 
-        //实例相关对象数据库操作
-        instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-        instanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-        applicationInstanceRepository.update(instanceE);
     }
 
     @Override
@@ -835,7 +841,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         .anyMatch(entry -> {
                             EnvSession envSession = entry.getValue();
                             return envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())
-                                    && agentExpectVersion.compareTo(envSession.getVersion()) < 1;
+                                    && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1;
                         })));
     }
 

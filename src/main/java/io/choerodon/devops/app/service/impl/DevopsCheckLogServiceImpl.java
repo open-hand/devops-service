@@ -599,7 +599,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 gitOpsUserAccess();
                 syncEnvProject(logs);
                 syncObjects(logs, this.env);
-            } else if ("1.0".equals(version)) {
+            } else if ("0.10.0".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 1.0");
                 updateWebHook(logs);
                 syncCommit(logs);

@@ -14,9 +14,9 @@
         dgc.url,
         da.`name` appName
         FROM
-        devops_gitlab_commit dgc,
-        devops_application da,
-        devops_project dp
+        devops_gitlab_commit dgc
+        JOIN devops_application da ON dgc.app_id = da.id
+        JOIN devops_project dp ON da.project_id = dp.id
         WHERE
         <if test="appIds != null">
             dgc.app_id IN
@@ -26,6 +26,12 @@
         </if>
         <if test="appIds == null">
             1
+        </if>
+        <if test="startDate != null">
+            AND dgc.commit_date >= CONCAT('','${startDate}',' 00:00:00')
+        </if>
+        <if test="endDate != null">
+            AND dgc.commit_date <![CDATA[<=]]>  CONCAT('','${endDate}',' 23:59:59')
         </if>
         AND da.is_active = 1
         AND dgc.app_id = da.id
@@ -39,5 +45,3 @@
         </if>
     </select>
 </mapper>
-
-        <!--CURDATE()-->

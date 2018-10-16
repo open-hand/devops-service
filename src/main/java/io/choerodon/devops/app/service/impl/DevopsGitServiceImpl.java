@@ -356,6 +356,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
         final Integer gitLabUserId = pushWebHookDTO.getUserId();
         Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
+        if (userId == null) {
+            return;
+        }
 
         List<String> operationFiles = new ArrayList<>();
         List<String> deletedFiles = new ArrayList<>();

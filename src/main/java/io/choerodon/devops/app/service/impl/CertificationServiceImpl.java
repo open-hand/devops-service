@@ -94,6 +94,13 @@ public class CertificationServiceImpl implements CertificationService {
                 certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus());
         // create
         C7nCertification c7nCertification = null;
+        certificationE = certificationRepository.create(certificationE);
+        Long certId = certificationE.getId();
+
+        // cert command
+        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
+        certificationRepository.updateCommandId(certificationE);
+
         if (!isGitOps) {
             String envCode = devopsEnvironmentE.getCode();
             String path = fileTmpPath(projectId, envCode);
@@ -107,12 +114,6 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.setType(c7nCertification);
             operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
         }
-        certificationE = certificationRepository.create(certificationE);
-        Long certId = certificationE.getId();
-
-        // cert command
-        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
-        certificationRepository.updateCommandId(certificationE);
 
         // store crt & key if type is upload
         storeCertFile(c7nCertification, certId);
@@ -196,6 +197,12 @@ public class CertificationServiceImpl implements CertificationService {
         String certName = certificationE.getName();
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(certEnvId, certId, certificateType);
+
+        certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId, null));
+        certificationRepository.updateCommandId(certificationE);
+        certificationE.setStatus(CertificationStatus.DELETING.getStatus());
+        certificationRepository.updateStatus(certificationE);
+
         if (devopsEnvFileResourceE != null && devopsEnvFileResourceE.getFilePath() != null
                 && devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
@@ -216,10 +223,6 @@ public class CertificationServiceImpl implements CertificationService {
                     "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
                     devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
         }
-        certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId, null));
-        certificationRepository.updateCommandId(certificationE);
-        certificationE.setStatus(CertificationStatus.DELETING.getStatus());
-        certificationRepository.updateStatus(certificationE);
     }
 
     @Override

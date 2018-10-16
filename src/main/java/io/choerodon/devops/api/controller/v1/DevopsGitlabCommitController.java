@@ -18,9 +18,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
-import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
@@ -82,8 +80,7 @@ public class DevopsGitlabCommitController {
             @ApiParam(value = "应用ids", required = true)
             @RequestBody String appIds,
             @ApiParam(value = "分页参数")
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
+            @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "开始时间start_date", required = true)
             @RequestParam(value = "start_date") Date startDate,
             @ApiParam(value = "结束时间end_date", required = true)
