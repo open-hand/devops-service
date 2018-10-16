@@ -16,7 +16,7 @@
         FROM
         devops_gitlab_commit dgc
         JOIN devops_application da ON dgc.app_id = da.id
-        JOIN devops_project dp ON da.project_id = dp.id
+        JOIN devops_project dp ON da.project_id = dp.iam_project_id
         WHERE
         <if test="appIds != null">
             dgc.app_id IN
