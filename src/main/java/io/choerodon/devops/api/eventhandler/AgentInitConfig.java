@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.util.regex.Pattern;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -12,6 +14,7 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 import io.choerodon.websocket.session.AgentConfigurer;
@@ -22,6 +25,8 @@ import io.choerodon.websocket.tool.KeyParseTool;
 
 @Component
 public class AgentInitConfig implements AgentConfigurer {
+
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final String INIT_AGENT = "init_agent";
@@ -49,8 +54,7 @@ public class AgentInitConfig implements AgentConfigurer {
 
                 ProjectE projectE = iamRepository.queryIamProject(env.getProjectE().getId());
                 Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-                String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
-                        gitlabSshUrl, organization.getCode(), projectE.getCode(), env.getCode());
+                String repoUrl =GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), env.getCode());
 
                 GitConfigDTO gitConfigDTO = new GitConfigDTO();
                 gitConfigDTO.setGitUrl(repoUrl);
