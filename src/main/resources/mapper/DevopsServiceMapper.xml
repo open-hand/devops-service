@@ -125,7 +125,8 @@
         de.id AS env_id,
         de.`name` AS env_name,
         dsai.app_instance_id AS app_instance_id,
-        dai.`status` AS instance_status
+        dai.`status` AS instance_status,
+        dsai.code AS code
         FROM
         devops_service ds
         INNER JOIN devops_env de ON ds.env_id = de.id
