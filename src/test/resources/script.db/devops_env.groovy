@@ -82,4 +82,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
                     column(name: 'devops_env_group_id', type: 'BIGINT UNSIGNED', remarks: 'devops env group id', afterColumn: 'agent_sync_commit')
                 }
             }
+
+
+
+    changeSet(id: '2018-10-08-rename-column', author: 'younger') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'saga_sync_commit', oldColumnName: 'git_commit', remarks: 'saga同步的commit', tableName: 'devops_env')
+    }
 }

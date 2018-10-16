@@ -41,7 +41,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
         if(userAttrDO==null) {
             return null;
         }else {
-            return userAttrDO.getId();
+            return userAttrDO.getIamUserId();
         }
     }
 
