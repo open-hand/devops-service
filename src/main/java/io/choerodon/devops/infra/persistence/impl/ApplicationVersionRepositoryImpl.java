@@ -230,4 +230,9 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         applicationVersionDO.setCommit(sha);
         return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
     }
+
+    @Override
+    public ApplicationVersionE getLatestVersion(Long appId) {
+        return ConvertHelper.convert(applicationVersionMapper.getLatestVersion(appId), ApplicationVersionE.class);
+    }
 }

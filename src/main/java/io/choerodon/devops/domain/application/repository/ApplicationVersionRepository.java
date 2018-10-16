@@ -49,4 +49,6 @@ public interface ApplicationVersionRepository {
     void checkProIdAndVerId(Long projectId, Long appVersionId);
 
     ApplicationVersionE queryByCommitSha(String sha);
+
+    ApplicationVersionE getLatestVersion(Long appId);
 }

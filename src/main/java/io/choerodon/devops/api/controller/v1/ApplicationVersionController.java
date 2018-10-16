@@ -15,6 +15,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -187,4 +188,28 @@ public class ApplicationVersionController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
+
+    /**
+     * 项目下查询应用最新的版本和各环境下部署的版本
+     *
+     * @param projectId 项目ID
+     * @param appId     应用ID
+     * @return DeployVersionDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "项目下查询应用最新的版本和各环境下部署的版本")
+    @GetMapping(value = "/deployVersions")
+    public ResponseEntity<DeployVersionDTO> getDeployVersions(
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用ID", required = true)
+            @RequestParam(value = "app_id") Long appId) {
+        return Optional.ofNullable(applicationVersionService.listDeployVersions(appId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
 }

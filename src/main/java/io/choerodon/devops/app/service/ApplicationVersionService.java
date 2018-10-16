@@ -6,6 +6,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -70,4 +71,7 @@ public interface ApplicationVersionService {
      * 根据应用id查询需要升级的应用版本
      */
     List<ApplicationVersionRepDTO> getUpgradeAppVersion(Long projectId, Long appVersionId);
+
+
+    DeployVersionDTO listDeployVersions(Long appId);
 }
