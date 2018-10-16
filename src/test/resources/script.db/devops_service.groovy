@@ -26,8 +26,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
         createIndex(indexName: "idx_name", tableName: "devops_service") {
             column(name: "name")
         }
-        addUniqueConstraint(tableName: 'devops_service', constraintName: 'uk_namespace_name',
-                columnNames: 'namespace,name')
     }
 
     changeSet(author: 'runge', id: '2018-07-31-change-column') {
@@ -61,17 +59,16 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
 
     }
 
-    changeSet(author: 'younger', id: '2018-09-03-modify-UniqueConstraint') {
-        dropUniqueConstraint(constraintName: "uk_namespace_name",tableName: "devops_service")
-        addUniqueConstraint(tableName: 'devops_service',
-                constraintName: 'devops_service_uk_namespace_name', columnNames: 'namespace,name')
-    }
-
-
     changeSet(author: 'younger', id: '2018-09-10-add-column')
             {
                 addColumn(tableName: 'devops_service') {
                     column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command id', afterColumn: 'env_id')
                 }
             }
+
+
+    changeSet(id: '2018-10-08-drop-column', author: 'younger') {
+        dropColumn(columnName: "namespace", tableName: "devops_service")
+
+    }
 }

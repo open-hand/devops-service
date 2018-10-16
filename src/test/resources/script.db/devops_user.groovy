@@ -17,4 +17,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_user.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+
+    changeSet(id: '2018-10-08-rename-column', author: 'younger') {
+        renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'iam_user_id', oldColumnName: 'id', remarks: 'iam user id', tableName: 'devops_user')
+    }
+
+
 }
