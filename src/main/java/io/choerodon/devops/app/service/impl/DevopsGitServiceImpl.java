@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
@@ -71,7 +72,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${services.gitlab.url}")
@@ -377,8 +378,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         final String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         //生成环境git仓库ssh地址
-        final String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        final String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+
+        LOGGER.info("The gitOps Repository ssh url:", url);
+
         final Long envId = devopsEnvironmentE.getId();
 
         final Long projectId = devopsEnvironmentE.getProjectE().getId();

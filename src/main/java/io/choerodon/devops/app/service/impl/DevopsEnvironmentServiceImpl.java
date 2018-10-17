@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -45,9 +46,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String README = "README.md";
     private static final String README_CONTENT =
             "# This is gitops env repository!";
-
-
     private static final String ENV = "ENV";
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${agent.version}")
@@ -510,8 +510,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         //生成环境git仓库ssh地址
-        String url = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+
         File file = new File(path);
         GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
         if (!file.exists()) {

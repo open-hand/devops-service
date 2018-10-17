@@ -136,7 +136,7 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long applicationId) {
-        applicationService.delete(projectId,applicationId);
+        applicationService.delete(projectId, applicationId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
@@ -247,7 +247,7 @@ public class ApplicationController {
 
 
     /**
-     * 项目下查询所有可选已经启用的应用
+     * 本项目下或者应用市场在该项目下部署过的应用
      *
      * @param projectId 项目id
      * @return list of ApplicationRepDTO
@@ -257,7 +257,7 @@ public class ApplicationController {
             InitRoleCode.PROJECT_MEMBER,
             InitRoleCode.DEPLOY_ADMINISTRATOR
     })
-    @ApiOperation(value = "项目下查询所有已经启用的应用")
+    @ApiOperation(value = "本项目下或者应用市场在该项目下部署过的应用")
     @GetMapping(value = "/list_all")
     public ResponseEntity<List<ApplicationRepDTO>> listAll(
             @ApiParam(value = "项目 ID", required = true)

@@ -5,15 +5,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.impl.DeployMsgHandlerServiceImpl;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -159,5 +156,12 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
         return PageHelper.doPageAndSort(pageRequest, () ->
                 applicationInstanceMapper
                         .listDeployTime(projectId, envId, appIds, new java.sql.Date(startTime.getTime()), new java.sql.Date(endTime.getTime())));
+    }
+
+    @Override
+    public List<ApplicationInstanceE> listByAppId(Long appId) {
+        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
+        applicationInstanceDO.setAppId(appId);
+        return ConvertHelper.convertList(applicationInstanceMapper.select(applicationInstanceDO), ApplicationInstanceE.class);
     }
 }

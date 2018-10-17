@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
@@ -94,6 +95,34 @@ public class GitUtil {
     public static String getFileLatestCommit(String path, String filePath) {
         String[] fileName = filePath.split("/");
         return GitUtil.getLog(path, fileName[fileName.length - 1]);
+    }
+
+    public static String getGitlabSshUrl(Pattern pattern, String url, String orgCode, String proCode, String envCode) {
+        String result = "";
+        if (url.contains("@")) {
+            String[] urls = url.split(":");
+            if (urls.length == 1) {
+                result = String.format("%s:%s-%s-gitops/%s.git",
+                        url, orgCode, proCode, envCode);
+            } else {
+                if (pattern.matcher(urls[1]).matches()) {
+                    result = String.format("ssh://%s/%s-%s-gitops/%s.git",
+                            url, orgCode, proCode, envCode);
+                }
+            }
+        } else {
+            String[] urls = url.split(":");
+            if (urls.length == 1) {
+                result = String.format("git@%s:%s-%s-gitops/%s.git",
+                        url, orgCode, proCode, envCode);
+            } else {
+                if (pattern.matcher(urls[1]).matches()) {
+                    result = String.format("ssh://git@%s/%s-%s-gitops/%s.git",
+                            url, orgCode, proCode, envCode);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -337,7 +366,6 @@ public class GitUtil {
         git.add().setUpdate(false).addFilepattern(relativePath).call();
         git.add().setUpdate(true).addFilepattern(relativePath).call();
     }
-
 
     private void commitChanges(Git git, String commitMsg) throws GitAPIException {
         git.commit().setMessage(commitMsg).call();

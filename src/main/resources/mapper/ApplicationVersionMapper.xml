@@ -176,4 +176,10 @@
         da.project_id = #{projectId}
         AND dav.id = #{appVersionId}
     </select>
+
+
+    <select id="getLatestVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        select * from devops_app_version where app_id = #{appId} order by id desc limit 1
+    </select>
+
 </mapper>
