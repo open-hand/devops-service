@@ -16,11 +16,14 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
 import org.springframework.context.annotation.Primary
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpRequest
 import org.springframework.http.client.ClientHttpRequestExecution
 import org.springframework.http.client.ClientHttpRequestInterceptor
 import org.springframework.http.client.ClientHttpResponse
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
+import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.jwt.JwtHelper
 import org.springframework.security.jwt.crypto.sign.MacSigner
 import org.springframework.security.jwt.crypto.sign.Signer
@@ -34,8 +37,9 @@ import javax.annotation.PostConstruct
  */
 @TestConfiguration
 @Import(LiquibaseConfig)
+@Order(1)
 @TestPropertySource("classpath:application-test.yml")
-class IntegrationTestConfiguration {
+class IntegrationTestConfiguration  extends WebSecurityConfigurerAdapter{
 
     private final detachedMockFactory = new DetachedMockFactory()
 
@@ -136,6 +140,19 @@ class IntegrationTestConfiguration {
             e.printStackTrace()
         }
         return jwtToken
+    }
+
+
+    /**
+     * 解决访问h2-console跨域问题
+     * @param http
+     * @throws Exception
+     */
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().ignoringAntMatchers("/h2-console/**")
+                .and()
+                .headers().frameOptions().disable()
     }
 }
 

@@ -146,7 +146,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setApplictionTemplateId(1L)
 
         UserAttrE userAttrE = new UserAttrE()
-        userAttrE.setId(1L)
+        userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
 
         Organization organization = new Organization()
@@ -159,7 +159,7 @@ class ApplicationControllerSpec extends Specification {
         projectE.setOrganization(organization)
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setGitlabGroupId(1)
+        gitlabGroupE.setDevopsAppGroupId(1L)
         gitlabGroupE.setProjectE(projectE)
 
         GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE()

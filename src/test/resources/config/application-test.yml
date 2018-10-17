@@ -11,6 +11,9 @@ spring:
     username: sa
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration,org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+  h2:
+    console:
+      enabled: true
 hystrix:
   stream:
     queue:
