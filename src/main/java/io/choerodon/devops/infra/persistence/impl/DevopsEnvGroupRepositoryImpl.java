@@ -1,13 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvGroupE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvGroupRepository;
 import io.choerodon.devops.infra.dataobject.DevopsEnvGroupDO;
@@ -48,16 +46,6 @@ public class DevopsEnvGroupRepositoryImpl implements DevopsEnvGroupRepository {
         return ConvertHelper.convert(devopsEnvGroupMapper.selectByPrimaryKey(id), DevopsEnvGroupE.class);
     }
 
-    @Override
-    public void sort(Long projectId, List<Long> envGroupIds) {
-        if (envGroupIds != null && !envGroupIds.isEmpty() && envGroupIds.stream().sorted().collect(Collectors.toList())
-                .equals(devopsEnvGroupMapper.selectAll().stream()
-                        .map(DevopsEnvGroupDO::getId).sorted().collect(Collectors.toList()))) {
-            devopsEnvGroupMapper.sortGroupInProject(projectId, envGroupIds);
-        } else {
-            throw new CommonException("error.groupIds.illegal");
-        }
-    }
 
     @Override
     public Boolean checkUniqueInProject(Long id, String name, Long projectId) {

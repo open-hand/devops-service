@@ -2,7 +2,10 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.domain.application.repository.*
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
+import io.choerodon.devops.domain.application.repository.GitlabRepository
+import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.domain.application.repository.UserAttrRepository
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
@@ -39,7 +42,7 @@ import javax.annotation.PostConstruct
 @Import(LiquibaseConfig)
 @Order(1)
 @TestPropertySource("classpath:application-test.yml")
-class IntegrationTestConfiguration  extends WebSecurityConfigurerAdapter{
+class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
     private final detachedMockFactory = new DetachedMockFactory()
 
@@ -96,11 +99,11 @@ class IntegrationTestConfiguration  extends WebSecurityConfigurerAdapter{
         detachedMockFactory.Mock(GitUtil)
     }
 
-    @Bean("mockDevopsGitRepository")
-    @Primary
-    DevopsGitRepository devopsGitRepository() {
-        detachedMockFactory.Mock(DevopsGitRepository)
-    }
+//    @Bean("mockDevopsGitRepository")
+//    @Primary
+//    DevopsGitRepository devopsGitRepository() {
+//        detachedMockFactory.Mock(DevopsGitRepository)
+//    }
 
     @Bean("mockDeployService")
     @Primary
@@ -141,7 +144,6 @@ class IntegrationTestConfiguration  extends WebSecurityConfigurerAdapter{
         }
         return jwtToken
     }
-
 
     /**
      * 解决访问h2-console跨域问题

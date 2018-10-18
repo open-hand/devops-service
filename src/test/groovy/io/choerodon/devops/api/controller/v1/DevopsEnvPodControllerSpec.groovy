@@ -42,10 +42,6 @@ class DevopsEnvPodControllerSpec extends Specification {
     @Autowired
     private DevopsEnvPodMapper devopsEnvPodMapper
     @Autowired
-    private DevopsServiceMapper devopsServiceMapper
-    @Autowired
-    private DevopsProjectMapper devopsProjectMapper
-    @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
     private ApplicationMarketMapper applicationMarketMapper
@@ -173,5 +169,15 @@ class DevopsEnvPodControllerSpec extends Specification {
         envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> updateEnvList
         page != null
+        devopsEnvPodMapper.deleteByPrimaryKey(1L)
+        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
+        applicationInstanceMapper.deleteByPrimaryKey(1L)
+        applicationInstanceMapper.deleteByPrimaryKey(2L)
+        applicationVersionMapper.deleteByPrimaryKey(1L)
+        applicationMapper.deleteByPrimaryKey(1L)
+        applicationMapper.deleteByPrimaryKey(2L)
+        applicationMarketMapper.deleteByPrimaryKey(1L)
+        FileUtil.deleteDirectory(new File("gitops"))
     }
+
 }

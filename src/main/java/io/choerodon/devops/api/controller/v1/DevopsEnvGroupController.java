@@ -74,27 +74,6 @@ public class DevopsEnvGroupController {
 
 
     /**
-     * 项目下排序环境组
-     *
-     * @param projectId         项目id
-     * @param devopsEnvGroupIds 环境组id序列
-     * @return ApplicationTemplateDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "项目下更新环境组顺序")
-    @PutMapping(value = "/sort")
-    public ResponseEntity<List<DevopsEnvGroupDTO>> sort(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境组信息", required = true)
-            @RequestBody List<Long> devopsEnvGroupIds) {
-        return Optional.ofNullable(devopsEnvGroupService.sort(projectId, devopsEnvGroupIds))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.group.sort"));
-    }
-
-
-    /**
      * 项目下查询环境组
      *
      * @param projectId 项目id
@@ -134,8 +113,8 @@ public class DevopsEnvGroupController {
     /**
      * 环境组删除
      *
-     * @param projectId  项目id
-     * @param groupId 实例id
+     * @param projectId 项目id
+     * @param groupId   实例id
      * @return responseEntity
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
