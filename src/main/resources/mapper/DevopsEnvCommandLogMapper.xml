@@ -5,18 +5,9 @@
 
     <!--删除实例event记录-->
     <delete id="deletePreInstanceCommandLog" >
-          DELETE
-          FROM
-          devops_env_command_log
-          where
-          devops_env_command_log.command_id  IN (
-             SELECT
-             d.id
-             FROM
-             devops_env_command d
-             where
-             d.object = 'instance' and d.object_id = #{instanceId}
-          )
+          DELETE e
+          FROM devops_env_command_log e, devops_env_command d
+          WHERE e.command_id = d.id AND d.object = 'instance' AND d.object_id = #{instanceId}
     </delete>
 
 </mapper>
