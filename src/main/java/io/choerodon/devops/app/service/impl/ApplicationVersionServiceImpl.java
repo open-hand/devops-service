@@ -2,10 +2,11 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,20 +80,20 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         String destFilePath = DESTPATH + version;
         FileUtil.unTarGZ(path, destFilePath);
-        String values = null;
-        try {
-            values = FileUtil.replaceReturnString(new FileInputStream(new File(FileUtil.queryFileFromFiles(
-                    new File(destFilePath), "values.yaml").getAbsolutePath())), null);
-        } catch (FileNotFoundException e) {
+        String values;
+        try (FileInputStream fis = new FileInputStream(new File(Objects.requireNonNull(FileUtil.queryFileFromFiles(
+                new File(destFilePath), "values.yaml")).getAbsolutePath()))) {
+            values = FileUtil.replaceReturnString(fis, null);
+        } catch (IOException e) {
             throw new CommonException(e);
         }
+
         try {
-            FileUtil.jungeYamlFormat(values);
+            FileUtil.checkYamlFormat(values);
         } catch (CommonException e) {
             throw new CommonException("The format of the values.yaml in the chart is invalid!", e);
         }
-        applicationVersionValueE.setValue(
-                values);
+        applicationVersionValueE.setValue(values);
         try {
             applicationVersionE.initApplicationVersionValueE(applicationVersionValueRepository
                     .create(applicationVersionValueE).getId());

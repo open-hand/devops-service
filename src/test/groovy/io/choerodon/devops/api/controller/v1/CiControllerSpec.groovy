@@ -1,14 +1,18 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.domain.application.entity.ApplicationE
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE
 import io.choerodon.devops.domain.application.entity.ProjectE
-import io.choerodon.devops.domain.application.repository.ApplicationRepository
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
+import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.ApplicationVersionReadmeV
 import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.infra.common.util.FileUtil
+import io.choerodon.devops.infra.dataobject.ApplicationDO
+import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
+import io.choerodon.devops.infra.mapper.ApplicationMapper
+import io.choerodon.devops.infra.mapper.ApplicationVersionMapper
+import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper
+import io.choerodon.devops.infra.mapper.ApplicationVersionValueMapper
+import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
@@ -17,8 +21,10 @@ import org.springframework.context.annotation.Import
 import org.springframework.core.io.FileSystemResource
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -30,83 +36,128 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(CiController)
 @Stepwise
 class CiControllerSpec extends Specification {
+
+    private static flag = 0
+
     @Autowired
     private TestRestTemplate restTemplate
+
     @Autowired
-    private ApplicationRepository applicationRepository
+    private ApplicationMapper applicationMapper
     @Autowired
-    private ApplicationVersionRepository applicationVersionRepository
+    private ApplicationVersionMapper applicationVersionMapper
+    @Autowired
+    private
+    ApplicationVersionReadmeMapper applicationVersionReadmeMapper
+    @Autowired
+    private ApplicationVersionValueMapper applicationVersionValueMapper
 
     @Autowired
     @Qualifier("mockIamRepository")
     private IamRepository iamRepository
 
-    def "QueryFile"() {
-        given:
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("ocode")
+    @Shared
+    Organization organization = new Organization()
+    @Shared
+    ProjectE projectE = new ProjectE()
+    @Shared
+    UserAttrE userAttrE = new UserAttrE()
+    @Shared
+    Map<String, Object> searchParam = new HashMap<>();
+    @Shared
+    PageRequest pageRequest = new PageRequest()
+    @Shared
+    Long project_id = 1L
+    @Shared
+    Long init_id = 1L
 
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setCode("pcode")
+    private ApplicationDO applicationDO
+
+    def setupSpec() {
+        given:
+        organization.setId(init_id)
+        organization.setCode("org")
+
+        projectE.setId(init_id)
+        projectE.setCode("pro")
         projectE.setOrganization(organization)
 
-        ApplicationE applicationE = new ApplicationE()
-        applicationE.setProjectE(projectE)
-        applicationE.setToken("token")
-        applicationE.setCode("acode")
-        applicationRepository.create(applicationE)
+        userAttrE.setIamUserId(init_id)
+        userAttrE.setGitlabUserId(init_id)
 
-        when:
-        restTemplate.getForObject("/ci?token=token", String.class)
+        Map<String, Object> xxx = new HashMap<>();
+        xxx.put("name", [])
+        xxx.put("code", ["app"])
+        searchParam.put("searchParam", xxx)
+        searchParam.put("param", "")
 
-        then:
+        pageRequest.size = 10
+        pageRequest.page = 0
+    }
+
+    def setup() {
+        if (flag == 0) {
+            // 创建应用
+            applicationDO = new ApplicationDO()
+            applicationDO.setProjectId(project_id)
+            applicationDO.setToken("token")
+            applicationDO.setCode("app")
+            applicationMapper.insert(applicationDO)
+            flag = 1
+        }
+    }
+
+    def "QueryFile"() {
+        given: '默认返回值'
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
+
+        when:
+        def str = restTemplate.getForObject("/ci?token=token", String.class)
+
+        then:
+        str != null && "" != str
     }
 
     def "Create"() {
-        given:
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("ocode")
+        given: '创建应用版本'
+        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+        applicationVersionDO.setAppId(init_id)
+        applicationVersionDO.setVersion("oldVersion")
+        applicationVersionDO.setReadmeValueId(init_id)
+        applicationVersionMapper.insert(applicationVersionDO)
 
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setCode("pcode")
-        projectE.setOrganization(organization)
-
-        ApplicationE applicationE = new ApplicationE()
-        applicationE.setProjectE(projectE)
-        applicationE.setToken("token2222")
-        applicationE.setCode("acode")
-        applicationRepository.create(applicationE)
-
-        ApplicationVersionReadmeV applicationVersionReadmeV = new ApplicationVersionReadmeV()
-        applicationVersionReadmeV.setReadme("readme")
-        ApplicationVersionE applicationVersionE = new ApplicationVersionE()
-        applicationVersionE.setApplicationE(applicationE)
-        applicationVersionE.setVersion("version")
-        applicationVersionE.setApplicationVersionReadmeV(applicationVersionReadmeV)
-        ApplicationVersionE applicationVersionE1 = new ApplicationVersionE()
-        applicationVersionE1.setApplicationE(applicationE)
-        applicationVersionE1.setVersion("version")
-        applicationVersionE1.setApplicationVersionReadmeV(applicationVersionReadmeV)
-        applicationVersionRepository.create(applicationVersionE)
-        applicationVersionRepository.create(applicationVersionE1)
+        and: '默认返回值'
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.queryOrganizationById(_ as Long) >> organization
 
         FileSystemResource resource = new FileSystemResource(new File("src/test/resources/key.tar.gz"))
         MultiValueMap<String, Object> file = new LinkedMultiValueMap<>()
         file.add("file", resource)
 
         when:
-        restTemplate.postForObject("/ci?image=iamge&token=token&version=version&commit=commit", file, String.class)
+        restTemplate.postForObject("/ci?image=iamge&token=token&version=version&commit=commit", file,
+                String.class)
 
         then:
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
+        File gzFile = new File("/Charts/org/pro/key.tar.gz")
+        gzFile != null
+        File yamlFile = new File("/devopsversion/values.yaml");
+        yamlFile != null
+        applicationVersionMapper.selectByPrimaryKey(2L).getVersion() == "version"
+
+        applicationVersionMapper.deleteByPrimaryKey(init_id)
+        applicationVersionMapper.deleteByPrimaryKey(2L)
+        applicationMapper.deleteByPrimaryKey(init_id)
+        applicationVersionValueMapper.deleteByPrimaryKey(init_id)
+        applicationVersionReadmeMapper.deleteByPrimaryKey(init_id)
+    }
+
+    //清除测试数据
+    def cleanupSpec() {
+        FileUtil.deleteDirectory(new File("Charts"))
     }
 }
