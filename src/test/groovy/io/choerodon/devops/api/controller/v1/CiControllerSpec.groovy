@@ -12,7 +12,6 @@ import io.choerodon.devops.infra.mapper.ApplicationMapper
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper
 import io.choerodon.devops.infra.mapper.ApplicationVersionValueMapper
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
@@ -66,10 +65,6 @@ class CiControllerSpec extends Specification {
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
-    Map<String, Object> searchParam = new HashMap<>();
-    @Shared
-    PageRequest pageRequest = new PageRequest()
-    @Shared
     Long project_id = 1L
     @Shared
     Long init_id = 1L
@@ -87,15 +82,6 @@ class CiControllerSpec extends Specification {
 
         userAttrE.setIamUserId(init_id)
         userAttrE.setGitlabUserId(init_id)
-
-        Map<String, Object> xxx = new HashMap<>();
-        xxx.put("name", [])
-        xxx.put("code", ["app"])
-        searchParam.put("searchParam", xxx)
-        searchParam.put("param", "")
-
-        pageRequest.size = 10
-        pageRequest.page = 0
     }
 
     def setup() {
@@ -145,7 +131,7 @@ class CiControllerSpec extends Specification {
         then:
         File gzFile = new File("/Charts/org/pro/key.tar.gz")
         gzFile != null
-        File yamlFile = new File("/devopsversion/values.yaml");
+        File yamlFile = new File("/devopsversion/values.yaml")
         yamlFile != null
         applicationVersionMapper.selectByPrimaryKey(2L).getVersion() == "version"
 
