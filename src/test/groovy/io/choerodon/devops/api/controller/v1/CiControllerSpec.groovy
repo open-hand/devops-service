@@ -88,6 +88,7 @@ class CiControllerSpec extends Specification {
         if (flag == 0) {
             // 创建应用
             applicationDO = new ApplicationDO()
+            applicationDO.setId(1L)
             applicationDO.setProjectId(project_id)
             applicationDO.setToken("token")
             applicationDO.setCode("app")
@@ -111,6 +112,7 @@ class CiControllerSpec extends Specification {
     def "Create"() {
         given: '创建应用版本'
         ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+        applicationVersionDO.setId(1L)
         applicationVersionDO.setAppId(init_id)
         applicationVersionDO.setVersion("oldVersion")
         applicationVersionDO.setReadmeValueId(init_id)
@@ -135,11 +137,11 @@ class CiControllerSpec extends Specification {
         yamlFile != null
         applicationVersionMapper.selectByPrimaryKey(2L).getVersion() == "version"
 
-        applicationVersionMapper.deleteByPrimaryKey(init_id)
+        applicationVersionMapper.deleteByPrimaryKey(1L)
         applicationVersionMapper.deleteByPrimaryKey(2L)
-        applicationMapper.deleteByPrimaryKey(init_id)
-        applicationVersionValueMapper.deleteByPrimaryKey(init_id)
-        applicationVersionReadmeMapper.deleteByPrimaryKey(init_id)
+        applicationMapper.deleteByPrimaryKey(1L)
+        applicationVersionValueMapper.deleteByPrimaryKey(1L)
+        applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
     }
 
     //清除测试数据
