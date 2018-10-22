@@ -89,11 +89,10 @@ class ApplicationTemplateControllerSpec extends Specification {
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
         gitlabGroupE.setName("org_template")
         gitlabGroupE.setPath("org_template")
-        gitlabGroupE.setGitlabGroupId(1)
         gitlabGroupE.setVisibility(Visibility.PUBLIC)
 
         UserAttrE userAttrE = new UserAttrE()
-        userAttrE.setId(1L)
+        userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
 
         // mock SagaClient
