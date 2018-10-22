@@ -1,21 +1,24 @@
 package io.choerodon.devops.api.controller.v1
 
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.domain.application.entity.ProjectE
+import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -25,13 +28,11 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  * Time: 14:54
  * Description: 
  */
-
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(DevopsEnvFileErrorController)
 @Stepwise
 class DevopsEnvFileErrorControllerSpec extends Specification {
-
-    private static flag = 0
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -44,64 +45,73 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     @Qualifier("mockIamRepository")
     private IamRepository iamRepository
 
-    def setup() {
-        if (flag == 0) {
-            DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO()
-            devopsEnvFileErrorDO.setEnvId(1L)
-            DevopsEnvFileErrorDO devopsEnvFileErrorDO1 = new DevopsEnvFileErrorDO()
-            devopsEnvFileErrorDO1.setEnvId(1L)
-            devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO)
-            devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO1)
+    @Shared
+    Long init_id = 1L
+    @Shared
+    Long project_id = 1L
+    @Shared
+    ProjectE projectE = new ProjectE()
+    @Shared
+    UserAttrE userAttrE = new UserAttrE()
+    @Shared
+    Organization organization = new Organization()
 
-            DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-            devopsEnvironmentDO.setDevopsEnvGroupId(1L)
-            devopsEnvironmentDO.setProjectId(1)
-            devopsEnvironmentDO.setCode("ecode")
-            devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+    def setupSpec() {
+        given:
+        organization.setId(init_id)
+        organization.setCode("org")
 
-            flag = 1
-        }
+        projectE.setId(project_id)
+        projectE.setCode("pro")
+        projectE.setOrganization(organization)
+
+        userAttrE.setIamUserId(init_id)
+        userAttrE.setGitlabUserId(init_id)
     }
 
     def "List"() {
-        given:
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("ocode")
+        given: '插入数据'
+        DevopsEnvFileErrorDO devopsEnvFileErrorDO = new DevopsEnvFileErrorDO()
+        devopsEnvFileErrorDO.setId(1L)
+        devopsEnvFileErrorDO.setEnvId(1L)
+        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO)
+        DevopsEnvFileErrorDO devopsEnvFileErrorDO1 = new DevopsEnvFileErrorDO()
+        devopsEnvFileErrorDO.setId(2L)
+        devopsEnvFileErrorDO1.setEnvId(1L)
+        devopsEnvFileErrorMapper.insert(devopsEnvFileErrorDO1)
 
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setCode("pcode")
-        projectE.setOrganization(organization)
+        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+        devopsEnvironmentDO.setId(1L)
+        devopsEnvironmentDO.setCode("env")
+        devopsEnvironmentDO.setProjectId(1)
+        devopsEnvironmentDO.setDevopsEnvGroupId(1L)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+
+        and: '设置默认值'
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.queryOrganizationById(_ as Long) >> organization
 
         when:
         def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list", List.class)
 
         then:
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-        !list.isEmpty()
+        list.size() == 2
     }
 
     def "Page"() {
-        given:
-        PageRequest pageRequest = new PageRequest(1, 20)
-
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("ocode")
-
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setCode("pcode")
-        projectE.setOrganization(organization)
-
-        when:
-        def page = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list_by_page", Object.class)
-
-        then:
+        given: '设置默认值'
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
-        page != null
+
+        when:
+        def page = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list_by_page", Page.class)
+
+        then:
+        page.size() == 2
+
+        // 清理数据
+        devopsEnvFileErrorMapper.deleteByPrimaryKey(1L)
+        devopsEnvFileErrorMapper.deleteByPrimaryKey(2L)
+        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
     }
 }
