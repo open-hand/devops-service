@@ -32,22 +32,20 @@ class DevopsEnvGroupControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private DevopsEnvGroupMapper devopsEnvGroupMapper
+    DevopsEnvGroupMapper devopsEnvGroupMapper
     @Autowired
-    private DevopsEnvironmentMapper devopsEnvironmentMapper
+    DevopsEnvironmentMapper devopsEnvironmentMapper
 
-    private DevopsEnvGroupDO devopsEnvGroupDO
-    private DevopsEnvGroupDO devopsEnvGroupDO1
 
     def setup() {
         if (flag == 0) {
-            devopsEnvGroupDO = new DevopsEnvGroupDO()
+            DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO()
             devopsEnvGroupDO.setName("test")
             devopsEnvGroupDO.setProjectId(1L)
             devopsEnvGroupDO.setSequence(1L)
             devopsEnvGroupDO.setObjectVersionNumber(1L)
 
-            devopsEnvGroupDO1 = new DevopsEnvGroupDO()
+            DevopsEnvGroupDO devopsEnvGroupDO1 = new DevopsEnvGroupDO()
             devopsEnvGroupDO1.setName("test1")
             devopsEnvGroupDO1.setProjectId(1L)
             devopsEnvGroupDO1.setSequence(2L)
@@ -58,6 +56,7 @@ class DevopsEnvGroupControllerSpec extends Specification {
             flag = 1
         }
     }
+
 
     def "Create"() {
         when:
@@ -100,13 +99,19 @@ class DevopsEnvGroupControllerSpec extends Specification {
     def "Delete"() {
         given:
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+        devopsEnvironmentDO.setId(1L)
         devopsEnvironmentDO.setProjectId(1L)
         devopsEnvironmentDO.setActive(true)
+        devopsEnvironmentDO.setGitlabEnvProjectId(1L)
         devopsEnvironmentDO.setSequence(1L)
+        devopsEnvironmentDO.setCode("env")
         devopsEnvironmentDO.setDevopsEnvGroupId(1L)
         DevopsEnvironmentDO devopsEnvironmentDO1 = new DevopsEnvironmentDO()
+        devopsEnvironmentDO1.setId(2L)
         devopsEnvironmentDO1.setProjectId(1L)
         devopsEnvironmentDO1.setActive(true)
+        devopsEnvironmentDO1.setCode("env1")
+        devopsEnvironmentDO1.setGitlabEnvProjectId(1L)
         devopsEnvironmentDO1.setSequence(2L)
         devopsEnvironmentDO1.setDevopsEnvGroupId(1L)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
@@ -119,6 +124,7 @@ class DevopsEnvGroupControllerSpec extends Specification {
         devopsEnvGroupMapper.selectByPrimaryKey(1L) == null
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
         devopsEnvironmentMapper.deleteByPrimaryKey(2L)
-        true
+        devopsEnvGroupMapper.deleteByPrimaryKey(2L)
     }
+
 }

@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
-
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsServiceDTO
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO
@@ -12,6 +12,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
@@ -44,6 +45,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class DevopsServiceControllerSpec extends Specification {
 
     private static flag = 0
+    private static id = 0
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -65,6 +67,10 @@ class DevopsServiceControllerSpec extends Specification {
     private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
     @Autowired
     private DevopsServiceAppInstanceMapper devopsServiceAppInstanceMapper
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository
+    @Autowired
+    private DevopsServiceRepository devopsServiceRepository
 
     @Autowired
     @Qualifier("mockEnvUtil")
@@ -88,24 +94,56 @@ class DevopsServiceControllerSpec extends Specification {
     @Qualifier("mockGitlabGroupMemberRepository")
     private GitlabGroupMemberRepository gitlabGroupMemberRepository
 
-    private ApplicationDO applicationDO
     private DevopsEnvCommandDO devopsEnvCommandDO
     private DevopsEnvFileResourceDO devopsEnvFileResourceDO
     private DevopsServiceAppInstanceDO devopsServiceAppInstanceDO
 
     def setup() {
         if (flag == 0) {
+            FileUtil.copyFile("src/test/gitops/org/pro/env/test-svc.yaml", "gitops/org/pro/env")
+
+
+            DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
+            devopsProjectDO.setIamProjectId(1L)
+            devopsProjectDO.setDevopsEnvGroupId(1L)
+            devopsProjectDO.setDevopsAppGroupId(1L)
+            devopsProjectMapper.insert(devopsProjectDO)
+
             devopsEnvCommandDO = new DevopsEnvCommandDO()
+            devopsEnvCommandDO.setId(1L)
             devopsEnvCommandMapper.insert(devopsEnvCommandDO)
 
+            DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+            devopsEnvironmentDO.setId(1L)
+            devopsEnvironmentDO.setProjectId(1L)
+            devopsEnvironmentDO.setActive(true)
+            devopsEnvironmentDO.setGitlabEnvProjectId(1L)
+            devopsEnvironmentDO.setSequence(1L)
+            devopsEnvironmentDO.setCode("env")
+            devopsEnvironmentDO.setDevopsEnvGroupId(1L)
+            devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+
+            ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+            applicationInstanceDO.setId(1L)
+            applicationInstanceDO.setProjectId(1L)
+            applicationInstanceDO.setCode("test")
+            applicationInstanceDO.setAppId(1L)
+            applicationInstanceDO.setEnvId(1L)
+            applicationInstanceDO.setAppVersionId(1L)
+            applicationInstanceMapper.insert(applicationInstanceDO)
+
+
             devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+            devopsEnvFileResourceDO.setId(1L)
             devopsEnvFileResourceDO.setEnvId(1L)
             devopsEnvFileResourceDO.setResourceId(1L)
             devopsEnvFileResourceDO.setResourceType("Service")
             devopsEnvFileResourceDO.setFilePath("test-svc.yaml")
             devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
 
+
             devopsServiceAppInstanceDO = new DevopsServiceAppInstanceDO()
+            devopsServiceAppInstanceDO.setId(1L)
             devopsServiceAppInstanceDO.setServiceId(1L)
             devopsServiceAppInstanceDO.setAppInstanceId(1L)
             devopsServiceAppInstanceMapper.insert(devopsServiceAppInstanceDO)
@@ -116,10 +154,10 @@ class DevopsServiceControllerSpec extends Specification {
 
     def "CheckName"() {
         when:
-        restTemplate.getForObject("/v1/projects/1/service/check?envId=1&name=svc", Boolean.class)
+        def exist = restTemplate.getForObject("/v1/projects/1/service/check?envId=1&name=svc", Boolean.class)
 
         then:
-        true
+        exist == true
     }
 
     def "Create"() {
@@ -136,14 +174,14 @@ class DevopsServiceControllerSpec extends Specification {
         devopsServiceReqDTO.setAppId(1L)
         devopsServiceReqDTO.setEnvId(1L)
         devopsServiceReqDTO.setType("ClusterIP")
-        devopsServiceReqDTO.setName("svc")
+        devopsServiceReqDTO.setName("svcsvc")
         devopsServiceReqDTO.setPorts(portMapES)
         devopsServiceReqDTO.setExternalIp("1.1.1.1")
 
         UserAttrE userAttrE = new UserAttrE(1L, 1L)
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setEnvGroupId(1)
+        gitlabGroupE.setDevopsEnvGroupId(1)
 
         GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE()
         groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
@@ -157,22 +195,18 @@ class DevopsServiceControllerSpec extends Specification {
         projectE.setCode("pro")
         projectE.setOrganization(organization)
 
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
-        devopsProjectDO.setId(1L)
-        devopsProjectDO.setEnvGroupId(1)
-        devopsProjectDO.setGitlabGroupId(1)
-        devopsProjectMapper.insert(devopsProjectDO)
-
-        when:
-        restTemplate.postForObject("/v1/projects/1/service", devopsServiceReqDTO, Boolean.class)
-
-        then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
         userAttrRepository.queryById(_ as Long) >> userAttrE
         devopsProjectRepository.queryDevopsProject(_ as Long) >> gitlabGroupE
         gitlabGroupMemberRepository.getUserMemberByUserId(_ as Integer, _ as Integer) >> groupMemberE
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
+
+        when:
+        def result = restTemplate.postForObject("/v1/projects/1/service", devopsServiceReqDTO, Boolean.class)
+
+        then:
+        result == true
     }
 
     def "Update"() {
@@ -190,15 +224,15 @@ class DevopsServiceControllerSpec extends Specification {
         newDevopsServiceReqDTO.setAppId(1L)
         newDevopsServiceReqDTO.setEnvId(1L)
         newDevopsServiceReqDTO.setType("ClusterIP")
-        newDevopsServiceReqDTO.setName("svc")
+        newDevopsServiceReqDTO.setName("svcsvc")
         newDevopsServiceReqDTO.setAppInstance(longList)
         newDevopsServiceReqDTO.setPorts(portMapES)
-        newDevopsServiceReqDTO.setExternalIp("1.1.1.1")
+        newDevopsServiceReqDTO.setExternalIp("1.2.1.1")
 
         UserAttrE userAttrE = new UserAttrE(1, 1)
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setEnvGroupId(1)
+        gitlabGroupE.setDevopsEnvGroupId(1)
 
         GitlabGroupMemberE groupMemberE
         groupMemberE = new GitlabGroupMemberE()
@@ -212,17 +246,23 @@ class DevopsServiceControllerSpec extends Specification {
         projectE.setId(1L)
         projectE.setCode("pro")
         projectE.setOrganization(organization)
-
-        when:
-        restTemplate.put("/v1/projects/1/service/1", newDevopsServiceReqDTO, Boolean.class)
-
-        then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
         userAttrRepository.queryById(_ as Long) >> userAttrE
         devopsProjectRepository.queryDevopsProject(_ as Long) >> gitlabGroupE
         gitlabGroupMemberRepository.getUserMemberByUserId(_ as Integer, _ as Integer) >> groupMemberE
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
+        id = devopsServiceRepository.selectByNameAndEnvId("svcsvc", 1L).getId()
+        devopsEnvFileResourceDO = devopsEnvFileResourceMapper.selectByPrimaryKey(1L)
+        devopsEnvFileResourceDO.setResourceId(id)
+        devopsEnvFileResourceMapper.updateByPrimaryKey(devopsEnvFileResourceDO)
+
+
+        when:
+        restTemplate.put("/v1/projects/1/service/{id}", newDevopsServiceReqDTO, id)
+
+        then:
+        devopsServiceMapper.selectByPrimaryKey(id).getExternalIp().equals("1.2.1.1")
     }
 
     def "Delete"() {
@@ -239,16 +279,11 @@ class DevopsServiceControllerSpec extends Specification {
         UserAttrE userAttrE = new UserAttrE(1, 1)
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setEnvGroupId(1)
+        gitlabGroupE.setDevopsEnvGroupId(1)
 
         GitlabGroupMemberE groupMemberE
         groupMemberE = new GitlabGroupMemberE()
         groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
-
-        when:
-        restTemplate.delete("/v1/projects/1/service/1")
-
-        then:
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
@@ -256,12 +291,20 @@ class DevopsServiceControllerSpec extends Specification {
         devopsProjectRepository.queryDevopsProject(_ as Long) >> gitlabGroupE
         gitlabGroupMemberRepository.getUserMemberByUserId(_ as Integer, _ as Integer) >> groupMemberE
         gitlabRepository.deleteFile(_ as Integer, _ as String, _ as String, _ as Integer) >> null
+
+
+
+
+        when:
+        restTemplate.delete("/v1/projects/1/service/{id}", id)
+
+        then:
+        devopsEnvCommandRepository.queryByObject("service", id).getCommandType().equals("delete")
     }
 
     def "PageByOptions"() {
         given:
-        String infra = "{\"searchParam\":{\"name\":[\"svc\"]}}"
-        PageRequest pageRequest = new PageRequest(1, 20)
+        String infra = "{\"searchParam\":{\"name\":[\"svcsvc\"]}}"
 
         HttpHeaders headers = new HttpHeaders()
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
@@ -270,13 +313,14 @@ class DevopsServiceControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-
-        when:
-        restTemplate.postForObject("/v1/projects/1/service/list_by_options", strEntity, Object.class)
-
-        then:
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+
+        when:
+        def pages = restTemplate.postForObject("/v1/projects/1/service/list_by_options", strEntity, Page.class)
+
+        then:
+        pages.size() == 1
     }
 
     def "ListByEnvId"() {
@@ -284,7 +328,7 @@ class DevopsServiceControllerSpec extends Specification {
         DevopsServiceDO devopsServiceDO = new DevopsServiceDO()
         devopsServiceDO.setEnvId(1L)
         devopsServiceDO.setAppId(1L)
-        devopsServiceDO.setName("svc")
+        devopsServiceDO.setName("svcsvc")
         devopsServiceDO.setStatus("running")
         devopsServiceDO.setPorts("[{\"port\":7777}]")
         devopsServiceDO.setExternalIp("1.1.1.1")
@@ -292,15 +336,16 @@ class DevopsServiceControllerSpec extends Specification {
         devopsServiceDO.setCommandId(1L)
         devopsServiceMapper.insert(devopsServiceDO)
         when:
-        def list = restTemplate.getForObject("/v1/projects/1/service?envId=3", List.class)
+        def list = restTemplate.getForObject("/v1/projects/1/service?envId=1", List.class)
 
         then:
-        true
+        list.size() == 1
     }
 
     def "Query"() {
+
         when:
-        def dto = restTemplate.getForObject("/v1/projects/1/service/1", DevopsServiceDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/service/{id}", DevopsServiceDTO.class, id)
 
         then:
         dto != null
@@ -318,12 +363,22 @@ class DevopsServiceControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-
-        when:
-        restTemplate.postForObject("/v1/projects/1/service/1/listByEnv", strEntity, Object.class)
-
-        then:
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+
+        when:
+        def page = restTemplate.postForObject("/v1/projects/1/service/1/listByEnv", strEntity, Page.class)
+
+        then:
+        page.size() == 2
+        devopsProjectMapper.deleteByPrimaryKey(1L)
+        devopsEnvCommandMapper.deleteByPrimaryKey(1L)
+        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
+        applicationInstanceMapper.deleteByPrimaryKey(1L)
+        devopsEnvFileResourceMapper.deleteByPrimaryKey(1L)
+        devopsServiceAppInstanceMapper.deleteByPrimaryKey(1L)
+        devopsServiceMapper.deleteByPrimaryKey(id)
+        FileUtil.deleteDirectory(new File("gitops"))
+
     }
 }

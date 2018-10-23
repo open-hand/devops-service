@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.infra.common.util.enums.InstanceStatus
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO
 import io.choerodon.devops.infra.mapper.DevopsEnvPodContainerMapper
@@ -36,13 +37,16 @@ class DevopsEnvPodContainerControllerSpec extends Specification {
     def "QueryLogByPod"() {
         given:
         DevopsEnvPodContainerDO devopsEnvPodContainerDO = new DevopsEnvPodContainerDO()
+        devopsEnvPodContainerDO.setId(1L)
         devopsEnvPodContainerDO.setPodId(1L)
         devopsEnvPodContainerDO.setContainerName("test1")
         devopsEnvPodContainerMapper.insert(devopsEnvPodContainerDO)
 
         DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
+        devopsEnvPodDO.setId(1L)
         devopsEnvPodDO.setName("name")
         devopsEnvPodMapper.insert(devopsEnvPodDO)
+        InstanceStatus
 
         when:
         def list = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs", List.class)
@@ -60,4 +64,6 @@ class DevopsEnvPodContainerControllerSpec extends Specification {
         devopsEnvPodContainerMapper.deleteByPrimaryKey(1L)
         devopsEnvPodMapper.deleteByPrimaryKey(1L)
     }
+
+
 }

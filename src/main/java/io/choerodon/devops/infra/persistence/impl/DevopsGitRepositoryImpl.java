@@ -538,4 +538,9 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
             throw new CommonException(e);
         }
     }
+
+    @Override
+    public void initGitlabServiceClient(GitlabServiceClient gitlabServiceClient) {
+        this.gitlabServiceClient = gitlabServiceClient;
+    }
 }
