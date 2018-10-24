@@ -237,8 +237,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
     }
 
     @Override
-    public Boolean checkIngressAndPath(Long id, String domain, String path) {
-        return !devopsIngressPathMapper.checkDomainAndPath(id, domain, path);
+    public Boolean checkIngressAndPath(Long envId, String domain, String path, Long id) {
+        return !devopsIngressPathMapper.checkDomainAndPath(envId, domain, path, id);
     }
 
     @Override

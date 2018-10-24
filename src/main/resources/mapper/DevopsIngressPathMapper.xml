@@ -27,6 +27,7 @@
             AND dd.id != #{ingressId}
         </if>
         AND dda.path = #{path}
+        AND dd.env_id = #{envId}
     </select>
 
     <select id="selectByEnvIdAndServiceId" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressPathDO">
