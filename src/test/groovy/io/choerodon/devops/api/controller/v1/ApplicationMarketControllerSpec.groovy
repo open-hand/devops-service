@@ -301,22 +301,26 @@ class ApplicationMarketControllerSpec extends Specification {
     }
 
     def "UploadApps"() {
-        given:
+        given: '设置multipartFile'
         HttpHeaders headers = new HttpHeaders()
         headers.setContentType(MediaType.parseMediaType("multipart/form-data"))
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>()
-        FileSystemResource fileSystemResource = new FileSystemResource("src/test/resources/key.tar.gz")
+        FileSystemResource fileSystemResource = new FileSystemResource("src/test/resources/chart.zip")
         map.add("file", fileSystemResource)
         map.add("filename", fileSystemResource.getFilename())
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<MultiValueMap<String, Object>>(map, headers)
 
-        when:
+        and: '设置默认值'
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.queryOrganizationById(_ as Long) >> organization
+
+        when: '更新单个应用市场的应用'
         def dto = restTemplate.postForObject("/v1/projects/1/apps_market/upload", requestEntity, AppMarketTgzDTO.class)
 
         then:
-        dto != null
+        dto.getAppMarketList().get(0).getId() == 27
     }
 
     def "ImportApps"() {
