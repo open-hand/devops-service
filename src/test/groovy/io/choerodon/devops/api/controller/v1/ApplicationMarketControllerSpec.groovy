@@ -158,7 +158,7 @@ class ApplicationMarketControllerSpec extends Specification {
         def marketId = restTemplate.postForObject("/v1/projects/1/apps_market", applicationReleasingDTO, Long.class)
 
         then: '验证创建后的id'
-        marketId == 1L
+        marketId == applicationMapper.selectAll().get(0).getId()
     }
 
     def "PageListMarketAppsByProjectId"() {
@@ -201,7 +201,8 @@ class ApplicationMarketControllerSpec extends Specification {
         iamRepository.listIamProjectByOrgId(_, _) >> projectEList
 
         when: '查询项目下单个应用市场的应用详情'
-        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/1/detail", ApplicationReleasingDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/detail", ApplicationReleasingDTO.class
+                , applicationMarketMapper.selectAll().get(0).getId())
 
         then:
         dto.getName() == "appName"
@@ -215,7 +216,8 @@ class ApplicationMarketControllerSpec extends Specification {
         iamRepository.listIamProjectByOrgId(_, _) >> projectEList
 
         when: '查询项目下单个应用市场的应用详情'
-        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/1", ApplicationReleasingDTO.class)
+        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}", ApplicationReleasingDTO.class,
+                applicationMarketMapper.selectAll().get(0).getId())
 
         then:
         dto.getName() == "appName"
@@ -229,10 +231,11 @@ class ApplicationMarketControllerSpec extends Specification {
         iamRepository.listIamProjectByOrgId(_, _) >> projectEList
 
         when: '查询项目下单个应用市场的应用的版本'
-        def list = restTemplate.getForObject("/v1/projects/1/apps_market/1/versions", List.class)
+        def list = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/versions", List.class,
+                applicationMarketMapper.selectAll().get(0).getId())
 
         then:
-        list.get(0)["id"] == 1
+        list.get(0)["version"] == "0.0"
     }
 
     def "QueryAppVersionsInProjectByPage"() {
@@ -243,10 +246,11 @@ class ApplicationMarketControllerSpec extends Specification {
         iamRepository.listIamProjectByOrgId(_, _) >> projectEList
 
         when: '分页查询项目下单个应用市场的应用的版本'
-        def page = restTemplate.postForObject("/v1/projects/1/apps_market/1/versions", searchParam, Page.class)
+        def page = restTemplate.postForObject("/v1/projects/1/apps_market/{app_market_id}/versions", searchParam, Page.class,
+                applicationMarketMapper.selectAll().get(0).getId())
 
         then:
-        page.getContent().get(0)["id"] == 1
+        page.getContent().get(0)["version"] == "0.0"
     }
 
     def "QueryAppVersionReadme"() {
@@ -257,7 +261,8 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationVersionReadmeMapper.insert(applicationVersionReadmeDO)
 
         when: '查询单个应用市场的应用的单个版本README'
-        def str = restTemplate.getForObject("/v1/projects/1/apps_market/1/versions/1/readme", String.class)
+        def str = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/versions/{version_id}/readme",
+                String.class, applicationMarketMapper.selectAll().get(0).getId(), applicationVersionMapper.selectAll().get(0).getId())
 
         then:
         str == "readme"
@@ -277,10 +282,11 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationReleasingDTO.setPublishLevel("organization")
 
         when: '更新单个应用市场的应用'
-        restTemplate.put("/v1/projects/1/apps_market/1", applicationReleasingDTO)
+        restTemplate.put("/v1/projects/1/apps_market/{app_market_id}", applicationReleasingDTO,
+                applicationMarketMapper.selectAll().get(0).getId())
 
         then: '验证更新后的contributor字段'
-        applicationMarketMapper.selectByPrimaryKey(1L).getContributor() == "newContributor"
+        applicationMarketMapper.selectAll().get(0).getContributor() == "newContributor"
     }
 
     def "UpdateVersions"() {
@@ -297,10 +303,11 @@ class ApplicationMarketControllerSpec extends Specification {
         iamRepository.listIamProjectByOrgId(_, _) >> projectEList
 
         when: '更新单个应用市场的应用'
-        restTemplate.put("/v1/projects/1/apps_market/1/versions", dtoList)
+        restTemplate.put("/v1/projects/1/apps_market/{app_market_id}/versions", dtoList,
+                applicationMarketMapper.selectAll().get(0).getId())
 
         then:
-        applicationMarketMapper.selectByPrimaryKey(1L).getId() == 1
+        applicationMarketMapper.selectAll().get(0).getId() == 1
     }
 
     def "UploadApps"() {
@@ -344,7 +351,7 @@ class ApplicationMarketControllerSpec extends Specification {
 
         then:
         bool == true
-        applicationMarketMapper.selectByPrimaryKey(2L)["contributor"] == "Choerodon"
+        applicationMarketMapper.selectAll().get(1).getContributor() == "Choerodon"
     }
 
     def "DeleteZip"() {
@@ -363,17 +370,27 @@ class ApplicationMarketControllerSpec extends Specification {
 
         applicationMapper.deleteByPrimaryKey(1L)
         applicationMapper.deleteByPrimaryKey(2L)
-        applicationMarketMapper.deleteByPrimaryKey(1L)
-        applicationMarketMapper.deleteByPrimaryKey(2L)
+
+        DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
+        devopsAppMarketDO.setContributor("newContributor")
+        applicationMarketMapper.delete(devopsAppMarketDO)
+        devopsAppMarketDO.setContributor("Choerodon")
+        applicationMarketMapper.delete(devopsAppMarketDO)
+
         applicationVersionMapper.deleteByPrimaryKey(1L)
-        applicationVersionMapper.deleteByPrimaryKey(2L)
-        applicationInstanceMapper.deleteByPrimaryKey(1L)
+        ApplicationVersionDO versionDO = new ApplicationVersionDO()
+        versionDO.setVersion("0.8.4")
+        applicationVersionMapper.delete(versionDO)
+
+        ApplicationInstanceDO instanceDO = new ApplicationInstanceDO()
+        instanceDO.setAppId(1L)
+        applicationInstanceMapper.delete(instanceDO)
+
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
+
         applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
         applicationVersionReadmeMapper.deleteByPrimaryKey(2L)
         applicationVersionValueMapper.deleteByPrimaryKey(1L)
-        applicationMapper.deleteByPrimaryKey(1L)
-        applicationMapper.deleteByPrimaryKey(2L)
     }
 
 //    def "ExportFile"() {
