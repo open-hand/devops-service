@@ -2,26 +2,27 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.AppMarketTgzDTO
 import io.choerodon.devops.api.dto.AppMarketVersionDTO
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
-import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper
-import io.choerodon.devops.infra.mapper.ApplicationMapper
-import io.choerodon.devops.infra.mapper.ApplicationVersionMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.devops.infra.dataobject.*
+import io.choerodon.devops.infra.mapper.*
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -40,7 +41,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Subject(ApplicationMarketController)
 @Stepwise
 class ApplicationMarketControllerSpec extends Specification {
-    private static flag = 0
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -50,9 +50,13 @@ class ApplicationMarketControllerSpec extends Specification {
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
     @Autowired
+    private ApplicationMarketMapper applicationMarketMapper
+    @Autowired
     private ApplicationVersionMapper applicationVersionMapper
     @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper
+    @Autowired
+    private ApplicationVersionReadmeMapper applicationVersionReadmeMapper
 
     @Autowired
     @Qualifier("mockIamRepository")
@@ -114,6 +118,7 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationVersionDO.setAppId(1L)
         applicationVersionDO.setIsPublish(1L)
         applicationVersionDO.setVersion("0.0")
+        applicationVersionDO.setReadmeValueId(1L)
 
         // dai
         applicationInstanceDO.setId(1L)
@@ -149,7 +154,7 @@ class ApplicationMarketControllerSpec extends Specification {
         when: '应用发布'
         def marketId = restTemplate.postForObject("/v1/projects/1/apps_market", applicationReleasingDTO, Long.class)
 
-        then:
+        then: '验证创建后的id'
         marketId == 1L
     }
 
@@ -168,34 +173,150 @@ class ApplicationMarketControllerSpec extends Specification {
         def page = restTemplate.postForObject("/v1/projects/1/apps_market/list", searchParam, Page.class)
 
         then:
-        page.getContent().get(0)["name"]=="appName"
+        page.getContent().get(0)["name"] == "appName"
     }
 
     def "ListAllApp"() {
+        given: '设置默认值'
+        List<ProjectE> projectEList = new ArrayList<>()
+        projectEList.add(projectE)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
+
+        when: '查询发布级别为全局或者在本组织下的所有应用市场的应用'
+        def page = restTemplate.postForObject("/v1/projects/1/apps_market/list_all", searchParam, Page.class)
+
+        then:
+        page.getContent().get(0)["name"] == "appName"
     }
 
     def "QueryAppInProject"() {
+        given: '设置默认值'
+        List<ProjectE> projectEList = new ArrayList<>()
+        projectEList.add(projectE)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
+
+        when: '查询项目下单个应用市场的应用详情'
+        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/1/detail", ApplicationReleasingDTO.class)
+
+        then:
+        dto.getName() == "appName"
     }
 
     def "QueryApp"() {
+        given: '设置默认值'
+        List<ProjectE> projectEList = new ArrayList<>()
+        projectEList.add(projectE)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
+
+        when: '查询项目下单个应用市场的应用详情'
+        def dto = restTemplate.getForObject("/v1/projects/1/apps_market/1", ApplicationReleasingDTO.class)
+
+        then:
+        dto.getName() == "appName"
     }
 
     def "QueryAppVersionsInProject"() {
+        given: '设置默认值'
+        List<ProjectE> projectEList = new ArrayList<>()
+        projectEList.add(projectE)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
+
+        when: '查询项目下单个应用市场的应用的版本'
+        def list = restTemplate.getForObject("/v1/projects/1/apps_market/1/versions", List.class)
+
+        then:
+        list.get(0)["id"] == 1
     }
 
     def "QueryAppVersionsInProjectByPage"() {
+        given: '设置默认值'
+        List<ProjectE> projectEList = new ArrayList<>()
+        projectEList.add(projectE)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
+
+        when: '分页查询项目下单个应用市场的应用的版本'
+        def page = restTemplate.postForObject("/v1/projects/1/apps_market/1/versions", searchParam, Page.class)
+
+        then:
+        page.getContent().get(0)["id"] == 1
     }
 
     def "QueryAppVersionReadme"() {
+        given: '插入App Version Readme'
+        ApplicationVersionReadmeDO applicationVersionReadmeDO = new ApplicationVersionReadmeDO()
+        applicationVersionReadmeDO.setId(1L)
+        applicationVersionReadmeDO.setReadme("readme")
+        applicationVersionReadmeMapper.insert(applicationVersionReadmeDO)
+
+        when: '查询单个应用市场的应用的单个版本README'
+        def str = restTemplate.getForObject("/v1/projects/1/apps_market/1/versions/1/readme", String.class)
+
+        then:
+        str == "readme"
     }
 
     def "Update"() {
+        given: '设置默认值'
+        List<ProjectE> projectEList = new ArrayList<>()
+        projectEList.add(projectE)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
+
+        and: '准备DTO'
+        ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO()
+        applicationReleasingDTO.setId(1L)
+        applicationReleasingDTO.setContributor("newContributor")
+        applicationReleasingDTO.setPublishLevel("organization")
+
+        when: '更新单个应用市场的应用'
+        restTemplate.put("/v1/projects/1/apps_market/1", applicationReleasingDTO)
+
+        then: '验证更新后的contributor字段'
+        applicationMarketMapper.selectByPrimaryKey(1L).getContributor() == "newContributor"
     }
 
     def "UpdateVersions"() {
+        given: '准备dotList'
+        AppMarketVersionDTO appMarketVersionDTO = new AppMarketVersionDTO()
+        appMarketVersionDTO.setId(1L)
+        List<AppMarketVersionDTO> dtoList = new ArrayList<>()
+        dtoList.add(appMarketVersionDTO)
+
+        and: '设置默认值'
+        List<ProjectE> projectEList = new ArrayList<>()
+        projectEList.add(projectE)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
+
+        when: '更新单个应用市场的应用'
+        restTemplate.put("/v1/projects/1/apps_market/1/versions", dtoList)
+
+        then:
+        applicationMarketMapper.selectByPrimaryKey(1L).getId() == 1
     }
 
     def "UploadApps"() {
+        given:
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.parseMediaType("multipart/form-data"))
+
+        MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>()
+        FileSystemResource fileSystemResource = new FileSystemResource("src/test/resources/key.tar.gz")
+        map.add("file", fileSystemResource)
+        map.add("filename", fileSystemResource.getFilename())
+
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<MultiValueMap<String, Object>>(map, headers)
+
+        when:
+        def dto = restTemplate.postForObject("/v1/projects/1/apps_market/upload", requestEntity, AppMarketTgzDTO.class)
+
+        then:
+        dto != null
     }
 
     def "ImportApps"() {
