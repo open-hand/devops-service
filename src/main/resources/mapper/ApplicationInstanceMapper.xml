@@ -149,6 +149,7 @@
         WHERE
         de.object_id = dai.id
         AND de.object_id = #{instanceId}
+        AND de.object = 'instance'
         ORDER BY
         de.creation_date DESC
         LIMIT 1
