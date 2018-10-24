@@ -242,7 +242,23 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationRepDTO> listByActive(Long projectId) {
-        return ConvertHelper.convertList(applicationRepository.listByActive(projectId), ApplicationRepDTO.class);
+        List<ApplicationE> applicationEList = applicationRepository.listByActive(projectId);
+
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
+        applicationEList.forEach(t -> {
+                    if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
+                        t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
+                                + organization.getCode() + "-" + projectE.getCode() + "/"
+                                + t.getCode() + ".git");
+                        getSonarUrl(projectE, organization, t);
+                    }
+                }
+        );
+
+        return ConvertHelper.convertList(applicationEList, ApplicationRepDTO.class);
     }
 
     @Override
