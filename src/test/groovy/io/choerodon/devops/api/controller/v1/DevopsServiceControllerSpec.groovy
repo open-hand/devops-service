@@ -103,11 +103,6 @@ class DevopsServiceControllerSpec extends Specification {
             FileUtil.copyFile("src/test/gitops/org/pro/env/test-svc.yaml", "gitops/org/pro/env")
 
 
-            DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
-            devopsProjectDO.setIamProjectId(1L)
-            devopsProjectDO.setDevopsEnvGroupId(1L)
-            devopsProjectDO.setDevopsAppGroupId(1L)
-            devopsProjectMapper.insert(devopsProjectDO)
 
             devopsEnvCommandDO = new DevopsEnvCommandDO()
             devopsEnvCommandDO.setId(1L)
@@ -371,7 +366,6 @@ class DevopsServiceControllerSpec extends Specification {
 
         then:
         page.size() == 2
-        devopsProjectMapper.deleteByPrimaryKey(1L)
         devopsEnvCommandMapper.deleteByPrimaryKey(1L)
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
         applicationInstanceMapper.deleteByPrimaryKey(1L)

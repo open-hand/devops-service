@@ -70,7 +70,7 @@ class DevopsEnvPodControllerSpec extends Specification {
             applicationVersionDO.setValueId(1L)
             applicationVersionDO.setIsPublish(1L)
             applicationVersionDO.setCommit("commit")
-            applicationVersionDO.setVersion("version")
+            applicationVersionDO.setVersion("versions")
             applicationVersionDO.setCreationDate(new Date(2018, 9, 14, 13, 40, 0))
             applicationVersionMapper.insert(applicationVersionDO)
             ApplicationVersionDO applicationVersionDO1 = new ApplicationVersionDO()

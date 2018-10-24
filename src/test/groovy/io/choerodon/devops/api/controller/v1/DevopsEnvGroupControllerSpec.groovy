@@ -40,12 +40,14 @@ class DevopsEnvGroupControllerSpec extends Specification {
     def setup() {
         if (flag == 0) {
             DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO()
+            devopsEnvGroupDO.setId(1L)
             devopsEnvGroupDO.setName("test")
             devopsEnvGroupDO.setProjectId(1L)
             devopsEnvGroupDO.setSequence(1L)
             devopsEnvGroupDO.setObjectVersionNumber(1L)
 
             DevopsEnvGroupDO devopsEnvGroupDO1 = new DevopsEnvGroupDO()
+            devopsEnvGroupDO1.setId(2L)
             devopsEnvGroupDO1.setName("test1")
             devopsEnvGroupDO1.setProjectId(1L)
             devopsEnvGroupDO1.setSequence(2L)

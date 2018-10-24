@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.FileUtil
@@ -53,6 +54,8 @@ class CiControllerSpec extends Specification {
     ApplicationVersionReadmeMapper applicationVersionReadmeMapper
     @Autowired
     private ApplicationVersionValueMapper applicationVersionValueMapper
+    @Autowired
+    private ApplicationVersionRepository applicationVersionRepository
 
     @Autowired
     @Qualifier("mockIamRepository")
@@ -135,12 +138,11 @@ class CiControllerSpec extends Specification {
         gzFile != null
         File yamlFile = new File("/devopsversion/values.yaml")
         yamlFile != null
-        applicationVersionMapper.selectByPrimaryKey(2L).getVersion() == "version"
-
-        applicationVersionMapper.deleteByPrimaryKey(1L)
-        applicationVersionMapper.deleteByPrimaryKey(2L)
         applicationMapper.deleteByPrimaryKey(1L)
+        applicationVersionMapper.selectByPrimaryKey(1L).getVersion() == "oldVersion"
+        applicationVersionMapper.deleteByPrimaryKey(1L)
         applicationVersionValueMapper.deleteByPrimaryKey(1L)
+        applicationVersionMapper.deleteByPrimaryKey(applicationVersionRepository.queryByAppAndVersion(1,"version").getId())
         applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
     }
 

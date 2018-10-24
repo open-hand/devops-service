@@ -275,6 +275,8 @@ class ApplicationControllerSpec extends Specification {
         ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(1L)
         applicationDO.setGitlabProjectId(1)
         applicationMapper.updateByPrimaryKey(applicationDO)
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        iamRepository.queryOrganizationById(_ as Long) >> organization
 
         when:
         def applicationList = restTemplate.getForObject("/v1/projects/{project_id}/apps", List.class, project_id)
