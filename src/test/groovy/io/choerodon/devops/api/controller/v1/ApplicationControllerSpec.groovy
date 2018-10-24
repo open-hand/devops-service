@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.alibaba.fastjson.JSONObject
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
@@ -96,8 +95,6 @@ class ApplicationControllerSpec extends Specification {
     UserAttrE userAttrE = new UserAttrE()
     @Shared
     Map<String, Object> searchParam = new HashMap<>();
-    @Shared
-    PageRequest pageRequest = new PageRequest()
 
     @Shared
     Long project_id = 1L
@@ -116,17 +113,14 @@ class ApplicationControllerSpec extends Specification {
         userAttrE.setIamUserId(init_id)
         userAttrE.setGitlabUserId(init_id)
 
-        Map<String, Object> xxx = new HashMap<>();
-        xxx.put("name",[])
-        xxx.put("code",["app"])
-        searchParam.put("searchParam", xxx)
+        Map<String, Object> params = new HashMap<>();
+        params.put("name",[])
+        params.put("code",["app"])
+        searchParam.put("searchParam", params)
         searchParam.put("param", "")
-
-        pageRequest.size = 10
-        pageRequest.page = 0
     }
     //项目下创建应用
-    def "Create"() {
+    def "create"() {
         given: '创建issueDTO'
         ApplicationDTO applicationDTO = new ApplicationDTO()
 
@@ -166,7 +160,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //项目下查询单个应用信息
-    def "QueryByAppId"() {
+    def "queryByAppId"() {
         given:
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
@@ -179,7 +173,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //项目下更新应用信息
-    def "Update"() {
+    def "update"() {
         given:
         ApplicationUpdateDTO applicationUpdateDTO = new ApplicationUpdateDTO()
         applicationUpdateDTO.setId(init_id)
@@ -216,7 +210,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //项目下分页查询应用
-    def "PageByOptions"() {
+    def "pageByOptions"() {
         given:
         ApplicationVersionReadmeDO applicationVersionReadmeDO = new ApplicationVersionReadmeDO()
         applicationVersionReadmeDO.setReadme("readme")
@@ -236,7 +230,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //根据环境id分页获取已部署正在运行实例的应用
-    def "PageByEnvIdAndStatus"() {
+    def "pageByEnvIdAndStatus"() {
         given: '添加应用运行实例'
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         applicationInstanceDO.setId(init_id)
@@ -265,7 +259,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //根据环境id获取已部署正在运行实例的应用
-    def "ListByEnvIdAndStatus"() {
+    def "listByEnvIdAndStatus"() {
         when:
         def applicationList = restTemplate.getForObject("/v1/projects/1/apps/options?envId=1&status=running", List.class)
 
@@ -276,7 +270,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //项目下查询所有已经启用的应用
-    def "ListByActive"() {
+    def "listByActive"() {
         given: '更新gitlabprojectID'
         ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(1L)
         applicationDO.setGitlabProjectId(1)
@@ -293,7 +287,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //项目下查询所有已经启用的应用
-    def "ListAll"() {
+    def "listAll"() {
         when:
         def applicationList = restTemplate.getForObject("/v1/projects/{project_id}/apps/list_all", List.class, project_id)
 
@@ -305,7 +299,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //创建应用校验名称是否存在
-    def "CheckName"() {
+    def "checkName"() {
         when:
         def entity = restTemplate.getForEntity("/v1/projects/{project_id}/apps/checkName?name={name}", Object.class, project_id, "name1")
 
@@ -322,7 +316,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //创建应用校验编码是否存在
-    def "CheckCode"() {
+    def "checkCode"() {
         when:
         def entity = restTemplate.getForEntity("/v1/projects/{project_id}/apps/checkCode?code={code}", Object.class, project_id, "code1")
 
@@ -340,7 +334,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //查询所有应用模板
-    def "ListTemplate"() {
+    def "listTemplate"() {
         given:
         ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
         applicationTemplateDO.setId(4L)
@@ -369,7 +363,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //项目下查询所有已经启用的且未发布的且有版本的应用
-    def "ListByActiveAndPubAndVersion"() {
+    def "listByActiveAndPubAndVersion"() {
         given:
         ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
         applicationVersionDO.setId(init_id)
@@ -385,7 +379,7 @@ class ApplicationControllerSpec extends Specification {
     }
 
     //项目下分页查询代码仓库
-    def "ListCodeRepository"() {
+    def "listCodeRepository"() {
         given:
         iamRepository.queryIamProject(_) >> projectE
         iamRepository.queryOrganizationById(_) >> organization
@@ -399,10 +393,12 @@ class ApplicationControllerSpec extends Specification {
 
     }
     //清除测试数据
-    def cleanupSepc() {
+    def "cleanupData"() {
+        given:
         applicationInstanceMapper.deleteByPrimaryKey(init_id)
         devopsEnvironmentMapper.deleteByPrimaryKey(init_id)
         applicationMapper.deleteByPrimaryKey(init_id)
         applicationTemplateMapper.deleteByPrimaryKey(4L)
+        applicationVersionMapper.deleteByPrimaryKey(1L)
     }
 }

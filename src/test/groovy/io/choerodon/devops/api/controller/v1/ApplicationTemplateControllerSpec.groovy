@@ -9,7 +9,6 @@ import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE
 import io.choerodon.devops.domain.application.repository.GitlabRepository
@@ -30,9 +29,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.*
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 
+import static org.mockito.Matchers.anyLong
+import static org.mockito.Matchers.anyObject
+import static org.mockito.Matchers.anyString
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -71,133 +74,176 @@ class ApplicationTemplateControllerSpec extends Specification {
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
-    def "Create"() {
+//    private IamServiceClient iamServiceClient = Mock(IamServiceClient)
+//    private SagaClient sagaClient = Mock(SagaClient)
+
+    @Shared
+    Organization organization = new Organization()
+    @Shared
+    OrganizationDO organizationDO = new OrganizationDO()
+    @Shared
+    UserAttrE userAttrE = new UserAttrE()
+    @Shared
+    GitlabGroupE gitlabGroupE = new GitlabGroupE()
+    @Shared
+    Map<String, Object> searchParam = new HashMap<>();
+
+    @Shared
+    Long org_id = 1L
+    @Shared
+    Long init_id = 1L
+    @Shared
+    Long template_id = 4L
+
+    //初始化部分对象
+    def setupSpec() {
         given:
+        organization.setId(init_id)
+        organization.setCode("org")
+
+        organizationDO.setCode("orgDO")
+
+        gitlabGroupE.setName("org_template")
+        gitlabGroupE.setPath("org_template")
+        gitlabGroupE.setVisibility(Visibility.PUBLIC)
+
+        userAttrE.setIamUserId(init_id)
+        userAttrE.setGitlabUserId(init_id)
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("name", [])
+        params.put("code", ["code"])
+        searchParam.put("searchParam", params)
+        searchParam.put("param", "")
+    }
+
+    //组织下创建应用模板
+    def "createTemplate"() {
+        given: "初始化数据"
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
+        applicationTemplateDTO.setId(4L)
         applicationTemplateDTO.setCode("code")
         applicationTemplateDTO.setName("app")
         applicationTemplateDTO.setDescription("des")
         applicationTemplateDTO.setOrganizationId(1L)
 
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("org")
-
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setCode("orgDO")
-
-        GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setName("org_template")
-        gitlabGroupE.setPath("org_template")
-        gitlabGroupE.setVisibility(Visibility.PUBLIC)
-
-        UserAttrE userAttrE = new UserAttrE()
-        userAttrE.setIamUserId(1L)
-        userAttrE.setGitlabUserId(1L)
-
-        // mock SagaClient
+        and: 'mock'
         applicationTemplateService.initMockService(sagaClient)
-        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(null, null)
-
-        // mock FeignClient
         applicationTemplateRepository.initMockService(iamServiceClient)
-        Mockito.doReturn(new ResponseEntity<OrganizationDO>(organizationDO, HttpStatus.OK)).when(iamServiceClient).queryOrganizationById(1)
-
-        ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE()
-        applicationTemplateE.setOrganization(organization)
+        Mockito.doReturn(new ResponseEntity<OrganizationDO>(organizationDO, HttpStatus.OK)).when(iamServiceClient).queryOrganizationById(anyLong())
+        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), anyObject())
+        userAttrRepository.queryById(_) >> userAttrE
+        iamRepository.queryOrganizationById(_) >> organization
+        gitlabRepository.queryGroupByName(_, _) >> null
+        gitlabRepository.createGroup(_, _) >> gitlabGroupE
 
         when:
-        def dto = restTemplate.postForEntity("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateRepDTO.class)
+        def entity = restTemplate.postForEntity("/v1/organizations/{org_id}/app_templates", applicationTemplateDTO, ApplicationTemplateRepDTO.class, org_id)
 
         then:
-        userAttrRepository.queryById(_ as Long) >> userAttrE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-        gitlabRepository.queryGroupByName(_ as String, _ as Integer) >> null
-        gitlabRepository.createGroup(_ as GitlabGroupE, _ as Integer) >> gitlabGroupE
-        dto != null
+        entity.statusCode.is2xxSuccessful()
+
+        expect:
+        ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
+        applicationTemplateDO.name == "app"
     }
 
-    def "Update"() {
+    //组织下更新应用模板
+    def "updateTemplate"() {
         given:
         ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO = new ApplicationTemplateUpdateDTO()
-        applicationTemplateUpdateDTO.setId(1L)
-
-        ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
-        applicationTemplateDO.setObjectVersionNumber(1L)
-        applicationTemplateMapper.insert(applicationTemplateDO)
+        applicationTemplateUpdateDTO.setId(4L)
+        applicationTemplateUpdateDTO.setName("updateName")
+        applicationTemplateUpdateDTO.setDescription("des")
 
         when:
-        restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateUpdateDTO, ApplicationTemplateRepDTO.class)
+        restTemplate.put("/v1/organizations/{org_id}/app_templates", applicationTemplateUpdateDTO, org_id)
 
         then:
-        true
+        ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
+
+        expect:
+        applicationTemplateDO.name == "updateName"
     }
 
-    def "Delete"() {
-        given:
-        UserAttrE userAttrE = new UserAttrE()
-        userAttrE.setGitlabUserId(1L)
-        userAttrE.setId(1L)
-
+    //组织下查询单个应用模板
+    def "queryByAppTemplateId"() {
         when:
-        restTemplate.delete("/v1/organizations/1/app_templates/1")
+        def object = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates/{template_id}", ApplicationTemplateRepDTO.class, org_id, template_id)
 
         then:
+        object.code == "code"
+    }
+
+    //组织下分页查询应用模板
+    def "listByOptions"() {
+        when:
+        def page = restTemplate.postForObject("/v1/organizations/{org_id}/app_templates/list_by_options", searchParam, Page.class, org_id)
+
+        then:
+        page.size() == 1
+
+        expect:
+        page.get(0).code == "code"
+    }
+
+    //组织下分页查询应用模板
+    def "listByOrgId"() {
+        when:
+        def list = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates", List.class, org_id)
+
+        then:
+        list.size() == 4
+
+        expect:
+        list.get(3).code == "code"
+    }
+    //创建模板校验名称是否存在
+    def "checkName"() {
+        when:
+        def entity = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", Object.class, org_id, "name")
+
+        then:
+        entity.statusCode.is2xxSuccessful()
+        entity.body == null
+
+        when:
+        def entity2 = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", Object.class, org_id, "updateName")
+
+        then:
+        entity2.statusCode.is2xxSuccessful()
+        entity2.body.failed == true
+    }
+    //创建模板校验编码是否存在
+    def "checkCode"() {
+        when:
+        def entity = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkCode?code={code}", Object.class, org_id, "testCode")
+
+        then:
+        entity.statusCode.is2xxSuccessful()
+        entity.body == null
+
+        when:
+        def entity2 = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkCode?code={code}", Object.class, org_id, "code")
+
+        then:
+        entity2.statusCode.is2xxSuccessful()
+        entity2.body.failed == true
+    }
+
+    //组织下删除应用模板
+    def "deleteTemplate"() {
+        given:
         userAttrRepository.queryById(_ as Long) >> userAttrE
         gitlabRepository.deleteProject(_ as Integer, _ as Integer) >> null
-    }
-
-    def "QueryByAppTemplateId"() {
-        given:
-        ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
-        applicationTemplateDO.setOrganizationId(1L)
-        applicationTemplateDO.setRepoUrl("/test/repoUrl/")
-        applicationTemplateMapper.insert(applicationTemplateDO)
 
         when:
-        def dto = restTemplate.getForObject("/v1/organizations/1/app_templates/3", ApplicationTemplateRepDTO.class)
+        restTemplate.delete("/v1/organizations/{project_id}/app_templates/{template_id}", org_id, 4L)
 
         then:
-        dto != null
-    }
+        ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
 
-    def "ListByOptions"() {
-        given:
-        String infra = null
-        PageRequest pageRequest = new PageRequest(1, 20)
-
-        HttpHeaders headers = new HttpHeaders()
-        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
-        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
-
-        when:
-        def page = restTemplate.postForObject("/v1/organizations/1/app_templates/list_by_options", strEntity, Page.class)
-
-        then:
-        !page.isEmpty()
-    }
-
-    def "ListByOrgId"() {
-        when:
-        def list = restTemplate.getForObject("/v1/organizations/1/app_templates", List.class)
-
-        then:
-        !list.isEmpty()
-    }
-
-    def "CheckName"() {
-        when:
-        restTemplate.getForObject("/v1/organizations/1/app_templates/checkName?name=test", Object.class)
-
-        then:
-        true
-    }
-
-    def "CheckCode"() {
-        when:
-        restTemplate.getForObject("/v1/organizations/1/app_templates/checkCode?code=test", Object.class)
-
-        then:
-        true
+        expect:
+        applicationTemplateDO == null
     }
 }
