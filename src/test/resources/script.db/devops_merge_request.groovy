@@ -53,4 +53,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_merge_request.groovy') {
             column(name: "gitlab_merge_request_id",type: 'BIGINT UNSIGNED')
         }
     }
+
+
+    changeSet(author: 'younger', id: '2018-09-27-add-column') {
+        addColumn(tableName: 'devops_merge_request') {
+            column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
+            column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
+            column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+            column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
+            column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
 }

@@ -10,8 +10,6 @@ public interface DevopsEnvGroupService {
 
     DevopsEnvGroupDTO update(DevopsEnvGroupDTO devopsEnvGroupDTO, Long projectId);
 
-    List<DevopsEnvGroupDTO> sort(Long projectId, List<Long> envGroupIds);
-
     List<DevopsEnvGroupDTO> listByProject(Long projectId);
 
     Boolean checkUniqueInProject(String name, Long projectId);

@@ -48,18 +48,10 @@ public class DevopsEnvGroupServiceImpl implements DevopsEnvGroupService {
         devopsEnvGroupValidator.checkNameUnique(devopsEnvGroupDTO.getId(), devopsEnvGroupDTO.getName(), projectId);
         DevopsEnvGroupE devopsEnvGroupE = ConvertHelper.convert(devopsEnvGroupDTO, DevopsEnvGroupE.class);
         devopsEnvGroupE.initProject(projectId);
-        devopsEnvGroupRepository.update(devopsEnvGroupE);
+        devopsEnvGroupE = devopsEnvGroupRepository.update(devopsEnvGroupE);
         return ConvertHelper.convert(devopsEnvGroupE, DevopsEnvGroupDTO.class);
     }
 
-    @Override
-    public List<DevopsEnvGroupDTO> sort(Long projectId, List<Long> envGroupIds) {
-        devopsEnvGroupRepository.sort(projectId, envGroupIds);
-        return ConvertHelper.convertList(
-                devopsEnvGroupRepository.listByProjectId(projectId).stream()
-                        .sorted(Comparator.comparing(DevopsEnvGroupE::getSequence)).collect(Collectors.toList()),
-                DevopsEnvGroupDTO.class);
-    }
 
     @Override
     public List<DevopsEnvGroupDTO> listByProject(Long projectId) {

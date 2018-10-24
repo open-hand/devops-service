@@ -29,7 +29,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
 
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "idx_app_id",tableName: "devops_app_version")
+        dropIndex(indexName: "idx_app_id", tableName: "devops_app_version")
 
         createIndex(indexName: "app_version_idx_app_id", tableName: "devops_app_version") {
             column(name: "app_id")

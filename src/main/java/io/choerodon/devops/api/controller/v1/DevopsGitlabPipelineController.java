@@ -68,7 +68,7 @@ public class DevopsGitlabPipelineController {
      * @param appId     应用id
      * @param startTime 开始时间
      * @param endTime   结束时间
-     * @return List
+     * @return
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,

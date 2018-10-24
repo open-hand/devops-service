@@ -14,8 +14,6 @@ public interface DevopsEnvGroupRepository {
 
     DevopsEnvGroupE query(Long id);
 
-    void sort(Long projectId, List<Long> devopsEnvGroupIds);
-
     Boolean checkUniqueInProject(Long id, String name, Long projectId);
 
     Boolean checkUniqueInProject(String name, Long projectId);

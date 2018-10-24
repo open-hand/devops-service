@@ -267,5 +267,4 @@ public class SagaHandler {
         gitlabUserService.disEnabledGitlabUser(TypeUtil.objToInteger(gitlabUserDTO.getId()));
         return payload;
     }
-
 }

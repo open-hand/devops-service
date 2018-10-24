@@ -27,4 +27,9 @@ public class AgileRepositoryImpl implements AgileRepository {
     public ProjectInfo queryProjectInfo(Long projectId) {
         return agileServiceClient.queryProjectInfo(projectId).getBody();
     }
+
+    @Override
+    public void initAgileServiceClient(AgileServiceClient agileServiceClient) {
+        this.agileServiceClient = agileServiceClient;
+    }
 }
