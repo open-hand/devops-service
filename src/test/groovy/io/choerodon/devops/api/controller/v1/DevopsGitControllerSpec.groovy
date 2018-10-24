@@ -8,6 +8,7 @@ import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.entity.iam.UserE
 import io.choerodon.devops.domain.application.repository.AgileRepository
+import io.choerodon.devops.domain.application.repository.DevopsBranchRepository
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.repository.UserAttrRepository
@@ -44,7 +45,7 @@ class DevopsGitControllerSpec extends Specification {
 
 
     private static flag = 0
-
+    private Long id;
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -60,6 +61,9 @@ class DevopsGitControllerSpec extends Specification {
     private DevopsMergeRequestMapper devopsMergeRequestMapper
     @Autowired
     private UserAttrMapper userAttrMapper
+    @Autowired
+    private DevopsBranchRepository devopsBranchRepository
+
 
     @Autowired
     @Qualifier("mockIamRepository")
@@ -274,7 +278,7 @@ class DevopsGitControllerSpec extends Specification {
         restTemplate.postForObject("/v1/projects/1/apps/1/git/branch", devopsBranchDTO, Object.class)
 
         then:
-        devopsBranchMapper.selectByPrimaryKey(1L).getBranchName().equals("test")
+        devopsBranchMapper.selectAll().get(0).getBranchName().equals("test")
 
     }
 
@@ -298,6 +302,7 @@ class DevopsGitControllerSpec extends Specification {
         iamRepository.queryOrganizationById(_ as Long) >> organization
         2 * iamRepository.queryUserByUserId(_) >> userE
         userAttrRepository.queryById(_ as Long) >> userAttrE
+
 
         when:
         def branches = restTemplate.postForObject("/v1/projects/1/apps/1/git/branches?page=0&size=10", null, Page.class)
@@ -331,7 +336,8 @@ class DevopsGitControllerSpec extends Specification {
 
 
         then:
-        devopsBranchMapper.selectByPrimaryKey(1L).getIssueId() == 2L
+        devopsBranchMapper.selectByPrimaryKey(devopsBranchMapper.selectAll().get(0).getId())
+                .getIssueId() == 2L
 
     }
 
@@ -348,7 +354,7 @@ class DevopsGitControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/apps/1/git/branch?branchName=test")
 
         then:
-        devopsBranchMapper.selectByPrimaryKey(1L).getDeleted() == true
+        devopsBranchMapper.selectByPrimaryKey(devopsBranchMapper.selectAll().get(0).getId()).getDeleted() == true
 
     }
 
@@ -404,7 +410,7 @@ class DevopsGitControllerSpec extends Specification {
         then:
         !mergeRequest.isEmpty()
         applicationMapper.deleteByPrimaryKey(1L)
-        devopsBranchMapper.deleteByPrimaryKey(1L)
+        devopsBranchMapper.deleteByPrimaryKey(devopsBranchMapper.selectAll().get(0).getId())
         devopsMergeRequestMapper.deleteByPrimaryKey(1L)
         devopsMergeRequestMapper.deleteByPrimaryKey(2L)
         devopsMergeRequestMapper.deleteByPrimaryKey(3L)

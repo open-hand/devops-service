@@ -68,7 +68,6 @@ class ProjectPipelineControllerSpec extends Specification {
 
         then:
         userAttrRepository.queryById(_ as Long) >> userAttrE
-        Thread.sleep(6000000)
         result == true
 
 
