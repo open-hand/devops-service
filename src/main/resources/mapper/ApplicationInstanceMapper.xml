@@ -42,6 +42,14 @@
         ) podRunningCount,
         dai.object_version_number,
         cmd.`status` commandStatus,
+        cmd.object_version_id commandVersionId,
+        (
+        select
+        ndav.version
+        from
+        devops_app_version ndav
+        where ndav.id = cmd.object_version_id
+        ) commandVersion,
         cmd.command_type commandType,
         cmd.error error
         FROM

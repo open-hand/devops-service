@@ -25,6 +25,8 @@ public class ApplicationInstanceE {
     private Long podRunningCount;
     private String commandStatus;
     private String commandType;
+    private String commandVersion;
+    private Long commandVersionId;
     private String error;
     private Boolean isConnect;
     private Long projectId;
@@ -202,5 +204,21 @@ public class ApplicationInstanceE {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
     }
 }

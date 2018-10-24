@@ -111,7 +111,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 projectId, pageRequest, envId, versionId, appId, params);
         List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getContent();
         setInstanceConnect(applicationInstanceES, envs);
-        return ConvertPageHelper.convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
+        Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper.convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
+        applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
+            List<DeploymentDTO> deploymentDTOS = new ArrayList<>();
+            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(applicationInstanceDTO.getId());
+            List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
+                    .convertList(devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()), DevopsEnvPodDTO.class);
+            for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
+                List<DevopsEnvPodDTO> newDevopsEnvPodDTO = devopsEnvPodDTOS.stream().filter(devopsEnvPodDTO -> devopsEnvPodDTO.getName().contains(deploymentDTO.getName())).collect(Collectors.toList());
+                deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
+                deploymentDTOS.add(deploymentDTO);
+            }
+            applicationInstanceDTO.setDeploymentDTOS(deploymentDTOS);
+        });
+        return applicationInstanceDTOS;
     }
 
     @Override
@@ -408,7 +421,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
                         .convertList(devopsEnvPodRepository.selectByInstanceId(devopsEnvPreviewInstanceDTO.getId()), DevopsEnvPodDTO.class);
                 DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(devopsEnvPreviewInstanceDTO.getId());
-                devopsEnvPreviewInstanceDTO.setDevopsEnvPodDTOS(devopsEnvPodDTOS);
+                for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
+                    List<DevopsEnvPodDTO> newDevopsEnvPodDTO = devopsEnvPodDTOS.stream().filter(devopsEnvPodDTO -> devopsEnvPodDTO.getName().contains(deploymentDTO.getName())).collect(Collectors.toList());
+                    deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
+                }
+                devopsEnvPreviewInstanceDTO.setDeploymentDTOS(devopsEnvResourceDTO.getDeploymentDTOS());
                 devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
                 devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
                 devopsEnvPreviewInstanceDTOS.add(devopsEnvPreviewInstanceDTO);
@@ -418,18 +435,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         });
         devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
         return devopsEnvPreviewDTO;
-    }
-
-    @Override
-    public DevopsEnvPreviewInstanceDTO getDevopsEnvPreviewInstance(Long instanceId) {
-        DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
-        List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
-                .convertList(devopsEnvPodRepository.selectByInstanceId(instanceId), DevopsEnvPodDTO.class);
-        DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(instanceId);
-        devopsEnvPreviewInstanceDTO.setDevopsEnvPodDTOS(devopsEnvPodDTOS);
-        devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
-        devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
-        return devopsEnvPreviewInstanceDTO;
     }
 
     @Override
@@ -465,7 +470,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO.getType());
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
         //初始化实例名
@@ -532,7 +537,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO.getType());
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
         //实例相关对象数据库操作
@@ -554,7 +559,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private ApplicationInstanceE initApplicationInstanceE(ApplicationDeployDTO applicationDeployDTO) {
 
         ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
-        applicationInstanceE.initApplicationVersionEById(applicationDeployDTO.getAppVerisonId());
         applicationInstanceE.initApplicationEById(applicationDeployDTO.getAppId());
         applicationInstanceE.initDevopsEnvironmentEById(applicationDeployDTO.getEnvironmentId());
         applicationInstanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
@@ -567,9 +571,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return applicationInstanceE;
     }
 
-    private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
+    private DevopsEnvCommandE initDevopsEnvCommandE(ApplicationDeployDTO applicationDeployDTO) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        switch (type) {
+        switch (applicationDeployDTO.getType()) {
             case CREATE:
                 devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
                 break;
@@ -580,6 +584,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
                 break;
         }
+        devopsEnvCommandE.setObjectVersionId(applicationDeployDTO.getAppVerisonId());
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;

@@ -4,18 +4,9 @@ import java.util.List;
 
 public class DevopsEnvPreviewInstanceDTO extends ApplicationInstanceDTO {
 
-    private List<DevopsEnvPodDTO> devopsEnvPodDTOS;
     private List<ServiceDTO> serviceDTOS;
     private List<IngressDTO> ingressDTOS;
 
-
-    public List<DevopsEnvPodDTO> getDevopsEnvPodDTOS() {
-        return devopsEnvPodDTOS;
-    }
-
-    public void setDevopsEnvPodDTOS(List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
-        this.devopsEnvPodDTOS = devopsEnvPodDTOS;
-    }
 
     public List<ServiceDTO> getServiceDTOS() {
         return serviceDTOS;
