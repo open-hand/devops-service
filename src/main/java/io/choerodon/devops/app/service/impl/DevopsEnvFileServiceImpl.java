@@ -41,15 +41,15 @@ public class DevopsEnvFileServiceImpl implements DevopsEnvFileService {
 
     @Override
     public List<DevopsEnvFileErrorDTO> listByEnvId(Long envId) {
-        final String gitlabProjectPath = getGitlabUrl(envId);
+        String gitlabProjectPath = getGitlabUrl(envId);
         List<DevopsEnvFileErrorE> envFileErrorES = devopsEnvFileErrorRepository.listByEnvId(envId);
-        envFileErrorES.stream().forEach(t -> setCommitAndFileUrl(t, gitlabProjectPath));
+        envFileErrorES.forEach(t -> setCommitAndFileUrl(t, gitlabProjectPath));
         return ConvertHelper.convertList(envFileErrorES, DevopsEnvFileErrorDTO.class);
     }
 
     @Override
     public Page<DevopsEnvFileErrorDTO> pageByEnvId(Long envId, PageRequest pageRequest) {
-        final String gitlabProjectPath = getGitlabUrl(envId);
+        String gitlabProjectPath = getGitlabUrl(envId);
         Page<DevopsEnvFileErrorE> envFileErrorES = devopsEnvFileErrorRepository.pageByEnvId(envId, pageRequest);
         envFileErrorES.getContent().stream().forEach(t -> setCommitAndFileUrl(t, gitlabProjectPath));
         return ConvertPageHelper.convertPage(envFileErrorES, DevopsEnvFileErrorDTO.class);

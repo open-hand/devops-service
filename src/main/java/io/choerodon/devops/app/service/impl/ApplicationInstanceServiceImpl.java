@@ -215,9 +215,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult queryValues(Long appId, Long envId, Long versionId) {
         ReplaceResult replaceResult = new ReplaceResult();
-        String versionValue = FileUtil.jungeValueFormat(applicationVersionRepository.queryValue(versionId));
+        String versionValue = FileUtil.checkValueFormat(applicationVersionRepository.queryValue(versionId));
         try {
-            FileUtil.jungeYamlFormat(versionValue);
+            FileUtil.checkYamlFormat(versionValue);
         } catch (Exception e) {
             replaceResult.setYaml(versionValue);
             replaceResult.setErrorMsg(e.getMessage());
@@ -225,7 +225,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             replaceResult.setErrorLines(getErrorLine(e.getMessage()));
             return replaceResult;
         }
-        String deployValue = FileUtil.jungeValueFormat(
+        String deployValue = FileUtil.checkValueFormat(
                 applicationInstanceRepository.queryValueByEnvIdAndAppId(envId, appId));
         replaceResult.setYaml(versionValue);
         if (deployValue != null) {
@@ -236,7 +236,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult queryUpgradeValue(Long instanceId, Long versionId) {
-        String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByInstanceId(instanceId));
+        String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(instanceId));
         String versionValue = applicationVersionRepository
                 .queryValue(versionId);
         return getReplaceResult(versionValue, yaml);
@@ -353,7 +353,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult queryValue(Long instanceId) {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
-        String yaml = FileUtil.jungeValueFormat(applicationInstanceRepository.queryValueByInstanceId(
+        String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
                 instanceId));
         String versionValue = applicationVersionRepository
                 .queryValue(applicationInstanceE.getApplicationVersionE().getId());
@@ -363,7 +363,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
         try {
-            FileUtil.jungeYamlFormat(replaceResult.getYaml());
+            FileUtil.checkYamlFormat(replaceResult.getYaml());
         } catch (Exception e) {
             return getErrorLine(e.getMessage());
         }
@@ -454,7 +454,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
 
         //校验values
-        FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
+        FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
 
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
@@ -528,7 +528,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
 
         //校验values
-        FileUtil.jungeYamlFormat(applicationDeployDTO.getValues());
+        FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);

@@ -799,7 +799,7 @@ public class FileUtil {
         return null;
     }
 
-    public static String getKeyValue(int complex, List<String> keys) {
+    private static String getKeyValue(int complex, List<String> keys) {
         String result = "";
         for (int i = 0; i < complex; i++) {
             result = result.equals("") ? result + keys.get(i) : result + "." + keys.get(i);
@@ -880,7 +880,7 @@ public class FileUtil {
      * @param value json value
      * @return yaml
      */
-    public static String jungeValueFormat(String value) {
+    public static String checkValueFormat(String value) {
         try {
             if (value.equals("")) {
                 return "{}";
@@ -898,7 +898,7 @@ public class FileUtil {
      *
      * @param yaml yaml value
      */
-    public static void jungeYamlFormat(String yaml) {
+    public static void checkYamlFormat(String yaml) {
         try {
             Composer composer = new Composer(new ParserImpl(new StreamReader(yaml)), new Resolver());
             composer.getSingleNode();
@@ -1013,7 +1013,7 @@ public class FileUtil {
 
             //分多次将一个文件读入，对于大型文件而言，比较推荐这种方式，占用内存比较少。
             byte[] buffer = new byte[1024];
-            int length = -1;
+            int length;
             while ((length = fis.read(buffer, 0, 1024)) != -1) {
                 md.update(buffer, 0, length);
             }
@@ -1208,7 +1208,7 @@ public class FileUtil {
         res.setContentType("application/octet-stream");
         res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
         byte[] buff = new byte[1024];
-        OutputStream os = null;
+        OutputStream os;
         try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))) {
             os = res.getOutputStream();
             int i = bis.read(buff);

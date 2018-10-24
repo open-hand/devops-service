@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ApplicationDTO
 import io.choerodon.devops.api.dto.ApplicationRepDTO
@@ -12,6 +13,7 @@ import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
@@ -27,13 +29,14 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
+import static org.mockito.Matchers.anyObject
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+import static org.mockito.Matchers.anyString
 
 /**
  * Created by n!Ck
@@ -43,10 +46,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(ApplicationController)
 @Stepwise
 class ApplicationControllerSpec extends Specification {
-
-    private static flag = 0
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -58,6 +60,8 @@ class ApplicationControllerSpec extends Specification {
     private ApplicationService applicationService
     @Autowired
     private UserAttrRepository userAttrRepository
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository
     @Autowired
     private DevopsProjectMapper devopsProjectMapper
     @Autowired
@@ -82,288 +86,319 @@ class ApplicationControllerSpec extends Specification {
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
 
-//    def setup() {
-//        if (flag == 0) {
-////            DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-////            devopsEnvironmentDO.setId(1L)
-////            devopsEnvironmentDO.setCode("env")
-////            devopsEnvironmentDO.setProjectId(1L)
-////            devopsEnvironmentDO.setName("testName")
-////            devopsEnvironmentDO.setEnvIdRsa("EnvIdRsa")
-////            devopsEnvironmentDO.setGitlabEnvProjectId(1L)
-////            devopsEnvironmentMapper.insert(devopsEnvironmentDO)
-//
-////            ApplicationDO applicationDO = new ApplicationDO()
-////            ApplicationDO applicationDO1 = new ApplicationDO()
-////            applicationDO.setActive(true)
-////            applicationDO1.setActive(true)
-////            applicationDO.setSynchro(true)
-////            applicationDO1.setSynchro(true)
-////            applicationDO.setCode("app")
-////            applicationDO1.setCode("app1")
-////            applicationDO.setProjectId(1L)
-////            applicationDO1.setProjectId(1L)
-////            applicationDO.setName("appname")
-////            applicationDO1.setName("appname1")
-////            applicationDO.setGitlabProjectId(1)
-////            applicationDO1.setGitlabProjectId(1)
-////            applicationDO.setAppTemplateId(1L)
-////            applicationDO1.setAppTemplateId(1L)
-////            applicationDO.setObjectVersionNumber(1L)
-////            applicationDO1.setObjectVersionNumber(1L)
-////            applicationMapper.insert(applicationDO)
-////            applicationMapper.insert(applicationDO1)
-////
-////            ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
-////            applicationInstanceDO.setAppId(2L)
-////            applicationInstanceDO.setEnvId(1L)
-////            applicationInstanceDO.setAppVersionId(1L)
-////            applicationInstanceDO.setStatus("deleted")
-////            ApplicationInstanceDO applicationInstanceDO1 = new ApplicationInstanceDO()
-////            applicationInstanceDO1.setAppId(2L)
-////            applicationInstanceDO1.setEnvId(1)
-////            applicationInstanceDO1.setAppVersionId(1L)
-////            applicationInstanceDO1.setStatus("running")
-////            applicationInstanceMapper.insert(applicationInstanceDO)
-////            applicationInstanceMapper.insert(applicationInstanceDO1)
-//
-//
-//
-////            ApplicationVersionDO applicationVersionDO1 = new ApplicationVersionDO()
-////            applicationVersionDO1.setAppId(2L)
-////            applicationVersionMapper.insert(applicationVersionDO1)
-//
-//            flag = 1
-//        }
-//    }
+    @Shared
+    Organization organization = new Organization()
 
-    def "Create"() {
+    @Shared
+    ProjectE projectE = new ProjectE()
+    @Shared
+    UserAttrE userAttrE = new UserAttrE()
+    @Shared
+    Map<String, Object> searchParam = new HashMap<>();
+
+    @Shared
+    Long project_id = 1L
+    @Shared
+    Long init_id = 1L
+
+    def setupSpec() {
         given:
-        ApplicationDTO applicationDTO = new ApplicationDTO()
-        applicationDTO.setName("dtoname")
-        applicationDTO.setCode("ddtoapp")
-        applicationDTO.setProjectId(1L)
-        applicationDTO.setApplictionTemplateId(1L)
-
-        UserAttrE userAttrE = new UserAttrE()
-        userAttrE.setIamUserId(1L)
-        userAttrE.setGitlabUserId(1L)
-
-        Organization organization = new Organization()
-        organization.setId(1L)
+        organization.setId(init_id)
         organization.setCode("org")
 
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
+        projectE.setId(init_id)
         projectE.setCode("pro")
         projectE.setOrganization(organization)
 
-        GitlabGroupE gitlabGroupE = new GitlabGroupE()
-        gitlabGroupE.setDevopsAppGroupId(1L)
-        gitlabGroupE.setProjectE(projectE)
+        userAttrE.setIamUserId(init_id)
+        userAttrE.setGitlabUserId(init_id)
 
+        Map<String, Object> params = new HashMap<>();
+        params.put("name",[])
+        params.put("code",["app"])
+        searchParam.put("searchParam", params)
+        searchParam.put("param", "")
+    }
+    //项目下创建应用
+    def "create"() {
+        given: '创建issueDTO'
+        ApplicationDTO applicationDTO = new ApplicationDTO()
+
+        and: '赋值'
+        applicationDTO.setId(init_id)
+        applicationDTO.setName("dtoname")
+        applicationDTO.setCode("ddtoapp")
+        applicationDTO.setProjectId(project_id)
+        applicationDTO.setApplictionTemplateId(init_id)
+
+        and: '设置gitlab组'
+        GitlabGroupE gitlabGroupE = new GitlabGroupE()
+        gitlabGroupE.setDevopsAppGroupId(init_id)
+        gitlabGroupE.setProjectE(projectE)
         GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE()
         groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
 
-        // mock SagaClient
+        and: 'sagaClient'
         applicationService.initMockService(sagaClient)
-        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(null, null)
+        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), anyObject())
 
-        when:
-        restTemplate.postForObject("/v1/projects/1/apps", applicationDTO, ApplicationRepDTO.class)
+        and: '默认返回值'
+        userAttrRepository.queryById(_) >> userAttrE
+        iamRepository.queryIamProject(_) >> projectE
+        iamRepository.queryOrganizationById(_) >> organization
+        gitlabGroupMemberRepository.getUserMemberByUserId(*_) >> groupMemberE
 
-        then:
-        userAttrRepository.queryById(_ as Long) >> userAttrE
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-        devopsProjectRepository.queryDevopsProject(_ as Long) >> gitlabGroupE
-        gitlabGroupMemberRepository.getUserMemberByUserId(_ as Integer, _ as Integer) >> groupMemberE
+        when: '创建一个应用'
+        def entity = restTemplate.postForEntity("/v1/projects/{project_id}/apps", applicationDTO, ApplicationRepDTO.class, project_id)
+
+        then: '返回值'
+        entity.statusCode.is2xxSuccessful()
+        ApplicationDO applicationDo = applicationMapper.selectByPrimaryKey(init_id)
+
+        expect: '验证更新是否成功'
+        applicationDo.getCode() == 'ddtoapp'
     }
 
-    def "QueryByAppId"() {
+    //项目下查询单个应用信息
+    def "queryByAppId"() {
         given:
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("org")
-
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setCode("pro")
-        projectE.setOrganization(organization)
-
-        when:
-        restTemplate.getForObject("/v1/projects/1/apps/1/detail", ApplicationRepDTO.class)
-
-        then:
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
+
+        when:
+        def entity = restTemplate.getForEntity("/v1/projects/{project_id}/apps/{app_id}/detail", ApplicationRepDTO.class, project_id, 1L)
+
+        then:
+        entity.body.code == 'ddtoapp'
     }
 
-    def "Update"() {
+    //项目下更新应用信息
+    def "update"() {
         given:
         ApplicationUpdateDTO applicationUpdateDTO = new ApplicationUpdateDTO()
-        applicationUpdateDTO.setId(1L)
+        applicationUpdateDTO.setId(init_id)
         applicationUpdateDTO.setName("updatename")
 
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-
         when:
-        restTemplate.put("/v1/projects/1/apps", applicationUpdateDTO, Boolean.class)
+        restTemplate.put("/v1/projects/{project_id}/apps", applicationUpdateDTO, project_id)
 
         then:
-        true
+        ApplicationDO applicationDo2 = applicationMapper.selectByPrimaryKey(init_id)
+
+        expect:
+        applicationDo2.name == "updatename"
     }
 
-    def "QueryByAppIdAndActive"() {
+    //停用应用
+    def "disableApp"() {
         when:
-        restTemplate.put("/v1/projects/1/apps/2?active=false", Boolean.class)
+        restTemplate.put("/v1/projects/1/apps/1?active=false", Boolean.class)
         then:
-        true
+        ApplicationDO applicationDo = applicationMapper.selectByPrimaryKey(init_id)
+        expect:
+        applicationDo.active == false
     }
 
-    def "PageByOptions"() {
+    //启用应用
+    def "enableApp"() {
+        when:
+        restTemplate.put("/v1/projects/1/apps/1?active=true", Boolean.class)
+        then:
+        ApplicationDO applicationDo = applicationMapper.selectByPrimaryKey(init_id)
+        expect:
+        applicationDo.active == true
+    }
+
+    //项目下分页查询应用
+    def "pageByOptions"() {
         given:
-        String infra = "{\"searchParam\":{\"code\":[\"app\"]}}"
-        PageRequest pageRequest = new PageRequest(1, 20)
-
-        HttpHeaders headers = new HttpHeaders()
-        headers.setContentType(MediaType.valueOf("application/json;UTF-8"))
-        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
-
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("org")
-
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setCode("pro")
-        projectE.setOrganization(organization)
-
         ApplicationVersionReadmeDO applicationVersionReadmeDO = new ApplicationVersionReadmeDO()
         applicationVersionReadmeDO.setReadme("readme")
 
-        when:
-        restTemplate.postForObject("/v1/projects/1/apps/list_by_options?active=true&has_version=true", strEntity, String.class)
-
-        then:
+        and:
         iamRepository.queryIamProject(_ as Long) >> projectE
         iamRepository.queryOrganizationById(_ as Long) >> organization
+
+        when:
+        def object = restTemplate.postForObject("/v1/projects/{project_id}/apps/list_by_options?active=true&has_version=false",searchParam, Page.class, project_id)
+
+        then:
+        object.size() == 1
+
+        expect:
+        object.get(0).name == "updatename"
     }
 
-    def "PageByEnvIdAndStatus"() {
+    //根据环境id分页获取已部署正在运行实例的应用
+    def "pageByEnvIdAndStatus"() {
+        given: '添加应用运行实例'
+        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
+        applicationInstanceDO.setId(init_id)
+        applicationInstanceDO.setCode("spock-test")
+        applicationInstanceDO.setStatus("running")
+        applicationInstanceDO.setAppId(init_id)
+        applicationInstanceDO.setAppVersionId(init_id)
+        applicationInstanceDO.setEnvId(init_id)
+        applicationInstanceDO.setCommandId(init_id)
+        applicationInstanceMapper.insert(applicationInstanceDO)
+        and: '添加env'
+        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+        devopsEnvironmentDO.setId(init_id)
+        devopsEnvironmentDO.setCode("spock-test")
+        devopsEnvironmentDO.setGitlabEnvProjectId(init_id)
+        devopsEnvironmentDO.setHookId(init_id)
+        devopsEnvironmentDO.setDevopsEnvGroupId(init_id)
+        devopsEnvironmentDO.setProjectId(init_id)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+        when:
+        def applicationPage = restTemplate.getForObject("/v1/projects/{project_id}/apps/pages?env_id={env_id}",Page.class,project_id,  1)
+        then:
+        applicationPage.size() == 1
+        expect:
+        applicationPage.get(0).name == "updatename"
+    }
+
+    //根据环境id获取已部署正在运行实例的应用
+    def "listByEnvIdAndStatus"() {
+        when:
+        def applicationList = restTemplate.getForObject("/v1/projects/1/apps/options?envId=1&status=running", List.class)
+
+        then:
+        applicationList.size() == 1
+        expect:
+        applicationList.get(0).name == "updatename"
+    }
+
+    //项目下查询所有已经启用的应用
+    def "listByActive"() {
+        given: '更新gitlabprojectID'
+        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(1L)
+        applicationDO.setGitlabProjectId(1)
+        applicationMapper.updateByPrimaryKey(applicationDO)
+
+        when:
+        def applicationList = restTemplate.getForObject("/v1/projects/{project_id}/apps", List.class, project_id)
+
+        then:
+        applicationList.size() == 1
+
+        expect:
+        applicationList.get(0).name == "updatename"
+    }
+
+    //项目下查询所有已经启用的应用
+    def "listAll"() {
+        when:
+        def applicationList = restTemplate.getForObject("/v1/projects/{project_id}/apps/list_all", List.class, project_id)
+
+        then:
+        applicationList.size() == 1
+
+        expect:
+        applicationList.get(0).name == "updatename"
+    }
+
+    //创建应用校验名称是否存在
+    def "checkName"() {
+        when:
+        def entity = restTemplate.getForEntity("/v1/projects/{project_id}/apps/checkName?name={name}", Object.class, project_id, "name1")
+
+        then:
+        entity.statusCode.is2xxSuccessful()
+        entity.body == null
+
+        when:
+        def entity2 = restTemplate.getForEntity("/v1/projects/{project_id}/apps/checkName?name={name}", Object.class, project_id, "updatename")
+
+        then:
+        entity2.statusCode.is2xxSuccessful()
+        entity2.body.failed == true
+    }
+
+    //创建应用校验编码是否存在
+    def "checkCode"() {
+        when:
+        def entity = restTemplate.getForEntity("/v1/projects/{project_id}/apps/checkCode?code={code}", Object.class, project_id, "code1")
+
+        then:
+        entity.statusCode.is2xxSuccessful()
+        entity.body == null
+
+
+        when:
+        def entity2 = restTemplate.getForEntity("/v1/projects/{project_id}/apps/checkCode?code={code}", Object.class, project_id, "ddtoapp")
+
+        then:
+        entity2.statusCode.is2xxSuccessful()
+        entity2.body.failed == true
+    }
+
+    //查询所有应用模板
+    def "listTemplate"() {
         given:
-        PageRequest pageRequest = new PageRequest(1, 20)
-
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setCode("pro")
-
-        when:
-        def page = restTemplate.getForObject("/v1/projects/1/apps/pages?env_id=1", PageRequest.class)
-        then:
-        page != null
-    }
-
-    def "ListByEnvIdAndStatus"() {
-        when:
-        restTemplate.getForObject("/v1/projects/1/apps/options?envId=1&status=running", List.class)
-
-        then:
-        true
-    }
-
-    def "ListByActive"() {
-        when:
-        def list = restTemplate.getForObject("/v1/projects/1/apps", List.class)
-
-        then:
-        !list.isEmpty()
-    }
-
-    def "ListAll"() {
-        when:
-        def list = restTemplate.getForObject("/v1/projects/1/apps/list_all", List.class)
-
-        then:
-        !list.isEmpty()
-    }
-
-    def "CheckName"() {
-        when:
-        restTemplate.getForObject("/v1/projects/1/apps/checkName?name=test", Object.class)
-
-        then:
-        true
-    }
-
-    def "CheckCode"() {
-        when:
-        restTemplate.getForObject("/v1/projects/1/apps/checkCode?code=test", Object.class)
-
-        then:
-        true
-    }
-
-    def "ListTemplate"() {
-        given:
-        Organization organization = new Organization()
-        organization.setId(1L)
-        organization.setCode("org")
-
-        ProjectE projectE = new ProjectE()
-        projectE.setId(1L)
-        projectE.setOrganization(organization)
-
         ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
-        applicationTemplateDO.setId(1L)
+        applicationTemplateDO.setId(4L)
         applicationTemplateDO.setName("tempname")
         applicationTemplateDO.setCode("tempcode")
-        applicationTemplateDO.setOrganizationId(1L)
+        applicationTemplateDO.setOrganizationId(init_id)
         applicationTemplateDO.setDescription("tempdes")
-        applicationTemplateDO.setCopyFrom(1L)
+        applicationTemplateDO.setCopyFrom(init_id)
         applicationTemplateDO.setRepoUrl("tempurl")
         applicationTemplateDO.setType(null)
         applicationTemplateDO.setUuid("tempuuid")
-        applicationTemplateDO.setGitlabProjectId(1L)
+        applicationTemplateDO.setGitlabProjectId(init_id)
 
-        when:
-        def list = restTemplate.getForObject("/v1/projects/1/apps/template", List.class)
-
-        then:
+        applicationTemplateMapper.insert(applicationTemplateDO)
+        and:
         iamRepository.queryIamProject(_ as Long) >> projectE
-        !list.isEmpty()
-    }
-
-    def "ListByActiveAndPubAndVersion"() {
-        given:
-        String infra = "{}"
-        PageRequest pageRequest = new PageRequest(1, 20)
-
-        HttpHeaders headers = new HttpHeaders()
-        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
-        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
 
         when:
-        restTemplate.postForObject("/v1/projects/1/apps/list_unpublish", strEntity, Object.class)
+        def templateList = restTemplate.getForObject("/v1/projects/{project_id}/apps/template", List.class, project_id)
 
         then:
-        true
+        templateList.size() == 4
+
+        expect:
+        templateList.get(3).code == "tempcode"
     }
 
-    def "ListCodeRepository"() {
+    //项目下查询所有已经启用的且未发布的且有版本的应用
+    def "listByActiveAndPubAndVersion"() {
         given:
-        String infra = "{\"searchParam\":{}}"
-        PageRequest pageRequest = new PageRequest(1, 20)
-
-        HttpHeaders headers = new HttpHeaders()
-        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
-        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
+        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+        applicationVersionDO.setId(init_id)
+        applicationVersionDO.setVersion("0.1.0-dev.20180521111826")
+        applicationVersionDO.setAppId(init_id)
+        applicationVersionMapper.insert(applicationVersionDO)
 
         when:
-        restTemplate.postForObject("/v1/projects/1/apps/list_code_repository", strEntity, Object.class)
+        def object = restTemplate.postForObject("/v1/projects/{project_id}/apps/list_unpublish", searchParam,Page.class , project_id)
 
         then:
-        true
+        object.get(0).code == "ddtoapp"
+    }
+
+    //项目下分页查询代码仓库
+    def "listCodeRepository"() {
+        given:
+        iamRepository.queryIamProject(_) >> projectE
+        iamRepository.queryOrganizationById(_) >> organization
+
+
+        when:
+        def object = restTemplate.postForObject("/v1/projects/{project_id}/apps/list_code_repository", searchParam,Page.class, project_id)
+
+        then:
+        object.get(0).code == "ddtoapp"
+
+    }
+    //清除测试数据
+    def "cleanupData"() {
+        given:
+        applicationInstanceMapper.deleteByPrimaryKey(init_id)
+        devopsEnvironmentMapper.deleteByPrimaryKey(init_id)
+        applicationMapper.deleteByPrimaryKey(init_id)
+        applicationTemplateMapper.deleteByPrimaryKey(4L)
+        applicationVersionMapper.deleteByPrimaryKey(1L)
     }
 }
