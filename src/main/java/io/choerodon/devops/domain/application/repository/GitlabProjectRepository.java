@@ -36,4 +36,5 @@ public interface GitlabProjectRepository {
     void initMockService(GitlabServiceClient gitlabServiceClient);
 
     List<CommitDO> listCommits(Integer projectId, Integer userId);
+
 }

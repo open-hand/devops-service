@@ -169,7 +169,9 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
             List<Stage> stages = JSONArray.parseArray(devopsGitlabPipelineDO.getStage(), Stage.class);
             //获取pipeline执行时间
-            pipelineTimes.add(getPipelineTime(stages));
+            if (stages != null) {
+                pipelineTimes.add(getPipelineTime(stages));
+            }
         });
         pipelineTimeDTO.setCreateDates(createDates);
         pipelineTimeDTO.setPipelineTime(pipelineTimes);
@@ -288,7 +290,9 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
             //pipeline阶段信息
             List<Stage> stages = JSONArray.parseArray(devopsGitlabPipelineDO.getStage(), Stage.class);
-            devopsGitlabPipelineDTO.setPipelineTime(getPipelineTime(stages));
+            if (stages != null) {
+                devopsGitlabPipelineDTO.setPipelineTime(getPipelineTime(stages));
+            }
             devopsGitlabPipelineDTO.setStages(stages);
             devopsGitlabPipelineDTO.setGitlabUrl(gitlabUrl + "/"
                     + organization.getCode() + "-" + projectE.getCode() + "/"

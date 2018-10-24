@@ -11,6 +11,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -79,4 +80,6 @@ public interface DevopsGitRepository {
     List<CommitDO> getCommits(Integer gitLabProjectId, String branchName, String date);
 
     List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId);
+
+    void initGitlabServiceClient(GitlabServiceClient gitlabServiceClient);
 }

@@ -32,22 +32,20 @@ class DevopsEnvGroupControllerSpec extends Specification {
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
-    private DevopsEnvGroupMapper devopsEnvGroupMapper
+    DevopsEnvGroupMapper devopsEnvGroupMapper
     @Autowired
-    private DevopsEnvironmentMapper devopsEnvironmentMapper
+    DevopsEnvironmentMapper devopsEnvironmentMapper
 
-    private DevopsEnvGroupDO devopsEnvGroupDO
-    private DevopsEnvGroupDO devopsEnvGroupDO1
 
     def setup() {
         if (flag == 0) {
-            devopsEnvGroupDO = new DevopsEnvGroupDO()
+            DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO()
             devopsEnvGroupDO.setName("test")
             devopsEnvGroupDO.setProjectId(1L)
             devopsEnvGroupDO.setSequence(1L)
             devopsEnvGroupDO.setObjectVersionNumber(1L)
 
-            devopsEnvGroupDO1 = new DevopsEnvGroupDO()
+            DevopsEnvGroupDO devopsEnvGroupDO1 = new DevopsEnvGroupDO()
             devopsEnvGroupDO1.setName("test1")
             devopsEnvGroupDO1.setProjectId(1L)
             devopsEnvGroupDO1.setSequence(2L)
@@ -59,12 +57,13 @@ class DevopsEnvGroupControllerSpec extends Specification {
         }
     }
 
+
     def "Create"() {
         when:
         def envDTO = restTemplate.postForObject("/v1/projects/1/env_groups?devopsEnvGroupName=test2", null, DevopsEnvGroupDTO.class)
 
         then:
-        envDTO != null
+        envDTO.getId() != null
     }
 
     def "Update"() {
@@ -77,37 +76,16 @@ class DevopsEnvGroupControllerSpec extends Specification {
         restTemplate.put("/v1/projects/1/env_groups", devopsEnvGroupDTO, DevopsEnvGroupDTO.class)
 
         then:
-        true
+        devopsEnvGroupMapper.selectByPrimaryKey(1L).getName().equals("name")
     }
-
-    /**
-     * h2数据库不支持mysql的某些方言
-     */
-//    def "Sort"() {
-//        given:
-//        List<Long> longList = new ArrayList<>()
-//        longList.add(1L)
-//        longList.add(2L)
-//
-//        DevopsEnvGroupDO devopsEnvGroupDO = new DevopsEnvGroupDO()
-//        devopsEnvGroupDO.setId(1L)
-//        devopsEnvGroupDO.setProjectId(1L)
-//        DevopsEnvGroupDO devopsEnvGroupDO1 = new DevopsEnvGroupDO()
-//        devopsEnvGroupDO1.setId(2L)
-//        devopsEnvGroupDO1.setProjectId(2L)
-//
-//        when:
-//        restTemplate.put("/v1/projects/1/env_groups/sort", longList, List.class)
-//        then:
-//        true
-//    }
 
     def "ListByProject"() {
         when:
-        restTemplate.getForObject("/v1/projects/1/env_groups", List.class)
+        def devopsEnvGroups = restTemplate.getForObject("/v1/projects/1/env_groups", List.class)
 
         then:
-        true
+        devopsEnvGroups.size() == 3
+
     }
 
     def "CheckName"() {
@@ -121,12 +99,19 @@ class DevopsEnvGroupControllerSpec extends Specification {
     def "Delete"() {
         given:
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+        devopsEnvironmentDO.setId(1L)
         devopsEnvironmentDO.setProjectId(1L)
         devopsEnvironmentDO.setActive(true)
+        devopsEnvironmentDO.setGitlabEnvProjectId(1L)
         devopsEnvironmentDO.setSequence(1L)
+        devopsEnvironmentDO.setCode("env")
+        devopsEnvironmentDO.setDevopsEnvGroupId(1L)
         DevopsEnvironmentDO devopsEnvironmentDO1 = new DevopsEnvironmentDO()
+        devopsEnvironmentDO1.setId(2L)
         devopsEnvironmentDO1.setProjectId(1L)
         devopsEnvironmentDO1.setActive(true)
+        devopsEnvironmentDO1.setCode("env1")
+        devopsEnvironmentDO1.setGitlabEnvProjectId(1L)
         devopsEnvironmentDO1.setSequence(2L)
         devopsEnvironmentDO1.setDevopsEnvGroupId(1L)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
@@ -136,6 +121,10 @@ class DevopsEnvGroupControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/env_groups/1")
 
         then:
-        true
+        devopsEnvGroupMapper.selectByPrimaryKey(1L) == null
+        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
+        devopsEnvironmentMapper.deleteByPrimaryKey(2L)
+        devopsEnvGroupMapper.deleteByPrimaryKey(2L)
     }
+
 }

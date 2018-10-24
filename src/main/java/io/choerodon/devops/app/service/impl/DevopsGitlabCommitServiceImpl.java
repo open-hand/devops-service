@@ -69,12 +69,6 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         if (appIdsMap.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
-//        // 如果传入的时间为null，表示查询至今所有的commit记录
-//        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-//        String sd = "null".equals(startDate) ? "1970-01-01" : sdf.format(new Date(Long.valueOf(startDate)));
-//        String ed = "null".equals(endDate) ?
-//                sdf.format(new Date(Long.valueOf(System.currentTimeMillis()))) :
-//                sdf.format(new Date(Long.valueOf(endDate)));
 
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
