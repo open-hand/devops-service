@@ -171,6 +171,8 @@ public class IamRepositoryImpl implements IamRepository {
     @Override
     public Page<UserE> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest) {
         try {
+            pageRequest.setPage(0);
+            pageRequest.setSize(100);
             ResponseEntity<Page<UserDO>> userEPageResponseEntity = iamServiceClient.queryUserByProjectId(projectId,
                     pageRequest.getPage(), pageRequest.getSize(), new RoleAssignmentSearchDTO());
             return ConvertPageHelper.convertPage(userEPageResponseEntity.getBody(), UserE.class);

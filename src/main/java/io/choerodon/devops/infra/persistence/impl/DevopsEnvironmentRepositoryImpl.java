@@ -1,6 +1,9 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
@@ -136,5 +139,20 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     public Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest) {
         return PageHelper.doPage(pageRequest.getPage(), pageRequest.getSize(),
                 () -> devopsEnvironmentMapper.pageUserEnvPermission(envId));
+    }
+
+    @Override
+    public void updateEnvUserPermission(Map<String, Boolean> updateMap, Long envId) {
+        Map<String, Boolean> trueMap = new HashMap<>();
+        Map<String, Boolean> falseMap = new HashMap<>();
+        updateMap.forEach((k, v) -> {
+            if (v == true) {
+                trueMap.put(k, v);
+            } else {
+                falseMap.put(k, v);
+            }
+        });
+        devopsEnvironmentMapper.updateEnvUserPermission(trueMap.keySet().stream().collect(Collectors.toList()),
+                falseMap.keySet().stream().collect(Collectors.toList()), envId);
     }
 }

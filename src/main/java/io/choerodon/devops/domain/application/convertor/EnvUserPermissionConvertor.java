@@ -19,7 +19,7 @@ public class EnvUserPermissionConvertor implements ConvertorI<Object, EnvUserPer
     public EnvUserPermissionDTO doToDto(EnvUserPermissionDO dataObject) {
         EnvUserPermissionDTO envUserPermissionDTO = new EnvUserPermissionDTO();
         BeanUtils.copyProperties(dataObject, envUserPermissionDTO);
-        envUserPermissionDTO.setDeployment(dataObject.getHasPermission());
+        envUserPermissionDTO.setDeployment(dataObject.getPermission());
         return envUserPermissionDTO;
     }
 }

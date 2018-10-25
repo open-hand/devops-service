@@ -7,35 +7,21 @@ package io.choerodon.devops.api.dto;
  * Description:
  */
 public class EnvUserPermissionDTO {
-    private Long id;
-    private String userName;
     private String loginName;
-    private Boolean isDeployment;
+    private String userName;
+    private Boolean permission;
 
     public EnvUserPermissionDTO() {
     }
 
-    public EnvUserPermissionDTO(Long id, String userName, String loginName, Boolean isDeployment) {
-        this.id = id;
-        this.userName = userName;
+    public EnvUserPermissionDTO(String loginName, String userName, Boolean permission) {
         this.loginName = loginName;
-        this.isDeployment = isDeployment;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+        this.userName = userName;
+        this.permission = permission;
     }
 
     public String getUserName() {
         return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
     }
 
     public String getLoginName() {
@@ -46,11 +32,15 @@ public class EnvUserPermissionDTO {
         this.loginName = loginName;
     }
 
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
     public Boolean getDeployment() {
-        return isDeployment;
+        return permission;
     }
 
     public void setDeployment(Boolean deployment) {
-        isDeployment = deployment;
+        permission = deployment;
     }
 }

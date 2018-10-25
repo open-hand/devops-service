@@ -19,4 +19,8 @@ public interface DevopsEnvironmentMapper extends BaseMapper<DevopsEnvironmentDO>
                                @Param("devopsSyncCommit") Long devopsSyncCommit, @Param("agentSyncCommit") Long agentSyncCommit);
 
     List<EnvUserPermissionDO> pageUserEnvPermission(@Param("envId") Long envId);
+
+    void updateEnvUserPermission(@Param("trueUsers") List<String> trueUsers,
+                                 @Param("falseUsers") List<String> falseUsers,
+                                 @Param("envId") Long envId);
 }

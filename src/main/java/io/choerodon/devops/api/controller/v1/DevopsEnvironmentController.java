@@ -321,7 +321,7 @@ public class DevopsEnvironmentController {
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "envId") Long envId) {
-        return Optional.ofNullable(devopsEnvironmentService.pageUserPermission(envId, pageRequest))
+        return Optional.ofNullable(devopsEnvironmentService.pageUserPermission(projectId, envId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
     }
@@ -332,7 +332,6 @@ public class DevopsEnvironmentController {
      * @param projectId   项目id
      * @param envId       环境id
      * @param perssionMap 用户权限map
-     * @return List
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
@@ -340,15 +339,14 @@ public class DevopsEnvironmentController {
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{envId}/perssion")
-    public ResponseEntity<List<EnvUserPermissionDTO>> updateEnvUserPermission(
+    public ResponseEntity updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "envId") Long envId,
             @ApiParam(value = "用户权限map")
             @RequestBody Map<String, Boolean> perssionMap) {
-        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(envId, perssionMap))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.sync.get"));
+        devopsEnvironmentService.updateEnvUserPermission(envId, perssionMap);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

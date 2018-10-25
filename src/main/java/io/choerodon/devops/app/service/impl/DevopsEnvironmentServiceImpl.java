@@ -144,6 +144,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
+
+//        // 创建环境时将项目下所有用户加入环境用户权限表
+//        Map<String, Boolean> updateMap = new HashMap<>();
+//        Page<UserE> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, new PageRequest(0, 100));
+//        // 获取当前用户
+//        UserE userE = iamRepository.queryUserByUserId(userAttrE.getIamUserId());
+//        allProjectUser.getContent().forEach(e -> {
+//            if (e.getId() == userE.getId()) {
+//                updateMap.put(e.getLoginName(), true);
+//            } else {
+//                updateMap.put(e.getLoginName(), false);
+//            }
+//        });
+//        // 更新环境用户权限表
+//        devopsEnviromentRepository.updateEnvUserPermission(updateMap, 1L);
+
         String input;
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
@@ -506,17 +522,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest) {
+    public Page<EnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest) {
         Page<EnvUserPermissionDTO> userPermissionDTOPage = ConvertPageHelper.convertPage(
                 devopsEnviromentRepository.pageUserPermission(envId, pageRequest), EnvUserPermissionDTO.class);
-        userPermissionDTOPage.getContent().forEach(e ->
-                e.setLoginName(iamRepository.queryByLoginName(e.getUserName()).getRealName()));
+        userPermissionDTOPage.getContent().forEach(e -> e.setUserName(iamRepository.queryByLoginName(e.getLoginName()).getRealName()));
         return userPermissionDTOPage;
     }
 
     @Override
-    public List<EnvUserPermissionDTO> updateEnvUserPermission(Long envId, Map<String, Boolean> perssionMap) {
-        return null;
+    public void updateEnvUserPermission(Long envId, Map<String, Boolean> updateMap) {
+        devopsEnviromentRepository.updateEnvUserPermission(updateMap, envId);
     }
 
     @Override

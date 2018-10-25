@@ -137,16 +137,16 @@ public interface DevopsEnvironmentService {
      * @param pageRequest 分页参数
      * @return page
      */
-    Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest);
+    Page<EnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest);
 
     /**
      * 环境下为用户分配权限
      *
      * @param envId       环境id
      * @param perssionMap 用户权限map
-     * @return List
+     * @return void
      */
-    List<EnvUserPermissionDTO> updateEnvUserPermission(Long envId, Map<String, Boolean> perssionMap);
+    void updateEnvUserPermission(Long envId, Map<String, Boolean> perssionMap);
 
     void initMockService(SagaClient sagaClient);
 }

@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.EnvUserPermissionDTO;
@@ -37,4 +38,6 @@ public interface DevopsEnvironmentRepository {
     void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
 
     Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest);
+
+    void updateEnvUserPermission(Map<String, Boolean> updateMap, Long envId);
 }

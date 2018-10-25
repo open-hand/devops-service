@@ -1,31 +1,41 @@
 package io.choerodon.devops.infra.dataobject;
 
+import javax.persistence.Table;
+
+import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
+
 /**
  * Created by n!Ck
  * Date: 2018/10/25
  * Time: 16:52
  * Description:
  */
-public class EnvUserPermissionDO {
-    private String userName;
+
+@VersionAudit
+@ModifyAudit
+@Table(name = "devops_env_user_permission")
+public class EnvUserPermissionDO extends AuditDomain {
+    private String loginName;
     private Long envId;
-    private Boolean hasPermission;
+    private Boolean permission;
 
     public EnvUserPermissionDO() {
     }
 
-    public EnvUserPermissionDO(String userName, Long envId, Boolean hasPermission) {
-        this.userName = userName;
+    public EnvUserPermissionDO(String loginName, Long envId, Boolean permission) {
+        this.loginName = loginName;
         this.envId = envId;
-        this.hasPermission = hasPermission;
+        this.permission = permission;
     }
 
-    public String getUserName() {
-        return userName;
+    public String getLoginName() {
+        return loginName;
     }
 
-    public void setUserName(String userName) {
-        this.userName = userName;
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
     }
 
     public Long getEnvId() {
@@ -36,11 +46,11 @@ public class EnvUserPermissionDO {
         this.envId = envId;
     }
 
-    public Boolean getHasPermission() {
-        return hasPermission;
+    public Boolean getPermission() {
+        return permission;
     }
 
-    public void setHasPermission(Boolean hasPermission) {
-        this.hasPermission = hasPermission;
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 }
