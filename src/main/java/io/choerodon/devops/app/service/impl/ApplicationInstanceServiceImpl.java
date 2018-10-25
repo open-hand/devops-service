@@ -456,7 +456,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
         //校验环境是否连接
-        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+//        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -483,7 +483,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //实例相关对象数据库操作
         if (applicationDeployDTO.getType().equals(CREATE)) {

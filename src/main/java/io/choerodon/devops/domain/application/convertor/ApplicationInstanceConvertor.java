@@ -20,8 +20,10 @@ public class ApplicationInstanceConvertor implements ConvertorI<ApplicationInsta
         ApplicationInstanceE applicationInstanceE = ApplicationInstanceFactory.create();
         BeanUtils.copyProperties(applicationInstanceDO, applicationInstanceE);
         applicationInstanceE.initApplicationE(applicationInstanceDO.getAppId(), applicationInstanceDO.getAppName());
-        applicationInstanceE.initApplicationVersionE(
-                applicationInstanceDO.getAppVersionId(), applicationInstanceDO.getAppVersion());
+        if (applicationInstanceDO.getAppVersionId() != null) {
+            applicationInstanceE.initApplicationVersionE(
+                    applicationInstanceDO.getAppVersionId(), applicationInstanceDO.getAppVersion());
+        }
         applicationInstanceE.initDevopsEnvironmentE(
                 applicationInstanceDO.getEnvId(),
                 applicationInstanceDO.getEnvCode(),
@@ -35,7 +37,9 @@ public class ApplicationInstanceConvertor implements ConvertorI<ApplicationInsta
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         BeanUtils.copyProperties(applicationInstanceE, applicationInstanceDO);
         applicationInstanceDO.setAppId(applicationInstanceE.getApplicationE().getId());
-        applicationInstanceDO.setAppVersionId(applicationInstanceE.getApplicationVersionE().getId());
+        if (applicationInstanceE.getApplicationVersionE() != null) {
+            applicationInstanceDO.setAppVersionId(applicationInstanceE.getApplicationVersionE().getId());
+        }
         applicationInstanceDO.setEnvId(applicationInstanceE.getDevopsEnvironmentE().getId());
         return applicationInstanceDO;
     }
