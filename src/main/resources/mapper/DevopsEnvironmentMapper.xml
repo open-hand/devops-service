@@ -5,13 +5,20 @@
 
     <update id="updateDevopsEnvGroupId" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
         UPDATE devops_env de set de.devops_env_group_id = null where de.id = #{envId}
-
     </update>
-
 
     <update id="updateDevopsEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
         UPDATE devops_env de set de.saga_sync_commit = #{gitCommit} , de.devops_sync_commit = #{devopsSyncCommit} ,
         de.agent_sync_commit = #{agentSyncCommit} where de.id = #{envId}
-
     </update>
+
+    <select id="pageUserEnvPermission" resultType="io.choerodon.devops.infra.dataobject.EnvUserPermissionDO">
+        SELECT
+        deup.user_name,
+        deup.env_id,
+        deup.has_permission
+        FROM devops_env_user_permission deup
+        WHERE
+        deup.env_id = #{envId}
+    </select>
 </mapper>

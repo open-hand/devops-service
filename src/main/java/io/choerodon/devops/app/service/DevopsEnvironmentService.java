@@ -1,11 +1,14 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/4/9.
@@ -38,6 +41,7 @@ public interface DevopsEnvironmentService {
      * @return List
      */
     List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active);
+
     /**
      * 项目下查询环境
      *
@@ -122,10 +126,27 @@ public interface DevopsEnvironmentService {
      */
     void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload);
 
-
     EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId);
 
     String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE);
+
+    /**
+     * 环境下查询用户权限
+     *
+     * @param envId       环境id
+     * @param pageRequest 分页参数
+     * @return page
+     */
+    Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest);
+
+    /**
+     * 环境下为用户分配权限
+     *
+     * @param envId       环境id
+     * @param perssionMap 用户权限map
+     * @return List
+     */
+    List<EnvUserPermissionDTO> updateEnvUserPermission(Long envId, Map<String, Boolean> perssionMap);
 
     void initMockService(SagaClient sagaClient);
 }

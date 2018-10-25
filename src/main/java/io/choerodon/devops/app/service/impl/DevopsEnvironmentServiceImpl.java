@@ -16,6 +16,8 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
@@ -33,6 +35,7 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
 
@@ -47,7 +50,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String README_CONTENT =
             "# This is gitops env repository!";
     private static final String ENV = "ENV";
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${agent.version}")
@@ -90,8 +93,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private UserAttrRepository userAttrRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
-    @Autowired
-    private DevopsGitRepository devopsGitRepository;
     @Autowired
     private DevopsEnvCommitRepository devopsEnvCommitRepository;
     @Autowired
@@ -165,7 +166,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return devopsEnvGroupEnvsDTOS;
         }
         List<DevopsEnvGroupE> devopsEnvGroupES = devopsEnvGroupRepository.listByProjectId(projectId);
-        devopsEnviromentRepDTOS.stream().forEach(devopsEnviromentRepDTO -> {
+        devopsEnviromentRepDTOS.forEach(devopsEnviromentRepDTO -> {
             if (devopsEnviromentRepDTO.getDevopsEnvGroupId() == null) {
                 devopsEnviromentRepDTO.setDevopsEnvGroupId(0L);
             }
@@ -187,7 +188,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
         });
         if (active) {
-            devopsEnvGroupES.stream().forEach(devopsEnvGroupE -> {
+            devopsEnvGroupES.forEach(devopsEnvGroupE -> {
                 if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
                     DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
                     devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
@@ -204,26 +205,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
-                .queryByprojectAndActive(projectId, active).stream()
-                .peek(t -> {
+                .queryByprojectAndActive(projectId, active).stream().peek(t -> {
                     t.setUpdate(false);
-                    if (connectedEnvList.contains(t.getId())) {
-                        if (updatedEnvList.contains(t.getId())) {
-                            t.initConnect(true);
-                        } else {
-                            t.setUpdate(true);
-                            t.initConnect(false);
-                            t.setUpdateMessage("Version is too low, please upgrade!");
-                        }
-                    } else {
-                        t.initConnect(false);
-                    }
+                    setEnvStatus(connectedEnvList, updatedEnvList, t);
                 })
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                 .collect(Collectors.toList());
         return ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class);
     }
-
 
     @Override
     public List<DevopsEnviromentRepDTO> listDeployed(Long projectId) {
@@ -258,7 +247,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                         .collect(Collectors.toList()).stream()
                         .map(devopsEnvironmentE1
-                                -> devopsEnvironmentE1.getId().longValue())
+                                -> devopsEnvironmentE1.getId())
                         .collect(Collectors.toList());
             } else {
                 environmentIds = devopsEnvironmentES.stream()
@@ -266,7 +255,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                         .collect(Collectors.toList()).stream()
                         .map(devopsEnvironmentE1
-                                -> devopsEnvironmentE1.getId().longValue())
+                                -> devopsEnvironmentE1.getId())
                         .collect(Collectors.toList());
             }
             environmentIds.remove(environmentId);
@@ -325,7 +314,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentE> devopsEnvironmentES = ids.stream()
                 .map(id -> devopsEnviromentRepository.queryById(id))
                 .collect(Collectors.toList());
-        Long sequence = 1L;
+        long sequence = 1L;
         for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
             devopsEnvironmentE.setSequence(sequence);
             devopsEnviromentRepository.update(devopsEnvironmentE);
@@ -333,22 +322,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        devopsEnvironmentES.stream()
-                .forEach(t -> {
-                    t.setUpdate(false);
-                    if (connectedEnvList.contains(t.getId())) {
-                        if (updatedEnvList.contains(t.getId())) {
-                            t.initConnect(true);
-                        } else {
-                            t.setUpdate(true);
-                            t.initConnect(false);
-                            t.setUpdateMessage("Version is too low, please upgrade!");
-
-                        }
-                    } else {
-                        t.initConnect(false);
-                    }
-                });
+        devopsEnvironmentES.forEach(t -> {
+            t.setUpdate(false);
+            setEnvStatus(connectedEnvList, updatedEnvList, t);
+        });
         if (!devopsEnvironmentES.isEmpty()) {
             DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
             if (devopsEnvironmentES.get(0).getDevopsEnvGroupId() != null) {
@@ -359,6 +336,20 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
         }
         return devopsEnvGroupEnvsDTO;
+    }
+
+    private void setEnvStatus(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsEnvironmentE t) {
+        if (connectedEnvList.contains(t.getId())) {
+            if (updatedEnvList.contains(t.getId())) {
+                t.initConnect(true);
+            } else {
+                t.setUpdate(true);
+                t.initConnect(false);
+                t.setUpdateMessage("Version is too low, please upgrade!");
+            }
+        } else {
+            t.initConnect(false);
+        }
     }
 
     @Override
@@ -399,12 +390,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
     }
 
-    /**
-     * 校验name是否改变
-     *
-     * @param devopsEnvironmentUpdateDTO 环境参数
-     * @return boolean
-     */
     private Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryById(devopsEnvironmentUpdateDTO.getId());
@@ -518,6 +503,20 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             gitUtil.cloneBySsh(path, url);
         }
         return path;
+    }
+
+    @Override
+    public Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest) {
+        Page<EnvUserPermissionDTO> userPermissionDTOPage = ConvertPageHelper.convertPage(
+                devopsEnviromentRepository.pageUserPermission(envId, pageRequest), EnvUserPermissionDTO.class);
+        userPermissionDTOPage.getContent().forEach(e ->
+                e.setLoginName(iamRepository.queryByLoginName(e.getUserName()).getRealName()));
+        return userPermissionDTOPage;
+    }
+
+    @Override
+    public List<EnvUserPermissionDTO> updateEnvUserPermission(Long envId, Map<String, Boolean> perssionMap) {
+        return null;
     }
 
     @Override

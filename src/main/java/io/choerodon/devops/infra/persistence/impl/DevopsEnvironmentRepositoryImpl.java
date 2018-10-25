@@ -5,11 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.EnvUserPermissionDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/4/9.
@@ -126,5 +130,11 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     @Override
     public void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
         devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(), devopsEnvironmentE.getSagaSyncCommit(), devopsEnvironmentE.getDevopsSyncCommit(), devopsEnvironmentE.getAgentSyncCommit());
+    }
+
+    @Override
+    public Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest) {
+        return PageHelper.doPage(pageRequest.getPage(), pageRequest.getSize(),
+                () -> devopsEnvironmentMapper.pageUserEnvPermission(envId));
     }
 }

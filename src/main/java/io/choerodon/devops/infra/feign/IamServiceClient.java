@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
@@ -50,4 +51,10 @@ public interface IamServiceClient {
 
     @GetMapping(value = "/v1/projects/{project_id}/users")
     ResponseEntity<Page<UserDO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+
+    @PostMapping(value = "/v1/projects/{project_id}/role_members/users/roles")
+    ResponseEntity<Page<UserDO>> queryUserByProjectId(@PathVariable("project_id") Long projectId,
+                                                      @RequestParam("page") int page,
+                                                      @RequestParam("size") int size,
+                                                      @RequestBody @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 }

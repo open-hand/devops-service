@@ -9,9 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
+import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -20,6 +22,7 @@ import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/3/29.
@@ -161,6 +164,18 @@ public class IamRepositoryImpl implements IamRepository {
 
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);
+            return null;
+        }
+    }
+
+    @Override
+    public Page<UserE> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest) {
+        try {
+            ResponseEntity<Page<UserDO>> userEPageResponseEntity = iamServiceClient.queryUserByProjectId(projectId,
+                    pageRequest.getPage(), pageRequest.getSize(), new RoleAssignmentSearchDTO());
+            return ConvertPageHelper.convertPage(userEPageResponseEntity.getBody(), UserE.class);
+        } catch (FeignException e) {
+            LOGGER.error("get user permission by project id {} error", projectId);
             return null;
         }
     }
