@@ -158,7 +158,7 @@ class ApplicationMarketControllerSpec extends Specification {
         def marketId = restTemplate.postForObject("/v1/projects/1/apps_market", applicationReleasingDTO, Long.class)
 
         then: '验证创建后的id'
-        marketId == applicationMapper.selectAll().get(0).getId()
+        marketId == applicationMarketMapper.selectAll().get(0).getId()
     }
 
     def "PageListMarketAppsByProjectId"() {
