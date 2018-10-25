@@ -3,12 +3,15 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -23,6 +26,8 @@ import io.choerodon.devops.infra.feign.IamServiceClient;
  */
 @Component
 public class IamRepositoryImpl implements IamRepository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IamRepositoryImpl.class);
 
     private IamServiceClient iamServiceClient;
 
@@ -64,7 +69,8 @@ public class IamRepositoryImpl implements IamRepository {
         try {
             ResponseEntity<UserDO> responseEntity = iamServiceClient.queryByLoginName(userName);
             return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
-        } catch (Exception e) {
+        } catch (FeignException e) {
+            LOGGER.error("get user by longin name {} error", userName);
             return null;
         }
     }
@@ -104,7 +110,8 @@ public class IamRepositoryImpl implements IamRepository {
         try {
             ResponseEntity<UserDO> responseEntity = iamServiceClient.queryById(id);
             return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
-        } catch (Exception e) {
+        } catch (FeignException e) {
+            LOGGER.error("get user by user id {}", id);
             return null;
         }
     }
@@ -114,7 +121,8 @@ public class IamRepositoryImpl implements IamRepository {
         try {
             ResponseEntity<Page<UserDO>> responseEntity = iamServiceClient.queryInProjectById(projectId, id);
             return ConvertHelper.convert(responseEntity.getBody().getContent().get(0), UserE.class);
-        } catch (Exception e) {
+        } catch (FeignException e) {
+            LOGGER.error("get user by project id {} and user id {} error", projectId, id);
             return null;
         }
     }
@@ -151,8 +159,8 @@ public class IamRepositoryImpl implements IamRepository {
             ResponseEntity<Page<UserDO>> userDOResponseEntity = iamServiceClient.listUsersByEmail(projectId, 0, 10, email);
             return ConvertHelper.convert(userDOResponseEntity.getBody().getContent().get(0), UserE.class);
 
-        } catch (Exception e) {
-
+        } catch (FeignException e) {
+            LOGGER.error("get user by email {} error", email);
             return null;
         }
     }
