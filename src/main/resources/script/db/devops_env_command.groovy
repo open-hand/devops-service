@@ -36,8 +36,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_command.groovy') {
 
             }
 
-    changeSet(author: 'younger', id: '2018-10-25-update-data')
-            {
-                sql("UPDATE devops_app_instance A,devops_env_command B SET　B.object_version_id = A.app_version_id WHERE　A.command_id = B.id")
+    changeSet(author: 'younger', id: '2018-10-25-update-data') {
+                sql("update devops_app_instance A,devops_env_command B set B.object_version_id=A.app_version_id where A.command_id=B.id")
             }
 }
