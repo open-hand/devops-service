@@ -12,6 +12,7 @@ public class DevopsEnvCommandE {
     private Long id;
     private String object;
     private Long objectId;
+    private Long objectVersionId;
     private String commandType;
     private String status;
     private String error;
@@ -106,5 +107,13 @@ public class DevopsEnvCommandE {
 
     public void setCreatedBy(Long createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public Long getObjectVersionId() {
+        return objectVersionId;
+    }
+
+    public void setObjectVersionId(Long objectVersionId) {
+        this.objectVersionId = objectVersionId;
     }
 }

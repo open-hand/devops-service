@@ -227,6 +227,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             if (devopsEnvCommandE != null) {
                 devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
+                ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByAppAndVersion(applicationInstanceE.getApplicationE().getId(), releasePayload.getChartVersion());
+                applicationInstanceE.initApplicationVersionEById(applicationVersionE.getId());
                 applicationInstanceE.setStatus(InstanceStatus.RUNNING.getStatus());
                 applicationInstanceRepository.update(applicationInstanceE);
                 installResource(resources, applicationInstanceE);

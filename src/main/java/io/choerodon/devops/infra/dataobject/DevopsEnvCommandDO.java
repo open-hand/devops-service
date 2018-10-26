@@ -18,6 +18,7 @@ public class DevopsEnvCommandDO extends AuditDomain {
     private Long id;
     private String object;
     private Long objectId;
+    private Long objectVersionId;
     private Long valueId;
     private String commandType;
     private String status;
@@ -88,4 +89,11 @@ public class DevopsEnvCommandDO extends AuditDomain {
         this.sha = sha;
     }
 
+    public Long getObjectVersionId() {
+        return objectVersionId;
+    }
+
+    public void setObjectVersionId(Long objectVersionId) {
+        this.objectVersionId = objectVersionId;
+    }
 }

@@ -167,9 +167,6 @@ public interface ApplicationInstanceService {
     DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
 
 
-    DevopsEnvPreviewInstanceDTO getDevopsEnvPreviewInstance(Long envId);
-
-
     Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId, PageRequest pageRequest);
 
 
