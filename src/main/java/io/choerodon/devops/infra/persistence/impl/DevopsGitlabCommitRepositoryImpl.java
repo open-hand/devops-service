@@ -38,9 +38,10 @@ public class DevopsGitlabCommitRepositoryImpl implements DevopsGitlabCommitRepos
     }
 
     @Override
-    public DevopsGitlabCommitE queryBySha(String sha) {
+    public DevopsGitlabCommitE queryByShaAndRef(String sha, String ref) {
         DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO();
         devopsGitlabCommitDO.setCommitSha(sha);
+        devopsGitlabCommitDO.setRef(ref);
         return ConvertHelper.convert(devopsGitlabCommitMapper.selectOne(devopsGitlabCommitDO),
                 DevopsGitlabCommitE.class);
     }
