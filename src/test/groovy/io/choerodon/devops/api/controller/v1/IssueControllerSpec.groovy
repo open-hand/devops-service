@@ -28,6 +28,8 @@ import org.springframework.http.ResponseEntity
 import spock.lang.Specification
 import spock.lang.Stepwise
 
+import static org.mockito.Matchers.anyInt
+import static org.mockito.Matchers.anyString
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -159,7 +161,7 @@ class IssueControllerSpec extends Specification {
 
         ResponseEntity<List<CommitDO>> responseEntity = new ResponseEntity<>(commitDOS1, HttpStatus.OK)
         devopsGitRepository.initGitlabServiceClient(gitlabServiceClient)
-        Mockito.doReturn(responseEntity).when(gitlabServiceClient).getCommits(1, "branch", "3918-10-07 09:18:00 CST")
+        Mockito.doReturn(responseEntity).when(gitlabServiceClient).getCommits(anyInt(), anyString(), anyString())
         userAttrRepository.queryById(_ as Long) >> userAttrE
         iamRepository.queryUserByUserId(1L) >> userE
         userAttrRepository.queryUserIdByGitlabUserId(_) >> 1L
