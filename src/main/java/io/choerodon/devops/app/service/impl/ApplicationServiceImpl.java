@@ -335,9 +335,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                 gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                         gitlabUserE.getUsername(), accessToken);
                 branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
                 if (!branchDO.getProtected()) {
-                    gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
-                            AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                    try {
+                        gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
+                                AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                    } catch (CommonException e) {
+                        branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                        if (!branchDO.getProtected()) {
+                            throw new CommonException(e);
+                        }
+                    }
                 }
             } else {
                 if (!branchDO.getProtected()) {
