@@ -318,10 +318,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (branchDO.getName() == null) {
                 gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                         gitlabUserE.getUsername(), accessToken);
-                gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
-                        AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                if (!branchDO.getProtected()) {
+                    gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
+                            AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                }
             } else {
-                if (branchDO.getProtected()) {
+                if (!branchDO.getProtected()) {
                     gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
                             AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
                 }

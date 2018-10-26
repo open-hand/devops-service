@@ -28,7 +28,6 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -75,13 +74,16 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void handleCreate(PipelineWebHookDTO pipelineWebHookDTO) {
         ApplicationE applicationE = applicationRepository.queryByToken(pipelineWebHookDTO.getToken());
         DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByGitlabPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
-        if ("admin1".equals(pipelineWebHookDTO.getUser().getUsername())) {
+        if ("admin1".equals(pipelineWebHookDTO.getUser().getUsername()) || "root".equals(pipelineWebHookDTO.getUser().getUsername())) {
             pipelineWebHookDTO.getUser().setUsername("admin");
         }
         UserE userE = iamRepository.queryByLoginName(pipelineWebHookDTO.getUser().getUsername());
         Integer gitlabUserId = ADMIN;
-        if (userE != null) {
-            gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(userE.getId()).getGitlabUserId());
+        if (userE.getId() != null) {
+            UserAttrE userAttrE = userAttrRepository.queryById(userE.getId());
+            if (userAttrE != null) {
+                gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
+            }
         }
         //查询pipeline最新阶段信息
 
@@ -92,13 +94,13 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                     stage.setName(commitStatuseDO.getName());
                     stage.setId(commitStatuseDO.getId());
                     stage.setStatus(commitStatuseDO.getStatus());
-                    if(commitStatuseDO.getFinishedAt()!=null) {
+                    if (commitStatuseDO.getFinishedAt() != null) {
                         stage.setFinishedAt(commitStatuseDO.getFinishedAt());
                     }
-                    if(commitStatuseDO.getStartedAt()!=null) {
+                    if (commitStatuseDO.getStartedAt() != null) {
                         stage.setStartedAt(commitStatuseDO.getStartedAt());
                     }
-                    if(pipelineWebHookDTO.getObjectAttributes().getRef().equals(commitStatuseDO.getRef())) {
+                    if (pipelineWebHookDTO.getObjectAttributes().getRef().equals(commitStatuseDO.getRef())) {
                         return stage;
                     } else {
                         return null;
@@ -112,8 +114,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineE.setAppId(applicationE.getId());
             devopsGitlabPipelineE.setPipelineCreateUserId(userE == null ? null : userE.getId());
             devopsGitlabPipelineE.setPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
-            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes()
-                    .getDetailedStatus());
+            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
             devopsGitlabPipelineE.setPipelineCreationDate(pipelineWebHookDTO.getObjectAttributes().getCreatedAt());
             if (devopsGitlabCommitE != null) {
                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
@@ -121,7 +122,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
         } else {
-            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getDetailedStatus());
+            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
             if (devopsGitlabCommitE != null) {
                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
@@ -246,7 +247,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
         //按照ref分组
         Map<String, List<DevopsGitlabPipelineDO>> refWithPipelines = devopsGitlabPipelineDOS.stream()
-                .filter( pageDevopsGitlabPipelineDTO -> pageDevopsGitlabPipelineDTO.getRef() != null)
+                .filter(pageDevopsGitlabPipelineDTO -> pageDevopsGitlabPipelineDTO.getRef() != null)
                 .collect(Collectors.groupingBy(DevopsGitlabPipelineDO::getRef));
         Map<String, Long> refWithPipelineIds = new HashMap<>();
 

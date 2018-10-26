@@ -4,7 +4,7 @@ import java.util.Date;
 
 public class PipelineWebHookAttributesDTO {
     private Long id;
-    private String detailedStatus;
+    private String status;
     private String sha;
     private String ref;
     private Date createdAt;
@@ -17,12 +17,12 @@ public class PipelineWebHookAttributesDTO {
         this.id = id;
     }
 
-    public String getDetailedStatus() {
-        return detailedStatus;
+    public String getStatus() {
+        return status;
     }
 
-    public void setDetailedStatus(String detailedStatus) {
-        this.detailedStatus = detailedStatus;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getSha() {
