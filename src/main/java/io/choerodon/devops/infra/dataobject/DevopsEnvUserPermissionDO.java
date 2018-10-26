@@ -18,14 +18,16 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_env_user_permission")
 public class DevopsEnvUserPermissionDO extends AuditDomain {
     private String loginName;
+    private String realName;
     private Long envId;
     private Boolean permission;
 
     public DevopsEnvUserPermissionDO() {
     }
 
-    public DevopsEnvUserPermissionDO(String loginName, Long envId, Boolean permission) {
+    public DevopsEnvUserPermissionDO(String loginName, String realName, Long envId, Boolean permission) {
         this.loginName = loginName;
+        this.realName = realName;
         this.envId = envId;
         this.permission = permission;
     }
@@ -36,6 +38,14 @@ public class DevopsEnvUserPermissionDO extends AuditDomain {
 
     public void setLoginName(String loginName) {
         this.loginName = loginName;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 
     public Long getEnvId() {

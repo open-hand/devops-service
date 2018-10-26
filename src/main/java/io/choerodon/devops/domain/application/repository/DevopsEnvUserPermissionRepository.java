@@ -17,7 +17,7 @@ public interface DevopsEnvUserPermissionRepository {
 
     void create(DevopsEnvUserPermissionE devopsEnvUserPermissionE);
 
-    Page<DevopsEnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest);
+    Page<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest, String params);
 
     void updateEnvUserPermission(Map<String, Boolean> updateMap, Long envId);
 }

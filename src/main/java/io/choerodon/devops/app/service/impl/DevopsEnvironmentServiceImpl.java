@@ -26,6 +26,7 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.*;
@@ -145,7 +146,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
-        gitlabProjectPayload.setLoginName(iamRepository.queryById(userAttrE.getIamUserId()).getLoginName());
+        UserE userE = iamRepository.queryById(userAttrE.getIamUserId());
+        gitlabProjectPayload.setLoginName(userE.getLoginName());
+        gitlabProjectPayload.setRealName(userE.getRealName());
 
         // 创建环境时将项目下所有用户装入payload以便于saga消费
         gitlabProjectPayload.setUpdateMap(devopsEnviromentDTO.getUpdateMap());
@@ -434,7 +437,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Map<String, Boolean> updateMap = gitlabProjectPayload.getUpdateMap();
         // 获取当前用户的loginname
         updateMap.put(gitlabProjectPayload.getLoginName(), true);
-        updateMap.forEach((k, v) -> devopsEnvUserPermissionRepository.create(new DevopsEnvUserPermissionE(k, devopsEnvironmentE.getId(), v)));
+        updateMap.forEach((k, v) -> devopsEnvUserPermissionRepository.create(
+                new DevopsEnvUserPermissionE(k, gitlabProjectPayload.getRealName(), devopsEnvironmentE.getId(), v)));
 
         GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
@@ -519,7 +523,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Page<DevopsEnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest) {
+    public Page<DevopsEnvUserPermissionDTO> queryUserPermissionWhenCreateEnv(Long projectId, PageRequest pageRequest) {
+        // 从iam服务中获取项目下所有用户
         Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, pageRequest);
         Page<DevopsEnvUserPermissionDTO> envUserPermissionDTOPage = new Page<>();
         List<DevopsEnvUserPermissionDTO> envUserPermissionDTOList = new ArrayList<>();
@@ -537,6 +542,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return envUserPermissionDTOPage;
     }
 
+    @Override
+    public Page<DevopsEnvUserPermissionDTO> pageByOptions(Long envId, PageRequest pageRequest, String params) {
+        return devopsEnvUserPermissionRepository.pageUserPermissionByOption(envId, pageRequest, params);
+    }
     @Override
     public void updateEnvUserPermission(Long envId, Map<String, Boolean> updateMap) {
         devopsEnvUserPermissionRepository.updateEnvUserPermission(updateMap, envId);

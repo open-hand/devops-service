@@ -15,4 +15,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'n1ck', id: '2018-10-26-add-real_name') {
+        addColumn(tableName: 'devops_env_user_permission') {
+            column(name: 'real_name', type: 'VARCHAR(32)', remarks: '真实名字', afterColumn: 'login_name')
+        }
+    }
 }

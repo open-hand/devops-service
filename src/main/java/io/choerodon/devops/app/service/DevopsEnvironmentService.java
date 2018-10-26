@@ -130,14 +130,25 @@ public interface DevopsEnvironmentService {
 
     String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE);
 
+
     /**
-     * 环境下查询用户权限
+     * 创建环境时查询项目下所有用户权限
      *
-     * @param envId       环境id
+     * @param projectId   项目id
      * @param pageRequest 分页参数
      * @return page
      */
-    Page<DevopsEnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest);
+    Page<DevopsEnvUserPermissionDTO> queryUserPermissionWhenCreateEnv(Long projectId, PageRequest pageRequest);
+
+    /**
+     * 分页过滤查询用户权限
+     *
+     * @param pageRequest 分页参数
+     * @param envId       环境id
+     * @param params      查询参数
+     * @return page
+     */
+    Page<DevopsEnvUserPermissionDTO> pageByOptions(Long envId, PageRequest pageRequest, String params);
 
     /**
      * 环境下为用户分配权限

@@ -1,8 +1,5 @@
 package io.choerodon.devops.domain.application.entity;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
-
 /**
  * Created by n!Ck
  * Date: 2018/10/26
@@ -12,14 +9,16 @@ import org.springframework.stereotype.Component;
 
 public class DevopsEnvUserPermissionE {
     private String loginName;
+    private String realName;
     private Long envId;
     private Boolean permission;
 
     public DevopsEnvUserPermissionE() {
     }
 
-    public DevopsEnvUserPermissionE(String loginName, Long envId, Boolean permission) {
+    public DevopsEnvUserPermissionE(String loginName, String realName, Long envId, Boolean permission) {
         this.loginName = loginName;
+        this.realName = realName;
         this.envId = envId;
         this.permission = permission;
     }
@@ -30,6 +29,14 @@ public class DevopsEnvUserPermissionE {
 
     public void setLoginName(String loginName) {
         this.loginName = loginName;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 
     public Long getEnvId() {

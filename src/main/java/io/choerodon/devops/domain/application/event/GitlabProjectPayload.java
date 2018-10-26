@@ -1,9 +1,6 @@
 package io.choerodon.devops.domain.application.event;
 
-import java.util.List;
 import java.util.Map;
-
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 
 /**
  * Created by younger on 2018/3/29.
@@ -18,6 +15,7 @@ public class GitlabProjectPayload {
     private Long organizationId;
     private Map<String, Boolean> updateMap;
     private String loginName;
+    private String realName;
 
     public Integer getUserId() {
         return userId;
@@ -81,5 +79,13 @@ public class GitlabProjectPayload {
 
     public void setLoginName(String loginName) {
         this.loginName = loginName;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
     }
 }
