@@ -1,12 +1,8 @@
 package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
-import java.util.Map;
 
-import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.EnvUserPermissionDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/4/9.

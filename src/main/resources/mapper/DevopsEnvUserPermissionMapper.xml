@@ -20,6 +20,7 @@
             <foreach collection="updateMap" item="loginName" open="(" close=")" separator=",">
                 #{loginName}
             </foreach>
+            AND deup.env_id = #{envId}
         </if>
     </update>
 </mapper>

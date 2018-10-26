@@ -307,6 +307,14 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.env.sync.get"));
     }
 
+    /**
+     * 环境下查询用户权限
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param envId       环境id
+     * @return page
+     */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER,
@@ -314,7 +322,7 @@ public class DevopsEnvironmentController {
     @CustomPageRequest
     @ApiOperation(value = "环境下查询用户权限")
     @GetMapping(value = "/{envId}/perssion")
-    public ResponseEntity<Page<EnvUserPermissionDTO>> queryUserPermission(
+    public ResponseEntity<Page<DevopsEnvUserPermissionDTO>> queryUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

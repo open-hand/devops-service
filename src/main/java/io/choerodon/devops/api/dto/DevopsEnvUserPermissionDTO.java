@@ -6,15 +6,15 @@ package io.choerodon.devops.api.dto;
  * Time: 11:32
  * Description:
  */
-public class EnvUserPermissionDTO {
+public class DevopsEnvUserPermissionDTO {
     private String loginName;
     private String userName;
     private Boolean permission;
 
-    public EnvUserPermissionDTO() {
+    public DevopsEnvUserPermissionDTO() {
     }
 
-    public EnvUserPermissionDTO(String loginName, String userName, Boolean permission) {
+    public DevopsEnvUserPermissionDTO(String loginName, String userName, Boolean permission) {
         this.loginName = loginName;
         this.userName = userName;
         this.permission = permission;

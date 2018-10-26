@@ -137,7 +137,7 @@ public interface DevopsEnvironmentService {
      * @param pageRequest 分页参数
      * @return page
      */
-    Page<EnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest);
+    Page<DevopsEnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest);
 
     /**
      * 环境下为用户分配权限

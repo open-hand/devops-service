@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -16,16 +17,14 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.domain.application.entity.DevopsEnvGroupE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
@@ -146,21 +145,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
+        gitlabProjectPayload.setLoginName(iamRepository.queryById(userAttrE.getIamUserId()).getLoginName());
 
-//        // 创建环境时将项目下所有用户加入环境用户权限表
-//        Map<String, Boolean> updateMap = new HashMap<>();
-//        Page<UserE> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, new PageRequest(0, 100));
-//        // 获取当前用户
-//        UserE userE = iamRepository.queryUserByUserId(userAttrE.getIamUserId());
-//        allProjectUser.getContent().forEach(e -> {
-//            if (e.getId() == userE.getId()) {
-//                updateMap.put(e.getLoginName(), true);
-//            } else {
-//                updateMap.put(e.getLoginName(), false);
-//            }
-//        });
-//        // 更新环境用户权限表
-//        devopsEnviromentRepository.updateEnvUserPermission(updateMap, 1L);
+        // 创建环境时将项目下所有用户装入payload以便于saga消费
+        gitlabProjectPayload.setUpdateMap(devopsEnviromentDTO.getUpdateMap());
 
         String input;
         try {
@@ -441,6 +429,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        // 更新所有用户的环境权限
+        Map<String, Boolean> updateMap = gitlabProjectPayload.getUpdateMap();
+        // 获取当前用户的loginname
+        updateMap.put(gitlabProjectPayload.getLoginName(), true);
+        updateMap.forEach((k, v) -> devopsEnvUserPermissionRepository.create(new DevopsEnvUserPermissionE(k, devopsEnvironmentE.getId(), v)));
+
         GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(
@@ -524,11 +519,22 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Page<EnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest) {
-        Page<EnvUserPermissionDTO> userPermissionDTOPage = ConvertPageHelper.convertPage(
-                devopsEnvUserPermissionRepository.pageUserPermission(envId, pageRequest), EnvUserPermissionDTO.class);
-        userPermissionDTOPage.getContent().forEach(e -> e.setUserName(iamRepository.queryByLoginName(e.getLoginName()).getRealName()));
-        return userPermissionDTOPage;
+    public Page<DevopsEnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest) {
+        Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, pageRequest);
+        Page<DevopsEnvUserPermissionDTO> envUserPermissionDTOPage = new Page<>();
+        List<DevopsEnvUserPermissionDTO> envUserPermissionDTOList = new ArrayList<>();
+        // 遍历所有用户
+        for (UserWithRoleDTO userWithRoleDTO : allProjectUser.getContent()) {
+            Optional<RoleDTO> cartOptional = userWithRoleDTO.getRoles().stream().filter(e -> e.getId().equals(43L) || e.getId().equals(45L)).findFirst();
+            if (cartOptional.isPresent()) {
+                envUserPermissionDTOList.add(new DevopsEnvUserPermissionDTO(userWithRoleDTO.getLoginName(), userWithRoleDTO.getRealName(), true));
+            } else {
+                envUserPermissionDTOList.add(new DevopsEnvUserPermissionDTO(userWithRoleDTO.getLoginName(), userWithRoleDTO.getRealName(), false));
+            }
+        }
+        BeanUtils.copyProperties(allProjectUser, envUserPermissionDTOPage);
+        envUserPermissionDTOPage.setContent(envUserPermissionDTOList);
+        return envUserPermissionDTOPage;
     }
 
     @Override

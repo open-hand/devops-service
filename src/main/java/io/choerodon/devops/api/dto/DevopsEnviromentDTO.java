@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.Map;
+
 /**
  * Created by younger on 2018/4/9.
  */
@@ -10,6 +12,7 @@ public class DevopsEnviromentDTO {
     private String code;
     private String description;
     private Long devopsEnvGroupId;
+    private Map<String, Boolean> updateMap;
 
     public Long getProjectId() {
         return projectId;
@@ -49,5 +52,13 @@ public class DevopsEnviromentDTO {
 
     public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
         this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public Map<String, Boolean> getUpdateMap() {
+        return updateMap;
+    }
+
+    public void setUpdateMap(Map<String, Boolean> updateMap) {
+        this.updateMap = updateMap;
     }
 }

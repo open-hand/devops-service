@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.valueobject.Organization;
@@ -33,5 +34,5 @@ public interface IamRepository {
 
     UserE queryByEmail(Long projectId, String email);
 
-    Page<UserE> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest);
+    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest);
 }

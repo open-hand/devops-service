@@ -9,11 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -169,13 +169,11 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public Page<UserE> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest) {
+    public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest) {
         try {
-            pageRequest.setPage(0);
-            pageRequest.setSize(100);
-            ResponseEntity<Page<UserDO>> userEPageResponseEntity = iamServiceClient.queryUserByProjectId(projectId,
+            ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient.queryUserByProjectId(projectId,
                     pageRequest.getPage(), pageRequest.getSize(), new RoleAssignmentSearchDTO());
-            return ConvertPageHelper.convertPage(userEPageResponseEntity.getBody(), UserE.class);
+            return userEPageResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user permission by project id {} error", projectId);
             return null;

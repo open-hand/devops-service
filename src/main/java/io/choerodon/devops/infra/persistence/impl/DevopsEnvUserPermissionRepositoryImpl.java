@@ -7,9 +7,12 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.EnvUserPermissionDTO;
+import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
+import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
+import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -28,7 +31,13 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
 
     @Override
-    public Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest) {
+    public void create(DevopsEnvUserPermissionE devopsEnvUserPermissionE) {
+        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = ConvertHelper.convert(devopsEnvUserPermissionE, DevopsEnvUserPermissionDO.class);
+        devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO);
+    }
+
+    @Override
+    public Page<DevopsEnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest) {
         return PageHelper.doPage(pageRequest.getPage(), pageRequest.getSize(),
                 () -> devopsEnvUserPermissionMapper.pageUserEnvPermission(envId));
     }
