@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper">
+    <select id="pageUserEnvPermission" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
+        SELECT
+        deup.login_name,
+        deup.env_id,
+        deup.permission
+        FROM devops_env_user_permission deup
+        WHERE
+        deup.env_id = #{envId}
+    </select>
+
+    <update id="updateEnvUserPermission" parameterType="java.util.Map">
+        <if test="updateMap.size() != 0">
+            UPDATE devops_env_user_permission deup
+            SET deup.permission = #{permission}
+            WHERE login_name IN
+            <foreach collection="updateMap" item="loginName" open="(" close=")" separator=",">
+                #{loginName}
+            </foreach>
+        </if>
+    </update>
+</mapper>

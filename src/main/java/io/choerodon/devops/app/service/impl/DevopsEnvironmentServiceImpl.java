@@ -76,6 +76,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
     private EnvListener envListener;
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
@@ -524,14 +526,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Page<EnvUserPermissionDTO> pageUserPermission(Long projectId, Long envId, PageRequest pageRequest) {
         Page<EnvUserPermissionDTO> userPermissionDTOPage = ConvertPageHelper.convertPage(
-                devopsEnviromentRepository.pageUserPermission(envId, pageRequest), EnvUserPermissionDTO.class);
+                devopsEnvUserPermissionRepository.pageUserPermission(envId, pageRequest), EnvUserPermissionDTO.class);
         userPermissionDTOPage.getContent().forEach(e -> e.setUserName(iamRepository.queryByLoginName(e.getLoginName()).getRealName()));
         return userPermissionDTOPage;
     }
 
     @Override
     public void updateEnvUserPermission(Long envId, Map<String, Boolean> updateMap) {
-        devopsEnviromentRepository.updateEnvUserPermission(updateMap, envId);
+        devopsEnvUserPermissionRepository.updateEnvUserPermission(updateMap, envId);
     }
 
     @Override

@@ -5,7 +5,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.EnvUserPermissionDTO;
-import io.choerodon.devops.infra.dataobject.EnvUserPermissionDO;
+import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
 
 /**
  * Created by n!Ck
@@ -14,9 +14,9 @@ import io.choerodon.devops.infra.dataobject.EnvUserPermissionDO;
  * Description:
  */
 @Component
-public class EnvUserPermissionConvertor implements ConvertorI<Object, EnvUserPermissionDO, EnvUserPermissionDTO> {
+public class EnvUserPermissionConvertor implements ConvertorI<Object, DevopsEnvUserPermissionDO, EnvUserPermissionDTO> {
     @Override
-    public EnvUserPermissionDTO doToDto(EnvUserPermissionDO dataObject) {
+    public EnvUserPermissionDTO doToDto(DevopsEnvUserPermissionDO dataObject) {
         EnvUserPermissionDTO envUserPermissionDTO = new EnvUserPermissionDTO();
         BeanUtils.copyProperties(dataObject, envUserPermissionDTO);
         envUserPermissionDTO.setDeployment(dataObject.getPermission());

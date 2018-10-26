@@ -11,35 +11,4 @@
         UPDATE devops_env de set de.saga_sync_commit = #{gitCommit} , de.devops_sync_commit = #{devopsSyncCommit} ,
         de.agent_sync_commit = #{agentSyncCommit} where de.id = #{envId}
     </update>
-
-    <select id="pageUserEnvPermission" resultType="io.choerodon.devops.infra.dataobject.EnvUserPermissionDO">
-        SELECT
-        deup.login_name,
-        deup.env_id,
-        deup.permission
-        FROM devops_env_user_permission deup
-        WHERE
-        deup.env_id = #{envId}
-    </select>
-
-    <update id="updateEnvUserPermission" parameterType="java.util.Map">
-        <if test="trueUsers.size() != 0">
-            UPDATE devops_env_user_permission deup
-            SET deup.permission = 1
-            WHERE login_name IN
-            <foreach collection="trueUsers" item="loginName" open="(" close=")" separator=",">
-                #{loginName}
-            </foreach>
-        </if>
-        ;
-        <if test="falseUsers.size() != 0">
-            UPDATE devops_env_user_permission deup
-            SET deup.permission = 0
-            WHERE login_name IN
-            <foreach collection="falseUsers" item="loginName" open="(" close=")" separator=",">
-                #{loginName}
-            </foreach>
-        </if>
-    </update>
-
 </mapper>

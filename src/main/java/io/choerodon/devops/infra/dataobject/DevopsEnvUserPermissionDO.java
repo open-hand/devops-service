@@ -16,15 +16,15 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_env_user_permission")
-public class EnvUserPermissionDO extends AuditDomain {
+public class DevopsEnvUserPermissionDO extends AuditDomain {
     private String loginName;
     private Long envId;
     private Boolean permission;
 
-    public EnvUserPermissionDO() {
+    public DevopsEnvUserPermissionDO() {
     }
 
-    public EnvUserPermissionDO(String loginName, Long envId, Boolean permission) {
+    public DevopsEnvUserPermissionDO(String loginName, Long envId, Boolean permission) {
         this.loginName = loginName;
         this.envId = envId;
         this.permission = permission;

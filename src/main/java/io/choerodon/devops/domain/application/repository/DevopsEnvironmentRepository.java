@@ -36,8 +36,4 @@ public interface DevopsEnvironmentRepository {
     List<DevopsEnvironmentE> list();
 
     void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
-
-    Page<EnvUserPermissionDTO> pageUserPermission(Long envId, PageRequest pageRequest);
-
-    void updateEnvUserPermission(Map<String, Boolean> updateMap, Long envId);
 }
