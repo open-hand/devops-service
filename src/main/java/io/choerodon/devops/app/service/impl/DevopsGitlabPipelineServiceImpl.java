@@ -79,7 +79,8 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         }
         UserE userE = iamRepository.queryByLoginName(pipelineWebHookDTO.getUser().getUsername());
         Integer gitlabUserId = ADMIN;
-        if (userE != null) {
+
+        if (userE.getId() != null) {
             UserAttrE userAttrE = userAttrRepository.queryById(userE.getId());
             if (userAttrE != null) {
                 gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
@@ -114,8 +115,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineE.setAppId(applicationE.getId());
             devopsGitlabPipelineE.setPipelineCreateUserId(userE == null ? null : userE.getId());
             devopsGitlabPipelineE.setPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
-            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes()
-                    .getDetailedStatus());
+            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
             devopsGitlabPipelineE.setPipelineCreationDate(pipelineWebHookDTO.getObjectAttributes().getCreatedAt());
             if (devopsGitlabCommitE != null) {
                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
@@ -123,7 +123,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
         } else {
-            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getDetailedStatus());
+            devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
             if (devopsGitlabCommitE != null) {
                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
