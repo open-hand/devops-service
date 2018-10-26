@@ -32,6 +32,14 @@ choerodon:
   event:
     consumer:
       enabled: false # 是否开启，不设置默认开启
+  devops:
+    message: false
+  saga:
+    consumer:
+      enabled: false # 启动消费端
+      thread-num: 2 # saga消息消费线程池大小
+      max-poll-size: 200 # 每次拉取消息最大数量
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
 # 使用本地docker里的mysql
 #datasource:
 #  username: root

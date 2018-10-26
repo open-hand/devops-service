@@ -80,11 +80,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
             Organization organization = initOrg(1L, "testOrganization")
             ProjectE projectE = initProj(1L, "testProject", organization)
 
-            DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
-            devopsProjectDO.setIamProjectId(1L)
-            devopsProjectDO.setDevopsEnvGroupId(1L)
-            devopsProjectDO.setDevopsAppGroupId(1L)
-            devopsProjectMapper.insert(devopsProjectDO)
             DevopsEnvironmentDO devopsEnvironmentDO = initEnv(
                     "testNameEnv", "testCodeEnv", projectE, true, 1L, "testToken")
             DevopsEnvironmentDO devopsEnvironmentDO1 = initEnv(
@@ -275,6 +270,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         given:
         List<Long> envList = new ArrayList<>()
         ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+        applicationInstanceDO.setId(1L)
         applicationInstanceDO.setAppId(1L)
         applicationInstanceDO.setEnvId(1L)
         applicationInstanceDO.setEnvCode("env")
@@ -286,6 +282,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         applicationInstanceDO.setCommandId(1L)
         applicationInstanceDO.setObjectVersionNumber(1L)
         ApplicationInstanceDO applicationInstanceDO1 = new ApplicationInstanceDO()
+        applicationInstanceDO1.setId(2L)
         applicationInstanceDO1.setAppId(2L)
         applicationInstanceDO1.setEnvId(2L)
         applicationInstanceDO1.setEnvCode("env1")
@@ -332,7 +329,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envSyncStatusDTO.getAgentSyncCommit().equals("testCommitSha")
 
         devopsEnvCommitMapper.deleteByPrimaryKey(1L)
-        devopsProjectMapper.deleteByPrimaryKey(1L)
         applicationInstanceMapper.deleteByPrimaryKey(1L)
         applicationInstanceMapper.deleteByPrimaryKey(2L)
         devopsServiceRepository.delete(1L)

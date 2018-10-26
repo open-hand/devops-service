@@ -101,11 +101,6 @@ class DevopsIngressControllerSpec extends Specification {
 
             FileUtil.copyFile("src/test/gitops/org/pro/env/test-ing.yaml", "gitops/org/pro/env")
 
-            DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
-            devopsProjectDO.setIamProjectId(1L)
-            devopsProjectDO.setDevopsEnvGroupId(1L)
-            devopsProjectDO.setDevopsAppGroupId(1L)
-            devopsProjectMapper.insert(devopsProjectDO)
 
             DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
             devopsEnvironmentDO.setId(1L)
@@ -383,7 +378,6 @@ class DevopsIngressControllerSpec extends Specification {
 
         then:
         page.size() == 1
-        devopsProjectMapper.deleteByPrimaryKey(1L)
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
         devopsIngressMapper.deleteByPrimaryKey(1L)
         devopsServiceMapper.deleteByPrimaryKey(1L)
