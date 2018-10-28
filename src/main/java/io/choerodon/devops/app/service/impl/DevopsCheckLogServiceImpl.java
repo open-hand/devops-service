@@ -55,12 +55,16 @@ import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
+import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
+import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
+import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -136,6 +140,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
     @Autowired
     private DevopsGitlabPipelineRepository devopsGitlabPipelineRepository;
+    @Autowired
+    private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper;
+    @Autowired
+    private DevopsGitlabCommitMapper devopsGitlabCommitMapper;
 
     @Override
     public void checkLog(String version) {
@@ -265,6 +273,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN).stream().map(commitStatuseDO -> {
                                         Stage stage = new Stage();
                                         stage.setDescription(commitStatuseDO.getDescription());
+                                        stage.setId(commitStatuseDO.getId());
                                         stage.setName(commitStatuseDO.getName());
                                         stage.setStatus(commitStatuseDO.getStatus());
                                         if (commitStatuseDO.getFinishedAt() != null) {
@@ -282,13 +291,57 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             stages.removeAll(Collections.singleton(null));
                             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
                             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
-                            logs.add(checkLog);
                         });
                     } catch (Exception e) {
                         checkLog.setResult(FAILED + e.getMessage());
                     }
+                    logs.add(checkLog);
                 });
         devopsGitlabPipelineRepository.deleteWithoutCommit();
+    }
+
+    private void fixPipelines(List<CheckLog> logs) {
+        List<DevopsGitlabPipelineDO> gitlabPipelineES = devopsGitlabPipelineMapper.selectAll();
+        gitlabPipelineES.forEach(devopsGitlabPipelineDO -> {
+            CheckLog checkLog = new CheckLog();
+            checkLog.setContent(APP + devopsGitlabPipelineDO.getPipelineId() + "fix pipeline");
+            try {
+                ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getAppId());
+                if (applicationDO.getGitlabProjectId() != null) {
+                    DevopsGitlabCommitDO devopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getCommitId());
+                    if (devopsGitlabCommitDO != null) {
+                        GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()), ADMIN);
+                        List<Stage> stages = gitlabProjectRepository
+                                .getCommitStatuse(applicationDO.getGitlabProjectId(), devopsGitlabCommitDO.getCommitSha(), ADMIN).stream().map(commitStatuseDO -> {
+                                    Stage stage = new Stage();
+                                    stage.setDescription(commitStatuseDO.getDescription());
+                                    stage.setId(commitStatuseDO.getId());
+                                    stage.setName(commitStatuseDO.getName());
+                                    stage.setStatus(commitStatuseDO.getStatus());
+                                    if (commitStatuseDO.getFinishedAt() != null) {
+                                        stage.setFinishedAt(commitStatuseDO.getFinishedAt());
+                                    }
+                                    if (commitStatuseDO.getStartedAt() != null) {
+                                        stage.setStartedAt(commitStatuseDO.getStartedAt());
+                                    }
+                                    if (gitlabPipelineE.getRef().equals(commitStatuseDO.getRef())) {
+                                        return stage;
+                                    } else {
+                                        return null;
+                                    }
+                                }).collect(Collectors.toList());
+                        stages.removeAll(Collections.singleton(null));
+                        devopsGitlabPipelineDO.setStage(JSONArray.toJSONString(stages));
+                        devopsGitlabPipelineMapper.updateByPrimaryKeySelective(devopsGitlabPipelineDO);
+                    }
+                }
+                checkLog.setResult("successd");
+            } catch (Exception e) {
+                checkLog.setResult(FAILED + e.getMessage());
+            }
+            logs.add(checkLog);
+        });
+
     }
 
 
@@ -604,6 +657,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 updateWebHook(logs);
                 syncCommit(logs);
                 syncPipelines(logs);
+            } else if ("0.10.4".equals(version)) {
+                fixPipelines(logs);
             } else {
                 LOGGER.info("version not matched");
             }
