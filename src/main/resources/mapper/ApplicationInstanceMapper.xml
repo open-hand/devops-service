@@ -260,9 +260,6 @@
         <if test="envGroupId != null">
             AND de.devops_env_group_id = #{envGroupId}
         </if>
-        <if test="envGroupId == null">
-            AND de.devops_env_group_id is null
-        </if>
         ORDER BY
         da.last_update_date DESC,
         de.sequence ASC,
