@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
@@ -250,5 +251,10 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         } catch (FeignException e) {
             throw new CommonException("error.deploykey.create", e);
         }
+    }
+
+    @Override
+    public void addMemberIntoGroup(Integer groupId, MemberDTO memberDTO) {
+
     }
 }

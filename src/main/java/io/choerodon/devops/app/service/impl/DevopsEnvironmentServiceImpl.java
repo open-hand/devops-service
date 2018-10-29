@@ -483,6 +483,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .queryUserPermissionByProjectId(projectId, new PageRequest(0, 999)).getContent();
         // 求allUsers中没权限的用户
         // TODO 有用户的权限分配gitlab的project的owner权限
+        gitlabRepository.
         allUsers.stream().filter(e -> !userIds.contains(e.getId())).forEach(e -> {
             Long userId = e.getId();
             String loginName = e.getLoginName();
@@ -554,7 +555,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 遍历所有用户
         for (UserWithRoleDTO userWithRoleDTO : allProjectUser.getContent()) {
             Optional<RoleDTO> roleOptional = userWithRoleDTO.getRoles().stream()
-                    .filter(e -> e.getCode().equals(PROJECT_OWNER)).findFirst();
+                    .filter(e -> PROJECT_OWNER.equals(e.getCode())).findFirst();
             if (roleOptional.isPresent()) {
                 envUserPermissionDTOList
                         .add(new DevopsEnvUserPermissionDTO(userWithRoleDTO.getLoginName(), userWithRoleDTO.getId(),
