@@ -42,6 +42,7 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
@@ -60,6 +61,7 @@ import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -269,26 +271,22 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 devopsGitlabCommitRepository.update(devopsGitlabCommitE);
                                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
                             }
-                            List<Stage> stages = gitlabProjectRepository
-                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN).stream().map(commitStatuseDO -> {
-                                        Stage stage = new Stage();
-                                        stage.setDescription(commitStatuseDO.getDescription());
-                                        stage.setId(commitStatuseDO.getId());
-                                        stage.setName(commitStatuseDO.getName());
-                                        stage.setStatus(commitStatuseDO.getStatus());
-                                        if (commitStatuseDO.getFinishedAt() != null) {
-                                            stage.setFinishedAt(commitStatuseDO.getFinishedAt());
-                                        }
-                                        if (commitStatuseDO.getStartedAt() != null) {
-                                            stage.setStartedAt(commitStatuseDO.getStartedAt());
-                                        }
-                                        if (gitlabPipelineE.getRef().equals(commitStatuseDO.getRef())) {
-                                            return stage;
-                                        } else {
-                                            return null;
-                                        }
-                                    }).collect(Collectors.toList());
-                            stages.removeAll(Collections.singleton(null));
+                            List<Stage> stages = new ArrayList<>();
+                            List<String> stageNames = new ArrayList<>();
+                            List<Integer> gitlabJobIds = gitlabProjectRepository
+                                    .listJobs(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(devopsGitlabPipelineE.getPipelineId()), ADMIN).stream().map(GitlabJobE::getId).collect(Collectors.toList());
+
+                            gitlabProjectRepository.getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN).
+                                    stream().forEach(commitStatuseDO -> {
+                                if (gitlabJobIds.contains(commitStatuseDO.getId())) {
+                                    Stage stage = getPipelibeStage(commitStatuseDO);
+                                    stages.add(stage);
+                                } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube")) {
+                                    Stage stage = getPipelibeStage(commitStatuseDO);
+                                    stages.add(stage);
+                                    stageNames.add(commitStatuseDO.getName());
+                                }
+                            });
                             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
                             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
                         });
@@ -311,26 +309,22 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     DevopsGitlabCommitDO devopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getCommitId());
                     if (devopsGitlabCommitDO != null) {
                         GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()), ADMIN);
-                        List<Stage> stages = gitlabProjectRepository
-                                .getCommitStatuse(applicationDO.getGitlabProjectId(), devopsGitlabCommitDO.getCommitSha(), ADMIN).stream().map(commitStatuseDO -> {
-                                    Stage stage = new Stage();
-                                    stage.setDescription(commitStatuseDO.getDescription());
-                                    stage.setId(commitStatuseDO.getId());
-                                    stage.setName(commitStatuseDO.getName());
-                                    stage.setStatus(commitStatuseDO.getStatus());
-                                    if (commitStatuseDO.getFinishedAt() != null) {
-                                        stage.setFinishedAt(commitStatuseDO.getFinishedAt());
-                                    }
-                                    if (commitStatuseDO.getStartedAt() != null) {
-                                        stage.setStartedAt(commitStatuseDO.getStartedAt());
-                                    }
-                                    if (gitlabPipelineE.getRef().equals(commitStatuseDO.getRef())) {
-                                        return stage;
-                                    } else {
-                                        return null;
-                                    }
-                                }).collect(Collectors.toList());
-                        stages.removeAll(Collections.singleton(null));
+                        List<Stage> stages = new ArrayList<>();
+                        List<String> stageNames = new ArrayList<>();
+                        List<Integer> gitlabJobIds = gitlabProjectRepository
+                                .listJobs(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()), ADMIN).stream().map(GitlabJobE::getId).collect(Collectors.toList());
+
+                        gitlabProjectRepository.getCommitStatuse(applicationDO.getGitlabProjectId(), devopsGitlabCommitDO.getCommitSha(), ADMIN).
+                                stream().forEach(commitStatuseDO -> {
+                            if (gitlabJobIds.contains(commitStatuseDO.getId())) {
+                                Stage stage = getPipelibeStage(commitStatuseDO);
+                                stages.add(stage);
+                            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube")) {
+                                Stage stage = getPipelibeStage(commitStatuseDO);
+                                stages.add(stage);
+                                stageNames.add(commitStatuseDO.getName());
+                            }
+                        });
                         devopsGitlabPipelineDO.setStatus(gitlabPipelineE.getStatus().toString());
                         devopsGitlabPipelineDO.setStage(JSONArray.toJSONString(stages));
                         devopsGitlabPipelineMapper.updateByPrimaryKeySelective(devopsGitlabPipelineDO);
@@ -343,6 +337,21 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             logs.add(checkLog);
         });
 
+    }
+
+    private Stage getPipelibeStage(CommitStatuseDO commitStatuseDO) {
+        Stage stage = new Stage();
+        stage.setDescription(commitStatuseDO.getDescription());
+        stage.setId(commitStatuseDO.getId());
+        stage.setName(commitStatuseDO.getName());
+        stage.setStatus(commitStatuseDO.getStatus());
+        if (commitStatuseDO.getFinishedAt() != null) {
+            stage.setFinishedAt(commitStatuseDO.getFinishedAt());
+        }
+        if (commitStatuseDO.getStartedAt() != null) {
+            stage.setStartedAt(commitStatuseDO.getStartedAt());
+        }
+        return stage;
     }
 
 
