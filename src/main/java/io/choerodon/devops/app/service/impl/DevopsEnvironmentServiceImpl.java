@@ -20,6 +20,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
@@ -118,9 +119,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .queryByprojectAndActive(projectId, true);
         //创建环境没有选环境组，序列从默认组环境递增，创建环境选了环境组，序列从该环境组环境递增
         if (devopsEnviromentDTO.getDevopsEnvGroupId() == null) {
-            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                    devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
         } else {
-            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnviromentDTO.getDevopsEnvGroupId().equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
+            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                    devopsEnviromentDTO.getDevopsEnvGroupId().equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                    .collect(Collectors.toList()));
         }
         List<String> sshKeys = FileUtil.getSshKey(
                 organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
@@ -243,29 +247,30 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         //启用环境，原环境不在环境组内，则序列在默认组内环境递增，员环境在环境组内，则序列在环境组内环境递增
         if (active) {
             if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
-                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             } else {
-                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .collect(Collectors.toList()));
             }
-        }
-        //停用环境，环境停用后，原组sequence重新排序
-        else {
+        } else {
+            // 停用环境，环境停用后，原组sequence重新排序
             List<Long> environmentIds;
             if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
                 environmentIds = devopsEnvironmentES.stream()
                         .filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null)
                         .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                         .collect(Collectors.toList()).stream()
-                        .map(devopsEnvironmentE1
-                                -> devopsEnvironmentE1.getId())
+                        .map(DevopsEnvironmentE::getId)
                         .collect(Collectors.toList());
             } else {
                 environmentIds = devopsEnvironmentES.stream()
-                        .filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId())
+                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
                         .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                         .collect(Collectors.toList()).stream()
-                        .map(devopsEnvironmentE1
-                                -> devopsEnvironmentE1.getId())
+                        .map(DevopsEnvironmentE::getId)
                         .collect(Collectors.toList());
             }
             environmentIds.remove(environmentId);
@@ -292,24 +297,42 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
-        DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository.queryById(devopsEnvironmentUpdateDTO.getId());
+        DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository
+                .queryById(devopsEnvironmentUpdateDTO.getId());
         List<Long> ids;
         //更新环境，包含默认组到环境组，环境组到环境组，环境组到默认组,此时将初始组sequence重新排列,新环境在所选环境组中环境sequence递增
         if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
             if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
-                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(DevopsEnvironmentE::getId).collect(Collectors.toList());
+                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        devopsEnvironmentE1.getDevopsEnvGroupId() == null)
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
             } else {
-                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> beforeDevopsEnvironmentE.getDevopsEnvGroupId().equals(devopsEnvironmentE1.getDevopsEnvGroupId())).sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(DevopsEnvironmentE::getId).collect(Collectors.toList());
+                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        beforeDevopsEnvironmentE.getDevopsEnvGroupId()
+                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
             }
             ids.remove(devopsEnvironmentUpdateDTO.getId());
             sort(ids.toArray(new Long[ids.size()]));
-            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
+            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                    (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())
+                            .equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
         } else {
             if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null) {
-                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> beforeDevopsEnvironmentE.getDevopsEnvGroupId().equals(devopsEnvironmentE1.getDevopsEnvGroupId())).sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(DevopsEnvironmentE::getId).collect(Collectors.toList());
+                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        beforeDevopsEnvironmentE.getDevopsEnvGroupId()
+                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
                 ids.remove(devopsEnvironmentUpdateDTO.getId());
                 sort(ids.toArray(new Long[ids.size()]));
-                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             }
         }
         return ConvertHelper.convert(devopsEnviromentRepository.update(
@@ -341,7 +364,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             if (devopsEnvironmentES.get(0).getDevopsEnvGroupId() != null) {
                 devopsEnvGroupE = devopsEnvGroupRepository.query(devopsEnvironmentES.get(0).getDevopsEnvGroupId());
             }
-            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class));
+            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(ConvertHelper.convertList(devopsEnvironmentES,
+                    DevopsEnviromentRepDTO.class));
             devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
             devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
         }
@@ -420,7 +444,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return devopsEnviromentRepDTOList.stream().filter(t ->
                     applicationInstanceRepository.selectByEnvId(t.getId()).stream()
                             .anyMatch(applicationInstanceE ->
-                                    applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus()) && applicationInstanceE.getApplicationE().getId().equals(appId)))
+                                    applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())
+                                            && applicationInstanceE.getApplicationE().getId().equals(appId)))
                     .collect(Collectors.toList());
         }
     }
@@ -436,7 +461,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentE.getId(), projectE.getId());
 
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode()
+                + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(
                     gitlabProjectPayload.getGroupId(),
@@ -460,7 +486,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
         uri += "devops/webhook/git_ops";
         projectHook.setUrl(uri);
-        List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
+        List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(),
+                gitlabProjectPayload.getUserId());
         if (projectHooks == null) {
             devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                     gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
@@ -482,12 +509,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<UserWithRoleDTO> allUsers = iamRepository
                 .queryUserPermissionByProjectId(projectId, new PageRequest(0, 999)).getContent();
         // 求allUsers中没权限的用户
-        // TODO 有用户的权限分配gitlab的project的owner权限
-        gitlabRepository.
+        // TODO 测试expiresAt参数的用处
         allUsers.stream().filter(e -> !userIds.contains(e.getId())).forEach(e -> {
             Long userId = e.getId();
             String loginName = e.getLoginName();
             String realName = e.getRealName();
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setUserId(TypeUtil.objToInteger(userId));
+            memberDTO.setAccessLevel(0);
+            memberDTO.setExpiresAt("");
+            gitlabRepository.addMemberIntoGroup(TypeUtil.objToInteger(projectId), memberDTO);
             devopsEnvUserPermissionRepository
                     .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, false));
         });
@@ -496,11 +527,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Long userId = e.getId();
             String loginName = e.getLoginName();
             String realName = e.getRealName();
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setUserId(TypeUtil.objToInteger(userId));
+            memberDTO.setAccessLevel(50);
+            memberDTO.setExpiresAt("");
+            gitlabRepository.addMemberIntoGroup(TypeUtil.objToInteger(projectId), memberDTO);
             devopsEnvUserPermissionRepository
                     .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
         });
     }
-
 
     @Override
     public EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId) {
@@ -536,7 +571,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         String path = String.format("gitops/%s/%s/%s",
                 organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
         //生成环境git仓库ssh地址
-        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
+                projectE.getCode(), devopsEnvironmentE.getCode());
 
         File file = new File(path);
         GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
@@ -575,6 +611,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Page<DevopsEnvUserPermissionDTO> pageByOptions(Long envId, PageRequest pageRequest, String params) {
         return devopsEnvUserPermissionRepository.pageUserPermissionByOption(envId, pageRequest, params);
     }
+
     @Override
     public void updateEnvUserPermission(Long envId, List<Long> userIds) {
         devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, userIds);
