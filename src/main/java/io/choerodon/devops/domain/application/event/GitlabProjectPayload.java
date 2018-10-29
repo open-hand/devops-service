@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.event;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * Created by younger on 2018/3/29.
@@ -13,7 +13,7 @@ public class GitlabProjectPayload {
     private Integer groupId;
     private String type;
     private Long organizationId;
-    private Map<String, Boolean> updateMap;
+    private List<Long> userIds;
     private String loginName;
     private String realName;
 
@@ -65,12 +65,12 @@ public class GitlabProjectPayload {
         this.organizationId = organizationId;
     }
 
-    public Map<String, Boolean> getUpdateMap() {
-        return updateMap;
+    public List<Long> getUserIds() {
+        return userIds;
     }
 
-    public void setUpdateMap(Map<String, Boolean> updateMap) {
-        this.updateMap = updateMap;
+    public void setUserIds(List<Long> userIds) {
+        this.userIds = userIds;
     }
 
     public String getLoginName() {

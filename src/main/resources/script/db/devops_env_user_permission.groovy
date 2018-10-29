@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
 
             column(name: 'login_name', type: 'VARCHAR(32)', remarks: '用户id')
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id')
-            column(name: 'permission', type: 'TINYINT UNSIGNED', remarks: '是否有权限', defaultValue: '0')
+            column(name: 'isPermitted', type: 'TINYINT UNSIGNED', remarks: '是否有权限', defaultValue: '0')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")

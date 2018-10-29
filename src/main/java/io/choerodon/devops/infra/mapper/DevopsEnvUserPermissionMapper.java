@@ -20,7 +20,7 @@ public interface DevopsEnvUserPermissionMapper extends BaseMapper<DevopsEnvUserP
                                                                   @Param("searchParam") Map<String, Object> searchParam,
                                                                   @Param("param") String param);
 
-    void updateEnvUserPermission(@Param("updateMap") List<String> updateMap,
-                                 @Param("permission") Boolean permission,
-                                 @Param("envId") Long envId);
+    void initUserPermission(@Param("envId") Long envId);
+
+    void updateEnvUserPermission(@Param("envId") Long envId, @Param("userIds") List<Long> userIds);
 }

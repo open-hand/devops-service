@@ -7,28 +7,35 @@
             resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
         SELECT
         deup.login_name,
+        deup.iam_user_id,
         deup.real_name,
         deup.env_id,
-        deup.permission
+        deup.is_permitted
         FROM devops_env_user_permission deup
         WHERE
         deup.env_id = #{envId}
         <include refid="sqlparam"/>
     </select>
 
+    <update id="initUserPermission">
+        UPDATE devops_env_user_permission deup
+        SET deup.is_permitted = FALSE
+        WHERE deup.env_id = #{envId}
+    </update>
+
     <update id="updateEnvUserPermission" parameterType="java.util.Map">
         UPDATE devops_env_user_permission deup
-        SET deup.permission = #{permission}
-        WHERE login_name IN
-        <foreach collection="updateMap" item="loginName" open="(" close=")" separator=",">
-            #{loginName}
+        SET deup.is_permitted = TRUE
+        WHERE deup.iam_user_id IN
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
         </foreach>
         AND deup.env_id = #{envId}
     </update>
 
     <sql id="sqlparam">
         <if test='searchParam != null'>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
+            <if test='searchParam.loginName != null and searchParam.loginName.size > 0'>
                 AND
                 <foreach collection="searchParam.loginName" item="loginName" open="(" separator=" OR " close=")">
                     deup.login_name LIKE CONCAT(CONCAT('%', #{loginName, jdbcType=VARCHAR}),'%')

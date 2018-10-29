@@ -8,16 +8,18 @@ package io.choerodon.devops.api.dto;
  */
 public class DevopsEnvUserPermissionDTO {
     private String loginName;
+    private Long iamUserId;
     private String realName;
-    private Boolean permission;
+    private Boolean isPermitted;
 
     public DevopsEnvUserPermissionDTO() {
     }
 
-    public DevopsEnvUserPermissionDTO(String loginName, String realName, Boolean permission) {
+    public DevopsEnvUserPermissionDTO(String loginName, Long iamUserId, String realName, Boolean isPermitted) {
         this.loginName = loginName;
+        this.iamUserId = iamUserId;
         this.realName = realName;
-        this.permission = permission;
+        this.isPermitted = isPermitted;
     }
 
     public String getRealName() {
@@ -28,6 +30,14 @@ public class DevopsEnvUserPermissionDTO {
         return loginName;
     }
 
+    public Long getIamUserId() {
+        return iamUserId;
+    }
+
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
+    }
+
     public void setLoginName(String loginName) {
         this.loginName = loginName;
     }
@@ -36,11 +46,11 @@ public class DevopsEnvUserPermissionDTO {
         this.realName = realName;
     }
 
-    public Boolean getDeployment() {
-        return permission;
+    public Boolean getPermitted() {
+        return isPermitted;
     }
 
-    public void setDeployment(Boolean deployment) {
-        permission = deployment;
+    public void setPermitted(Boolean permitted) {
+        isPermitted = permitted;
     }
 }

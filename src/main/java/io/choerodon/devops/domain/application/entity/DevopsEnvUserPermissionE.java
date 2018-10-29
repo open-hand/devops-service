@@ -9,18 +9,20 @@ package io.choerodon.devops.domain.application.entity;
 
 public class DevopsEnvUserPermissionE {
     private String loginName;
+    private Long iamUserId;
     private String realName;
     private Long envId;
-    private Boolean permission;
+    private Boolean isPermitted;
 
     public DevopsEnvUserPermissionE() {
     }
 
-    public DevopsEnvUserPermissionE(String loginName, String realName, Long envId, Boolean permission) {
+    public DevopsEnvUserPermissionE(String loginName, Long iamUserId, String realName, Long envId, Boolean isPermitted) {
         this.loginName = loginName;
+        this.iamUserId = iamUserId;
         this.realName = realName;
         this.envId = envId;
-        this.permission = permission;
+        this.isPermitted = isPermitted;
     }
 
     public String getLoginName() {
@@ -29,6 +31,14 @@ public class DevopsEnvUserPermissionE {
 
     public void setLoginName(String loginName) {
         this.loginName = loginName;
+    }
+
+    public Long getIamUserId() {
+        return iamUserId;
+    }
+
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
     }
 
     public String getRealName() {
@@ -47,11 +57,11 @@ public class DevopsEnvUserPermissionE {
         this.envId = envId;
     }
 
-    public Boolean getPermission() {
-        return permission;
+    public Boolean getIsPermitted() {
+        return isPermitted;
     }
 
-    public void setPermission(Boolean permission) {
-        this.permission = permission;
+    public void setIsPermitted(Boolean isPermitted) {
+        this.isPermitted = isPermitted;
     }
 }

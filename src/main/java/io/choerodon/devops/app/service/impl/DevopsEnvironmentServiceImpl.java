@@ -50,6 +50,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private static final String README_CONTENT =
             "# This is gitops env repository!";
     private static final String ENV = "ENV";
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -151,7 +152,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setRealName(userE.getRealName());
 
         // 创建环境时将项目下所有用户装入payload以便于saga消费
-        gitlabProjectPayload.setUpdateMap(devopsEnviromentDTO.getUpdateMap());
+        gitlabProjectPayload.setUserIds(devopsEnviromentDTO.getUserIds());
 
         String input;
         try {
@@ -433,12 +434,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        // 更新所有用户的环境权限
-        Map<String, Boolean> updateMap = gitlabProjectPayload.getUpdateMap();
-        // 获取当前用户的loginname
-        updateMap.put(gitlabProjectPayload.getLoginName(), true);
-        updateMap.forEach((k, v) -> devopsEnvUserPermissionRepository.create(
-                new DevopsEnvUserPermissionE(k, gitlabProjectPayload.getRealName(), devopsEnvironmentE.getId(), v)));
+        initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentE.getId(), projectE.getId());
 
         GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
@@ -477,6 +473,33 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         devopsEnviromentRepository.update(devopsEnvironmentE);
     }
+
+    private void initUserPermissionWhenCreatingEnv(GitlabProjectPayload gitlabProjectPayload, Long envId,
+            Long projectId) {
+        List<Long> userIds = gitlabProjectPayload.getUserIds();
+        userIds.add(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+        // TODO 由于获取项目下所有的用户iam服务提供的接口只有带分页的接口，所以只有把pageSize设置为999去获得所有的用户，日后优化
+        List<UserWithRoleDTO> allUsers = iamRepository
+                .queryUserPermissionByProjectId(projectId, new PageRequest(0, 999)).getContent();
+        // 求allUsers中没权限的用户
+        // TODO 有用户的权限分配gitlab的project的owner权限
+        allUsers.stream().filter(e -> !userIds.contains(e.getId())).forEach(e -> {
+            Long userId = e.getId();
+            String loginName = e.getLoginName();
+            String realName = e.getRealName();
+            devopsEnvUserPermissionRepository
+                    .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, false));
+        });
+        // 求allUsers中有权限的用户
+        allUsers.stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
+            Long userId = e.getId();
+            String loginName = e.getLoginName();
+            String realName = e.getRealName();
+            devopsEnvUserPermissionRepository
+                    .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
+        });
+    }
+
 
     @Override
     public EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId) {
@@ -530,11 +553,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvUserPermissionDTO> envUserPermissionDTOList = new ArrayList<>();
         // 遍历所有用户
         for (UserWithRoleDTO userWithRoleDTO : allProjectUser.getContent()) {
-            Optional<RoleDTO> cartOptional = userWithRoleDTO.getRoles().stream().filter(e -> e.getId().equals(43L) || e.getId().equals(45L)).findFirst();
-            if (cartOptional.isPresent()) {
-                envUserPermissionDTOList.add(new DevopsEnvUserPermissionDTO(userWithRoleDTO.getLoginName(), userWithRoleDTO.getRealName(), true));
+            Optional<RoleDTO> roleOptional = userWithRoleDTO.getRoles().stream()
+                    .filter(e -> e.getCode().equals(PROJECT_OWNER)).findFirst();
+            if (roleOptional.isPresent()) {
+                envUserPermissionDTOList
+                        .add(new DevopsEnvUserPermissionDTO(userWithRoleDTO.getLoginName(), userWithRoleDTO.getId(),
+                                userWithRoleDTO.getRealName(), true));
             } else {
-                envUserPermissionDTOList.add(new DevopsEnvUserPermissionDTO(userWithRoleDTO.getLoginName(), userWithRoleDTO.getRealName(), false));
+                envUserPermissionDTOList
+                        .add(new DevopsEnvUserPermissionDTO(userWithRoleDTO.getLoginName(), userWithRoleDTO.getId(),
+                                userWithRoleDTO.getRealName(), false));
             }
         }
         BeanUtils.copyProperties(allProjectUser, envUserPermissionDTOPage);
@@ -547,8 +575,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvUserPermissionRepository.pageUserPermissionByOption(envId, pageRequest, params);
     }
     @Override
-    public void updateEnvUserPermission(Long envId, Map<String, Boolean> updateMap) {
-        devopsEnvUserPermissionRepository.updateEnvUserPermission(updateMap, envId);
+    public void updateEnvUserPermission(Long envId, List<Long> userIds) {
+        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, userIds);
     }
 
     @Override

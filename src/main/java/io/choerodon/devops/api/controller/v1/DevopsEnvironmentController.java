@@ -1,7 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import io.swagger.annotations.ApiOperation;
@@ -308,7 +307,7 @@ public class DevopsEnvironmentController {
     }
 
     /**
-     * 创建环境时查询项目下所有用户权限
+     * 创建环境时分页查询项目下用户权限
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
@@ -319,8 +318,8 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER,
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @CustomPageRequest
-    @ApiOperation(value = "创建环境时查询项目下所有用户权限")
-    @GetMapping(value = "/perssion")
+    @ApiOperation(value = "创建环境时分页查询项目下用户权限")
+    @GetMapping(value = "/permission")
     public ResponseEntity<Page<DevopsEnvUserPermissionDTO>> queryUserPermissionWhenCreateEnv(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -346,13 +345,13 @@ public class DevopsEnvironmentController {
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "分页过滤查询用户权限")
     @CustomPageRequest
-    @PostMapping(value = "/{env_id}/perssion/list_by_options")
+    @PostMapping(value = "/{env_id}/permission/list_by_options")
     public ResponseEntity<Page<DevopsEnvUserPermissionDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "环境ID")
+            @ApiParam(value = "环境ID", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
@@ -364,24 +363,24 @@ public class DevopsEnvironmentController {
     /**
      * 环境下为用户分配权限
      *
-     * @param projectId   项目id
-     * @param envId       环境id
-     * @param perssionMap 用户权限map
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param userIds   有权限的用户ids
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER,
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "环境下为用户分配权限")
-    @PostMapping(value = "/{env_id}/perssion")
+    @PostMapping(value = "/{env_id}/permission")
     public ResponseEntity updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
-            @ApiParam(value = "用户权限map")
-            @RequestBody Map<String, Boolean> perssionMap) {
-        devopsEnvironmentService.updateEnvUserPermission(envId, perssionMap);
+            @ApiParam(value = "有权限的用户ids")
+            @RequestBody List<Long> userIds) {
+        devopsEnvironmentService.updateEnvUserPermission(envId, userIds);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

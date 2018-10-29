@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.dto;
 
-import java.util.Map;
+import java.util.List;
 
 /**
  * Created by younger on 2018/4/9.
@@ -12,7 +12,7 @@ public class DevopsEnviromentDTO {
     private String code;
     private String description;
     private Long devopsEnvGroupId;
-    private Map<String, Boolean> updateMap;
+    private List<Long> userIds;
 
     public Long getProjectId() {
         return projectId;
@@ -54,11 +54,11 @@ public class DevopsEnviromentDTO {
         this.devopsEnvGroupId = devopsEnvGroupId;
     }
 
-    public Map<String, Boolean> getUpdateMap() {
-        return updateMap;
+    public List<Long> getUserIds() {
+        return userIds;
     }
 
-    public void setUpdateMap(Map<String, Boolean> updateMap) {
-        this.updateMap = updateMap;
+    public void setUserIds(List<Long> userIds) {
+        this.userIds = userIds;
     }
 }

@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service;
 
 import java.util.List;
-import java.util.Map;
 
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
@@ -132,7 +131,7 @@ public interface DevopsEnvironmentService {
 
 
     /**
-     * 创建环境时查询项目下所有用户权限
+     * 创建环境时分页查询项目下用户权限
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
@@ -153,11 +152,10 @@ public interface DevopsEnvironmentService {
     /**
      * 环境下为用户分配权限
      *
-     * @param envId       环境id
-     * @param perssionMap 用户权限map
-     * @return void
+     * @param envId   环境id
+     * @param userIds 有权限的用户ids
      */
-    void updateEnvUserPermission(Long envId, Map<String, Boolean> perssionMap);
+    void updateEnvUserPermission(Long envId, List<Long> userIds);
 
     void initMockService(SagaClient sagaClient);
 }
