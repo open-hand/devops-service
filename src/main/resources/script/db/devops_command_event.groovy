@@ -26,4 +26,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_command_event.groovy') {
             column(name: 'type')
         }
     }
+
+    changeSet(author: 'crockitwood', id: '2018-10-19-create-command-event-id-index') {
+        createIndex(indexName: "idx_command_id", tableName: "devops_command_event") {
+            column(name: "command_id")
+        }
+    }
 }

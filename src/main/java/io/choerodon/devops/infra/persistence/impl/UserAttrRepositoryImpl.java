@@ -42,6 +42,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
             return null;
         }else {
             return userAttrDO.getIamUserId();
+
         }
     }
 
