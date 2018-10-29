@@ -105,10 +105,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-//        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
-//            throw new CommonException("error.user.not.owner");
-//        }
-        // 创建sega payload
+        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+        }
+        // 创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
         devOpsAppPayload.setType(APPLICATION);
         devOpsAppPayload.setPath(applicationDTO.getCode());
@@ -334,15 +334,17 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (branchDO.getName() == null) {
                 gitUtil.push(git, applicationDir, applicationE.getGitlabProjectE().getRepoURL(),
                         gitlabUserE.getUsername(), accessToken);
-                gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
-                        AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                if (!branchDO.getProtected()) {
+                    gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
+                            AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                }
             } else {
-                if (branchDO.getProtected()) {
+                if (!branchDO.getProtected()) {
                     gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
                             AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
                 }
             }
-
             initMasterBranch(gitlabProjectPayload, applicationE);
         }
         try {
@@ -352,6 +354,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 gitlabRepository.addVariable(gitlabProjectPayload.getGitlabProjectId(), "Token",
                         token,
                         false, gitlabProjectPayload.getUserId());
+            } else {
+                token = variables.get(0).getValue();
             }
             applicationE.setToken(token);
             applicationE.initGitlabProjectE(

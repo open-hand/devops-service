@@ -3,6 +3,7 @@ package io.choerodon.devops.api.dto;
 public class JobWebHookDTO {
 
     private String sha;
+    private String ref;
     private String buildName;
     private String buildStage;
     private String buildStatus;
@@ -37,5 +38,13 @@ public class JobWebHookDTO {
 
     public void setBuildStatus(String buildStatus) {
         this.buildStatus = buildStatus;
+    }
+
+    public String getRef() {
+        return ref;
+    }
+
+    public void setRef(String ref) {
+        this.ref = ref;
     }
 }

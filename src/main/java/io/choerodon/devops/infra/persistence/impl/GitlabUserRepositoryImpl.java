@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import feign.FeignException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import feign.FeignException;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
@@ -30,7 +31,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
             responseEntity = gitlabServiceClient.createGitLabUser(
                     password, projectsLimit, gitlabUserEvent);
         } catch (FeignException e) {
-            return null;
+            throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
@@ -42,19 +43,28 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
             responseEntity = gitlabServiceClient.updateGitLabUser(
                     userId, projectsLimit, gitlabUserEvent);
         } catch (FeignException e) {
-            return null;
+            throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
 
     @Override
     public void isEnabledGitlabUser(Integer userId) {
-        gitlabServiceClient.enabledUserByUserId(userId);
+
+        try {
+            gitlabServiceClient.enabledUserByUserId(userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
     public void disEnabledGitlabUser(Integer userId) {
-        gitlabServiceClient.disEnabledUserByUserId(userId);
+        try {
+            gitlabServiceClient.disEnabledUserByUserId(userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
@@ -63,7 +73,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
         try {
             responseEntity = gitlabServiceClient.queryUserByUserId(userId);
         } catch (FeignException e) {
-            return null;
+            throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }

@@ -255,7 +255,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             } catch (ParseException e) {
                                 checkLog.setResult(FAILED + e.getMessage());
                             }
-                            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(gitlabPipelineE.getSha());
+                            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(gitlabPipelineE.getSha(), gitlabPipelineE.getRef());
                             if (devopsGitlabCommitE != null) {
                                 devopsGitlabCommitE.setRef(gitlabPipelineE.getRef());
                                 devopsGitlabCommitRepository.update(devopsGitlabCommitE);

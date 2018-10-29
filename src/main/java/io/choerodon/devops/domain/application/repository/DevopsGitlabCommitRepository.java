@@ -14,7 +14,7 @@ public interface DevopsGitlabCommitRepository {
 
     DevopsGitlabCommitE create(DevopsGitlabCommitE devopsGitlabCommitE);
 
-    DevopsGitlabCommitE queryBySha(String sha);
+    DevopsGitlabCommitE queryByShaAndRef(String sha, String ref);
 
     List<DevopsGitlabCommitE> listCommits(Long projectId, List<Long> appIds, Date startDate, Date endDate);
 

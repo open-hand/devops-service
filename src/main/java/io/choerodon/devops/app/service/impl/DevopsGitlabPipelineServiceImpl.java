@@ -74,13 +74,16 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     public void handleCreate(PipelineWebHookDTO pipelineWebHookDTO) {
         ApplicationE applicationE = applicationRepository.queryByToken(pipelineWebHookDTO.getToken());
         DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByGitlabPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
-        if ("admin1".equals(pipelineWebHookDTO.getUser().getUsername())) {
+        if ("admin1".equals(pipelineWebHookDTO.getUser().getUsername()) || "root".equals(pipelineWebHookDTO.getUser().getUsername())) {
             pipelineWebHookDTO.getUser().setUsername("admin");
         }
         UserE userE = iamRepository.queryByLoginName(pipelineWebHookDTO.getUser().getUsername());
         Integer gitlabUserId = ADMIN;
         if (userE != null) {
-            gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(userE.getId()).getGitlabUserId());
+            UserAttrE userAttrE = userAttrRepository.queryById(userE.getId());
+            if (userAttrE != null) {
+                gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
+            }
         }
         //查询pipeline最新阶段信息
 
@@ -104,7 +107,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                     }
                 }).collect(Collectors.toList());
         stages.removeAll(Collections.singleton(null));
-        DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(pipelineWebHookDTO.getObjectAttributes().getSha());
+        DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(pipelineWebHookDTO.getObjectAttributes().getSha(), pipelineWebHookDTO.getObjectAttributes().getRef());
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsGitlabPipelineE == null) {
             devopsGitlabPipelineE = new DevopsGitlabPipelineE();
@@ -133,7 +136,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     @Override
     public void updateStages(JobWebHookDTO jobWebHookDTO) {
         //按照job的状态实时更新pipeline阶段的状态
-        DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryBySha(jobWebHookDTO.getSha());
+        DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(jobWebHookDTO.getSha(), jobWebHookDTO.getRef());
         if (devopsGitlabCommitE != null && !"created".equals(jobWebHookDTO.getBuildStatus())) {
             DevopsGitlabPipelineE devopsGitlabPipelineE = devopsGitlabPipelineRepository.queryByCommitId(devopsGitlabCommitE.getId());
             if (devopsGitlabPipelineE != null) {
