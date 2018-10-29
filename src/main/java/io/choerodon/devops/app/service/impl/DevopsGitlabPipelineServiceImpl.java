@@ -101,7 +101,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
                 stages.add(stage);
-            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube")) {
+            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube")&& stages.size() > 0) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
                 stages.add(stage);
                 stageNames.add(commitStatuseDO.getName());
