@@ -22,4 +22,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
             column(name: 'iam_user_id', type: 'BIGINT UNSIGNED', remarks: 'id', afterColumn: 'login_name')
         }
     }
+
+    changeSet(author: 'n1ck', id: '2018-10-29-add-UniqueConstraint') {
+        addUniqueConstraint(tableName: 'devops_env_user_permission',
+                constraintName: 'uk_iam_user_id_env_id', columnNames: 'iam_user_id,env_id')
+    }
 }
