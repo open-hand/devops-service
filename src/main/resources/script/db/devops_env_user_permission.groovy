@@ -6,7 +6,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
 
             column(name: 'login_name', type: 'VARCHAR(32)', remarks: '用户id')
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id')
-            column(name: 'isPermitted', type: 'TINYINT UNSIGNED', remarks: '是否有权限', defaultValue: '0')
+            column(name: 'is_permitted', type: 'TINYINT UNSIGNED', remarks: '是否有权限', defaultValue: '0')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
@@ -19,6 +19,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_user_permission.groovy') {
     changeSet(author: 'n1ck', id: '2018-10-26-add-real_name') {
         addColumn(tableName: 'devops_env_user_permission') {
             column(name: 'real_name', type: 'VARCHAR(32)', remarks: '真实名字', afterColumn: 'login_name')
+            column(name: 'iam_user_id', type: 'BIGINT UNSIGNED', remarks: 'id', afterColumn: 'login_name')
         }
     }
 }
