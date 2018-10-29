@@ -59,4 +59,6 @@ public interface GitlabRepository {
     List<DeployKey> getDeployKeys(Integer projectId, Integer userId);
 
     void addMemberIntoGroup(Integer groupId, MemberDTO memberDTO);
+
+    void removeMemberFromGroup(Integer groupId, Integer userId);
 }

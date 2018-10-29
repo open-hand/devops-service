@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
@@ -422,8 +423,13 @@ public interface GitlabServiceClient {
     @PutMapping("/v1/groups/{groupId}")
     ResponseEntity updateGroup(@PathVariable("groupId") Integer groupId,
                                @RequestParam("userId") Integer userId,
-                               @RequestBody @Valid GroupDO group
-    );
+                               @RequestBody @Valid GroupDO group);
 
+    @GetMapping("/v1/groups/{groupId}/members")
+    ResponseEntity addMemberIntoGroup(@PathVariable("groupId") Integer groupId,
+                                      @RequestBody MemberDTO memberDTO);
 
+    @DeleteMapping("/v1/groups/{groupId}/members/{userId}")
+    ResponseEntity removeMemberFromGroup(@PathVariable("groupId") Integer groupId,
+                                         @PathVariable("userId") Integer userId);
 }

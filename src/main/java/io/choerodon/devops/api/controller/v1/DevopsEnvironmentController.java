@@ -380,7 +380,7 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody List<Long> userIds) {
-        devopsEnvironmentService.updateEnvUserPermission(envId, userIds);
+        devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

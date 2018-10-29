@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
@@ -321,5 +322,15 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity updateGroup(Integer groupId, Integer userId, GroupDO group) {
         return new ResponseEntity("error.group.update", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity addMemberIntoGroup(Integer groupId, MemberDTO memberDTO) {
+        return new ResponseEntity("error.member.add", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity removeMemberFromGroup(Integer groupId, Integer userId) {
+        return new ResponseEntity("error.member.remove", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

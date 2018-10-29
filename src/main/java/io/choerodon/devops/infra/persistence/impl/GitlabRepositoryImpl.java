@@ -101,7 +101,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient.createFile(projectId, path, content, commitMessage, userId);
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                .createFile(projectId, path, content, commitMessage, userId);
         if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.create");
         }
@@ -109,7 +110,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient.updateFile(projectId, path, content, commitMessage, userId);
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                .updateFile(projectId, path, content, commitMessage, userId);
         if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.update");
         }
@@ -137,7 +139,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public Boolean getFile(Integer projectId, String branch, String filePath) {
         try{
             gitlabServiceClient.getFile(projectId, branch, filePath);
-        }catch (FeignException e) {
+        } catch (FeignException e) {
             return false;
         }
         return true;
@@ -255,6 +257,19 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void addMemberIntoGroup(Integer groupId, MemberDTO memberDTO) {
+        try {
+            gitlabServiceClient.addMemberIntoGroup(groupId, memberDTO);
+        } catch (FeignException e) {
+            throw new CommonException("error.member.add", e);
+        }
+    }
 
+    @Override
+    public void removeMemberFromGroup(Integer groupId, Integer userId) {
+        try {
+            gitlabServiceClient.removeMemberFromGroup(groupId, userId);
+        } catch (FeignException e) {
+            throw new CommonException("error.member.remove", e);
+        }
     }
 }
