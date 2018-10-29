@@ -654,6 +654,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
                         .forEach(applicationDO -> {
                             syncWebHook(applicationDO, logs);
+                        });
+                applications.stream()
+                        .filter(applicationDO ->
+                                applicationDO.getGitlabProjectId() != null)
+                        .forEach(applicationDO -> {
                             syncBranches(applicationDO, logs);
                         });
             } else if ("0.9".equals(version)) {
