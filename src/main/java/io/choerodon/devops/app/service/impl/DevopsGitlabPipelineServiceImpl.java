@@ -285,7 +285,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineDTO.setCreationDate(devopsGitlabPipelineDO.getPipelineCreationDate());
             devopsGitlabPipelineDTO.setGitlabProjectId(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()));
             devopsGitlabPipelineDTO.setPipelineId(devopsGitlabPipelineDO.getPipelineId());
-            devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
+            if (("success").equals(devopsGitlabPipelineDO.getStatus())) {
+                devopsGitlabPipelineDTO.setStatus("passed");
+            } else {
+                devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
+            }
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
             ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(devopsGitlabPipelineDO.getSha());
             if (applicationVersionE != null) {

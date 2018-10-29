@@ -331,6 +331,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     }
                                 }).collect(Collectors.toList());
                         stages.removeAll(Collections.singleton(null));
+                        devopsGitlabPipelineDO.setStatus(gitlabPipelineE.getStatus().toString());
                         devopsGitlabPipelineDO.setStage(JSONArray.toJSONString(stages));
                         devopsGitlabPipelineMapper.updateByPrimaryKeySelective(devopsGitlabPipelineDO);
                     }
