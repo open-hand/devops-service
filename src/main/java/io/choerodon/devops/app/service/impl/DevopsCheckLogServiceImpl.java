@@ -649,11 +649,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             if ("0.8".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 0.8");
                 List<ApplicationDO> applications = applicationMapper.selectAll();
-                applications.parallelStream()
+                applications.stream()
                         .filter(applicationDO ->
                                 applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
                         .forEach(applicationDO -> {
                             syncWebHook(applicationDO, logs);
+                        });
+                applications.stream()
+                        .filter(applicationDO ->
+                                applicationDO.getGitlabProjectId() != null)
+                        .forEach(applicationDO -> {
                             syncBranches(applicationDO, logs);
                         });
             } else if ("0.9".equals(version)) {
