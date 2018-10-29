@@ -22,12 +22,14 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Stage;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
@@ -88,27 +90,25 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         }
         //查询pipeline最新阶段信息
 
-        List<Stage> stages = gitlabProjectRepository
-                .getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), gitlabUserId).stream().map(commitStatuseDO -> {
-                    Stage stage = new Stage();
-                    stage.setDescription(commitStatuseDO.getDescription());
-                    stage.setName(commitStatuseDO.getName());
-                    stage.setId(commitStatuseDO.getId());
-                    stage.setStatus(commitStatuseDO.getStatus());
-                    if (commitStatuseDO.getFinishedAt() != null) {
-                        stage.setFinishedAt(commitStatuseDO.getFinishedAt());
-                    }
-                    if (commitStatuseDO.getStartedAt() != null) {
-                        stage.setStartedAt(commitStatuseDO.getStartedAt());
-                    }
-                    if (pipelineWebHookDTO.getObjectAttributes().getRef().equals(commitStatuseDO.getRef())) {
-                        return stage;
-                    } else {
-                        return null;
-                    }
-                }).collect(Collectors.toList());
-        stages.removeAll(Collections.singleton(null));
-        DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(pipelineWebHookDTO.getObjectAttributes().getSha(), pipelineWebHookDTO.getObjectAttributes().getRef());
+
+        List<Stage> stages = new ArrayList<>();
+        List<String> stageNames = new ArrayList<>();
+        List<Integer> gitlabJobIds = gitlabProjectRepository
+                .listJobs(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(pipelineWebHookDTO.getObjectAttributes().getId()), gitlabUserId).stream().map(GitlabJobE::getId).collect(Collectors.toList());
+
+        gitlabProjectRepository.getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN).
+                stream().forEach(commitStatuseDO -> {
+            if (gitlabJobIds.contains(commitStatuseDO.getId())) {
+                Stage stage = getPipelibeStage(commitStatuseDO);
+                stages.add(stage);
+            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube")&& stages.size() > 0) {
+                Stage stage = getPipelibeStage(commitStatuseDO);
+                stages.add(stage);
+                stageNames.add(commitStatuseDO.getName());
+            }
+        });
+        DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(pipelineWebHookDTO.getObjectAttributes().getSha(),pipelineWebHookDTO.getObjectAttributes().getRef());
+
         //pipeline不存在则创建,存在则更新状态和阶段信息
         if (devopsGitlabPipelineE == null) {
             devopsGitlabPipelineE = new DevopsGitlabPipelineE();
@@ -132,6 +132,21 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         }
     }
 
+
+    private Stage getPipelibeStage(CommitStatuseDO commitStatuseDO) {
+        Stage stage = new Stage();
+        stage.setDescription(commitStatuseDO.getDescription());
+        stage.setId(commitStatuseDO.getId());
+        stage.setName(commitStatuseDO.getName());
+        stage.setStatus(commitStatuseDO.getStatus());
+        if (commitStatuseDO.getFinishedAt() != null) {
+            stage.setFinishedAt(commitStatuseDO.getFinishedAt());
+        }
+        if (commitStatuseDO.getStartedAt() != null) {
+            stage.setStartedAt(commitStatuseDO.getStartedAt());
+        }
+        return stage;
+    }
 
     @Override
     public void updateStages(JobWebHookDTO jobWebHookDTO) {
@@ -285,7 +300,11 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineDTO.setCreationDate(devopsGitlabPipelineDO.getPipelineCreationDate());
             devopsGitlabPipelineDTO.setGitlabProjectId(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()));
             devopsGitlabPipelineDTO.setPipelineId(devopsGitlabPipelineDO.getPipelineId());
-            devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
+            if (("success").equals(devopsGitlabPipelineDO.getStatus())) {
+                devopsGitlabPipelineDTO.setStatus("passed");
+            } else {
+                devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
+            }
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
             ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(devopsGitlabPipelineDO.getSha());
             if (applicationVersionE != null) {
