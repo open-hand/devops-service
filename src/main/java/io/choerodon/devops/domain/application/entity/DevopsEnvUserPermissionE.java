@@ -17,7 +17,8 @@ public class DevopsEnvUserPermissionE {
     public DevopsEnvUserPermissionE() {
     }
 
-    public DevopsEnvUserPermissionE(String loginName, Long iamUserId, String realName, Long envId, Boolean isPermitted) {
+    public DevopsEnvUserPermissionE(String loginName, Long iamUserId, String realName, Long envId,
+                                    Boolean isPermitted) {
         this.loginName = loginName;
         this.iamUserId = iamUserId;
         this.realName = realName;
@@ -57,11 +58,11 @@ public class DevopsEnvUserPermissionE {
         this.envId = envId;
     }
 
-    public Boolean getIsPermitted() {
+    public Boolean getPermitted() {
         return isPermitted;
     }
 
-    public void setIsPermitted(Boolean isPermitted) {
-        this.isPermitted = isPermitted;
+    public void setPermitted(Boolean permitted) {
+        isPermitted = permitted;
     }
 }

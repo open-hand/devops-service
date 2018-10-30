@@ -36,7 +36,7 @@
         AND deup.is_permitted = TRUE
     </select>
 
-    <update id="updateEnvUserPermission" parameterType="java.util.Map">
+    <update id="updateEnvUserPermission" parameterType="java.util.List">
         UPDATE devops_env_user_permission deup
         SET deup.is_permitted = TRUE
         WHERE deup.iam_user_id IN

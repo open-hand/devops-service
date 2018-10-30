@@ -24,5 +24,5 @@ public interface DevopsEnvUserPermissionMapper extends BaseMapper<DevopsEnvUserP
 
     List<DevopsEnvUserPermissionDO> listAllUserPermission(@Param("envId") Long envId);
 
-    void updateEnvUserPermission(@Param("envId") Long envId, @Param("userIds") List<Long> userIds);
+    Integer updateEnvUserPermission(@Param("envId") Long envId, @Param("userIds") List<Long> userIds);
 }

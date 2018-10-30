@@ -139,7 +139,7 @@ public interface DevopsEnvironmentService {
      * @return page
      */
     Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                               String params, Long envId);
+                                                               String params, String envId);
 
     /**
      * 获取环境下所有用户权限
@@ -156,7 +156,7 @@ public interface DevopsEnvironmentService {
      * @param envId     环境id
      * @param userIds   有权限的用户ids
      */
-    void updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds);
+    Integer updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds);
 
     void initMockService(SagaClient sagaClient);
 }

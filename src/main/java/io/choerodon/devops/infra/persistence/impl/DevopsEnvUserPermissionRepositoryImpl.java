@@ -60,8 +60,8 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     }
 
     @Override
-    public void updateEnvUserPermission(Long envId, List<Long> userIds) {
+    public Integer updateEnvUserPermission(Long envId, List<Long> userIds) {
         devopsEnvUserPermissionMapper.initUserPermission(envId);
-        devopsEnvUserPermissionMapper.updateEnvUserPermission(envId, userIds);
+        return devopsEnvUserPermissionMapper.updateEnvUserPermission(envId, userIds);
     }
 }

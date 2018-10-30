@@ -579,10 +579,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                      String searchParams, Long envId) {
+                                                                      String searchParams, String envId) {
         // 获取当前操作者
         UserE userE = iamRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        if (envId == null) {
+        if ("null".equals(envId)) {
             // 创建环境时的分页查询，因为此时还没有envId
             // 从iam服务中获取项目下所有用户
             Page<UserWithRoleDTO> allProjectUser = iamRepository
@@ -614,7 +614,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             // 普通的分页查询
             return devopsEnvUserPermissionRepository
-                    .pageUserPermissionByOption(envId, pageRequest, searchParams);
+                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams);
         }
     }
 
@@ -624,7 +624,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public void updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
+    public Integer updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
         // TODO 由于获取项目下所有的用户iam服务提供的接口只有带分页的接口，所以只有把pageSize设置为999去获得所有的用户，日后优化
         List<UserWithRoleDTO> allUsers = iamRepository
                 .queryUserPermissionByProjectId(projectId, new PageRequest(0, 999), "").getContent();
@@ -641,7 +641,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             // TODO 这里是向group里添加成员，需要替换为向project里添加成员，需要自己实现相应api接口
             //       updateGitlabGroupMember(projectId, userId, 50);
         });
-        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, userIds);
+        return devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, userIds);
     }
 
 

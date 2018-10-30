@@ -21,5 +21,5 @@ public interface DevopsEnvUserPermissionRepository {
 
     List<DevopsEnvUserPermissionDTO> listALlUserPermission(Long envId);
 
-    void updateEnvUserPermission(Long envId, List<Long> userIds);
+    Integer updateEnvUserPermission(Long envId, List<Long> userIds);
 }

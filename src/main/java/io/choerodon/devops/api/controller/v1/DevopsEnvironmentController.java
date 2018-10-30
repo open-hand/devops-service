@@ -329,7 +329,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params,
             @ApiParam(value = "环境id")
-            @RequestParam(value = "env_id") Long envId) {
+            @RequestParam(value = "env_id") String envId) {
         return Optional
                 .ofNullable(devopsEnvironmentService
                         .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
@@ -349,12 +349,12 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER,
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取环境下所有用户权限")
-    @GetMapping(value = "/list_all")
+    @GetMapping(value = "/{env_id}/list_all")
     public ResponseEntity<List<DevopsEnvUserPermissionDTO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @RequestParam(value = "env_id") Long envId) {
+            @PathVariable(value = "env_id") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
@@ -373,14 +373,15 @@ public class DevopsEnvironmentController {
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{env_id}/permission")
-    public ResponseEntity updateEnvUserPermission(
+    public ResponseEntity<Integer> updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
             @PathVariable(value = "env_id") Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody List<Long> userIds) {
-        devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.user.permission.update"));
     }
 }
