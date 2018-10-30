@@ -69,11 +69,16 @@ public class CertificationServiceImpl implements CertificationService {
     private GitlabRepository gitlabRepository;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
-
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
                        MultipartFile key, MultipartFile cert, Boolean isGitOps) {
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
+
         String certName = certificationDTO.getCertName();
         String type = certificationDTO.getType();
         List<String> domains = certificationDTO.getDomains();
@@ -187,6 +192,9 @@ public class CertificationServiceImpl implements CertificationService {
     public void deleteById(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
         Long certEnvId = certificationE.getEnvironmentE().getId();
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certEnvId);
+
         envUtil.checkEnvConnection(certEnvId, envListener);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
 
@@ -245,6 +253,7 @@ public class CertificationServiceImpl implements CertificationService {
         if (params == null) {
             params = "{}";
         }
+
         return certificationRepository.page(projectId, envId, pageRequest, params);
     }
 

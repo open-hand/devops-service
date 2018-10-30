@@ -272,7 +272,7 @@ public class SagaHandler {
     /**
      * 注册组织事件
      */
-    @SagaTask(code = "org-register", description = "注册组织",
+    @SagaTask(code = "devopsOrgRegister", description = "注册组织",
             sagaCode = "org-register", maxRetryCount = 0,
             seq = 1)
     public String registerOrganization(String payload) {

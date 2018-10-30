@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
@@ -68,5 +69,23 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     public Integer updateEnvUserPermission(Long envId, List<Long> userIds) {
         devopsEnvUserPermissionMapper.initUserPermission(envId);
         return devopsEnvUserPermissionMapper.updateEnvUserPermission(envId, userIds);
+    }
+
+    @Override
+    public List<DevopsEnvUserPermissionE> listByUserId(Long userId) {
+        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
+        devopsEnvUserPermissionDO.setIamUserId(userId);
+        return ConvertHelper.convertList(devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDO), DevopsEnvUserPermissionE.class);
+    }
+
+    @Override
+    public void checkEnvDeployPermission(Long userId, Long envId) {
+        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
+        devopsEnvUserPermissionDO.setIamUserId(userId);
+        devopsEnvUserPermissionDO.setEnvId(envId);
+        devopsEnvUserPermissionDO = devopsEnvUserPermissionMapper.selectOne(devopsEnvUserPermissionDO);
+        if (devopsEnvUserPermissionDO != null && !devopsEnvUserPermissionDO.getPermitted()) {
+            throw new CommonException("error.env.user.permission.get");
+        }
     }
 }

@@ -29,6 +29,7 @@ public class DevopsEnvironmentE {
     private Boolean isActive;
     private Boolean isUpdate;
     private String updateMessage;
+    private Boolean permission;
 
     private Long devopsSyncCommit;
     private Long agentSyncCommit;
@@ -265,6 +266,14 @@ public class DevopsEnvironmentE {
 
     public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
         this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 
     /**

@@ -15,6 +15,7 @@ public class DevopsEnviromentRepDTO {
     private Boolean isUpdate;
     private String updateMessage;
     private Long devopsEnvGroupId;
+    private Boolean permission;
 
     public Long getId() {
         return id;
@@ -94,5 +95,21 @@ public class DevopsEnviromentRepDTO {
 
     public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
         this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public Boolean getConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(Boolean connected) {
+        isConnected = connected;
+    }
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 }
