@@ -34,5 +34,5 @@ public interface IamRepository {
 
     UserE queryByEmail(Long projectId, String email);
 
-    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest);
+    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,String searchParams);
 }

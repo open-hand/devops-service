@@ -2,7 +2,9 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
@@ -29,6 +32,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class IamRepositoryImpl implements IamRepository {
+
+    private static final Gson gson = new Gson();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IamRepositoryImpl.class);
 
@@ -169,10 +174,23 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest) {
+    public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, String searchParams) {
         try {
+            RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
+            if (searchParams != null && !"".equals(searchParams)) {
+                Map maps = gson.fromJson(searchParams, Map.class);
+                Map<String, String> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+                String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                String subLogin = loginName.substring(1, loginName.length() - 1);
+                String subReal = realName.substring(1, realName.length() - 1);
+                roleAssignmentSearchDTO.setLoginName("".equals(subLogin) ? null : subLogin);
+                roleAssignmentSearchDTO.setRealName("".equals(subReal) ? null : subReal);
+                roleAssignmentSearchDTO.setParam(new String[]{param});
+            }
             ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient.queryUserByProjectId(projectId,
-                    pageRequest.getPage(), pageRequest.getSize(), new RoleAssignmentSearchDTO());
+                    pageRequest.getPage(), pageRequest.getSize(), roleAssignmentSearchDTO);
             return userEPageResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user permission by project id {} error", projectId);

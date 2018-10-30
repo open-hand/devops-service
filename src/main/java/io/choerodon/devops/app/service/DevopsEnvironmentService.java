@@ -131,23 +131,23 @@ public interface DevopsEnvironmentService {
 
 
     /**
-     * 创建环境时分页查询项目下用户权限
+     * 分页查询项目下用户权限
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
+     * @param envId       环境id
      * @return page
      */
-    Page<DevopsEnvUserPermissionDTO> queryUserPermissionWhenCreateEnv(Long projectId, PageRequest pageRequest);
+    Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                               String params, Long envId);
 
     /**
-     * 分页过滤查询用户权限
+     * 获取环境下所有用户权限
      *
-     * @param pageRequest 分页参数
-     * @param envId       环境id
-     * @param params      查询参数
-     * @return page
+     * @param envId 环境id
+     * @return list
      */
-    Page<DevopsEnvUserPermissionDTO> pageByOptions(Long envId, PageRequest pageRequest, String params);
+    List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId);
 
     /**
      * 环境下为用户分配权限

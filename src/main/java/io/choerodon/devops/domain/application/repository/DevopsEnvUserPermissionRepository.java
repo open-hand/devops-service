@@ -19,5 +19,7 @@ public interface DevopsEnvUserPermissionRepository {
 
     Page<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest, String params);
 
+    List<DevopsEnvUserPermissionDTO> listALlUserPermission(Long envId);
+
     void updateEnvUserPermission(Long envId, List<Long> userIds);
 }

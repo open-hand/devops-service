@@ -36,18 +36,27 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
 
     @Override
     public void create(DevopsEnvUserPermissionE devopsEnvUserPermissionE) {
-        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = ConvertHelper.convert(devopsEnvUserPermissionE, DevopsEnvUserPermissionDO.class);
+        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = ConvertHelper
+                .convert(devopsEnvUserPermissionE, DevopsEnvUserPermissionDO.class);
         devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO);
     }
 
     @Override
-    public Page<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest, String params) {
+    public Page<DevopsEnvUserPermissionDTO> pageUserPermissionByOption(Long envId, PageRequest pageRequest,
+                                                                       String params) {
         Map maps = gson.fromJson(params, Map.class);
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = PageHelper.doPage(pageRequest.getPage(),
-                pageRequest.getSize(), () -> devopsEnvUserPermissionMapper.pageUserEnvPermissionByOption(envId, searchParamMap, paramMap));
+                pageRequest.getSize(), () -> devopsEnvUserPermissionMapper
+                        .pageUserEnvPermissionByOption(envId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPage(devopsEnvUserPermissionDTOPage, DevopsEnvUserPermissionDTO.class);
+    }
+
+    @Override
+    public List<DevopsEnvUserPermissionDTO> listALlUserPermission(Long envId) {
+        return ConvertHelper.convertList(devopsEnvUserPermissionMapper.listAllUserPermission(envId),
+                DevopsEnvUserPermissionDTO.class);
     }
 
     @Override
