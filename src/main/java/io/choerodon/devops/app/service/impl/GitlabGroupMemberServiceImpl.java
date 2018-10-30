@@ -87,10 +87,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     if (PROJECT.equals(gitlabGroupMemberDTO.getResourceType())) {
                         gitlabGroupE = devopsProjectRepository.queryDevopsProject(gitlabGroupMemberDTO.getResourceId());
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
-                                userId);
-                        deleteGilabRole(groupMemberE, gitlabGroupE, userId, true);
-                        groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                 TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                                 userId);
                         deleteGilabRole(groupMemberE, gitlabGroupE, userId, false);
@@ -179,22 +175,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                     (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
             addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
-        }
-        if (memberHelper.isDeploy()) {
-            try {
-                gitlabGroupE = devopsProjectRepository.queryDevopsProject(resourceId);
-            } catch (Exception e) {
-                LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
-                return;
-            }
-            groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                    TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
-                    (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-            addOrUpdateGilabRole(
-                    memberHelper.getDeployAdminAccessLevel(),
-                    groupMemberE,
-                    TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
-                    userAttrE);
         }
     }
 
