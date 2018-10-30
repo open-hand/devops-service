@@ -256,18 +256,18 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void addMemberIntoGroup(Integer groupId, MemberDTO memberDTO) {
+    public void addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
         try {
-            gitlabServiceClient.addMemberIntoGroup(groupId, memberDTO);
+            gitlabServiceClient.addMemberIntoProject(projectId, memberDTO);
         } catch (FeignException e) {
             throw new CommonException("error.member.add", e);
         }
     }
 
     @Override
-    public void removeMemberFromGroup(Integer groupId, Integer userId) {
+    public void removeMemberFromProject(Integer groupId, Integer userId) {
         try {
-            gitlabServiceClient.removeMemberFromGroup(groupId, userId);
+            gitlabServiceClient.removeMemberFromProject(groupId, userId);
         } catch (FeignException e) {
             throw new CommonException("error.member.remove", e);
         }

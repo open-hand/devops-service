@@ -332,7 +332,7 @@ public class DevopsEnvironmentController {
             @RequestParam(value = "env_id") String envId) {
         return Optional
                 .ofNullable(devopsEnvironmentService
-                        .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
+                                    .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
     }
@@ -349,12 +349,12 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER,
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "获取环境下所有用户权限")
-    @GetMapping(value = "/{env_id}/list_all")
+    @GetMapping(value = "/{envId}/list_all")
     public ResponseEntity<List<DevopsEnvUserPermissionDTO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @PathVariable(value = "envId") Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
@@ -372,12 +372,12 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER,
                     InitRoleCode.DEPLOY_ADMINISTRATOR})
     @ApiOperation(value = "环境下为用户分配权限")
-    @PostMapping(value = "/{env_id}/permission")
+    @PostMapping(value = "/{envId}/permission")
     public ResponseEntity<Integer> updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @PathVariable(value = "envId") Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody List<Long> userIds) {
         return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds))

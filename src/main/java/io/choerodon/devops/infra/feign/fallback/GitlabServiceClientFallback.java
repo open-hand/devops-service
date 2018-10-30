@@ -325,12 +325,12 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity addMemberIntoGroup(Integer groupId, MemberDTO memberDTO) {
+    public ResponseEntity addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
         return new ResponseEntity("error.member.add", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity removeMemberFromGroup(Integer groupId, Integer userId) {
+    public ResponseEntity removeMemberFromProject(Integer projectId, Integer userId) {
         return new ResponseEntity("error.member.remove", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

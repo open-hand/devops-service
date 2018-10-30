@@ -128,7 +128,8 @@ public interface GitlabServiceClient {
     ResponseEntity<List<ImpersonationTokenDO>> listTokenByUserId(@PathVariable("userId") Integer userId);
 
     @GetMapping(value = "/v1/groups/{groupName}")
-    ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName, @RequestParam(value = "userId") Integer userId);
+    ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName,
+                                             @RequestParam(value = "userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFile> createFile(@PathVariable("projectId") Integer projectId,
@@ -168,11 +169,14 @@ public interface GitlabServiceClient {
                                                                 @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines")
-    ResponseEntity<List<PipelineDO>> listPipeline(@PathVariable("projectId") Integer projectId, @RequestParam("userId") Integer userId);
+    ResponseEntity<List<PipelineDO>> listPipeline(@PathVariable("projectId") Integer projectId,
+                                                  @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/page")
     ResponseEntity<List<PipelineDO>> listPipelines(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("page") Integer page, @RequestParam("size") Integer size, @RequestParam("userId") Integer userId);
+                                                   @RequestParam("page") Integer page,
+                                                   @RequestParam("size") Integer size,
+                                                   @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}")
     ResponseEntity<PipelineDO> getPipeline(@PathVariable("projectId") Integer projectId,
@@ -425,11 +429,11 @@ public interface GitlabServiceClient {
                                @RequestParam("userId") Integer userId,
                                @RequestBody @Valid GroupDO group);
 
-    @GetMapping("/v1/groups/{groupId}/members")
-    ResponseEntity addMemberIntoGroup(@PathVariable("groupId") Integer groupId,
-                                      @RequestBody MemberDTO memberDTO);
+    @PostMapping("/v1/projects/{projectId}/members")
+    ResponseEntity addMemberIntoProject(@PathVariable("projectId") Integer projectId,
+                                        @RequestBody MemberDTO memberDTO);
 
-    @DeleteMapping("/v1/groups/{groupId}/members/{userId}")
-    ResponseEntity removeMemberFromGroup(@PathVariable("groupId") Integer groupId,
-                                         @PathVariable("userId") Integer userId);
+    @DeleteMapping("/v1/projects/{projectId}/members/{userId}")
+    ResponseEntity removeMemberFromProject(@PathVariable("projectId") Integer projectId,
+                                           @PathVariable("userId") Integer userId);
 }

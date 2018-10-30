@@ -39,7 +39,6 @@ import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
-
 /**
  * Created by younger on 2018/4/9.
  */
@@ -510,14 +509,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<UserWithRoleDTO> allUsers = iamRepository
                 .queryUserPermissionByProjectId(projectId, new PageRequest(0, 999), null).getContent();
         // 求allUsers中没权限的用户
-        // TODO 测试expiresAt参数的用处
-        // TODO 使用Integer常量替换permission的具体值
         allUsers.stream().filter(e -> !userIds.contains(e.getId())).forEach(e -> {
             Long userId = e.getId();
             String loginName = e.getLoginName();
             String realName = e.getRealName();
-            // TODO 这里是向group里添加成员，需要替换为向project里添加成员，需要自己实现相应api接口
-            // updateGitlabGroupMember(projectId, userId, 0);
+            updateGitlabProjectMember(projectId, userId, 0);
             devopsEnvUserPermissionRepository
                     .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, false));
         });
@@ -526,8 +522,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Long userId = e.getId();
             String loginName = e.getLoginName();
             String realName = e.getRealName();
-            // TODO 这里是向group里添加成员，需要替换为向project里添加成员，需要自己实现相应api接口
-            // updateGitlabGroupMember(projectId, userId, 50);
+            updateGitlabProjectMember(projectId, userId, 50);
             devopsEnvUserPermissionRepository
                     .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
         });
@@ -545,7 +540,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
         if (devopsEnvironmentE.getDevopsSyncCommit() != null) {
             envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository
-                    .query(devopsEnvironmentE.getDevopsSyncCommit()).getCommitSha());
+                    .query(devopsEnvironmentE.getDevopsSyncCommit())
+                    .getCommitSha());
         }
         if (devopsEnvironmentE.getSagaSyncCommit() != null) {
             envSyncStatusDTO.setSagaSyncCommit(devopsEnvCommitRepository
@@ -554,7 +550,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
         envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
-                gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode()));
+                gitlabUrl, organization.getCode(), projectE.getCode(),
+                devopsEnvironmentE.getCode()));
         return envSyncStatusDTO;
     }
 
@@ -628,30 +625,28 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // TODO 由于获取项目下所有的用户iam服务提供的接口只有带分页的接口，所以只有把pageSize设置为999去获得所有的用户，日后优化
         List<UserWithRoleDTO> allUsers = iamRepository
                 .queryUserPermissionByProjectId(projectId, new PageRequest(0, 999), "").getContent();
-        // TODO 测试expiresAt参数的用处
-        // TODO 使用Integer常量替换permission的具体值
         allUsers.stream().filter(e -> !userIds.contains(e.getId())).forEach(e -> {
             Long userId = e.getId();
-            // TODO 这里是向group里添加成员，需要替换为向project里添加成员，需要自己实现相应api接口
-            //         updateGitlabGroupMember(projectId, userId, 0);
+            updateGitlabProjectMember(projectId, userId, 0);
         });
         // 求allUsers中有权限的用户
         allUsers.stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
             Long userId = e.getId();
-            // TODO 这里是向group里添加成员，需要替换为向project里添加成员，需要自己实现相应api接口
-            //       updateGitlabGroupMember(projectId, userId, 50);
+            updateGitlabProjectMember(projectId, userId, 50);
         });
         return devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, userIds);
     }
 
-
-    // TODO 这里是向group里添加成员，需要替换为向project里添加成员，需要自己实现相应api接口
-    private void updateGitlabGroupMember(Long projectId, Long userId, Integer permission) {
-        MemberDTO memberDTO = new MemberDTO();
-        memberDTO.setUserId(TypeUtil.objToInteger(userId));
-        memberDTO.setAccessLevel(permission);
-        memberDTO.setExpiresAt("");
-        gitlabRepository.addMemberIntoGroup(TypeUtil.objToInteger(projectId), memberDTO);
+    private void updateGitlabProjectMember(Long projectId, Long userId, Integer permission) {
+        if (permission == 0) {
+            gitlabRepository.removeMemberFromProject(TypeUtil.objToInteger(projectId), TypeUtil.objToInteger(userId));
+        } else {
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setUserId(TypeUtil.objToInteger(userId));
+            memberDTO.setAccessLevel(permission);
+            memberDTO.setExpiresAt("");
+            gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(projectId), memberDTO);
+        }
     }
 
     @Override
