@@ -15,6 +15,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -171,6 +173,32 @@ public class IamRepositoryImpl implements IamRepository {
             LOGGER.error("get user by email {} error", email);
             return null;
         }
+    }
+
+    @Override
+    public List<RoleDTO> listRolesWithUserCountOnProjectLevel(Long projectId,
+                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
+        try {
+            return iamServiceClient.listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO).getBody();
+        } catch (FeignException e) {
+            LOGGER.error("get roles with user count error by search param {}", roleAssignmentSearchDTO.getParam());
+            return null;
+        }
+    }
+
+    @Override
+    public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
+                                                                RoleAssignmentSearchDTO roleAssignmentSearchDTO,
+                                                                Long roleId, Long projectId) {
+        try {
+            return iamServiceClient
+                    .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
+                            projectId, roleAssignmentSearchDTO)
+                    .getBody();
+        } catch (FeignException e) {
+            LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
+        }
+        return null;
     }
 
     @Override

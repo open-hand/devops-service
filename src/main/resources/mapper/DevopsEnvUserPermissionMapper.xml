@@ -46,6 +46,14 @@
         AND deup.env_id = #{envId}
     </update>
 
+    <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
+        SELECT
+        deup.iam_user_id,
+        deup.is_permitted
+        FROM devops_env_user_permission deup
+        WHERE deup.env_id = #{envId}
+    </select>
+
     <sql id="sqlparam">
         <if test='searchParam != null'>
             <if test='searchParam.loginName != null and searchParam.loginName.size > 0'>

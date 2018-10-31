@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
+import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
 import io.choerodon.mybatis.common.BaseMapper;
 
@@ -23,6 +24,8 @@ public interface DevopsEnvUserPermissionMapper extends BaseMapper<DevopsEnvUserP
     void initUserPermission(@Param("envId") Long envId);
 
     List<DevopsEnvUserPermissionDO> listAllUserPermission(@Param("envId") Long envId);
+
+    List<DevopsEnvUserPermissionDO> listAll(@Param("envId") Long envId);
 
     Integer updateEnvUserPermission(@Param("envId") Long envId, @Param("userIds") List<Long> userIds);
 }

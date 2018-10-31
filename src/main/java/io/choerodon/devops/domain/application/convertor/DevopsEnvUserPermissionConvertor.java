@@ -30,4 +30,11 @@ public class DevopsEnvUserPermissionConvertor implements ConvertorI<DevopsEnvUse
         BeanUtils.copyProperties(entity, devopsEnvUserPermissionDO);
         return devopsEnvUserPermissionDO;
     }
+
+    @Override
+    public DevopsEnvUserPermissionE doToEntity(DevopsEnvUserPermissionDO dataObject) {
+        DevopsEnvUserPermissionE devopsEnvUserPermissionE = new DevopsEnvUserPermissionE();
+        BeanUtils.copyProperties(dataObject, devopsEnvUserPermissionE);
+        return devopsEnvUserPermissionE;
+    }
 }

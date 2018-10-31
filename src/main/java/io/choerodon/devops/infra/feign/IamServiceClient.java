@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
@@ -52,6 +54,18 @@ public interface IamServiceClient {
 
     @GetMapping(value = "/v1/projects/{project_id}/users")
     ResponseEntity<Page<UserDO>> listUsersByEmail(@PathVariable("project_id") Long projectId, @RequestParam("page") int page, @RequestParam("size") int size, @RequestParam("email") String email);
+
+    @PostMapping(value = "/v1/projects/{project_id}/role_members/users/count")
+    ResponseEntity<List<RoleDTO>> listRolesWithUserCountOnProjectLevel(@PathVariable(name = "project_id") Long sourceId,
+                                                                       @RequestBody(required = false) @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    @PostMapping(value = "/v1/projects/{project_id}/role_members/users")
+    ResponseEntity<Page<UserDTO>> pagingQueryUsersByRoleIdOnProjectLevel(
+            @RequestParam("page") int page,
+            @RequestParam("size") int size,
+            @RequestParam(name = "role_id") Long roleId,
+            @PathVariable(name = "project_id") Long sourceId,
+            @RequestBody RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/roles")
     ResponseEntity<Page<UserWithRoleDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId,
