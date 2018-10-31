@@ -249,11 +249,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
             throw new CommonException("error.env.project.not.exist");
         }
-        GitlabGroupMemberE groupMemberE = gitlabProjectRepository.getProjectMember(
+        GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (groupMemberE != null && groupMemberE.getAccessLevel() == AccessLevel.OWNER.toValue()) {
+            return;
+        }
+        GitlabGroupMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (groupMemberE == null || (groupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue() && groupMemberE
-                .getAccessLevel() != AccessLevel.OWNER.toValue())) {
+        if (newGroupMemberE == null || (newGroupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue())) {
             throw new CommonException("error.user.not.env.pro.owner");
         }
     }
