@@ -1,13 +1,14 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
+import javax.validation.Valid;
 
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
@@ -127,7 +128,8 @@ public interface GitlabServiceClient {
     ResponseEntity<List<ImpersonationTokenDO>> listTokenByUserId(@PathVariable("userId") Integer userId);
 
     @GetMapping(value = "/v1/groups/{groupName}")
-    ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName, @RequestParam(value = "userId") Integer userId);
+    ResponseEntity<GroupDO> queryGroupByName(@PathVariable("groupName") String groupName,
+                                             @RequestParam(value = "userId") Integer userId);
 
     @PostMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFile> createFile(@PathVariable("projectId") Integer projectId,
@@ -167,11 +169,14 @@ public interface GitlabServiceClient {
                                                                 @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines")
-    ResponseEntity<List<PipelineDO>> listPipeline(@PathVariable("projectId") Integer projectId, @RequestParam("userId") Integer userId);
+    ResponseEntity<List<PipelineDO>> listPipeline(@PathVariable("projectId") Integer projectId,
+                                                  @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/page")
     ResponseEntity<List<PipelineDO>> listPipelines(@PathVariable("projectId") Integer projectId,
-                                                   @RequestParam("page") Integer page, @RequestParam("size") Integer size, @RequestParam("userId") Integer userId);
+                                                   @RequestParam("page") Integer page,
+                                                   @RequestParam("size") Integer size,
+                                                   @RequestParam("userId") Integer userId);
 
     @GetMapping(value = "/v1/projects/{projectId}/pipelines/{pipelineId}")
     ResponseEntity<PipelineDO> getPipeline(@PathVariable("projectId") Integer projectId,
@@ -422,8 +427,13 @@ public interface GitlabServiceClient {
     @PutMapping("/v1/groups/{groupId}")
     ResponseEntity updateGroup(@PathVariable("groupId") Integer groupId,
                                @RequestParam("userId") Integer userId,
-                               @RequestBody @Valid GroupDO group
-    );
+                               @RequestBody @Valid GroupDO group);
 
+    @PostMapping("/v1/projects/{projectId}/members")
+    ResponseEntity addMemberIntoProject(@PathVariable("projectId") Integer projectId,
+                                        @RequestBody MemberDTO memberDTO);
 
+    @DeleteMapping("/v1/projects/{projectId}/members/{userId}")
+    ResponseEntity removeMemberFromProject(@PathVariable("projectId") Integer projectId,
+                                           @PathVariable("userId") Integer userId);
 }

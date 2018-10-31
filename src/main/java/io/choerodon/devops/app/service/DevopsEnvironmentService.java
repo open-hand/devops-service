@@ -3,9 +3,11 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
  * Created by younger on 2018/4/9.
@@ -38,6 +40,7 @@ public interface DevopsEnvironmentService {
      * @return List
      */
     List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active);
+
     /**
      * 项目下查询环境
      *
@@ -122,10 +125,38 @@ public interface DevopsEnvironmentService {
      */
     void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload);
 
-
     EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId);
 
     String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE);
+
+
+    /**
+     * 分页查询项目下用户权限
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param envId       环境id
+     * @return page
+     */
+    Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                               String params, String envId);
+
+    /**
+     * 获取环境下所有用户权限
+     *
+     * @param envId 环境id
+     * @return list
+     */
+    List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId);
+
+    /**
+     * 环境下为用户分配权限
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param userIds   有权限的用户ids
+     */
+    Integer updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds);
 
     void initMockService(SagaClient sagaClient);
 }

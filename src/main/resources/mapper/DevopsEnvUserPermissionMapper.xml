@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvUserPermissionMapper">
+
+    <select id="pageUserEnvPermissionByOption"
+            resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
+        SELECT
+        deup.login_name,
+        deup.iam_user_id,
+        deup.real_name,
+        deup.env_id,
+        deup.is_permitted
+        FROM devops_env_user_permission deup
+        WHERE
+        deup.env_id = #{envId}
+        <include refid="sqlparam"/>
+    </select>
+
+    <update id="initUserPermission">
+        UPDATE devops_env_user_permission deup
+        SET deup.is_permitted = FALSE
+        WHERE deup.env_id = #{envId}
+    </update>
+
+    <select id="listAllUserPermission" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
+        SELECT
+        deup.login_name,
+        deup.iam_user_id,
+        deup.real_name,
+        deup.env_id,
+        deup.is_permitted
+        FROM devops_env_user_permission deup
+        WHERE
+        deup.env_id = #{envId}
+        AND deup.is_permitted = TRUE
+    </select>
+
+    <update id="updateEnvUserPermission" parameterType="java.util.List">
+        UPDATE devops_env_user_permission deup
+        SET deup.is_permitted = TRUE
+        WHERE deup.iam_user_id IN
+        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
+            #{userId}
+        </foreach>
+        AND deup.env_id = #{envId}
+    </update>
+
+    <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
+        SELECT
+        deup.iam_user_id,
+        deup.is_permitted
+        FROM devops_env_user_permission deup
+        WHERE deup.env_id = #{envId}
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.loginName != null and searchParam.loginName.size > 0'>
+                AND
+                <foreach collection="searchParam.loginName" item="loginName" open="(" separator=" OR " close=")">
+                    deup.login_name LIKE CONCAT(CONCAT('%', #{loginName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.realName != null and searchParam.realName.size > 0'>
+                AND
+                <foreach collection="searchParam.realName" item="realName" open="(" separator=" OR " close=")">
+                    deup.real_name LIKE CONCAT(CONCAT('%', #{realName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (deup.login_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR deup.real_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
+    </sql>
+</mapper>

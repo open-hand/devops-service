@@ -32,5 +32,4 @@ public interface DevopsEnvironmentRepository {
     List<DevopsEnvironmentE> list();
 
     void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
-
 }

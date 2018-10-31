@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
@@ -100,7 +101,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient.createFile(projectId, path, content, commitMessage, userId);
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                .createFile(projectId, path, content, commitMessage, userId);
         if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.create");
         }
@@ -108,7 +110,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
-        ResponseEntity<RepositoryFile> result = gitlabServiceClient.updateFile(projectId, path, content, commitMessage, userId);
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                .updateFile(projectId, path, content, commitMessage, userId);
         if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.update");
         }
@@ -136,7 +139,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public Boolean getFile(Integer projectId, String branch, String filePath) {
         try{
             gitlabServiceClient.getFile(projectId, branch, filePath);
-        }catch (FeignException e) {
+        } catch (FeignException e) {
             return false;
         }
         return true;
@@ -249,6 +252,24 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             gitlabServiceClient.createDeploykey(projectId, title, key, canPush, userId);
         } catch (FeignException e) {
             throw new CommonException("error.deploykey.create", e);
+        }
+    }
+
+    @Override
+    public void addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
+        try {
+            gitlabServiceClient.addMemberIntoProject(projectId, memberDTO);
+        } catch (FeignException e) {
+            throw new CommonException("error.member.add", e);
+        }
+    }
+
+    @Override
+    public void removeMemberFromProject(Integer groupId, Integer userId) {
+        try {
+            gitlabServiceClient.removeMemberFromProject(groupId, userId);
+        } catch (FeignException e) {
+            throw new CommonException("error.member.remove", e);
         }
     }
 }

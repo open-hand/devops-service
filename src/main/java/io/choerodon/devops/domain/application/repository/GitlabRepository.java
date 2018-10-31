@@ -2,6 +2,7 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -57,5 +58,7 @@ public interface GitlabRepository {
 
     List<DeployKey> getDeployKeys(Integer projectId, Integer userId);
 
+    void addMemberIntoProject(Integer projectId, MemberDTO memberDTO);
 
+    void removeMemberFromProject(Integer projectId, Integer userId);
 }

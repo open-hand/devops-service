@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 /**
  * Created by younger on 2018/4/9.
  */
@@ -10,6 +12,7 @@ public class DevopsEnviromentDTO {
     private String code;
     private String description;
     private Long devopsEnvGroupId;
+    private List<Long> userIds;
 
     public Long getProjectId() {
         return projectId;
@@ -49,5 +52,13 @@ public class DevopsEnviromentDTO {
 
     public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
         this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public List<Long> getUserIds() {
+        return userIds;
+    }
+
+    public void setUserIds(List<Long> userIds) {
+        this.userIds = userIds;
     }
 }

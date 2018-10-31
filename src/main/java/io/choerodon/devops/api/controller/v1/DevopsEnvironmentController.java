@@ -8,12 +8,16 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
 
 /**
@@ -300,5 +304,84 @@ public class DevopsEnvironmentController {
         return Optional.ofNullable(devopsEnvironmentService.queryEnvSyncStatus(projectId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.sync.get"));
+    }
+
+    /**
+     * 分页查询项目下用户权限
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param envId       环境id
+     * @return page
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @CustomPageRequest
+    @ApiOperation(value = "分页查询项目下用户权限")
+    @PostMapping(value = "/list")
+    public ResponseEntity<Page<DevopsEnvUserPermissionDTO>> listUserPermissionByEnvId(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params,
+            @ApiParam(value = "环境id")
+            @RequestParam(value = "env_id") String envId) {
+        return Optional
+                .ofNullable(devopsEnvironmentService
+                                    .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+    }
+
+    /**
+     * 获取环境下所有用户权限
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return list
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "获取环境下所有用户权限")
+    @GetMapping(value = "/{envId}/list_all")
+    public ResponseEntity<List<DevopsEnvUserPermissionDTO>> listAllUserPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "envId") Long envId) {
+        return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
+    }
+
+    /**
+     * 环境下为用户分配权限
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param userIds   有权限的用户ids
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER,
+                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @ApiOperation(value = "环境下为用户分配权限")
+    @PostMapping(value = "/{envId}/permission")
+    public ResponseEntity<Integer> updateEnvUserPermission(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "envId") Long envId,
+            @ApiParam(value = "有权限的用户ids")
+            @RequestBody List<Long> userIds) {
+        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.env.user.permission.update"));
     }
 }
