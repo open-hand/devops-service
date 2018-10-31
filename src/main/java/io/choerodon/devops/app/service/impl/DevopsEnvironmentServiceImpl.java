@@ -471,8 +471,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        // 创建环境时初始化用户权限，分为gitlab权限和devops环境用户表权限
-        initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentE.getId(), projectE.getId());
         GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode()
                 + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
@@ -510,11 +508,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             gitlabRepository.createFile(gitlabProjectDO.getId(),
                     README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
         }
+
         devopsEnviromentRepository.update(devopsEnvironmentE);
+        // 创建环境时初始化用户权限，分为gitlab权限和devops环境用户表权限
+        initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentE.getId(),
+                TypeUtil.objToLong(gitlabProjectDO.getId()), projectE.getId());
     }
 
     private void initUserPermissionWhenCreatingEnv(GitlabProjectPayload gitlabProjectPayload, Long envId,
-                                                   Long projectId) {
+                                                   Long gitlabProjectId, Long projectId) {
 
         List<Long> userIds = gitlabProjectPayload.getUserIds();
         // 获取项目下所有角色和角色的用户数量
@@ -546,7 +548,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             String realName = e.getRealName();
             UserAttrE userAttrE = userAttrRepository.queryById(userId);
             Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(envId, gitlabUserId, 0);
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, 0);
             devopsEnvUserPermissionRepository
                     .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, false));
         });
@@ -557,7 +559,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             String realName = e.getRealName();
             UserAttrE userAttrE = userAttrRepository.queryById(userId);
             Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(envId, gitlabUserId, 40);
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, 40);
             devopsEnvUserPermissionRepository
                     .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
         });
@@ -669,8 +671,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, userIds);
     }
 
-    private void updateGitlabProjectMember(Long envId, Long userId, Integer permission) {
-        Long gitlabProjectId = devopsEnviromentRepository.queryById(envId).getGitlabEnvProjectId();
+    private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
         if (permission == 0) {
             // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
             GitlabGroupMemberE gitlabGroupMemberE = gitlabProjectRepository.getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
