@@ -661,7 +661,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Integer updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
         List<DevopsEnvUserPermissionE> allUserList = devopsEnvUserPermissionRepository.listAll(envId);
         allUserList.forEach(e -> {
-            Integer permissionNumber = e.getPermitted() ? 40 : 0;
+            Integer permissionNumber = userIds.contains(e.getIamUserId()) ? 40 : 0;
             UserAttrE userAttrE = userAttrRepository.queryById(e.getIamUserId());
             Long gitlabUserId = userAttrE.getGitlabUserId();
             updateGitlabProjectMember(envId, gitlabUserId, permissionNumber);
@@ -674,7 +674,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (permission == 0) {
             // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
             GitlabGroupMemberE gitlabGroupMemberE = gitlabProjectRepository.getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            if (gitlabGroupMemberE != null) {
+            if (gitlabGroupMemberE.getId() != null) {
                 gitlabRepository
                         .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
             }

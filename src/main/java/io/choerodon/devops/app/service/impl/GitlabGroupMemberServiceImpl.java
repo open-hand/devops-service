@@ -241,7 +241,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        GitlabGroupE gitlabGroupE = devopsProjectRepository
+                .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
         if (gitlabGroupE == null) {
             throw new CommonException("error.group.not.sync");
         }
@@ -251,7 +252,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         GitlabGroupMemberE groupMemberE = gitlabProjectRepository.getProjectMember(
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue()) {
+        if (groupMemberE == null || (groupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue() && groupMemberE
+                .getAccessLevel() != AccessLevel.OWNER.toValue())) {
             throw new CommonException("error.user.not.env.pro.owner");
         }
     }
