@@ -171,7 +171,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                             TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                    addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
+                    addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), userAttrE);
                 } catch (Exception e) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                     return;
