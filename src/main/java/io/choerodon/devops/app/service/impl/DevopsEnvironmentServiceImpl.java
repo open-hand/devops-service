@@ -219,14 +219,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
+
+        //查询当前用户的环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionRepository.listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream().filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true).map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        //查询当前用户是否为项目所有者
+        Boolean isProjectOwner = devopsEnvUserPermissionRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
+
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t -> {
                     t.setUpdate(false);
                     setEnvStatus(connectedEnvList, updatedEnvList, t);
-                    setPermission(t, permissionEnvIds);
+                    //项目成员返回拥有对应权限的环境，项目所有者返回所有环境
+                    setPermission(t, permissionEnvIds, isProjectOwner);
                 })
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                 .collect(Collectors.toList());
@@ -680,8 +687,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
-    private void setPermission(DevopsEnvironmentE devopsEnvironmentE, List<Long> permissionEnvIds) {
-        if (permissionEnvIds.contains(devopsEnvironmentE.getId())) {
+    private void setPermission(DevopsEnvironmentE devopsEnvironmentE, List<Long> permissionEnvIds, Boolean isProjectOwner) {
+        if (permissionEnvIds.contains(devopsEnvironmentE.getId()) || isProjectOwner) {
             devopsEnvironmentE.setPermission(true);
         } else {
             devopsEnvironmentE.setPermission(false);

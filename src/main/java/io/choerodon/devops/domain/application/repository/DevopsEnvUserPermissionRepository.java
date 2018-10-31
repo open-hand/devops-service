@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -30,4 +31,6 @@ public interface DevopsEnvUserPermissionRepository {
 
 
     void checkEnvDeployPermission(Long userId, Long envId);
+
+    boolean isProjectOwner(Long userId, ProjectE projectE);
 }

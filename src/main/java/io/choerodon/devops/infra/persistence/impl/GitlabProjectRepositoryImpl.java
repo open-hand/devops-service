@@ -11,10 +11,8 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import feign.FeignException;
-import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabCommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
+
+import io.choerodon.devops.domain.application.entity.gitlab.*;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -143,6 +141,16 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
             return commitDOS;
         } catch (FeignException e) {
             throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public GitlabGroupMemberE getProjectMember(Integer projectId, Integer userId) {
+        try {
+            return ConvertHelper.convert(gitlabServiceClient.getProjectMember(
+                    projectId, userId).getBody(), GitlabGroupMemberE.class);
+        } catch (FeignException e) {
+            throw new CommonException(e);
         }
     }
 }
