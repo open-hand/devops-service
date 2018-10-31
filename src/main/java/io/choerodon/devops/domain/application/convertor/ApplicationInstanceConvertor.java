@@ -54,7 +54,9 @@ public class ApplicationInstanceConvertor implements ConvertorI<ApplicationInsta
         applicationDeployDTO.setEnvName(entity.getDevopsEnvironmentE().getName());
         applicationDeployDTO.setAppId(entity.getApplicationE().getId());
         applicationDeployDTO.setEnvId(entity.getDevopsEnvironmentE().getId());
-        applicationDeployDTO.setAppVersionId(entity.getApplicationVersionE().getId());
+        if (entity.getApplicationVersionE() != null) {
+            applicationDeployDTO.setAppVersionId(entity.getApplicationVersionE().getId());
+        }
         return applicationDeployDTO;
     }
 }
