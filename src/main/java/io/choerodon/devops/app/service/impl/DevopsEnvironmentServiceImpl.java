@@ -673,11 +673,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long gitlabProjectId = devopsEnviromentRepository.queryById(envId).getGitlabEnvProjectId();
         if (permission == 0) {
             // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
-//            GitlabGroupMemberE gitlabGroupMemberE = gitlabProjectRepository.
-//            if (gitlabRepository.getProjectName()) {
-//                gitlabRepository
-//                        .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-//            }
+            GitlabGroupMemberE gitlabGroupMemberE = gitlabProjectRepository.getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
+            if (gitlabGroupMemberE != null) {
+                gitlabRepository
+                        .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
+            }
         } else {
             MemberDTO memberDTO = new MemberDTO();
             memberDTO.setUserId(TypeUtil.objToInteger(userId));

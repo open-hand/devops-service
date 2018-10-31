@@ -370,7 +370,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             PageRequest pageRequest = new PageRequest();
             pageRequest.setPage(0);
             pageRequest.setSize(100);
-            Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, pageRequest);
+            Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, pageRequest,null);
             if (!allProjectUser.getContent().isEmpty()) {
                 allProjectUser.forEach(userWithRoleDTO -> {
                     if (userWithRoleDTO.getRoles().stream().noneMatch(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))) {
