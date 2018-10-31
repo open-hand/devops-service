@@ -42,8 +42,7 @@ public class DevopsEnvPodController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询容器管理")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")

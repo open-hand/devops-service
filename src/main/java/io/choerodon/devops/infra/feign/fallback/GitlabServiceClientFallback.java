@@ -333,4 +333,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity removeMemberFromProject(Integer projectId, Integer userId) {
         return new ResponseEntity("error.member.remove", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity<MemberDO> getProjectMember(Integer projectId, Integer userId) {
+        return new ResponseEntity("error.project.member.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

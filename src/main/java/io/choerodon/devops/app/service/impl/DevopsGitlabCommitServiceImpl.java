@@ -16,16 +16,20 @@ import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
 import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService {
 
     private static final Gson gson = new Gson();
+    private static final Integer ADMIN = 1;
 
     @Autowired
     IamRepository iamRepository;
@@ -33,34 +37,62 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     private ApplicationRepository applicationRepository;
     @Autowired
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+    @Autowired
+    private DevopsGitRepository devopsGitRepository;
 
     @Override
     public void create(PushWebHookDTO pushWebHookDTO, String token) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
-        pushWebHookDTO.getCommits().stream().forEach(commitDTO -> {
-            String ref = pushWebHookDTO.getRef().split("/")[2];
-            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(commitDTO.getId(), ref);
+        String ref = pushWebHookDTO.getRef().split("/")[2];
+        if (pushWebHookDTO.getCommits().size() != 0) {
+            pushWebHookDTO.getCommits().stream().forEach(commitDTO -> {
+                DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(commitDTO.getId(), ref);
 
+                if (devopsGitlabCommitE == null) {
+                    devopsGitlabCommitE = new DevopsGitlabCommitE();
+                    devopsGitlabCommitE.setAppId(applicationE.getId());
+                    devopsGitlabCommitE.setCommitContent(commitDTO.getMessage());
+                    devopsGitlabCommitE.setCommitSha(commitDTO.getId());
+                    devopsGitlabCommitE.setRef(ref);
+                    devopsGitlabCommitE.setUrl(commitDTO.getUrl());
+                    if ("root".equals(commitDTO.getAuthor().getName())) {
+                        devopsGitlabCommitE.setUserId(1L);
+                    } else {
+                        UserE userE = iamRepository.queryByEmail(applicationE.getProjectE().getId(),
+                                commitDTO.getAuthor().getEmail());
+                        if (userE != null) {
+                            devopsGitlabCommitE.setUserId(userE.getId());
+                        }
+                    }
+                    devopsGitlabCommitE.setCommitDate(commitDTO.getTimestamp());
+                    devopsGitlabCommitRepository.create(devopsGitlabCommitE);
+                }
+            });
+        } else {
+            //直接从一个分支切出来另外一个分支，没有commits记录
+            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(pushWebHookDTO.getCheckoutSha(), ref);
             if (devopsGitlabCommitE == null) {
+                CommitE commitE = devopsGitRepository.getCommit(TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()), pushWebHookDTO.getCheckoutSha(), ADMIN);
                 devopsGitlabCommitE = new DevopsGitlabCommitE();
                 devopsGitlabCommitE.setAppId(applicationE.getId());
-                devopsGitlabCommitE.setCommitContent(commitDTO.getMessage());
-                devopsGitlabCommitE.setCommitSha(commitDTO.getId());
-                devopsGitlabCommitE.setRef(pushWebHookDTO.getRef().split("/")[2]);
-                devopsGitlabCommitE.setUrl(commitDTO.getUrl());
-                if ("root".equals(commitDTO.getAuthor().getName())) {
+                devopsGitlabCommitE.setCommitContent(commitE.getMessage());
+                devopsGitlabCommitE.setCommitSha(commitE.getId());
+                devopsGitlabCommitE.setRef(ref);
+                devopsGitlabCommitE.setUrl(commitE.getUrl());
+                if ("root".equals(commitE.getAuthorName())) {
                     devopsGitlabCommitE.setUserId(1L);
                 } else {
                     UserE userE = iamRepository.queryByEmail(applicationE.getProjectE().getId(),
-                            commitDTO.getAuthor().getEmail());
+                            commitE.getAuthorEmail());
                     if (userE != null) {
                         devopsGitlabCommitE.setUserId(userE.getId());
                     }
                 }
-                devopsGitlabCommitE.setCommitDate(commitDTO.getTimestamp());
+                devopsGitlabCommitE.setCommitDate(commitE.getCommittedDate());
                 devopsGitlabCommitRepository.create(devopsGitlabCommitE);
             }
-        });
+        }
+
     }
 
     @Override

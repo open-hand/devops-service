@@ -46,7 +46,8 @@ public class DevopsServiceController {
      * @param name      网络名
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查网络唯一性")
     @GetMapping(value = "/check")
     public ResponseEntity<Boolean> checkName(
@@ -68,7 +69,8 @@ public class DevopsServiceController {
      * @param devopsServiceReqDTO 部署网络参数
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "部署网络")
     @PostMapping
     public ResponseEntity<Boolean> create(@ApiParam(value = "项目ID", required = true)
@@ -89,7 +91,8 @@ public class DevopsServiceController {
      * @param devopsServiceReqDTO 部署网络参数
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "更新网络")
     @PutMapping(value = "/{id}")
     public ResponseEntity<Boolean> update(@ApiParam(value = "项目ID", required = true)
@@ -111,7 +114,8 @@ public class DevopsServiceController {
      * @param id        网络ID
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "删除网络")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(@ApiParam(value = "项目ID", required = true)
@@ -122,33 +126,6 @@ public class DevopsServiceController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 分页查询网络列表
-     *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @return Page of DevopsServiceDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "分页查询网络列表")
-    @CustomPageRequest
-    @PostMapping(value = "/list_by_options")
-    public ResponseEntity<Page<DevopsServiceDTO>> pageByOptions(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore
-            @SortDefault(value = "id", direction = Sort.Direction.DESC) PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(devopsServiceService.listDevopsServiceByPage(projectId, pageRequest, searchParam))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
-    }
 
     /**
      * 分页查询网络列表
@@ -159,8 +136,7 @@ public class DevopsServiceController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境查询网络列表")
     @GetMapping
     public ResponseEntity<List<DevopsServiceDTO>> listByEnvId(
@@ -180,7 +156,8 @@ public class DevopsServiceController {
      * @param id        网络id
      * @return DevopsServiceDTO
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询单个网络")
     @GetMapping(value = "/{id}")
     public ResponseEntity<DevopsServiceDTO> query(
@@ -205,8 +182,7 @@ public class DevopsServiceController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境总览网络查询")
     @CustomPageRequest
     @PostMapping(value = "/{envId}/listByEnv")

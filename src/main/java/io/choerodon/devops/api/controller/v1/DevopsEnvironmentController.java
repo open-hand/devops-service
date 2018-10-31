@@ -40,7 +40,7 @@ public class DevopsEnvironmentController {
      * @param devopsEnviromentDTO 环境信息
      * @return String
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
     public ResponseEntity<String> create(
@@ -59,7 +59,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询存在网络环境")
     @GetMapping(value = "/deployed")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdDeployed(
@@ -79,8 +79,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询环境")
     @GetMapping
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectIdAndActive(
@@ -102,9 +101,7 @@ public class DevopsEnvironmentController {
      * @return List
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下环境流水线查询环境")
     @GetMapping("/groups")
     public ResponseEntity<List<DevopsEnvGroupEnvsDTO>> listByProjectIdAndActiveWithGroup(
@@ -124,7 +121,7 @@ public class DevopsEnvironmentController {
      * @param environmentId 环境id
      * @return String
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询单个环境的可执行shell")
     @GetMapping("/{environmentId}/shell")
     public ResponseEntity<String> queryShell(
@@ -147,7 +144,7 @@ public class DevopsEnvironmentController {
      * @param active        是否可用
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用环境")
     @PutMapping("/{environmentId}/active")
     public ResponseEntity<Boolean> enableOrDisableEnv(
@@ -170,7 +167,7 @@ public class DevopsEnvironmentController {
      * @return DevopsEnvironmentUpdateDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询单个环境")
     @GetMapping("/{environmentId}")
     public ResponseEntity<DevopsEnvironmentUpdateDTO> query(
@@ -191,7 +188,7 @@ public class DevopsEnvironmentController {
      * @return DevopsEnvironmentUpdateDTO
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {
-            InitRoleCode.DEPLOY_ADMINISTRATOR
+            InitRoleCode.PROJECT_OWNER
     })
     @ApiOperation(value = "项目下更新环境")
     @PutMapping
@@ -212,7 +209,7 @@ public class DevopsEnvironmentController {
      * @param environmentIds 环境列表
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下环境流水线排序")
     @PutMapping("/sort")
     public ResponseEntity<DevopsEnvGroupEnvsDTO> sort(
@@ -232,7 +229,7 @@ public class DevopsEnvironmentController {
      * @param name      环境名
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建环境校验名称是否存在")
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
@@ -251,7 +248,7 @@ public class DevopsEnvironmentController {
      * @param code      应用code
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建环境校验编码是否存在")
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
@@ -269,7 +266,7 @@ public class DevopsEnvironmentController {
      * @param projectId 项目id
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询有正在运行实例的环境")
     @GetMapping(value = "/instance")
     public ResponseEntity<List<DevopsEnviromentRepDTO>> listByProjectId(
@@ -292,8 +289,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询环境同步状态")
     @GetMapping(value = "/{envId}/status")
     public ResponseEntity<EnvSyncStatusDTO> queryEnvSyncStatus(
@@ -316,8 +312,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目下用户权限")
     @PostMapping(value = "/list")
@@ -369,8 +364,7 @@ public class DevopsEnvironmentController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{envId}/permission")
     public ResponseEntity<Integer> updateEnvUserPermission(

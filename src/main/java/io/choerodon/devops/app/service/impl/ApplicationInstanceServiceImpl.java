@@ -102,11 +102,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DeployMsgHandlerService deployMsgHandlerService;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                 Long envId, Long versionId, Long appId, String params) {
         Map<String, EnvSession> envs = envListener.connectedEnv();
+
         Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
                 projectId, pageRequest, envId, versionId, appId, params);
         List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getContent();
@@ -128,8 +131,17 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId, Long envGroupId) {
-        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId, envGroupId);
+    public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
+
+        Long[] permissionEnvIds = (Long[]) devopsEnvUserPermissionRepository.listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream().filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true).map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList()).toArray();
+
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+
+        if (devopsEnvUserPermissionRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+            permissionEnvIds = (Long[]) devopsEnvironmentRepository.queryByProject(projectId).stream().map(DevopsEnvironmentE::getId).collect(Collectors.toList()).toArray();
+        }
+
+        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId, permissionEnvIds);
         List<ApplicationLatestVersionDO> appLatestVersionList =
                 applicationVersionRepository.listAppLatestVersion(projectId);
         Map<Long, ApplicationLatestVersionDO> latestVersionList = appLatestVersionList.stream()
@@ -455,8 +467,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), applicationDeployDTO.getEnvironmentId());
+
         //校验环境是否连接
-//        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -483,7 +499,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //实例相关对象数据库操作
         if (applicationDeployDTO.getType().equals(CREATE)) {
@@ -529,6 +545,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
 
     public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
+
         //校验环境是否连接
         envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
 
@@ -656,6 +673,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
+
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         if (!instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
             throw new CommonException("error.instance.notRunning");
@@ -679,6 +699,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
         if (!instanceE.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
             throw new CommonException("error.instance.notStop");
@@ -702,6 +724,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
         ApplicationVersionE applicationVersionE = applicationVersionRepository.query(instanceE.getApplicationVersionE().getId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
@@ -719,6 +743,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
 
         //校验环境是否连接
         envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);

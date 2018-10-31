@@ -34,7 +34,7 @@ public interface ApplicationInstanceService {
      * @param appId     应用id
      * @return page of ApplicationInstancesDTO
      */
-    List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId, Long envGroupId);
+    List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId);
 
     /**
      * 查询value列表

@@ -84,9 +84,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private CertificationRepository certificationRepository;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
 
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
@@ -145,6 +150,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
 
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
@@ -209,11 +217,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
 
     @Override
-    public Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params) {
-        return listByEnv(projectId, null, pageRequest, params);
-    }
-
-    @Override
     public DevopsIngressDTO getIngress(Long projectId, Long ingressId) {
         return devopsIngressRepository.getIngress(projectId, ingressId);
     }
@@ -235,7 +238,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public void deleteIngress(Long ingressId) {
+
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), ingressDO.getEnvId());
 
         //校验环境是否连接
         envUtil.checkEnvConnection(ingressDO.getEnvId(), envListener);

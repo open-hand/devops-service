@@ -291,8 +291,15 @@
         <if test="appId != null">
             AND da.id = #{appId}
         </if>
-        <if test="envGroupId != null">
-            AND de.devops_env_group_id = #{envGroupId}
+        <if test="envIds != null">
+            AND de.id in
+            <foreach collection="envIds" item="envIds" index="index"
+                     open="(" close=")" separator=",">
+                #{envIds}
+            </foreach>
+        </if>
+        <if test="envIds == null">
+            AND de.id is null
         </if>
         ORDER BY
         da.last_update_date DESC,

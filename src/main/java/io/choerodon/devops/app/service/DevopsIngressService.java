@@ -52,16 +52,6 @@ public interface DevopsIngressService {
 
 
     /**
-     * 项目下查询域
-     *
-     * @param projectId   项目Id
-     * @param pageRequest 分页参数
-     * @param params      模糊查询参数
-     * @return Page
-     */
-    Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params);
-
-    /**
      * 项目下查询域名
      *
      * @param projectId 项目Id

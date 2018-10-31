@@ -10,6 +10,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
@@ -90,5 +91,10 @@ public class IamServiceClientFallback implements IamServiceClient {
     public ResponseEntity<Page<UserWithRoleDTO>> queryUserByProjectId(Long projectId, int page, int size,
                                                                       RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         return new ResponseEntity("error.user.get.byProjectId", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<Page<ProjectWithRoleDTO>> listProjectWithRole(Long id, int page, int size) {
+        return new ResponseEntity("error.project.role.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

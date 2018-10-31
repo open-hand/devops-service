@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
@@ -44,4 +45,6 @@ public interface IamRepository {
                                                          Long projectId);
 
     Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,String searchParams);
+
+    List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId);
 }

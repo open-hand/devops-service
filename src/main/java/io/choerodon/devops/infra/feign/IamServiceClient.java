@@ -11,6 +11,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
@@ -72,4 +73,10 @@ public interface IamServiceClient {
                                                                @RequestParam("page") int page,
                                                                @RequestParam("size") int size,
                                                                @RequestBody @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
+
+    @GetMapping(value = "/v1/users/{id}/project_roles")
+    ResponseEntity<Page<ProjectWithRoleDTO>> listProjectWithRole(@PathVariable("id") Long id,
+                                                                  @RequestParam("page") int page,
+                                                                  @RequestParam("size") int size);
+
 }

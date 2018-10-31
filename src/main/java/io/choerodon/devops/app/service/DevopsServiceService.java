@@ -77,15 +77,6 @@ public interface DevopsServiceService {
      */
     Boolean checkName(Long projectId, Long envId, String name);
 
-    /**
-     * 分页查询网络列表
-     *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @return Page of DevopsServiceDTO
-     */
-    Page<DevopsServiceDTO> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam);
 
     /**
      * 分页查询网络列表

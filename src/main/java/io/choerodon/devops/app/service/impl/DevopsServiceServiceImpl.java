@@ -95,16 +95,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private CertificationRepository certificationRepository;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
         return devopsServiceRepository.checkName(projectId, envId, name);
     }
 
-    @Override
-    public Page<DevopsServiceDTO> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam) {
-        return listByEnv(projectId, null, pageRequest, searchParam);
-    }
 
     @Override
     public Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
@@ -134,6 +132,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
+
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
 
@@ -284,6 +286,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO) {
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
+
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
 
@@ -350,6 +356,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public void deleteDevopsService(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
+
+        //校验用户是否有环境的权限
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceE.getEnvId());
 
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);

@@ -43,7 +43,8 @@ public class DevopsIngressController {
      * @param devopsIngressDTO 域名信息
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建域名")
     @PostMapping
     public ResponseEntity create(
@@ -63,7 +64,8 @@ public class DevopsIngressController {
      * @param devopsIngressDTO 域名信息
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下更新域名")
     @PutMapping(value = "/{id}")
     public ResponseEntity update(
@@ -77,33 +79,6 @@ public class DevopsIngressController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 项目下查询域
-     *
-     * @param projectId   项目ID
-     * @param pageRequest 分页参数
-     * @param params      查询参数
-     * @return Page of DevopsIngressDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
-    @ApiOperation(value = "项目下查询所有域名")
-    @CustomPageRequest
-    @PostMapping(value = "/list_by_options")
-    public ResponseEntity<Page<DevopsIngressDTO>> pageByOptions(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore
-                    PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(devopsIngressService.getIngress(projectId, pageRequest, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.Ingress.query"));
-    }
 
     /**
      * 项目下查询域名
@@ -114,8 +89,7 @@ public class DevopsIngressController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询域名")
     @GetMapping(value = "/{id}")
     public ResponseEntity<DevopsIngressDTO> queryDomainId(
@@ -136,7 +110,8 @@ public class DevopsIngressController {
      * @return ResponseEntity
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除域名")
     @DeleteMapping(value = "/{id}")
     public ResponseEntity delete(
@@ -151,7 +126,8 @@ public class DevopsIngressController {
     /**
      * 检查域名唯一性
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查域名唯一性")
     @GetMapping(value = "/check_name")
     public ResponseEntity<Boolean> checkName(
@@ -175,7 +151,8 @@ public class DevopsIngressController {
      * @param id        ingress ID
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "检查域名名称唯一性")
     @GetMapping(value = "/check_domain")
     public ResponseEntity<Boolean> checkDomain(
@@ -204,8 +181,7 @@ public class DevopsIngressController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "环境总览域名查询")
     @PostMapping(value = "/{envId}/listByEnv")

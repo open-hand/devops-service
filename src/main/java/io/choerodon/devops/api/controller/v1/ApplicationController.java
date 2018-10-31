@@ -63,7 +63,7 @@ public class ApplicationController {
      * @return ApplicationRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询单个应用信息")
     @GetMapping("/{applicationId}/detail")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
@@ -151,8 +151,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询应用")
     @CustomPageRequest
     @PostMapping("/list_by_options")
@@ -181,8 +180,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
     @CustomPageRequest
     @GetMapping("/pages")
@@ -208,8 +206,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id获取已部署正在运行实例的应用")
     @GetMapping("/options")
     public ResponseEntity<List<ApplicationCodeDTO>> listByEnvIdAndStatus(
@@ -232,8 +229,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {
             InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER,
-            InitRoleCode.DEPLOY_ADMINISTRATOR
+            InitRoleCode.PROJECT_MEMBER
     })
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
@@ -254,8 +250,7 @@ public class ApplicationController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {
             InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER,
-            InitRoleCode.DEPLOY_ADMINISTRATOR
+            InitRoleCode.PROJECT_MEMBER
     })
     @ApiOperation(value = "本项目下或者应用市场在该项目下部署过的应用")
     @GetMapping(value = "/list_all")

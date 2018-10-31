@@ -417,12 +417,10 @@ public interface GitlabServiceClient {
             @RequestParam("hookId") Integer hookId,
             @RequestParam("userId") Integer userId);
 
-
     @GetMapping("/v1/hook")
     ResponseEntity<List<ProjectHook>> getProjectHook(
             @RequestParam("projectId") Integer projectId,
             @RequestParam("userId") Integer userId);
-
 
     @PutMapping("/v1/groups/{groupId}")
     ResponseEntity updateGroup(@PathVariable("groupId") Integer groupId,
@@ -432,6 +430,10 @@ public interface GitlabServiceClient {
     @PostMapping("/v1/projects/{projectId}/members")
     ResponseEntity addMemberIntoProject(@PathVariable("projectId") Integer projectId,
                                         @RequestBody MemberDTO memberDTO);
+
+    @GetMapping("/v1/projects/{projectId}/members/{userId}")
+    ResponseEntity<MemberDO> getProjectMember(@PathVariable("projectId") Integer projectId,
+                                       @PathVariable("userId") Integer userId);
 
     @DeleteMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity removeMemberFromProject(@PathVariable("projectId") Integer projectId,

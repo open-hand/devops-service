@@ -41,8 +41,7 @@ public class DevopsEnvPodContainerController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取日志信息 By Pod")
     @GetMapping(value = "/logs")
     public ResponseEntity<List<DevopsEnvPodContainerLogDTO>> queryLogByPod(
@@ -63,7 +62,8 @@ public class DevopsEnvPodContainerController {
      * @return List of DevopsEnvPodContainerLogDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取日志shell信息 By Pod")
     @GetMapping(value = "/logs/shell")
     public ResponseEntity<List<DevopsEnvPodContainerLogDTO>> handleShellByPod(

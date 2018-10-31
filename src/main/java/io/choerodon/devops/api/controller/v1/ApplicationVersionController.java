@@ -45,8 +45,7 @@ public class ApplicationVersionController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询应用版本")
     @CustomPageRequest
     @PostMapping(value = "/app_version/list_by_options")
@@ -76,8 +75,7 @@ public class ApplicationVersionController {
     @ApiOperation(value = "应用下查询应用所有版本")
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/apps/{appId}/version/list")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppId(
             @ApiParam(value = "项目ID", required = true)
@@ -101,7 +99,7 @@ public class ApplicationVersionController {
     @ApiOperation(value = "项目下查询应用所有已部署版本")
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER, InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/apps/{app_id}/version/list_deployed")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryDeployedByAppId(
             @ApiParam(value = "项目ID", required = true)
@@ -123,8 +121,7 @@ public class ApplicationVersionController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询部署在某个环境应用的应用版本")
     @GetMapping("/apps/{appId}/version")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppIdAndEnvId(
@@ -149,7 +146,8 @@ public class ApplicationVersionController {
      * @return ApplicationVersionRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询某应用下的所有版本")
     @CustomPageRequest
     @PostMapping(value = "/apps/{appId}/version/list_by_options")
@@ -176,7 +174,8 @@ public class ApplicationVersionController {
      * @return ApplicationVersionRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "实例下查询可升级版本")
     @GetMapping(value = "/version/{app_version_id}/upgrade_version")
     public ResponseEntity<List<ApplicationVersionRepDTO>> getUpgradeAppVersion(
@@ -198,8 +197,7 @@ public class ApplicationVersionController {
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询应用最新的版本和各环境下部署的版本")
     @GetMapping(value = "/deployVersions")
     public ResponseEntity<DeployVersionDTO> getDeployVersions(

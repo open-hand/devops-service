@@ -59,8 +59,6 @@ public enum AccessLevel {
                 memberHelper.setProjectDevelopAccessLevel(AccessLevel.DEVELOPER);
                 return AccessLevel.DEVELOPER;
             case "PROJECT.DEPLOY.ADMIN":
-                memberHelper.setDeployAdminAccessLevel(AccessLevel.OWNER);
-                memberHelper.setDeploy(true);
                 return AccessLevel.OWNER;
             case "GITLAB.REPORTER":
                 return AccessLevel.REPORTER;
