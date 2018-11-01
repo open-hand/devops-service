@@ -520,38 +520,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<Long> userIds = gitlabProjectPayload.getUserIds();
         // 获取项目下所有角色和角色的用户数量
-        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
-        List<RoleDTO> roleDTOList = iamRepository
-                .listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO);
-        // 获取项目成员的roleId
-        Long projectMemberId = 0L;
-        // 获取项目成员的数量
-        Integer projectMemberCount = 0;
-        for (RoleDTO roleDTO : roleDTOList) {
-            if (PROJECT_MEMBER.equals(roleDTO.getCode())) {
-                projectMemberId = roleDTO.getId();
-                projectMemberCount = roleDTO.getUserCount();
-            }
-        }
-        if (projectMemberId == 0) {
-            throw new CommonException("error.get.member.roleId");
-        }
-        // 根据项目成员id查询项目下所有的项目成员
-        Page<UserDTO> allProjectMemberPage = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, projectMemberCount), roleAssignmentSearchDTO,
-                        projectMemberId, projectId);
-
-        // 所有项目成员中没权限的
-        //        allProjectMemberPage.getContent().stream().filter(e -> !userIds.contains(e.getId())).forEach(e -> {
-        //            Long userId = e.getId();
-        //            String loginName = e.getLoginName();
-        //            String realName = e.getRealName();
-        //            UserAttrE userAttrE = userAttrRepository.queryById(userId);
-        //            Long gitlabUserId = userAttrE.getGitlabUserId();
-        //            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, 0);
-        //            devopsEnvUserPermissionRepository
-        //                    .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, false));
-        //        });
+        Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId);
         // 所有项目成员中有权限的
         allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
             Long userId = e.getId();
@@ -615,26 +584,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
                                                                       String searchParams, String envId) {
         if ("null".equals(envId)) {
-            // 项目层查询角色列表以及该角色下的用户数量
-            RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
-            List<RoleDTO> roleDTOList = iamRepository
-                    .listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO);
-            // 获取项目成员的roleId
-            Long projectMemberId = 0L;
-            for (RoleDTO roleDTO : roleDTOList) {
-                if (PROJECT_MEMBER.equals(roleDTO.getCode())) {
-                    projectMemberId = roleDTO.getId();
-                }
-            }
-            if (projectMemberId == 0) {
-                throw new CommonException("error.get.member.roleId");
-            }
             // 根据项目成员id查询项目下所有的项目成员
-            Page<UserDTO> allProjectMemberPage = iamRepository
-                    .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO, projectMemberId,
-                            projectId);
-            List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
+            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId);
 
+            List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
             allProjectMemberPage.getContent().forEach(e -> {
                 DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
@@ -655,8 +608,28 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId) {
-        return devopsEnvUserPermissionRepository.listALlUserPermission(envId);
+    public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long projectId, Long envId) {
+        // 查询表中已经有权限的项目成员
+        List<DevopsEnvUserPermissionDTO> allUsersDTO = devopsEnvUserPermissionRepository.listALlUserPermission(envId);
+        List<Long> allUsersId = allUsersDTO.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
+                .collect(Collectors.toList());
+
+        // 从iam中查询所有项目成员然后拼接上已有权限的项目成员
+        // 获取项目下所有角色和角色的用户数量
+        Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId);
+        allProjectMemberPage.getContent().forEach(e -> {
+            DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+            devopsEnvUserPermissionDTO.setIamUserId(e.getId());
+            devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
+            devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+            if (allUsersId.contains(e.getId())) {
+                devopsEnvUserPermissionDTO.setPermitted(true);
+            } else {
+                devopsEnvUserPermissionDTO.setPermitted(false);
+            }
+            allUsersDTO.add(devopsEnvUserPermissionDTO);
+        });
+        return allUsersDTO;
     }
 
     @Override
@@ -688,6 +661,30 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
         });
         return true;
+    }
+
+    private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId) {
+        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
+        List<RoleDTO> roleDTOList = iamRepository
+                .listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO);
+        // 获取项目成员的roleId
+        Long projectMemberId = 0L;
+        for (RoleDTO roleDTO : roleDTOList) {
+            if (PROJECT_MEMBER.equals(roleDTO.getCode())) {
+                projectMemberId = roleDTO.getId();
+                if (pageRequest == null) {
+                    // 获取项目成员的数量
+                    pageRequest = new PageRequest(0, roleDTO.getUserCount());
+                }
+            }
+        }
+        if (projectMemberId == 0) {
+            throw new CommonException("error.get.member.roleId");
+        }
+        // 根据项目成员id查询项目下所有的项目成员
+        return iamRepository
+                .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
+                        projectMemberId, projectId);
     }
 
     private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
