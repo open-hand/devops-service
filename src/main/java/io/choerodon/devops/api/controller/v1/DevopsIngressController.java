@@ -50,9 +50,11 @@ public class DevopsIngressController {
     public ResponseEntity create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam Long envId,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressDTO devopsIngressDTO) {
-        devopsIngressService.addIngress(devopsIngressDTO, projectId);
+        devopsIngressService.addIngress(devopsIngressDTO, projectId,envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -158,13 +160,15 @@ public class DevopsIngressController {
     public ResponseEntity<Boolean> checkDomain(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam Long envId,
             @ApiParam(value = "域名", required = true)
             @RequestParam String domain,
             @ApiParam(value = "路径", required = true)
             @RequestParam String path,
             @ApiParam(value = "ingress ID", required = false)
             @RequestParam(value = "id", required = false) Long id) {
-        return Optional.ofNullable(devopsIngressService.checkDomainAndPath(id, domain, path))
+        return Optional.ofNullable(devopsIngressService.checkDomainAndPath(envId, domain, path, id))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.domain.name.check"));
     }

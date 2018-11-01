@@ -325,8 +325,7 @@ public class DevopsEnvironmentController {
             @RequestBody(required = false) String params,
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id") String envId) {
-        return Optional
-                .ofNullable(devopsEnvironmentService
+        return Optional.ofNullable(devopsEnvironmentService
                                     .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
@@ -367,7 +366,7 @@ public class DevopsEnvironmentController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{envId}/permission")
-    public ResponseEntity<Integer> updateEnvUserPermission(
+    public ResponseEntity<Boolean> updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)

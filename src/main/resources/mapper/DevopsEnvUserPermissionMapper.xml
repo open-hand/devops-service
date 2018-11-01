@@ -17,12 +17,6 @@
         <include refid="sqlparam"/>
     </select>
 
-    <update id="initUserPermission">
-        UPDATE devops_env_user_permission deup
-        SET deup.is_permitted = FALSE
-        WHERE deup.env_id = #{envId}
-    </update>
-
     <select id="listAllUserPermission" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
         SELECT
         deup.login_name,
@@ -35,16 +29,6 @@
         deup.env_id = #{envId}
         AND deup.is_permitted = TRUE
     </select>
-
-    <update id="updateEnvUserPermission" parameterType="java.util.List">
-        UPDATE devops_env_user_permission deup
-        SET deup.is_permitted = TRUE
-        WHERE deup.iam_user_id IN
-        <foreach collection="userIds" item="userId" open="(" close=")" separator=",">
-            #{userId}
-        </foreach>
-        AND deup.env_id = #{envId}
-    </update>
 
     <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO">
         SELECT

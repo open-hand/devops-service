@@ -133,12 +133,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
 
-        Long[] permissionEnvIds = (Long[]) devopsEnvUserPermissionRepository.listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream().filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true).map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList()).toArray();
+        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository.listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream().filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true).map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
 
         ProjectE projectE = iamRepository.queryIamProject(projectId);
 
         if (devopsEnvUserPermissionRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-            permissionEnvIds = (Long[]) devopsEnvironmentRepository.queryByProject(projectId).stream().map(DevopsEnvironmentE::getId).collect(Collectors.toList()).toArray();
+            permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream().map(DevopsEnvironmentE::getId).collect(Collectors.toList());
         }
 
         List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId, permissionEnvIds);

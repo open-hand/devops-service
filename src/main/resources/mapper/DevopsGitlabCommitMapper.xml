@@ -16,10 +16,10 @@
         FROM
         devops_gitlab_commit dgc
         JOIN devops_application da ON dgc.app_id = da.id
-        JOIN devops_project dp ON da.project_id = dp.id
         WHERE
+        da.project_id = #{projectId}
         <if test="appIds != null">
-            dgc.app_id IN
+           AND dgc.app_id IN
             <foreach collection="appIds" item="appId" open="(" close=")" separator=",">
                 #{appId}
             </foreach>
@@ -42,7 +42,6 @@
         <if test="endDate != null">
             AND dgc.commit_date <![CDATA[<=]]>  CONCAT('','${endDate}',' 23:59:59')
         </if>
-        AND dp.id = #{projectId}
         ORDER BY dgc.commit_date DESC
     </select>
 </mapper>

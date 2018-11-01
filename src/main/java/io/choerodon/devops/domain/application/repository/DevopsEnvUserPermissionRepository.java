@@ -24,11 +24,9 @@ public interface DevopsEnvUserPermissionRepository {
 
     List<DevopsEnvUserPermissionE> listAll(Long envId);
 
-    Integer updateEnvUserPermission(Long envId, List<Long> userIds);
-
+    void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList);
 
     List<DevopsEnvUserPermissionE> listByUserId(Long userId);
-
 
     void checkEnvDeployPermission(Long userId, Long envId);
 

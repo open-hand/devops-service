@@ -97,14 +97,6 @@ public class DevopsEnviromentRepDTO {
         this.devopsEnvGroupId = devopsEnvGroupId;
     }
 
-    public Boolean getConnected() {
-        return isConnected;
-    }
-
-    public void setConnected(Boolean connected) {
-        isConnected = connected;
-    }
-
     public Boolean getPermission() {
         return permission;
     }

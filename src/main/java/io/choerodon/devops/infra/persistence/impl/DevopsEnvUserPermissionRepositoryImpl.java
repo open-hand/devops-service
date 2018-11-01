@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -19,6 +20,7 @@ import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -40,7 +42,6 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
 
     private static final Gson gson = new Gson();
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
-
 
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;
@@ -80,9 +81,22 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     }
 
     @Override
-    public Integer updateEnvUserPermission(Long envId, List<Long> userIds) {
-        devopsEnvUserPermissionMapper.initUserPermission(envId);
-        return devopsEnvUserPermissionMapper.updateEnvUserPermission(envId, userIds);
+    @Transactional
+    public void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList) {
+        // 待添加的用户列表
+        List<UserE> addIamUsers = iamRepository.listUsersByIds(addUsersList);
+        addIamUsers.forEach(e -> {
+            devopsEnvUserPermissionMapper
+                    .insert(new DevopsEnvUserPermissionDO(e.getLoginName(), e.getId(), e.getRealName(), envId,
+                            true));
+        });
+        // 待删除的用户列表
+        List<UserE> deleteIamUsers = iamRepository.listUsersByIds(deleteUsersList);
+        deleteIamUsers.forEach(e -> {
+            DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
+            devopsEnvUserPermissionDO.setIamUserId(e.getId());
+            devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO);
+        });
     }
 
     @Override

@@ -119,7 +119,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                     envId, filePath);
                             if (!devopsIngressDTO.getPathList().stream()
                                     .allMatch(t ->
-                                            devopsIngressRepository.checkIngressAndPath(null, devopsIngressDTO.getDomain(), t.getPath()))) {
+                                            devopsIngressRepository.checkIngressAndPath(envId, devopsIngressDTO.getDomain(), t.getPath(), null))) {
                                 throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
                             }
                             devopsIngressService.addIngressByGitOps(devopsIngressDTO, projectId, userId);
@@ -172,7 +172,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         }
                         if (!devopsIngressDTO.getPathList().stream()
                                 .allMatch(t ->
-                                        devopsIngressRepository.checkIngressAndPath(devopsIngressE.getId(), devopsIngressDTO.getDomain(), t.getPath()))) {
+                                        devopsIngressRepository.checkIngressAndPath(envId, devopsIngressDTO.getDomain(),
+                                                t.getPath(), devopsIngressE.getId()))) {
                             throw new GitOpsExplainException(GitOpsObjectError.INGRESS_DOMAIN_PATH_IS_EXIST.getError(), filePath);
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());

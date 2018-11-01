@@ -16,7 +16,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsIngressPathDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
@@ -31,7 +30,6 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
-
 
 /**
  * Creator: Runge
@@ -73,12 +71,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
-    private IamRepository iamRepository;
-    @Autowired
-    private DevopsEnvCommitRepository devopsEnvCommitRepository;
-    @Autowired
-    private ApplicationInstanceService applicationInstanceService;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
@@ -88,7 +80,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
-    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
+    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, Long envId) {
 
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
@@ -319,8 +311,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public Boolean checkDomainAndPath(Long id, String domain, String path) {
-        return devopsIngressRepository.checkIngressAndPath(id, domain, path);
+    public Boolean checkDomainAndPath(Long envId, String domain, String path, Long id) {
+        return devopsIngressRepository.checkIngressAndPath(envId, domain, path, id);
     }
 
     @Override
@@ -329,7 +321,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         V1beta1HTTPIngressPath path = new V1beta1HTTPIngressPath();
         V1beta1IngressBackend backend = new V1beta1IngressBackend();
         backend.setServiceName(devopsServiceE.getName().toLowerCase());
-        Integer servicePort;
+        int servicePort;
         if (port == null) {
             servicePort = devopsServiceE.getPorts().get(0).getPort().intValue();
         } else {
@@ -439,7 +431,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //校验域名的domain和path是否在数据库中已存在
         if (devopsIngressPathDOS.stream()
                 .noneMatch(t ->
-                        devopsIngressRepository.checkIngressAndPath(devopsIngressDTO.getId(), devopsIngressDO.getDomain(), t.getPath()))) {
+                        devopsIngressRepository.checkIngressAndPath(envId, devopsIngressDO.getDomain(),
+                                t.getPath(), devopsIngressDTO.getId()))) {
             throw new CommonException(ERROR_DOMAIN_PATH_EXIST);
         }
         devopsIngressDO.setDevopsIngressPathDOS(devopsIngressPathDOS);

@@ -156,7 +156,7 @@ public interface DevopsEnvironmentService {
      * @param envId     环境id
      * @param userIds   有权限的用户ids
      */
-    Integer updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds);
+    Boolean updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds);
 
     void initMockService(SagaClient sagaClient);
 }

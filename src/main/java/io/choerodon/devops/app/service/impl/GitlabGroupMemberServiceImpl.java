@@ -171,7 +171,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                             TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                    addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
+                    addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), userAttrE);
                 } catch (Exception e) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                     return;
@@ -182,14 +182,14 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 gitlabGroupE = gitlabRepository.queryGroupByName(
                         organization.getCode() + "_" + TEMPLATE,
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-                groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                        TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
-                        (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
                 if (gitlabGroupE == null) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                     return;
                 }
+                groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                        TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
+                        (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+                addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
             }
         }
     }
@@ -241,17 +241,22 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
 
     @Override
     public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
+        GitlabGroupE gitlabGroupE = devopsProjectRepository
+                .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
         if (gitlabGroupE == null) {
             throw new CommonException("error.group.not.sync");
         }
         if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
             throw new CommonException("error.env.project.not.exist");
         }
-        GitlabGroupMemberE groupMemberE = gitlabProjectRepository.getProjectMember(
+        GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (groupMemberE != null && groupMemberE.getAccessLevel() == AccessLevel.OWNER.toValue()) {
+            return;
+        }
+        GitlabGroupMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (groupMemberE == null || groupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue()) {
+        if (newGroupMemberE == null || (newGroupMemberE.getAccessLevel() != AccessLevel.MASTER.toValue())) {
             throw new CommonException("error.user.not.env.pro.owner");
         }
     }
