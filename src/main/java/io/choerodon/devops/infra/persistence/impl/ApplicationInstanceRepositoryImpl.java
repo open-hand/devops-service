@@ -115,7 +115,10 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId, Long[] envIds) {
+    public List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId, List<Long> envIds) {
+        if (envIds.size() == 0) {
+            envIds = null;
+        }
         return applicationInstanceMapper.listApplicationInstances(projectId, appId, envIds);
     }
 

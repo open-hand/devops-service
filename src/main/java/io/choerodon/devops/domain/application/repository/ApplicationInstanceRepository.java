@@ -35,7 +35,7 @@ public interface ApplicationInstanceRepository {
 
     List<ApplicationInstanceE> selectByEnvId(Long envId);
 
-    List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId, Long envIds[]);
+    List<ApplicationInstancesDO> getDeployInstances(Long projectId, Long appId, List<Long> envIds);
 
     List<ApplicationInstanceE> list();
 
