@@ -602,8 +602,30 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             return devopsEnvUserPermissionDTOPage;
         } else {
             // 普通的分页查询
-            return devopsEnvUserPermissionRepository
-                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams);
+            // 查询表中已经有权限的项目成员
+            List<DevopsEnvUserPermissionDTO> allUsersDTO = devopsEnvUserPermissionRepository
+                    .listALlUserPermission(TypeUtil.objToLong(envId));
+            List<Long> allUsersId = allUsersDTO.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
+                    .collect(Collectors.toList());
+            // TODO 普通分页需要带上iam中的所有项目成员
+            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId);
+            allProjectMemberPage.getContent().forEach(e -> {
+                DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+                devopsEnvUserPermissionDTO.setIamUserId(e.getId());
+                devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
+                devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+                if (allUsersId.contains(e.getId())) {
+                    devopsEnvUserPermissionDTO.setPermitted(true);
+                } else {
+                    devopsEnvUserPermissionDTO.setPermitted(false);
+                }
+                allUsersDTO.add(devopsEnvUserPermissionDTO);
+            });
+            // 手动分页
+            Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
+            BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
+            devopsEnvUserPermissionDTOPage.setContent(allUsersDTO);
+            return devopsEnvUserPermissionDTOPage;
         }
     }
 
