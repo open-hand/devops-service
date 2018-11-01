@@ -54,9 +54,9 @@
         cmd.error error
         FROM
         devops_app_instance dai
-        JOIN devops_app_version dav ON dai.app_version_id = dav.id
         JOIN devops_env de ON dai.env_id = de.id
-        JOIN devops_application da ON da.id = dav.app_id
+        JOIN devops_application da ON da.id = dai.app_id
+        LEFT JOIN devops_app_version dav ON dai.app_version_id = dav.id
         LEFT JOIN devops_env_command cmd ON cmd.id = dai.command_id
         LEFT JOIN devops_app_market dam ON dam.app_id = da.id
         WHERE de.project_id = #{projectId}
