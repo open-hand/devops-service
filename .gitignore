@@ -26,3 +26,6 @@ nbdist/
 application-default.yml
 init-local-database.sh
 values_yaml.spec
+
+### macos junk file
+.DS_Store
