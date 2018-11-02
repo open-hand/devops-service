@@ -614,12 +614,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                if (allUsersId.contains(e.getId())) {
-                    devopsEnvUserPermissionDTO.setPermitted(true);
-                } else {
+                if (!allUsersId.contains(e.getId())) {
                     devopsEnvUserPermissionDTO.setPermitted(false);
+                    allUsersDTO.add(devopsEnvUserPermissionDTO);
                 }
-                allUsersDTO.add(devopsEnvUserPermissionDTO);
             });
             // 手动分页
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
@@ -644,12 +642,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvUserPermissionDTO.setIamUserId(e.getId());
             devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
             devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-            if (allUsersId.contains(e.getId())) {
-                devopsEnvUserPermissionDTO.setPermitted(true);
-            } else {
+            if (!allUsersId.contains(e.getId())) {
                 devopsEnvUserPermissionDTO.setPermitted(false);
+                allUsersDTO.add(devopsEnvUserPermissionDTO);
             }
-            allUsersDTO.add(devopsEnvUserPermissionDTO);
         });
         return allUsersDTO;
     }
