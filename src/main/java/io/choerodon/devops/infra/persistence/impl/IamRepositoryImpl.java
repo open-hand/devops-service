@@ -270,5 +270,7 @@ public class IamRepositoryImpl implements IamRepository {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
         }
+
+
     }
 }

@@ -2,20 +2,28 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
+import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO
 import io.choerodon.devops.api.dto.EnvSyncStatusDTO
+import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO
+import io.choerodon.devops.api.dto.gitlab.MemberDTO
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
+import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.api.dto.iam.UserDTO
 import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.domain.application.entity.DevopsServiceE
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,6 +31,9 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import spock.lang.Specification
 import spock.lang.Stepwise
 
@@ -62,6 +73,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
     private DevopsProjectMapper devopsProjectMapper
     @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper
+    @Autowired
+    private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper
 
     @Autowired
     @Qualifier("mockEnvUtil")
@@ -72,6 +85,12 @@ class DevopsEnvironmentControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockUserAttrRepository")
     private UserAttrRepository userAttrRepository
+    @Autowired
+    @Qualifier("mockGitlabRepository")
+    private GitlabRepository gitlabRepository
+    @Autowired
+    @Qualifier("mockGitlabProjectRepository")
+    private GitlabProjectRepository gitlabProjectRepository
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
 
@@ -82,13 +101,36 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
             DevopsEnvironmentDO devopsEnvironmentDO = initEnv(
                     "testNameEnv", "testCodeEnv", projectE, true, 1L, "testToken")
+            devopsEnvironmentDO.setGitlabEnvProjectId(1L);
             DevopsEnvironmentDO devopsEnvironmentDO1 = initEnv(
                     "testNameEnv1", "testCodeEnv1", projectE, true, 2L, "testToken1")
-
+            devopsEnvironmentDO1.setGitlabEnvProjectId(2L)
             devopsEnvironmentDO.setId(1L)
             devopsEnvironmentDO1.setId(2L)
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
             devopsEnvironmentMapper.insert(devopsEnvironmentDO1)
+
+            DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO()
+            devopsEnvUserPermissionDO.setIamUserId(1L)
+            devopsEnvUserPermissionDO.setEnvId(1L)
+            devopsEnvUserPermissionDO.setLoginName("test")
+            devopsEnvUserPermissionDO.setRealName("realTest")
+            devopsEnvUserPermissionDO.setPermitted(true)
+            DevopsEnvUserPermissionDO devopsEnvUserPermissionDO1 = new DevopsEnvUserPermissionDO()
+            devopsEnvUserPermissionDO1.setIamUserId(2L)
+            devopsEnvUserPermissionDO1.setEnvId(1L)
+            devopsEnvUserPermissionDO1.setLoginName("test1")
+            devopsEnvUserPermissionDO1.setRealName("realTest1")
+            devopsEnvUserPermissionDO1.setPermitted(true)
+            DevopsEnvUserPermissionDO devopsEnvUserPermissionDO2 = new DevopsEnvUserPermissionDO()
+            devopsEnvUserPermissionDO2.setIamUserId(3L)
+            devopsEnvUserPermissionDO2.setEnvId(1L)
+            devopsEnvUserPermissionDO2.setLoginName("test2")
+            devopsEnvUserPermissionDO2.setRealName("realTest2")
+            devopsEnvUserPermissionDO2.setPermitted(true)
+            devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO)
+            devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO1)
+            devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO2)
             flag = 1
         }
     }
@@ -138,6 +180,21 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+
+        ProjectE projectE = new ProjectE()
+        projectE.setName("pro")
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new ArrayList()
+        roleDTO.setCode("role/project/default/project-owner")
+        roleDTOList.add(roleDTO)
+        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        projectWithRoleDTO.setName("pro")
+        projectWithRoleDTO.setRoles(roleDTOList)
+        projectWithRoleDTOList.add(projectWithRoleDTO)
+        iamRepository.listProjectWithRoleDTO(_ as Long) >> projectWithRoleDTOList
+
         when:
         def envs = restTemplate.getForObject("/v1/projects/1/envs/deployed", List.class)
 
@@ -156,6 +213,21 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envList.add(2L)
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+
+        ProjectE projectE = new ProjectE()
+        projectE.setName("pro")
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new ArrayList()
+        roleDTO.setCode("role/project/default/project-owner")
+        roleDTOList.add(roleDTO)
+        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        projectWithRoleDTO.setName("pro")
+        projectWithRoleDTO.setRoles(roleDTOList)
+        projectWithRoleDTOList.add(projectWithRoleDTO)
+        iamRepository.listProjectWithRoleDTO(_ as Long) >> projectWithRoleDTOList
+
         when:
         def envs = restTemplate.getForObject("/v1/projects/1/envs?active=true", List.class)
 
@@ -179,6 +251,21 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvGroupMapper.insert(devopsEnvGroupDO1)
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+
+        ProjectE projectE = new ProjectE()
+        projectE.setName("pro")
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new ArrayList()
+        roleDTO.setCode("role/project/default/project-owner")
+        roleDTOList.add(roleDTO)
+        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        projectWithRoleDTO.setName("pro")
+        projectWithRoleDTO.setRoles(roleDTOList)
+        projectWithRoleDTOList.add(projectWithRoleDTO)
+        iamRepository.listProjectWithRoleDTO(_ as Long) >> projectWithRoleDTOList
+
 
         when:
         def list = restTemplate.getForObject("/v1/projects/1/envs/groups?active=true", List.class)
@@ -300,6 +387,21 @@ class DevopsEnvironmentControllerSpec extends Specification {
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
 
+        ProjectE projectE = new ProjectE()
+        projectE.setName("pro")
+        iamRepository.queryIamProject(_ as Long) >> projectE
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new ArrayList()
+        roleDTO.setCode("role/project/default/project-owner")
+        roleDTOList.add(roleDTO)
+        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        projectWithRoleDTO.setName("pro")
+        projectWithRoleDTO.setRoles(roleDTOList)
+        projectWithRoleDTOList.add(projectWithRoleDTO)
+        iamRepository.listProjectWithRoleDTO(_ as Long) >> projectWithRoleDTOList
+
+
         when:
         def envs = restTemplate.getForObject("/v1/projects/1/envs/instance", List.class)
 
@@ -312,7 +414,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Organization organization = initOrg(1L, "testOrganization")
 
         ProjectE projectE = initProj(1L, "testProject", organization)
-
 
         DevopsEnvCommitDO devopsEnvCommitDO = new DevopsEnvCommitDO()
         devopsEnvCommitDO.setId(1L)
@@ -327,6 +428,82 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         then:
         envSyncStatusDTO.getAgentSyncCommit().equals("testCommitSha")
+    }
+
+    def "ListUserPermissionByEnvId"() {
+        given:
+        String params = "{\"searchParam\": {\"loginName\": [],\"realName\": []},\"param\": \"\"}";
+
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
+        HttpEntity<String> strEntity = new HttpEntity<String>(params, headers)
+
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new RoleDTO()
+        roleDTO.setId(1L)
+        roleDTO.setCode("role/project/default/project-member")
+        roleDTOList.add(roleDTO)
+        iamRepository.listRolesWithUserCountOnProjectLevel(_ as Long, _ as RoleAssignmentSearchDTO) >> roleDTOList
+
+        Page<UserDTO> userDTOPage = new Page<>()
+        List<UserDTO> userDTOList = new ArrayList<>()
+        UserDTO userDTO = new UserDTO()
+        userDTO.setId(1L)
+        userDTO.setLoginName("test")
+        userDTO.setRealName("realTest")
+        userDTOList.add(userDTO)
+        userDTOPage.setContent(userDTOList)
+        iamRepository.pagingQueryUsersByRoleIdOnProjectLevel(_ as PageRequest, _ as RoleAssignmentSearchDTO, _ as Long, _ as Long) >> userDTOPage
+
+        when:
+        def page = restTemplate.postForObject("/v1/projects/1/envs/list?page=0&size5&env_id=null", strEntity, Page.class)
+
+        then:
+        page.get(0)["loginName"] == "test"
+    }
+
+    def "ListAllUserPermission"() {
+        given:
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new RoleDTO()
+        roleDTO.setCode("role/project/default/project-member")
+        roleDTO.setUserCount(1)
+        roleDTOList.add(roleDTO)
+        iamRepository.listRolesWithUserCountOnProjectLevel(_ as Long, _ as RoleAssignmentSearchDTO) >> roleDTOList
+
+        Page<UserDTO> userDTOPage = new ArrayList<>()
+        iamRepository.pagingQueryUsersByRoleIdOnProjectLevel(_ as PageRequest, _ as RoleAssignmentSearchDTO, _ as Long) >> userDTOPage
+
+
+        when:
+        def list = restTemplate.getForObject("/v1/projects/1/envs/1/list_all", List.class)
+
+        then:
+        !list.isEmpty()
+        list.get(0)["loginName"] == "test"
+        list.get(1)["loginName"] == "test1"
+        list.get(2)["loginName"] == "test2"
+    }
+
+    def "UpdateEnvUserPermission"() {
+        given:
+        List<Long> userIds = new ArrayList<>()
+        userIds.add(2L)
+
+        GitlabGroupMemberE gitlabGroupMemberE = new GitlabGroupMemberE()
+        gitlabGroupMemberE.setId(1)
+        gitlabProjectRepository.getProjectMember(_ as Integer, _ as Integer) >> gitlabGroupMemberE
+        gitlabRepository.removeMemberFromProject(_ as Integer, _ as Integer) >> null
+        gitlabRepository.addMemberIntoProject(_ as Integer, _ as MemberDTO) >> null
+
+        UserAttrE userAttrE = new UserAttrE()
+        userAttrE.setGitlabUserId(1L)
+        userAttrRepository.queryById(_ as Long) >> userAttrE
+        when:
+        def count = restTemplate.postForObject("/v1/projects/1/envs/1/permission", userIds, Integer.class)
+
+        then:
+        count > 0
 
         devopsEnvCommitMapper.deleteByPrimaryKey(1L)
         applicationInstanceMapper.deleteByPrimaryKey(1L)
@@ -339,8 +516,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentMapper.deleteByPrimaryKey(2L)
         devopsEnvironmentMapper.deleteByPrimaryKey(3L)
 
+        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO()
+        devopsEnvUserPermissionDO.setEnvId(1L)
+        devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO)
     }
-
 
     private static Organization initOrg(Long id, String code) {
         Organization organization = new Organization()
