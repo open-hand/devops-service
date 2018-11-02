@@ -628,26 +628,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long projectId, Long envId) {
-        // 查询表中已经有权限的项目成员
-        List<DevopsEnvUserPermissionDTO> allUsersDTO = devopsEnvUserPermissionRepository.listALlUserPermission(envId);
-        List<Long> allUsersId = allUsersDTO.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
-                .collect(Collectors.toList());
-
-        // 从iam中查询所有项目成员然后拼接上已有权限的项目成员
-        // 获取项目下所有角色和角色的用户数量
-        Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId);
-        allProjectMemberPage.getContent().forEach(e -> {
-            DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
-            devopsEnvUserPermissionDTO.setIamUserId(e.getId());
-            devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
-            devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-            if (!allUsersId.contains(e.getId())) {
-                devopsEnvUserPermissionDTO.setPermitted(false);
-                allUsersDTO.add(devopsEnvUserPermissionDTO);
-            }
-        });
-        return allUsersDTO;
+    public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId) {
+       return devopsEnvUserPermissionRepository.listALlUserPermission(envId);
     }
 
     @Override
