@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import feign.FeignException;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
@@ -24,10 +24,10 @@ public class GitlabGroupMemberRepositoryImpl implements GitlabGroupMemberReposit
     }
 
     @Override
-    public GitlabGroupMemberE getUserMemberByUserId(Integer groupId, Integer userId) {
+    public GitlabMemberE getUserMemberByUserId(Integer groupId, Integer userId) {
         try {
             return ConvertHelper.convert(gitlabServiceClient.getUserMemberByUserId(
-                    groupId, userId).getBody(), GitlabGroupMemberE.class);
+                    groupId, userId).getBody(), GitlabMemberE.class);
         } catch (FeignException e) {
             throw new CommonException(e);
         }

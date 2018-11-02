@@ -44,8 +44,8 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
@@ -195,7 +195,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
 
-    void updateWebHook(List<CheckLog> logs) {
+    private void updateWebHook(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
         applications.stream()
                 .filter(applicationDO ->
@@ -213,7 +213,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 });
     }
 
-    void syncCommit(List<CheckLog> logs) {
+    private void syncCommit(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
         applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
@@ -221,7 +221,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             checkLog.setContent(APP + applicationDO.getName() + "sync gitlab commit");
                             try {
                                 List<CommitDO> commitDOS = gitlabProjectRepository.listCommits(applicationDO.getGitlabProjectId(), ADMIN);
-                                commitDOS.stream().forEach(commitDO -> {
+                                commitDOS.forEach(commitDO -> {
                                     DevopsGitlabCommitE devopsGitlabCommitE = new DevopsGitlabCommitE();
                                     devopsGitlabCommitE.setAppId(applicationDO.getId());
                                     devopsGitlabCommitE.setCommitContent(commitDO.getMessage());
@@ -250,19 +250,23 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
 
-    void syncPipelines(List<CheckLog> logs) {
+    private void syncPipelines(List<CheckLog> logs) {
         List<ApplicationDO> applications = applicationMapper.selectAll();
         applications.stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                 .forEach(applicationDO -> {
                     CheckLog checkLog = new CheckLog();
                     checkLog.setContent(APP + applicationDO.getName() + "sync gitlab pipeline");
                     try {
-                        List<GitlabPipelineE> pipelineDOS = gitlabProjectRepository.listPipeline(applicationDO.getGitlabProjectId(), ADMIN);
-                        pipelineDOS.stream().forEach(pipelineE -> {
-                            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), pipelineE.getId(), ADMIN);
+                        List<GitlabPipelineE> pipelineDOS = gitlabProjectRepository
+                                .listPipeline(applicationDO.getGitlabProjectId(), ADMIN);
+                        pipelineDOS.forEach(pipelineE -> {
+                            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository
+                                    .getPipeline(applicationDO.getGitlabProjectId(), pipelineE.getId(), ADMIN);
                             DevopsGitlabPipelineE devopsGitlabPipelineE = new DevopsGitlabPipelineE();
                             devopsGitlabPipelineE.setAppId(applicationDO.getId());
-                            Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser().getId()));
+                            Long userId = userAttrRepository
+                                    .queryUserIdByGitlabUserId(TypeUtil.objToLong(gitlabPipelineE.getUser()
+                                            .getId()));
                             devopsGitlabPipelineE.setPipelineCreateUserId(userId);
                             devopsGitlabPipelineE.setPipelineId(TypeUtil.objToLong(gitlabPipelineE.getId()));
                             if (gitlabPipelineE.getStatus().toString().equals("success")) {
@@ -271,11 +275,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 devopsGitlabPipelineE.setStatus(gitlabPipelineE.getStatus().toString());
                             }
                             try {
-                                devopsGitlabPipelineE.setPipelineCreationDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(gitlabPipelineE.getCreatedAt()));
+                                devopsGitlabPipelineE
+                                        .setPipelineCreationDate(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                                .parse(gitlabPipelineE.getCreatedAt()));
                             } catch (ParseException e) {
                                 checkLog.setResult(FAILED + e.getMessage());
                             }
-                            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(gitlabPipelineE.getSha(), gitlabPipelineE.getRef());
+                            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository
+                                    .queryByShaAndRef(gitlabPipelineE.getSha(), gitlabPipelineE.getRef());
                             if (devopsGitlabCommitE != null) {
                                 devopsGitlabCommitE.setRef(gitlabPipelineE.getRef());
                                 devopsGitlabCommitRepository.update(devopsGitlabCommitE);
@@ -284,14 +291,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             List<Stage> stages = new ArrayList<>();
                             List<String> stageNames = new ArrayList<>();
                             List<Integer> gitlabJobIds = gitlabProjectRepository
-                                    .listJobs(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(devopsGitlabPipelineE.getPipelineId()), ADMIN).stream().map(GitlabJobE::getId).collect(Collectors.toList());
+                                    .listJobs(applicationDO.getGitlabProjectId(),
+                                            TypeUtil.objToInteger(devopsGitlabPipelineE.getPipelineId()), ADMIN)
+                                    .stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
-                            gitlabProjectRepository.getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(), ADMIN).
-                                    stream().forEach(commitStatuseDO -> {
+                            gitlabProjectRepository
+                                    .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(),
+                                            ADMIN)
+                                    .forEach(commitStatuseDO -> {
                                 if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                                     Stage stage = getPipelineStage(commitStatuseDO);
                                     stages.add(stage);
-                                } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube") && stages.size() > 0) {
+                                } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
+                                        .contains("sonarqube") && !stages.isEmpty()) {
                                     Stage stage = getPipelineStage(commitStatuseDO);
                                     stages.add(stage);
                                     stageNames.add(commitStatuseDO.getName());
@@ -316,20 +328,27 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             try {
                 ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getAppId());
                 if (applicationDO.getGitlabProjectId() != null) {
-                    DevopsGitlabCommitDO devopsGitlabCommitDO = devopsGitlabCommitMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getCommitId());
+                    DevopsGitlabCommitDO devopsGitlabCommitDO = devopsGitlabCommitMapper
+                            .selectByPrimaryKey(devopsGitlabPipelineDO.getCommitId());
                     if (devopsGitlabCommitDO != null) {
-                        GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()), ADMIN);
+                        GitlabPipelineE gitlabPipelineE = gitlabProjectRepository
+                                .getPipeline(applicationDO.getGitlabProjectId(),
+                                        TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()), ADMIN);
                         List<Stage> stages = new ArrayList<>();
                         List<String> stageNames = new ArrayList<>();
                         List<Integer> gitlabJobIds = gitlabProjectRepository
-                                .listJobs(applicationDO.getGitlabProjectId(), TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()), ADMIN).stream().map(GitlabJobE::getId).collect(Collectors.toList());
+                                .listJobs(applicationDO.getGitlabProjectId(),
+                                        TypeUtil.objToInteger(devopsGitlabPipelineDO.getPipelineId()),
+                                        ADMIN).stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
-                        gitlabProjectRepository.getCommitStatuse(applicationDO.getGitlabProjectId(), devopsGitlabCommitDO.getCommitSha(), ADMIN).
-                                stream().forEach(commitStatuseDO -> {
+                        gitlabProjectRepository.getCommitStatuse(applicationDO.getGitlabProjectId(),
+                                devopsGitlabCommitDO.getCommitSha(), ADMIN)
+                                .forEach(commitStatuseDO -> {
                             if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                                 Stage stage = getPipelineStage(commitStatuseDO);
                                 stages.add(stage);
-                            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube") && stages.size() > 0) {
+                            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
+                                    .contains("sonarqube") && !stages.isEmpty()) {
                                 Stage stage = getPipelineStage(commitStatuseDO);
                                 stages.add(stage);
                                 stageNames.add(commitStatuseDO.getName());
@@ -365,12 +384,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     }
 
     private void changeGitOpsUserAccess(List<CheckLog> logs) {
-        List<Long> projectIds = devopsProjectMapper.selectAll().stream().filter(devopsProjectDO -> devopsProjectDO.getDevopsEnvGroupId() != null && devopsProjectDO.getDevopsAppGroupId() != null).map(DevopsProjectDO::getIamProjectId).collect(Collectors.toList());
+        List<Long> projectIds = devopsProjectMapper.selectAll().stream().
+                filter(devopsProjectDO -> devopsProjectDO.getDevopsEnvGroupId() != null && devopsProjectDO
+                        .getDevopsAppGroupId() != null).map(DevopsProjectDO::getIamProjectId)
+                .collect(Collectors.toList());
         projectIds.forEach(projectId -> {
             PageRequest pageRequest = new PageRequest();
             pageRequest.setPage(0);
             pageRequest.setSize(100);
-            Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, pageRequest,null);
+            Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId,
+                    pageRequest, null);
             if (!allProjectUser.getContent().isEmpty()) {
                 allProjectUser.forEach(userWithRoleDTO -> {
                     if (userWithRoleDTO.getRoles().stream().noneMatch(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))) {
@@ -381,7 +404,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             if (userAttrE != null) {
                                 Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
                                 GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
-                                GitlabGroupMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                                GitlabMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                         TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                                         gitlabUserId);
                                 if (groupMemberE != null) {
@@ -662,8 +685,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     devopsIngressE.getDomain(), devopsIngressE.getName(), devopsIngressE.getCertName());
             List<DevopsIngressPathE> devopsIngressPathES =
                     devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
-            devopsIngressPathES.stream()
-                    .forEach(devopsIngressPathE ->
+            devopsIngressPathES.forEach(devopsIngressPathE ->
                             v1beta1Ingress.getSpec().getRules().get(0).getHttp()
                                     .addPathsItem(devopsIngressService.createPath(
                                             devopsIngressPathE.getPath(),
@@ -699,15 +721,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 applications.stream()
                         .filter(applicationDO ->
                                 applicationDO.getGitlabProjectId() != null && applicationDO.getHookId() == null)
-                        .forEach(applicationDO -> {
-                            syncWebHook(applicationDO, logs);
-                        });
+                        .forEach(applicationDO -> syncWebHook(applicationDO, logs));
                 applications.stream()
                         .filter(applicationDO ->
                                 applicationDO.getGitlabProjectId() != null)
-                        .forEach(applicationDO -> {
-                            syncBranches(applicationDO, logs);
-                        });
+                        .forEach(applicationDO -> syncBranches(applicationDO, logs));
             } else if ("0.9".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 0.9");
                 syncNonEnvGroupProject(logs);
@@ -919,7 +937,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 LOGGER.info(checkLog.toString());
                 logs.add(checkLog);
             });
-
         }
     }
 }

@@ -12,7 +12,7 @@ import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
@@ -22,7 +22,6 @@ import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
@@ -94,7 +93,7 @@ class ApplicationControllerSpec extends Specification {
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
-    Map<String, Object> searchParam = new HashMap<>();
+    Map<String, Object> searchParam = new HashMap<>()
 
     @Shared
     Long project_id = 1L
@@ -113,7 +112,7 @@ class ApplicationControllerSpec extends Specification {
         userAttrE.setIamUserId(init_id)
         userAttrE.setGitlabUserId(init_id)
 
-        Map<String, Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>()
         params.put("name",[])
         params.put("code",["app"])
         searchParam.put("searchParam", params)
@@ -135,8 +134,8 @@ class ApplicationControllerSpec extends Specification {
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
         gitlabGroupE.setDevopsAppGroupId(init_id)
         gitlabGroupE.setProjectE(projectE)
-        GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE()
-        groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
+        GitlabMemberE gitlabMemberE = new GitlabMemberE()
+        gitlabMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
 
         and: 'sagaClient'
         applicationService.initMockService(sagaClient)
@@ -146,7 +145,7 @@ class ApplicationControllerSpec extends Specification {
         userAttrRepository.queryById(_) >> userAttrE
         iamRepository.queryIamProject(_) >> projectE
         iamRepository.queryOrganizationById(_) >> organization
-        gitlabGroupMemberRepository.getUserMemberByUserId(*_) >> groupMemberE
+        gitlabGroupMemberRepository.getUserMemberByUserId(*_) >> gitlabMemberE
 
         when: '创建一个应用'
         def entity = restTemplate.postForEntity("/v1/projects/{project_id}/apps", applicationDTO, ApplicationRepDTO.class, project_id)
@@ -196,7 +195,7 @@ class ApplicationControllerSpec extends Specification {
         then:
         ApplicationDO applicationDo = applicationMapper.selectByPrimaryKey(init_id)
         expect:
-        applicationDo.active == false
+        !applicationDo.active
     }
 
     //启用应用
@@ -206,7 +205,7 @@ class ApplicationControllerSpec extends Specification {
         then:
         ApplicationDO applicationDo = applicationMapper.selectByPrimaryKey(init_id)
         expect:
-        applicationDo.active == true
+        applicationDo.active
     }
 
     //项目下分页查询应用
@@ -232,7 +231,7 @@ class ApplicationControllerSpec extends Specification {
     //根据环境id分页获取已部署正在运行实例的应用
     def "pageByEnvIdAndStatus"() {
         given: '添加应用运行实例'
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
+        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
         applicationInstanceDO.setId(init_id)
         applicationInstanceDO.setCode("spock-test")
         applicationInstanceDO.setStatus("running")
@@ -385,7 +384,6 @@ class ApplicationControllerSpec extends Specification {
         given:
         iamRepository.queryIamProject(_) >> projectE
         iamRepository.queryOrganizationById(_) >> organization
-
 
         when:
         def object = restTemplate.postForObject("/v1/projects/{project_id}/apps/list_code_repository", searchParam,Page.class, project_id)

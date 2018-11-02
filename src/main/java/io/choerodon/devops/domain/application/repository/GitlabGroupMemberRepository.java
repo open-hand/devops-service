@@ -2,7 +2,7 @@ package io.choerodon.devops.domain.application.repository;
 
 import org.springframework.http.ResponseEntity;
 
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 
 /**
@@ -10,7 +10,7 @@ import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
  */
 public interface GitlabGroupMemberRepository {
 
-    GitlabGroupMemberE getUserMemberByUserId(Integer groupId, Integer userId);
+    GitlabMemberE getUserMemberByUserId(Integer groupId, Integer userId);
 
     ResponseEntity deleteMember(Integer groupId, Integer userId);
 

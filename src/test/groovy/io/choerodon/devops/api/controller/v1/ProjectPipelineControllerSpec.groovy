@@ -7,6 +7,7 @@ import io.choerodon.devops.domain.application.repository.UserAttrRepository
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
@@ -32,10 +33,8 @@ class ProjectPipelineControllerSpec extends Specification {
     private UserAttrRepository userAttrRepository
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
-
     def "Retry"() {
         given:
-
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
@@ -49,13 +48,10 @@ class ProjectPipelineControllerSpec extends Specification {
         then:
         userAttrRepository.queryById(_ as Long) >> userAttrE
         result == true
-
     }
 
     def "Cancel"() {
-
         given:
-
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
@@ -69,8 +65,5 @@ class ProjectPipelineControllerSpec extends Specification {
         then:
         userAttrRepository.queryById(_ as Long) >> userAttrE
         result == true
-
-
     }
-
 }

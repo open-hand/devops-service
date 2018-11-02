@@ -34,6 +34,5 @@ public interface GitlabProjectRepository {
 
     List<CommitDO> listCommits(Integer projectId, Integer userId);
 
-    GitlabGroupMemberE getProjectMember(Integer projectId, Integer userId);
-
+    GitlabMemberE getProjectMember(Integer projectId, Integer userId);
 }

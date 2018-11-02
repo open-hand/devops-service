@@ -2,10 +2,7 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.repository.UserAttrRepository
+import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
@@ -63,11 +60,11 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(GitlabRepository)
     }
 
-    @Bean("mockUserAttrRepository")
-    @Primary
-    UserAttrRepository userAttrRepository() {
-        detachedMockFactory.Mock(UserAttrRepository)
-    }
+//    @Bean("mockUserAttrRepository")
+//    @Primary
+//    UserAttrRepository userAttrRepository() {
+//        detachedMockFactory.Mock(UserAttrRepository)
+//    }
 
     @Bean("mockGitlabGroupMemberRepository")
     @Primary
@@ -87,11 +84,11 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(EnvListener)
     }
 
-    @Bean("mockIamRepository")
-    @Primary
-    IamRepository iamRepository() {
-        detachedMockFactory.Mock(IamRepository)
-    }
+//    @Bean("mockIamRepository")
+//    @Primary
+//    IamRepository iamRepository() {
+//        detachedMockFactory.Mock(IamRepository)
+//    }
 
     @Bean("mockGitUtil")
     @Primary
@@ -109,6 +106,12 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Primary
     DeployService deployService() {
         detachedMockFactory.Mock(DeployService)
+    }
+
+    @Bean("mockGitlabProjectRepository")
+    @Primary
+    GitlabProjectRepository gitlabProjectRepository() {
+        detachedMockFactory.Mock(GitlabProjectRepository)
     }
 
     @PostConstruct

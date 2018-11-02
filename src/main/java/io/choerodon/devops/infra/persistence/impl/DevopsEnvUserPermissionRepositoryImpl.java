@@ -85,16 +85,13 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     public void updateEnvUserPermission(Long envId, List<Long> addUsersList, List<Long> deleteUsersList) {
         // 待添加的用户列表
         List<UserE> addIamUsers = iamRepository.listUsersByIds(addUsersList);
-        addIamUsers.forEach(e -> {
-            devopsEnvUserPermissionMapper
-                    .insert(new DevopsEnvUserPermissionDO(e.getLoginName(), e.getId(), e.getRealName(), envId,
-                            true));
-        });
+        addIamUsers.forEach(e -> devopsEnvUserPermissionMapper
+                .insert(new DevopsEnvUserPermissionDO(e.getLoginName(), e.getId(), e.getRealName(), envId,
+                        true)));
         // 待删除的用户列表
-        List<UserE> deleteIamUsers = iamRepository.listUsersByIds(deleteUsersList);
-        deleteIamUsers.forEach(e -> {
+        deleteUsersList.forEach(e -> {
             DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
-            devopsEnvUserPermissionDO.setIamUserId(e.getId());
+            devopsEnvUserPermissionDO.setIamUserId(e);
             devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO);
         });
     }
@@ -128,7 +125,7 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
         List<RoleDTO> roleDTOS = new ArrayList<>();
         projectWithRoleDTOList.stream().filter(projectWithRoleDTO -> projectWithRoleDTO.getName().equals(projectE.getName())).forEach(projectWithRoleDTO ->
             roleDTOS.addAll(projectWithRoleDTO.getRoles().stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER)).collect(Collectors.toList())));
-        if (roleDTOS.size() > 0) {
+        if (!roleDTOS.isEmpty()) {
             return true;
         } else {
             return false;

@@ -29,7 +29,7 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
@@ -39,6 +39,7 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -175,7 +176,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             throw new CommonException(e.getMessage(), e);
         }
     }
-
 
     @Override
     public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
@@ -738,9 +738,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
         if (permission == 0) {
             // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
-            GitlabGroupMemberE gitlabGroupMemberE = gitlabProjectRepository
+            GitlabMemberE gitlabMemberE = gitlabProjectRepository
                     .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            if (gitlabGroupMemberE.getId() != null) {
+            if (gitlabMemberE.getId() != null) {
                 gitlabRepository
                         .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
             }

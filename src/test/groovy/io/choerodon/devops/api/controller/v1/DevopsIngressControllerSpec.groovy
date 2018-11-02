@@ -7,7 +7,7 @@ import io.choerodon.devops.api.dto.DevopsIngressPathDTO
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.EnvUtil
@@ -17,7 +17,6 @@ import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.CertificationStatus
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.mapper.*
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.helper.EnvSession
 import org.springframework.beans.factory.annotation.Autowired
@@ -192,14 +191,14 @@ class DevopsIngressControllerSpec extends Specification {
         certificationDO.setName("cert")
         devopsCertificationMapper.insert(certificationDO)
 
-        GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE()
-        groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
+        GitlabMemberE gitlabMemberE = new GitlabMemberE()
+        gitlabMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
 
         GitlabGroupE gitlabGroupE = new GitlabGroupE()
         gitlabGroupE.setDevopsEnvGroupId(1)
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
         userAttrRepository.queryById(_ as Long) >> userAttrE
-        gitlabGroupMemberRepository.getUserMemberByUserId(_ as Integer, _ as Integer) >> groupMemberE
+        gitlabGroupMemberRepository.getUserMemberByUserId(_ as Integer, _ as Integer) >> gitlabMemberE
         devopsProjectRepository.queryDevopsProject(_ as Long) >> gitlabGroupE
 
         when:
@@ -233,8 +232,8 @@ class DevopsIngressControllerSpec extends Specification {
 
         UserAttrE userAttrE = new UserAttrE(1, 1)
 
-        GitlabGroupMemberE groupMemberE
-        groupMemberE = new GitlabGroupMemberE()
+        GitlabMemberE groupMemberE
+        groupMemberE = new GitlabMemberE()
         groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
 
         Organization organization = new Organization()
@@ -262,7 +261,7 @@ class DevopsIngressControllerSpec extends Specification {
         restTemplate.put("/v1/projects/1/ingress/1", newDevopsIngressDTO, Object.class)
 
         then:
-        devopsIngressMapper.selectByPrimaryKey(1L).getDomain().equals("test.test-test.test")
+        devopsIngressMapper.selectByPrimaryKey(1L).getDomain() == "test.test-test.test"
 
     }
 
@@ -305,8 +304,8 @@ class DevopsIngressControllerSpec extends Specification {
         given:
         UserAttrE userAttrE = new UserAttrE(1, 1)
 
-        GitlabGroupMemberE groupMemberE
-        groupMemberE = new GitlabGroupMemberE()
+        GitlabMemberE groupMemberE
+        groupMemberE = new GitlabMemberE()
         groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue())
 
         Organization organization = new Organization()
@@ -331,7 +330,7 @@ class DevopsIngressControllerSpec extends Specification {
         restTemplate.delete("/v1/projects/1/ingress/1")
 
         then:
-        devopsEnvCommandRepository.queryByObject("ingress", 1L).getCommandType().equals("delete")
+        devopsEnvCommandRepository.queryByObject("ingress", 1L).getCommandType() == "delete"
 
     }
 
@@ -340,7 +339,7 @@ class DevopsIngressControllerSpec extends Specification {
         boolean exist = restTemplate.getForObject("/v1/projects/1/ingress/check_name?name=test&envId=1", Boolean.class)
 
         then:
-        exist == true
+        exist
     }
 
     def "CheckDomain"() {
@@ -348,13 +347,12 @@ class DevopsIngressControllerSpec extends Specification {
         boolean exist = restTemplate.getForObject("/v1/projects/1/ingress/check_domain?domain=test.test&path=testpath&id=1", Boolean.class)
 
         then:
-        exist == true
+        exist
     }
 
     def "ListByEnv"() {
         given:
         String infra = "{\"searchParam\":{\"name\":[\"ing\"]}}"
-        PageRequest pageRequest = new PageRequest(1, 20)
 
         HttpHeaders headers = new HttpHeaders()
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))

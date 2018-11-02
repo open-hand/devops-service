@@ -145,10 +145,10 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
-    public GitlabGroupMemberE getProjectMember(Integer projectId, Integer userId) {
+    public GitlabMemberE getProjectMember(Integer projectId, Integer userId) {
         try {
             return ConvertHelper.convert(gitlabServiceClient.getProjectMember(
-                    projectId, userId).getBody(), GitlabGroupMemberE.class);
+                    projectId, userId).getBody(), GitlabMemberE.class);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
