@@ -456,6 +456,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         iamRepository.initMockIamService(iamServiceClient)
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("pro")
+        projectDO.setOrganizationId(1L)
         ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
@@ -484,7 +485,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         HttpHeaders headers = new HttpHeaders()
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
         HttpEntity<String> strEntity = new HttpEntity<String>(params, headers)
-
 
         iamRepository.initMockIamService(iamServiceClient)
         List<RoleDTO> roleDTOList = new ArrayList<>()
