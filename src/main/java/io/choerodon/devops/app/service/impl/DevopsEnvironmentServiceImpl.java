@@ -519,7 +519,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                                    Long gitlabProjectId, Long projectId) {
 
         List<Long> userIds = gitlabProjectPayload.getUserIds();
-        // 获取项目下所有角色和角色的用户数量
+        // 获取项目下所有项目成员
         Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId);
         // 所有项目成员中有权限的
         allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
@@ -607,7 +607,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .listALlUserPermission(TypeUtil.objToLong(envId));
             List<Long> allUsersId = allUsersDTO.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
                     .collect(Collectors.toList());
-            // TODO 普通分页需要带上iam中的所有项目成员
+            // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId);
             allProjectMemberPage.getContent().forEach(e -> {
                 DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
@@ -665,26 +665,51 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId) {
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
+        // 获取项目下的所有角色和该角色下的用户数量
         List<RoleDTO> roleDTOList = iamRepository
                 .listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO);
-        // 获取项目成员的roleId
-        Long projectMemberId = 0L;
-        for (RoleDTO roleDTO : roleDTOList) {
-            if (PROJECT_MEMBER.equals(roleDTO.getCode())) {
-                projectMemberId = roleDTO.getId();
-                if (pageRequest == null) {
-                    // 获取项目成员的数量
-                    pageRequest = new PageRequest(0, roleDTO.getUserCount());
-                }
+        // 获取项目成员的roleId和数量
+        Long projectMemberId;
+        Optional<RoleDTO> memberRoleDTOOptional = roleDTOList.stream().filter(e -> PROJECT_MEMBER.equals(e.getCode()))
+                .findFirst();
+        if (memberRoleDTOOptional.isPresent()) {
+            RoleDTO memberRoleDTO = memberRoleDTOOptional.get();
+            projectMemberId = memberRoleDTO.getId();
+            if (pageRequest == null) {
+                pageRequest = new PageRequest(0, memberRoleDTO.getUserCount());
+            } else {
+                pageRequest.setSize(memberRoleDTO.getUserCount());
             }
-        }
-        if (projectMemberId == 0) {
+        } else {
             throw new CommonException("error.get.member.roleId");
         }
-        // 根据项目成员id查询项目下所有的项目成员
-        return iamRepository
+        // 获取项目所有者的roleId和数量
+        Long projectOwnerId;
+        PageRequest ownerPageRequest;
+        Optional<RoleDTO> ownerRoleDTOOptional = roleDTOList.stream().filter(e -> PROJECT_OWNER.equals(e.getCode()))
+                .findFirst();
+        if (ownerRoleDTOOptional.isPresent()) {
+            projectOwnerId = ownerRoleDTOOptional.get().getId();
+            ownerPageRequest = new PageRequest(0, ownerRoleDTOOptional.get().getUserCount());
+        } else {
+            throw new CommonException("error.get.projectOwner.roldId");
+        }
+        // 所有项目成员，可能还带有项目所有者的角色，需要过滤
+        Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
                         projectMemberId, projectId);
+        // 所有项目所有者
+        Page<UserDTO> allOwnerUsersPage = iamRepository
+                .pagingQueryUsersByRoleIdOnProjectLevel(ownerPageRequest, roleAssignmentSearchDTO, projectOwnerId,
+                        projectId);
+        // 过滤项目成员中含有项目所有者的人
+        List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.stream()
+                .filter(e -> !allOwnerUsersPage.getContent().contains(e)).collect(Collectors.toList());
+        // 设置过滤后的分页显示参数
+        allMemberWithOtherUsersPage.setContent(returnUserDTOList);
+        allMemberWithOtherUsersPage.setNumberOfElements(returnUserDTOList.size());
+        allMemberWithOtherUsersPage.setTotalElements(returnUserDTOList.size());
+        return allMemberWithOtherUsersPage;
     }
 
     private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
