@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -46,6 +47,7 @@ import io.choerodon.websocket.helper.EnvListener;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
+    private static final Gson gson = new Gson();
     private static final String MASTER = "master";
     private static final String README = "README.md";
     private static final String README_CONTENT =
@@ -520,7 +522,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<Long> userIds = gitlabProjectPayload.getUserIds();
         // 获取项目下所有项目成员
-        Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId);
+        Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId, "");
         // 所有项目成员中有权限的
         allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
             Long userId = e.getId();
@@ -585,7 +587,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                                                       String searchParams, String envId) {
         if ("null".equals(envId)) {
             // 根据项目成员id查询项目下所有的项目成员
-            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId);
+            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
             List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
@@ -604,11 +606,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             // 普通的分页查询
             // 查询表中已经有权限的项目成员
             List<DevopsEnvUserPermissionDTO> allUsersDTO = devopsEnvUserPermissionRepository
-                    .listALlUserPermission(TypeUtil.objToLong(envId));
+                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams).getContent();
             List<Long> allUsersId = allUsersDTO.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
                     .collect(Collectors.toList());
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
-            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId);
+            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
             allProjectMemberPage.getContent().forEach(e -> {
                 DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
@@ -663,8 +665,20 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return true;
     }
 
-    private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId) {
+    private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParam) {
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
+        if (searchParam != null && !"".equals(searchParam)) {
+            Map maps = gson.fromJson(searchParam, Map.class);
+            Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+            String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+            String subLogin = loginName.substring(1, loginName.length() - 1);
+            String subReal = realName.substring(1, realName.length() - 1);
+            roleAssignmentSearchDTO.setLoginName(subLogin);
+            roleAssignmentSearchDTO.setRealName(subReal);
+            roleAssignmentSearchDTO.setParam(new String[]{param});
+        }
         // 获取项目下的所有角色和该角色下的用户数量
         List<RoleDTO> roleDTOList = iamRepository
                 .listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO);
@@ -707,8 +721,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .filter(e -> !allOwnerUsersPage.getContent().contains(e)).collect(Collectors.toList());
         // 设置过滤后的分页显示参数
         allMemberWithOtherUsersPage.setContent(returnUserDTOList);
-        allMemberWithOtherUsersPage.setNumberOfElements(returnUserDTOList.size());
-        allMemberWithOtherUsersPage.setTotalElements(returnUserDTOList.size());
         return allMemberWithOtherUsersPage;
     }
 
