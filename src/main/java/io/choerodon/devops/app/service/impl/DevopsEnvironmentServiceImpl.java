@@ -626,7 +626,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             });
             // 手动分页
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
-            BeanUtils.copyProperties(allUsersDTOPage, devopsEnvUserPermissionDTOPage);
+            BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setContent(allUsersDTOList);
             return devopsEnvUserPermissionDTOPage;
         }
@@ -698,9 +698,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             projectMemberId = memberRoleDTO.getId();
             if (pageRequest == null) {
                 pageRequest = new PageRequest(0, memberRoleDTO.getUserCount());
-            } else {
-                pageRequest.setSize(memberRoleDTO.getUserCount());
             }
+//            else {
+            //                pageRequest.setSize(memberRoleDTO.getUserCount());
+            //            }
         } else {
             throw new CommonException("error.get.member.roleId");
         }
