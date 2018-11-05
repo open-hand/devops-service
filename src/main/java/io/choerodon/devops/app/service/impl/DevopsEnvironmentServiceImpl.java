@@ -665,19 +665,23 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return true;
     }
 
-    private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParam) {
+    private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
         RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
-        if (searchParam != null && !"".equals(searchParam)) {
-            Map maps = gson.fromJson(searchParam, Map.class);
+        if (searchParams != null && !"".equals(searchParams)) {
+            Map maps = gson.fromJson(searchParams, Map.class);
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-            String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
-            String realName = TypeUtil.objToString(searchParamMap.get("realName"));
-            String subLogin = loginName.substring(1, loginName.length() - 1);
-            String subReal = realName.substring(1, realName.length() - 1);
-            roleAssignmentSearchDTO.setLoginName(subLogin);
-            roleAssignmentSearchDTO.setRealName(subReal);
             roleAssignmentSearchDTO.setParam(new String[]{param});
+            if(searchParamMap.get("loginName")!=null){
+                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                String subLogin = loginName.substring(1, loginName.length() - 1);
+                roleAssignmentSearchDTO.setLoginName(subLogin);
+            }
+            if(searchParamMap.get("realName")!=null){
+                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                String subReal = realName.substring(1, realName.length() - 1);
+                roleAssignmentSearchDTO.setRealName(subReal);
+            }
         }
         // 获取项目下的所有角色和该角色下的用户数量
         List<RoleDTO> roleDTOList = iamRepository
