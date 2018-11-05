@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto.iam;
 
+import java.util.HashMap;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
@@ -189,5 +191,31 @@ public class UserDTO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (this.getClass() != obj.getClass()) {
+            return false;
+        }
+        UserDTO anotherObj = (UserDTO) obj;
+        if (anotherObj.getId() == null) {
+            return false;
+        }
+        if (id == null) {
+            return false;
+        }
+        return anotherObj.getId().equals(id);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
