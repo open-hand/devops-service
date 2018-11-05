@@ -524,16 +524,18 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 获取项目下所有项目成员
         Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId, "");
         // 所有项目成员中有权限的
-        allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
-            Long userId = e.getId();
-            String loginName = e.getLoginName();
-            String realName = e.getRealName();
-            UserAttrE userAttrE = userAttrRepository.queryById(userId);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, 40);
-            devopsEnvUserPermissionRepository
-                    .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
-        });
+        if (userIds != null && !userIds.isEmpty()) {
+            allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
+                Long userId = e.getId();
+                String loginName = e.getLoginName();
+                String realName = e.getRealName();
+                UserAttrE userAttrE = userAttrRepository.queryById(userId);
+                Long gitlabUserId = userAttrE.getGitlabUserId();
+                updateGitlabProjectMember(gitlabProjectId, gitlabUserId, 40);
+                devopsEnvUserPermissionRepository
+                        .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
+            });
+        }
     }
 
     @Override
@@ -605,9 +607,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             // 普通的分页查询
             // 查询表中已经有权限的项目成员
-            List<DevopsEnvUserPermissionDTO> allUsersDTO = devopsEnvUserPermissionRepository
-                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams).getContent();
-            List<Long> allUsersId = allUsersDTO.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
+            Page<DevopsEnvUserPermissionDTO> allUsersDTOPage = devopsEnvUserPermissionRepository
+                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams);
+            List<DevopsEnvUserPermissionDTO> allUsersDTOList = allUsersDTOPage.getContent();
+            List<Long> allUsersId = allUsersDTOPage.getContent().stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
                     .collect(Collectors.toList());
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
@@ -618,13 +621,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
                 if (!allUsersId.contains(e.getId())) {
                     devopsEnvUserPermissionDTO.setPermitted(false);
-                    allUsersDTO.add(devopsEnvUserPermissionDTO);
+                    allUsersDTOList.add(devopsEnvUserPermissionDTO);
                 }
             });
             // 手动分页
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
-            BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
-            devopsEnvUserPermissionDTOPage.setContent(allUsersDTO);
+            BeanUtils.copyProperties(allUsersDTOPage, devopsEnvUserPermissionDTOPage);
+            devopsEnvUserPermissionDTOPage.setContent(allUsersDTOList);
             return devopsEnvUserPermissionDTOPage;
         }
     }
