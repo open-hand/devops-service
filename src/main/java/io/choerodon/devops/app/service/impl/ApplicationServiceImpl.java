@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -83,6 +84,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private DevopsGitRepository devopsGitRepository;
     @Autowired
     private SagaClient sagaClient;
+    @Autowired
+    private ApplicationMarketRepository applicationMarketRepository;
 
     @Override
     @Saga(code = "devops-create-gitlab-project",
@@ -476,10 +479,29 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status) {
-        return ConvertHelper.convertList(applicationRepository.listByEnvId(projectId, envId, status),
+    public List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
+        List<ApplicationCodeDTO> applicationCodeDTOS = ConvertHelper.convertList(applicationRepository.listByEnvId(projectId, envId, status),
                 ApplicationCodeDTO.class);
+        if (appId != null) {
+            ApplicationE applicationE = applicationRepository.query(appId);
+            ApplicationCodeDTO applicationCodeDTO = new ApplicationCodeDTO();
+            BeanUtils.copyProperties(applicationE, applicationCodeDTO);
+            ApplicationMarketE applicationMarketE = applicationMarketRepository.queryByAppId(appId);
+            if (applicationMarketE != null) {
+                applicationCodeDTO.setPublishLevel(applicationMarketE.getPublishLevel());
+                applicationCodeDTO.setContributor(applicationMarketE.getContributor());
+                applicationCodeDTO.setDescription(applicationMarketE.getDescription());
+            }
+            for (int i = 0; i < applicationCodeDTOS.size(); i++) {
+                if (applicationCodeDTOS.get(i).getId().equals(applicationE.getId())) {
+                    applicationCodeDTOS.remove(applicationCodeDTOS.get(i));
+                }
+            }
+            applicationCodeDTOS.add(0, applicationCodeDTO);
+        }
+        return applicationCodeDTOS;
     }
+
 
     @Override
     public Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest) {

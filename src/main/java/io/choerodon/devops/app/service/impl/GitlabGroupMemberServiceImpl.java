@@ -94,7 +94,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                 TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                                 userId);
-                        deleteGilabRole(groupMemberE, gitlabGroupE, userId, false);
+                        deleteGilabRole(groupMemberE, gitlabGroupE, userId, true);
                     } else {
                         Organization organization =
                                 iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());

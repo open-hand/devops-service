@@ -109,7 +109,7 @@ public interface ApplicationService {
      * @param status    环境状态
      * @return list of ApplicationRepDTO
      */
-    List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status);
+    List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用

@@ -63,7 +63,7 @@ public class ApplicationController {
      * @return ApplicationRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
+            roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
     @GetMapping("/{applicationId}/detail")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
@@ -215,8 +215,10 @@ public class ApplicationController {
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例运行状态", required = true)
-            @RequestParam String status) {
-        return Optional.ofNullable(applicationService.listByEnvId(projectId, envId, status))
+            @RequestParam String status,
+            @ApiParam(value = "应用 Id")
+            @RequestParam(required = false) Long appId) {
+        return Optional.ofNullable(applicationService.listByEnvId(projectId, envId, status, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appName.query"));
     }
