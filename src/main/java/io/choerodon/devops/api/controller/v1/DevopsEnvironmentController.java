@@ -311,8 +311,7 @@ public class DevopsEnvironmentController {
      * @return page
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @CustomPageRequest
     @ApiOperation(value = "分页查询项目下用户权限")
     @PostMapping(value = "/list")
@@ -339,9 +338,7 @@ public class DevopsEnvironmentController {
      * @return list
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER,
-                    InitRoleCode.DEPLOY_ADMINISTRATOR})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取环境下所有用户权限")
     @GetMapping(value = "/{envId}/list_all")
     public ResponseEntity<List<DevopsEnvUserPermissionDTO>> listAllUserPermission(
@@ -362,8 +359,7 @@ public class DevopsEnvironmentController {
      * @param userIds   有权限的用户ids
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境下为用户分配权限")
     @PostMapping(value = "/{envId}/permission")
     public ResponseEntity<Boolean> updateEnvUserPermission(
