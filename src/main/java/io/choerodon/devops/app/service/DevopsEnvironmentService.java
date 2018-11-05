@@ -144,7 +144,7 @@ public interface DevopsEnvironmentService {
     /**
      * 获取环境下所有用户权限
      *
-     * @param envId 环境id
+     * @param envId     环境id
      * @return list
      */
     List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId);

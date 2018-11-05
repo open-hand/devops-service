@@ -15,9 +15,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -196,6 +196,7 @@ public class IamRepositoryImpl implements IamRepository {
     public List<RoleDTO> listRolesWithUserCountOnProjectLevel(Long projectId,
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         try {
+
             return iamServiceClient.listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get roles with user count error by search param {}", roleAssignmentSearchDTO.getParam());
@@ -224,15 +225,19 @@ public class IamRepositoryImpl implements IamRepository {
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
             if (searchParams != null && !"".equals(searchParams)) {
                 Map maps = gson.fromJson(searchParams, Map.class);
-                Map<String, String> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+                Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
                 String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
-                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
-                String subLogin = loginName.substring(1, loginName.length() - 1);
-                String subReal = realName.substring(1, realName.length() - 1);
-                roleAssignmentSearchDTO.setLoginName("".equals(subLogin) ? null : subLogin);
-                roleAssignmentSearchDTO.setRealName("".equals(subReal) ? null : subReal);
                 roleAssignmentSearchDTO.setParam(new String[]{param});
+                if (searchParamMap.get("loginName") != null) {
+                    String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                    String subLogin = loginName.substring(1, loginName.length() - 1);
+                    roleAssignmentSearchDTO.setLoginName(subLogin);
+                }
+                if (searchParamMap.get("realName") != null) {
+                    String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                    String subReal = realName.substring(1, realName.length() - 1);
+                    roleAssignmentSearchDTO.setRealName(subReal);
+                }
             }
             ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient.queryUserByProjectId(projectId,
                     pageRequest.getPage(), pageRequest.getSize(), roleAssignmentSearchDTO);
