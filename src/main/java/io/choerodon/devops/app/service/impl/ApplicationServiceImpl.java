@@ -97,7 +97,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = ConvertHelper.convert(applicationDTO, ApplicationE.class);
         applicationE.initProjectE(projectId);
-        applicationRepository.checkName(applicationE);
+        applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         applicationRepository.checkCode(applicationE);
         applicationE.initActive(true);
         applicationE.initSynchro(false);
@@ -156,7 +156,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO) {
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
         applicationE.initProjectE(projectId);
-        applicationRepository.checkName(applicationE);
+        applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException("error.application.update");
         }
@@ -185,17 +185,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
-        applicationES.getContent().stream()
-                .forEach(t -> {
-                            if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
-                                t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                                        + organization.getCode() + "-" + projectE.getCode() + "/"
-                                        + t.getCode() + ".git");
-                                getSonarUrl(projectE, organization, t);
-                            }
-                        }
-                );
-
+        applicationES.getContent().forEach(t -> {
+                    if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
+                        t.initGitlabProjectEByUrl(
+                                gitlabUrl + urlSlash + organization.getCode() + "-" + projectE.getCode() + "/" +
+                                        t.getCode() + ".git");
+                        getSonarUrl(projectE, organization, t);
+                    }
+                }
+        );
         return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
     }
 
@@ -271,10 +269,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public void checkName(Long projectId, String name) {
-        ApplicationE applicationE = ApplicationFactory.createApplicationE();
-        applicationE.initProjectE(projectId);
-        applicationE.setName(name);
-        applicationRepository.checkName(applicationE);
+        applicationRepository.checkName(projectId, name);
     }
 
     @Override

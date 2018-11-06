@@ -46,9 +46,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public void checkName(ApplicationE applicationE) {
-        Long projectId = applicationE.getProjectE().getId();
-        String appName = applicationE.getName();
+    public void checkName(Long projectId, String appName) {
         if (applicationMapper.selectOneWithCaseSensitive(projectId, appName) == 1) {
             throw new CommonException("error.name.exist");
         }
@@ -94,14 +92,13 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
             Map<String, Object> maps = json.deserialize(params, Map.class);
             if (maps.get(TypeUtil.SEARCH_PARAM).equals("")) {
                 applicationES = PageHelper.doPageAndSort(
-                        pageRequest, () -> applicationMapper.list(
-                                projectId, isActive, hasVersion, null,
+                        pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, null,
                                 TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
             } else {
                 applicationES = PageHelper.doPageAndSort(
-                        pageRequest, () -> applicationMapper.list(
-                                projectId, isActive, hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                                TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
+                        pageRequest, () -> applicationMapper
+                                .list(projectId, isActive, hasVersion, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                                        TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
             }
         } else {
             applicationES = PageHelper.doPageAndSort(
