@@ -47,4 +47,6 @@ public interface IamRepository {
     Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,String searchParams);
 
     List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId);
+
+    Page<RoleDTO> queryRoleIdByCode(String roleCode);
 }

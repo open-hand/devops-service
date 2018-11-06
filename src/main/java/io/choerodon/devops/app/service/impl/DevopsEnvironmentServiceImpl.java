@@ -223,10 +223,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
 
         //查询当前用户的环境权限
-        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository.listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream().filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true).map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
+                .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                .filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true)
+                .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         //查询当前用户是否为项目所有者
-        Boolean isProjectOwner = devopsEnvUserPermissionRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
+        Boolean isProjectOwner = devopsEnvUserPermissionRepository
+                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
@@ -624,7 +628,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     allUsersDTOList.add(devopsEnvUserPermissionDTO);
                 }
             });
-            // 手动分页
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setContent(allUsersDTOList);
@@ -634,7 +637,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId) {
-       return devopsEnvUserPermissionRepository.listALlUserPermission(envId);
+        return devopsEnvUserPermissionRepository.listALlUserPermission(envId);
     }
 
     @Override
@@ -675,55 +678,42 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
             String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
             roleAssignmentSearchDTO.setParam(new String[]{param});
-            if(searchParamMap.get("loginName")!=null){
+            if (searchParamMap.get("loginName") != null) {
                 String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
                 String subLogin = loginName.substring(1, loginName.length() - 1);
                 roleAssignmentSearchDTO.setLoginName(subLogin);
             }
-            if(searchParamMap.get("realName")!=null){
+            if (searchParamMap.get("realName") != null) {
                 String realName = TypeUtil.objToString(searchParamMap.get("realName"));
                 String subReal = realName.substring(1, realName.length() - 1);
                 roleAssignmentSearchDTO.setRealName(subReal);
             }
         }
-        // 获取项目下的所有角色和该角色下的用户数量
-        List<RoleDTO> roleDTOList = iamRepository
-                .listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO);
-        // 获取项目成员的roleId和数量
-        Long projectMemberId;
-        Optional<RoleDTO> memberRoleDTOOptional = roleDTOList.stream().filter(e -> PROJECT_MEMBER.equals(e.getCode()))
-                .findFirst();
-        if (memberRoleDTOOptional.isPresent()) {
-            RoleDTO memberRoleDTO = memberRoleDTOOptional.get();
-            projectMemberId = memberRoleDTO.getId();
-            if (pageRequest == null) {
-                pageRequest = new PageRequest(0, memberRoleDTO.getUserCount());
-            }
-//            else {
-            //                pageRequest.setSize(memberRoleDTO.getUserCount());
-            //            }
+        // 获取项目所有者角色id和数量
+        Long ownerId;
+        Page<RoleDTO> ownerRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
+        if (ownerRoleDTOPage.getTotalElements() == 0) {
+            throw new CommonException("error.get.projectOwner.roleId");
         } else {
-            throw new CommonException("error.get.member.roleId");
+            ownerId = ownerRoleDTOPage.getContent().get(0).getId();
         }
-        // 获取项目所有者的roleId和数量
-        Long projectOwnerId;
-        PageRequest ownerPageRequest;
-        Optional<RoleDTO> ownerRoleDTOOptional = roleDTOList.stream().filter(e -> PROJECT_OWNER.equals(e.getCode()))
-                .findFirst();
-        if (ownerRoleDTOOptional.isPresent()) {
-            projectOwnerId = ownerRoleDTOOptional.get().getId();
-            ownerPageRequest = new PageRequest(0, ownerRoleDTOOptional.get().getUserCount());
+        // 获取项目成员id
+        Long memberId;
+        Page<RoleDTO> memberRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
+        if (memberRoleDTOPage.getTotalElements() == 0) {
+            throw new CommonException("error.get.projectMember.roleId");
         } else {
-            throw new CommonException("error.get.projectOwner.roldId");
+            memberId = memberRoleDTOPage.getContent().get(0).getId();
         }
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
         Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
-                        projectMemberId, projectId);
+                        memberId, projectId);
         // 所有项目所有者
+        // TODO 目前先设置为200，等iam接口修改后再做调整
         Page<UserDTO> allOwnerUsersPage = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(ownerPageRequest, roleAssignmentSearchDTO, projectOwnerId,
-                        projectId);
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 200), roleAssignmentSearchDTO,
+                        ownerId, projectId);
         // 过滤项目成员中含有项目所有者的人
         List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.stream()
                 .filter(e -> !allOwnerUsersPage.getContent().contains(e)).collect(Collectors.toList());
@@ -750,7 +740,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
-    private void setPermission(DevopsEnvironmentE devopsEnvironmentE, List<Long> permissionEnvIds, Boolean isProjectOwner) {
+    private void setPermission(DevopsEnvironmentE devopsEnvironmentE, List<Long> permissionEnvIds,
+                               Boolean isProjectOwner) {
         if (permissionEnvIds.contains(devopsEnvironmentE.getId()) || isProjectOwner) {
             devopsEnvironmentE.setPermission(true);
         } else {

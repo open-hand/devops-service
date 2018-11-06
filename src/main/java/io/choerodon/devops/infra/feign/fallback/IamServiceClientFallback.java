@@ -8,10 +8,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
-import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
+import io.choerodon.devops.api.dto.iam.*;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
@@ -96,5 +93,10 @@ public class IamServiceClientFallback implements IamServiceClient {
     @Override
     public ResponseEntity<Page<ProjectWithRoleDTO>> listProjectWithRole(Long id, int page, int size) {
         return new ResponseEntity("error.project.role.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<Page<RoleDTO>> queryRoleIdByCode(RoleSearchDTO roleSearchDTO) {
+        return new ResponseEntity("error.roleId.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
