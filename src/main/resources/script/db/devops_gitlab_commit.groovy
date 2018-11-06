@@ -40,5 +40,7 @@ databaseChangeLog(logicalFilePath: 'db/devops_gitlab_commit.groovy') {
                 constraintName: 'uk_commit_sha_ref', columnNames: 'commit_sha,ref')
     }
 
-
+    changeSet(author: 'n1ck', id: '2018-11-06-drop-column') {
+        dropColumn(columnName: "app_name", tableName: "devops_gitlab_commit")
+    }
 }

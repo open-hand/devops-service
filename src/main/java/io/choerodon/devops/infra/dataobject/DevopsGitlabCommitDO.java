@@ -4,6 +4,7 @@ import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -23,6 +24,8 @@ public class DevopsGitlabCommitDO extends AuditDomain {
     private String commitContent;
     private String ref;
     private Date commitDate;
+
+    @Transient
     private String appName;
     private String url;
 

@@ -15,10 +15,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
-import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
+import io.choerodon.devops.api.dto.iam.*;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -127,70 +124,70 @@ public class IamRepositoryImpl implements IamRepository {
         if (projectWithRoleDTOPage.getContent() != null) {
             returnList.addAll(projectWithRoleDTOPage.getContent());
         }
-            int totalPages = projectWithRoleDTOPage.getTotalPages();
-            if (totalPages > 1) {
-                for (int i = 1; i < totalPages; i++) {
-                    page = i;
-                    ResponseEntity<Page<ProjectWithRoleDTO>> entity = iamServiceClient
-                            .listProjectWithRole(userId, page, size);
-                    if (entity.getBody() != null) {
-                        Page<ProjectWithRoleDTO> projectWithRolePageNew = entity.getBody();
-                        if (!projectWithRolePageNew.getContent().isEmpty()) {
-                            returnList.addAll(projectWithRolePageNew.getContent());
-                        }
+        int totalPages = projectWithRoleDTOPage.getTotalPages();
+        if (totalPages > 1) {
+            for (int i = 1; i < totalPages; i++) {
+                page = i;
+                ResponseEntity<Page<ProjectWithRoleDTO>> entity = iamServiceClient
+                        .listProjectWithRole(userId, page, size);
+                if (entity.getBody() != null) {
+                    Page<ProjectWithRoleDTO> projectWithRolePageNew = entity.getBody();
+                    if (!projectWithRolePageNew.getContent().isEmpty()) {
+                        returnList.addAll(projectWithRolePageNew.getContent());
                     }
                 }
             }
+        }
         return returnList;
     }
 
-        @Override
-        public UserE queryById (Long id){
-            try {
-                ResponseEntity<UserDO> responseEntity = iamServiceClient.queryById(id);
-                return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
-            } catch (FeignException e) {
-                LOGGER.error("get user by user id {}", id);
-                return null;
-            }
-        }
-
-        @Override
-        public UserE queryByProjectAndId (Long projectId, Long id){
-            try {
-                ResponseEntity<Page<UserDO>> responseEntity = iamServiceClient.queryInProjectById(projectId, id);
-                return ConvertHelper.convert(responseEntity.getBody().getContent().get(0), UserE.class);
-            } catch (FeignException e) {
-                LOGGER.error("get user by project id {} and user id {} error", projectId, id);
-                return null;
-            }
-        }
-
-        @Override
-        public List<UserE> listUsersByIds (List < Long > ids) {
-            List<UserE> userES = new ArrayList<>();
-            if (ids != null && !ids.isEmpty()) {
-                Long[] newIds = new Long[ids.size()];
-                try {
-                    userES = ConvertHelper.convertList(iamServiceClient
-                            .listUsersByIds(ids.toArray(newIds)).getBody(), UserE.class);
-                } catch (Exception e) {
-                    throw new CommonException("error.users.get", e);
-                }
-            }
-            return userES;
-        }
-
-        @Override
-        public UserE queryUserByUserId (Long id){
-            List<Long> ids = new ArrayList<>();
-            ids.add(id);
-            List<UserE> userES = this.listUsersByIds(ids);
-            if (userES != null && !userES.isEmpty()) {
-                return userES.get(0);
-            }
+    @Override
+    public UserE queryById(Long id) {
+        try {
+            ResponseEntity<UserDO> responseEntity = iamServiceClient.queryById(id);
+            return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
+        } catch (FeignException e) {
+            LOGGER.error("get user by user id {}", id);
             return null;
         }
+    }
+
+    @Override
+    public UserE queryByProjectAndId(Long projectId, Long id) {
+        try {
+            ResponseEntity<Page<UserDO>> responseEntity = iamServiceClient.queryInProjectById(projectId, id);
+            return ConvertHelper.convert(responseEntity.getBody().getContent().get(0), UserE.class);
+        } catch (FeignException e) {
+            LOGGER.error("get user by project id {} and user id {} error", projectId, id);
+            return null;
+        }
+    }
+
+    @Override
+    public List<UserE> listUsersByIds(List<Long> ids) {
+        List<UserE> userES = new ArrayList<>();
+        if (ids != null && !ids.isEmpty()) {
+            Long[] newIds = new Long[ids.size()];
+            try {
+                userES = ConvertHelper.convertList(iamServiceClient
+                        .listUsersByIds(ids.toArray(newIds)).getBody(), UserE.class);
+            } catch (Exception e) {
+                throw new CommonException("error.users.get", e);
+            }
+        }
+        return userES;
+    }
+
+    @Override
+    public UserE queryUserByUserId(Long id) {
+        List<Long> ids = new ArrayList<>();
+        ids.add(id);
+        List<UserE> userES = this.listUsersByIds(ids);
+        if (userES != null && !userES.isEmpty()) {
+            return userES.get(0);
+        }
+        return null;
+    }
 
     @Override
     public List<RoleDTO> listRolesWithUserCountOnProjectLevel(Long projectId,
@@ -220,7 +217,8 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, String searchParams) {
+    public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
+                                                                String searchParams) {
         try {
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
             if (searchParams != null && !"".equals(searchParams)) {
@@ -239,8 +237,9 @@ public class IamRepositoryImpl implements IamRepository {
                     roleAssignmentSearchDTO.setRealName(subReal);
                 }
             }
-            ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient.queryUserByProjectId(projectId,
-                    pageRequest.getPage(), pageRequest.getSize(), roleAssignmentSearchDTO);
+            ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient
+                    .queryUserByProjectId(projectId,
+                            pageRequest.getPage(), pageRequest.getSize(), roleAssignmentSearchDTO);
             return userEPageResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user permission by project id {} error", projectId);
@@ -248,15 +247,28 @@ public class IamRepositoryImpl implements IamRepository {
         }
     }
 
-        @Override
-        public UserE queryByEmail(Long projectId, String email){
-            try {
-                ResponseEntity<Page<UserDO>> userDOResponseEntity = iamServiceClient.listUsersByEmail(projectId, 0, 10, email);
-                return ConvertHelper.convert(userDOResponseEntity.getBody().getContent().get(0), UserE.class);
+    @Override
+    public UserE queryByEmail(Long projectId, String email) {
+        try {
+            ResponseEntity<Page<UserDO>> userDOResponseEntity = iamServiceClient
+                    .listUsersByEmail(projectId, 0, 10, email);
+            return ConvertHelper.convert(userDOResponseEntity.getBody().getContent().get(0), UserE.class);
 
-            } catch (FeignException e) {
-                LOGGER.error("get user by email {} error", email);
-                return null;
-            }
+        } catch (FeignException e) {
+            LOGGER.error("get user by email {} error", email);
+            return null;
         }
     }
+
+    @Override
+    public Page<RoleDTO> queryRoleIdByCode(String roleCode) {
+        try {
+            RoleSearchDTO roleSearchDTO = new RoleSearchDTO();
+            roleSearchDTO.setCode(roleCode);
+            return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody();
+        } catch (FeignException e) {
+            LOGGER.error("get role id by code {} error", roleCode);
+            return null;
+        }
+    }
+}

@@ -9,10 +9,7 @@ import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
-import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
+import io.choerodon.devops.api.dto.iam.*;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
@@ -79,4 +76,6 @@ public interface IamServiceClient {
                                                                   @RequestParam("page") int page,
                                                                   @RequestParam("size") int size);
 
+    @PostMapping(value = "/v1/roles/search")
+    ResponseEntity<Page<RoleDTO>> queryRoleIdByCode(@RequestBody @Valid RoleSearchDTO roleSearchDTO);
 }

@@ -12,7 +12,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface ApplicationRepository {
     void checkApp(Long projectId, Long appId);
 
-    void checkName(ApplicationE applicationE);
+    void checkName(Long projectId, String appName);
 
     void checkCode(ApplicationE applicationE);
 
