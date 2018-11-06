@@ -709,17 +709,26 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
                         memberId, projectId);
+        // 如果项目成员查出来为空，则直接返回空列表
+        if (allMemberWithOtherUsersPage.getContent().isEmpty()) {
+            return allMemberWithOtherUsersPage;
+        }
         // 所有项目所有者
         // TODO 目前先设置为200，等iam接口修改后再做调整
         Page<UserDTO> allOwnerUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 200), roleAssignmentSearchDTO,
                         ownerId, projectId);
-        // 过滤项目成员中含有项目所有者的人
-        List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.stream()
-                .filter(e -> !allOwnerUsersPage.getContent().contains(e)).collect(Collectors.toList());
-        // 设置过滤后的分页显示参数
-        allMemberWithOtherUsersPage.setContent(returnUserDTOList);
-        return allMemberWithOtherUsersPage;
+        // 如果项目所有者查出来为空，则返回之前的项目成员列表
+        if (allOwnerUsersPage.getContent().isEmpty()) {
+            return allMemberWithOtherUsersPage;
+        } else {
+            // 否则过滤项目成员中含有项目所有者的人
+            List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.stream()
+                    .filter(e -> !allOwnerUsersPage.getContent().contains(e)).collect(Collectors.toList());
+            // 设置过滤后的分页显示参数
+            allMemberWithOtherUsersPage.setContent(returnUserDTOList);
+            return allMemberWithOtherUsersPage;
+        }
     }
 
     private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
