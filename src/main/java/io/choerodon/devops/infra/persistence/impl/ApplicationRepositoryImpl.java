@@ -47,10 +47,9 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void checkName(ApplicationE applicationE) {
-        ApplicationDO applicationDO = new ApplicationDO();
-        applicationDO.setProjectId(applicationE.getProjectE().getId());
-        applicationDO.setName(applicationE.getName());
-        if (!applicationMapper.select(applicationDO).isEmpty()) {
+        Long projectId = applicationE.getProjectE().getId();
+        String appName = applicationE.getName();
+        if (applicationMapper.selectOneWithCaseSensitive(projectId, appName) == 1) {
             throw new CommonException("error.name.exist");
         }
     }

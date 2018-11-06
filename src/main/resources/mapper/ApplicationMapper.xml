@@ -213,4 +213,11 @@
         AND da.gitlab_project_id IS NOT NULL
         <include refid="sqlparam"/>
     </select>
+
+    <select id="selectOneWithCaseSensitive" resultType="java.lang.Integer">
+        SELECT 1
+        FROM devops_application da
+        WHERE da.project_id = #{projectId}
+        AND BINARY da.name = #{appName}
+    </select>
 </mapper>
