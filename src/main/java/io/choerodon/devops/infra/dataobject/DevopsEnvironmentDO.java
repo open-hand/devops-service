@@ -19,6 +19,7 @@ public class DevopsEnvironmentDO extends AuditDomain {
     @GeneratedValue
     private Long id;
     private Long projectId;
+    private Long clusterId;
     private Long gitlabEnvProjectId;
     private Long hookId;
     private String envIdRsa;
@@ -171,5 +172,13 @@ public class DevopsEnvironmentDO extends AuditDomain {
 
     public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
         this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }

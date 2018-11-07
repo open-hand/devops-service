@@ -46,7 +46,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     public List<ApplicationLatestVersionDO> listAppLatestVersion(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Long organizationId = projectE.getOrganization().getId();
-        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null);
+        List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null, null);
         List<Long> projectIds = projectEList.stream().map(ProjectE::getId)
                 .collect(Collectors.toCollection(ArrayList::new));
 

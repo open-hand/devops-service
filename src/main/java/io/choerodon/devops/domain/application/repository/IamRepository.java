@@ -27,7 +27,7 @@ public interface IamRepository {
 
     UserE queryByLoginName(String userName);
 
-    List<ProjectE> listIamProjectByOrgId(Long organizationId, String name);
+    List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params);
 
     UserE queryById(Long id);
 
@@ -45,7 +45,7 @@ public interface IamRepository {
                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
                                                          Long projectId);
 
-    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,String searchParams);
+    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, String searchParams);
 
     List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId);
 

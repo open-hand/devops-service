@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class DevopsEnvironmentE {
     private Long id;
     private ProjectE projectE;
+    private DevopsClusterE clusterE;
     private Long gitlabEnvProjectId;
     private Long devopsEnvGroupId;
     private Long hookId;
@@ -243,7 +244,6 @@ public class DevopsEnvironmentE {
         this.agentSyncCommit = agentSyncCommit;
     }
 
-
     public Boolean getConnected() {
         return isConnected;
     }
@@ -274,6 +274,14 @@ public class DevopsEnvironmentE {
 
     public void setPermission(Boolean permission) {
         this.permission = permission;
+    }
+
+    public DevopsClusterE getClusterE() {
+        return clusterE;
+    }
+
+    public void initDevopsClusterEById(Long id) {
+        this.clusterE = new DevopsClusterE(id);
     }
 
     /**

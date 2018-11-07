@@ -23,6 +23,9 @@ public class DevopsEnviromentUpdateConvertor implements ConvertorI<DevopsEnviron
     public DevopsEnvironmentE dtoToEntity(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         BeanUtils.copyProperties(devopsEnvironmentUpdateDTO, devopsEnvironmentE);
+        if (devopsEnvironmentUpdateDTO.getClusterId() != null) {
+            devopsEnvironmentE.initDevopsClusterEById(devopsEnvironmentUpdateDTO.getClusterId());
+        }
         return devopsEnvironmentE;
     }
 }

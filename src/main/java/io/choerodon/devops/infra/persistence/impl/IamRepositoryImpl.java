@@ -16,6 +16,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -84,12 +88,12 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public List<ProjectE> listIamProjectByOrgId(Long organizationId, String name) {
+    public List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params) {
         List<ProjectE> returnList = new ArrayList<>();
         int page = 0;
         int size = 200;
         ResponseEntity<Page<ProjectDO>> pageResponseEntity =
-                iamServiceClient.queryProjectByOrgId(organizationId, page, size, name);
+                iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, null);
         Page<ProjectDO> projectDOPage = pageResponseEntity.getBody();
         List<ProjectE> projectEList = ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class);
         if (ConvertHelper.convertList(projectDOPage.getContent(), ProjectE.class) != null) {
@@ -100,7 +104,7 @@ public class IamRepositoryImpl implements IamRepository {
             for (int i = 1; i < totalPages; i++) {
                 page = i;
                 ResponseEntity<Page<ProjectDO>> entity = iamServiceClient
-                        .queryProjectByOrgId(organizationId, page, size, name);
+                        .queryProjectByOrgId(organizationId, page, size, name, null);
                 if (entity != null) {
                     Page<ProjectDO> project = entity.getBody();
                     List<ProjectE> projectE = ConvertHelper.convertList(project.getContent(), ProjectE.class);
@@ -266,8 +270,7 @@ public class IamRepositoryImpl implements IamRepository {
             return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
-            return null;
-        }
+            return null; }
     }
 
     @Override

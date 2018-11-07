@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,10 +35,10 @@ import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -110,16 +109,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private GitlabProjectRepository gitlabProjectRepository;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
+    @Autowired
+    private DevopsClusterRepository devopsClusterRepository;
+    @Autowired
+    private DeployService deployService;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
-    public String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
+    public void create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
         devopsEnvironmentE.initProjectE(projectId);
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
         devopsEnviromentRepository.checkName(devopsEnvironmentE);
         devopsEnvironmentE.initActive(true);
         devopsEnvironmentE.initConnect(false);
+        devopsEnvironmentE.initDevopsClusterEById(devopsEnviromentDTO.getClusterId());
         devopsEnvironmentE.initToken(GenerateUUID.generateUUID());
         devopsEnvironmentE.initProjectE(projectId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
@@ -139,19 +143,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-        String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
-        Map<String, String> params = new HashMap<>();
-        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
-        params.put("{VERSION}", agentExpectVersion);
-        params.put("{SERVICEURL}", agentServiceUrl);
-        params.put("{TOKEN}", devopsEnvironmentE.getToken());
-        params.put("{REPOURL}", agentRepoUrl);
-        params.put("{ENVID}", devopsEnviromentRepository.create(devopsEnvironmentE)
-                .getId().toString());
-        params.put("{RSA}", sshKeys.get(0));
-        params.put("{GITREPOURL}", repoUrl);
+        devopsEnviromentRepository.create(devopsEnvironmentE);
+
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
@@ -171,7 +164,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
             sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", ""));
-            return FileUtil.replaceReturnString(inputStream, params);
+            deployService.initCluster(devopsEnviromentDTO.getClusterId());
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage(), e);
         }
@@ -357,6 +350,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             }
         }
+        //
+        if (devopsEnvironmentUpdateDTO.getClusterId() != null && !devopsEnvironmentUpdateDTO.getClusterId()
+                .equals(beforeDevopsEnvironmentE.getClusterE().getId())) {
+            deployService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
+        }
         return ConvertHelper.convert(devopsEnviromentRepository.update(
                 devopsEnvironmentE), DevopsEnvironmentUpdateDTO.class);
     }
@@ -408,40 +406,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
-    @Override
-    public String queryShell(Long environmentId, Boolean update) {
-        if (update == null) {
-            update = false;
-        }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
-        InputStream inputStream;
-        Map<String, String> params = new HashMap<>();
-        if (update) {
-            inputStream = this.getClass().getResourceAsStream("/shell/environment-upgrade.sh");
-        } else {
-            inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
-        }
-        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
-        params.put("{VERSION}", agentExpectVersion);
-        params.put("{SERVICEURL}", agentServiceUrl);
-        params.put("{TOKEN}", devopsEnvironmentE.getToken());
-        params.put("{REPOURL}", agentRepoUrl);
-        params.put("{ENVID}", devopsEnvironmentE.getId().toString());
-        return FileUtil.replaceReturnString(inputStream, params);
-    }
 
     @Override
-    public void checkName(Long projectId, String name) {
+    public void checkName(Long projectId, Long clusterId, String name) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         devopsEnvironmentE.initProjectE(projectId);
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setName(name);
         devopsEnviromentRepository.checkName(devopsEnvironmentE);
     }
 
     @Override
-    public void checkCode(Long projectId, String code) {
+    public void checkCode(Long projectId, Long clusterId, String code) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         devopsEnvironmentE.initProjectE(projectId);
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setCode(code);
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
     }
@@ -786,4 +765,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public void initMockService(SagaClient sagaClient) {
         this.sagaClient = sagaClient;
     }
+
+    @Override
+    public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
+        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
+    }
+
+
 }

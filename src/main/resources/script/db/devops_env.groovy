@@ -87,5 +87,16 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'saga_sync_commit', oldColumnName: 'git_commit', remarks: 'saga同步的commit', tableName: 'devops_env')
     }
 
+    changeSet(author: 'younger', id: '2018-11-01-add-column')
+            {
+                addColumn(tableName: 'devops_env') {
+                    column(name: 'cluster_id', type: 'BIGINT UNSIGNED', remarks: '集群id', afterColumn: 'project_id')
+                }
+                dropUniqueConstraint(constraintName: "uk_project_id_code",tableName: "devops_env")
+                addUniqueConstraint(tableName: 'devops_env',
+                        constraintName: 'devops_envs_uk_cluster_id_code', columnNames: 'cluster_id,code')
+            }
+
+
 
 }

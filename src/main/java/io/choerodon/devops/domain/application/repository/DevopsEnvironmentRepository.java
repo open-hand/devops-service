@@ -34,4 +34,6 @@ public interface DevopsEnvironmentRepository {
     void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
 
     void deleteById(Long id);
+
+    List<DevopsEnvironmentE> listByClusterId(Long clusterId);
 }
