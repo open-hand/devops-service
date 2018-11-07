@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.kubernetes.client.JSON;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
 
     private JSON json = new JSON();
+
 
     @Autowired
     private DevopsClusterMapper devopsClusterMapper;

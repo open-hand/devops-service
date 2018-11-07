@@ -99,4 +99,5 @@ public class DevopsClusterE {
     public void setUpgradeMessage(String upgradeMessage) {
         this.upgradeMessage = upgradeMessage;
     }
+
 }

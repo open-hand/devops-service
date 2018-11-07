@@ -18,6 +18,7 @@ public class DevopsClusterProPermissionDO extends AuditDomain {
     private String projectName;
     private String projectCode;
 
+
     public Long getClusterId() {
         return clusterId;
     }
@@ -49,4 +50,5 @@ public class DevopsClusterProPermissionDO extends AuditDomain {
     public void setProjectCode(String projectCode) {
         this.projectCode = projectCode;
     }
+
 }

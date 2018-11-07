@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
+
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO;
@@ -17,4 +18,5 @@ public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDO> {
     List<DevopsClusterDO> listClusters(@Param("organizationId") Long organizationId,
                                        @Param("searchParam") Map<String, Object> searchParam,
                                        @Param("param") String param);
+
 }

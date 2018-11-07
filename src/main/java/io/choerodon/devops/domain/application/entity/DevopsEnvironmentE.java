@@ -226,6 +226,14 @@ public class DevopsEnvironmentE {
         this.agentSyncCommit = agentSyncCommit;
     }
 
+    public Boolean getConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(Boolean connected) {
+        isConnected = connected;
+    }
+
     public Long getSagaSyncCommit() {
         return sagaSyncCommit;
     }
