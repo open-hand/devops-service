@@ -6,6 +6,7 @@ public class DevopsClusterRepDTO {
     private String name;
     private Boolean skipCheckProjectPermission;
     private String code;
+    private Boolean connect;
     private String description;
 
     public Long getId() {
@@ -46,5 +47,13 @@ public class DevopsClusterRepDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getConnect() {
+        return connect;
+    }
+
+    public void setConnect(Boolean connect) {
+        this.connect = connect;
     }
 }
