@@ -182,7 +182,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         restTemplate.postForObject("/v1/projects/1/envs", devopsEnviromentDTO, String.class)
 
-        then: '校验结果'
+        then: '返回值'
         devopsEnvironmentRepository.queryByProjectIdAndCode(1L, "testCodeChange") != null
     }
 
@@ -234,7 +234,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def envs = restTemplate.getForObject("/v1/projects/1/envs/deployed", List.class)
 
-        then: '校验结果'
+        then: '返回值'
         envs.size() == 2
     }
 
@@ -274,7 +274,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def envs = restTemplate.getForObject("/v1/projects/1/envs?active=true", List.class)
 
-        then: '校验结果'
+        then: '返回值'
         envs.size() == 3
     }
 
@@ -324,7 +324,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def list = restTemplate.getForObject("/v1/projects/1/envs/groups?active=true", List.class)
 
-        then: '校验结果'
+        then: '返回值'
         !list.isEmpty()
     }
 
@@ -332,7 +332,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         String shell = restTemplate.getForObject("/v1/projects/1/envs/1/shell", String.class)
 
-        then: '校验结果'
+        then: '返回值'
         !shell.isEmpty()
     }
 
@@ -347,7 +347,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         restTemplate.put("/v1/projects/1/envs/3/active?active=false", Boolean.class)
 
-        then: '校验结果'
+        then: '返回值'
         !devopsEnvironmentMapper.selectByPrimaryKey(3L).getActive()
     }
 
@@ -355,7 +355,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         DevopsEnvironmentUpdateDTO a = restTemplate.getForObject("/v1/projects/1/envs/1", DevopsEnvironmentUpdateDTO.class)
 
-        then: '校验结果'
+        then: '返回值'
         a != null
     }
 
@@ -368,7 +368,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         restTemplate.put("/v1/projects/1/envs", devopsEnvironmentUpdateDTO, DevopsEnvironmentUpdateDTO.class)
 
-        then: '校验结果'
+        then: '返回值'
         devopsEnvironmentMapper.selectByPrimaryKey(3L).getName() == "testNameChange1222"
     }
 
@@ -384,7 +384,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         restTemplate.put("/v1/projects/1/envs/sort", sequence, List.class)
 
-        then: '校验结果'
+        then: '返回值'
         devopsEnvironmentMapper.selectByPrimaryKey(1L).getSequence() == 2L
     }
 
@@ -392,7 +392,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         restTemplate.getForObject("/v1/projects/1/envs/checkName?name=testCheckName", Object.class)
 
-        then: '校验结果'
+        then: '返回值'
         notThrown(CommonException)
     }
 
@@ -400,7 +400,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         restTemplate.getForObject("/v1/projects/1/envs/checkCode?code=testCheckCode", Object.class)
 
-        then: '校验结果'
+        then: '返回值'
         notThrown(CommonException)
     }
 
@@ -468,7 +468,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def envs = restTemplate.getForObject("/v1/projects/1/envs/instance", List.class)
 
-        then: '校验结果'
+        then: '返回值'
         envs.size() == 2
     }
 
@@ -500,7 +500,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def envSyncStatusDTO = restTemplate.getForObject("/v1/projects/1/envs/1/status", EnvSyncStatusDTO.class)
 
-        then: '校验结果'
+        then: '返回值'
         envSyncStatusDTO.getAgentSyncCommit().equals("testCommitSha")
     }
 
@@ -569,7 +569,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def page = restTemplate.postForObject("/v1/projects/1/envs/list?page=0&size5&env_id=null", strEntity, Page.class)
 
-        then: '校验结果'
+        then: '返回值'
         page != null
 
         expect: '校验查询结果'
@@ -583,10 +583,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def list = restTemplate.getForObject("/v1/projects/1/envs/1/list_all", List.class)
 
-        then: '校验结果'
+        then: '返回值'
         !list.isEmpty()
 
-        expect: '校验检查结果'
+        expect: '校验查询结果'
         list.get(0)["loginName"] == "test"
         list.get(1)["loginName"] == "test1"
         list.get(2)["loginName"] == "test2"
@@ -644,7 +644,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when:
         def count = restTemplate.postForObject("/v1/projects/1/envs/1/permission", userIds, Boolean.class)
 
-        then: '校验结果'
+        then: '返回值'
         List<DevopsEnvUserPermissionDO> lastUsers = devopsEnvUserPermissionMapper.selectAll()
 
         expect: '校验用户4和用户2'

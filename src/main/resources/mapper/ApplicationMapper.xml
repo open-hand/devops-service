@@ -224,6 +224,6 @@
         SELECT 1
         FROM devops_application da
         WHERE da.project_id = #{projectId}
-        AND BINARY da.name = #{appName}
+        AND BINARY ( da.`name` ) = #{appName}
     </select>
 </mapper>
