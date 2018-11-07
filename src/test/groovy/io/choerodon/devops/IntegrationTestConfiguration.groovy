@@ -92,21 +92,21 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @PostConstruct
     void init() {
         liquibaseExecutor.execute(new String()[])
-        initSqlFunction()
+//        initSqlFunction()
         setTestRestTemplateJWT()
     }
 
-    void initSqlFunction() {
-        //连接H2数据库
-        Class.forName("org.h2.Driver")
-        Connection conn = DriverManager.
-                getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
-        Statement stat = conn.createStatement()
-        //创建 SQL的IF函数，用JAVA的方法代替函数
-        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.common.util.MybatisFunctionTestUtil.binaryFunction\"")
-        stat.close()
-        conn.close()
-    }
+//    void initSqlFunction() {
+//        //连接H2数据库
+//        Class.forName("org.h2.Driver")
+//        Connection conn = DriverManager.
+//                getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
+//        Statement stat = conn.createStatement()
+//        //创建 SQL的IF函数，用JAVA的方法代替函数
+//        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.common.util.MybatisFunctionTestUtil.binaryFunction\"")
+//        stat.close()
+//        conn.close()
+//    }
 
     private void setTestRestTemplateJWT() {
         testRestTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory())

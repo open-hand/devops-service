@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.AppMarketDownloadDTO
 import io.choerodon.devops.api.dto.AppMarketTgzDTO
 import io.choerodon.devops.api.dto.AppMarketVersionDTO
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO
@@ -11,17 +12,18 @@ import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.dataobject.*
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.FileSystemResource
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import org.springframework.http.*
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import spock.lang.Shared
@@ -29,6 +31,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import static org.mockito.Matchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -62,8 +65,9 @@ class ApplicationMarketControllerSpec extends Specification {
     private ApplicationVersionReadmeMapper applicationVersionReadmeMapper
 
     @Autowired
-    @Qualifier("mockIamRepository")
     private IamRepository iamRepository
+
+    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     @Shared
     ApplicationDO applicationDO = new ApplicationDO()
@@ -133,6 +137,30 @@ class ApplicationMarketControllerSpec extends Specification {
         devopsEnvironmentDO.setProjectId(2L)
     }
 
+    def setup() {
+        iamRepository.initMockIamService(iamServiceClient)
+
+        ProjectDO projectDO = new ProjectDO()
+        projectDO.setId(1L)
+        projectDO.setCode("pro")
+        projectDO.setOrganizationId(1L)
+        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+
+        OrganizationDO organizationDO = new OrganizationDO()
+        organizationDO.setId(1L)
+        organizationDO.setCode("org")
+        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+
+        Page<ProjectDO> projectDOPage = new Page<>()
+        List<ProjectDO> projectDOList = new ArrayList<>()
+        projectDOList.add(projectDO)
+        projectDOPage.setContent(projectDOList)
+        ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
+        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(projectDOPageResponseEntity)
+    }
+
     def "Create"() {
         given: '插入数据'
         applicationMapper.insert(applicationDO)
@@ -145,7 +173,7 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationReleasingDTO.setCategory("category")
         applicationReleasingDTO.setContributor("contributor")
         applicationReleasingDTO.setDescription("description")
-        applicationReleasingDTO.setPublishLevel("organization")
+        applicationReleasingDTO.setPublishLevel("public")
 
         and: '应用版本'
         List<AppMarketVersionDTO> appVersions = new ArrayList<>()
@@ -158,7 +186,7 @@ class ApplicationMarketControllerSpec extends Specification {
         def marketId = restTemplate.postForObject("/v1/projects/1/apps_market", applicationReleasingDTO, Long.class)
 
         then: '验证创建后的id'
-        marketId == applicationMarketMapper.selectAll().get(0).getId()
+        applicationMarketMapper.selectAll().get(0)["id"] == marketId
     }
 
     def "PageListMarketAppsByProjectId"() {
@@ -166,85 +194,49 @@ class ApplicationMarketControllerSpec extends Specification {
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
         applicationInstanceMapper.insert(applicationInstanceDO)
 
-        and: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
         when: '查询所有发布在应用市场的应用'
         def page = restTemplate.postForObject("/v1/projects/1/apps_market/list", searchParam, Page.class)
 
-        then:
+        then: '验证返回值'
         page.getContent().get(0)["name"] == "appName"
     }
 
     def "ListAllApp"() {
-        given: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
         when: '查询发布级别为全局或者在本组织下的所有应用市场的应用'
         def page = restTemplate.postForObject("/v1/projects/1/apps_market/list_all", searchParam, Page.class)
 
-        then:
+        then: '验证返回值'
         page.getContent().get(0)["name"] == "appName"
     }
 
     def "QueryAppInProject"() {
-        given: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
         when: '查询项目下单个应用市场的应用详情'
         def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/detail", ApplicationReleasingDTO.class
                 , applicationMarketMapper.selectAll().get(0).getId())
 
-        then:
-        dto.getName() == "appName"
+        then: '验证返回值'
+        dto["code"] == "appCode"
     }
 
     def "QueryApp"() {
-        given: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
         when: '查询项目下单个应用市场的应用详情'
         def dto = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}", ApplicationReleasingDTO.class,
                 applicationMarketMapper.selectAll().get(0).getId())
 
-        then:
-        dto.getName() == "appName"
+        then: '验证返回值'
+        dto["code"] == "appCode"
     }
 
     def "QueryAppVersionsInProject"() {
-        given: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
         when: '查询项目下单个应用市场的应用的版本'
         def list = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/versions", List.class,
                 applicationMarketMapper.selectAll().get(0).getId())
 
-        then:
+        then: '验证返回值'
         list.get(0)["version"] == "0.0"
     }
 
     def "QueryAppVersionsInProjectByPage"() {
-        given: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
         when: '分页查询项目下单个应用市场的应用的版本'
         def page = restTemplate.postForObject("/v1/projects/1/apps_market/{app_market_id}/versions", searchParam, Page.class,
                 applicationMarketMapper.selectAll().get(0).getId())
@@ -264,29 +256,23 @@ class ApplicationMarketControllerSpec extends Specification {
         def str = restTemplate.getForObject("/v1/projects/1/apps_market/{app_market_id}/versions/{version_id}/readme",
                 String.class, applicationMarketMapper.selectAll().get(0).getId(), applicationVersionMapper.selectAll().get(0).getId())
 
-        then:
+        then: '验证返回值'
         str == "readme"
     }
 
     def "Update"() {
-        given: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
-        and: '准备DTO'
+        given: '初始化DTO'
         ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO()
         applicationReleasingDTO.setId(1L)
         applicationReleasingDTO.setContributor("newContributor")
-        applicationReleasingDTO.setPublishLevel("organization")
+        applicationReleasingDTO.setPublishLevel("public")
 
         when: '更新单个应用市场的应用'
         restTemplate.put("/v1/projects/1/apps_market/{app_market_id}", applicationReleasingDTO,
                 applicationMarketMapper.selectAll().get(0).getId())
 
         then: '验证更新后的contributor字段'
-        applicationMarketMapper.selectAll().get(0).getContributor() == "newContributor"
+        applicationMarketMapper.selectAll().get(0)["contributor"] == "newContributor"
     }
 
     def "UpdateVersions"() {
@@ -296,18 +282,12 @@ class ApplicationMarketControllerSpec extends Specification {
         List<AppMarketVersionDTO> dtoList = new ArrayList<>()
         dtoList.add(appMarketVersionDTO)
 
-        and: '设置默认值'
-        List<ProjectE> projectEList = new ArrayList<>()
-        projectEList.add(projectE)
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.listIamProjectByOrgId(_, _) >> projectEList
-
         when: '更新单个应用市场的应用'
         restTemplate.put("/v1/projects/1/apps_market/{app_market_id}/versions", dtoList,
                 applicationMarketMapper.selectAll().get(0).getId())
 
-        then:
-        applicationMarketMapper.selectAll().get(0).getId() == 1
+        then: '验证返回值'
+        applicationMarketMapper.selectAll().get(0)["id"] == 1
     }
 
     def "UploadApps"() {
@@ -322,108 +302,66 @@ class ApplicationMarketControllerSpec extends Specification {
 
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<MultiValueMap<String, Object>>(map, headers)
 
-        and: '设置默认值'
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-
         when: '应用市场解析导入应用'
         def dto = restTemplate.postForObject("/v1/projects/1/apps_market/upload", requestEntity, AppMarketTgzDTO.class)
 
-        then:
-        dto.getAppMarketList().get(0).getId() == 27
+        then: '验证返回值'
+        dto.getAppMarketList().get(0)["id"] == 27
     }
 
     def "ImportApps"() {
-        given:
-        true
-
-        and: '设置默认值'
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-
-        and: '获取文件名'
-        File file = new File("tmp/org/pro")
-        String fileName = file.listFiles()[0].getName()
+        given: '获取文件名'
+        // File file = new File("chart.zip")
+        String fileName = "59027735aa121f3befb8cc9f7684b62e"
 
         when: '应用市场导入应用'
         def bool = restTemplate.postForObject("/v1/projects/1/apps_market/import?file_name=" + fileName + "&public=true",
                 null, Boolean.class)
 
-        then:
-        bool == true
-        applicationMarketMapper.selectAll().get(1).getContributor() == "Choerodon"
+        then: '验证返回值'
+        bool
+        applicationMarketMapper.selectAll().get(1)["contributor"] == "Choerodon"
+        applicationMarketMapper.selectAll().get(0)["contributor"] == "newContributor"
     }
 
     def "DeleteZip"() {
-        given: '设置默认值'
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-
-        and: '获取文件名'
-
         when: '应用市场取消导入应用'
         restTemplate.postForObject("/v1/projects/1/apps_market/import_cancel?file_name=", null, Object.class)
 
-        then:
+        then: '验证返回值'
         File file = new File("tmp/org")
         file.listFiles().size() == 0
+    }
 
+    def "ExportFile"() {
+        given: '准备dto list'
+        List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
+        AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
+        appMarketDownloadDTO.setAppMarketId(1L)
+        List<Long> appVersionList = new ArrayList<>()
+        appVersionList.add(1L)
+        appMarketDownloadDTO.setAppVersionIds(appVersionList)
+        dtoList.add(appMarketDownloadDTO)
+
+        when: '导出应用市场应用信息'
+        restTemplate.postForObject("/v1/projects/1/apps_market/export", dtoList, Object.class)
+
+        then: '验证返回值'
         applicationMapper.deleteByPrimaryKey(1L)
         applicationMapper.deleteByPrimaryKey(2L)
-
         DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
-        devopsAppMarketDO.setContributor("newContributor")
-        applicationMarketMapper.delete(devopsAppMarketDO)
-        devopsAppMarketDO.setContributor("Choerodon")
-        applicationMarketMapper.delete(devopsAppMarketDO)
-
         applicationVersionMapper.deleteByPrimaryKey(1L)
-        ApplicationVersionDO versionDO = new ApplicationVersionDO()
-        versionDO.setVersion("0.8.4")
-        applicationVersionMapper.delete(versionDO)
-
-        ApplicationInstanceDO instanceDO = new ApplicationInstanceDO()
-        instanceDO.setAppId(1L)
-        applicationInstanceMapper.delete(instanceDO)
-
+        applicationVersionMapper.deleteByPrimaryKey(2L)
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-
         applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
         applicationVersionReadmeMapper.deleteByPrimaryKey(2L)
         applicationVersionValueMapper.deleteByPrimaryKey(1L)
+        applicationMarketMapper.deleteByPrimaryKey(1L)
+        applicationMarketMapper.deleteByPrimaryKey(2L)
+        applicationInstanceMapper.deleteByPrimaryKey(1L)
     }
 
-//    def "ExportFile"() {
-//        given: '准备dto list'
-//        List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
-//        AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
-//        appMarketDownloadDTO.setAppMarketId(1L)
-//
-//        dtoList.add(AppMarketDownloadDTO)
-//
-//        and: '设置默认值'
-//        iamRepository.queryIamProject(_ as Long) >> projectE
-//        iamRepository.queryOrganizationById(_ as Long) >> organization
-//
-//
-//        when: '导出应用市场应用信息'
-//        restTemplate.postForObject("/v1/projects/1/apps_market/export", dtoList)
-//
-//        then:
-//        applicationMapper.deleteByPrimaryKey(1L)
-//        applicationMarketMapper.deleteByPrimaryKey(1L)
-//        applicationMarketMapper.deleteByPrimaryKey(2L)
-//        applicationVersionMapper.deleteByPrimaryKey(1L)
-//        applicationVersionMapper.deleteByPrimaryKey(2L)
-//        applicationInstanceMapper.deleteByPrimaryKey(1L)
-//        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-//        applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
-//        applicationVersionReadmeMapper.deleteByPrimaryKey(2L)
-//        applicationVersionValueMapper.deleteByPrimaryKey(1L)
-//        applicationMapper.deleteByPrimaryKey(1L)
-//        applicationMapper.deleteByPrimaryKey(2L)
-//    }
-    //清除测试数据
+    // 清除测试数据
     def cleanupSpec() {
         FileUtil.deleteDirectory(new File("Charts"))
         FileUtil.deleteDirectory(new File("devops-service"))
