@@ -11,6 +11,7 @@ import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -49,4 +50,6 @@ public interface IamRepository {
     List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId);
 
     Page<RoleDTO> queryRoleIdByCode(String roleCode);
+
+    void initMockIamService(IamServiceClient iamServiceClient);
 }

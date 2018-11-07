@@ -193,7 +193,6 @@ public class IamRepositoryImpl implements IamRepository {
     public List<RoleDTO> listRolesWithUserCountOnProjectLevel(Long projectId,
                                                               RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
         try {
-
             return iamServiceClient.listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get roles with user count error by search param {}", roleAssignmentSearchDTO.getParam());
@@ -208,8 +207,7 @@ public class IamRepositoryImpl implements IamRepository {
         try {
             return iamServiceClient
                     .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
-                            projectId, roleAssignmentSearchDTO)
-                    .getBody();
+                            projectId, roleAssignmentSearchDTO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
         }
@@ -270,7 +268,10 @@ public class IamRepositoryImpl implements IamRepository {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
         }
+    }
 
-
+    @Override
+    public void initMockIamService(IamServiceClient iamServiceClient) {
+        this.iamServiceClient = iamServiceClient;
     }
 }

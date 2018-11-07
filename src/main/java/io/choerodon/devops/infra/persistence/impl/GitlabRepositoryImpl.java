@@ -272,4 +272,9 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             throw new CommonException("error.member.remove", e);
         }
     }
+
+    @Override
+    public void initMockService(GitlabServiceClient gitlabServiceClient) {
+        this.gitlabServiceClient = gitlabServiceClient;
+    }
 }

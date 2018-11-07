@@ -2,7 +2,8 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.domain.application.repository.*
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
+import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
@@ -54,11 +55,11 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
     final ObjectMapper objectMapper = new ObjectMapper()
 
-    @Bean("mockGitlabRepository")
-    @Primary
-    GitlabRepository gitlabRepository() {
-        detachedMockFactory.Mock(GitlabRepository)
-    }
+//    @Bean("mockGitlabRepository")
+//    @Primary
+//    GitlabRepository gitlabRepository() {
+//        detachedMockFactory.Mock(GitlabRepository)
+//    }
 
 //    @Bean("mockUserAttrRepository")
 //    @Primary
@@ -108,11 +109,11 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(DeployService)
     }
 
-    @Bean("mockGitlabProjectRepository")
-    @Primary
-    GitlabProjectRepository gitlabProjectRepository() {
-        detachedMockFactory.Mock(GitlabProjectRepository)
-    }
+//    @Bean("mockGitlabProjectRepository")
+//    @Primary
+//    GitlabProjectRepository gitlabProjectRepository() {
+//        detachedMockFactory.Mock(GitlabProjectRepository)
+//    }
 
     @PostConstruct
     void init() {
