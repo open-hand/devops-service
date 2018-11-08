@@ -59,4 +59,6 @@ public interface DevopsIngressRepository {
     Boolean checkEnvHasIngress(Long envId);
 
     List<DevopsIngressE> list();
+
+    void deleteIngressAndIngressPathByEnvId(Long envId);
 }

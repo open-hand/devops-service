@@ -144,7 +144,7 @@ public interface DevopsEnvironmentService {
     /**
      * 获取环境下所有用户权限
      *
-     * @param envId     环境id
+     * @param envId 环境id
      * @return list
      */
     List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId);
@@ -157,6 +157,13 @@ public interface DevopsEnvironmentService {
      * @param userIds   有权限的用户ids
      */
     Boolean updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds);
+
+    /**
+     * 删除已停用的环境
+     *
+     * @param envId 环境id
+     */
+    void deleteDeactivatedEnvironment(Long envId);
 
     void initMockService(SagaClient sagaClient);
 }

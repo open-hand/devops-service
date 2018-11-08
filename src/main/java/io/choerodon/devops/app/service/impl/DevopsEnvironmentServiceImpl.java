@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -106,6 +107,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvGroupRepository devopsEnvGroupRepository;
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
+    @Autowired
+    private DevopsIngressRepository devopsIngressRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -225,7 +228,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         //查询当前用户的环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                .filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true)
+                .filter(DevopsEnvUserPermissionE::getPermitted)
                 .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         //查询当前用户是否为项目所有者
@@ -756,6 +759,19 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             devopsEnvironmentE.setPermission(false);
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteDeactivatedEnvironment(Long envId) {
+        // 删除环境对应的实例
+        applicationInstanceRepository.deleteAppInstanceByEnvId(envId);
+        // 删除环境对应的域名、域名路径
+        devopsIngressRepository.deleteIngressAndIngressPathByEnvId(envId);
+        // 删除环境对应的网络和网络实例
+        devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
+        // 删除环境
+        devopsEnviromentRepository.deleteById(envId);
     }
 
     @Override
