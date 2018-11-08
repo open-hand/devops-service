@@ -159,12 +159,12 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询已有权限的项目列表")
-    @GetMapping("/list_cluster_projects")
+    @GetMapping("/list_cluster_projects/{clusterId}")
     public ResponseEntity<List<ProjectDTO>> listClusterProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
-            @RequestParam Long clusterId) {
+            @PathVariable Long clusterId) {
         return Optional.ofNullable(devopsClusterService.listClusterProjects(organizationId, clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.project.query"));
