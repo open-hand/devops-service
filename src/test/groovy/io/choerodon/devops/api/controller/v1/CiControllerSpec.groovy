@@ -9,16 +9,21 @@ import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.ApplicationMapper
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper
 import io.choerodon.devops.infra.mapper.ApplicationVersionValueMapper
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.core.io.FileSystemResource
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.util.LinkedMultiValueMap
 import org.springframework.util.MultiValueMap
 import spock.lang.Shared
@@ -40,8 +45,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Stepwise
 class CiControllerSpec extends Specification {
 
-    private static flag = 0
-
     @Autowired
     private TestRestTemplate restTemplate
 
@@ -58,8 +61,9 @@ class CiControllerSpec extends Specification {
     private ApplicationVersionRepository applicationVersionRepository
 
     @Autowired
-    @Qualifier("mockIamRepository")
     private IamRepository iamRepository
+
+    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     @Shared
     Organization organization = new Organization()
@@ -71,8 +75,8 @@ class CiControllerSpec extends Specification {
     Long project_id = 1L
     @Shared
     Long init_id = 1L
-
-    private ApplicationDO applicationDO
+    @Shared
+    ApplicationDO applicationDO
 
     def setupSpec() {
         given:
@@ -85,30 +89,39 @@ class CiControllerSpec extends Specification {
 
         userAttrE.setIamUserId(init_id)
         userAttrE.setGitlabUserId(init_id)
+
+        applicationDO = new ApplicationDO()
+        applicationDO.setId(1L)
+        applicationDO.setProjectId(project_id)
+        applicationDO.setToken("token")
+        applicationDO.setCode("app")
     }
 
     def setup() {
-        if (flag == 0) {
-            // 创建应用
-            applicationDO = new ApplicationDO()
-            applicationDO.setId(1L)
-            applicationDO.setProjectId(project_id)
-            applicationDO.setToken("token")
-            applicationDO.setCode("app")
-            applicationMapper.insert(applicationDO)
-            flag = 1
-        }
+        iamRepository.initMockIamService(iamServiceClient)
+
+        ProjectDO projectDO = new ProjectDO()
+        projectDO.setId(1L)
+        projectDO.setCode("pro")
+        projectDO.setOrganizationId(1L)
+        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+
+        OrganizationDO organizationDO = new OrganizationDO()
+        organizationDO.setId(1L)
+        organizationDO.setCode("org")
+        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
     }
 
     def "QueryFile"() {
-        given: '默认返回值'
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
+        given: '创建应用'
+        applicationMapper.insert(applicationDO)
 
-        when:
+        when: '应用查询ci脚本文件'
         def str = restTemplate.getForObject("/ci?token=token", String.class)
 
-        then:
+        then: '校验返回结果'
         str != null && "" != str
     }
 
@@ -121,23 +134,19 @@ class CiControllerSpec extends Specification {
         applicationVersionDO.setReadmeValueId(init_id)
         applicationVersionMapper.insert(applicationVersionDO)
 
-        and: '默认返回值'
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-
         FileSystemResource resource = new FileSystemResource(new File("src/test/resources/key.tar.gz"))
         MultiValueMap<String, Object> file = new LinkedMultiValueMap<>()
         file.add("file", resource)
 
-        when:
+        when: '获取应用版本信息'
         restTemplate.postForObject("/ci?image=iamge&token=token&version=version&commit=commit", file,
                 String.class)
 
-        then:
+        then: '校验文件是否创建'
         File gzFile = new File("/Charts/org/pro/key.tar.gz")
-        gzFile != null
+        gzFile.getName()=="key.tar.gz"
         File yamlFile = new File("/devopsversion/values.yaml")
-        yamlFile != null
+        yamlFile.getName() == "values.yaml"
         applicationMapper.deleteByPrimaryKey(1L)
         applicationVersionMapper.deleteByPrimaryKey(1L)
     }
