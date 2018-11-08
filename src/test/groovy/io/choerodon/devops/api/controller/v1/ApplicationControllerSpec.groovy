@@ -127,6 +127,23 @@ class ApplicationControllerSpec extends Specification {
         devopsAppMarketDO.setContributor("con")
         devopsAppMarketDO.setDescription("des")
     }
+
+    def setup() {
+        iamRepository.initMockIamService(iamServiceClient)
+        gitlabRepository.initMockService(gitlabServiceClient)
+        gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+
+        ProjectDO projectDO = new ProjectDO()
+        projectDO.setName("pro")
+        projectDO.setOrganizationId(1L)
+        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+        OrganizationDO organizationDO = new OrganizationDO()
+        organizationDO.setId(1L)
+        organizationDO.setCode("testOrganization")
+        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+    }
     // 项目下创建应用
     def "create"() {
         given: '创建issueDTO'
@@ -139,23 +156,6 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setProjectId(project_id)
         applicationDTO.setApplictionTemplateId(init_id)
 
-        and: '初始化iamServiceClient mock对象'
-        iamRepository.initMockIamService(iamServiceClient)
-
-        and: 'mock查询项目和组织'
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
-
-        and: '初始化gitlabServiceClient mock对象'
-        gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
 
         and: 'mock查询gitlab用户'
         MemberDO memberDO = new MemberDO()
@@ -181,21 +181,6 @@ class ApplicationControllerSpec extends Specification {
 
     // 项目下查询单个应用信息
     def "queryByAppId"() {
-        given: '初始化iamServiceClient mock对象'
-        iamRepository.initMockIamService(iamServiceClient)
-
-        and: 'mock查询项目和组织'
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
-
         when:
         def entity = restTemplate.getForEntity("/v1/projects/{project_id}/apps/{app_id}/detail", ApplicationRepDTO.class, project_id, 1L)
 
@@ -246,27 +231,10 @@ class ApplicationControllerSpec extends Specification {
 
     // 删除应用
     def "deleteByAppId"() {
-        given: '初始化iamServiceClient mock对象'
-        iamRepository.initMockIamService(iamServiceClient)
-
-        and: 'mock查询项目和组织'
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
-
-        and: '初始化gitlabServiceClient mock对象'
-        gitlabRepository.initMockService(gitlabServiceClient)
-
-        and: 'mock删除git项目'
+        given: 'mock删除git项目'
         ResponseEntity responseEntity2 = new ResponseEntity(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteProjectByProjectName(anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
+
         when:
         restTemplate.delete("/v1/projects/1/apps/1")
 
@@ -288,21 +256,6 @@ class ApplicationControllerSpec extends Specification {
 
     // 项目下分页查询应用
     def "pageByOptions"() {
-        given: '初始化iamServiceClient mock对象'
-        iamRepository.initMockIamService(iamServiceClient)
-
-        and: 'mock查询项目和组织'
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
-
         when:
         def app = restTemplate.postForObject("/v1/projects/1/apps/list_by_options?active=true", searchParam, Page.class)
 
@@ -363,21 +316,6 @@ class ApplicationControllerSpec extends Specification {
 
     // 项目下查询所有已经启用的应用
     def "listByActive"() {
-        given: '初始化iamServiceClient mock对象'
-        iamRepository.initMockIamService(iamServiceClient)
-
-        and: 'mock查询项目和组织'
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
-
         when:
         def applicationList = restTemplate.getForObject("/v1/projects/{project_id}/apps", List.class, project_id)
 
@@ -451,16 +389,6 @@ class ApplicationControllerSpec extends Specification {
         applicationTemplateDO.setGitlabProjectId(init_id)
         applicationTemplateMapper.insert(applicationTemplateDO)
 
-        and: '初始化iamServiceClient mock对象'
-        iamRepository.initMockIamService(iamServiceClient)
-
-        and: 'mock查询项目'
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-
         when:
         def templateList = restTemplate.getForObject("/v1/projects/1/apps/template", List.class)
 
@@ -489,21 +417,6 @@ class ApplicationControllerSpec extends Specification {
 
     // 项目下分页查询代码仓库
     def "listCodeRepository"() {
-        given: '初始化iamServiceClient mock对象'
-        iamRepository.initMockIamService(iamServiceClient)
-
-        and: 'mock查询项目和组织'
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
-
         when:
         def entity = restTemplate.postForObject("/v1/projects/{project_id}/apps/list_code_repository", searchParam, Page.class, project_id)
 
