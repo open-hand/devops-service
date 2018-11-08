@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.DeployVersionDTO
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
@@ -182,6 +183,14 @@ class ApplicationVersionControllerSpec extends Specification {
 
         expect: '校验返回结果'
         list.get(0).version == "0.2.0-dev.20180521111826"
+    }
+
+    def "GetDeployVersions"() {
+        when: '项目下查询应用最新的版本和各环境下部署的版本'
+        def dto = restTemplate.getForObject("/v1/projects/1/deployVersions?app_id=1", DeployVersionDTO.class)
+
+        then: '校验返回结果'
+        dto["latestVersion"] == "0.2.0-dev.20180521111826"
     }
 
     // 清除测试数据
