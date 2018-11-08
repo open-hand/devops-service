@@ -14,24 +14,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsClusterRepDTO;
 import io.choerodon.devops.api.dto.DevopsClusterReqDTO;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.app.service.DevopsClusterService;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.entity.DevopsClusterProPermissionE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
-import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.helper.EnvListener;
 
 @Service
 public class DevopsClusterServiceImpl implements DevopsClusterService {
@@ -53,6 +56,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private IamServiceClient iamServiceClient;
     @Autowired
     private IamRepository iamRepository;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     @Override
     @Transactional
@@ -69,6 +78,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 devopsClusterProPermissionE.setProjectId(projectId);
                 ProjectE projectE = iamRepository.queryIamProject(projectId);
                 devopsClusterProPermissionE.setProjectName(projectE.getName());
+                devopsClusterProPermissionE.setProjectCode(projectE.getCode());
                 devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
             }
         }
@@ -109,6 +119,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 devopsClusterProPermissionE.setProjectId(addProject);
                 ProjectE projectE = iamRepository.queryIamProject(addProject);
                 devopsClusterProPermissionE.setProjectName(projectE.getName());
+                devopsClusterProPermissionE.setProjectCode(projectE.getCode());
                 devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
             });
             projectIds.forEach(deleteProject -> {
@@ -148,6 +159,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 ProjectDTO projectDTO = new ProjectDTO();
                 projectDTO.setId(projectDO.getId());
                 projectDTO.setName(projectDO.getName());
+                projectDTO.setCode(projectDO.getCode());
                 if (projectIds.contains(projectDO.getId())) {
                     projectDTO.setPermission(true);
                 }
@@ -161,7 +173,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public String queryShell(Long clusterId) {
         DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE);
+        InputStream inputStream;
+        if (devopsClusterE.getUpgrade()) {
+            inputStream = this.getClass().getResourceAsStream("/shell/cluster-upgrade.sh");
+        } else {
+            inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
+        }
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
@@ -181,8 +201,15 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Page<DevopsClusterRepDTO> pageClusters(Long organizationId, PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> devopsClusterRepository.pageClusters(organizationId, pageRequest)), DevopsClusterRepDTO.class);
+    public Page<DevopsClusterRepDTO> pageClusters(Long organizationId, PageRequest pageRequest, String params) {
+        Page<DevopsClusterE> devopsClusterEPage = devopsClusterRepository.pageClusters(organizationId, pageRequest, params);
+        Page<DevopsClusterRepDTO> devopsClusterRepDTOPage = new Page<>();
+        BeanUtils.copyProperties(devopsClusterEPage, devopsClusterRepDTOPage);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        devopsClusterEPage.getContent().stream().forEach(devopsClusterE -> setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE));
+        devopsClusterRepDTOPage.setContent(ConvertHelper.convertList(devopsClusterEPage.getContent(), DevopsClusterRepDTO.class));
+        return devopsClusterRepDTOPage;
     }
 
     @Override
@@ -191,9 +218,42 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             ProjectDTO projectDTO = new ProjectDTO();
             projectDTO.setId(devopsClusterProPermissionE.getProjectId());
             projectDTO.setName(devopsClusterProPermissionE.getProjectName());
+            projectDTO.setCode(devopsClusterProPermissionE.getProjectCode());
             return projectDTO;
         }).collect(Collectors.toList());
     }
 
+    private void setClusterStatus(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsClusterE t) {
+        if (connectedEnvList.contains(t.getId())) {
+            if (updatedEnvList.contains(t.getId())) {
+                t.initUpgrade(false);
+                t.initConnect(true);
+            } else {
+                t.initUpgrade(true);
+                t.initConnect(false);
+                t.setUpgradeMessage("Version is too low, please upgrade!");
+            }
+        } else {
+            t.initUpgrade(false);
+            t.initConnect(false);
+        }
+    }
 
+    @Override
+    public String deleteCluster(Long clusterId) {
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.listByClusterId(clusterId);
+        if (!connectedEnvList.contains(clusterId) && devopsEnvironmentES.isEmpty()) {
+            devopsClusterRepository.delete(clusterId);
+        } else {
+            throw new CommonException("error.cluster.delete");
+        }
+        InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster-delete.sh");
+        return FileUtil.replaceReturnString(inputStream, null);
+    }
+
+    @Override
+    public DevopsClusterRepDTO getCluster(Long clusterId) {
+        return ConvertHelper.convert(devopsClusterRepository.query(clusterId), DevopsClusterRepDTO.class);
+    }
 }

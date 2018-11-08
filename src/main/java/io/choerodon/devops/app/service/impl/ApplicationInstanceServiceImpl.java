@@ -493,14 +493,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), applicationDeployDTO.getEnvironmentId());
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
+
         //校验环境是否连接
-        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
-
-        DevopsEnvironmentE devopsEnvironmentE =
-                devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
 
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         ApplicationVersionE applicationVersionE =
@@ -560,24 +559,20 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
 
             //实例相关对象数据库操作,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而实例成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行实例数据库操作
-            if (applicationDeployDTO.getType().equals(CREATE)) {
-                if (afterApplicationInstanceE == null) {
-                    applicationInstanceE.setCode(code);
-                    applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-                    devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                    devopsEnvCommandE.initDevopsEnvCommandValueE(
-                            devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                    applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                    applicationInstanceRepository.update(applicationInstanceE);
-                }
-            } else {
-                if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
-                    devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                    devopsEnvCommandE.initDevopsEnvCommandValueE(
-                            devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                    applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                    applicationInstanceRepository.update(applicationInstanceE);
-                }
+            if (applicationDeployDTO.getType().equals(CREATE) && afterApplicationInstanceE == null) {
+                applicationInstanceE.setCode(code);
+                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
+            } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
             }
 
         }
@@ -588,8 +583,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
+
         //校验环境是否连接
-        envUtil.checkEnvConnection(applicationDeployDTO.getEnvironmentId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -718,7 +715,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
 
-        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
         if (!instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
             throw new CommonException("error.instance.notRunning");
         }
@@ -743,7 +742,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
-        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
         if (!instanceE.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
             throw new CommonException("error.instance.notStop");
         }
@@ -788,10 +790,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
         //校验环境是否连接
-        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(instanceE.getDevopsEnvironmentE().getId());
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+
         DevopsEnvCommandE devopsEnvCommandE;
         if (instanceE.getCommandId() == null) {
             devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
@@ -852,8 +855,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceDeleteByGitOps(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+
         //校验环境是否连接
-        envUtil.checkEnvConnection(instanceE.getDevopsEnvironmentE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE;
@@ -916,7 +921,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE.setConnect(envSessionMap.entrySet().stream()
                         .anyMatch(entry -> {
                             EnvSession envSession = entry.getValue();
-                            return envSession.getEnvId().equals(applicationInstanceE.getDevopsEnvironmentE().getId())
+                            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+                            return envSession.getClusterId().equals(devopsEnvironmentE.getClusterE().getId())
                                     && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1;
                         })));
     }

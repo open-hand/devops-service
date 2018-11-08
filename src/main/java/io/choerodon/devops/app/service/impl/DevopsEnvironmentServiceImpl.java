@@ -156,6 +156,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         UserE userE = iamRepository.queryById(userAttrE.getIamUserId());
         gitlabProjectPayload.setLoginName(userE.getLoginName());
         gitlabProjectPayload.setRealName(userE.getRealName());
+        gitlabProjectPayload.setClusterId(devopsEnviromentDTO.getClusterId());
 
         // 创建环境时将项目下所有用户装入payload以便于saga消费
         gitlabProjectPayload.setUserIds(devopsEnviromentDTO.getUserIds());
@@ -228,12 +229,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Boolean isProjectOwner = devopsEnvUserPermissionRepository
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t -> {
-                    t.setUpdate(false);
-                    setEnvStatus(connectedEnvList, updatedEnvList, t);
+                    setEnvStatus(connectedClusterList, t);
                     //项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
@@ -374,10 +373,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             sequence = sequence + 1;
         }
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsEnvironmentES.forEach(t -> {
-            t.setUpdate(false);
-            setEnvStatus(connectedEnvList, updatedEnvList, t);
+            setEnvStatus(connectedEnvList, t);
         });
         if (!devopsEnvironmentES.isEmpty()) {
             DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
@@ -392,20 +389,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvGroupEnvsDTO;
     }
 
-    private void setEnvStatus(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsEnvironmentE t) {
-        if (connectedEnvList.contains(t.getId())) {
-            if (updatedEnvList.contains(t.getId())) {
-                t.initConnect(true);
-            } else {
-                t.setUpdate(true);
-                t.initConnect(false);
-                t.setUpdateMessage("Version is too low, please upgrade!");
-            }
+    private void setEnvStatus(List<Long> connectedEnvList, DevopsEnvironmentE t) {
+        if (connectedEnvList.contains(t.getClusterE().getId())) {
+            t.initConnect(true);
         } else {
             t.initConnect(false);
         }
     }
-
 
     @Override
     public void checkName(Long projectId, Long clusterId, String name) {
@@ -456,7 +446,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
-                .queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
+                .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 

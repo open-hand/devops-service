@@ -1,7 +1,9 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
+import java.util.Map;
 
+import io.kubernetes.client.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -18,6 +21,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Service
 public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
+
+    private JSON json = new JSON();
 
     @Autowired
     private DevopsClusterMapper devopsClusterMapper;
@@ -67,9 +72,15 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     }
 
     @Override
-    public Page<DevopsClusterE> pageClusters(Long organizationId, PageRequest pageRequest) {
+    public Page<DevopsClusterE> pageClusters(Long organizationId, PageRequest pageRequest, String params) {
         DevopsClusterDO devopsClusterDO = new DevopsClusterDO();
         devopsClusterDO.setOrganizationId(organizationId);
-        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> devopsClusterMapper.select(devopsClusterDO)), DevopsClusterE.class);
+        Map<String, Object> maps = json.deserialize(params, Map.class);
+        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAM)))), DevopsClusterE.class);
+    }
+
+    @Override
+    public void delete(Long clusterId) {
+        devopsClusterMapper.deleteByPrimaryKey(clusterId);
     }
 }

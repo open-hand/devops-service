@@ -16,6 +16,7 @@ public class GitlabProjectPayload {
     private List<Long> userIds;
     private String loginName;
     private String realName;
+    private Long clusterId;
 
     public Integer getUserId() {
         return userId;
@@ -87,5 +88,13 @@ public class GitlabProjectPayload {
 
     public void setRealName(String realName) {
         this.realName = realName;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }

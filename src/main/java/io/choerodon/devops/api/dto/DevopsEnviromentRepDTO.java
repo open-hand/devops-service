@@ -12,8 +12,6 @@ public class DevopsEnviromentRepDTO {
     private Boolean isActive;
     private Boolean isConnected;
     private Long sequence;
-    private Boolean isUpdate;
-    private String updateMessage;
     private Long devopsEnvGroupId;
     private Boolean permission;
 
@@ -65,21 +63,6 @@ public class DevopsEnviromentRepDTO {
         this.sequence = sequence;
     }
 
-    public Boolean getUpdate() {
-        return isUpdate;
-    }
-
-    public void setUpdate(Boolean update) {
-        isUpdate = update;
-    }
-
-    public String getUpdateMessage() {
-        return updateMessage;
-    }
-
-    public void setUpdateMessage(String updateMessage) {
-        this.updateMessage = updateMessage;
-    }
 
     public String getCode() {
         return code;

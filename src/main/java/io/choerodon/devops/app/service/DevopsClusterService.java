@@ -22,7 +22,11 @@ public interface DevopsClusterService {
 
     void checkCode(Long organizationId, String code);
 
-    Page<DevopsClusterRepDTO> pageClusters(Long organizationId, PageRequest pageRequest);
+    Page<DevopsClusterRepDTO> pageClusters(Long organizationId, PageRequest pageRequest, String params);
 
     List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId);
+
+    String deleteCluster(Long clusterId);
+
+    DevopsClusterRepDTO getCluster(Long clusterId);
 }

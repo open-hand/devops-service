@@ -7,6 +7,9 @@ public class DevopsClusterE {
     private String name;
     private String token;
     private String code;
+    private Boolean connect;
+    private Boolean upgrade;
+    private String upgradeMessage;
     private String description;
     private Boolean skipCheckProjectPermission;
 
@@ -71,5 +74,29 @@ public class DevopsClusterE {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Boolean getConnect() {
+        return connect;
+    }
+
+    public void initConnect(Boolean connect) {
+        this.connect = connect;
+    }
+
+    public Boolean getUpgrade() {
+        return upgrade;
+    }
+
+    public void initUpgrade(Boolean upgrade) {
+        this.upgrade = upgrade;
+    }
+
+    public String getUpgradeMessage() {
+        return upgradeMessage;
+    }
+
+    public void setUpgradeMessage(String upgradeMessage) {
+        this.upgradeMessage = upgradeMessage;
     }
 }

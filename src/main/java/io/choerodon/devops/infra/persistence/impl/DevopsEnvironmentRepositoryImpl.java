@@ -102,9 +102,9 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     }
 
     @Override
-    public DevopsEnvironmentE queryByProjectIdAndCode(Long projectId, String code) {
+    public DevopsEnvironmentE queryByClusterIdAndCode(Long clusterId, String code) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
-        devopsEnvironmentDO.setProjectId(projectId);
+        devopsEnvironmentDO.setClusterId(clusterId);
         devopsEnvironmentDO.setCode(code);
         return ConvertHelper.convert(devopsEnvironmentMapper.selectOne(devopsEnvironmentDO), DevopsEnvironmentE.class);
     }

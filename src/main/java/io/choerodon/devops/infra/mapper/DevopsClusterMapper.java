@@ -1,6 +1,7 @@
 package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
@@ -13,4 +14,7 @@ public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDO> {
 
     void updateSkipCheckPro(@Param("clusterId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 
+    List<DevopsClusterDO> listClusters(@Param("organizationId") Long organizationId,
+                                       @Param("searchParam") Map<String, Object> searchParam,
+                                       @Param("param") String param);
 }

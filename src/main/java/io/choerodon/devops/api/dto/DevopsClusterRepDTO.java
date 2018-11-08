@@ -7,6 +7,8 @@ public class DevopsClusterRepDTO {
     private Boolean skipCheckProjectPermission;
     private String code;
     private Boolean connect;
+    private Boolean upgrade;
+    private String upgradeMessage;
     private String description;
 
     public Long getId() {
@@ -55,5 +57,21 @@ public class DevopsClusterRepDTO {
 
     public void setConnect(Boolean connect) {
         this.connect = connect;
+    }
+
+    public Boolean getUpgrade() {
+        return upgrade;
+    }
+
+    public void setUpgrade(Boolean upgrade) {
+        this.upgrade = upgrade;
+    }
+
+    public String getUpgradeMessage() {
+        return upgradeMessage;
+    }
+
+    public void setUpgradeMessage(String upgradeMessage) {
+        this.upgradeMessage = upgradeMessage;
     }
 }

@@ -4,6 +4,7 @@ public class ProjectDTO {
 
     private Long id;
     private String name;
+    private String code;
     private Boolean permission;
 
     public Long getId() {
@@ -28,5 +29,13 @@ public class ProjectDTO {
 
     public void setPermission(Boolean permission) {
         this.permission = permission;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

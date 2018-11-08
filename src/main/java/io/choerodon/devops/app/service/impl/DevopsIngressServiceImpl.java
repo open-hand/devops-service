@@ -57,8 +57,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
     @Autowired
-    private DevopsEnvironmentRepository environmentRepository;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private EnvListener envListener;
@@ -78,6 +76,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private CertificationRepository certificationRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, Long envId) {
@@ -85,8 +85,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
@@ -95,7 +96,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(CREATE);
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDTO.getEnvId());
+
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -121,7 +122,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId) {
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
@@ -146,8 +149,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //判断ingress有没有修改，没有修改直接返回
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
@@ -165,7 +169,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         devopsIngressDTO.setId(id);
         DevopsIngressDO devopsIngressDO = handlerIngress(devopsIngressDTO, projectId, v1beta1Ingress);
 
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsIngressDTO.getEnvId());
+
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -182,7 +186,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Override
     public void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId) {
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsIngressDTO.getEnvId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //判断ingress有没有修改，没有修改直接返回
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
@@ -220,8 +226,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsIngressDTOS.stream().forEach(devopsIngressDTO -> {
-            if (connectedEnvList.contains(devopsIngressDTO.getEnvId())
-                    && updatedEnvList.contains(devopsIngressDTO.getEnvId())) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
+            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsIngressDTO.setEnvStatus(true);
             }
         });
@@ -233,15 +240,16 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         DevopsIngressDO ingressDO = devopsIngressRepository.getIngress(ingressId);
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(ingressDO.getEnvId());
+
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), ingressDO.getEnvId());
 
         //校验环境是否连接
-        envUtil.checkEnvConnection(ingressDO.getEnvId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
-        DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(ingressDO.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
@@ -294,8 +302,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     @Override
     public void deleteIngressByGitOps(Long ingressId) {
-        envUtil.checkEnvConnection(devopsIngressRepository.getIngress(ingressId).getEnvId(), envListener);
         DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(ingressId);
+
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDO.getEnvId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressDO.getCommandId());
 
@@ -395,23 +406,37 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       DevopsIngressDO devopsIngressDO,
                                       UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE) {
 
-        //创建或更新数据
-        if (isCreate) {
-            Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
-            devopsEnvCommandE.setObjectId(ingressId);
-            devopsIngressDO.setId(ingressId);
-            devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsIngressRepository.updateIngress(devopsIngressDO);
-        } else {
-            devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
-            devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
+        DevopsIngressE beforeDevopsIngressE = devopsIngressRepository.selectByEnvAndName(devopsIngressDO.getEnvId(), devopsIngressDO.getName());
+        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
+        if (beforeDevopsIngressE != null) {
+            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeDevopsIngressE.getCommandId());
         }
+
 
         ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
         objectOperation.setType(ingress);
         objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
                 userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, devopsIngressDO.getEnvId(), path);
+
+
+        DevopsIngressE afterDevopsIngressE = devopsIngressRepository.selectByEnvAndName(devopsIngressDO.getEnvId(), devopsIngressDO.getName());
+        DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
+        if (afterDevopsIngressE != null) {
+            afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterDevopsIngressE.getCommandId());
+        }
+
+        //创建或更新数据,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而域名成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行域名数据库操作
+        if (isCreate && afterDevopsIngressE == null) {
+            Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
+            devopsEnvCommandE.setObjectId(ingressId);
+            devopsIngressDO.setId(ingressId);
+            devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsIngressRepository.updateIngress(devopsIngressDO);
+        } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
+            devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
+            devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
+        }
 
     }
 

@@ -25,7 +25,7 @@ public interface DevopsEnvironmentRepository {
 
     List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active);
 
-    DevopsEnvironmentE queryByProjectIdAndCode(Long projectId, String code);
+    DevopsEnvironmentE queryByClusterIdAndCode(Long projectId, String code);
 
     DevopsEnvironmentE queryByToken(String token);
 

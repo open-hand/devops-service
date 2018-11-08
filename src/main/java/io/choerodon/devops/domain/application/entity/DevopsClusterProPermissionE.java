@@ -5,6 +5,7 @@ public class DevopsClusterProPermissionE {
     private Long clusterId;
     private Long projectId;
     private String projectName;
+    private String projectCode;
 
     public Long getClusterId() {
         return clusterId;
@@ -28,5 +29,13 @@ public class DevopsClusterProPermissionE {
 
     public void setProjectName(String projectName) {
         this.projectName = projectName;
+    }
+
+    public String getProjectCode() {
+        return projectCode;
+    }
+
+    public void setProjectCode(String projectCode) {
+        this.projectCode = projectCode;
     }
 }

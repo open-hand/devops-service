@@ -28,8 +28,6 @@ public class DevopsEnvironmentE {
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
-    private Boolean isUpdate;
-    private String updateMessage;
     private Boolean permission;
 
     private Long devopsSyncCommit;
@@ -147,21 +145,6 @@ public class DevopsEnvironmentE {
 
     }
 
-    public Boolean getUpdate() {
-        return isUpdate;
-    }
-
-    public void setUpdate(Boolean update) {
-        isUpdate = update;
-    }
-
-    public String getUpdateMessage() {
-        return updateMessage;
-    }
-
-    public void setUpdateMessage(String updateMessage) {
-        this.updateMessage = updateMessage;
-    }
 
     public Long getSequence() {
         return sequence;

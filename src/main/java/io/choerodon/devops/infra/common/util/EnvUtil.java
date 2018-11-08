@@ -74,13 +74,13 @@ public class EnvUtil {
     /**
      * 检查环境是否链接
      *
-     * @param envId       环境ID
+     * @param clusterId   环境ID
      * @param envListener EnvListener
      */
-    public void checkEnvConnection(Long envId, EnvListener envListener) {
+    public void checkEnvConnection(Long clusterId, EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         Boolean envConnected = connectedEnv.entrySet().stream()
-                .anyMatch(t -> envId.equals(t.getValue().getEnvId())
+                .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
                         && compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1);
         if (!envConnected) {
             throw new CommonException("error.env.disconnect");
@@ -96,7 +96,7 @@ public class EnvUtil {
     public List<Long> getConnectedEnvList(EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().stream()
-                .map(t -> t.getValue().getEnvId())
+                .map(t -> t.getValue().getClusterId())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -110,7 +110,7 @@ public class EnvUtil {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().stream()
                 .filter(t -> compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1)
-                .map(t -> t.getValue().getEnvId())
+                .map(t -> t.getValue().getClusterId())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 }
