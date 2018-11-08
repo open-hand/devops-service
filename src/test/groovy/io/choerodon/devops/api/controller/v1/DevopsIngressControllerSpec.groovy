@@ -31,6 +31,7 @@ import org.springframework.http.*
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
 import static org.mockito.Matchers.anyInt
 import static org.mockito.Matchers.anyLong
@@ -45,6 +46,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(DevopsIngressController)
 @Stepwise
 class DevopsIngressControllerSpec extends Specification {
 

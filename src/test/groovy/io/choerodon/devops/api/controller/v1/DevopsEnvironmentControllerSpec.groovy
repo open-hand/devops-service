@@ -41,6 +41,7 @@ import org.springframework.http.*
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
 import static org.mockito.Matchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -54,6 +55,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(DevopsEnvironmentController)
 @Stepwise
 class DevopsEnvironmentControllerSpec extends Specification {
 
