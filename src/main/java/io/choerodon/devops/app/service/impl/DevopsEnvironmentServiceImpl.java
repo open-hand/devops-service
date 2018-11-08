@@ -259,6 +259,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
         if (!active) {
+            // TODO 校验环境是否连接，不再校验环境下是否存在运行中的对象
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
@@ -778,6 +779,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
         gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+        // TODO 删除命名空间
     }
 
     @Override
