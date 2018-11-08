@@ -8,13 +8,18 @@ import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -42,8 +47,9 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     private DevopsEnvFileErrorMapper devopsEnvFileErrorMapper
 
     @Autowired
-    @Qualifier("mockIamRepository")
     private IamRepository iamRepository
+
+    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     @Shared
     Long init_id = 1L
@@ -56,17 +62,21 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     @Shared
     Organization organization = new Organization()
 
-    def setupSpec() {
-        given:
-        organization.setId(init_id)
-        organization.setCode("org")
+    def setup() {
+        iamRepository.initMockIamService(iamServiceClient)
 
-        projectE.setId(project_id)
-        projectE.setCode("pro")
-        projectE.setOrganization(organization)
+        ProjectDO projectDO = new ProjectDO()
+        projectDO.setId(1L)
+        projectDO.setCode("pro")
+        projectDO.setOrganizationId(1L)
+        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
 
-        userAttrE.setIamUserId(init_id)
-        userAttrE.setGitlabUserId(init_id)
+        OrganizationDO organizationDO = new OrganizationDO()
+        organizationDO.setId(1L)
+        organizationDO.setCode("org")
+        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
     }
 
     def "List"() {
@@ -87,26 +97,18 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
         devopsEnvironmentDO.setDevopsEnvGroupId(1L)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
-        and: '设置默认值'
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-
-        when:
+        when: '项目下查询环境文件错误列表'
         def list = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list", List.class)
 
-        then:
+        then: '校验返回结果'
         list.size() == 2
     }
 
     def "Page"() {
-        given: '设置默认值'
-        iamRepository.queryIamProject(_ as Long) >> projectE
-        iamRepository.queryOrganizationById(_ as Long) >> organization
-
-        when:
+        when: '项目下查询环境文件错误列表'
         def page = restTemplate.getForObject("/v1/projects/1/envs/1/error_file/list_by_page", Page.class)
 
-        then:
+        then: '校验返回结果'
         page.size() == 2
 
         // 清理数据
