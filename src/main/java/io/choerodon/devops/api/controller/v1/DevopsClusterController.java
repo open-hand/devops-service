@@ -78,7 +78,7 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询单个集群信息")
     @GetMapping("/{clusterId}")
-    public ResponseEntity<DevopsClusterRepDTO> update(
+    public ResponseEntity<DevopsClusterRepDTO> query(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
