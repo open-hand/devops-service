@@ -12,6 +12,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -24,6 +25,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(DevopsEnvPodContainerController)
 @Stepwise
 class DevopsEnvPodContainerControllerSpec extends Specification {
 
@@ -35,7 +37,7 @@ class DevopsEnvPodContainerControllerSpec extends Specification {
     private DevopsEnvPodContainerMapper devopsEnvPodContainerMapper
 
     def "QueryLogByPod"() {
-        given:
+        given: '初始化envPodContainerDO类'
         DevopsEnvPodContainerDO devopsEnvPodContainerDO = new DevopsEnvPodContainerDO()
         devopsEnvPodContainerDO.setId(1L)
         devopsEnvPodContainerDO.setPodId(1L)
@@ -48,22 +50,20 @@ class DevopsEnvPodContainerControllerSpec extends Specification {
         devopsEnvPodMapper.insert(devopsEnvPodDO)
         InstanceStatus
 
-        when:
+        when: '获取日志信息 By Pod'
         def list = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs", List.class)
 
-        then:
+        then: '校验返回结果'
         list.size() == 1
     }
 
     def "HandleShellByPod"() {
-        when:
+        when: '获取日志shell信息 By Pod'
         def list = restTemplate.getForObject("/v1/projects/1/app_pod/1/containers/logs/shell", List.class)
 
-        then:
+        then: '校验返回结果'
         list.size() == 1
         devopsEnvPodContainerMapper.deleteByPrimaryKey(1L)
         devopsEnvPodMapper.deleteByPrimaryKey(1L)
     }
-
-
 }
