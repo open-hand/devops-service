@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
+import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO
@@ -13,29 +14,29 @@ import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.repository.UserAttrRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
+import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.infra.common.util.enums.Visibility
 import io.choerodon.devops.infra.dataobject.ApplicationTemplateDO
+import io.choerodon.devops.infra.dataobject.gitlab.GroupDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.ApplicationTemplateMapper
 import io.choerodon.devops.infra.persistence.impl.ApplicationTemplateRepositoryImpl
-import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.*
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
-import static org.mockito.Matchers.anyLong
-import static org.mockito.Matchers.anyObject
-import static org.mockito.Matchers.anyString
+import static org.mockito.Matchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -47,6 +48,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(ApplicationTemplateController)
 @Stepwise
 class ApplicationTemplateControllerSpec extends Specification {
 
@@ -60,22 +62,14 @@ class ApplicationTemplateControllerSpec extends Specification {
     private ApplicationTemplateService applicationTemplateService
     @Autowired
     private ApplicationTemplateRepositoryImpl applicationTemplateRepository
-
     @Autowired
-    @Qualifier("mockIamRepository")
     private IamRepository iamRepository
     @Autowired
-    @Qualifier("mockGitlabRepository")
     private GitlabRepository gitlabRepository
-    @Autowired
-    @Qualifier("mockUserAttrRepository")
-    private UserAttrRepository userAttrRepository
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
-
-//    private IamServiceClient iamServiceClient = Mock(IamServiceClient)
-//    private SagaClient sagaClient = Mock(SagaClient)
+    GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     @Shared
     Organization organization = new Organization()
@@ -87,7 +81,6 @@ class ApplicationTemplateControllerSpec extends Specification {
     GitlabGroupE gitlabGroupE = new GitlabGroupE()
     @Shared
     Map<String, Object> searchParam = new HashMap<>();
-
     @Shared
     Long org_id = 1L
     @Shared
@@ -95,7 +88,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Shared
     Long template_id = 4L
 
-    //初始化部分对象
+    // 初始化部分对象
     def setupSpec() {
         given:
         organization.setId(init_id)
@@ -117,7 +110,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         searchParam.put("param", "")
     }
 
-    //组织下创建应用模板
+    // 组织下创建应用模板
     def "createTemplate"() {
         given: "初始化数据"
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()
@@ -127,123 +120,138 @@ class ApplicationTemplateControllerSpec extends Specification {
         applicationTemplateDTO.setDescription("des")
         applicationTemplateDTO.setOrganizationId(1L)
 
-        and: 'mock'
+        and: 'mock saga'
         applicationTemplateService.initMockService(sagaClient)
-        applicationTemplateRepository.initMockService(iamServiceClient)
-        Mockito.doReturn(new ResponseEntity<OrganizationDO>(organizationDO, HttpStatus.OK)).when(iamServiceClient).queryOrganizationById(anyLong())
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), anyObject())
-        userAttrRepository.queryById(_) >> userAttrE
-        iamRepository.queryOrganizationById(_) >> organization
-        gitlabRepository.queryGroupByName(_, _) >> null
-        gitlabRepository.createGroup(_, _) >> gitlabGroupE
 
-        when:
-        def entity = restTemplate.postForEntity("/v1/organizations/{org_id}/app_templates", applicationTemplateDTO, ApplicationTemplateRepDTO.class, org_id)
+        and: 'mock 查询组织'
+        iamRepository.initMockIamService(iamServiceClient)
+        Mockito.doReturn(new ResponseEntity<OrganizationDO>(organizationDO, HttpStatus.OK)).when(iamServiceClient).queryOrganizationById(anyLong())
 
-        then:
+        and: 'mock 查询gitlab组'
+        applicationTemplateRepository.initMockService(iamServiceClient)
+        gitlabRepository.initMockService(gitlabServiceClient)
+        GroupDO groupDO = null
+        ResponseEntity<GroupDO> responseEntity = new ResponseEntity<>(groupDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.queryGroupByName(anyString(), anyInt())).thenReturn(responseEntity)
+
+        and: 'mock 创建gitlab组'
+        GroupDO newGroupDO = new GroupDO()
+        newGroupDO.setId(1)
+        ResponseEntity<GroupDO> newResponseEntity = new ResponseEntity<>(newGroupDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.createGroup(any(GroupDO.class), anyInt())).thenReturn(newResponseEntity)
+
+        when: '组织下创建应用模板'
+        def entity = restTemplate.postForEntity("/v1/organizations/1/app_templates", applicationTemplateDTO, ApplicationTemplateRepDTO.class)
+
+        then: '验证响应状态码'
         entity.statusCode.is2xxSuccessful()
 
-        expect:
+        expect: '验证创建的模板结果'
         ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
-        applicationTemplateDO.name == "app"
+        applicationTemplateDO["code"] == "code"
     }
 
-    //组织下更新应用模板
+    // 组织下更新应用模板
     def "updateTemplate"() {
-        given:
+        given: '初始化模板更新dto类'
         ApplicationTemplateUpdateDTO applicationTemplateUpdateDTO = new ApplicationTemplateUpdateDTO()
         applicationTemplateUpdateDTO.setId(4L)
         applicationTemplateUpdateDTO.setName("updateName")
         applicationTemplateUpdateDTO.setDescription("des")
 
-        when:
-        restTemplate.put("/v1/organizations/{org_id}/app_templates", applicationTemplateUpdateDTO, org_id)
+        when: '组织下更新应用模板'
+        restTemplate.put("/v1/organizations/1/app_templates", applicationTemplateUpdateDTO, ApplicationTemplateRepDTO.class)
 
-        then:
+        then: '返回值'
         ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
 
-        expect:
-        applicationTemplateDO.name == "updateName"
+        expect: '验证返回结果'
+        applicationTemplateMapper.selectAll().get(3)["name"] == "updateName"
     }
 
-    //组织下查询单个应用模板
+    // 组织下查询单个应用模板
     def "queryByAppTemplateId"() {
-        when:
+        when: '组织下查询单个应用模板'
         def object = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates/{template_id}", ApplicationTemplateRepDTO.class, org_id, template_id)
 
-        then:
-        object.code == "code"
+        then: '验证返回结果'
+        object["code"] == "code"
     }
 
-    //组织下分页查询应用模板
+    // 组织下分页查询应用模板
     def "listByOptions"() {
-        when:
+        when: '组织下分页查询应用模板'
         def page = restTemplate.postForObject("/v1/organizations/{org_id}/app_templates/list_by_options", searchParam, Page.class, org_id)
 
-        then:
+        then: '验证返回结果'
         page.size() == 1
 
-        expect:
-        page.get(0).code == "code"
+        expect: '验证返回结果'
+        page.get(0)["code"] == "code"
     }
 
-    //组织下分页查询应用模板
+    // 组织下分页查询应用模板
     def "listByOrgId"() {
-        when:
+        when: '组织下分页查询应用模板'
         def list = restTemplate.getForObject("/v1/organizations/{org_id}/app_templates", List.class, org_id)
 
-        then:
+        then: '验证返回结果'
         list.size() == 4
 
-        expect:
-        list.get(3).code == "code"
+        expect: '验证返回结果'
+        list.get(3)["code"] == "code"
     }
-    //创建模板校验名称是否存在
+
+    // 创建模板校验名称是否存在
     def "checkName"() {
-        when:
+        when: '创建模板校验名称是否存在'
         def entity = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", Object.class, org_id, "name")
 
-        then:
+        then: '校验通过，没有抛出异常'
         entity.statusCode.is2xxSuccessful()
-        entity.body == null
+        entity.getBody() == null
 
-        when:
-        def entity2 = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", Object.class, org_id, "updateName")
+        when: '校验未通过，抛出异常'
+        def exception = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", ExceptionResponse.class, org_id, "updateName")
 
         then:
-        entity2.statusCode.is2xxSuccessful()
-        entity2.body.failed == true
+        exception.statusCode.is2xxSuccessful()
+        exception.getBody()["code"] == "error.name.exist"
     }
-    //创建模板校验编码是否存在
+
+    // 创建模板校验编码是否存在
     def "checkCode"() {
-        when:
+        when: '创建模板校验编码是否存在'
         def entity = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkCode?code={code}", Object.class, org_id, "testCode")
 
-        then:
+        then: '校验通过，没有抛出异常'
         entity.statusCode.is2xxSuccessful()
-        entity.body == null
+        entity.getBody() == null
 
-        when:
-        def entity2 = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkCode?code={code}", Object.class, org_id, "code")
+        when: '创建模板校验编码是否存在'
+        def exception = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkCode?code={code}", ExceptionResponse.class, org_id, "code")
 
-        then:
-        entity2.statusCode.is2xxSuccessful()
-        entity2.body.failed == true
+        then: '校验未通过，抛出异常'
+        exception.statusCode.is2xxSuccessful()
+        exception.getBody()["code"] == "error.code.exist"
     }
 
-    //组织下删除应用模板
+    // 组织下删除应用模板
     def "deleteTemplate"() {
-        given:
-        userAttrRepository.queryById(_ as Long) >> userAttrE
-        gitlabRepository.deleteProject(_ as Integer, _ as Integer) >> null
+        given: 'mock 删除gitlab项目'
+        gitlabRepository.initMockService(gitlabServiceClient)
+        ProjectHook projectHook = new ProjectHook()
+        ResponseEntity<ProjectHook> responseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.deleteProject(anyInt(), anyInt())).thenReturn(responseEntity)
 
-        when:
+        when: '组织下删除应用模板'
         restTemplate.delete("/v1/organizations/{project_id}/app_templates/{template_id}", org_id, 4L)
 
-        then:
+        then: '返回值'
         ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(4L)
 
-        expect:
+        expect: '验证是否删除'
         applicationTemplateDO == null
     }
 }
