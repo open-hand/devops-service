@@ -104,6 +104,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
     private GitlabRepository gitlabRepository
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository
+    @Autowired
+    private GitlabGroupMemberRepository gitlabGroupMemberRepository
 
     SagaClient sagaClient = Mockito.mock(SagaClient.class)
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
@@ -191,6 +193,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         iamRepository.initMockIamService(iamServiceClient)
         gitlabRepository.initMockService(gitlabServiceClient)
         gitlabProjectRepository.initMockService(gitlabServiceClient)
+        gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setId(1L)
@@ -219,6 +222,11 @@ class DevopsEnvironmentControllerSpec extends Specification {
         projectWithRoleDTOPage.setTotalPages(2)
         ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+
+        MemberDO memberDO = new MemberDO()
+        memberDO.setAccessLevel(AccessLevel.OWNER)
+        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
     }
 
     def "Create"() {
