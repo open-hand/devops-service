@@ -764,6 +764,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     @Transactional
     public void deleteDeactivatedEnvironment(Long envId) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
         // 删除环境对应的实例
         applicationInstanceRepository.deleteAppInstanceByEnvId(envId);
         // 删除环境对应的域名、域名路径
@@ -772,6 +773,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
         // 删除环境
         devopsEnviromentRepository.deleteById(envId);
+        // 删除gitlab库
+        Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+        gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
     }
 
     @Override

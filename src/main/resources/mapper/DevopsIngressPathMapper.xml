@@ -43,9 +43,9 @@
     </select>
 
     <delete id="deleteByIngressIds">
-        DELETE FROM devops_ingress_path dip
-        WHERE dip.ingress_id IN
-        <foreach collection="ingressIds" item="ingressId" open="(" separator="," close=")">
+        DELETE FROM devops_ingress_path
+        WHERE ingress_id IN
+        <foreach collection="ingressIds" item="ingressId" open="(" close=")" separator=",">
             #{ingressId}
         </foreach>
     </delete>

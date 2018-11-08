@@ -223,9 +223,17 @@
         AND `status` != 'deleted';
     </select>
 
-
     <update id="setLablesToNull">
-        UPDATE devops_service ds set ds.labels = null where ds.id = #{serviceId}
-
+        UPDATE devops_service ds
+        SET ds.labels = null
+        WHERE ds.id = #{serviceId}
     </update>
+
+    <delete id="deleteServiceInstance">
+        DELETE FROM devops_service_instance
+        WHERE service_id IN
+        <foreach collection="serviceIds" item="serviceId" open="(" separator="," close=")">
+            #{serviceId}
+        </foreach>
+    </delete>
 </mapper>

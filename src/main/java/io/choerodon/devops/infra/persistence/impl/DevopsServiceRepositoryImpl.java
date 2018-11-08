@@ -21,7 +21,6 @@ import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
-import io.choerodon.devops.infra.mapper.DevopsServiceAppInstanceMapper;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -34,7 +33,6 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
 
     private static JSON json = new JSON();
     private DevopsServiceMapper devopsServiceMapper;
-    private DevopsServiceAppInstanceMapper devopsServiceAppInstanceMapper;
 
     public DevopsServiceRepositoryImpl(DevopsServiceMapper devopsServiceMapper) {
         this.devopsServiceMapper = devopsServiceMapper;
@@ -180,9 +178,9 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         // 环境下的serviceIds
         List<Long> serviceIds = devopsServiceMapper.select(devopsServiceDO).stream().map(DevopsServiceDO::getId)
                 .collect(Collectors.toList());
-        // 删除网络
         devopsServiceMapper.delete(devopsServiceDO);
-        // 删除网络关联的实例表数据
-        devopsServiceAppInstanceMapper.deleteByServiceIds(serviceIds);
+        if (!serviceIds.isEmpty()) {
+            devopsServiceMapper.deleteServiceInstance(serviceIds);
+        }
     }
 }

@@ -37,4 +37,6 @@ public interface DevopsServiceMapper extends BaseMapper<DevopsServiceDO> {
     Boolean checkEnvHasService(@Param("envId") Long envId);
 
     void setLablesToNull(@Param("serviceId") Long serviceId);
+
+    void deleteServiceInstance(@Param("serviceIds") List<Long> serviceIds);
 }

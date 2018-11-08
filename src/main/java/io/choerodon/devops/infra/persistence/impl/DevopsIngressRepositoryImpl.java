@@ -338,6 +338,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         List<Long> allIngressIds = devopsIngressMapper.select(devopsIngressDO).stream().map(DevopsIngressDO::getId)
                 .collect(Collectors.toList());
         devopsIngressMapper.delete(devopsIngressDO);
-        devopsIngressPathMapper.deleteByIngressIds(allIngressIds);
+        if (!allIngressIds.isEmpty()) {
+            devopsIngressPathMapper.deleteByIngressIds(allIngressIds);
+        }
     }
 }
