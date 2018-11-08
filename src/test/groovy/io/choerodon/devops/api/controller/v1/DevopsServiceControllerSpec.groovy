@@ -323,15 +323,16 @@ class DevopsServiceControllerSpec extends Specification {
         then: '校验返回值'
         page.size() == 2
         devopsEnvCommandMapper.deleteByPrimaryKey(1L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(2L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(3L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(4L)
+        devopsEnvCommandMapper.deleteByPrimaryKey(5L)
+        devopsEnvCommandMapper.deleteByPrimaryKey(6L)
+        devopsEnvCommandMapper.deleteByPrimaryKey(7L)
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
         applicationInstanceMapper.deleteByPrimaryKey(1L)
         devopsEnvFileResourceMapper.deleteByPrimaryKey(1L)
         devopsServiceAppInstanceMapper.deleteByPrimaryKey(1L)
-        devopsServiceMapper.deleteByPrimaryKey(id)
-        devopsServiceMapper.deleteByPrimaryKey(2L)
+        devopsServiceAppInstanceMapper.deleteByPrimaryKey(9L)
+        devopsServiceMapper.deleteByPrimaryKey(4L)
+        devopsServiceMapper.deleteByPrimaryKey(5L)
         FileUtil.deleteDirectory(new File("gitops"))
     }
 }

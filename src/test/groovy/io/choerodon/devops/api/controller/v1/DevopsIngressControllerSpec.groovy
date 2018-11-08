@@ -7,6 +7,7 @@ import io.choerodon.devops.api.dto.DevopsIngressPathDTO
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
 import io.choerodon.devops.domain.application.repository.*
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
@@ -33,8 +34,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.anyInt
-import static org.mockito.Matchers.anyLong
+import static org.mockito.Matchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -213,6 +213,12 @@ class DevopsIngressControllerSpec extends Specification {
         projectWithRoleDTOPage.setTotalPages(2)
         ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
         Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+
+        RepositoryFile repositoryFile = new RepositoryFile()
+        repositoryFile.setFilePath("testFilePath")
+        ResponseEntity<RepositoryFile> responseEntity3 = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
+        Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity3)
     }
 
     def "Create"() {
@@ -231,7 +237,7 @@ class DevopsIngressControllerSpec extends Specification {
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
 
         when: '项目下创建域名'
-        restTemplate.postForEntity("/v1/projects/1/ingress", devopsIngressDTO, Object.class)
+        restTemplate.postForEntity("/v1/projects/1/ingress?envId=1", devopsIngressDTO, Object.class)
 
         then: '校验返回值'
         devopsIngressMapper.selectByPrimaryKey(1L).getId() != null
@@ -328,16 +334,19 @@ class DevopsIngressControllerSpec extends Specification {
         def page = restTemplate.postForObject("/v1/projects/1/ingress/1/listByEnv", strEntity, Page.class)
 
         then: '校验返回值'
-        page.size() == 1
+        page.size() == 2
 
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
         devopsIngressMapper.deleteByPrimaryKey(1L)
+        devopsIngressMapper.deleteByPrimaryKey(2L)
         devopsServiceMapper.deleteByPrimaryKey(1L)
         devopsEnvCommandMapper.deleteByPrimaryKey(1L)
         devopsEnvCommandMapper.deleteByPrimaryKey(2L)
         devopsEnvCommandMapper.deleteByPrimaryKey(3L)
+        devopsEnvCommandMapper.deleteByPrimaryKey(4L)
         devopsEnvFileResourceMapper.deleteByPrimaryKey(1L)
         devopsIngressPathMapper.deleteByPrimaryKey(3L)
+        devopsIngressPathMapper.deleteByPrimaryKey(4L)
         FileUtil.deleteDirectory(new File("gitops"))
     }
 }
