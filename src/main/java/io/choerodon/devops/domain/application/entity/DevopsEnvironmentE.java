@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class DevopsEnvironmentE {
     private Long id;
     private ProjectE projectE;
+    private DevopsClusterE clusterE;
     private Long gitlabEnvProjectId;
     private Long devopsEnvGroupId;
     private Long hookId;
@@ -27,8 +28,6 @@ public class DevopsEnvironmentE {
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
-    private Boolean isUpdate;
-    private String updateMessage;
     private Boolean permission;
 
     private Long devopsSyncCommit;
@@ -146,22 +145,6 @@ public class DevopsEnvironmentE {
 
     }
 
-    public Boolean getUpdate() {
-        return isUpdate;
-    }
-
-    public void setUpdate(Boolean update) {
-        isUpdate = update;
-    }
-
-    public String getUpdateMessage() {
-        return updateMessage;
-    }
-
-    public void setUpdateMessage(String updateMessage) {
-        this.updateMessage = updateMessage;
-    }
-
     public Long getSequence() {
         return sequence;
     }
@@ -243,15 +226,6 @@ public class DevopsEnvironmentE {
         this.agentSyncCommit = agentSyncCommit;
     }
 
-
-    public Boolean getConnected() {
-        return isConnected;
-    }
-
-    public void setConnected(Boolean connected) {
-        isConnected = connected;
-    }
-
     public Long getSagaSyncCommit() {
         return sagaSyncCommit;
     }
@@ -274,6 +248,14 @@ public class DevopsEnvironmentE {
 
     public void setPermission(Boolean permission) {
         this.permission = permission;
+    }
+
+    public DevopsClusterE getClusterE() {
+        return clusterE;
+    }
+
+    public void initDevopsClusterEById(Long id) {
+        this.clusterE = new DevopsClusterE(id);
     }
 
     /**

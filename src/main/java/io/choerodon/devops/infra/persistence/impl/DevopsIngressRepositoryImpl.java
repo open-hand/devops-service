@@ -157,7 +157,8 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             setIngressDTOCert(t.getCertId(), devopsIngressDTO);
             for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
                 EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(t.getEnvId())
+                DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(t.getEnvId());
+                if (envSession.getClusterId().equals(devopsEnvironmentE.getClusterE().getId())
                         && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1) {
                     devopsIngressDTO.setEnvStatus(true);
                 }

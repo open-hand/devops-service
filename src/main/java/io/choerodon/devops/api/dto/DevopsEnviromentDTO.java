@@ -9,6 +9,7 @@ public class DevopsEnviromentDTO {
 
     private Long projectId;
     private String name;
+    private Long clusterId;
     private String code;
     private String description;
     private Long devopsEnvGroupId;
@@ -60,5 +61,13 @@ public class DevopsEnviromentDTO {
 
     public void setUserIds(List<Long> userIds) {
         this.userIds = userIds;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }

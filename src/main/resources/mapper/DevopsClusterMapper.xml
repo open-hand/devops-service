@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterMapper">
+    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dataobject.DevopsClusterDO">
+        select dc.id,dc.`name` from devops_cluster dc where dc.skip_check_project_permission is true
+        UNION
+        select dc.id,dc.`name` from devops_cluster dc
+        join devops_cluster_pro_permission dcp on dc.id = dcp.cluster_id
+        where dcp.project_id = #{projectId}
+    </select>
+
+    <update id="updateSkipCheckPro">
+        UPDATE devops_cluster dc set dc.skip_check_project_permission = #{skipCheckPro} where dc.id = #{clusterId}
+    </update>
+
+    <select id="listClusters" resultType="io.choerodon.devops.infra.dataobject.DevopsClusterDO">
+        SELECT
+        *
+        FROM devops_cluster dc
+        where dc.organization_id = #{organizationId}
+        <include refid="sqlparam"/>
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.code != null and searchParam.code.size > 0'>
+                AND
+                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
+                    dc.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    dc.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.description != null and searchParam.description.size > 0'>
+                AND
+                <foreach collection="searchParam.description" item="description" open="(" separator=" OR " close=")">
+                    dc.name LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dc.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dc.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
+</mapper>

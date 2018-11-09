@@ -11,7 +11,10 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
+import io.kubernetes.client.models.V1OwnerReference;
+import io.kubernetes.client.models.V1Pod;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1beta1Ingress;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +26,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.*;
@@ -117,15 +121,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private CertificationRepository certificationRepository;
 
-    /**
-     * pod 更新
-     *
-     * @param key   消息key
-     * @param envId 环境Id
-     * @param msg   消息msg
-     */
-    public void handlerUpdatePodMessage(String key, Long envId, String msg) {
+
+    public void handlerUpdatePodMessage(String key, String msg, Long clusterId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
+
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         ApplicationInstanceE applicationInstanceE =
                 applicationInstanceRepository.selectByCode(KeyParseTool.getReleaseName(key), envId);
         if (applicationInstanceE == null) {
@@ -216,7 +221,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void handlerReleaseInstall(String msg, Long envId) {
+    public void handlerReleaseInstall(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
         List<Resource> resources = JSONArray.parseArray(releasePayload.getResources(), Resource.class);
         String releaseName = releasePayload.getName();
@@ -238,10 +248,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
 
     @Override
-    public void handlerPreInstall(String msg, Long envId, String type) {
+    public void handlerPreInstall(String key, String msg, Long clusterId) {
         if (msg.equals("null")) {
             return;
         }
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         List<Job> jobs = JSONArray.parseArray(msg, Job.class);
         ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
         try {
@@ -278,8 +294,14 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void resourceUpdate(String key, Long envId, String msg) {
+    public void resourceUpdate(String key, String msg, Long clusterId) {
         try {
+            Long envId = getEnvId(key, clusterId);
+            if (envId == null) {
+                logger.info("env not exist" + KeyParseTool.getNamespace(key));
+                return;
+            }
+
             Object obj = objectMapper.readValue(msg, Object.class);
             DevopsEnvResourceE devopsEnvResourceE =
                     new DevopsEnvResourceE();
@@ -309,7 +331,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             devopsEnvResourceDetailE, null);
                     break;
                 case POD:
-                    handlerUpdatePodMessage(key, envId, msg);
+                    handlerUpdatePodMessage(key, msg, envId);
                     break;
                 case SERVICE:
                     handleUpdateServiceMsg(key, envId, msg, devopsEnvResourceE);
@@ -371,7 +393,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void resourceDelete(Long envId, String msg) {
+    public void resourceDelete(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
         if (KeyParseTool.getResourceType(msg).equals(ResourceType.JOB.getType())) {
             return;
         }
@@ -402,9 +429,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             }
         }
         if (KeyParseTool.getResourceType(msg).equals(ResourceType.INGRESS.getType())) {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+
             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
-                    devopsEnvironmentE.getId(), KeyParseTool.getResourceName(msg));
+                    envId, KeyParseTool.getResourceName(msg));
             if (devopsIngressE != null) {
                 DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
                 devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
@@ -423,7 +450,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseHookLogs(String key, String msg, Long envId) {
+    public void helmReleaseHookLogs(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                 .selectByCode(KeyParseTool.getReleaseName(key), envId);
         if (applicationInstanceE != null) {
@@ -439,7 +472,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void updateInstanceStatus(String key, Long envId, String instanceStatus, String commandStatus, String msg) {
+    public void updateInstanceStatus(String key, Long clusterId, String instanceStatus, String commandStatus, String msg) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key, envId);
         if (instanceE != null) {
             instanceE.setStatus(instanceStatus);
@@ -453,7 +491,14 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseDelete(String key, Long envId) {
+    public void helmReleaseDelete(String key, Long clusterId) {
+
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key, envId);
         if (instanceE != null) {
             DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
@@ -467,7 +512,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void handlerDomainCreateMessage(String key, String msg, Long envId) {
+    public void handlerDomainCreateMessage(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         V1beta1Ingress ingress = json.deserialize(msg, V1beta1Ingress.class);
         DevopsEnvResourceE devopsEnvResourceE = new DevopsEnvResourceE();
         DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
@@ -487,13 +538,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleasePreUpgrade(String msg, Long envId, String type) {
-        handlerPreInstall(msg, envId, type);
+    public void helmReleasePreUpgrade(String key, String msg, Long clusterId) {
+        handlerPreInstall(key, msg, clusterId);
     }
 
     @Override
-    public void handlerReleaseUpgrade(String msg, Long envId) {
-        handlerReleaseInstall(msg, envId);
+    public void handlerReleaseUpgrade(String key, String msg, Long clusterId) {
+        handlerReleaseInstall(key, msg, clusterId);
     }
 
     private ApplicationInstanceE helmRelease(Long envId, String msg) {
@@ -562,7 +613,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseDeleteFail(String key, String msg, Long envId) {
+    public void helmReleaseDeleteFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.DELETED.getStatus(),
@@ -571,7 +628,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseStartFail(String key, String msg, Long envId) {
+    public void helmReleaseStartFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.STOPPED.getStatus(),
@@ -585,7 +648,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseInstallFail(String key, String msg, Long envId) {
+    public void helmReleaseInstallFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.FAILED.getStatus(),
@@ -594,7 +663,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseUpgradeFail(String key, String msg, Long envId) {
+    public void helmReleaseUpgradeFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.RUNNING.getStatus(),
@@ -603,7 +678,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaeStopFail(String key, String msg, Long envId) {
+    public void helmReleaeStopFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         updateInstanceStatus(KeyParseTool.getReleaseName(key),
                 envId,
                 InstanceStatus.RUNNING.getStatus(),
@@ -613,7 +694,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void netWorkServiceFail(String key, Long envId, String msg) {
+    public void netWorkServiceFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                 KeyParseTool.getValue(key, SERVICE_KIND), envId);
         devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
@@ -626,7 +713,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void netWorkIngressFail(String key, Long envId, String msg) {
+    public void netWorkIngressFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
                 envId, KeyParseTool.getValue(key, INGRESS_KIND));
         devopsIngressE.setStatus(IngressStatus.FAILED.getStatus());
@@ -634,7 +727,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void netWorkServiceDeleteFail(String key, Long envId, String msg) {
+    public void netWorkServiceDeleteFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                 KeyParseTool.getValue(key, SERVICE_KIND), envId);
         devopsServiceE.setStatus(ServiceStatus.DELETED.getStatus());
@@ -647,14 +746,26 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void netWorkIngressDeleteFail(String key, Long envId, String msg) {
+    public void netWorkIngressDeleteFail(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
                 envId, KeyParseTool.getValue(key, INGRESS_KIND));
         devopsIngressRepository.deleteIngress(devopsIngressE.getId());
     }
 
     @Override
-    public void netWorkUpdate(String key, String msg, Long envId) {
+    public void netWorkUpdate(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         V1Service v1Service = json.deserialize(msg, V1Service.class);
 
         String releaseNames = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
@@ -709,7 +820,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void helmReleaseGetContent(String key, Long envId, String msg) {
+    public void helmReleaseGetContent(String key, String msg, Long clusterId) {
+
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
         ApplicationInstanceE applicationInstanceE = helmRelease(envId, msg);
         if (applicationInstanceE != null) {
@@ -743,7 +860,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void resourceSync(String key, Long envId, String msg) {
+    public void resourceSync(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         ResourceSyncPayload resourceSyncPayload = JSONArray.parseObject(msg, ResourceSyncPayload.class);
         ResourceType resourceType = ResourceType.forString(resourceSyncPayload.getResourceType());
         List<DevopsEnvResourceE> devopsEnvResourceES;
@@ -825,7 +948,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void jobEvent(String key, String msg, Long envId) {
+    public void jobEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
             event.getInvolvedObject().setKind(ResourceType.JOB.getType());
@@ -837,13 +960,19 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void releasePodEvent(String key, String msg, Long envId) {
+    public void releasePodEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         insertDevopsCommandEvent(event, ResourceType.POD.getType());
     }
 
     @Override
-    public void gitOpsSyncEvent(Long envId, String msg) {
+    public void gitOpsSyncEvent(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         logger.info("env {} receive git ops msg :\n{}", envId, msg);
         GitOpsSync gitOpsSync = JSONArray.parseObject(msg, GitOpsSync.class);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
@@ -851,7 +980,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (agentSyncCommit != null && agentSyncCommit.getCommitSha().equals(gitOpsSync.getMetadata().getCommit())) {
             return;
         }
-        devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit()).getId());
+        DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit());
+        if (devopsEnvCommitE == null) {
+            return;
+        }
+        devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitE.getId());
         devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
         if (gitOpsSync.getResourceIDs() == null) {
             return;
@@ -1140,54 +1273,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         t.getName())));
     }
 
-    private void syncIngress(String msg, Long envId) {
-        V1beta1Ingress v1beta1Ingress = json.deserialize(msg, V1beta1Ingress.class);
-        Map<String, String> label = v1beta1Ingress.getMetadata().getLabels();
-        if (label.get(SERVICE_LABLE) != null
-                && label.get(SERVICE_LABLE).equals(INGRESS_KIND)) {
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-            if (devopsEnvironmentE == null) {
-                return;
-            }
-            DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(
-                    devopsEnvironmentE.getId(), v1beta1Ingress.getMetadata().getName());
-            if (devopsIngressE == null) {
-                devopsIngressE = new DevopsIngressE();
-                devopsIngressE.setProjectId(devopsEnvironmentE.getProjectE().getId());
-                devopsIngressE.setDomain(v1beta1Ingress.getSpec().getRules().get(0).getHost());
-                devopsIngressE.setEnvId(devopsEnvironmentE.getId());
-                devopsIngressE.setName(v1beta1Ingress.getMetadata().getName());
-                devopsIngressE.setUsable(true);
-                devopsIngressE.setStatus(IngressStatus.RUNNING.getStatus());
-                devopsIngressE = devopsIngressRepository.insertIngress(devopsIngressE);
-                DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-                devopsEnvCommandE.setObject(ObjectType.INGRESS.getType());
-                devopsEnvCommandE.setObjectId(devopsIngressE.getId());
-                devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-                devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
-                devopsEnvCommandRepository.create(devopsEnvCommandE);
-                List<V1beta1HTTPIngressPath> paths = v1beta1Ingress.getSpec().getRules()
-                        .get(0).getHttp().getPaths();
-                for (V1beta1HTTPIngressPath path : paths) {
-                    DevopsIngressPathE devopsIngressPathE = new DevopsIngressPathE();
-                    devopsIngressPathE.setDevopsIngressE(devopsIngressE);
-                    devopsIngressPathE.setServiceName(path.getBackend().getServiceName());
-                    DevopsServiceE devopsServiceE = devopsServiceRepository
-                            .selectByNameAndEnvId(path.getBackend().getServiceName(),
-                                    envId);
-                    if (devopsServiceE != null) {
-                        devopsIngressPathE.setServiceId(devopsServiceE.getId());
-                    }
-                    devopsIngressPathE.setPath(path.getPath());
-                    devopsIngressRepository.insertIngressPath(devopsIngressPathE);
-                }
-            }
-        } else {
-            devopsEnvResourceRepository.deleteByKindAndName(
-                    ResourceType.INGRESS.getType(), v1beta1Ingress.getMetadata().getName());
-        }
-    }
-
     private void insertDevopsCommandEvent(Event event, String type) {
         DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository
                 .queryLatestJob(event.getInvolvedObject().getKind(), event.getInvolvedObject().getName());
@@ -1245,7 +1330,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void gitOpsCommandSyncEvent(Long envId) {
+    public void gitOpsCommandSyncEvent(String key, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         logger.info("sync command status!");
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         List<Command> commands = new ArrayList<>();
@@ -1322,7 +1413,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
 
     @Override
-    public void gitOpsCommandSyncEventResult(Long envId, String msg) {
+    public void gitOpsCommandSyncEventResult(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         logger.info("sync command status result: {}.", msg);
         List<Command> commands = JSONArray.parseArray(msg, Command.class);
         List<Command> oldCommands = new ArrayList<>();
@@ -1341,6 +1438,53 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                     })
             );
+        }
+    }
+
+    @Override
+    public void handlerServiceCreateMessage(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
+        DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                KeyParseTool.getResourceName(key), envId);
+        try {
+            V1Service v1Service = json.deserialize(msg, V1Service.class);
+            String releaseNames = v1Service.getMetadata().getAnnotations()
+                    .get("choerodon.io/network-service-instances");
+            String[] releases = releaseNames.split("\\+");
+            DevopsEnvResourceE devopsEnvResourceE =
+                    DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
+            DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
+            devopsEnvResourceDetailE.setMessage(msg);
+            devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
+            devopsEnvResourceE.setName(v1Service.getMetadata().getName());
+            devopsEnvResourceE.setReversion(TypeUtil.objToLong(v1Service.getMetadata().getResourceVersion()));
+            for (String release : releases) {
+                ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
+                        .selectByCode(release, envId);
+
+                DevopsEnvResourceE newdevopsEnvResourceE = devopsEnvResourceRepository
+                        .queryByInstanceIdAndKindAndName(
+                                applicationInstanceE.getId(),
+                                KeyParseTool.getResourceType(key),
+                                KeyParseTool.getResourceName(key));
+                saveOrUpdateResource(devopsEnvResourceE,
+                        newdevopsEnvResourceE,
+                        devopsEnvResourceDetailE,
+                        applicationInstanceE);
+            }
+            devopsServiceE.setStatus(ServiceStatus.RUNNING.getStatus());
+            devopsServiceRepository.update(devopsServiceE);
+            DevopsEnvCommandE newdevopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.SERVICE.getType(), devopsServiceE.getId());
+            newdevopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
+            devopsEnvCommandRepository.update(newdevopsEnvCommandE);
+        } catch (Exception e) {
+            logger.info(e.getMessage());
         }
     }
 
@@ -1367,7 +1511,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void certIssued(String key, Long envId, String msg) {
+    public void certIssued(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         try {
             String certName = KeyParseTool.getValue(key, "Cert");
             CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
@@ -1408,7 +1558,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void certFailed(String key, Long envId, String msg) {
+    public void certFailed(String key, String msg, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info("env not exist" + KeyParseTool.getNamespace(key));
+            return;
+        }
+
         String commitSha = KeyParseTool.getValue(key, "commit");
         String certName = KeyParseTool.getValue(key, "Cert");
         CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
@@ -1445,6 +1601,18 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             }
         }
 
+    }
+
+
+    private Long getEnvId(String key, Long clusterId) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByClusterIdAndCode(clusterId, KeyParseTool.getNamespace(key));
+        Long envId = null;
+        if (devopsEnvironmentE == null) {
+            logger.info("env not exist!" + KeyParseTool.getNamespace(key));
+        } else {
+            envId = devopsEnvironmentE.getId();
+        }
+        return envId;
     }
 }
 

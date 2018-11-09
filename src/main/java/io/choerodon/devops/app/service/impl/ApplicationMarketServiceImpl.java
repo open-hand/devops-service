@@ -111,7 +111,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         if (projectE != null && projectE.getOrganization() != null) {
             Long organizationId = projectE.getOrganization().getId();
-            List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null);
+            List<ProjectE> projectEList = iamRepository.listIamProjectByOrgId(organizationId, null, null);
             List<Long> projectIds = new ArrayList<>();
             if (projectEList != null) {
                 for (ProjectE project : projectEList) {

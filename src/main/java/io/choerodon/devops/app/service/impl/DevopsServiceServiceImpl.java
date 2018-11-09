@@ -111,8 +111,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsServiceByPage.stream().forEach(devopsServiceV -> {
-            if (connectedEnvList.contains(devopsServiceV.getEnvId())
-                    && updatedEnvList.contains(devopsServiceV.getEnvId())) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceV.getEnvId());
+            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsServiceV.setEnvStatus(true);
             }
         });
@@ -136,8 +137,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
 
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<Long> beforeDevopsServiceAppInstanceES = new ArrayList<>();
@@ -159,7 +161,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Override
     public Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId) {
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<Long> beforeDevopsServiceAppInstanceES = new ArrayList<>();
 
@@ -291,7 +295,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
 
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
@@ -319,7 +325,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean updateDevopsServiceByGitOps(Long projectId, Long id,
                                                DevopsServiceReqDTO devopsServiceReqDTO, Long userId) {
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsServiceReqDTO.getEnvId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
@@ -361,9 +369,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceE.getEnvId());
 
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
-
         DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(devopsServiceE.getEnvId());
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
@@ -416,7 +424,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public void deleteDevopsServiceByGitOps(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsServiceE.getEnvId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
 
@@ -574,31 +583,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
-        //进行Service的数据库操作
-        if (isCreate) {
-            Long serviceId = devopsServiceRepository.insert(devopsServiceE).getId();
-            devopsEnvCommandE.setObjectId(serviceId);
-            devopsServiceE.setId(serviceId);
-            devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsServiceRepository.update(devopsServiceE);
-        } else {
-            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
-            devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsServiceRepository.update(devopsServiceE);
+        DevopsServiceE beforeDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());
+        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
+        if (beforeDevopsServiceE != null) {
+            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeDevopsServiceE.getCommandId());
         }
-        Long serviceId = devopsServiceE.getId();
-        if (beforeDevopsServiceAppInstanceES != null) {
-            beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
-                    devopsServiceInstanceRepository.deleteByOptions(serviceId, instanceId)
-            );
-        }
-        devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
-            devopsServiceAppInstanceE.setServiceId(serviceId);
-            devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
-        });
-
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
@@ -609,6 +600,44 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
                 userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, devopsServiceE.getEnvId(), path);
 
+
+        DevopsServiceE afterDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());
+        DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
+        if (afterDevopsServiceE != null) {
+            afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterDevopsServiceE.getCommandId());
+        }
+
+        //进行Service的数据库操作,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而网络成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行网络数据库操作
+        if (isCreate && afterDevopsServiceE == null) {
+            Long serviceId = devopsServiceRepository.insert(devopsServiceE).getId();
+            devopsEnvCommandE.setObjectId(serviceId);
+            devopsServiceE.setId(serviceId);
+            devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsServiceRepository.update(devopsServiceE);
+            if (beforeDevopsServiceAppInstanceES != null) {
+                beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
+                        devopsServiceInstanceRepository.deleteByOptions(serviceId, instanceId)
+                );
+            }
+            devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
+                devopsServiceAppInstanceE.setServiceId(serviceId);
+                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+            });
+        } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
+            devopsEnvCommandE.setObjectId(devopsServiceE.getId());
+            devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsServiceRepository.update(devopsServiceE);
+            Long serviceId = devopsServiceE.getId();
+            if (beforeDevopsServiceAppInstanceES != null) {
+                beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
+                        devopsServiceInstanceRepository.deleteByOptions(serviceId, instanceId)
+                );
+            }
+            devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
+                devopsServiceAppInstanceE.setServiceId(serviceId);
+                devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
+            });
+        }
     }
 
 

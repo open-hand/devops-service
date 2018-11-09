@@ -86,25 +86,18 @@ public class CertificationServiceImpl implements CertificationService {
         Long envId = certificationDTO.getEnvId();
 
         //校验环境是否链接
-        envUtil.checkEnvConnection(certificationDTO.getEnvId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         devopsCertificationValidator.checkCertification(envId, certName);
-
-        // agent certification
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
                 certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus());
-        // create
-        C7nCertification c7nCertification = null;
-        certificationE = certificationRepository.create(certificationE);
-        Long certId = certificationE.getId();
 
-        // cert command
-        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
-        certificationRepository.updateCommandId(certificationE);
+        C7nCertification c7nCertification = null;
 
         if (!isGitOps) {
             String envCode = devopsEnvironmentE.getCode();
@@ -118,10 +111,31 @@ public class CertificationServiceImpl implements CertificationService {
             ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
             certificationOperation.setType(c7nCertification);
             operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
+
+
+            //创建证书,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而证书成功的状态会被错误更新为处理中，所以用after去区分是否部署成功。成功不再执行证书数据库操作
+            CertificationE afterCertificationE = certificationRepository.queryByEnvAndName(devopsEnvironmentE.getId(), certificationE.getName());
+            if (afterCertificationE == null) {
+                // create
+                certificationE = certificationRepository.create(certificationE);
+                Long certId = certificationE.getId();
+                // cert command
+                certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
+                certificationRepository.updateCommandId(certificationE);
+                // store crt & key if type is upload
+                storeCertFile(c7nCertification, certId);
+            }
+        } else {
+            // create
+            certificationE = certificationRepository.create(certificationE);
+            Long certId = certificationE.getId();
+            // cert command
+            certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
+            certificationRepository.updateCommandId(certificationE);
+            // store crt & key if type is upload
+            storeCertFile(c7nCertification, certId);
         }
 
-        // store crt & key if type is upload
-        storeCertFile(c7nCertification, certId);
     }
 
     private void removeFiles(String path, MultipartFile multipartFile) {
@@ -194,9 +208,10 @@ public class CertificationServiceImpl implements CertificationService {
         Long certEnvId = certificationE.getEnvironmentE().getId();
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certEnvId);
-
-        envUtil.checkEnvConnection(certEnvId, envListener);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certEnvId);
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
@@ -238,7 +253,9 @@ public class CertificationServiceImpl implements CertificationService {
         CertificationE certificationE = certificationRepository.queryById(certId);
 
         //校验环境是否连接
-        envUtil.checkEnvConnection(certificationE.getEnvironmentE().getId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationE.getEnvironmentE().getId());
+
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository

@@ -55,7 +55,7 @@ public class DevopsSagaHandler {
             sagaCode = "devops-create-env",
             maxRetryCount = 0,
             seq = 1)
-    public String devopsCreateUser(String data) {
+    public String devopsCreateEnv(String data) {
         GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
         devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
         return data;
@@ -93,19 +93,19 @@ public class DevopsSagaHandler {
     public String createApp(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
         if (devOpsAppPayload.getType().equals(APPLICATION)) {
-           try {
-               applicationService.operationApplication(devOpsAppPayload);
-           } catch (Exception e){
-               applicationService.setAppErrStatus(data);
-               throw e;
-           }
-           ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
-           if (applicationE.getFailed() != null && applicationE.getFailed()) {
-               applicationE.setFailed(false);
-               if (1 != applicationRepository.update(applicationE)) {
-                   LOGGER.error("update application set create success status error");
-               }
-           }
+            try {
+                applicationService.operationApplication(devOpsAppPayload);
+            } catch (Exception e) {
+                applicationService.setAppErrStatus(data);
+                throw e;
+            }
+            ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
+            if (applicationE.getFailed() != null && applicationE.getFailed()) {
+                applicationE.setFailed(false);
+                if (1 != applicationRepository.update(applicationE)) {
+                    LOGGER.error("update application set create success status error");
+                }
+            }
         }
         return data;
     }

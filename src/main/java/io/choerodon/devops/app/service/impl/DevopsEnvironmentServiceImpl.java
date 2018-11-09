@@ -1,7 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
-import java.io.InputStream;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,10 +35,10 @@ import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -110,16 +109,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private GitlabProjectRepository gitlabProjectRepository;
     @Autowired
     private DevopsIngressRepository devopsIngressRepository;
+    @Autowired
+    private DevopsClusterRepository devopsClusterRepository;
+    @Autowired
+    private DeployService deployService;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
-    public String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
+    public void create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
         devopsEnvironmentE.initProjectE(projectId);
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
         devopsEnviromentRepository.checkName(devopsEnvironmentE);
         devopsEnvironmentE.initActive(true);
         devopsEnvironmentE.initConnect(false);
+        devopsEnvironmentE.initDevopsClusterEById(devopsEnviromentDTO.getClusterId());
         devopsEnvironmentE.initToken(GenerateUUID.generateUUID());
         devopsEnvironmentE.initProjectE(projectId);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
@@ -139,19 +143,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-        String repoUrl = String.format("git@%s:%s-%s-gitops/%s.git",
-                gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
-        Map<String, String> params = new HashMap<>();
-        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
-        params.put("{VERSION}", agentExpectVersion);
-        params.put("{SERVICEURL}", agentServiceUrl);
-        params.put("{TOKEN}", devopsEnvironmentE.getToken());
-        params.put("{REPOURL}", agentRepoUrl);
-        params.put("{ENVID}", devopsEnviromentRepository.create(devopsEnvironmentE)
-                .getId().toString());
-        params.put("{RSA}", sshKeys.get(0));
-        params.put("{GITREPOURL}", repoUrl);
+        devopsEnviromentRepository.create(devopsEnvironmentE);
+
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
@@ -163,6 +156,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         UserE userE = iamRepository.queryById(userAttrE.getIamUserId());
         gitlabProjectPayload.setLoginName(userE.getLoginName());
         gitlabProjectPayload.setRealName(userE.getRealName());
+        gitlabProjectPayload.setClusterId(devopsEnviromentDTO.getClusterId());
 
         // 创建环境时将项目下所有用户装入payload以便于saga消费
         gitlabProjectPayload.setUserIds(devopsEnviromentDTO.getUserIds());
@@ -171,7 +165,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
             sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", ""));
-            return FileUtil.replaceReturnString(inputStream, params);
+            deployService.initCluster(devopsEnviromentDTO.getClusterId());
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage(), e);
         }
@@ -225,23 +219,21 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
 
-        //查询当前用户的环境权限
+        // 查询当前用户的环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionE::getPermitted)
                 .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        //查询当前用户是否为项目所有者
+        // 查询当前用户是否为项目所有者
         Boolean isProjectOwner = devopsEnvUserPermissionRepository
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t -> {
-                    t.setUpdate(false);
-                    setEnvStatus(connectedEnvList, updatedEnvList, t);
-                    //项目成员返回拥有对应权限的环境，项目所有者返回所有环境
+                    setEnvStatus(connectedClusterList, t);
+                    // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
@@ -258,13 +250,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
         if (!active) {
-            // TODO 校验环境是否连接，不再校验环境下是否存在运行中的对象
-            devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
+            List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+            setEnvStatus(connectedClusterList, devopsEnvironmentE);
+        }
+        if (devopsEnvironmentE.getConnect()) {
+            throw new CommonException("error.env.connected");
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
         devopsEnvironmentE.setActive(active);
         //启用环境，原环境不在环境组内，则序列在默认组内环境递增，员环境在环境组内，则序列在环境组内环境递增
         if (active) {
@@ -357,6 +352,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             }
         }
+        //
+        if (devopsEnvironmentUpdateDTO.getClusterId() != null && !devopsEnvironmentUpdateDTO.getClusterId()
+                .equals(beforeDevopsEnvironmentE.getClusterE().getId())) {
+            deployService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
+        }
         return ConvertHelper.convert(devopsEnviromentRepository.update(
                 devopsEnvironmentE), DevopsEnvironmentUpdateDTO.class);
     }
@@ -376,10 +376,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             sequence = sequence + 1;
         }
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsEnvironmentES.forEach(t -> {
-            t.setUpdate(false);
-            setEnvStatus(connectedEnvList, updatedEnvList, t);
+            setEnvStatus(connectedEnvList, t);
         });
         if (!devopsEnvironmentES.isEmpty()) {
             DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
@@ -394,54 +392,28 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvGroupEnvsDTO;
     }
 
-    private void setEnvStatus(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsEnvironmentE t) {
-        if (connectedEnvList.contains(t.getId())) {
-            if (updatedEnvList.contains(t.getId())) {
-                t.initConnect(true);
-            } else {
-                t.setUpdate(true);
-                t.initConnect(false);
-                t.setUpdateMessage("Version is too low, please upgrade!");
-            }
+    private void setEnvStatus(List<Long> connectedEnvList, DevopsEnvironmentE t) {
+        if (connectedEnvList.contains(t.getClusterE().getId())) {
+            t.initConnect(true);
         } else {
             t.initConnect(false);
         }
     }
 
     @Override
-    public String queryShell(Long environmentId, Boolean update) {
-        if (update == null) {
-            update = false;
-        }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
-        InputStream inputStream;
-        Map<String, String> params = new HashMap<>();
-        if (update) {
-            inputStream = this.getClass().getResourceAsStream("/shell/environment-upgrade.sh");
-        } else {
-            inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
-        }
-        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
-        params.put("{VERSION}", agentExpectVersion);
-        params.put("{SERVICEURL}", agentServiceUrl);
-        params.put("{TOKEN}", devopsEnvironmentE.getToken());
-        params.put("{REPOURL}", agentRepoUrl);
-        params.put("{ENVID}", devopsEnvironmentE.getId().toString());
-        return FileUtil.replaceReturnString(inputStream, params);
-    }
-
-    @Override
-    public void checkName(Long projectId, String name) {
+    public void checkName(Long projectId, Long clusterId, String name) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         devopsEnvironmentE.initProjectE(projectId);
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setName(name);
         devopsEnviromentRepository.checkName(devopsEnvironmentE);
     }
 
     @Override
-    public void checkCode(Long projectId, String code) {
+    public void checkCode(Long projectId, Long clusterId, String code) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         devopsEnvironmentE.initProjectE(projectId);
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setCode(code);
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
     }
@@ -477,7 +449,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
-                .queryByProjectIdAndCode(gitlabGroupE.getProjectE().getId(), gitlabProjectPayload.getPath());
+                .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
@@ -779,11 +751,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
         gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
-        // TODO 删除命名空间
+        // 删除环境命名空间
+        deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
     }
 
     @Override
     public void initMockService(SagaClient sagaClient) {
         this.sagaClient = sagaClient;
+    }
+
+    @Override
+    public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
+        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
     }
 }

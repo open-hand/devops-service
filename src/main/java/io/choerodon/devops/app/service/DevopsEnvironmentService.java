@@ -21,7 +21,7 @@ public interface DevopsEnvironmentService {
      * @param devopsEnviromentDTO 环境信息
      * @return String
      */
-    String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO);
+    void create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO);
 
     /**
      * 项目下环境流水线查询环境
@@ -85,23 +85,13 @@ public interface DevopsEnvironmentService {
      */
     DevopsEnvGroupEnvsDTO sort(Long[] environmentIds);
 
-
-    /**
-     * 项目下查询单个环境的可执行shell
-     *
-     * @param environmentId 环境id
-     * @param update        是否更新
-     * @return String
-     */
-    String queryShell(Long environmentId, Boolean update);
-
     /**
      * 创建环境校验名称是否存在
      *
      * @param projectId 项目id
      * @param name      应用name
      */
-    void checkName(Long projectId, String name);
+    void checkName(Long projectId, Long clusterId, String name);
 
     /**
      * 创建环境校验编码是否存在
@@ -109,7 +99,7 @@ public interface DevopsEnvironmentService {
      * @param projectId 项目ID
      * @param code      应用code
      */
-    void checkCode(Long projectId, String code);
+    void checkCode(Long projectId, Long clusterId, String code);
 
     /**
      * 项目下查询有正在运行实例的环境
@@ -167,4 +157,6 @@ public interface DevopsEnvironmentService {
     void deleteDeactivatedEnvironment(Long envId);
 
     void initMockService(SagaClient sagaClient);
+
+    List<DevopsClusterRepDTO> listDevopsCluster(Long projectId);
 }

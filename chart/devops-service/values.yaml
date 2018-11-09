@@ -63,6 +63,7 @@ env:
     TEMPLATE_VERSION_MICROSERVICE: 0.9.0
     TEMPLATE_VERSION_MICROSERVICEFRONT: 0.9.0
     TEMPLATE_VERSION_JAVALIB: 0.9.0
+    JAVA_OPTS: -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap
 metrics:
   path: /prometheus
   group: spring-boot

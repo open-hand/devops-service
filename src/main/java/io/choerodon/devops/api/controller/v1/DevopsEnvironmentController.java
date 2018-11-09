@@ -38,19 +38,17 @@ public class DevopsEnvironmentController {
      *
      * @param projectId           项目id
      * @param devopsEnviromentDTO 环境信息
-     * @return String
+     * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
     @PostMapping
-    public ResponseEntity<String> create(
+    public void create(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
             @RequestBody DevopsEnviromentDTO devopsEnviromentDTO) {
-        return Optional.ofNullable(devopsEnvironmentService.create(projectId, devopsEnviromentDTO))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.environment.create"));
+        devopsEnvironmentService.create(projectId, devopsEnviromentDTO);
     }
 
     /**
@@ -114,27 +112,7 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.environment.get"));
     }
 
-    /**
-     * 项目下查询单个环境的可执行shell
-     *
-     * @param projectId     项目id
-     * @param environmentId 环境id
-     * @return String
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下查询单个环境的可执行shell")
-    @GetMapping("/{environment_id}/shell")
-    public ResponseEntity<String> queryShell(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "environment_id") Long environmentId,
-            @ApiParam(value = "是否更新")
-            @RequestParam(required = false) Boolean update) {
-        return Optional.ofNullable(devopsEnvironmentService.queryShell(environmentId, update))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.shell.get"));
-    }
+
 
     /**
      * 项目下启用停用环境
@@ -235,9 +213,11 @@ public class DevopsEnvironmentController {
     public ResponseEntity checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群Id")
+            @RequestParam(required = true) Long clusterId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam(value = "name") String name) {
-        devopsEnvironmentService.checkName(projectId, name);
+        devopsEnvironmentService.checkName(projectId, clusterId, name);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -254,9 +234,11 @@ public class DevopsEnvironmentController {
     public ResponseEntity checkCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群Id")
+            @RequestParam(required = true) Long clusterId,
             @ApiParam(value = "环境编码", required = true)
             @RequestParam(value = "code") String code) {
-        devopsEnvironmentService.checkCode(projectId, code);
+        devopsEnvironmentService.checkCode(projectId, clusterId, code);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -392,5 +374,24 @@ public class DevopsEnvironmentController {
             @PathVariable(value = "env_id") Long envId) {
         devopsEnvironmentService.deleteDeactivatedEnvironment(envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 环境下查询集群信息
+     *
+     * @param projectId 项目id
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "环境下查询集群信息")
+    @GetMapping(value = "/permission")
+    public ResponseEntity<List<DevopsClusterRepDTO>> listDevopsClusters(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(devopsEnvironmentService.listDevopsCluster(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.cluster.query"));
     }
 }

@@ -1,22 +1,24 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 public class GitConfigDTO {
-    private String gitUrl;
-    private String sshKey;
+    private String gitHost;
+    private List<GitEnvConfigDTO> envs;
 
-    public String getGitUrl() {
-        return gitUrl;
+    public String getGitHost() {
+        return gitHost;
     }
 
-    public void setGitUrl(String gitUrl) {
-        this.gitUrl = gitUrl;
+    public void setGitHost(String gitHost) {
+        this.gitHost = gitHost;
     }
 
-    public String getSshKey() {
-        return sshKey;
+    public List<GitEnvConfigDTO> getEnvs() {
+        return envs;
     }
 
-    public void setSshKey(String sshKey) {
-        this.sshKey = sshKey;
+    public void setEnvs(List<GitEnvConfigDTO> envs) {
+        this.envs = envs;
     }
 }

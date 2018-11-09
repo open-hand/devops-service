@@ -14,7 +14,9 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.domain.application.entity.CertificationE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CertificationStatus;
@@ -39,6 +41,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     private DevopsCertificationMapper devopsCertificationMapper;
     @Autowired
     private DevopsCertificationFileMapper devopsCertificationFileMapper;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     private Gson gson = new Gson();
 
@@ -103,10 +107,13 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         certificationDTOPage.getContent().stream()
-                .forEach(certificationDTO ->
-                        certificationDTO.setEnvConnected(
-                                connectedEnvList.contains(certificationDTO.getEnvId())
-                                        && updatedEnvList.contains(certificationDTO.getEnvId())));
+                .forEach(certificationDTO -> {
+                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationDTO.getEnvId());
+                    certificationDTO.setEnvConnected(
+                            connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId()));
+                });
+
         return certificationDTOPage;
     }
 
