@@ -1,443 +1,311 @@
 package io.choerodon.devops.api.controller.v1
-//package io.choerodon.devops.api.controller.v1
-//
-//import io.choerodon.devops.IntegrationTestConfiguration
-//import io.choerodon.devops.api.dto.ApplicationDeployDTO
-//import io.choerodon.devops.app.service.ApplicationInstanceService
-//import io.choerodon.devops.domain.application.entity.ApplicationE
-//import io.choerodon.devops.domain.application.entity.ApplicationInstanceE
-//import io.choerodon.devops.domain.application.entity.ApplicationVersionE
-//import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE
-//import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE
-//import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE
-//import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE
-//import io.choerodon.devops.domain.application.entity.ProjectE
-//import io.choerodon.devops.domain.application.entity.UserAttrE
-//import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE
-//import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository
-//import io.choerodon.devops.domain.application.repository.ApplicationRepository
-//import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
-//import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository
-//import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository
-//import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository
-//import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository
-//import io.choerodon.devops.domain.application.repository.DevopsProjectRepository
-//import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-//import io.choerodon.devops.domain.application.repository.GitlabRepository
-//import io.choerodon.devops.domain.application.repository.IamRepository
-//import io.choerodon.devops.domain.application.repository.UserAttrRepository
-//import io.choerodon.devops.domain.application.valueobject.ApplicationVersionReadmeV
-//import io.choerodon.devops.domain.application.valueobject.Organization
-//import io.choerodon.devops.infra.common.util.EnvUtil
-//import io.choerodon.devops.infra.common.util.FileUtil
-//import io.choerodon.devops.infra.common.util.GitUtil
-//import io.choerodon.devops.infra.common.util.enums.AccessLevel
-//import io.choerodon.devops.infra.common.util.enums.CommandType
-//import io.choerodon.devops.infra.common.util.enums.InstanceStatus
-//import io.choerodon.devops.infra.common.util.enums.ObjectType
-//import io.choerodon.devops.infra.dataobject.DevopsProjectDO
-//import io.choerodon.websocket.helper.EnvListener
-//import org.springframework.beans.factory.annotation.Autowired
-//import org.springframework.beans.factory.annotation.Qualifier
-//import org.springframework.boot.test.context.SpringBootTest
-//import org.springframework.boot.test.web.client.TestRestTemplate
-//import org.springframework.context.annotation.Import
-//import spock.lang.Specification
-//
-//import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
-//
-//@SpringBootTest(webEnvironment = RANDOM_PORT)
-//@Import(IntegrationTestConfiguration)
-//class ApplicationInstanceControllerSpec extends Specification {
-//
-//    private static int initLabel = 0;
-//
-//    @Autowired
-//    TestRestTemplate restTemplate;
-//    @Autowired
-//    private ApplicationVersionRepository applicationVersionRepository;
-//    @Autowired
-//    private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
-//    @Autowired
-//    private DevopsEnvCommandRepository devopsEnvCommandRepository
-//    @Autowired
-//    private ApplicationInstanceRepository applicationInstanceRepositoryImpl;
-//    @Autowired
-//    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-//    @Autowired
-//    private UserAttrRepository userAttrRepository;
-//    @Autowired
-//    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository
-//    @Autowired
-//    private DevopsProjectRepository devopsProjectRepository;
-//    @Autowired
-//    private ApplicationRepository applicationRepository;
-//    @Autowired
-//    private ApplicationInstanceRepository applicationInstanceRepository
-//    @Autowired
-//    private ApplicationInstanceService  applicationInstanceService
-//    @Autowired
-//    @Qualifier("mockGitlabGroupMemberRepository")
-//    GitlabGroupMemberRepository gitlabGroupMemberRepository
-//    @Autowired
-//    @Qualifier("mockGitlabRepository")
-//    private GitlabRepository gitlabRepository;
-//    @Autowired
-//    @Qualifier("mockIamRepository")
-//    private IamRepository iamRepository;
-//    @Autowired
-//    @Qualifier("mockEnvListener")
-//    private EnvListener envListener;
-//    @Autowired
-//    @Qualifier("mockEnvUtil")
-//    private EnvUtil envUtil;
-//    @Autowired
-//    @Qualifier("mockGitUtil")
-//    private GitUtil gitUtil;
-//
-//    def setup() {
-//        FileUtil.copyFile("test/gitops/test1.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test3.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test4.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test5.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test6.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test7.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test8.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test9.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test10.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test11.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test12.yaml", "gitops/test/test/test")
-//        FileUtil.copyFile("test/gitops/test2.yaml", "gitops/test/test/test2")
-//        if (initLabel == 0) {
-//            DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE(1L);
-//            ProjectE projectE = new ProjectE(1L);
-//            projectE.setCode("test");
-//            Organization organization = new Organization(1);
-//            organization.setCode("test")
-//            projectE.setOrganization(organization);
-//            devopsEnvironmentE.setProjectE(projectE);
-//            devopsEnvironmentE.setGitlabEnvProjectId(1);
-//            devopsEnvironmentE.setCode("test");
-//            devopsEnvironmentE.setName("test");
-//            devopsEnvironmentRepository.create(devopsEnvironmentE);
-//
-//            DevopsEnvironmentE devopsEnvironmentE2 = new DevopsEnvironmentE(2);
-//            ProjectE projectE2 = new ProjectE(2L);
-//            projectE2.setCode("test2");
-//            Organization organization2 = new Organization(2);
-//            organization2.setCode("test2")
-//            projectE2.setOrganization(organization2);
-//            devopsEnvironmentE2.setProjectE(projectE2);
-//            devopsEnvironmentE2.setGitlabEnvProjectId(2);
-//            devopsEnvironmentE2.setCode("test2");
-//            devopsEnvironmentE2.setName("test2");
-//            devopsEnvironmentRepository.create(devopsEnvironmentE2);
-//
-//
-//            DevopsProjectDO devopsProjectDO = new DevopsProjectDO(1)
-//            devopsProjectDO.setEnvGroupId(1)
-//            devopsProjectDO.setGitlabGroupId(1)
-//            devopsProjectRepository.createProject(devopsProjectDO);
-//
-//            DevopsProjectDO devopsProjectDO2 = new DevopsProjectDO(2)
-//            devopsProjectDO2.setEnvGroupId(2)
-//            devopsProjectDO2.setGitlabGroupId(2)
-//            devopsProjectRepository.createProject(devopsProjectDO2);
-//
-//            UserAttrE userAttrE = new UserAttrE(1, 1);
-//            userAttrRepository.insert(userAttrE);
-//
-//            GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE();
-//            groupMemberE.setId(1);
-//            groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue());
-//
-//            ApplicationE applicationE = new ApplicationE();
-//            applicationE.setId(1L);
-//            applicationE.setName("test")
-//            applicationE.setProjectE(projectE);
-//            applicationE.setCode("test")
-//            applicationRepository.create(applicationE);
-//
-//            ApplicationVersionE applicationVersionE = new ApplicationVersionE(1L);
-//            applicationVersionE.setVersion("0.8.0")
-//            applicationVersionE.setApplicationE(applicationE);
-//            ApplicationVersionReadmeV applicationVersionReadmeV = new ApplicationVersionReadmeV(1);
-//            applicationVersionE.setApplicationVersionReadmeV(applicationVersionReadmeV);
-//            applicationVersionE.setApplicationVersionValueE(new ApplicationVersionValueE(1));
-//            applicationVersionRepository.create(applicationVersionE);
-//
-//            ApplicationVersionE applicationVersionE2 = new ApplicationVersionE(2L);
-//            applicationVersionE2.setVersion("0.9.0")
-//            applicationVersionE2.setApplicationE(applicationE);
-//            ApplicationVersionReadmeV applicationVersionReadmeV2 = new ApplicationVersionReadmeV(2);
-//            applicationVersionE2.setApplicationVersionReadmeV(applicationVersionReadmeV2);
-//            applicationVersionE2.setApplicationVersionValueE(new ApplicationVersionValueE(2));
-//            applicationVersionRepository.create(applicationVersionE2);
-//
-//            ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE(1L);
-//            applicationInstanceE.setCode("test");
-//            applicationInstanceE.setApplicationE(applicationE);
-//            applicationInstanceE.setApplicationVersionE(applicationVersionE)
-//            applicationInstanceE.setDevopsEnvironmentE(devopsEnvironmentE);
-//            applicationInstanceRepository.create(applicationInstanceE);
-//
-//            DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-//            devopsEnvFileResourceE.setId(1)
-//            devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
-//            devopsEnvFileResourceE.setResourceId(1)
-//            devopsEnvFileResourceE.setFilePath("/test1.yaml")
-//            devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
-//
-//            devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
-//
-//            DevopsEnvFileResourceE devopsEnvFileResourceE2 = new DevopsEnvFileResourceE();
-//            devopsEnvFileResourceE2.setId(2)
-//            devopsEnvFileResourceE2.setEnvironment(devopsEnvironmentE2)
-//            devopsEnvFileResourceE2.setResourceId(2)
-//            devopsEnvFileResourceE2.setFilePath("/test2.yaml")
-//            devopsEnvFileResourceE2.setResourceType("C7NHelmRelease")
-//            devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE2);
-//
-//            DevopsEnvFileResourceE devopsEnvFileResourceE3 = new DevopsEnvFileResourceE();
-//            devopsEnvFileResourceE3.setId(3)
-//            devopsEnvFileResourceE3.setEnvironment(devopsEnvironmentE2)
-//            devopsEnvFileResourceE3.setResourceId(3)
-//            devopsEnvFileResourceE3.setFilePath("/test2.yaml")
-//            devopsEnvFileResourceE3.setResourceType("C7NHelmRelease")
-//            devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE3);
-//            initLabel = 1
-//        }
-//
-//    }
-//
-//    def "create"() {
-//        given:
-//        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
-//        applicationDeployDTO.setEnvironmentId(2L);
-//        applicationDeployDTO.setAppId(1L);
-//        applicationDeployDTO.setAppInstanceId(2L);
-//        applicationDeployDTO.setAppVerisonId(1L);
-//        applicationDeployDTO.setValues("test2");
-//        applicationDeployDTO.setType("create");
-//        applicationDeployDTO.setInstanceName("test2");
-//
-//        DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE(1L);
-//        ProjectE projectE = new ProjectE(1L);
-//        projectE.setCode("test");
-//
-//        Organization organization = new Organization(1);
-//        organization.setCode("test")
-//
-//        projectE.setOrganization(organization);
-//        devopsEnvironmentE.setProjectE(projectE);
-//        devopsEnvironmentE.setGitlabEnvProjectId(1);
-//        devopsEnvironmentE.setCode("test");
-//        devopsEnvironmentE.setName("test");
-//
-//        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(1)
-//        devopsProjectDO.setEnvGroupId(1)
-//        devopsProjectDO.setGitlabGroupId(1)
-//
-//        UserAttrE userAttrE = new UserAttrE(1, 1);
-//
-//        GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE();
-//        groupMemberE.setId(1);
-//        groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue());
-//
-//        ApplicationE applicationE = new ApplicationE();
-//        applicationE.setId(1L);
-//        applicationE.setName("test")
-//        applicationE.setProjectE(projectE);
-//        applicationE.setCode("test")
-//
-//        ApplicationVersionE applicationVersionE = new ApplicationVersionE(1L);
-//        applicationVersionE.setVersion("0.8.0")
-//        applicationVersionE.setApplicationE(applicationE);
-//        ApplicationVersionReadmeV applicationVersionReadmeV = new ApplicationVersionReadmeV(1);
-//        applicationVersionE.setApplicationVersionReadmeV(applicationVersionReadmeV);
-//        applicationVersionE.setApplicationVersionValueE(new ApplicationVersionValueE(1));
-//
-//        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-//        devopsEnvFileResourceE.setId(1)
-//        devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
-//        devopsEnvFileResourceE.setResourceId(1)
-//        devopsEnvFileResourceE.setFilePath("/Test.yml")
-//        devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
-//
-//        when:
-//        def e = restTemplate.postForEntity("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO);
-//
-//        then:
-//        userAttrRepository.queryById(_) >> userAttrE
-//        gitlabGroupMemberRepository.getUserMemberByUserId(_, _) >> groupMemberE
-//        applicationVersionRepository.query(_) >> applicationVersionE
-//        applicationVersionRepository.queryValue(_) >> null
-//        iamRepository.queryIamProject(_) >> projectE
-//        iamRepository.queryOrganizationById(_) >> organization
-//        ApplicationInstanceE result = applicationInstanceRepository.selectById(2L);
-//        result.getApplicationE().getId() == 1;
-//        result.getDevopsEnvironmentE().id == 2;
-//        result.getApplicationVersionE().id == 1;
-//        e.getStatusCode().value() == 200
-//    }
-//
-//    def "update"() {
-//        given:
-//        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO();
-//        applicationDeployDTO.setEnvironmentId(1L);
-//        applicationDeployDTO.setAppId(1L);
-//        applicationDeployDTO.setAppInstanceId(1L);
-//        applicationDeployDTO.setAppVerisonId(2L);
-//        applicationDeployDTO.setValues("test");
-//        applicationDeployDTO.setType("update");
-//        applicationDeployDTO.setInstanceName("test");
-//
-//        DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE(1L);
-//        ProjectE projectE = new ProjectE(1L);
-//        projectE.setCode("test");
-//        Organization organization = new Organization(1);
-//        organization.setCode("test")
-//        projectE.setOrganization(organization);
-//        devopsEnvironmentE.setProjectE(projectE);
-//        devopsEnvironmentE.setGitlabEnvProjectId(1);
-//        devopsEnvironmentE.setCode("test");
-//        devopsEnvironmentE.setName("test");
-//
-//        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(1)
-//        devopsProjectDO.setEnvGroupId(1)
-//        devopsProjectDO.setGitlabGroupId(1)
-//
-//        UserAttrE userAttrE = new UserAttrE(1, 1);
-//
-//        GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE();
-//        groupMemberE.setId(1);
-//        groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue());
-//
-//        ApplicationE applicationE = new ApplicationE();
-//        applicationE.setId(1L);
-//        applicationE.setName("test")
-//        applicationE.setProjectE(projectE);
-//        applicationE.setCode("test")
-//
-//        ApplicationVersionE applicationVersionE = new ApplicationVersionE(1L);
-//        applicationVersionE.setVersion("0.8.0")
-//        applicationVersionE.setApplicationE(applicationE);
-//        ApplicationVersionReadmeV applicationVersionReadmeV = new ApplicationVersionReadmeV(1);
-//        applicationVersionE.setApplicationVersionReadmeV(applicationVersionReadmeV);
-//        applicationVersionE.setApplicationVersionValueE(new ApplicationVersionValueE(1));
-//
-//        DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-//        devopsEnvFileResourceE.setId(1)
-//        devopsEnvFileResourceE.setEnvironment(devopsEnvironmentE)
-//        devopsEnvFileResourceE.setResourceId(1)
-//        devopsEnvFileResourceE.setFilePath("/Test.yml")
-//        devopsEnvFileResourceE.setResourceType("C7NHelmRelease")
-//
-//        when:
-//        def e = restTemplate.postForEntity("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO);
-//
-//        then:
-//        userAttrRepository.queryById(_) >> userAttrE
-//        gitlabGroupMemberRepository.getUserMemberByUserId(_, _) >> groupMemberE
-//        applicationVersionRepository.query(_) >> applicationVersionE
-//        applicationVersionRepository.queryValue(_) >> null
-//        iamRepository.queryIamProject(_) >> projectE
-//        iamRepository.queryOrganizationById(_) >> organization
-//        applicationInstanceRepository.selectById(1L).applicationVersionE.id==2
-//        e.statusCodeValue == 200
-//    }
-//    /*
-//    * 删除情况一:配置文件单kind情况
-//    * **/
-//    def "delete1"() {
-//        given:
-//        ProjectE projectE = new ProjectE(1L);
-//        projectE.setCode("test");
-//        Organization organization = new Organization(1);
-//        organization.setCode("test")
-//        projectE.setOrganization(organization);
-//
-//        ApplicationE applicationE = new ApplicationE();
-//        applicationE.setId(1L);
-//        applicationE.setName("test")
-//        applicationE.setProjectE(projectE);
-//        applicationE.setCode("test")
-//
-//        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(1)
-//        devopsProjectDO.setEnvGroupId(1)
-//        devopsProjectDO.setGitlabGroupId(1)
-//
-//        UserAttrE userAttrE = new UserAttrE(1, 1);
-//
-//        GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE();
-//        groupMemberE.setId(1);
-//        groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue());
-//
-//        ApplicationVersionE applicationVersionE = new ApplicationVersionE(1L);
-//        applicationVersionE.setVersion("0.8.0")
-//        applicationVersionE.setApplicationE(applicationE);
-//        ApplicationVersionReadmeV applicationVersionReadmeV = new ApplicationVersionReadmeV(1);
-//        applicationVersionE.setApplicationVersionReadmeV(applicationVersionReadmeV);
-//        applicationVersionE.setApplicationVersionValueE(new ApplicationVersionValueE(1));
-//
-//
-//        when:
-//        restTemplate.delete("/v1/projects/1/app_instances/1/delete");
-//
-//        then:
-//        userAttrRepository.queryById(_) >> userAttrE
-//        gitlabGroupMemberRepository.getUserMemberByUserId(_, _) >> groupMemberE
-//        applicationVersionRepository.query(_) >> applicationVersionE
-//        applicationVersionRepository.queryValue(_) >> null
-//        iamRepository.queryIamProject(_) >> projectE
-//        iamRepository.queryOrganizationById(_) >> organization
-//        1 * gitlabRepository.deleteFile(_,_,_,_);
-//        applicationInstanceRepository.selectById(1).status.equals(InstanceStatus.OPERATIING.getStatus());
-//    }
-//    /*
-//    * 删除情况二:配置文件多kind情况
-//    * **/
-//    def "delete2"() {
-//        given:
-//        DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE(1L);
-//        ProjectE projectE = new ProjectE(1L);
-//        projectE.setCode("test");
-//        Organization organization = new Organization(1);
-//        organization.setCode("test")
-//        projectE.setOrganization(organization);
-//        devopsEnvironmentE.setProjectE(projectE);
-//        devopsEnvironmentE.setGitlabEnvProjectId(1);
-//        devopsEnvironmentE.setCode("test");
-//        devopsEnvironmentE.setName("test");
-//
-//        DevopsProjectDO devopsProjectDO = new DevopsProjectDO(1)
-//        devopsProjectDO.setEnvGroupId(1)
-//        devopsProjectDO.setGitlabGroupId(1)
-//
-//        UserAttrE userAttrE = new UserAttrE(1, 1);
-//
-//        GitlabGroupMemberE groupMemberE = new GitlabGroupMemberE();
-//        groupMemberE.setId(1);
-//        groupMemberE.setAccessLevel(AccessLevel.OWNER.toValue());
-//
-//        ApplicationE applicationE = new ApplicationE();
-//        applicationE.setId(1L);
-//        applicationE.setName("test")
-//        applicationE.setProjectE(projectE);
-//        applicationE.setCode("test")
-//
-//
-//        when:
-//        restTemplate.delete("/v1/projects/1/app_instances/2/delete");
-//
-//        then:
-//        userAttrRepository.queryById(_) >> userAttrE;
-//        gitlabGroupMemberRepository.getUserMemberByUserId(_, _) >> groupMemberE;
-//        applicationVersionRepository.queryValue(_) >> null;
-//        iamRepository.queryIamProject(_) >> projectE;
-//        iamRepository.queryOrganizationById(_) >> organization;
-//        devopsEnvFileResourceRepository.queryByEnvIdAndPath(2,"/test2.yaml").size()>1;
-//        applicationInstanceRepository.selectById(2).status.equals(InstanceStatus.OPERATIING.getStatus());
-//    }
-//}
+
+import io.choerodon.core.domain.Page
+import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.dataobject.*
+import io.choerodon.devops.infra.mapper.*
+import io.choerodon.websocket.helper.EnvListener
+import io.choerodon.websocket.helper.EnvSession
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Import
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import spock.lang.Shared
+import spock.lang.Specification
+import spock.lang.Stepwise
+import spock.lang.Subject
+
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
+
+/**
+ * Created by n!Ck
+ * Date: 2018/11/9
+ * Time: 16:13
+ * Description: 
+ */
+@SpringBootTest(webEnvironment = RANDOM_PORT)
+@Import(IntegrationTestConfiguration)
+@Subject(ApplicationInstanceController)
+@Stepwise
+class ApplicationInstanceControllerSpec extends Specification {
+
+    @Autowired
+    @Qualifier("mockEnvUtil")
+    private EnvUtil envUtil
+    @Autowired
+    @Qualifier("mockEnvListener")
+    private EnvListener envListener
+
+    @Autowired
+    private TestRestTemplate restTemplate
+    @Autowired
+    private ApplicationMapper applicationMapper
+    @Autowired
+    private DevopsEnvPodMapper devopsEnvPodMapper
+    @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper
+    @Autowired
+    private ApplicationMarketMapper applicationMarketMapper
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper
+    @Autowired
+    private DevopsEnvResourceMapper devopsEnvResourceMapper
+    @Autowired
+    private ApplicationVersionMapper applicationVersionMapper
+    @Autowired
+    private ApplicationInstanceMapper applicationInstanceMapper
+    @Autowired
+    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper
+
+    @Shared
+    ApplicationDO applicationDO = new ApplicationDO()
+    @Shared
+    DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
+    @Shared
+    DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
+    @Shared
+    DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
+    @Shared
+    DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO()
+    @Shared
+    DevopsEnvResourceDO devopsEnvResourceDO2 = new DevopsEnvResourceDO()
+    @Shared
+    DevopsEnvResourceDO devopsEnvResourceDO3 = new DevopsEnvResourceDO()
+    @Shared
+    DevopsEnvResourceDO devopsEnvResourceDO4 = new DevopsEnvResourceDO()
+    @Shared
+    DevopsEnvResourceDO devopsEnvResourceDO5 = new DevopsEnvResourceDO()
+    @Shared
+    DevopsEnvResourceDO devopsEnvResourceDO0 = new DevopsEnvResourceDO()
+    @Shared
+    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    @Shared
+    ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+    @Shared
+    ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    @Shared
+    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDO()
+    @Shared
+    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO2 = new DevopsEnvResourceDetailDO()
+    @Shared
+    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO3 = new DevopsEnvResourceDetailDO()
+    @Shared
+    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO4 = new DevopsEnvResourceDetailDO()
+    @Shared
+    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO5 = new DevopsEnvResourceDetailDO()
+    @Shared
+    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO0 = new DevopsEnvResourceDetailDO()
+
+    def setupSpec() {
+        // de
+        devopsEnvironmentDO.setId(1L)
+        devopsEnvironmentDO.setProjectId(1L)
+        devopsEnvironmentDO.setName("envName")
+        devopsEnvironmentDO.setCode("envCode")
+        devopsEnvironmentDO.setClusterId(1L)
+
+        // dam
+        devopsAppMarketDO.setPublishLevel("pub")
+        devopsAppMarketDO.setContributor("con")
+        devopsAppMarketDO.setDescription("des")
+
+        // dav
+        applicationVersionDO.setId(1L)
+        applicationVersionDO.setVersion("version")
+
+        // dp
+        devopsEnvPodDO.setId(1L)
+        devopsEnvPodDO.setReady(true)
+        devopsEnvPodDO.setAppInstanceId(1L)
+        devopsEnvPodDO.setStatus("Running")
+        devopsEnvPodDO.setNamespace("envCode")
+        devopsEnvPodDO.setNamespace("envCode")
+
+        // cmd
+        devopsEnvCommandDO.setId(1L)
+        devopsEnvCommandDO.setError("error")
+        devopsEnvCommandDO.setStatus("operating")
+        devopsEnvCommandDO.setObjectVersionId(1L)
+        devopsEnvCommandDO.setCommandType("commandType")
+
+        // da
+        applicationDO.setId(1L)
+        applicationDO.setProjectId(1L)
+        applicationDO.setName("appName")
+
+        // dai
+        applicationInstanceDO.setId(1L)
+        applicationInstanceDO.setEnvId(1L)
+        applicationInstanceDO.setAppId(1L)
+        applicationInstanceDO.setCommandId(1L)
+        applicationInstanceDO.setAppVersionId(1L)
+        applicationInstanceDO.setStatus("running")
+        applicationInstanceDO.setCode("appInsCode")
+        applicationInstanceDO.setObjectVersionNumber(1L)
+
+        // der
+        devopsEnvResourceDO.setId(1L)
+        devopsEnvResourceDO.setKind("Pod")
+        devopsEnvResourceDO.setAppInstanceId(1L)
+        devopsEnvResourceDO.setResourceDetailId(1L)
+
+        devopsEnvResourceDO2.setId(2L)
+        devopsEnvResourceDO2.setKind("Deployment")
+        devopsEnvResourceDO2.setAppInstanceId(1L)
+        devopsEnvResourceDO2.setResourceDetailId(2L)
+
+        devopsEnvResourceDO3.setId(3L)
+        devopsEnvResourceDO3.setKind("Service")
+        devopsEnvResourceDO3.setAppInstanceId(1L)
+        devopsEnvResourceDO3.setResourceDetailId(3L)
+
+        devopsEnvResourceDO4.setId(4L)
+        devopsEnvResourceDO4.setKind("Ingress")
+        devopsEnvResourceDO4.setAppInstanceId(1L)
+        devopsEnvResourceDO4.setResourceDetailId(4L)
+
+        devopsEnvResourceDO5.setId(5L)
+        devopsEnvResourceDO5.setKind("ReplicaSet")
+        devopsEnvResourceDO5.setAppInstanceId(1L)
+        devopsEnvResourceDO5.setResourceDetailId(5L)
+
+        devopsEnvResourceDO0.setId(6)
+        devopsEnvResourceDO0.setKind(null)
+        devopsEnvResourceDO0.setAppInstanceId(1L)
+        devopsEnvResourceDO0.setResourceDetailId(6L)
+
+        // derd
+        devopsEnvResourceDetailDO.setId(1L)
+        devopsEnvResourceDetailDO.setMessage("This is Pod")
+
+        devopsEnvResourceDetailDO2.setId(2L)
+        devopsEnvResourceDetailDO2.setMessage("This is Deployment")
+
+        devopsEnvResourceDetailDO3.setId(3L)
+        devopsEnvResourceDetailDO3.setMessage("This is Service")
+
+        devopsEnvResourceDetailDO4.setId(4L)
+        devopsEnvResourceDetailDO4.setMessage("This is Ingress")
+
+        devopsEnvResourceDetailDO5.setId(5L)
+        devopsEnvResourceDetailDO5.setMessage("This is ReplicaSet")
+
+        devopsEnvResourceDetailDO0.setId(6L)
+        devopsEnvResourceDetailDO0.setMessage("This is 0")
+    }
+
+    def "PageByOptions"() {
+        given: '初始化数据'
+        applicationMapper.insert(applicationDO)
+        devopsEnvPodMapper.insert(devopsEnvPodDO)
+        applicationMarketMapper.insert(devopsAppMarketDO)
+        devopsEnvCommandMapper.insert(devopsEnvCommandDO)
+        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+
+        devopsEnvResourceMapper.insert(devopsEnvResourceDO)
+        devopsEnvResourceMapper.insert(devopsEnvResourceDO2)
+        devopsEnvResourceMapper.insert(devopsEnvResourceDO3)
+        devopsEnvResourceMapper.insert(devopsEnvResourceDO4)
+        devopsEnvResourceMapper.insert(devopsEnvResourceDO5)
+
+        applicationVersionMapper.insert(applicationVersionDO)
+        applicationInstanceMapper.insert(applicationInstanceDO)
+
+        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO)
+        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO2)
+        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO3)
+        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO4)
+        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO5)
+
+        and: '初始化请求头'
+        String infra = "{\"searchParam\":{},\"param\":\"\"}"
+        HttpHeaders headers = new HttpHeaders()
+        headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
+        HttpEntity<String> strEntity = new HttpEntity<String>(infra, headers)
+
+        and: 'mock envListener'
+        Map<String, EnvSession> envs = new HashMap<>()
+        EnvSession envSession = new EnvSession()
+        envSession.setVersion("0.10.0")
+        envSession.setClusterId(1L)
+        envs.put("testenv", envSession)
+        envListener.connectedEnv() >> envs
+
+        when: '分页查询应用部署'
+        def page = restTemplate.postForObject("/v1/projects/1/app_instances/list_by_options?envId=1&appId=1&page=0&size=5", strEntity, Page.class)
+
+        then: '校验返回值'
+        page != null
+    }
+
+    def "ListByAppId"() {
+    }
+
+    def "QueryValue"() {
+    }
+
+    def "QueryUpgradeValue"() {
+    }
+
+    def "QueryValues"() {
+    }
+
+    def "PreviewValues"() {
+    }
+
+    def "FormatValue"() {
+    }
+
+    def "Deploy"() {
+    }
+
+    def "QueryVersionFeatures"() {
+    }
+
+    def "ListByAppVersionId"() {
+    }
+
+    def "ListByAppIdAndEnvId"() {
+    }
+
+    def "ListResources"() {
+    }
+
+    def "ListStages"() {
+    }
+
+    def "Stop"() {
+    }
+
+    def "Start"() {
+    }
+
+    def "Restart"() {
+    }
+
+    def "Delete"() {
+    }
+
+    def "ListByEnv"() {
+    }
+
+    def "ListEnvFiles"() {
+    }
+
+    def "ListDeployTime"() {
+    }
+
+    def "ListDeployFrequency"() {
+    }
+
+    def "PageDeployFrequencyDetail"() {
+    }
+
+    def "PageDeployTimeDetail"() {
+    }
+}

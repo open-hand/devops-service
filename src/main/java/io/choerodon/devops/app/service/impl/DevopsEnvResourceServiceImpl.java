@@ -52,7 +52,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         if (devopsEnvResourceES == null) {
             return devopsEnvResourceDTO;
         }
-        devopsEnvResourceES.stream().forEach(devopsInstanceResourceE -> {
+        devopsEnvResourceES.forEach(devopsInstanceResourceE -> {
             DevopsEnvResourceDetailE devopsEnvResourceDetailE =
                     devopsEnvResourceDetailRepository.query(
                             devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());

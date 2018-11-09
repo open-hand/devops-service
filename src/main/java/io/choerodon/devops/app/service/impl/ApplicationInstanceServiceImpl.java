@@ -123,7 +123,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
 
                 List<DevopsEnvPodDTO> newDevopsEnvPodDTO = new ArrayList<>();
-                devopsEnvPodDTOS.stream().forEach(devopsEnvPodDTO -> {
+                devopsEnvPodDTOS.forEach(devopsEnvPodDTO -> {
                             String podName = devopsEnvPodDTO.getName();
                             String tmp = podName.substring(0, podName.lastIndexOf("-"));
                             tmp = tmp.substring(0, tmp.lastIndexOf("-"));
@@ -917,7 +917,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     private void setInstanceConnect(List<ApplicationInstanceE> applicationInstanceES,
                                     Map<String, EnvSession> envSessionMap) {
-        applicationInstanceES.stream().forEach(applicationInstanceE ->
+        applicationInstanceES.forEach(applicationInstanceE ->
                 applicationInstanceE.setConnect(envSessionMap.entrySet().stream()
                         .anyMatch(entry -> {
                             EnvSession envSession = entry.getValue();
