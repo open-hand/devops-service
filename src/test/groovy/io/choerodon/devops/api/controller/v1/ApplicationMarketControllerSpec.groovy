@@ -158,7 +158,7 @@ class ApplicationMarketControllerSpec extends Specification {
         projectDOList.add(projectDO)
         projectDOPage.setContent(projectDOList)
         ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(projectDOPageResponseEntity)
+        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[].class))).thenReturn(projectDOPageResponseEntity)
     }
 
     def "Create"() {

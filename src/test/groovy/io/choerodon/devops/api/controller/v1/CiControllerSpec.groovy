@@ -9,6 +9,8 @@ import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
+import io.choerodon.devops.infra.dataobject.ApplicationVersionReadmeDO
+import io.choerodon.devops.infra.dataobject.ApplicationVersionValueDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.IamServiceClient
@@ -147,8 +149,35 @@ class CiControllerSpec extends Specification {
         gzFile.getName()=="key.tar.gz"
         File yamlFile = new File("/devopsversion/values.yaml")
         yamlFile.getName() == "values.yaml"
-        applicationMapper.deleteByPrimaryKey(1L)
-        applicationVersionMapper.deleteByPrimaryKey(1L)
+
+        // 删除app
+        List<ApplicationDO> list = applicationMapper.selectAll()
+        if (!list.isEmpty()) {
+            for (ApplicationDO e : list) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除appVersion
+        List<ApplicationVersionDO> list1 = applicationVersionMapper.selectAll()
+        if (!list1.isEmpty()) {
+            for (ApplicationVersionDO e : list1) {
+                applicationVersionMapper.delete(e)
+            }
+        }
+        // 删除appVersionReadme
+        List<ApplicationVersionReadmeDO> list2 = applicationVersionReadmeMapper.selectAll()
+        if (!list2.isEmpty()) {
+            for (ApplicationVersionReadmeDO e : list2) {
+                applicationVersionReadmeMapper.delete(e)
+            }
+        }
+        // 删除appVersionValue
+        List<ApplicationVersionValueDO> list3 = applicationVersionValueMapper.selectAll()
+        if (!list3.isEmpty()) {
+            for (ApplicationVersionValueDO e : list3) {
+                applicationVersionValueMapper.delete(e)
+            }
+        }
     }
 
     //清除测试数据

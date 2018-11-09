@@ -756,12 +756,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public void initMockService(SagaClient sagaClient) {
-        this.sagaClient = sagaClient;
+    public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
+        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
     }
 
     @Override
-    public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
-        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
+    public void initMockService(SagaClient sagaClient) {
+        this.sagaClient = sagaClient;
     }
 }
