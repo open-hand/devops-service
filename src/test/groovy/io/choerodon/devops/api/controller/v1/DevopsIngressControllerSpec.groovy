@@ -240,7 +240,7 @@ class DevopsIngressControllerSpec extends Specification {
         restTemplate.postForEntity("/v1/projects/1/ingress?envId=1", devopsIngressDTO, Object.class)
 
         then: '校验返回值'
-        devopsIngressMapper.selectByPrimaryKey(1L).getId() != null
+        devopsIngressMapper.selectByPrimaryKey(1L)["name"] == "ingdo"
     }
 
     def "Update"() {
@@ -255,7 +255,6 @@ class DevopsIngressControllerSpec extends Specification {
         pathList.add(devopsIngressPathDTO)
         // 修改后的DTO
         DevopsIngressDTO newDevopsIngressDTO = new DevopsIngressDTO()
-        newDevopsIngressDTO = new DevopsIngressDTO()
         newDevopsIngressDTO.setId(1L)
         newDevopsIngressDTO.setEnvId(1L)
         newDevopsIngressDTO.setCertId(1L)

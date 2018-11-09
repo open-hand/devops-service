@@ -263,7 +263,7 @@ class ApplicationMarketControllerSpec extends Specification {
     def "Update"() {
         given: '初始化DTO'
         ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO()
-        applicationReleasingDTO.setId(1L)
+        applicationReleasingDTO.setId(2L)
         applicationReleasingDTO.setContributor("newContributor")
         applicationReleasingDTO.setPublishLevel("public")
 
@@ -287,7 +287,7 @@ class ApplicationMarketControllerSpec extends Specification {
                 applicationMarketMapper.selectAll().get(0).getId())
 
         then: '验证返回值'
-        applicationMarketMapper.selectAll().get(0)["id"] == 1
+        applicationMarketMapper.selectAll().get(0)["id"] == 2
     }
 
     def "UploadApps"() {
@@ -337,7 +337,7 @@ class ApplicationMarketControllerSpec extends Specification {
         given: '准备dto list'
         List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
         AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
-        appMarketDownloadDTO.setAppMarketId(1L)
+        appMarketDownloadDTO.setAppMarketId(2L)
         List<Long> appVersionList = new ArrayList<>()
         appVersionList.add(1L)
         appMarketDownloadDTO.setAppVersionIds(appVersionList)
@@ -349,15 +349,14 @@ class ApplicationMarketControllerSpec extends Specification {
         then: '验证返回值'
         applicationMapper.deleteByPrimaryKey(1L)
         applicationMapper.deleteByPrimaryKey(2L)
-        DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
         applicationVersionMapper.deleteByPrimaryKey(1L)
         applicationVersionMapper.deleteByPrimaryKey(2L)
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
         applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
         applicationVersionReadmeMapper.deleteByPrimaryKey(2L)
         applicationVersionValueMapper.deleteByPrimaryKey(1L)
-        applicationMarketMapper.deleteByPrimaryKey(1L)
         applicationMarketMapper.deleteByPrimaryKey(2L)
+        applicationMarketMapper.deleteByPrimaryKey(3L)
         applicationInstanceMapper.deleteByPrimaryKey(1L)
     }
 

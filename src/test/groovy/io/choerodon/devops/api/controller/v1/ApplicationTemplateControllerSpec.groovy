@@ -206,18 +206,18 @@ class ApplicationTemplateControllerSpec extends Specification {
     // 创建模板校验名称是否存在
     def "checkName"() {
         when: '创建模板校验名称是否存在'
-        def entity = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", Object.class, org_id, "name")
+        def exception = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", ExceptionResponse.class, org_id, "name")
 
         then: '校验通过，没有抛出异常'
-        entity.statusCode.is2xxSuccessful()
-        entity.getBody() == null
+        exception.statusCode.is2xxSuccessful()
+        exception.getBody() == null
 
         when: '校验未通过，抛出异常'
-        def exception = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", ExceptionResponse.class, org_id, "updateName")
+        def exception1 = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", ExceptionResponse.class, org_id, "updateName")
 
         then:
-        exception.statusCode.is2xxSuccessful()
-        exception.getBody()["code"] == "error.name.exist"
+        exception1.statusCode.is2xxSuccessful()
+        exception1.getBody()["code"] == "error.name.exist"
     }
 
     // 创建模板校验编码是否存在

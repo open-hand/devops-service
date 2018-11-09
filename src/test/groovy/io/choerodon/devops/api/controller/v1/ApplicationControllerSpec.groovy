@@ -4,6 +4,7 @@ import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
+import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ApplicationDTO
 import io.choerodon.devops.api.dto.ApplicationRepDTO
@@ -341,17 +342,17 @@ class ApplicationControllerSpec extends Specification {
     // 创建应用校验名称是否存在
     def "checkName"() {
         when:
-        def entity = restTemplate.getForEntity("/v1/projects/1/apps/checkName?name=appName", Object.class)
+        def exception = restTemplate.getForEntity("/v1/projects/1/apps/checkName?name=appName", ExceptionResponse.class)
 
         then: '名字存在抛出异常'
-        entity.statusCode.is2xxSuccessful()
-        entity.getBody()["code"] == "error.name.exist"
+        exception.statusCode.is2xxSuccessful()
+        exception.getBody()["code"] == "error.name.exist"
 
         when:
-        def entity1 = restTemplate.getForEntity("/v1/projects/1/apps/checkName?name=testName", Object.class)
+        def exception1 = restTemplate.getForEntity("/v1/projects/1/apps/checkName?name=testName", ExceptionResponse.class)
 
         then: '名字不存在不抛出异常'
-        entity1.statusCode.is2xxSuccessful()
+        exception1.statusCode.is2xxSuccessful()
         notThrown(CommonException)
     }
 
