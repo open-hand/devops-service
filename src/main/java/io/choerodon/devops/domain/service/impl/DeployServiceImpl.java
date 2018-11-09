@@ -32,6 +32,7 @@ import io.choerodon.websocket.helper.CommandSender;
 public class DeployServiceImpl implements DeployService {
 
     private static final String INIT_AGENT = "init_agent";
+    private static final String DELETE_ENV = "delete_env";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
     @Autowired
@@ -119,4 +120,19 @@ public class DeployServiceImpl implements DeployService {
         commandSender.sendMsg(msg);
     }
 
+    @Override
+    public void deleteEnv(Long envId, String code, Long clusterId) {
+        GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
+        gitEnvConfigDTO.setEnvId(envId);
+        gitEnvConfigDTO.setNamespace(code);
+        Msg msg = new Msg();
+        try {
+            msg.setPayload(mapper.writeValueAsString(gitEnvConfigDTO));
+        } catch (IOException e) {
+            throw new CommonException("error get envId and code", e);
+        }
+        msg.setType(DELETE_ENV);
+        msg.setKey(String.format("cluster:%s", clusterId));
+        commandSender.sendMsg(msg);
+    }
 }

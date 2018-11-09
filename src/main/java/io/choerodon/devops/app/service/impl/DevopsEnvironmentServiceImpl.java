@@ -39,7 +39,6 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -222,13 +221,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
 
-        //查询当前用户的环境权限
+        // 查询当前用户的环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
                 .filter(DevopsEnvUserPermissionE::getPermitted)
                 .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        //查询当前用户是否为项目所有者
+        // 查询当前用户是否为项目所有者
         Boolean isProjectOwner = devopsEnvUserPermissionRepository
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
@@ -236,7 +235,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t -> {
                     setEnvStatus(connectedClusterList, t);
-                    //项目成员返回拥有对应权限的环境，项目所有者返回所有环境
+                    // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
@@ -253,13 +252,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
         if (!active) {
-            // TODO 校验环境是否连接，不再校验环境下是否存在运行中的对象
-            devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
+            List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+            setEnvStatus(connectedClusterList, devopsEnvironmentE);
+        }
+        if (devopsEnvironmentE.getConnect()) {
+            throw new CommonException("error.env.connected");
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
         devopsEnvironmentE.setActive(active);
         //启用环境，原环境不在环境组内，则序列在默认组内环境递增，员环境在环境组内，则序列在环境组内环境递增
         if (active) {
@@ -751,7 +753,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
         gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
-        // TODO 删除命名空间
+        // 删除环境命名空间
+        deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
     }
 
     @Override

@@ -145,7 +145,6 @@ public class DevopsEnvironmentE {
 
     }
 
-
     public Long getSequence() {
         return sequence;
     }
@@ -225,14 +224,6 @@ public class DevopsEnvironmentE {
 
     public void setAgentSyncCommit(Long agentSyncCommit) {
         this.agentSyncCommit = agentSyncCommit;
-    }
-
-    public Boolean getConnected() {
-        return isConnected;
-    }
-
-    public void setConnected(Boolean connected) {
-        isConnected = connected;
     }
 
     public Long getSagaSyncCommit() {
