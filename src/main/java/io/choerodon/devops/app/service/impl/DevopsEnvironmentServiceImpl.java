@@ -113,8 +113,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsClusterRepository devopsClusterRepository;
     @Autowired
     private DeployService deployService;
-    @Autowired
-    private DevopsIngressRepository devopsIngressRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")

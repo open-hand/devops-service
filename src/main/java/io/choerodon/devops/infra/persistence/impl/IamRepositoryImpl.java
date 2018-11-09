@@ -278,9 +278,4 @@ public class IamRepositoryImpl implements IamRepository {
     public void initMockIamService(IamServiceClient iamServiceClient) {
         this.iamServiceClient = iamServiceClient;
     }
-
-    @Override
-    public void initMockIamService(IamServiceClient iamServiceClient) {
-        this.iamServiceClient = iamServiceClient;
-    }
 }

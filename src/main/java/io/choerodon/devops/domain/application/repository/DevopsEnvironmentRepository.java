@@ -36,6 +36,4 @@ public interface DevopsEnvironmentRepository {
     void deleteById(Long id);
 
     List<DevopsEnvironmentE> listByClusterId(Long clusterId);
-
-    void deleteById(Long id);
 }
