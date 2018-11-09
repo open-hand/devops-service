@@ -270,7 +270,13 @@ public class IamRepositoryImpl implements IamRepository {
             return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
-            return null; }
+            return null;
+        }
+    }
+
+    @Override
+    public void initMockIamService(IamServiceClient iamServiceClient) {
+        this.iamServiceClient = iamServiceClient;
     }
 
     @Override

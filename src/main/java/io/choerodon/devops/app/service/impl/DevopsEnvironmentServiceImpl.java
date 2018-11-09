@@ -39,6 +39,7 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -113,6 +114,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsClusterRepository devopsClusterRepository;
     @Autowired
     private DeployService deployService;
+    @Autowired
+    private DevopsIngressRepository devopsIngressRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -760,6 +763,4 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
         return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
     }
-
-
 }
