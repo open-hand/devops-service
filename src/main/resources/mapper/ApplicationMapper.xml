@@ -132,7 +132,7 @@
                     </if>
                     <if test="active == 2">
                         da.is_synchro = 0
-                        AND da.is_failed = 0
+                        AND da.is_failed IS NULL
                     </if>
                 </foreach>
             </if>
