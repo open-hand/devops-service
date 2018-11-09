@@ -30,10 +30,9 @@ public interface GitlabProjectRepository {
 
     List<CommitStatuseDO> getCommitStatuse(Integer projectId, String sha, Integer useId);
 
-    void initMockService(GitlabServiceClient gitlabServiceClient);
-
     List<CommitDO> listCommits(Integer projectId, Integer userId);
 
-    GitlabGroupMemberE getProjectMember(Integer projectId, Integer userId);
+    GitlabMemberE getProjectMember(Integer projectId, Integer userId);
 
+    void initMockService(GitlabServiceClient gitlabServiceClient);
 }

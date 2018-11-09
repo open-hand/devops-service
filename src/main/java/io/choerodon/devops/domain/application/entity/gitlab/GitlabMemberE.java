@@ -5,7 +5,7 @@ import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 /**
  * Created by Zenger on 2018/3/28.
  */
-public class GitlabGroupMemberE {
+public class GitlabMemberE {
 
     private Integer id;
     private String userName;

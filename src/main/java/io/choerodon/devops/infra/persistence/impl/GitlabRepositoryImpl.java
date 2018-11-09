@@ -159,12 +159,10 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public void deleteProject(Integer projectId, Integer userId) {
         try {
             gitlabServiceClient.deleteProject(projectId, userId);
-
         } catch (FeignException e) {
             throw new CommonException(e);
         }
     }
-
 
     @Override
     public String updateProject(Integer projectId, Integer userId) {
@@ -271,5 +269,10 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         } catch (FeignException e) {
             throw new CommonException("error.member.remove", e);
         }
+    }
+
+    @Override
+    public void initMockService(GitlabServiceClient gitlabServiceClient) {
+        this.gitlabServiceClient = gitlabServiceClient;
     }
 }

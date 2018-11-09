@@ -2,10 +2,6 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.repository.UserAttrRepository
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
@@ -34,6 +30,9 @@ import org.springframework.test.context.TestPropertySource
 import spock.mock.DetachedMockFactory
 
 import javax.annotation.PostConstruct
+import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.Statement
 
 /**
  * Created by hailuoliu@choerodon.io on 2018/7/13.
@@ -49,6 +48,15 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Value('${choerodon.oauth.jwt.key:choerodon}')
     String key
 
+    @Value('${spring.datasource.url}')
+    String dataBaseUrl
+
+    @Value('${spring.datasource.username}')
+    String dataBaseUsername
+
+    @Value('${spring.datasource.password}')
+    String dataBasePassword
+
     @Autowired
     TestRestTemplate testRestTemplate
 
@@ -56,24 +64,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     LiquibaseExecutor liquibaseExecutor
 
     final ObjectMapper objectMapper = new ObjectMapper()
-
-    @Bean("mockGitlabRepository")
-    @Primary
-    GitlabRepository gitlabRepository() {
-        detachedMockFactory.Mock(GitlabRepository)
-    }
-
-    @Bean("mockUserAttrRepository")
-    @Primary
-    UserAttrRepository userAttrRepository() {
-        detachedMockFactory.Mock(UserAttrRepository)
-    }
-
-    @Bean("mockGitlabGroupMemberRepository")
-    @Primary
-    GitlabGroupMemberRepository gitlabGroupMemberRepository() {
-        detachedMockFactory.Mock(GitlabGroupMemberRepository)
-    }
 
     @Primary
     @Bean("mockEnvUtil")
@@ -87,23 +77,11 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(EnvListener)
     }
 
-    @Bean("mockIamRepository")
-    @Primary
-    IamRepository iamRepository() {
-        detachedMockFactory.Mock(IamRepository)
-    }
-
     @Bean("mockGitUtil")
     @Primary
     GitUtil gitUtil() {
         detachedMockFactory.Mock(GitUtil)
     }
-
-//    @Bean("mockDevopsGitRepository")
-//    @Primary
-//    DevopsGitRepository devopsGitRepository() {
-//        detachedMockFactory.Mock(DevopsGitRepository)
-//    }
 
     @Bean("mockDeployService")
     @Primary
@@ -114,7 +92,20 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @PostConstruct
     void init() {
         liquibaseExecutor.execute(new String()[])
+        initSqlFunction()
         setTestRestTemplateJWT()
+    }
+
+    void initSqlFunction() {
+        //连接H2数据库
+        Class.forName("org.h2.Driver")
+        Connection conn = DriverManager.
+                getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
+        Statement stat = conn.createStatement()
+        //创建 SQL的IF函数，用JAVA的方法代替函数
+        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.common.util.MybatisFunctionTestUtil.binaryFunction\"")
+        stat.close()
+        conn.close()
     }
 
     private void setTestRestTemplateJWT() {

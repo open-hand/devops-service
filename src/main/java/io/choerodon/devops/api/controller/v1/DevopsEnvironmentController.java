@@ -325,7 +325,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "环境id")
             @RequestParam(value = "env_id") String envId) {
         return Optional.ofNullable(devopsEnvironmentService
-                                    .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
+                .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
     }
@@ -372,5 +372,25 @@ public class DevopsEnvironmentController {
         return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.update"));
+    }
+
+    /**
+     * 删除已停用的环境
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @return Boolean
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "删除已停用的环境")
+    @DeleteMapping(value = "/{env_id}")
+    public ResponseEntity deleteDeactivatedEnvironment(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "env_id") Long envId) {
+        devopsEnvironmentService.deleteDeactivatedEnvironment(envId);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

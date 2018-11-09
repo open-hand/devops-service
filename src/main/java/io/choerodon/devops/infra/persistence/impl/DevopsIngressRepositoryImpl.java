@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -327,5 +328,18 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
                 devopsServiceE == null ? ServiceStatus.DELETED.getStatus() : devopsServiceE.getStatus());
         devopsIngressPathDTO.setServicePort(e.getServicePort());
         devopsIngressDTO.addDevopsIngressPathDTO(devopsIngressPathDTO);
+    }
+
+    @Override
+    public void deleteIngressAndIngressPathByEnvId(Long envId) {
+        DevopsIngressDO devopsIngressDO = new DevopsIngressDO();
+        devopsIngressDO.setEnvId(envId);
+        // 获取环境下的所有域名ids
+        List<Long> allIngressIds = devopsIngressMapper.select(devopsIngressDO).stream().map(DevopsIngressDO::getId)
+                .collect(Collectors.toList());
+        devopsIngressMapper.delete(devopsIngressDO);
+        if (!allIngressIds.isEmpty()) {
+            devopsIngressPathMapper.deleteByIngressIds(allIngressIds);
+        }
     }
 }

@@ -92,7 +92,6 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         return ConvertHelper.convertList(devopsEnvironmentDOS, DevopsEnvironmentE.class);
     }
 
-
     @Override
     public List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
@@ -125,6 +124,13 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
 
     @Override
     public void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
-        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(), devopsEnvironmentE.getSagaSyncCommit(), devopsEnvironmentE.getDevopsSyncCommit(), devopsEnvironmentE.getAgentSyncCommit());
+        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(),
+                devopsEnvironmentE.getSagaSyncCommit(), devopsEnvironmentE.getDevopsSyncCommit(),
+                devopsEnvironmentE.getAgentSyncCommit());
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        devopsEnvironmentMapper.deleteByPrimaryKey(id);
     }
 }

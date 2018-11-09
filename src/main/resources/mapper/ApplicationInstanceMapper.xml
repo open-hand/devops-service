@@ -94,7 +94,6 @@
         dai.id DESC
     </select>
 
-
     <select id="listRunningAndFailedInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
         SELECT
         dai.id id,
@@ -264,7 +263,6 @@
         </if>
     </sql>
 
-
     <select id="listApplicationInstances" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstancesDO">
         SELECT
         da.id appId,
@@ -307,7 +305,6 @@
         dav.creation_date DESC,
         dai.last_update_date DESC;
     </select>
-
 
     <select id="listDeployTime" resultType="io.choerodon.devops.infra.dataobject.DeployDO">
         select
@@ -383,8 +380,5 @@
             </foreach>
         </if>
         order by cmd.creation_date DESC
-
     </select>
-
-
 </mapper>

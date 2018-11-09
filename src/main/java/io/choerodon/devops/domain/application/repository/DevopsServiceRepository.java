@@ -40,4 +40,6 @@ public interface DevopsServiceRepository {
     List<DevopsServiceE> selectByEnvId(Long envId);
 
     void setLablesToNull(Long id);
+
+    void deleteServiceAndInstanceByEnvId(Long envId);
 }

@@ -13,6 +13,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -28,7 +29,7 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupMemberE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
@@ -38,6 +39,7 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -106,6 +108,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvGroupRepository devopsEnvGroupRepository;
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
+    @Autowired
+    private DevopsIngressRepository devopsIngressRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -173,7 +177,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         }
     }
 
-
     @Override
     public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsDTO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
@@ -225,7 +228,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         //查询当前用户的环境权限
         List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
                 .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
-                .filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true)
+                .filter(DevopsEnvUserPermissionE::getPermitted)
                 .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         //查询当前用户是否为项目所有者
@@ -256,6 +259,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
         if (!active) {
+            // TODO 校验环境是否连接，不再校验环境下是否存在运行中的对象
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
@@ -734,9 +738,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
         if (permission == 0) {
             // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
-            GitlabGroupMemberE gitlabGroupMemberE = gitlabProjectRepository
+            GitlabMemberE gitlabMemberE = gitlabProjectRepository
                     .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            if (gitlabGroupMemberE.getId() != null) {
+            if (gitlabMemberE.getId() != null) {
                 gitlabRepository
                         .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
             }
@@ -756,6 +760,26 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         } else {
             devopsEnvironmentE.setPermission(false);
         }
+    }
+
+    @Override
+    @Transactional
+    public void deleteDeactivatedEnvironment(Long envId) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
+        // 删除环境对应的实例
+        applicationInstanceRepository.deleteAppInstanceByEnvId(envId);
+        // 删除环境对应的域名、域名路径
+        devopsIngressRepository.deleteIngressAndIngressPathByEnvId(envId);
+        // 删除环境对应的网络和网络实例
+        devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
+        // 删除环境
+        devopsEnviromentRepository.deleteById(envId);
+        // 删除gitlab库
+        Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+        gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+        // TODO 删除命名空间
     }
 
     @Override

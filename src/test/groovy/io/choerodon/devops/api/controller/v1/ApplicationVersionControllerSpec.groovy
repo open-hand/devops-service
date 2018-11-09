@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.DeployVersionDTO
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
@@ -18,6 +19,7 @@ import org.springframework.context.annotation.Import
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
+import spock.lang.Subject
 
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -30,6 +32,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
+@Subject(ApplicationVersionController)
 @Stepwise
 class ApplicationVersionControllerSpec extends Specification {
 
@@ -64,7 +67,7 @@ class ApplicationVersionControllerSpec extends Specification {
         searchParam.put("param", "")
     }
 
-    //分页查询应用版本
+    // 分页查询应用版本
     def "PageByOptions"() {
         given: '添加应用'
         ApplicationDO applicationDO = new ApplicationDO()
@@ -105,84 +108,92 @@ class ApplicationVersionControllerSpec extends Specification {
         devopsEnvironmentDO.setProjectId(init_id)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
-        when:
+        when: '分页查询应用版本'
         def page = restTemplate.postForObject("/v1/projects/{project_id}/app_version/list_by_options?appId={app_id}", searchParam, Page.class, project_id, init_id)
 
-        then:
+        then: '返回值'
         page.size() == 1
 
-        expect:
+        expect: '校验返回结果'
         page.get(0).version == "0.1.0-dev.20180521111826"
     }
 
-    //应用下查询应用所有版本
+    // 应用下查询应用所有版本
     def "QueryByAppId"() {
-        when:
+        when: '应用下查询应用所有版本'
         def list = restTemplate.getForObject("/v1/projects/{project_id}/apps/{app_id}/version/list?is_publish=true", List.class, project_id, init_id)
 
-        then:
+        then: '返回值'
         list.size() == 1
 
-        expect:
+        expect: '校验返回结果'
         list.get(0).version == "0.1.0-dev.20180521111826"
     }
 
-    //项目下查询应用所有已部署版本
+    // 项目下查询应用所有已部署版本
     def "QueryDeployedByAppId"() {
-        when:
+        when: '项目下查询应用所有已部署版本'
         def list = restTemplate.getForObject("/v1/projects/{project_id}/apps/{app_id}/version/list_deployed", List.class, project_id, init_id)
 
-        then:
+        then: '返回值'
         list.size() == 1
 
-        expect:
+        expect: '校验返回结果'
         list.get(0).version == "0.1.0-dev.20180521111826"
     }
 
-    //查询部署在某个环境的应用版本
+    // 查询部署在某个环境的应用版本
     def "QueryByAppIdAndEnvId"() {
-        when:
+        when: '查询部署在某个环境的应用版本'
         def list = restTemplate.getForObject("/v1/projects/1/apps/1/version?envId=1", List.class)
 
-        then:
+        then: '返回值'
         list.size() == 1
 
-        expect:
+        expect: '校验返回结果'
         list.get(0).version == "0.1.0-dev.20180521111826"
     }
 
-    //分页查询某应用下的所有版本
+    // 分页查询某应用下的所有版本
     def "PageByApp"() {
-        when:
+        when: '分页查询某应用下的所有版本'
         def page = restTemplate.postForObject("/v1/projects/{project_id}/apps/{app_id}/version/list_by_options", null, Page.class, project_id, init_id)
 
-        then:
+        then: '返回值'
         page.size() == 1
 
-        expect:
+        expect: '校验返回结果'
         page.get(0).version == "0.1.0-dev.20180521111826"
     }
 
-    //根据应用版本ID查询，可升级的应用版本
+    // 根据应用版本ID查询，可升级的应用版本
     def "GetUpgradeAppVersion"() {
-        given:
+        given: '初始化应用版本DO类'
         ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
         applicationVersionDO.setId(2L)
         applicationVersionDO.setVersion("0.2.0-dev.20180521111826")
         applicationVersionDO.setAppId(init_id)
         applicationVersionMapper.insert(applicationVersionDO)
 
-        when:
+        when: '根据应用版本ID查询，可升级的应用版本'
         def list = restTemplate.getForObject("/v1/projects/1/version/1/upgrade_version", List.class)
 
-        then:
+        then: '返回值'
         list.size() == 1
 
-        expect:
+        expect: '校验返回结果'
         list.get(0).version == "0.2.0-dev.20180521111826"
     }
 
-    //清除测试数据
+    def "GetDeployVersions"() {
+        when: '项目下查询应用最新的版本和各环境下部署的版本'
+        def dto = restTemplate.getForObject("/v1/projects/1/deployVersions?app_id=1", DeployVersionDTO.class)
+
+        then: '校验返回结果'
+        dto["latestVersion"] == "0.2.0-dev.20180521111826"
+    }
+
+    // 清除测试数据
     def "cleanupData"() {
         given:
         applicationInstanceMapper.deleteByPrimaryKey(init_id)
