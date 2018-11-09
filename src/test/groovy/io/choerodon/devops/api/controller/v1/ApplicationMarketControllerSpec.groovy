@@ -263,7 +263,7 @@ class ApplicationMarketControllerSpec extends Specification {
     def "Update"() {
         given: '初始化DTO'
         ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO()
-        applicationReleasingDTO.setId(2L)
+        applicationReleasingDTO.setId(1L)
         applicationReleasingDTO.setContributor("newContributor")
         applicationReleasingDTO.setPublishLevel("public")
 
@@ -281,13 +281,12 @@ class ApplicationMarketControllerSpec extends Specification {
         appMarketVersionDTO.setId(1L)
         List<AppMarketVersionDTO> dtoList = new ArrayList<>()
         dtoList.add(appMarketVersionDTO)
-
         when: '更新单个应用市场的应用'
         restTemplate.put("/v1/projects/1/apps_market/{app_market_id}/versions", dtoList,
                 applicationMarketMapper.selectAll().get(0).getId())
 
         then: '验证返回值'
-        applicationMarketMapper.selectAll().get(0)["id"] == 2
+        applicationMarketMapper.selectAll().get(0)["id"] == 1
     }
 
     def "UploadApps"() {
@@ -355,8 +354,8 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
         applicationVersionReadmeMapper.deleteByPrimaryKey(2L)
         applicationVersionValueMapper.deleteByPrimaryKey(1L)
+        applicationMarketMapper.deleteByPrimaryKey(1L)
         applicationMarketMapper.deleteByPrimaryKey(2L)
-        applicationMarketMapper.deleteByPrimaryKey(3L)
         applicationInstanceMapper.deleteByPrimaryKey(1L)
     }
 

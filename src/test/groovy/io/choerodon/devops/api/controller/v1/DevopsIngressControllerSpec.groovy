@@ -230,10 +230,14 @@ class DevopsIngressControllerSpec extends Specification {
         devopsEnvCommandMapper.insert(devopsEnvCommandDO)
         devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
 
+        and: '创建证书'
         CertificationDO certificationDO = new CertificationDO()
-        certificationDO.setStatus(CertificationStatus.ACTIVE.getStatus())
+        certificationDO.setId(1L)
         certificationDO.setName("cert")
+        certificationDO.setStatus(CertificationStatus.ACTIVE.getStatus())
         devopsCertificationMapper.insert(certificationDO)
+
+        and: 'mock envUtil'
         envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
 
         when: '项目下创建域名'
@@ -335,6 +339,7 @@ class DevopsIngressControllerSpec extends Specification {
         then: '校验返回值'
         page.size() == 2
 
+        devopsCertificationMapper.deleteByPrimaryKey(1L)
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)
         devopsIngressMapper.deleteByPrimaryKey(1L)
         devopsIngressMapper.deleteByPrimaryKey(2L)
