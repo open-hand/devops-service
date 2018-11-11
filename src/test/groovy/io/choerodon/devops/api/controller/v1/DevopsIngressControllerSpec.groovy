@@ -116,12 +116,13 @@ class DevopsIngressControllerSpec extends Specification {
         FileUtil.copyFile("src/test/gitops/org/pro/env/test-ing.yaml", "gitops/org/pro/env")
 
         devopsEnvironmentDO.setId(1L)
-        devopsEnvironmentDO.setProjectId(1L)
-        devopsEnvironmentDO.setActive(true)
-        devopsEnvironmentDO.setGitlabEnvProjectId(1L)
-        devopsEnvironmentDO.setSequence(1L)
         devopsEnvironmentDO.setCode("env")
+        devopsEnvironmentDO.setActive(true)
+        devopsEnvironmentDO.setSequence(1L)
+        devopsEnvironmentDO.setProjectId(1L)
+        devopsEnvironmentDO.setClusterId(1L)
         devopsEnvironmentDO.setDevopsEnvGroupId(1L)
+        devopsEnvironmentDO.setGitlabEnvProjectId(1L)
 
         devopsIngressPathDTO.setServiceId(1L)
         devopsIngressPathDTO.setPath("/bootz")
@@ -263,7 +264,7 @@ class DevopsIngressControllerSpec extends Specification {
         newDevopsIngressDTO.setEnvId(1L)
         newDevopsIngressDTO.setCertId(1L)
         newDevopsIngressDTO.setCertName("newcertname")
-        newDevopsIngressDTO.setName("test.test")
+        newDevopsIngressDTO.setName("ingdo")
         newDevopsIngressDTO.setPathList(pathList)
         newDevopsIngressDTO.setDomain("test.test-test.test")
 
@@ -322,8 +323,8 @@ class DevopsIngressControllerSpec extends Specification {
 
         Map<String, EnvSession> envs = new HashMap<>()
         EnvSession envSession = new EnvSession()
-        envSession.setEnvId(1L)
         envSession.setVersion("0.10.0")
+        envSession.setClusterId(1L)
         envs.put("testenv", envSession)
 
         List<Long> envList = new ArrayList<>()
@@ -337,7 +338,7 @@ class DevopsIngressControllerSpec extends Specification {
         def page = restTemplate.postForObject("/v1/projects/1/ingress/1/listByEnv", strEntity, Page.class)
 
         then: '校验返回值'
-        page.size() == 2
+        page.size() == 1
 
         devopsCertificationMapper.deleteByPrimaryKey(1L)
         devopsEnvironmentMapper.deleteByPrimaryKey(1L)

@@ -57,8 +57,7 @@ public class ApplicationInstanceController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
-            @ApiParam(value = "分页参数")
-                    PageRequest pageRequest,
+            @ApiParam(value = "分页参数") PageRequest pageRequest,
             @ApiParam(value = "环境ID")
             @RequestParam(required = false) Long envId,
             @ApiParam(value = "版本ID")

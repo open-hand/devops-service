@@ -322,17 +322,49 @@ class DevopsServiceControllerSpec extends Specification {
 
         then: '校验返回值'
         page.size() == 2
-        devopsEnvCommandMapper.deleteByPrimaryKey(1L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(5L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(6L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(7L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-        applicationInstanceMapper.deleteByPrimaryKey(1L)
-        devopsEnvFileResourceMapper.deleteByPrimaryKey(1L)
-        devopsServiceAppInstanceMapper.deleteByPrimaryKey(1L)
-        devopsServiceAppInstanceMapper.deleteByPrimaryKey(9L)
-        devopsServiceMapper.deleteByPrimaryKey(4L)
-        devopsServiceMapper.deleteByPrimaryKey(5L)
+
+        // 删除envCommand
+        List<DevopsEnvCommandDO> list = devopsEnvCommandMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (DevopsEnvCommandDO e : list) {
+                devopsEnvCommandMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvironmentDO e : list1) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除appInstance
+        List<ApplicationInstanceDO> list2 = applicationInstanceMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (ApplicationInstanceDO e : list2) {
+                applicationInstanceMapper.delete(e)
+            }
+        }
+        // 删除envFileResource
+        List<DevopsEnvFileResourceDO> list3 = devopsEnvFileResourceMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (DevopsEnvFileResourceDO e : list3) {
+                devopsEnvFileResourceMapper.delete(e)
+            }
+        }
+        // 删除serviceInstance
+        List<DevopsServiceAppInstanceDO> list4 = devopsServiceAppInstanceMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (DevopsServiceAppInstanceDO e : list4) {
+                devopsServiceAppInstanceMapper.delete(e)
+            }
+        }
+        // 删除service
+        List<DevopsServiceDO> list5 = devopsServiceMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (DevopsServiceDO e : list5) {
+                devopsServiceMapper.delete(e)
+            }
+        }
         FileUtil.deleteDirectory(new File("gitops"))
     }
 }

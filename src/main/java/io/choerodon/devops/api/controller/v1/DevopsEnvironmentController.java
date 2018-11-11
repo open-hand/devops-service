@@ -113,7 +113,6 @@ public class DevopsEnvironmentController {
     }
 
 
-
     /**
      * 项目下启用停用环境
      *
@@ -377,7 +376,7 @@ public class DevopsEnvironmentController {
     }
 
     /**
-     * 环境下查询集群信息
+     * 项目下查询集群信息
      *
      * @param projectId 项目id
      * @return List
@@ -385,8 +384,8 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "环境下查询集群信息")
-    @GetMapping(value = "/permission")
+    @ApiOperation(value = "项目下查询集群信息")
+    @GetMapping(value = "/clusters")
     public ResponseEntity<List<DevopsClusterRepDTO>> listDevopsClusters(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {

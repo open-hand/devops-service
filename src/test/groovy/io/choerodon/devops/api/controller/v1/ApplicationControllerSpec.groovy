@@ -341,37 +341,22 @@ class ApplicationControllerSpec extends Specification {
 
     // 创建应用校验名称是否存在
     def "checkName"() {
-        when:
-        def exception = restTemplate.getForEntity("/v1/projects/1/apps/checkName?name=appName", ExceptionResponse.class)
-
-        then: '名字存在抛出异常'
-        exception.statusCode.is2xxSuccessful()
-        exception.getBody()["code"] == "error.name.exist"
-
-        when:
-        def exception1 = restTemplate.getForEntity("/v1/projects/1/apps/checkName?name=testName", ExceptionResponse.class)
+        when: '创建应用校验名称是否存在'
+        def exception = restTemplate.getForEntity("/v1/projects/1/apps/checkName?name=testName", ExceptionResponse.class)
 
         then: '名字不存在不抛出异常'
-        exception1.statusCode.is2xxSuccessful()
+        exception.statusCode.is2xxSuccessful()
         notThrown(CommonException)
     }
 
     // 创建应用校验编码是否存在
     def "checkCode"() {
-        when:
-        def entity = restTemplate.getForEntity("/v1/projects/1/apps/checkCode?code=appCode", Object.class)
+        when: '创建应用校验编码是否存在'
+        def exception = restTemplate.getForEntity("/v1/projects/1/apps/checkCode?code=testCode", ExceptionResponse.class)
 
-        then:
-        entity.statusCode.is2xxSuccessful()
-        entity.getBody()["code"] == "error.code.exist"
-
-        when:
-        def entity1 = restTemplate.getForEntity("/v1/projects/1/apps/checkCode?code=testCode", Object.class)
-
-        then:
-        entity1.statusCode.is2xxSuccessful()
+        then: '编码不存在不抛出异常'
+        exception.statusCode.is2xxSuccessful()
         notThrown(CommonException)
-        entity1.body == null
     }
 
     // 查询所有应用模板

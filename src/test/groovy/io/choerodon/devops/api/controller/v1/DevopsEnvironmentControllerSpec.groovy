@@ -4,6 +4,7 @@ import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
+import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsEnviromentDTO
 import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO
@@ -93,6 +94,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
     private DevopsServiceMapper devopsServiceMapper
     @Autowired
     private DevopsServiceAppInstanceMapper devopsServiceAppInstanceMapper
+    @Autowired
+    private DevopsClusterMapper devopsClusterMapper
+    @Autowired
+    private DevopsClusterProPermissionMapper devopsClusterProPermissionMapper
 
     @Autowired
     @Qualifier("mockEnvUtil")
@@ -161,6 +166,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentDO.setActive(true)
         devopsEnvironmentDO.setSequence(1L)
         devopsEnvironmentDO.setToken("testToken")
+        devopsEnvironmentDO.setClusterId(1L)
         devopsEnvironmentDO.setGitlabEnvProjectId(1L)
 
         devopsEnvironmentDO1.setId(2L)
@@ -170,6 +176,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentDO1.setActive(true)
         devopsEnvironmentDO1.setSequence(2L)
         devopsEnvironmentDO1.setToken("testToken1")
+        devopsEnvironmentDO1.setClusterId(1L)
         devopsEnvironmentDO1.setGitlabEnvProjectId(2L)
 
         devopsEnvUserPermissionDO.setIamUserId(1L)
@@ -267,7 +274,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         restTemplate.postForObject("/v1/projects/1/envs", devopsEnviromentDTO, String.class)
 
         then: '返回值'
-        devopsEnvironmentRepository.queryByProjectIdAndCode(1L, "testCodeChange") != null
+        devopsEnvironmentMapper.selectAll().size() == 3
     }
 
     def "ListByProjectIdDeployed"() {
@@ -372,6 +379,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         given: '初始化环境更新DTO对象'
         DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO = new DevopsEnvironmentUpdateDTO()
         devopsEnvironmentUpdateDTO.setId(3L)
+        devopsEnvironmentUpdateDTO.setClusterId(1L)
         devopsEnvironmentUpdateDTO.setName("testNameChange1222")
 
         when: '项目下更新环境'
@@ -399,17 +407,19 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "CheckName"() {
         when: '创建环境校验名称是否存在'
-        restTemplate.getForObject("/v1/projects/1/envs/checkName?name=testCheckName", Object.class)
+        def exception = restTemplate.getForEntity("/v1/projects/1/envs/checkName?clusterId=1&name=testCheckName", ExceptionResponse.class)
 
         then: '返回值'
+        exception.statusCode.is2xxSuccessful()
         notThrown(CommonException)
     }
 
     def "CheckCode"() {
         when: '创建环境校验编码是否存在'
-        restTemplate.getForObject("/v1/projects/1/envs/checkCode?code=testCheckCode", Object.class)
+        def exception = restTemplate.getForEntity("/v1/projects/1/envs/checkCode?clusterId=1&code=testCheckCode", ExceptionResponse.class)
 
         then: '返回值'
+        exception.statusCode.is2xxSuccessful()
         notThrown(CommonException)
     }
 
@@ -607,28 +617,99 @@ class DevopsEnvironmentControllerSpec extends Specification {
         expect: '校验用户4和用户2'
         lastUsers.get(0)["iamUserId"] == 2
         lastUsers.get(1)["iamUserId"] == 4
+    }
 
-        devopsEnvCommitMapper.deleteByPrimaryKey(1L)
-        applicationInstanceMapper.deleteByPrimaryKey(1L)
-        applicationInstanceMapper.deleteByPrimaryKey(2L)
-        devopsServiceRepository.delete(1L)
-        devopsServiceRepository.delete(2L)
-        devopsServiceRepository.delete(3L)
-        devopsEnvGroupMapper.deleteByPrimaryKey(1L)
-        devopsEnvGroupMapper.deleteByPrimaryKey(2L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(2L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(3L)
+    def "ListDevopsClusters"() {
+        given: '创建集群和项目关联关系'
+        DevopsClusterDO devopsClusterDO = new DevopsClusterDO()
+        devopsClusterDO.setId(1L)
+        devopsClusterDO.setName("testCluster")
+        devopsClusterDO.setSkipCheckProjectPermission(true)
+        devopsClusterMapper.insert(devopsClusterDO)
 
-        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO()
-        devopsEnvUserPermissionDO.setEnvId(1L)
-        devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO)
+        DevopsClusterProPermissionDO devopsClusterProPermissionDO = new DevopsClusterProPermissionDO()
+        devopsClusterProPermissionDO.setClusterId(1L)
+        devopsClusterProPermissionDO.setProjectId(1L)
+        devopsClusterProPermissionMapper.insert(devopsClusterProPermissionDO)
+
+        when: '项目下查询集群信息'
+        def list = restTemplate.getForObject("/v1/projects/1/envs/clusters", List.class)
+
+        then: '校验返回值'
+        !list.isEmpty()
+
+        // 删除user，保留默认初始化的1号用户
+        List<UserAttrDO> list0 = userAttrMapper.selectAll()
+        if (list0 != null && !list0.isEmpty()) {
+            for (UserAttrDO e : list0) {
+                if (e.getIamUserId() != 1L) {
+                    userAttrMapper.delete(e)
+                }
+            }
+        }
+        // 删除envCommit
+        List<DevopsEnvCommitDO> list1 = devopsEnvCommitMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvCommitDO e : list1) {
+                devopsEnvCommitMapper.delete(e)
+            }
+        }
+        // 删除appInstance
+        List<ApplicationInstanceDO> list2 = applicationInstanceMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (ApplicationInstanceDO e : list2) {
+                applicationInstanceMapper.delete(e)
+            }
+        }
+        // 删除service
+        List<DevopsServiceDO> list3 = devopsServiceMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (DevopsServiceDO e : list3) {
+                devopsServiceMapper.delete()
+            }
+        }
+        // 删除envGroup
+        List<DevopsEnvGroupDO> list4 = devopsEnvGroupMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (DevopsEnvGroupDO e : list4) {
+                devopsEnvGroupMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list5 = devopsEnvironmentMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (DevopsEnvironmentDO e : list5) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除cluster
+        List<DevopsClusterDO> list6 = devopsClusterMapper.selectAll()
+        if (list6 != null && !list6.isEmpty()) {
+            for (DevopsClusterDO e : list6) {
+                devopsClusterMapper.delete(e)
+            }
+        }
+        // 删除clusterProPermission
+        List<DevopsClusterProPermissionDO> list7 = devopsClusterProPermissionMapper.selectAll()
+        if (list7 != null && !list7.isEmpty()) {
+            for (DevopsClusterProPermissionDO e : list7) {
+                devopsClusterProPermissionMapper.delete(e)
+            }
+        }
+        // 删除envUserPermission
+        List<DevopsEnvUserPermissionDO> list8 = devopsEnvUserPermissionMapper.selectAll()
+        if (list8 != null && !list8.isEmpty()) {
+            for (DevopsEnvUserPermissionDO e : list8) {
+                devopsEnvUserPermissionMapper.delete(e)
+            }
+        }
     }
 
     def "DeleteDeactivatedEnvironment"() {
         given: '插入关联环境的对象'
         DevopsEnvironmentDO devopsEnvironmentDODel = new DevopsEnvironmentDO()
         devopsEnvironmentDODel.setId(999L)
+        devopsEnvironmentDODel.setClusterId(1L)
         devopsEnvironmentDODel.setGitlabEnvProjectId(888L)
         devopsEnvironmentMapper.insert(devopsEnvironmentDODel)
 

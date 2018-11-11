@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
+import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO
@@ -210,14 +211,7 @@ class ApplicationTemplateControllerSpec extends Specification {
 
         then: '校验通过，没有抛出异常'
         exception.statusCode.is2xxSuccessful()
-        exception.getBody() == null
-
-        when: '校验未通过，抛出异常'
-        def exception1 = restTemplate.getForEntity("/v1/organizations/{org_id}/app_templates/checkName?name={name}", ExceptionResponse.class, org_id, "updateName")
-
-        then:
-        exception1.statusCode.is2xxSuccessful()
-        exception1.getBody()["code"] == "error.name.exist"
+        notThrown(CommonException)
     }
 
     // 创建模板校验编码是否存在

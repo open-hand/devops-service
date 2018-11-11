@@ -7,7 +7,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -31,7 +30,6 @@ public interface DevopsEnvironmentService {
      * @return List
      */
     List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active);
-
 
     /**
      * 项目下查询环境
@@ -120,7 +118,6 @@ public interface DevopsEnvironmentService {
 
     String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE);
 
-
     /**
      * 分页查询项目下用户权限
      *
@@ -156,7 +153,13 @@ public interface DevopsEnvironmentService {
      */
     void deleteDeactivatedEnvironment(Long envId);
 
-    void initMockService(SagaClient sagaClient);
-
+    /**
+     * 项目下查询集群信息
+     *
+     * @param projectId 项目id
+     * @return List
+     */
     List<DevopsClusterRepDTO> listDevopsCluster(Long projectId);
+
+    void initMockService(SagaClient sagaClient);
 }

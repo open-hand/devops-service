@@ -34,13 +34,10 @@ class IamRepositoryImplSpec extends Specification {
         ResponseEntity<OrganizationDO> organization = new ResponseEntity<>(organizationDO,HttpStatus.OK)
         Mockito.doReturn(organization).when(iamServiceClient).queryOrganization()
 
-
         when:
         def newOrganization = iamRepository.queryOrganization()
 
         then:
         newOrganization.getId()==1L
-
-
     }
 }

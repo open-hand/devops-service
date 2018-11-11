@@ -225,7 +225,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                 .getIngress(projectId, envId, pageRequest, params);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        devopsIngressDTOS.stream().forEach(devopsIngressDTO -> {
+        devopsIngressDTOS.forEach(devopsIngressDTO -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
