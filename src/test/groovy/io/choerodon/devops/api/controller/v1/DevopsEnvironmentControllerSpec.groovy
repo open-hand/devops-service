@@ -638,30 +638,71 @@ class DevopsEnvironmentControllerSpec extends Specification {
         then: '校验返回值'
         !list.isEmpty()
 
-        UserAttrDO userAttrDO3 = new UserAttrDO()
-        userAttrDO3.setIamUserId(3L)
-        userAttrMapper.delete(userAttrDO3)
-        UserAttrDO userAttrDO4 = new UserAttrDO()
-        userAttrDO4.setIamUserId(4L)
-        userAttrMapper.delete(userAttrDO4)
-
-        devopsEnvCommitMapper.deleteByPrimaryKey(1L)
-        applicationInstanceMapper.deleteByPrimaryKey(1L)
-        applicationInstanceMapper.deleteByPrimaryKey(2L)
-        devopsServiceRepository.delete(1L)
-        devopsServiceRepository.delete(2L)
-        devopsServiceRepository.delete(3L)
-        devopsEnvGroupMapper.deleteByPrimaryKey(1L)
-        devopsEnvGroupMapper.deleteByPrimaryKey(2L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(2L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(3L)
-        devopsClusterMapper.deleteByPrimaryKey(1L)
-        devopsClusterProPermissionMapper.deleteByPrimaryKey(1L)
-
-        DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO()
-        devopsEnvUserPermissionDO.setEnvId(1L)
-        devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO)
+        // 删除user，保留默认初始化的1号用户
+        List<UserAttrDO> list0 = userAttrMapper.selectAll()
+        if (list0 != null && !list0.isEmpty()) {
+            for (UserAttrDO e : list0) {
+                if (e.getIamUserId() != 1L) {
+                    userAttrMapper.delete(e)
+                }
+            }
+        }
+        // 删除envCommit
+        List<DevopsEnvCommitDO> list1 = devopsEnvCommitMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvCommitDO e : list1) {
+                devopsEnvCommitMapper.delete(e)
+            }
+        }
+        // 删除appInstance
+        List<ApplicationInstanceDO> list2 = applicationInstanceMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (ApplicationInstanceDO e : list2) {
+                applicationInstanceMapper.delete(e)
+            }
+        }
+        // 删除service
+        List<DevopsServiceDO> list3 = devopsServiceMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (DevopsServiceDO e : list3) {
+                devopsServiceMapper.delete()
+            }
+        }
+        // 删除envGroup
+        List<DevopsEnvGroupDO> list4 = devopsEnvGroupMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (DevopsEnvGroupDO e : list4) {
+                devopsEnvGroupMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list5 = devopsEnvironmentMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (DevopsEnvironmentDO e : list5) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除cluster
+        List<DevopsClusterDO> list6 = devopsClusterMapper.selectAll()
+        if (list6 != null && !list6.isEmpty()) {
+            for (DevopsClusterDO e : list6) {
+                devopsClusterMapper.delete(e)
+            }
+        }
+        // 删除clusterProPermission
+        List<DevopsClusterProPermissionDO> list7 = devopsClusterProPermissionMapper.selectAll()
+        if (list7 != null && !list7.isEmpty()) {
+            for (DevopsClusterProPermissionDO e : list7) {
+                devopsClusterProPermissionMapper.delete(e)
+            }
+        }
+        // 删除envUserPermission
+        List<DevopsEnvUserPermissionDO> list8 = devopsEnvUserPermissionMapper.selectAll()
+        if (list8 != null && !list8.isEmpty()) {
+            for (DevopsEnvUserPermissionDO e : list8) {
+                devopsEnvUserPermissionMapper.delete(e)
+            }
+        }
     }
 
     def "DeleteDeactivatedEnvironment"() {
