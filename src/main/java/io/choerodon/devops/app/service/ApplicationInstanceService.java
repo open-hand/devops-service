@@ -174,7 +174,6 @@ public interface ApplicationInstanceService {
 
     ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
 
-
     DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
 
     DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);

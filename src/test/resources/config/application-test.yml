@@ -9,6 +9,10 @@ spring:
     password: sa
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Mysql;TRACE_LEVEL_SYSTEM_OUT=2;
     username: sa
+  # 使用本地docker里的mysql
+  #    username: root
+  #    password: root
+  #    url: jdbc:mysql://192.168.99.100:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration,org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   h2:
@@ -40,8 +44,3 @@ choerodon:
       thread-num: 2 # saga消息消费线程池大小
       max-poll-size: 200 # 每次拉取消息最大数量
       poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
-# 使用本地docker里的mysql
-#datasource:
-#  username: root
-#  password: root
-#  url: jdbc:mysql://192.168.99.100:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false

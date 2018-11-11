@@ -125,12 +125,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 List<DevopsEnvPodDTO> newDevopsEnvPodDTO = new ArrayList<>();
                 devopsEnvPodDTOS.forEach(devopsEnvPodDTO -> {
                             String podName = devopsEnvPodDTO.getName();
-                            String tmp = podName.substring(0, podName.lastIndexOf("-"));
-                            tmp = tmp.substring(0, tmp.lastIndexOf("-"));
+                    String tmp = podName.substring(0, podName.lastIndexOf('-'));
+                    tmp = tmp.substring(0, tmp.lastIndexOf('-'));
                             if (deploymentDTO.getName().equals(tmp)) {
                                 newDevopsEnvPodDTO.add(devopsEnvPodDTO);
                             }
-
                         }
                 );
                 deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
@@ -144,17 +143,21 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
 
-        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository.listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream().filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true).map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
+                .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                .filter(DevopsEnvUserPermissionE::getPermitted).map(DevopsEnvUserPermissionE::getEnvId)
+                .collect(Collectors.toList());
 
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-
         if (devopsEnvUserPermissionRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-            permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream().map(DevopsEnvironmentE::getId).collect(Collectors.toList());
+            permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream()
+                    .map(DevopsEnvironmentE::getId).collect(Collectors.toList());
         }
 
-        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId, permissionEnvIds);
-        List<ApplicationLatestVersionDO> appLatestVersionList =
-                applicationVersionRepository.listAppLatestVersion(projectId);
+        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId,
+                permissionEnvIds);
+        List<ApplicationLatestVersionDO> appLatestVersionList = applicationVersionRepository
+                .listAppLatestVersion(projectId);
         Map<Long, ApplicationLatestVersionDO> latestVersionList = appLatestVersionList.stream()
                 .collect(Collectors.toMap(ApplicationLatestVersionDO::getAppId, t -> t, (a, b) -> b));
         Map<Long, Integer> appInstancesListMap = new HashMap<>();
@@ -385,7 +388,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return pageDeployDetailDTOS;
     }
 
-
     @Override
     public ReplaceResult queryValue(Long instanceId) {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
@@ -447,14 +449,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(devopsEnvPreviewInstanceDTO.getId());
                 for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
                     List<DevopsEnvPodDTO> newDevopsEnvPodDTO = new ArrayList<>();
-                    devopsEnvPodDTOS.stream().forEach(devopsEnvPodDTO -> {
+                    devopsEnvPodDTOS.forEach(devopsEnvPodDTO -> {
                                 String podName = devopsEnvPodDTO.getName();
-                                String tmp = podName.substring(0, podName.lastIndexOf("-"));
-                                tmp = tmp.substring(0, tmp.lastIndexOf("-"));
+                        String tmp = podName.substring(0, podName.lastIndexOf('-'));
+                        tmp = tmp.substring(0, tmp.lastIndexOf('-'));
                                 if (deploymentDTO.getName().equals(tmp)) {
                                     newDevopsEnvPodDTO.add(devopsEnvPodDTO);
                                 }
-
                             }
                     );
                     deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
@@ -522,7 +523,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
-
         ApplicationInstanceE beforeApplicationInstanceE = applicationInstanceRepository.selectByCode(code, applicationDeployDTO.getEnvironmentId());
         DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
         if (beforeApplicationInstanceE != null) {
@@ -552,7 +552,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
                     applicationInstanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), filePath);
-            ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository.selectByCode(code, applicationDeployDTO.getEnvironmentId());
+            ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository
+                    .selectByCode(code, applicationDeployDTO.getEnvironmentId());
             DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
             if (afterApplicationInstanceE != null) {
                 afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterApplicationInstanceE.getCommandId());
