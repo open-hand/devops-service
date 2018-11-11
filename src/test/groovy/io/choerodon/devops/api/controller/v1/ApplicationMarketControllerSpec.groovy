@@ -346,17 +346,56 @@ class ApplicationMarketControllerSpec extends Specification {
         restTemplate.postForObject("/v1/projects/1/apps_market/export", dtoList, Object.class)
 
         then: '验证返回值'
-        applicationMapper.deleteByPrimaryKey(1L)
-        applicationMapper.deleteByPrimaryKey(2L)
-        applicationVersionMapper.deleteByPrimaryKey(1L)
-        applicationVersionMapper.deleteByPrimaryKey(2L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-        applicationVersionReadmeMapper.deleteByPrimaryKey(1L)
-        applicationVersionReadmeMapper.deleteByPrimaryKey(2L)
-        applicationVersionValueMapper.deleteByPrimaryKey(1L)
-        applicationMarketMapper.deleteByPrimaryKey(1L)
-        applicationMarketMapper.deleteByPrimaryKey(2L)
-        applicationInstanceMapper.deleteByPrimaryKey(1L)
+
+        // 删除app
+        List<ApplicationDO> list = applicationMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationDO e : list) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除appVersion
+        List<ApplicationVersionDO> list1 = applicationVersionMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (ApplicationVersionDO e : list1) {
+                applicationVersionMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list2 = devopsEnvironmentMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (DevopsEnvironmentDO e : list2) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除appVersionReadme
+        List<ApplicationVersionReadmeDO> list3 = applicationVersionReadmeMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (ApplicationVersionReadmeDO e : list3) {
+                applicationVersionReadmeMapper.delete(e)
+            }
+        }
+        // 删除appVersionValue
+        List<ApplicationVersionValueDO> list4 = applicationVersionValueMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (ApplicationVersionValueDO e : list4) {
+                applicationVersionValueMapper.delete(e)
+            }
+        }
+        // 删除appMarket
+        List<DevopsAppMarketDO> list5 = applicationMarketMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (DevopsAppMarketDO e : list5) {
+                applicationMarketMapper.delete(e)
+            }
+        }
+        // 删除appInstance
+        List<ApplicationInstanceDO> list6 = applicationInstanceMapper.selectAll()
+        if (list6 != null && !list6.isEmpty()) {
+            for (ApplicationInstanceDO e : list6) {
+                applicationInstanceMapper.delete(e)
+            }
+        }
     }
 
     // 清除测试数据
