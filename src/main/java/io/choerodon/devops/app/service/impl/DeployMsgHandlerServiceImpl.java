@@ -1508,6 +1508,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             logger.info("the cluster is not exist:" + upgradeCluster.getToken());
             return;
         }
+        if (devopsClusterE.getInit()) {
+            logger.info("the cluster has bean init:" + devopsClusterE.getName());
+            return;
+        }
         if (upgradeCluster.getEnvs() != null) {
             upgradeCluster.getEnvs().forEach(clusterEnv -> {
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(clusterEnv.getEnvId());
@@ -1524,6 +1528,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 }
             });
         }
+        devopsClusterE.setInit(true);
         devopsClusterRepository.update(devopsClusterE);
         GitConfigDTO gitConfigDTO = envUtil.getGitConfig(devopsClusterE.getId());
         Msg initClusterEnv = new Msg();

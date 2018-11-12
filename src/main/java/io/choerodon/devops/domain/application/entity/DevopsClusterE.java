@@ -14,6 +14,7 @@ public class DevopsClusterE {
     private Boolean skipCheckProjectPermission;
     private String choerodonId;
     private String namespaces;
+    private Boolean  isInit;
 
     public DevopsClusterE() {
     }
@@ -119,4 +120,11 @@ public class DevopsClusterE {
         this.namespaces = namespaces;
     }
 
+    public Boolean getInit() {
+        return isInit;
+    }
+
+    public void setInit(Boolean init) {
+        isInit = init;
+    }
 }

@@ -25,6 +25,7 @@ public class DevopsClusterDO extends AuditDomain {
     private Boolean skipCheckProjectPermission;
     private String choerodonId;
     private String namespaces;
+    private Boolean isInit;
 
 
     public Long getId() {
@@ -97,5 +98,13 @@ public class DevopsClusterDO extends AuditDomain {
 
     public void setNamespaces(String namespaces) {
         this.namespaces = namespaces;
+    }
+
+    public Boolean getInit() {
+        return isInit;
+    }
+
+    public void setInit(Boolean init) {
+        isInit = init;
     }
 }

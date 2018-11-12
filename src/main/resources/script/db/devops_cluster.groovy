@@ -33,6 +33,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
                 }
             }
 
-
+    changeSet(author: 'younger', id: '2018-11-12-add-column')
+            {
+                addColumn(tableName: 'devops_cluster') {
+                    column(name: 'is_init',type: 'TINYINT UNSIGNED',remarks:'集群是否被初始化', afterColumn: 'skip_check_project_permission')
+                }
+            }
 
 }
