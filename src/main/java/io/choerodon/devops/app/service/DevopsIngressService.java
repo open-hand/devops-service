@@ -21,7 +21,7 @@ public interface DevopsIngressService {
      * @param devopsIngressDTO 域名参数
      * @param projectId        项目Id
      */
-    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, Long envId);
+    void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId);
 
     /**
      * 项目下创建域名,GitOps

@@ -181,6 +181,12 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case STATUS_SYNC:
                 deployMsgHandlerService.gitOpsCommandSyncEventResult(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
+            case NAMESPACE_UPDATE:
+                deployMsgHandlerService.updateNamespaces(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case UPGRADE_CLUSTER:
+                deployMsgHandlerService.upgradeCluster(msg.getKey(), msg.getPayload());
+                break;
             default:
                 msg.setDispatch(false);
                 break;

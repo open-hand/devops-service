@@ -9,25 +9,21 @@ image:
   pullPolicy: Always
 
 preJob:
+  timeout: 300
+  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.6
   preConfig:
     enable: true
-    timeout: 300
     configFile: application.yml
-    mysql:
-      host: 192.168.12.175
-      port: 3306
-      database: manager_service
-      username: root
-      password: choerodon
+    datasource:
+      url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      username: username
+      password: password
   preInitDB:
     enable: true
-    timeout: 300
-    mysql:
-      host: 192.168.12.175
-      port: 3306
-      database: devops_service
-      username: root
-      password: choerodon
+    datasource:
+      url: jdbc:mysql://localhost:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      username: username
+      password: password
 
 deployment:
   managementPort: 8061

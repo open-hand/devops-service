@@ -2,7 +2,6 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -16,15 +15,10 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
-import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
@@ -211,7 +205,9 @@ public class IamRepositoryImpl implements IamRepository {
         try {
             return iamServiceClient
                     .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
-                            projectId, roleAssignmentSearchDTO).getBody();
+
+                            projectId, false, roleAssignmentSearchDTO)
+                    .getBody();
         } catch (FeignException e) {
             LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
         }
@@ -220,28 +216,12 @@ public class IamRepositoryImpl implements IamRepository {
 
     @Override
     public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
-                                                                String searchParams) {
+                                                                Boolean doPage, String searchParams) {
         try {
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
-            if (searchParams != null && !"".equals(searchParams)) {
-                Map maps = gson.fromJson(searchParams, Map.class);
-                Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
-                String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
-                roleAssignmentSearchDTO.setParam(new String[]{param});
-                if (searchParamMap.get("loginName") != null) {
-                    String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
-                    String subLogin = loginName.substring(1, loginName.length() - 1);
-                    roleAssignmentSearchDTO.setLoginName(subLogin);
-                }
-                if (searchParamMap.get("realName") != null) {
-                    String realName = TypeUtil.objToString(searchParamMap.get("realName"));
-                    String subReal = realName.substring(1, realName.length() - 1);
-                    roleAssignmentSearchDTO.setRealName(subReal);
-                }
-            }
             ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient
                     .queryUserByProjectId(projectId,
-                            pageRequest.getPage(), pageRequest.getSize(), roleAssignmentSearchDTO);
+                            pageRequest.getPage(), pageRequest.getSize(), doPage, roleAssignmentSearchDTO);
             return userEPageResponseEntity.getBody();
         } catch (FeignException e) {
             LOGGER.error("get user permission by project id {} error", projectId);
@@ -270,7 +250,8 @@ public class IamRepositoryImpl implements IamRepository {
             return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
-            return null; }
+            return null;
+        }
     }
 
     @Override

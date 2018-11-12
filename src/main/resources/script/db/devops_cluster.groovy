@@ -25,6 +25,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
     }
 
 
+    changeSet(author: 'younger', id: '2018-11-11-add-column')
+            {
+                addColumn(tableName: 'devops_cluster') {
+                    column(name: 'choerodon_id',type: 'VARCHAR(64)',remarks:'平台标识', afterColumn: 'token')
+                    column(name: 'namespaces', type: 'TEXT', remarks: '命名空间列表', afterColumn:'choerodon_id')
+                }
+            }
+
 
 
 }

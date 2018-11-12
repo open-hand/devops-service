@@ -10,10 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
-import io.choerodon.devops.api.dto.iam.UserDTO;
-import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
@@ -67,12 +63,14 @@ public interface IamServiceClient {
             @RequestParam("size") int size,
             @RequestParam(name = "role_id") Long roleId,
             @PathVariable(name = "project_id") Long sourceId,
+            @RequestParam(name = "doPage") Boolean doPage,
             @RequestBody RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     @PostMapping(value = "/v1/projects/{project_id}/role_members/users/roles")
     ResponseEntity<Page<UserWithRoleDTO>> queryUserByProjectId(@PathVariable("project_id") Long projectId,
                                                                @RequestParam("page") int page,
                                                                @RequestParam("size") int size,
+                                                               @RequestParam("doPage") Boolean doPage,
                                                                @RequestBody @Valid RoleAssignmentSearchDTO roleAssignmentSearchDTO);
 
     @GetMapping(value = "/v1/users/{id}/project_roles")

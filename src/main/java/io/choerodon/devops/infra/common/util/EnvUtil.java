@@ -3,12 +3,21 @@ package io.choerodon.devops.infra.common.util;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.GitConfigDTO;
+import io.choerodon.devops.api.dto.GitEnvConfigDTO;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
 
@@ -22,8 +31,15 @@ import io.choerodon.websocket.helper.EnvSession;
 @Service
 public class EnvUtil {
 
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Value("${agent.version}")
     private String agentExpectVersion;
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -113,4 +129,27 @@ public class EnvUtil {
                 .map(t -> t.getValue().getClusterId())
                 .collect(Collectors.toCollection(ArrayList::new));
     }
+
+
+    public GitConfigDTO getGitConfig(Long clusterId) {
+        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.listByClusterId(clusterId);
+        GitConfigDTO gitConfigDTO = new GitConfigDTO();
+        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
+        devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
+            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+
+            GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
+            gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
+            gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
+            gitEnvConfigDTO.setGitUrl(repoUrl);
+            gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
+            gitEnvConfigDTOS.add(gitEnvConfigDTO);
+        });
+        gitConfigDTO.setEnvs(gitEnvConfigDTOS);
+        gitConfigDTO.setGitHost(gitlabSshUrl);
+        return gitConfigDTO;
+    }
+
 }

@@ -23,6 +23,8 @@ public class DevopsClusterDO extends AuditDomain {
     private String description;
     private String token;
     private Boolean skipCheckProjectPermission;
+    private String choerodonId;
+    private String namespaces;
 
 
     public Long getId() {
@@ -79,5 +81,21 @@ public class DevopsClusterDO extends AuditDomain {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getChoerodonId() {
+        return choerodonId;
+    }
+
+    public void setChoerodonId(String choerodonId) {
+        this.choerodonId = choerodonId;
+    }
+
+    public String getNamespaces() {
+        return namespaces;
+    }
+
+    public void setNamespaces(String namespaces) {
+        this.namespaces = namespaces;
     }
 }

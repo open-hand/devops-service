@@ -14,6 +14,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO;
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper;
@@ -32,6 +33,13 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     @Override
     public DevopsClusterE create(DevopsClusterE devopsClusterE) {
         DevopsClusterDO devopsClusterDO = ConvertHelper.convert(devopsClusterE, DevopsClusterDO.class);
+        List<DevopsClusterDO> devopsClusterDOS = devopsClusterMapper.selectAll();
+        String choerodonId = GenerateUUID.generateUUID().split("-")[0];
+        if (!devopsClusterDOS.isEmpty()) {
+            devopsClusterDO.setChoerodonId(devopsClusterDOS.get(0).getChoerodonId());
+        } else {
+            devopsClusterDO.setChoerodonId(choerodonId);
+        }
         if (devopsClusterMapper.insert(devopsClusterDO) != 1) {
             throw new CommonException("error.devops.cluster.insert");
         }
@@ -84,5 +92,12 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     @Override
     public void delete(Long clusterId) {
         devopsClusterMapper.deleteByPrimaryKey(clusterId);
+    }
+
+    @Override
+    public DevopsClusterE queryByToken(String token) {
+        DevopsClusterDO devopsClusterDO = new DevopsClusterDO();
+        devopsClusterDO.setToken(token);
+        return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDO), DevopsClusterE.class);
     }
 }

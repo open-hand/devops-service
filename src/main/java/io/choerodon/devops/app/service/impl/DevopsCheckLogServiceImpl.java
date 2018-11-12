@@ -390,10 +390,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 .collect(Collectors.toList());
         projectIds.forEach(projectId -> {
             PageRequest pageRequest = new PageRequest();
-            pageRequest.setPage(0);
-            pageRequest.setSize(100);
-            Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId,
-                    pageRequest, null);
+
+            Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, pageRequest, false, null);
             if (!allProjectUser.getContent().isEmpty()) {
                 allProjectUser.forEach(userWithRoleDTO -> {
                     if (userWithRoleDTO.getRoles().stream().noneMatch(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))) {
@@ -409,8 +407,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         gitlabUserId);
                                 if (groupMemberE != null) {
                                     gitlabGroupMemberRepository.deleteMember(
-                                            false ? TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId())
-                                                    : TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
+                                            TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                                             gitlabUserId);
                                 }
                             }

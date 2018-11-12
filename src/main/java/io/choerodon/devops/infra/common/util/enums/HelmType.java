@@ -48,6 +48,8 @@ public enum HelmType {
     STATUS_SYNC_EVENT("status_sync_event"),
     STATUS_SYNC("status_sync"),
     CERT_ISSUED("cert_issued"),
+    NAMESPACE_UPDATE("namespace_update"),
+    UPGRADE_CLUSTER("upgrade"),
     CERT_FAILED("cert_failed");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
@@ -159,6 +161,10 @@ public enum HelmType {
                 return HelmType.STATUS_SYNC;
             case "status_sync_event":
                 return HelmType.STATUS_SYNC_EVENT;
+            case "upgrade":
+                return HelmType.UPGRADE_CLUSTER;
+            case "namespace_update":
+                return HelmType.NAMESPACE_UPDATE;
             default:
                 break;
         }

@@ -24,4 +24,6 @@ public interface DevopsClusterRepository {
 
     void delete(Long clusterId);
 
+    DevopsClusterE queryByToken(String token);
+
 }

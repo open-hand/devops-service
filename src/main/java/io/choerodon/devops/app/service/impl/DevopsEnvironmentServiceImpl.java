@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
@@ -119,8 +120,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public void create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
         devopsEnvironmentE.initProjectE(projectId);
-        devopsEnviromentRepository.checkCode(devopsEnvironmentE);
-        devopsEnviromentRepository.checkName(devopsEnvironmentE);
+        checkCode(projectId, devopsEnviromentDTO.getClusterId(), devopsEnviromentDTO.getCode());
+        checkName(projectId, devopsEnviromentDTO.getClusterId(), devopsEnviromentDTO.getName());
         devopsEnvironmentE.initActive(true);
         devopsEnvironmentE.initConnect(false);
         devopsEnvironmentE.initDevopsClusterEById(devopsEnviromentDTO.getClusterId());
@@ -165,7 +166,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
             sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", ""));
-            deployService.initCluster(devopsEnviromentDTO.getClusterId());
+            deployService.initEnv(devopsEnvironmentE, devopsEnviromentDTO.getClusterId());
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage(), e);
         }
@@ -413,9 +414,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
+        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
         devopsEnvironmentE.initProjectE(projectId);
         devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setCode(code);
+        if (devopsClusterE.getNamespaces() != null) {
+            JSONArray.parseArray(devopsClusterE.getNamespaces(), String.class).forEach(namespace -> {
+                if (namespace.equals(code)) {
+                    throw new CommonException("error.code.exist");
+                }
+            });
+        }
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
     }
 
@@ -503,7 +512,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
         List<Long> userIds = gitlabProjectPayload.getUserIds();
         // 获取项目下所有项目成员
-        Page<UserDTO> allProjectMemberPage = getMembersFromProject(null, projectId, "");
+        Page<UserDTO> allProjectMemberPage = getMembersFromProject(new PageRequest(), projectId, "");
         // 所有项目成员中有权限的
         if (userIds != null && !userIds.isEmpty()) {
             allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {

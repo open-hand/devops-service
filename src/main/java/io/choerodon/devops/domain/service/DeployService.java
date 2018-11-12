@@ -17,4 +17,6 @@ public interface DeployService {
 
     void deleteEnv(Long envId, String code, Long clusterId);
 
+    void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId);
+
 }

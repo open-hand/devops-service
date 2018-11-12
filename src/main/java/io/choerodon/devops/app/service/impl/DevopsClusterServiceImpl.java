@@ -78,7 +78,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterE.setToken(GenerateUUID.generateUUID());
         devopsClusterE.setOrganizationId(organizationId);
         devopsClusterE = devopsClusterRepository.create(devopsClusterE);
-        if (!devopsClusterE.getSkipCheckProjectPermission()) {
+        if (!devopsClusterE.getSkipCheckProjectPermission() && devopsClusterReqDTO.getProjects() != null) {
             for (Long projectId : devopsClusterReqDTO.getProjects()) {
                 DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                 devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
@@ -94,6 +94,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         params.put("{VERSION}", agentExpectVersion);
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
+        params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{CLUSTERID}", devopsClusterE
                 .getId().toString());
@@ -194,6 +195,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
         params.put("{REPOURL}", agentRepoUrl);
+        params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
         params.put("{CLUSTERID}", devopsClusterE
                 .getId().toString());
         return FileUtil.replaceReturnString(inputStream, params);

@@ -583,7 +583,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         DevopsServiceE beforeDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());
         DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
