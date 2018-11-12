@@ -2,11 +2,12 @@ package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.oauth.CustomUserDetails
-import io.choerodon.devops.domain.service.DeployService
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
+import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -83,30 +84,30 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(GitUtil)
     }
 
-    @Bean("mockDeployService")
+    @Bean("mockCommandSender")
     @Primary
-    DeployService deployService() {
-        detachedMockFactory.Mock(DeployService)
+    CommandSender commandSender() {
+        detachedMockFactory.Mock(CommandSender)
     }
 
     @PostConstruct
     void init() {
         liquibaseExecutor.execute(new String()[])
-//        initSqlFunction()
+        initSqlFunction()
         setTestRestTemplateJWT()
     }
 
-//    void initSqlFunction() {
-//        //连接H2数据库
-//        Class.forName("org.h2.Driver")
-//        Connection conn = DriverManager.
-//                getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
-//        Statement stat = conn.createStatement()
-//        //创建 SQL的IF函数，用JAVA的方法代替函数
-//        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.common.util.MybatisFunctionTestUtil.binaryFunction\"")
-//        stat.close()
-//        conn.close()
-//    }
+    void initSqlFunction() {
+        //连接H2数据库
+        Class.forName("org.h2.Driver")
+        Connection conn = DriverManager.
+                getConnection(dataBaseUrl, dataBaseUsername, dataBasePassword)
+        Statement stat = conn.createStatement()
+        //创建 SQL的IF函数，用JAVA的方法代替函数
+        stat.execute("CREATE ALIAS IF NOT EXISTS BINARY FOR \"io.choerodon.devops.infra.common.util.MybatisFunctionTestUtil.binaryFunction\"")
+        stat.close()
+        conn.close()
+    }
 
     private void setTestRestTemplateJWT() {
         testRestTemplate.getRestTemplate().setRequestFactory(new HttpComponentsClientHttpRequestFactory())

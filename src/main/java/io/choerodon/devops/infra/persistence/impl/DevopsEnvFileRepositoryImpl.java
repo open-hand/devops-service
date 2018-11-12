@@ -6,22 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvFileRepository;
 import io.choerodon.devops.infra.dataobject.DevopsEnvFileDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileMapper;
-import io.choerodon.mybatis.pagehelper.PageHelper;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 @Component
 public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
 
     @Autowired
     DevopsEnvFileMapper devopsEnvFileMapper;
-
 
     @Override
     public DevopsEnvFileE create(DevopsEnvFileE devopsEnvFileE) {
@@ -37,11 +32,6 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
         DevopsEnvFileDO devopsEnvFileDO = new DevopsEnvFileDO();
         devopsEnvFileDO.setEnvId(envId);
         return ConvertHelper.convertList(devopsEnvFileMapper.select(devopsEnvFileDO), DevopsEnvFileE.class);
-    }
-
-    @Override
-    public Page<DevopsEnvFileE> pageByEnvId(Long envId, PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(PageHelper.doPage(pageRequest.getPage(), pageRequest.getSize(), () -> devopsEnvFileMapper.pageByEnvId(envId)), DevopsEnvFileE.class);
     }
 
     @Override
@@ -63,7 +53,8 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
 
     @Override
     public DevopsEnvFileE queryByEnvAndPathAndCommits(Long envId, String path, List<String> commits) {
-        return ConvertHelper.convert(devopsEnvFileMapper.queryByEnvAndPathAndCommits(envId, path, commits), DevopsEnvFileE.class);
+        return ConvertHelper
+                .convert(devopsEnvFileMapper.queryByEnvAndPathAndCommits(envId, path, commits), DevopsEnvFileE.class);
     }
 
     @Override
@@ -87,6 +78,4 @@ public class DevopsEnvFileRepositoryImpl implements DevopsEnvFileRepository {
         devopsEnvFileDO.setFilePath(path);
         return ConvertHelper.convertList(devopsEnvFileMapper.select(devopsEnvFileDO), DevopsEnvFileE.class);
     }
-
-
 }

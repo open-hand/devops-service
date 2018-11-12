@@ -2,21 +2,32 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.DeployFrequencyDTO
+import io.choerodon.devops.api.dto.DeployTimeDTO
+import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO
+import io.choerodon.devops.api.dto.DevopsEnvResourceDTO
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
+import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult
 import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.websocket.Msg
+import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.helper.EnvSession
 import org.mockito.Mockito
@@ -55,6 +66,9 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Autowired
     @Qualifier("mockGitUtil")
     private GitUtil gitUtil
+    @Autowired
+    @Qualifier("mockCommandSender")
+    private CommandSender commandSender
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -82,7 +96,17 @@ class ApplicationInstanceControllerSpec extends Specification {
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper
     @Autowired
     private ApplicationVersionValueMapper applicationVersionValueMapper
+    @Autowired
+    private DevopsCommandEventMapper devopsCommandEventMapper
+    @Autowired
+    private DevopsEnvCommandLogMapper devopsEnvCommandLogMapper
+    @Autowired
+    private DevopsEnvFileResourceMapper devopsEnvFileResourceMapper
+    @Autowired
+    private DevopsEnvFileMapper devopsEnvFileMapper
 
+    @Shared
+    Map<String, Object> searchParam = new HashMap<>()
     @Shared
     ApplicationDO applicationDO = new ApplicationDO()
     @Shared
@@ -102,7 +126,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Shared
     DevopsEnvResourceDO devopsEnvResourceDO5 = new DevopsEnvResourceDO()
     @Shared
-    DevopsEnvResourceDO devopsEnvResourceDO0 = new DevopsEnvResourceDO()
+    DevopsEnvResourceDO devopsEnvResourceDO6 = new DevopsEnvResourceDO();
     @Shared
     DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
@@ -124,22 +148,35 @@ class ApplicationInstanceControllerSpec extends Specification {
     @Shared
     DevopsEnvResourceDetailDO devopsEnvResourceDetailDO5 = new DevopsEnvResourceDetailDO()
     @Shared
-    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO0 = new DevopsEnvResourceDetailDO()
+    DevopsEnvResourceDetailDO devopsEnvResourceDetailDO6 = new DevopsEnvResourceDetailDO()
     @Shared
     DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO()
+    @Shared
+    DevopsCommandEventDO devopsCommandEventDO = new DevopsCommandEventDO()
+    @Shared
+    DevopsEnvCommandLogDO devopsEnvCommandLogDO = new DevopsEnvCommandLogDO()
+    @Shared
+    DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+    @Shared
+    DevopsEnvFileDO devopsEnvFileDO = new DevopsEnvFileDO()
 
     @Autowired
     private IamRepository iamRepository
-//    @Autowired
-//    private GitlabRepository gitlabRepository
+    @Autowired
+    private GitlabRepository gitlabRepository
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository
     @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository
 
-    // SagaClient sagaClient = Mockito.mock(SagaClient.class)
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setupSpec() {
+        Map<String, Object> params = new HashMap<>()
+        searchParam.put("searchParam", "")
+        searchParam.put("param", "")
+
         // de
         devopsEnvironmentDO.setId(1L)
         devopsEnvironmentDO.setClusterId(1L)
@@ -195,6 +232,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         applicationDO.setId(1L)
         applicationDO.setProjectId(1L)
         applicationDO.setName("appName")
+        applicationDO.setGitlabProjectId(1)
 
         // dai
         applicationInstanceDO.setId(1L)
@@ -246,10 +284,10 @@ class ApplicationInstanceControllerSpec extends Specification {
         devopsEnvResourceDO5.setResourceDetailId(5L)
         devopsEnvResourceDO5.setName("test-replicaset-123456-abcdef")
 
-        devopsEnvResourceDO0.setId(6)
-        devopsEnvResourceDO0.setKind(null)
-        devopsEnvResourceDO0.setAppInstanceId(1L)
-        devopsEnvResourceDO0.setResourceDetailId(6L)
+        devopsEnvResourceDO6.setId(6)
+        devopsEnvResourceDO6.setKind("Job")
+        devopsEnvResourceDO6.setAppInstanceId(1L)
+        devopsEnvResourceDO6.setResourceDetailId(6L)
 
         // derd
         devopsEnvResourceDetailDO.setId(1L)
@@ -265,25 +303,50 @@ class ApplicationInstanceControllerSpec extends Specification {
         devopsEnvResourceDetailDO4.setMessage("{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Ingress\",\"metadata\":{\"creationTimestamp\":\"2018-05-20T03:48:33Z\",\"generation\":1,\"labels\":{\"choerodon.io/release\":\"devops-service\"},\"name\":\"devops-service\",\"namespace\":\"choerodon-devops-prod\",\"resourceVersion\":\"4337962\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/choerodon-devops-prod/ingresses/devops-service\",\"uid\":\"aadd986d-5be0-11e8-a66e-00163e0e2443\"},\"spec\":{\"rules\":[{\"host\":\"devops.service.choerodon.com.cn\",\"http\":{\"paths\":[{\"backend\":{\"serviceName\":\"devops-service\",\"servicePort\":8060},\"path\":\"/\"}]}}]},\"status\":{\"loadBalancer\":{\"ingress\":[{}]}}}")
 
         devopsEnvResourceDetailDO5.setId(5L)
-        devopsEnvResourceDetailDO5.setMessage("{\"metadata\":{\"name\":\"agile-service-6c7c77bf88\",\"namespace\":\"choerodon-devops-prod\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/choerodon-devops-prod/replicasets/agile-service-6c7c77bf88\",\"uid\":\"a682bf2a-6d49-11e8-94ae-00163e0e2443\",\"resourceVersion\":\"5105851\",\"generation\":2,\"creationTimestamp\":\"2018-06-11T07:32:52Z\",\"labels\":{\"choerodon.io/metrics-port\":\"8379\",\"choerodon.io/release\":\"agile-service\",\"choerodon.io/service\":\"agile-service\",\"choerodon.io/version\":\"0.5.1\",\"pod-template-hash\":\"2737336944\"},\"annotations\":{\"deployment.kubernetes.io/desired-replicas\":\"1\",\"deployment.kubernetes.io/max-replicas\":\"2\",\"deployment.kubernetes.io/revision\":\"3\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"name\":\"agile-service\",\"uid\":\"9b62acbd-6b47-11e8-94ae-00163e0e2443\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"replicas\":0,\"selector\":{\"matchLabels\":{\"choerodon.io/release\":\"agile-service\",\"pod-template-hash\":\"2737336944\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"choerodon.io/metrics-port\":\"8379\",\"choerodon.io/release\":\"agile-service\",\"choerodon.io/service\":\"agile-service\",\"choerodon.io/version\":\"0.5.1\",\"pod-template-hash\":\"2737336944\"},\"annotations\":{\"choerodon.io/metrics-group\":\"spring-boot\",\"choerodon.io/metrics-path\":\"/prometheus\"}},\"spec\":{\"containers\":[{\"name\":\"agile-service\",\"image\":\"registry.choerodon.com.cn/choerodon-framework/agile-service:0.5.1\",\"ports\":[{\"name\":\"http\",\"containerPort\":8378,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"EUREKA_CLIENT_SERVICEURL_DEFAULTZONE\",\"value\":\"http://register-server.choerodon-devops-prod:8000/eureka/\"},{\"name\":\"SERVICES_ATTACHMENT_URL\",\"value\":\"https://minio.choerodon.com.cn/agile-service/\"},{\"name\":\"SPRING_CLOUD_CONFIG_URI\",\"value\":\"http://config-server.choerodon-devops-prod:8010/\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS\",\"value\":\"172.19.136.81:9092,172.19.136.82:9092,172.19.136.83:9092\"},{\"name\":\"SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES\",\"value\":\"172.19.136.81:2181,172.19.136.82:2181,172.19.136.83:2181\"},{\"name\":\"SPRING_DATASOURCE_PASSWORD\",\"value\":\"CAu0p8zL\"},{\"name\":\"SPRING_DATASOURCE_URL\",\"value\":\"jdbc:mysql://rm-uf65upic89q7007h5.mysql.rds.aliyuncs.com:3306/agile_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\"},{\"name\":\"SPRING_DATASOURCE_USERNAME\",\"value\":\"c7n_agile\"}],\"resources\":{\"limits\":{\"memory\":\"3Gi\"},\"requests\":{\"memory\":\"2Gi\"}},\"readinessProbe\":{\"exec\":{\"command\":[\"curl\",\"localhost:8379/health\"]},\"initialDelaySeconds\":120,\"timeoutSeconds\":10,\"periodSeconds\":10,\"successThreshold\":1,\"failureThreshold\":3},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}}},\"status\":{\"replicas\":0,\"observedGeneration\":2}}")
+        devopsEnvResourceDetailDO5.setMessage("{\"metadata\":{\"name\":\"springboot-14f93-55f7896455\",\"namespace\":\"ljt\",\"selfLink\":\"/apis/extensions/v1beta1/namespaces/ljt/replicasets/springboot-14f93-55f7896455\",\"uid\":\"5553489b-6c9b-11e8-ad82-525400d91faf\",\"resourceVersion\":\"24136809\",\"generation\":5,\"creationTimestamp\":\"2018-06-10T10:45:04Z\",\"labels\":{\"choerodon.io/application\":\"springboot\",\"choerodon.io/release\":\"springboot-14f93\",\"choerodon.io/version\":\"0.1.0-dev.20180530070103\",\"pod-template-hash\":\"1193452011\"},\"annotations\":{\"deployment.kubernetes.io/desired-replicas\":\"1\",\"deployment.kubernetes.io/max-replicas\":\"2\",\"deployment.kubernetes.io/revision\":\"5\",\"deployment.kubernetes.io/revision-history\":\"1,3\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"Deployment\",\"name\":\"springboot-14f93\",\"uid\":\"5550ab04-6c9b-11e8-8371-6a12b79743a2\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"replicas\":1,\"selector\":{\"matchLabels\":{\"choerodon.io/release\":\"springboot-14f93\",\"pod-template-hash\":\"1193452011\"}},\"template\":{\"metadata\":{\"creationTimestamp\":null,\"labels\":{\"choerodon.io/application\":\"springboot\",\"choerodon.io/release\":\"springboot-14f93\",\"choerodon.io/version\":\"0.1.0-dev.20180530070103\",\"pod-template-hash\":\"1193452011\"}},\"spec\":{\"containers\":[{\"name\":\"springboot-14f93\",\"image\":\"registry.saas.hand-china.com/operation-ystest1805192/springboot:0.1.0-dev.20180530070103\",\"ports\":[{\"name\":\"http\",\"containerPort\":8080,\"protocol\":\"TCP\"}],\"resources\":{\"limits\":{\"memory\":\"500Mi\"},\"requests\":{\"memory\":\"256Mi\"}},\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}}},\"status\":{\"replicas\":1,\"fullyLabeledReplicas\":1,\"readyReplicas\":1,\"availableReplicas\":1,\"observedGeneration\":5}}")
 
-        devopsEnvResourceDetailDO0.setId(6L)
-        devopsEnvResourceDetailDO0.setMessage(null)
+        devopsEnvResourceDetailDO6.setId(6L)
+        devopsEnvResourceDetailDO6.setMessage("{\"metadata\":{\"name\":\"cctestws-7bc7a-init-db\",\"namespace\":\"ljt\",\"selfLink\":\"/apis/batch/v1/namespaces/ljt/jobs/cctestws-7bc7a-init-db\",\"uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\",\"resourceVersion\":\"19435339\",\"creationTimestamp\":\"2018-06-11T03:10:13Z\",\"labels\":{\"choerodon.io/release\":\"cctestws-7bc7a\"},\"annotations\":{\"helm.sh/hook\":\"pre-install,pre-upgrade\",\"helm.sh/hook-weight\":\"1\"}},\"spec\":{\"parallelism\":1,\"completions\":1,\"activeDeadlineSeconds\":120,\"backoffLimit\":1,\"selector\":{\"matchLabels\":{\"controller-uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\"}},\"template\":{\"metadata\":{\"name\":\"cctestws-7bc7a-init-db\",\"creationTimestamp\":null,\"labels\":{\"controller-uid\":\"f56fcbf4-6d24-11e8-8371-6a12b79743a2\",\"job-name\":\"cctestws-7bc7a-init-db\"}},\"spec\":{\"volumes\":[{\"name\":\"tools-jar\",\"emptyDir\":{}}],\"initContainers\":[{\"name\":\"tools\",\"image\":\"registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.0\",\"command\":[\"sh\",\"-c\",\"cp -rf /var/choerodon/* /tools\"],\"resources\":{},\"volumeMounts\":[{\"name\":\"tools-jar\",\"mountPath\":\"/tools\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"containers\":[{\"name\":\"cctestws-7bc7a-init-db\",\"image\":\"registry.saas.hand-china.com/operation-ystest1805192/cctestws:1.8.1-hotfix-we.20180608135220\",\"command\":[\"/bin/sh\",\"-c\",\" java -Dspring.datasource.url=\\\"jdbc:mysql://192.168.12.175:3306/demo_service?useUnicode=true\\u0026characterEncoding=utf-8\\u0026useSSL=false\\\" -Dspring.datasource.username=root -Dspring.datasource.password=choerodon -Ddata.init=true -Ddata.jar=/cctestws.jar -jar /var/choerodon/choerodon-tool-liquibase.jar; \"],\"resources\":{},\"volumeMounts\":[{\"name\":\"tools-jar\",\"mountPath\":\"/var/choerodon\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"IfNotPresent\"}],\"restartPolicy\":\"Never\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"}}},\"status\":{\"conditions\":[{\"type\":\"Failed\",\"status\":\"True\",\"lastProbeTime\":\"2018-06-11T03:10:34Z\",\"lastTransitionTime\":\"2018-06-11T03:10:34Z\",\"reason\":\"BackoffLimitExceeded\",\"message\":\"Job has reach the specified backoff limit\"}],\"startTime\":\"2018-06-11T03:10:13Z\",\"failed\":1}}")
+
+        // dce
+        devopsCommandEventDO.setId(1L)
+        devopsCommandEventDO.setType("Job")
+        devopsCommandEventDO.setCommandId(1L)
+        devopsCommandEventDO.setName("commandEvent")
+
+        // dcl
+        devopsEnvCommandLogDO.setId(1L)
+        devopsEnvCommandLogDO.setLog()
+        devopsEnvCommandLogDO.setCommandId(1L)
+
+        // defr
+        devopsEnvFileResourceDO.setId(1L)
+        devopsEnvFileResourceDO.setEnvId(1L)
+        devopsEnvFileResourceDO.setResourceId(1L)
+        devopsEnvFileResourceDO.setResourceType("C7NHelmRelease")
+        devopsEnvFileResourceDO.setFilePath("filePath")
+
+        // def
+        devopsEnvFileDO.setId(1L)
+        devopsEnvFileDO.setEnvId(1L)
+        devopsEnvFileDO.setDevopsCommit("devopsCommit")
     }
 
     def setup() {
         iamRepository.initMockIamService(iamServiceClient)
-//        gitlabRepository.initMockService(gitlabServiceClient)
+        gitlabRepository.initMockService(gitlabServiceClient)
+        gitlabProjectRepository.initMockService(gitlabServiceClient)
         gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
+        projectDO.setName("testProject")
+        projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
         ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
         OrganizationDO organizationDO = new OrganizationDO()
         organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
+        organizationDO.setCode("org")
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
@@ -310,9 +373,38 @@ class ApplicationInstanceControllerSpec extends Specification {
         Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[].class))).thenReturn(projectDOPageResponseEntity)
 
         MemberDO memberDO = new MemberDO()
+        memberDO.setId(1)
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+
+        UserDO userDO = new UserDO()
+        userDO.setId(1L)
+        userDO.setLoginName("test")
+        userDO.setImageUrl("imageURL")
+        ResponseEntity<UserDO> responseEntity3 = new ResponseEntity<>(userDO, HttpStatus.OK)
+        Mockito.when(iamServiceClient.queryByLoginName(anyString())).thenReturn(responseEntity3)
+
+        List<PipelineDO> pipelineDOList = new ArrayList<>()
+        PipelineDO pipelineDO = new PipelineDO()
+        pipelineDO.setId(1)
+        io.choerodon.devops.infra.dataobject.gitlab.UserDO gitlabUser = new io.choerodon.devops.infra.dataobject.gitlab.UserDO()
+        pipelineDO.setRef("")
+        pipelineDO.setUser(gitlabUser)
+        gitlabUser.setId(1)
+        gitlabUser.setName("gitlabTestName")
+        pipelineDOList.add(pipelineDO)
+        ResponseEntity<List<PipelineDO>> responseEntity4 = new ResponseEntity<>(pipelineDOList, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.listPipeline(anyInt(), anyInt())).thenReturn(responseEntity4)
+
+        ResponseEntity<PipelineDO> responseEntity5 = new ResponseEntity<>(pipelineDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.getPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
+//
+//        ResponseEntity<MemberDO> responseEntity6 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+//        Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(responseEntity6)
+
+        ResponseEntity responseEntity6 = new ResponseEntity<>(HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)
     }
 
     def "PageByOptions"() {
@@ -331,6 +423,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         devopsEnvResourceMapper.insert(devopsEnvResourceDO3)
         devopsEnvResourceMapper.insert(devopsEnvResourceDO4)
         devopsEnvResourceMapper.insert(devopsEnvResourceDO5)
+        devopsEnvResourceMapper.insert(devopsEnvResourceDO6)
 
         applicationVersionMapper.insert(applicationVersionDO)
         applicationInstanceMapper.insert(applicationInstanceDO)
@@ -340,6 +433,12 @@ class ApplicationInstanceControllerSpec extends Specification {
         devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO3)
         devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO4)
         devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO5)
+        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO6)
+
+        devopsEnvCommandLogMapper.insert(devopsEnvCommandLogDO)
+        devopsCommandEventMapper.insert(devopsCommandEventDO)
+        devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
+        devopsEnvFileMapper.insert(devopsEnvFileDO)
 
         and: '初始化请求头'
         String infra = "{\"searchParam\":{},\"param\":\"\"}"
@@ -450,48 +549,313 @@ class ApplicationInstanceControllerSpec extends Specification {
 //        dto != null
 //    }
 
-    def "QueryVersionFeatures"() {
-    }
-
     def "ListByAppVersionId"() {
+        when: '查询运行中的实例'
+        def list = restTemplate.getForObject("/v1/projects/1/app_instances/options?envId=1&appId=1&appVersionId=1", List.class)
+
+        then: '校验返回值'
+        list.get(0)["code"] == "appInsCode"
     }
 
     def "ListByAppIdAndEnvId"() {
+        when: '环境下某应用运行中或失败的实例'
+        def list = restTemplate.getForObject("/v1/projects/1/app_instances/listByAppIdAndEnvId?envId=1&appId=1", List.class)
+
+        then: '校验返回值'
+        list.get(0)["code"] == "appInsCode"
     }
 
+
     def "ListResources"() {
+        when: '获取部署实例资源对象'
+        def dto = restTemplate.getForObject("/v1/projects/1/app_instances/1/resources", DevopsEnvResourceDTO.class)
+
+        then: '校验返回值'
+        dto.getPodDTOS().get(0)["name"] == "iam-service-56946b7b9f-42xnx"
+        dto.getServiceDTOS().get(0)["name"] == "config-server"
+        dto.getIngressDTOS().get(0)["name"] == "devops-service"
+        dto.getDeploymentDTOS().get(0)["name"] == "iam-service"
+        dto.getReplicaSetDTOS().get(0)["name"] == "springboot-14f93-55f7896455"
     }
 
     def "ListStages"() {
+        when: '获取部署实例hook阶段'
+        def list = restTemplate.getForObject("/v1/projects/1/app_instances/1/stages", List.class)
+
+        then: '校验返回值'
+        list.get(0)["stageName"] == "cctestws-7bc7a-init-db"
     }
 
     def "Stop"() {
+        given: 'mock envUtil'
+        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+
+        when: '校验返回值'
+        restTemplate.put("/v1/projects/1/app_instances/1/stop", null)
+
+        then:
+        devopsEnvCommandMapper.selectAll().get(1)["commandType"] == "stop"
     }
 
     def "Start"() {
+        given: '初始化已停止的实例'
+        ApplicationInstanceDO applicationInstanceDOStopped = new ApplicationInstanceDO()
+        applicationInstanceDOStopped.setId(2L)
+        applicationInstanceDOStopped.setEnvId(1L)
+        applicationInstanceDOStopped.setStatus("stopped")
+        applicationInstanceMapper.insert(applicationInstanceDOStopped)
+
+        and: '初始化对应的envCommand'
+        DevopsEnvCommandDO devopsEnvCommandDOStart = new DevopsEnvCommandDO()
+        devopsEnvCommandDOStart.setId(3L)
+        devopsEnvCommandDOStart.setObject("instance")
+        devopsEnvCommandDOStart.setObjectId(2L)
+        devopsEnvCommandMapper.insert(devopsEnvCommandDOStart)
+
+        when: '实例重启'
+        restTemplate.put("/v1/projects/1/app_instances/2/start", null)
+
+        then: '校验返回值'
+        devopsEnvCommandMapper.selectAll().get(3)["commandType"] == "restart"
     }
 
     def "Restart"() {
+        given: 'mock commandSender'
+        commandSender.sendMsg(_ as Msg) >> null
+
+        when: '实例重新部署'
+        restTemplate.put("/v1/projects/1/app_instances/1/restart", null)
+
+        then: '校验返回值'
+        devopsEnvCommandMapper.selectAll().get(4)["commandType"] == "commandType"
     }
 
     def "Delete"() {
+        given: 'mock envUtil'
+        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+
+        and: 'mock gitUtil'
+        gitUtil.cloneBySsh(_ as String, _ as String) >> null
+
+        and: '手动创建文件目录'
+        File file = new File("gitops/org/pro/envCode")
+        file.mkdirs()
+
+        when: '实例删除'
+        restTemplate.delete("/v1/projects/1/app_instances/1/delete")
+
+        then: '校验是否删除'
+        devopsEnvCommandMapper.selectAll().get(5)["commandType"] == "delete"
     }
 
     def "ListByEnv"() {
-    }
+        given: 'mock envListener'
+        Map<String, EnvSession> envs = new HashMap<>()
+        EnvSession envSession = new EnvSession()
+        envSession.setVersion("0.5.0")
+        envSession.setClusterId(1L)
+        envs.put("testenv", envSession)
+        envListener.connectedEnv() >> envs
 
-    def "ListEnvFiles"() {
+        when: '环境总览实例查询'
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/1/listByEnv", "{\"searchParam\":{},\"param\":\"\"}", DevopsEnvPreviewDTO.class)
+
+        then: '校验返回值'
+        dto.getDevopsEnvPreviewAppDTOS().get(0)["appName"] == "appName"
     }
 
     def "ListDeployTime"() {
+        given: 'appIds'
+        List<Long> appIds = new ArrayList<>()
+        appIds.add(1L)
+
+        DevopsEnvCommandDO e = new DevopsEnvCommandDO()
+        e.setId(999L)
+        e.setObjectId(1L)
+        e.setStatus("success")
+        e.setCommandType("create")
+        devopsEnvCommandMapper.insert(e)
+
+        Calendar cal = Calendar.getInstance()
+        String year = cal.get(Calendar.YEAR)
+        String month = cal.get(Calendar.MONTH) + 1
+        String day = cal.get(Calendar.DATE)
+        String startTime = year + "/" + month + "/" + day
+
+        when: '获取部署时长报表'
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/time?envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, DeployTimeDTO.class)
+
+        then: '校验返回值'
+        dto.getDeployAppDTOS().get(0)["appName"] == "appName"
     }
 
     def "ListDeployFrequency"() {
+        given: '初始化时间'
+        Calendar cal = Calendar.getInstance()
+        String year = cal.get(Calendar.YEAR)
+        String month = cal.get(Calendar.MONTH) + 1
+        String day = cal.get(Calendar.DATE)
+        String startTime = year + "/" + month + "/" + day
+
+        and: 'envIds'
+        List<Long> envIds = new ArrayList<>()
+        envIds.add(1L)
+
+        when: '获取部署次数报表'
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequency?appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, DeployFrequencyDTO.class)
+
+        then: '校验返回值'
+        dto.getCreationDates().size() == 1
+        dto.getDeployFrequencys().size() == 1
+        dto.getDeploySuccessFrequency().size() == 1
+        dto.getDeployFailFrequency().size() == 1
     }
 
     def "PageDeployFrequencyDetail"() {
+        given: '初始化时间'
+        Calendar cal = Calendar.getInstance()
+        String year = cal.get(Calendar.YEAR)
+        String month = cal.get(Calendar.MONTH) + 1
+        String day = cal.get(Calendar.DATE)
+        String startTime = year + "/" + month + "/" + day
+
+        and: 'envIds'
+        List<Long> envIds = new ArrayList<>()
+        envIds.add(1L)
+
+        when: '获取部署次数报表table'
+        def page = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/frequencyDetail?page=0&size=10&appId=1&startTime=" + startTime + "&endTime=" + startTime, envIds, Page.class)
+
+        then: '校验返回值'
+        page.get(0)["appName"] == "appName"
     }
 
     def "PageDeployTimeDetail"() {
+        given: 'appIds'
+        List<Long> appIds = new ArrayList<>()
+        appIds.add(1L)
+
+        Calendar cal = Calendar.getInstance()
+        String year = cal.get(Calendar.YEAR)
+        String month = cal.get(Calendar.MONTH) + 1
+        String day = cal.get(Calendar.DATE)
+        String startTime = year + "/" + month + "/" + day
+
+        when: '获取部署时长报表table'
+        def page = restTemplate.postForObject("/v1/projects/1/app_instances/env_commands/timeDetail?page=0&size=10&envId=1&startTime=" + startTime + "&endTime=" + startTime, appIds, Page.class)
+
+        then: '校验返回值'
+        page.get(0)["appName"] == "appName"
+    }
+
+    // 清除测试数据
+    def "cleanupData"() {
+        given:
+        // 删除appInstance
+        List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationInstanceDO e : list) {
+                applicationInstanceMapper.delete(e)
+            }
+        }
+        // 删除appMarket
+        List<DevopsAppMarketDO> list1 = applicationMarketMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsAppMarketDO e : list1) {
+                applicationMarketMapper.delete(e)
+            }
+        }
+        // 删除envPod
+        List<DevopsEnvPodDO> list2 = devopsEnvPodMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (DevopsEnvPodDO e : list2) {
+                devopsEnvPodMapper.delete(e)
+            }
+        }
+        // 删除appMarket
+        List<DevopsAppMarketDO> list3 = applicationMarketMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (DevopsAppMarketDO e : list3) {
+                applicationMarketMapper.delete(e)
+            }
+        }
+        // 删除appVersion
+        List<ApplicationVersionDO> list4 = applicationVersionMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (ApplicationVersionDO e : list4) {
+                applicationVersionMapper.delete(e)
+            }
+        }
+        // 删除appVersionValue
+        List<ApplicationVersionValueDO> list5 = applicationVersionValueMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (ApplicationVersionValueDO e : list5) {
+                applicationVersionValueMapper.delete(e)
+            }
+        }
+        // 删除app
+        List<ApplicationDO> list6 = applicationMapper.selectAll()
+        if (list6 != null && !list6.isEmpty()) {
+            for (ApplicationDO e : list6) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list7 = devopsEnvironmentMapper.selectAll()
+        if (list7 != null && !list7.isEmpty()) {
+            for (DevopsEnvironmentDO e : list7) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除envCommand
+        List<DevopsEnvCommandDO> list8 = devopsEnvCommandMapper.selectAll()
+        if (list8 != null && !list8.isEmpty()) {
+            for (DevopsEnvCommandDO e : list8) {
+                devopsEnvCommandMapper.delete(e)
+            }
+        }
+        // 删除envCommandValue
+        List<DevopsEnvCommandValueDO> list9 = devopsEnvCommandValueMapper.selectAll()
+        if (list9 != null && !list9.isEmpty()) {
+            for (DevopsEnvCommandValueDO e : list9) {
+                devopsEnvCommandValueMapper.delete(e)
+            }
+        }
+        // 删除envFile
+        List<DevopsEnvFileDO> list10 = devopsEnvFileMapper.selectAll()
+        if (list10 != null && !list10.isEmpty()) {
+            for (DevopsEnvFileDO e : list10) {
+                devopsEnvFileMapper.delete(e)
+            }
+        }
+        // 删除envFileResource
+        List<DevopsEnvFileResourceDO> list11 = devopsEnvFileResourceMapper.selectAll()
+        if (list11 != null && !list11.isEmpty()) {
+            for (DevopsEnvFileResourceDO e : list11) {
+                devopsEnvFileResourceMapper.delete(e)
+            }
+        }
+        // 删除envResource
+        List<DevopsEnvResourceDO> list12 = devopsEnvResourceMapper.selectAll()
+        if (list12 != null && !list12.isEmpty()) {
+            for (DevopsEnvResourceDO e : list12) {
+                devopsEnvResourceMapper.delete(e)
+            }
+        }
+        // 删除envResourceDetail
+        List<DevopsEnvResourceDetailDO> list13 = devopsEnvResourceDetailMapper.selectAll()
+        if (list13 != null && !list13.isEmpty()) {
+            for (DevopsEnvResourceDetailDO e : list13) {
+                devopsEnvResourceDetailMapper.delete(e)
+            }
+        }
+        // 删除envUserPermission
+        List<DevopsEnvUserPermissionDO> list14 = devopsEnvUserPermissionMapper.selectAll()
+        if (list14 != null && !list14.isEmpty()) {
+            for (DevopsEnvUserPermissionDO e : list14) {
+                devopsEnvUserPermissionMapper.delete(e)
+            }
+        }
+        FileUtil.deleteDirectory(new File("gitops"))
     }
 }

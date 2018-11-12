@@ -115,7 +115,6 @@ public class ApplicationInstanceController {
                 .orElseThrow(() -> new CommonException("error.instance.value.get"));
     }
 
-
     /**
      * 获取升级 Value
      *
@@ -229,27 +228,6 @@ public class ApplicationInstanceController {
         return Optional.ofNullable(applicationInstanceService.createOrUpdate(applicationDeployDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.deploy"));
-    }
-
-    /**
-     * 获取版本特性
-     *
-     * @param projectId     项目id
-     * @param appInstanceId 实例id
-     * @return list of versionFeaturesDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
-            InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取版本特性")
-    @GetMapping("/{appInstanceId}/version_features")
-    public ResponseEntity<List<VersionFeaturesDTO>> queryVersionFeatures(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "部署ID", required = true)
-            @PathVariable Long appInstanceId) {
-        return Optional.ofNullable(applicationInstanceService.queryVersionFeatures(appInstanceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.version.values.query"));
     }
 
     /**
@@ -452,34 +430,6 @@ public class ApplicationInstanceController {
                 .orElseThrow(() -> new CommonException("error.appInstance.query"));
     }
 
-
-    /**
-     * 部署文件日志
-     *
-     * @param projectId 项目id
-     * @param envId     实例id
-     * @return DevopsEnvPreviewDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "部署文件日志")
-    @CustomPageRequest
-    @GetMapping(value = "/{envId}/envFiles")
-    public ResponseEntity<Page<DevopsEnvFileDTO>> listEnvFiles(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "envId", required = true)
-            @PathVariable(value = "envId") Long envId,
-            @ApiIgnore
-            @ApiParam(value = "分页参数")
-                    PageRequest pageRequest) {
-        return Optional.ofNullable(applicationInstanceService.getEnvFile(projectId, envId, pageRequest))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.env.file.query"));
-    }
-
-
     /**
      * 获取部署时长报表
      *
@@ -563,8 +513,7 @@ public class ApplicationInstanceController {
     public ResponseEntity<Page<DeployDetailDTO>> pageDeployFrequencyDetail(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-                    PageRequest pageRequest,
+            @ApiParam(value = "分页参数") PageRequest pageRequest,
             @ApiParam(value = "appId")
             @RequestParam(required = false) Long appId,
             @ApiParam(value = "envIds")

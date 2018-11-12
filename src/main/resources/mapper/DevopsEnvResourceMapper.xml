@@ -5,7 +5,9 @@
     <select id="listJobByInstanceId" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
         SELECT
         *
-        FROM devops_env_resource dir where dir.app_instance_id = #{instanceId} and dir.kind = "Job"
+        FROM devops_env_resource dir
+        WHERE dir.app_instance_id = #{instanceId}
+        AND dir.kind = 'Job'
         ORDER BY dir.weight ASC
     </select>
 
