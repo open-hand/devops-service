@@ -1504,7 +1504,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         UpgradeCluster upgradeCluster = json.deserialize(msg, UpgradeCluster.class);
         DevopsClusterE devopsClusterE = devopsClusterRepository.queryByToken(upgradeCluster.getToken());
         devopsClusterE.setSkipCheckProjectPermission(false);
-        if (devopsClusterE == null) {
+        if (devopsClusterE.getId() == null) {
             logger.info("the cluster is not exist:" + upgradeCluster.getToken());
             return;
         }
