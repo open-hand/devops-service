@@ -16,9 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
-
 import io.choerodon.devops.api.dto.DevopsClusterRepDTO;
 import io.choerodon.devops.api.dto.DevopsClusterReqDTO;
 import io.choerodon.devops.api.dto.ProjectDTO;
@@ -38,8 +35,6 @@ import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
-
-import io.choerodon.mybatis.pagehelper.PageHelper;
 
 
 @Service
@@ -92,6 +87,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
+        params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterE.getCode());
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
         params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
@@ -192,6 +188,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
+        params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterE.getCode());
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
         params.put("{REPOURL}", agentRepoUrl);

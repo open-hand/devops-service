@@ -144,7 +144,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
         devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
         devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
-        devopsEnviromentRepository.create(devopsEnvironmentE);
+        Long envId = devopsEnviromentRepository.create(devopsEnvironmentE).getId();
+        devopsEnvironmentE.setId(envId);
 
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));

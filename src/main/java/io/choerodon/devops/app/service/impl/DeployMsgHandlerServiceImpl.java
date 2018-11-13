@@ -1344,7 +1344,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<Command> commands = new ArrayList<>();
         getCommands(envId, commands);
         Msg msg = new Msg();
-        msg.setKey(String.format("env:%s.envId:%d",
+        msg.setKey(String.format("cluster:%d.env:%s.envId:%d",
+                clusterId,
                 devopsEnvironmentE.getCode(),
                 envId));
         msg.setType(HelmType.STATUS_SYNC.toValue());
@@ -1435,6 +1436,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             updateResourceStatus(envId, devopsEnvCommandE, InstanceStatus.RUNNING, ServiceStatus.RUNNING, IngressStatus.RUNNING, CertificationStatus.ACTIVE);
                         } else {
                             devopsEnvCommandE.setStatus(CommandStatus.FAILED.getStatus());
+                            devopsEnvCommandE.setError("The deploy is time out!");
                             updateResourceStatus(envId, devopsEnvCommandE, InstanceStatus.FAILED, ServiceStatus.FAILED, IngressStatus.FAILED, CertificationStatus.FAILED);
                         }
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -1501,6 +1503,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Override
     public void upgradeCluster(String key, String msg) {
         //0.10.0-0.11.0  初始化集群信息
+        logger.info("upgradeCluster message:" + msg);
         UpgradeCluster upgradeCluster = json.deserialize(msg, UpgradeCluster.class);
         DevopsClusterE devopsClusterE = devopsClusterRepository.queryByToken(upgradeCluster.getToken());
         devopsClusterE.setSkipCheckProjectPermission(false);
@@ -1508,7 +1511,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             logger.info("the cluster is not exist:" + upgradeCluster.getToken());
             return;
         }
-        if (devopsClusterE.getInit()) {
+        if (devopsClusterE.getInit() != null) {
             logger.info("the cluster has bean init:" + devopsClusterE.getName());
             return;
         }
@@ -1517,14 +1520,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(clusterEnv.getEnvId());
                 if (devopsEnvironmentE != null && devopsEnvironmentE.getCode().equals(clusterEnv.getNamespace())) {
                     ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-                    DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
-                    devopsClusterProPermissionE.setProjectCode(projectE.getCode());
-                    devopsClusterProPermissionE.setProjectName(projectE.getName());
-                    devopsClusterProPermissionE.setProjectId(projectE.getId());
-                    devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
-                    devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
-                    devopsEnvironmentE.initDevopsClusterEById(devopsClusterE.getId());
-                    devopsEnvironmentRepository.update(devopsEnvironmentE);
+                    if (projectE.getOrganization().getId().equals(devopsClusterE.getOrganizationId())) {
+                        DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
+                        devopsClusterProPermissionE.setProjectCode(projectE.getCode());
+                        devopsClusterProPermissionE.setProjectName(projectE.getName());
+                        devopsClusterProPermissionE.setProjectId(projectE.getId());
+                        devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
+                        devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
+                        devopsEnvironmentE.initDevopsClusterEById(devopsClusterE.getId());
+                        devopsEnvironmentRepository.update(devopsEnvironmentE);
+                    }
                 }
             });
         }
