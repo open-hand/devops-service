@@ -100,7 +100,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public Page<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest,
+                                                                   String searchParam) {
         Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketAppsByProjectId(
                 projectId, pageRequest, searchParam);
         return getReleasingDTOs(projectId, applicationMarketEPage);
@@ -177,7 +178,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     : versionId;
         }
         ApplicationVersionE applicationVersionE = applicationVersionRepository.query(latestVersionId);
-        String readme = applicationVersionRepository.getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
+        String readme = applicationVersionRepository
+                .getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
 
         applicationReleasingDTO.setReadme(readme);
 
@@ -475,7 +477,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
      *
      * @param appMarkets 应用市场应用信息
      */
-    public void export(List<AppMarketDownloadDTO> appMarkets) {
+    public void export(List<AppMarketDownloadDTO> appMarkets, String fileName) {
         List<String> images = new ArrayList<>();
         for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
             ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(), null);
@@ -492,7 +494,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             );
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
-            appMarketDownloadDTO.getAppVersionIds().stream().forEach(appVersionId -> {
+            appMarketDownloadDTO.getAppVersionIds().forEach(appVersionId -> {
                 ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
                 images.add(applicationVersionE.getImage());
                 String repoUrl = String.format("%s%s%s%s%s%s%s%s%s%s%s%s", helmUrl,
@@ -501,7 +503,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         FILE_SEPARATOR,
                         projectE.getCode(),
                         FILE_SEPARATOR,
-                        CHARTS,
+                        fileName,
                         FILE_SEPARATOR,
                         applicationE.getCode(),
                         "-",
@@ -514,7 +516,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                                 FILE_SEPARATOR,
                                 applicationE.getCode(),
                                 applicationVersionE.getVersion()));
-
             });
             StringBuilder stringBuilder = new StringBuilder();
             for (String image : images) {
@@ -522,17 +523,16 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 stringBuilder.append(System.getProperty("line.separator"));
             }
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/push_image.sh");
-            FileUtil.saveDataToFile(CHARTS, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream, null));
-            FileUtil.saveDataToFile(CHARTS, IMAGES, stringBuilder.toString());
+            FileUtil.saveDataToFile(fileName, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream, null));
+            FileUtil.saveDataToFile(fileName, IMAGES, stringBuilder.toString());
         }
-        try (FileOutputStream outputStream = new FileOutputStream(CHARTS + ".zip")) {
-            FileUtil.toZip(CHARTS, outputStream, true);
-            FileUtil.deleteDirectory(new File(CHARTS));
+        try (FileOutputStream outputStream = new FileOutputStream(fileName + ".zip")) {
+            FileUtil.toZip(fileName, outputStream, true);
+            FileUtil.deleteDirectory(new File(fileName));
         } catch (IOException e) {
             throw new CommonException(e.getMessage(), e);
         }
     }
-
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
                                                            Page<ApplicationMarketE> applicationMarketEPage) {

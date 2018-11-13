@@ -356,8 +356,8 @@ public class ApplicationMarketController {
             @ApiParam(value = "导出包名字")
             @RequestParam(value = "fileName", required = false) String fileName,
             HttpServletResponse res) {
-        applicationMarketService.export(appMarkets);
-        FileUtil.downloadFile(res, fileName);
+        applicationMarketService.export(appMarkets, fileName);
+        FileUtil.downloadFile(res, fileName + ".zip");
         try {
             Files.delete(new File(fileName).toPath());
         } catch (IOException e) {
