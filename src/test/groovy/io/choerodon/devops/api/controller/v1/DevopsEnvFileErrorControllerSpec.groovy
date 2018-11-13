@@ -111,9 +111,19 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
         then: '校验返回结果'
         page.size() == 2
 
-        // 清理数据
-        devopsEnvFileErrorMapper.deleteByPrimaryKey(1L)
-        devopsEnvFileErrorMapper.deleteByPrimaryKey(2L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
+        // 删除env
+        List<DevopsEnvironmentDO> list = devopsEnvironmentMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (DevopsEnvironmentDO e : list) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除envFileError
+        List<DevopsEnvFileErrorDO> list1 = devopsEnvFileErrorMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvFileErrorDO e : list1) {
+                devopsEnvFileErrorMapper.delete(e)
+            }
+        }
     }
 }

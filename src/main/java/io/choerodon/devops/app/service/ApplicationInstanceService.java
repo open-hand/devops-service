@@ -62,15 +62,6 @@ public interface ApplicationInstanceService {
      */
     ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId);
 
-
-    /**
-     * 获取版本特性
-     *
-     * @param appInstanceId 实例id
-     * @return list of versionFeaturesDTO
-     */
-    List<VersionFeaturesDTO> queryVersionFeatures(Long appInstanceId);
-
     /**
      * 查询运行中的实例
      *
@@ -166,14 +157,9 @@ public interface ApplicationInstanceService {
      */
     DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
 
-
-    Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId, PageRequest pageRequest);
-
-
     ReplaceResult getReplaceResult(String versionValue, String deployValue);
 
     ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
-
 
     DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
 

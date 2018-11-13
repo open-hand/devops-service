@@ -262,16 +262,15 @@ class ApplicationMarketControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化DTO'
+        Long appMarketId = applicationMarketMapper.selectAll().get(0).getId()
         ApplicationReleasingDTO applicationReleasingDTO = new ApplicationReleasingDTO()
-        applicationReleasingDTO.setId(1L)
+        applicationReleasingDTO.setId(appMarketId)
         applicationReleasingDTO.setContributor("newContributor")
         applicationReleasingDTO.setPublishLevel("public")
-
         when: '更新单个应用市场的应用'
-        restTemplate.put("/v1/projects/1/apps_market/{app_market_id}", applicationReleasingDTO,
-                applicationMarketMapper.selectAll().get(0).getId())
+        restTemplate.put("/v1/projects/1/apps_market/{app_market_id}", applicationReleasingDTO, appMarketId)
 
-        then: '验证更新后的contributor字段'
+        then: '验w证更新后的contributor字段'
         applicationMarketMapper.selectAll().get(0)["contributor"] == "newContributor"
     }
 
@@ -281,12 +280,13 @@ class ApplicationMarketControllerSpec extends Specification {
         appMarketVersionDTO.setId(1L)
         List<AppMarketVersionDTO> dtoList = new ArrayList<>()
         dtoList.add(appMarketVersionDTO)
+
         when: '更新单个应用市场的应用'
         restTemplate.put("/v1/projects/1/apps_market/{app_market_id}/versions", dtoList,
                 applicationMarketMapper.selectAll().get(0).getId())
 
         then: '验证返回值'
-        applicationMarketMapper.selectAll().get(0)["id"] == 1
+        applicationMarketMapper.selectAll().get(0)["contributor"] == "newContributor"
     }
 
     def "UploadApps"() {

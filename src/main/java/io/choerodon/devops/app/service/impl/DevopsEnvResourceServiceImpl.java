@@ -205,11 +205,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1Pod                pod对象
      */
-    public void addPodToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1Pod v1Pod) {
+    private void addPodToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1Pod v1Pod) {
         PodDTO podDTO = new PodDTO();
         podDTO.setName(v1Pod.getMetadata().getName());
         podDTO.setDesire(TypeUtil.objToLong(v1Pod.getSpec().getContainers().size()));
-        Long ready = 0L;
+        long ready = 0L;
         Long restart = 0L;
         if (v1Pod.getStatus().getContainerStatuses() != null) {
             for (V1ContainerStatus v1ContainerStatus : v1Pod.getStatus().getContainerStatuses()) {

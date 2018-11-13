@@ -100,7 +100,8 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     public List<DevopsEnvUserPermissionE> listByUserId(Long userId) {
         DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
         devopsEnvUserPermissionDO.setIamUserId(userId);
-        return ConvertHelper.convertList(devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDO), DevopsEnvUserPermissionE.class);
+        return ConvertHelper.convertList(devopsEnvUserPermissionMapper.select(devopsEnvUserPermissionDO),
+                DevopsEnvUserPermissionE.class);
     }
 
     @Override
@@ -123,12 +124,11 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
     public boolean isProjectOwner(Long userId, ProjectE projectE) {
         List<ProjectWithRoleDTO> projectWithRoleDTOList = iamRepository.listProjectWithRoleDTO(userId);
         List<RoleDTO> roleDTOS = new ArrayList<>();
-        projectWithRoleDTOList.stream().filter(projectWithRoleDTO -> projectWithRoleDTO.getName().equals(projectE.getName())).forEach(projectWithRoleDTO ->
-            roleDTOS.addAll(projectWithRoleDTO.getRoles().stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER)).collect(Collectors.toList())));
-        if (!roleDTOS.isEmpty()) {
-            return true;
-        } else {
-            return false;
-        }
+        projectWithRoleDTOList.stream().filter(projectWithRoleDTO ->
+                projectWithRoleDTO.getName().equals(projectE.getName())).forEach(projectWithRoleDTO ->
+                roleDTOS.addAll(projectWithRoleDTO.getRoles()
+                        .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
+                        .collect(Collectors.toList())));
+        return !roleDTOS.isEmpty();
     }
 }

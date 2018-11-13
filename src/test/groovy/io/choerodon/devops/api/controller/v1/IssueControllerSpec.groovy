@@ -241,11 +241,28 @@ class IssueControllerSpec extends Specification {
         then: '校验返回值'
         issueDTO["branchCount"] == 2
         issueDTO["mergeRequestStatus"] == "opened"
-        applicationRepository.delete(1L)
-        devopsBranchMapper.deleteByPrimaryKey(1L)
-        devopsBranchMapper.deleteByPrimaryKey(2L)
-        devopsMergeRequestMapper.deleteByPrimaryKey(1L)
-        devopsMergeRequestMapper.deleteByPrimaryKey(2L)
+
+        // 删除app
+        List<ApplicationDO> list = applicationMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationDO e : list) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除branch
+        List<DevopsBranchDO> list1 = devopsBranchMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsBranchDO e : list1) {
+                devopsBranchMapper.delete(e)
+            }
+        }
+        // 删除mergeRequest
+        List<DevopsMergeRequestDO> list2 = devopsMergeRequestMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (DevopsMergeRequestDO e : list2) {
+                devopsMergeRequestMapper.delete(e)
+            }
+        }
     }
 
     /**

@@ -245,7 +245,7 @@ class DevopsIngressControllerSpec extends Specification {
         restTemplate.postForEntity("/v1/projects/1/ingress?envId=1", devopsIngressDTO, Object.class)
 
         then: '校验返回值'
-        devopsIngressMapper.selectByPrimaryKey(1L)["name"] == "ingdo"
+        devopsIngressMapper.selectAll().get(0)["name"] == "ingdo"
     }
 
     def "Update"() {
@@ -340,18 +340,57 @@ class DevopsIngressControllerSpec extends Specification {
         then: '校验返回值'
         page.size() == 1
 
-        devopsCertificationMapper.deleteByPrimaryKey(1L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-        devopsIngressMapper.deleteByPrimaryKey(1L)
-        devopsIngressMapper.deleteByPrimaryKey(2L)
-        devopsServiceMapper.deleteByPrimaryKey(1L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(1L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(2L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(3L)
-        devopsEnvCommandMapper.deleteByPrimaryKey(4L)
-        devopsEnvFileResourceMapper.deleteByPrimaryKey(1L)
-        devopsIngressPathMapper.deleteByPrimaryKey(3L)
-        devopsIngressPathMapper.deleteByPrimaryKey(4L)
+        and: '清理数据'
+
+        // 删除cert
+        List<CertificationDO> list = devopsCertificationMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (CertificationDO e : list) {
+                devopsCertificationMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvironmentDO e : list1) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除ingress
+        List<DevopsIngressDO> list2 = devopsIngressMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (DevopsIngressDO e : list2) {
+                devopsIngressMapper.delete(e)
+            }
+        }
+        // 删除service
+        List<DevopsServiceDO> list3 = devopsServiceMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (DevopsServiceDO e : list3) {
+                devopsServiceMapper.delete(e)
+            }
+        }
+        // 删除envCommand
+        List<DevopsEnvCommandDO> list4 = devopsEnvCommandMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (DevopsEnvCommandDO e : list4) {
+                devopsEnvCommandMapper.delete(e)
+            }
+        }
+        // 删除envFileResource
+        List<DevopsEnvFileResourceDO> list5 = devopsEnvFileResourceMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (DevopsEnvFileResourceDO e : list5) {
+                devopsEnvFileResourceMapper.delete(e)
+            }
+        }
+        // 删除ingressPath
+        List<DevopsIngressPathDO> list6 = devopsIngressPathMapper.selectAll()
+        if (list6 != null && !list6.isEmpty()) {
+            for (DevopsIngressPathDO e : list6) {
+                devopsIngressPathMapper.delete(e)
+            }
+        }
         FileUtil.deleteDirectory(new File("gitops"))
     }
 }

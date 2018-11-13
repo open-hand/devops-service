@@ -4,9 +4,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.PipelineFrequencyDTO
 import io.choerodon.devops.api.dto.PipelineTimeDTO
-import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.repository.IamRepository
-import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
@@ -124,22 +122,21 @@ class DevopsGitlabPipelineControlleSpec extends Specification {
 
         then: '校验返回值'
         pages.size() == 1
-        applicationMapper.deleteByPrimaryKey(1L)
-        devopsGitlabPipelineMapper.deleteByPrimaryKey(1L)
-    }
 
-    private static Organization initOrg(Long id, String code) {
-        Organization organization = new Organization()
-        organization.setId(id)
-        organization.setCode(code)
-        organization
-    }
-
-    private static ProjectE initProj(Long id, String code, Organization organization) {
-        ProjectE projectE = new ProjectE()
-        projectE.setId(id)
-        projectE.setCode(code)
-        projectE.setOrganization(organization)
-        projectE
+        and: '清理数据'
+        // 删除app
+        List<ApplicationDO> list = applicationMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationDO e : list) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除gitlabPipeline
+        List<DevopsGitlabPipelineDO> list1 = devopsGitlabPipelineMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsGitlabPipelineDO e : list1) {
+                devopsGitlabPipelineMapper.delete(e)
+            }
+        }
     }
 }

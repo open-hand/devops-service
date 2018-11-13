@@ -257,7 +257,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public void addMemberIntoProject(Integer projectId, MemberDTO memberDTO) {
         try {
             gitlabServiceClient.addMemberIntoProject(projectId, memberDTO);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.member.add", e);
         }
     }
@@ -266,7 +266,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public void removeMemberFromProject(Integer groupId, Integer userId) {
         try {
             gitlabServiceClient.removeMemberFromProject(groupId, userId);
-        } catch (FeignException e) {
+        } catch (Exception e) {
             throw new CommonException("error.member.remove", e);
         }
     }

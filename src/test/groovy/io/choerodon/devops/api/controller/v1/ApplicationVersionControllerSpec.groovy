@@ -196,10 +196,33 @@ class ApplicationVersionControllerSpec extends Specification {
     // 清除测试数据
     def "cleanupData"() {
         given:
-        applicationInstanceMapper.deleteByPrimaryKey(init_id)
-        devopsEnvironmentMapper.deleteByPrimaryKey(init_id)
-        applicationMapper.deleteByPrimaryKey(init_id)
-        applicationVersionMapper.deleteByPrimaryKey(1L)
-        applicationVersionMapper.deleteByPrimaryKey(2L)
+        // 删除appInstance
+        List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationInstanceDO e : list) {
+                applicationInstanceMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvironmentDO e : list1) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除app
+        List<ApplicationDO> list2 = applicationMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (ApplicationDO e : list2) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除appVersion
+        List<ApplicationVersionDO> list3 = applicationVersionMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (ApplicationVersionDO e : list3) {
+                applicationVersionMapper.delete(e)
+            }
+        }
     }
 }

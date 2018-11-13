@@ -63,7 +63,21 @@ class DevopsEnvPodContainerControllerSpec extends Specification {
 
         then: '校验返回结果'
         list.size() == 1
-        devopsEnvPodContainerMapper.deleteByPrimaryKey(1L)
-        devopsEnvPodMapper.deleteByPrimaryKey(1L)
+
+        and: '清理数据'
+        // 删除envPodContainer
+        List<DevopsEnvPodContainerDO> list1 = devopsEnvPodContainerMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvPodContainerDO e : list1) {
+                devopsEnvPodContainerMapper.delete(e)
+            }
+        }
+        // 删除envPod
+        List<DevopsEnvPodDO> list2 = devopsEnvPodMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (DevopsEnvPodDO e : list2) {
+                devopsEnvPodMapper.delete(e)
+            }
+        }
     }
 }

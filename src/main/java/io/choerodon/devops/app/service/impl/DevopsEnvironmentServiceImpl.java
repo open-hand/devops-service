@@ -638,8 +638,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 待删除的用户
         List<Long> deleteUsersList = currentRecord.stream().filter(e -> !userIds.contains(e))
                 .collect(Collectors.toList());
-        // 事务如果失败，数据库会回滚
-        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, addUsersList, deleteUsersList);
 
         // 更新gitlab权限
         Long gitlabProjectId = devopsEnviromentRepository.queryById(envId).getGitlabEnvProjectId();
@@ -655,6 +653,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             Long gitlabUserId = userAttrE.getGitlabUserId();
             updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
         });
+        // 事务如果失败，数据库会回滚
+        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, addUsersList, deleteUsersList);
         return true;
     }
 

@@ -18,11 +18,12 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.*;
+import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
+import io.choerodon.devops.domain.application.valueobject.Metadata;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
@@ -37,18 +38,18 @@ import io.choerodon.websocket.helper.CommandSender;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
 
-
 /**
  * Created by Zenger on 2018/4/12.
  */
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
+
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
-
     private static Gson gson = new Gson();
+
     @Autowired
     DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Value("${agent.version}")
@@ -114,23 +115,25 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 projectId, pageRequest, envId, versionId, appId, params);
         List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getContent();
         setInstanceConnect(applicationInstanceES, envs);
-        Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper.convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
+        Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
+                .convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
         applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
             List<DeploymentDTO> deploymentDTOS = new ArrayList<>();
-            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(applicationInstanceDTO.getId());
+            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
+                    .listResources(applicationInstanceDTO.getId());
             List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
-                    .convertList(devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()), DevopsEnvPodDTO.class);
+                    .convertList(devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()),
+                            DevopsEnvPodDTO.class);
             for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
 
                 List<DevopsEnvPodDTO> newDevopsEnvPodDTO = new ArrayList<>();
                 devopsEnvPodDTOS.forEach(devopsEnvPodDTO -> {
                             String podName = devopsEnvPodDTO.getName();
-                            String tmp = podName.substring(0, podName.lastIndexOf("-"));
-                            tmp = tmp.substring(0, tmp.lastIndexOf("-"));
+                            String tmp = podName.substring(0, podName.lastIndexOf('-'));
+                            tmp = tmp.substring(0, tmp.lastIndexOf('-'));
                             if (deploymentDTO.getName().equals(tmp)) {
                                 newDevopsEnvPodDTO.add(devopsEnvPodDTO);
                             }
-
                         }
                 );
                 deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
@@ -144,17 +147,22 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public List<ApplicationInstancesDTO> listApplicationInstances(Long projectId, Long appId) {
 
-        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository.listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream().filter(devopsEnvUserPermissionE -> devopsEnvUserPermissionE.getPermitted() == true).map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
+                .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                .filter(DevopsEnvUserPermissionE::getPermitted).map(DevopsEnvUserPermissionE::getEnvId)
+                .collect(Collectors.toList());
 
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-
-        if (devopsEnvUserPermissionRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
-            permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream().map(DevopsEnvironmentE::getId).collect(Collectors.toList());
+        if (devopsEnvUserPermissionRepository
+                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+            permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream()
+                    .map(DevopsEnvironmentE::getId).collect(Collectors.toList());
         }
 
-        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId, permissionEnvIds);
-        List<ApplicationLatestVersionDO> appLatestVersionList =
-                applicationVersionRepository.listAppLatestVersion(projectId);
+        List<ApplicationInstancesDO> instancesDOS = applicationInstanceRepository.getDeployInstances(projectId, appId,
+                permissionEnvIds);
+        List<ApplicationLatestVersionDO> appLatestVersionList = applicationVersionRepository
+                .listAppLatestVersion(projectId);
         Map<Long, ApplicationLatestVersionDO> latestVersionList = appLatestVersionList.stream()
                 .collect(Collectors.toMap(ApplicationLatestVersionDO::getAppId, t -> t, (a, b) -> b));
         Map<Long, Integer> appInstancesListMap = new HashMap<>();
@@ -283,10 +291,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (appIds.length == 0) {
             return new DeployTimeDTO();
         }
-        List<DeployDO> deployDOS = applicationInstanceRepository.listDeployTime(projectId, envId, appIds, startTime, endTime);
+        List<DeployDO> deployDOS = applicationInstanceRepository
+                .listDeployTime(projectId, envId, appIds, startTime, endTime);
         DeployTimeDTO deployTimeDTO = new DeployTimeDTO();
         List<Date> creationDates = deployDOS.stream().map(DeployDO::getCreationDate).collect(Collectors.toList());
-        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
         List<DeployAppDTO> deployAppDTOS = new ArrayList<>();
         Map<String, List<DeployDO>> resultMaps = deployDOS.stream()
                 .collect(Collectors.groupingBy(DeployDO::getAppName));
@@ -297,7 +307,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             value.forEach(deployDO -> {
                 DeployAppDetail deployAppDetail = new DeployAppDetail();
                 deployAppDetail.setDeployDate(deployDO.getCreationDate());
-                deployAppDetail.setDeployTime(getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
+                deployAppDetail.setDeployTime(
+                        getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
                 deployAppDetails.add(deployAppDetail);
             });
             deployAppDTO.setDeployAppDetails(deployAppDetails);
@@ -309,18 +320,23 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime) {
+    public DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime,
+                                                  Date endTime) {
         if (envIds.length == 0) {
             return new DeployFrequencyDTO();
         }
-        List<DeployDO> deployFrequencyDOS = applicationInstanceRepository.listDeployFrequency(projectId, envIds, appId, startTime, endTime);
+        List<DeployDO> deployFrequencyDOS = applicationInstanceRepository
+                .listDeployFrequency(projectId, envIds, appId, startTime, endTime);
         Map<String, List<DeployDO>> resultMaps = deployFrequencyDOS.stream()
                 .collect(Collectors.groupingBy(t -> new java.sql.Date(t.getCreationDate().getTime()).toString()));
         List<Long> deployFrequencys = new LinkedList<>();
         List<Long> deploySuccessFrequency = new LinkedList<>();
         List<Long> deployFailFrequency = new LinkedList<>();
-        List<String> creationDates = deployFrequencyDOS.stream().map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString()).collect(Collectors.toList());
-        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
+        List<String> creationDates = deployFrequencyDOS.stream()
+                .map(deployDO -> new java.sql.Date(deployDO.getCreationDate().getTime()).toString())
+                .collect(Collectors.toList());
+        creationDates = new ArrayList<>(new HashSet<>(creationDates)).stream().sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
         creationDates.forEach(date -> {
             Long[] newDeployFrequencys = {0L};
             Long[] newDeploySuccessFrequency = {0L};
@@ -357,7 +373,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId,
+    public Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds,
+                                                      Long envId,
                                                       Date startTime, Date endTime) {
         if (appIds.length == 0) {
             return new Page<>();
@@ -374,7 +391,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         deployDOS.getContent().forEach(deployDO -> {
             DeployDetailDTO deployDetailDTO = new DeployDetailDTO();
             BeanUtils.copyProperties(deployDO, deployDetailDTO);
-            deployDetailDTO.setDeployTime(getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
+            deployDetailDTO.setDeployTime(
+                    getDeployTime(deployDO.getLastUpdateDate().getTime() - deployDO.getCreationDate().getTime()));
             if (deployDO.getCreatedBy() != 0) {
                 UserE userE = iamRepository.queryUserByUserId(deployDO.getCreatedBy());
                 deployDetailDTO.setLastUpdatedName(userE.getRealName());
@@ -384,7 +402,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         pageDeployDetailDTOS.setContent(deployDetailDTOS);
         return pageDeployDetailDTOS;
     }
-
 
     @Override
     public ReplaceResult queryValue(Long instanceId) {
@@ -443,18 +460,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
                 BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
                 List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
-                        .convertList(devopsEnvPodRepository.selectByInstanceId(devopsEnvPreviewInstanceDTO.getId()), DevopsEnvPodDTO.class);
-                DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(devopsEnvPreviewInstanceDTO.getId());
+                        .convertList(devopsEnvPodRepository.selectByInstanceId(devopsEnvPreviewInstanceDTO.getId()),
+                                DevopsEnvPodDTO.class);
+                DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
+                        .listResources(devopsEnvPreviewInstanceDTO.getId());
                 for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
                     List<DevopsEnvPodDTO> newDevopsEnvPodDTO = new ArrayList<>();
-                    devopsEnvPodDTOS.stream().forEach(devopsEnvPodDTO -> {
+                    devopsEnvPodDTOS.forEach(devopsEnvPodDTO -> {
                                 String podName = devopsEnvPodDTO.getName();
-                                String tmp = podName.substring(0, podName.lastIndexOf("-"));
-                                tmp = tmp.substring(0, tmp.lastIndexOf("-"));
+                                String tmp = podName.substring(0, podName.lastIndexOf('-'));
+                                tmp = tmp.substring(0, tmp.lastIndexOf('-'));
                                 if (deploymentDTO.getName().equals(tmp)) {
                                     newDevopsEnvPodDTO.add(devopsEnvPodDTO);
                                 }
-
                             }
                     );
                     deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
@@ -471,29 +489,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return devopsEnvPreviewDTO;
     }
 
-    @Override
-    public Page<DevopsEnvFileDTO> getEnvFile(Long projectId, Long envId, PageRequest pageRequest) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
-        Page<DevopsEnvFileE> devopsEnvFilePages = devopsEnvFileRepository.pageByEnvId(envId, pageRequest);
-        List<DevopsEnvFileE> devopsEnvFileES = devopsEnvFilePages.stream().peek(devopsEnvFileE ->
-                devopsEnvFileE.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/%s",
-                        gitlabUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode(),
-                        devopsEnvFileE.getDevopsCommit()))).collect(Collectors.toList());
-        Page<DevopsEnvFileE> pages = new Page<>();
-        BeanUtils.copyProperties(devopsEnvFilePages, pages);
-        pages.setContent(devopsEnvFileES);
-        return ConvertPageHelper.convertPage(pages, DevopsEnvFileDTO.class);
-    }
-
-
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), applicationDeployDTO.getEnvironmentId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                applicationDeployDTO.getEnvironmentId());
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(applicationDeployDTO.getEnvironmentId());
 
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
@@ -522,8 +525,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
-
-        ApplicationInstanceE beforeApplicationInstanceE = applicationInstanceRepository.selectByCode(code, applicationDeployDTO.getEnvironmentId());
+        ApplicationInstanceE beforeApplicationInstanceE = applicationInstanceRepository
+                .selectByCode(code, applicationDeployDTO.getEnvironmentId());
         DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
         if (beforeApplicationInstanceE != null) {
             beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeApplicationInstanceE.getCommandId());
@@ -535,9 +538,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
             devopsEnvCommandE.initDevopsEnvCommandValueE(
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-            deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE, devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE,
+                    devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
-
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
 
@@ -552,7 +555,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
                     applicationInstanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), filePath);
-            ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository.selectByCode(code, applicationDeployDTO.getEnvironmentId());
+            ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository
+                    .selectByCode(code, applicationDeployDTO.getEnvironmentId());
             DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
             if (afterApplicationInstanceE != null) {
                 afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterApplicationInstanceE.getCommandId());
@@ -574,17 +578,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
                 applicationInstanceRepository.update(applicationInstanceE);
             }
-
         }
-
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
 
-
     public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
-
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationDeployDTO.getEnvironmentId());
-
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(applicationDeployDTO.getEnvironmentId());
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
@@ -648,53 +648,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     private DevopsEnvCommandValueE initDevopsEnvCommandValueE(ApplicationDeployDTO applicationDeployDTO) {
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
-        devopsEnvCommandValueE.setValue(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml().trim());
+        devopsEnvCommandValueE.setValue(
+                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                        applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return devopsEnvCommandValueE;
-    }
-
-    @Override
-    public List<VersionFeaturesDTO> queryVersionFeatures(Long appInstanceId) {
-
-        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(appInstanceId);
-        ApplicationE applicationE = applicationRepository.query(
-                applicationInstanceE.getApplicationE().getId());
-
-        Integer gitlabProjectId = applicationE.getGitlabProjectE().getId();
-        List<GitlabPipelineE> gitlabPipelineEList =
-                gitlabProjectRepository.listPipeline(gitlabProjectId, GitUserNameUtil.getUserId());
-        if (gitlabPipelineEList == null) {
-            return Collections.emptyList();
-        }
-
-        List<PipelineResultV> pipelineResultVS = new ArrayList<>();
-        String branch = "";
-        long pipelineId = 0;
-        for (GitlabPipelineE gitlabPipeline : gitlabPipelineEList) {
-            PipelineResultV pipelineResultV = new PipelineResultV();
-            GitlabPipelineE gitlabPipelineE = gitlabProjectRepository.getPipeline(
-                    gitlabProjectId, gitlabPipeline.getId(), GitUserNameUtil.getUserId());
-            if (gitlabPipelineE != null) {
-                pipelineResultV.setId(gitlabPipelineE.getId().longValue());
-                pipelineResultV.setRef(gitlabPipelineE.getRef());
-
-                UserE userE = iamRepository.queryByLoginName(gitlabPipelineE.getUser().getUsername());
-                if (userE != null) {
-                    pipelineResultV.setImageUrl(userE.getImageUrl());
-                }
-            }
-            pipelineResultVS.add(pipelineResultV);
-        }
-
-        List<PipelineResultV> pipelineResultVList = new ArrayList<>();
-        for (PipelineResultV pipelineResult : pipelineResultVS) {
-            if (branch.equals(pipelineResult.getRef())
-                    && pipelineId >= pipelineResult.getId()) {
-                pipelineResultVList.add(pipelineResult);
-            }
-        }
-
-        return ConvertHelper.convertList(pipelineResultVList, VersionFeaturesDTO.class);
-
     }
 
     @Override
@@ -713,9 +670,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                instanceE.getDevopsEnvironmentE().getId());
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(instanceE.getDevopsEnvironmentE().getId());
 
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
         if (!instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
@@ -741,9 +700,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                instanceE.getDevopsEnvironmentE().getId());
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(instanceE.getDevopsEnvironmentE().getId());
 
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
         if (!instanceE.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
@@ -769,10 +730,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                instanceE.getDevopsEnvironmentE().getId());
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(instanceE.getApplicationVersionE().getId());
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        ApplicationVersionE applicationVersionE = applicationVersionRepository
+                .query(instanceE.getApplicationVersionE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(instanceE.getDevopsEnvironmentE().getId());
         String value = applicationInstanceRepository.queryValueByInstanceId(instanceId);
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
@@ -788,16 +752,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), instanceE.getDevopsEnvironmentE().getId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                instanceE.getDevopsEnvironmentE().getId());
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(instanceE.getDevopsEnvironmentE().getId());
 
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         DevopsEnvCommandE devopsEnvCommandE;
         if (instanceE.getCommandId() == null) {
-            devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
+            devopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
         } else {
             devopsEnvCommandE = devopsEnvCommandRepository
                     .query(instanceE.getCommandId());
@@ -806,11 +773,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         devopsEnvCommandE.setId(null);
 
-
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-
 
         //实例相关对象数据库操作
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
@@ -826,7 +791,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (devopsEnvFileResourceE == null) {
             throw new CommonException("error.fileResource.not.exist");
         }
-        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
+        List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
+                .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
         if (devopsEnvFileResourceES.size() == 1) {
             gitlabRepository.deleteFile(
                     TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
@@ -848,14 +814,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     userAttrE.getGitlabUserId(),
                     instanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), path);
         }
-
     }
 
     @Override
     public void instanceDeleteByGitOps(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
 
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(instanceE.getDevopsEnvironmentE().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(instanceE.getDevopsEnvironmentE().getId());
 
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
@@ -863,7 +829,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE;
         if (instanceE.getCommandId() == null) {
-            devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
+            devopsEnvCommandE = devopsEnvCommandRepository
+                    .queryByObject(ObjectType.INSTANCE.getType(), instanceE.getId());
         } else {
             devopsEnvCommandE = devopsEnvCommandRepository
                     .query(instanceE.getCommandId());
@@ -883,7 +850,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceRepository.update(instanceE);
         return instanceE.getCode();
     }
-
 
     private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
         Msg msg = new Msg();
@@ -921,12 +887,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceE.setConnect(envSessionMap.entrySet().stream()
                         .anyMatch(entry -> {
                             EnvSession envSession = entry.getValue();
-                            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+                            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                                    .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
                             return envSession.getClusterId().equals(devopsEnvironmentE.getClusterE().getId())
                                     && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1;
                         })));
     }
-
 
     private C7nHelmRelease getC7NHelmRelease(String code,
                                              ApplicationVersionE applicationVersionE,
@@ -938,11 +904,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-        c7nHelmRelease.getSpec().setValues(getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()), applicationDeployDTO.getValues()).getDeltaYaml().trim());
+        c7nHelmRelease.getSpec().setValues(
+                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                        applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return c7nHelmRelease;
 
     }
-
 
     @Override
     public ReplaceResult getReplaceResult(String versionValue, String deployValue) {
@@ -970,7 +937,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
         return replaceResult;
     }
-
 
     private String getDeployTime(Long diff) {
         float num = (float) diff / (60 * 1000);

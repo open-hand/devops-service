@@ -413,11 +413,49 @@ class ApplicationControllerSpec extends Specification {
     // 清除测试数据
     def "cleanupData"() {
         given:
-        applicationInstanceMapper.deleteByPrimaryKey(init_id)
-        devopsEnvironmentMapper.deleteByPrimaryKey(init_id)
-        applicationMapper.deleteByPrimaryKey(init_id)
-        applicationTemplateMapper.deleteByPrimaryKey(4L)
-        applicationVersionMapper.deleteByPrimaryKey(1L)
-        applicationMarketMapper.deleteByPrimaryKey(1L)
+        // 删除appInstance
+        List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationInstanceDO e : list) {
+                applicationInstanceMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvironmentDO e : list1) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
+        // 删除app
+        List<ApplicationDO> list2 = applicationMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (ApplicationDO e : list2) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除appVersion
+        List<ApplicationVersionDO> list3 = applicationVersionMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (ApplicationVersionDO e : list3) {
+                applicationVersionMapper.delete(e)
+            }
+        }
+        // 删除appMarket
+        List<DevopsAppMarketDO> list4 = applicationMarketMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (DevopsAppMarketDO e : list4) {
+                applicationMarketMapper.delete(e)
+            }
+        }
+        // 删除appTemplet
+        List<ApplicationTemplateDO> list5 = applicationTemplateMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (ApplicationTemplateDO e : list5) {
+                if (e.getId() >= 4) {
+                    applicationTemplateMapper.delete(e)
+                }
+            }
+        }
     }
 }
