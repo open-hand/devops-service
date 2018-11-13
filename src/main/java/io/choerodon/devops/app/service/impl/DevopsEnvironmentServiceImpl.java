@@ -232,9 +232,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
         List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t -> {
-                    setEnvStatus(connectedClusterList, t);
+                    setEnvStatus(connectedClusterList, upgradeClusterList, t);
                     // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
@@ -254,8 +255,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
 
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
         List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
-        setEnvStatus(connectedClusterList, devopsEnvironmentE);
+        setEnvStatus(connectedClusterList, upgradeClusterList, devopsEnvironmentE);
         if (!active && devopsEnvironmentE.getConnect()) {
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
@@ -377,9 +379,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             sequence = sequence + 1;
         }
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        devopsEnvironmentES.forEach(t -> {
-            setEnvStatus(connectedEnvList, t);
-        });
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+
+        devopsEnvironmentES.forEach(t ->
+                setEnvStatus(connectedEnvList, upgradeClusterList, t)
+        );
         if (!devopsEnvironmentES.isEmpty()) {
             DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
             if (devopsEnvironmentES.get(0).getDevopsEnvGroupId() != null) {
@@ -393,8 +397,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvGroupEnvsDTO;
     }
 
-    private void setEnvStatus(List<Long> connectedEnvList, DevopsEnvironmentE t) {
-        if (connectedEnvList.contains(t.getClusterE().getId())) {
+    private void setEnvStatus(List<Long> connectedEnvList, List<Long> upgradeEnvList, DevopsEnvironmentE t) {
+        if (connectedEnvList.contains(t.getClusterE().getId()) && upgradeEnvList.contains(t.getClusterE().getId())) {
             t.initConnect(true);
         } else {
             t.initConnect(false);
@@ -768,7 +772,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId,projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
+        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
     }
 
     @Override
