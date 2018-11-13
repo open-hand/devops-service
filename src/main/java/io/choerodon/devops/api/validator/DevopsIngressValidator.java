@@ -12,7 +12,7 @@ public class DevopsIngressValidator {
     //ingress name
     private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
     // ingress subdomain
-    private static final String SUB_PATH_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
+    private static final String SUB_PATH_PATTERN = "^\\/(\\S)*$";
 
     private DevopsIngressValidator() {
     }

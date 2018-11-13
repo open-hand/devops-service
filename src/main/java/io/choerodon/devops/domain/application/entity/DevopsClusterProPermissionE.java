@@ -7,6 +7,7 @@ public class DevopsClusterProPermissionE {
     private String projectName;
     private String projectCode;
 
+
     public Long getClusterId() {
         return clusterId;
     }
@@ -38,4 +39,5 @@ public class DevopsClusterProPermissionE {
     public void setProjectCode(String projectCode) {
         this.projectCode = projectCode;
     }
+
 }

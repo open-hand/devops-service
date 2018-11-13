@@ -20,6 +20,7 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.domain.service.DeployService;
+import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
@@ -33,6 +34,7 @@ public class DeployServiceImpl implements DeployService {
 
     private static final String INIT_AGENT = "init_agent";
     private static final String DELETE_ENV = "delete_env";
+    private static final String INIT_ENV = "create_env";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
     @Autowired
@@ -44,6 +46,8 @@ public class DeployServiceImpl implements DeployService {
     private IamRepository iamRepository;
     @Autowired
     private DevopsClusterRepository devopsClusterRepository;
+    @Autowired
+    private EnvUtil envUtil;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -91,21 +95,34 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void initCluster(Long clusterId) {
-        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.listByClusterId(clusterId);
-        GitConfigDTO gitConfigDTO = new GitConfigDTO();
-        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
-        devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(clusterId);
+        Msg msg = new Msg();
+        try {
+            msg.setPayload(mapper.writeValueAsString(gitConfigDTO));
+        } catch (IOException e) {
+            throw new CommonException("read envId from agent session failed", e);
+        }
+        msg.setType(INIT_AGENT);
+        msg.setKey(String.format("cluster:%s", clusterId
+        ));
+        commandSender.sendMsg(msg);
 
-            GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
-            gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
-            gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
-            gitEnvConfigDTO.setGitUrl(repoUrl);
-            gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
-            gitEnvConfigDTOS.add(gitEnvConfigDTO);
-        });
+    }
+
+    @Override
+    public void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId) {
+        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(clusterId);
+        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
+        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+
+        GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
+        gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
+        gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
+        gitEnvConfigDTO.setGitUrl(repoUrl);
+        gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
+        gitEnvConfigDTOS.add(gitEnvConfigDTO);
         gitConfigDTO.setEnvs(gitEnvConfigDTOS);
         gitConfigDTO.setGitHost(gitlabSshUrl);
         Msg msg = new Msg();
@@ -114,7 +131,7 @@ public class DeployServiceImpl implements DeployService {
         } catch (IOException e) {
             throw new CommonException("read envId from agent session failed", e);
         }
-        msg.setType(INIT_AGENT);
+        msg.setType(INIT_ENV);
         msg.setKey(String.format("cluster:%s", clusterId
         ));
         commandSender.sendMsg(msg);
@@ -135,4 +152,5 @@ public class DeployServiceImpl implements DeployService {
         msg.setKey(String.format("cluster:%s", clusterId));
         commandSender.sendMsg(msg);
     }
+
 }

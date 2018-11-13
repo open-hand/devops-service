@@ -50,11 +50,9 @@ public class DevopsIngressController {
     public ResponseEntity create(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境id", required = true)
-            @RequestParam Long envId,
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsIngressDTO devopsIngressDTO) {
-        devopsIngressService.addIngress(devopsIngressDTO, projectId,envId);
+        devopsIngressService.addIngress(devopsIngressDTO, projectId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

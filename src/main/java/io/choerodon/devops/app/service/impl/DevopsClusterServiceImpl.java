@@ -36,6 +36,7 @@ import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
+
 @Service
 public class DevopsClusterServiceImpl implements DevopsClusterService {
 
@@ -63,6 +64,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
+
     @Override
     @Transactional
     public String createCluster(Long organizationId, DevopsClusterReqDTO devopsClusterReqDTO) {
@@ -71,7 +73,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         devopsClusterE.setToken(GenerateUUID.generateUUID());
         devopsClusterE.setOrganizationId(organizationId);
         devopsClusterE = devopsClusterRepository.create(devopsClusterE);
-        if (!devopsClusterE.getSkipCheckProjectPermission()) {
+        if (!devopsClusterE.getSkipCheckProjectPermission() && devopsClusterReqDTO.getProjects() != null) {
             for (Long projectId : devopsClusterReqDTO.getProjects()) {
                 DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                 devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
@@ -85,8 +87,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
+        params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterE.getCode());
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
+        params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
         params.put("{REPOURL}", agentRepoUrl);
         params.put("{CLUSTERID}", devopsClusterE
                 .getId().toString());
@@ -184,9 +188,11 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         }
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);
+        params.put("{NAME}", "choerodon-cluster-agent-" + devopsClusterE.getCode());
         params.put("{SERVICEURL}", agentServiceUrl);
         params.put("{TOKEN}", devopsClusterE.getToken());
         params.put("{REPOURL}", agentRepoUrl);
+        params.put("{CHOERODONID}", devopsClusterE.getChoerodonId());
         params.put("{CLUSTERID}", devopsClusterE
                 .getId().toString());
         return FileUtil.replaceReturnString(inputStream, params);
@@ -257,3 +263,4 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return ConvertHelper.convert(devopsClusterRepository.query(clusterId), DevopsClusterRepDTO.class);
     }
 }
+

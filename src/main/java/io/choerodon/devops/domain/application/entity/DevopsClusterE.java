@@ -12,6 +12,9 @@ public class DevopsClusterE {
     private String upgradeMessage;
     private String description;
     private Boolean skipCheckProjectPermission;
+    private String choerodonId;
+    private String namespaces;
+    private Boolean  isInit;
 
     public DevopsClusterE() {
     }
@@ -98,5 +101,30 @@ public class DevopsClusterE {
 
     public void setUpgradeMessage(String upgradeMessage) {
         this.upgradeMessage = upgradeMessage;
+    }
+
+
+    public String getChoerodonId() {
+        return choerodonId;
+    }
+
+    public void setChoerodonId(String choerodonId) {
+        this.choerodonId = choerodonId;
+    }
+
+    public String getNamespaces() {
+        return namespaces;
+    }
+
+    public void setNamespaces(String namespaces) {
+        this.namespaces = namespaces;
+    }
+
+    public Boolean getInit() {
+        return isInit;
+    }
+
+    public void setInit(Boolean init) {
+        isInit = init;
     }
 }

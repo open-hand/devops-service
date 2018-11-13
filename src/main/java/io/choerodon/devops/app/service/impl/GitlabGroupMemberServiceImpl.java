@@ -167,11 +167,13 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                             TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
                     addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
-                    //给gitlab环境组分配owner角色
-                    groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                            TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
-                            (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                    addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), userAttrE);
+                    if (accessLevel.equals(AccessLevel.OWNER)) {
+                        //给gitlab环境组分配owner角色
+                        groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                                TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
+                                (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
+                        addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), userAttrE);
+                    }
                 } catch (Exception e) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                     return;

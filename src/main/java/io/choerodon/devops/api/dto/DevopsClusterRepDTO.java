@@ -51,6 +51,7 @@ public class DevopsClusterRepDTO {
         this.description = description;
     }
 
+
     public Boolean getConnect() {
         return connect;
     }
@@ -74,4 +75,5 @@ public class DevopsClusterRepDTO {
     public void setUpgradeMessage(String upgradeMessage) {
         this.upgradeMessage = upgradeMessage;
     }
+
 }

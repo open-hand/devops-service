@@ -80,7 +80,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     @Override
-    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId, Long envId) {
+    public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());

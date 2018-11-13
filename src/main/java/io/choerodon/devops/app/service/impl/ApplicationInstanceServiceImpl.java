@@ -555,7 +555,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository.selectByCode(code, applicationDeployDTO.getEnvironmentId());
             DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
             if (afterApplicationInstanceE != null) {
-                afterDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeApplicationInstanceE.getCommandId());
+                afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterApplicationInstanceE.getCommandId());
             }
 
             //实例相关对象数据库操作,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而实例成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行实例数据库操作

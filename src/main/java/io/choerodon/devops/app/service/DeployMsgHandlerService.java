@@ -73,4 +73,8 @@ public interface DeployMsgHandlerService {
 
     void handlerServiceCreateMessage(String key, String msg, Long clusterId);
 
+    void updateNamespaces(String msg, Long clusterId);
+
+    void upgradeCluster(String key, String msg);
+
 }
