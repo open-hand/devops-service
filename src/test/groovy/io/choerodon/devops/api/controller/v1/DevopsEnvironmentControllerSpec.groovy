@@ -6,10 +6,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsEnviromentDTO
-import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO
-import io.choerodon.devops.api.dto.EnvSyncStatusDTO
-import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO
+import io.choerodon.devops.api.dto.*
 import io.choerodon.devops.api.dto.gitlab.MemberDTO
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
@@ -140,6 +137,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
     DevopsEnvUserPermissionDO devopsEnvUserPermissionDO1 = new DevopsEnvUserPermissionDO()
     @Shared
     DevopsEnvUserPermissionDO devopsEnvUserPermissionDO2 = new DevopsEnvUserPermissionDO()
+    @Shared
+    DevopsClusterDO devopsClusterDO = new DevopsClusterDO()
 
     def setupSpec() {
         given:
@@ -160,42 +159,49 @@ class DevopsEnvironmentControllerSpec extends Specification {
         searchParam.put("param", "")
 
         devopsEnvironmentDO.setId(1L)
-        devopsEnvironmentDO.setName("testNameEnv")
-        devopsEnvironmentDO.setCode("testCodeEnv")
-        devopsEnvironmentDO.setProjectId(1L)
         devopsEnvironmentDO.setActive(true)
         devopsEnvironmentDO.setSequence(1L)
-        devopsEnvironmentDO.setToken("testToken")
         devopsEnvironmentDO.setClusterId(1L)
+        devopsEnvironmentDO.setProjectId(1L)
+        devopsEnvironmentDO.setConnect(true)
+        devopsEnvironmentDO.setToken("testToken")
+        devopsEnvironmentDO.setName("testNameEnv")
+        devopsEnvironmentDO.setCode("testCodeEnv")
         devopsEnvironmentDO.setGitlabEnvProjectId(1L)
 
         devopsEnvironmentDO1.setId(2L)
-        devopsEnvironmentDO1.setName("testNameEnv1")
-        devopsEnvironmentDO1.setCode("testCodeEnv1")
-        devopsEnvironmentDO1.setProjectId(1L)
         devopsEnvironmentDO1.setActive(true)
         devopsEnvironmentDO1.setSequence(2L)
-        devopsEnvironmentDO1.setToken("testToken1")
         devopsEnvironmentDO1.setClusterId(1L)
+        devopsEnvironmentDO1.setProjectId(1L)
+        devopsEnvironmentDO1.setConnect(false)
+        devopsEnvironmentDO1.setToken("testToken1")
+        devopsEnvironmentDO1.setCode("testCodeEnv1")
+        devopsEnvironmentDO1.setName("testNameEnv1")
         devopsEnvironmentDO1.setGitlabEnvProjectId(2L)
 
-        devopsEnvUserPermissionDO.setIamUserId(1L)
         devopsEnvUserPermissionDO.setEnvId(1L)
+        devopsEnvUserPermissionDO.setIamUserId(1L)
+        devopsEnvUserPermissionDO.setPermitted(true)
         devopsEnvUserPermissionDO.setLoginName("test")
         devopsEnvUserPermissionDO.setRealName("realTest")
-        devopsEnvUserPermissionDO.setPermitted(true)
 
-        devopsEnvUserPermissionDO1.setIamUserId(2L)
         devopsEnvUserPermissionDO1.setEnvId(1L)
+        devopsEnvUserPermissionDO1.setIamUserId(2L)
+        devopsEnvUserPermissionDO1.setPermitted(true)
         devopsEnvUserPermissionDO1.setLoginName("test1")
         devopsEnvUserPermissionDO1.setRealName("realTest1")
-        devopsEnvUserPermissionDO1.setPermitted(true)
 
-        devopsEnvUserPermissionDO2.setIamUserId(3L)
         devopsEnvUserPermissionDO2.setEnvId(1L)
+        devopsEnvUserPermissionDO2.setIamUserId(3L)
+        devopsEnvUserPermissionDO2.setPermitted(true)
         devopsEnvUserPermissionDO2.setLoginName("test2")
         devopsEnvUserPermissionDO2.setRealName("realTest2")
-        devopsEnvUserPermissionDO2.setPermitted(true)
+
+        devopsClusterDO.setId(1L)
+        devopsClusterDO.setName("testCluster")
+        devopsClusterDO.setChoerodonId("choerodon")
+        devopsClusterDO.setSkipCheckProjectPermission(true)
     }
 
     def setup() {
@@ -242,6 +248,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         given: '插入env'
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO1)
+        devopsClusterMapper.insert(devopsClusterDO)
 
         and: '插入envUserPermission'
         devopsEnvUserPermissionMapper.insert(devopsEnvUserPermissionDO)
@@ -250,6 +257,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
         and: '设置DTO类'
         DevopsEnviromentDTO devopsEnviromentDTO = new DevopsEnviromentDTO()
+        devopsEnviromentDTO.setClusterId(1L)
         devopsEnviromentDTO.setCode("testCodeChange")
         devopsEnviromentDTO.setName("testNameChange")
 
@@ -269,6 +277,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
         ResponseEntity<UserDO> responseEntity2 = new ResponseEntity<>(userDO, HttpStatus.OK)
         Mockito.doReturn(responseEntity2).when(iamServiceClient).queryById(1L)
         userAttrRepository.queryById(_ as Long) >> userAttrE
+
+        and: 'mock envUtil'
+        GitConfigDTO gitConfigDTO = new GitConfigDTO()
+        envUtil.getGitConfig(_ as Long) >> gitConfigDTO
 
         when: '项目下创建环境'
         restTemplate.postForObject("/v1/projects/1/envs", devopsEnviromentDTO, String.class)
@@ -294,7 +306,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
+        List<Long> connectedClusterList = new ArrayList<>()
+        connectedClusterList.add(3L)
+        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedClusterList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
 
         when: '项目下查询存在网络环境'
@@ -357,14 +371,16 @@ class DevopsEnvironmentControllerSpec extends Specification {
         List<Long> envList = new ArrayList<>()
         envList.add(1L)
         envList.add(2L)
-        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
+        List<Long> connectedEnvList = new ArrayList<>()
+        connectedEnvList.add(3L)
+        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
 
         when: '项目下启用停用环境'
-        restTemplate.put("/v1/projects/1/envs/3/active?active=false", Boolean.class)
+        restTemplate.put("/v1/projects/1/envs/1/active?active=false", Boolean.class)
 
         then: '返回值'
-        !devopsEnvironmentMapper.selectByPrimaryKey(3L).getActive()
+        !devopsEnvironmentMapper.selectByPrimaryKey(1L).getActive()
     }
 
     def "Query"() {
@@ -463,7 +479,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         def envs = restTemplate.getForObject("/v1/projects/1/envs/instance", List.class)
 
         then: '返回值'
-        envs.size() == 2
+        envs.size() == 1
     }
 
     def "QueryEnvSyncStatus"() {
@@ -538,10 +554,11 @@ class DevopsEnvironmentControllerSpec extends Specification {
         String[] param = new String[1]
         param[0] = ""
         roleAssignmentSearchDTO.setParam(param)
-        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
+        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
 
         when: '分页查询项目下用户权限'
         def page = restTemplate.postForObject("/v1/projects/1/envs/list?page=0&size5&env_id=null", strEntity, Page.class)
+
 
         then: '返回值'
         page != null
@@ -621,11 +638,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "ListDevopsClusters"() {
         given: '创建集群和项目关联关系'
-        DevopsClusterDO devopsClusterDO = new DevopsClusterDO()
-        devopsClusterDO.setId(1L)
-        devopsClusterDO.setName("testCluster")
-        devopsClusterDO.setSkipCheckProjectPermission(true)
-        devopsClusterMapper.insert(devopsClusterDO)
 
         DevopsClusterProPermissionDO devopsClusterProPermissionDO = new DevopsClusterProPermissionDO()
         devopsClusterProPermissionDO.setClusterId(1L)

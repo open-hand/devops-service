@@ -109,7 +109,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
             devopsClusterProPermissionRepository.deleteByClusterId(clusterId);
         } else {
             //操作集群项目权限校验表记录
-            List<Long> projectIds = devopsClusterProPermissionRepository.listByClusterId(clusterId).stream().map(DevopsClusterProPermissionE::getProjectId).collect(Collectors.toList());
+            List<Long> projectIds = devopsClusterProPermissionRepository.listByClusterId(clusterId)
+                    .stream().map(DevopsClusterProPermissionE::getProjectId).collect(Collectors.toList());
+
             projects.forEach(projectId -> {
                 if (!projectIds.contains(projectId)) {
                     addProjects.add(projectId);
@@ -147,15 +149,19 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest, String[] params) {
-        Page<ProjectDO> projects = iamServiceClient.queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params).getBody();
+    public Page<ProjectDTO> listProjects(Long organizationId, Long clusterId, PageRequest pageRequest,
+                                         String[] params) {
+        Page<ProjectDO> projects = iamServiceClient
+                .queryProjectByOrgId(organizationId, pageRequest.getPage(), pageRequest.getSize(), null, params)
+                .getBody();
         Page<ProjectDTO> pageProjectDTOS = new Page<>();
         List<ProjectDTO> projectDTOS = new ArrayList<>();
         if (projects.getContent() != null) {
             BeanUtils.copyProperties(projects, pageProjectDTOS);
             List<Long> projectIds;
             if (clusterId != null) {
-                projectIds = devopsClusterProPermissionRepository.listByClusterId(clusterId).stream().map(DevopsClusterProPermissionE::getProjectId).collect(Collectors.toList());
+                projectIds = devopsClusterProPermissionRepository.listByClusterId(clusterId).stream()
+                        .map(DevopsClusterProPermissionE::getProjectId).collect(Collectors.toList());
             } else {
                 projectIds = new ArrayList<>();
             }
@@ -208,25 +214,29 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public Page<DevopsClusterRepDTO> pageClusters(Long organizationId, PageRequest pageRequest, String params) {
-        Page<DevopsClusterE> devopsClusterEPage = devopsClusterRepository.pageClusters(organizationId, pageRequest, params);
+        Page<DevopsClusterE> devopsClusterEPage = devopsClusterRepository
+                .pageClusters(organizationId, pageRequest, params);
         Page<DevopsClusterRepDTO> devopsClusterRepDTOPage = new Page<>();
         BeanUtils.copyProperties(devopsClusterEPage, devopsClusterRepDTOPage);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        devopsClusterEPage.getContent().stream().forEach(devopsClusterE -> setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE));
-        devopsClusterRepDTOPage.setContent(ConvertHelper.convertList(devopsClusterEPage.getContent(), DevopsClusterRepDTO.class));
+        devopsClusterEPage.getContent().forEach(devopsClusterE ->
+                setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE));
+        devopsClusterRepDTOPage.setContent(ConvertHelper.convertList(devopsClusterEPage.getContent(),
+                DevopsClusterRepDTO.class));
         return devopsClusterRepDTOPage;
     }
 
     @Override
     public List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId) {
-        return devopsClusterProPermissionRepository.listByClusterId(clusterId).stream().map(devopsClusterProPermissionE -> {
-            ProjectDTO projectDTO = new ProjectDTO();
-            projectDTO.setId(devopsClusterProPermissionE.getProjectId());
-            projectDTO.setName(devopsClusterProPermissionE.getProjectName());
-            projectDTO.setCode(devopsClusterProPermissionE.getProjectCode());
-            return projectDTO;
-        }).collect(Collectors.toList());
+        return devopsClusterProPermissionRepository.listByClusterId(clusterId).stream()
+                .map(devopsClusterProPermissionE -> {
+                    ProjectDTO projectDTO = new ProjectDTO();
+                    projectDTO.setId(devopsClusterProPermissionE.getProjectId());
+                    projectDTO.setName(devopsClusterProPermissionE.getProjectName());
+                    projectDTO.setCode(devopsClusterProPermissionE.getProjectCode());
+                    return projectDTO;
+                }).collect(Collectors.toList());
     }
 
     private void setClusterStatus(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsClusterE t) {
@@ -263,4 +273,3 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return ConvertHelper.convert(devopsClusterRepository.query(clusterId), DevopsClusterRepDTO.class);
     }
 }
-

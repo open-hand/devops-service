@@ -46,6 +46,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     changeSet(id: '2018-05-21-add-constraint', author: 'younger') {
         addUniqueConstraint(tableName: 'devops_env',
                 constraintName: 'uk_project_id_code', columnNames: 'project_id,code')
+
     }
 
     changeSet(author: 'younger', id: '2018-07-25-add-column') {
@@ -56,6 +57,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
             column(name: 'hook_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab webhook', afterColumn: 'gitlab_env_project_id')
         }
     }
+
     changeSet(author: 'younger', id: '2018-08-1-add-column') {
         addColumn(tableName: 'devops_env') {
             column(name: 'git_commit', type: 'BIGINT UNSIGNED', remarks: 'env_commit_id', afterColumn: 'hook_id')
