@@ -110,7 +110,21 @@ class DevopsGitlabCommitControllerSpec extends Specification {
 
         then: '校验返回值'
         pages.size() == 1
-        applicationMapper.deleteByPrimaryKey(1L)
-        devopsGitlabCommitMapper.deleteByPrimaryKey(1L)
+
+        and: '清理数据'
+        // 删除app
+        List<ApplicationDO> list = applicationMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationDO e : list) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除gitlabCommit
+        List<DevopsGitlabCommitDO> list1 = devopsGitlabCommitMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsGitlabCommitDO e : list1) {
+                devopsGitlabCommitMapper.delete(e)
+            }
+        }
     }
 }

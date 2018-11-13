@@ -124,11 +124,23 @@ class DevopsEnvGroupControllerSpec extends Specification {
         when: '环境组删除'
         restTemplate.delete("/v1/projects/1/env_groups/1")
 
-        then: '清理数据'
+        then: '验证是否删除'
         devopsEnvGroupMapper.selectByPrimaryKey(1L) == null
-        devopsEnvironmentMapper.deleteByPrimaryKey(1L)
-        devopsEnvironmentMapper.deleteByPrimaryKey(2L)
-        devopsEnvGroupMapper.deleteByPrimaryKey(2L)
-        devopsEnvGroupMapper.deleteByPrimaryKey(3L)
+
+        and: '清理数据'
+        // 删除envGroup
+        List<DevopsEnvGroupDO> list = devopsEnvGroupMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (DevopsEnvGroupDO e : list) {
+                devopsEnvGroupMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsEnvironmentDO e : list1) {
+                devopsEnvironmentMapper.delete(e)
+            }
+        }
     }
 }

@@ -12,6 +12,7 @@ import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Issue
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.dataobject.ApplicationDO
+import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
@@ -397,10 +398,27 @@ class DevopsGitControllerSpec extends Specification {
 
         then: '校验返回值'
         !mergeRequest.isEmpty()
-        applicationMapper.deleteByPrimaryKey(1L)
-        devopsBranchMapper.deleteByPrimaryKey(devopsBranchMapper.selectAll().get(0).getId())
-        devopsMergeRequestMapper.deleteByPrimaryKey(1L)
-        devopsMergeRequestMapper.deleteByPrimaryKey(2L)
-        devopsMergeRequestMapper.deleteByPrimaryKey(3L)
+
+        // 删除app
+        List<ApplicationDO> list = applicationMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (ApplicationDO e : list) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除branch
+        List<DevopsBranchDO> list1 = devopsBranchMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (DevopsBranchDO e : list1) {
+                devopsBranchMapper.delete(e)
+            }
+        }
+        // 删除mergeRequest
+        List<DevopsMergeRequestDO> list2 = devopsMergeRequestMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (DevopsMergeRequestDO e : list2) {
+                devopsMergeRequestMapper.delete(e)
+            }
+        }
     }
 }

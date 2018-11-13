@@ -146,11 +146,35 @@ class DevopsEnvPodControllerSpec extends Specification {
 
         then: '校验返回值和清除数据'
         page != null
-        devopsEnvPodMapper.deleteByPrimaryKey(1L)
-        applicationVersionMapper.deleteByPrimaryKey(1L)
-        applicationVersionMapper.deleteByPrimaryKey(2L)
-        applicationMapper.deleteByPrimaryKey(1L)
-        applicationMapper.deleteByPrimaryKey(2L)
-        applicationMarketMapper.deleteByPrimaryKey(1L)
+
+        and:'清理数据'
+        // 删除envPod
+        List<DevopsEnvPodDO> list = devopsEnvPodMapper.selectAll()
+        if (list != null && !list.isEmpty()) {
+            for (DevopsEnvPodDO e : list) {
+                devopsEnvPodMapper.delete(e)
+            }
+        }
+        // 删除appVersion
+        List<ApplicationVersionDO> list1 = applicationVersionMapper.selectAll()
+        if (list1 != null && !list1.isEmpty()) {
+            for (ApplicationVersionDO e : list1) {
+                applicationVersionMapper.delete(e)
+            }
+        }
+        // 删除app
+        List<ApplicationDO> list2 = applicationMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (ApplicationDO e : list2) {
+                applicationMapper.delete(e)
+            }
+        }
+        // 删除appMarket
+        List<DevopsAppMarketDO> list3 = applicationMarketMapper.selectAll()
+        if (list3 != null && !list3.isEmpty()) {
+            for (DevopsAppMarketDO e : list3) {
+                applicationMarketMapper.delete(e)
+            }
+        }
     }
 }
