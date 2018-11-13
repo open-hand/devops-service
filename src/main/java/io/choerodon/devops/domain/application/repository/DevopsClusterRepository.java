@@ -14,7 +14,7 @@ public interface DevopsClusterRepository {
 
     void checkCode(DevopsClusterE devopsClusterE);
 
-    List<DevopsClusterE> listByProjectId(Long projectId);
+    List<DevopsClusterE> listByProjectId(Long projectId, Long organizationId);
 
     DevopsClusterE query(Long clusterId);
 

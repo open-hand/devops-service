@@ -768,7 +768,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
-        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId,projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
     }
 
     @Override

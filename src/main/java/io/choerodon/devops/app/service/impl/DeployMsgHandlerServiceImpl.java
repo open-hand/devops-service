@@ -1506,8 +1506,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         logger.info("upgradeCluster message:" + msg);
         UpgradeCluster upgradeCluster = json.deserialize(msg, UpgradeCluster.class);
         DevopsClusterE devopsClusterE = devopsClusterRepository.queryByToken(upgradeCluster.getToken());
-        devopsClusterE.setSkipCheckProjectPermission(false);
-        if (devopsClusterE.getId() == null) {
+        if (devopsClusterE == null) {
             logger.info("the cluster is not exist:" + upgradeCluster.getToken());
             return;
         }
@@ -1515,6 +1514,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             logger.info("the cluster has bean init:" + devopsClusterE.getName());
             return;
         }
+        devopsClusterE.setSkipCheckProjectPermission(false);
         if (upgradeCluster.getEnvs() != null) {
             upgradeCluster.getEnvs().forEach(clusterEnv -> {
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(clusterEnv.getEnvId());
