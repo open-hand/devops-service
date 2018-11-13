@@ -29,3 +29,6 @@ values_yaml.spec
 
 ### macos junk file
 .DS_Store
+
+### JRebel
+rebel.xml
