@@ -9,6 +9,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +51,7 @@ import io.choerodon.websocket.helper.EnvListener;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
     private static final Gson gson = new Gson();
     private static final String MASTER = "master";
     private static final String README = "README.md";
@@ -766,7 +769,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
         gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
         // 删除环境命名空间
-        deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
+        if (devopsEnvironmentE.getClusterE().getId() != null) {
+            deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
+        }
     }
 
     @Override
