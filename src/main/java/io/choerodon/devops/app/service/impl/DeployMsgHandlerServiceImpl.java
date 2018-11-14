@@ -426,6 +426,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                 devopsEnvCommandE.setObject(SERVICE_KIND);
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
                 devopsServiceRepository.delete(devopsServiceE.getId());
             }
         }
@@ -440,6 +441,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandE.setObjectId(devopsIngressE.getId());
                 devopsEnvCommandE.setObject(INGRESS_KIND);
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
                 devopsIngressRepository.deleteIngress(devopsIngressE.getId());
                 devopsIngressRepository.deleteIngressPath(devopsIngressE.getId());
             }
@@ -508,6 +510,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvCommandE.setObjectId(instanceE.getId());
             devopsEnvCommandE.setObject(INSTANCE_KIND);
             devopsEnvCommandRepository.create(devopsEnvCommandE);
+            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, instanceE.getId(), "C7NHelmRelease");
             applicationInstanceRepository.deleteById(instanceE.getId());
         }
     }

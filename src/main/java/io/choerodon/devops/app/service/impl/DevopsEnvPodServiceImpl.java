@@ -41,6 +41,7 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         Page<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
         devopsEnvPodEPage.stream().forEach(devopsEnvPodE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsEnvPodE.getEnvId());
+            devopsEnvPodE.setClusterId(devopsEnvironmentE.getClusterE().getId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsEnvPodE.setConnect(true);
