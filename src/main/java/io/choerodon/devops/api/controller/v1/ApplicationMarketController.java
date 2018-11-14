@@ -359,7 +359,7 @@ public class ApplicationMarketController {
         applicationMarketService.export(appMarkets, fileName);
         FileUtil.downloadFile(res, fileName + ".zip");
         try {
-            Files.delete(new File(fileName).toPath());
+            Files.delete(new File(fileName + ".zip").toPath());
         } catch (IOException e) {
             throw new CommonException(e.getMessage());
         }
