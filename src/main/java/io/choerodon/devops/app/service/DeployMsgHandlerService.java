@@ -17,7 +17,7 @@ public interface DeployMsgHandlerService {
 
     void helmReleaseHookLogs(String key, String msg, Long clusterId);
 
-    void updateInstanceStatus(String key, Long clusterId, String instanceStatus, String commandStatus, String commandMsg);
+    void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String commandMsg);
 
     void helmReleaseDelete(String key, Long clusterId);
 

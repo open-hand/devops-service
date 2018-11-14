@@ -473,13 +473,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void updateInstanceStatus(String key, Long clusterId, String instanceStatus, String commandStatus, String msg) {
+    public void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String msg) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info("env not exist" + KeyParseTool.getNamespace(key));
             return;
         }
-        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key, envId);
+        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
         if (instanceE != null) {
             instanceE.setStatus(instanceStatus);
             applicationInstanceRepository.update(instanceE);
@@ -616,14 +616,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseDeleteFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
 
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.DELETED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -631,14 +626,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseStartFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
-
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(
+                key,
+                KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.STOPPED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -651,14 +642,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseInstallFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
-
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(
+                key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.FAILED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -666,14 +652,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseUpgradeFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
 
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -681,14 +662,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaeStopFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
 
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);

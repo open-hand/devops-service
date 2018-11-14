@@ -131,8 +131,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        devopsServiceService.updateDevopsServiceByGitOps(
-                                projectId, devopsServiceE.getId(), devopsServiceReqDTO, userId);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                 .queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,

@@ -853,7 +853,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId, Long clusterId) {
         Msg msg = new Msg();
-        msg.setKey("cluster"+ clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
+        msg.setKey("cluster:" + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
         msg.setType(type);
         msg.setPayload(payload);
         msg.setCommandId(commandId);
