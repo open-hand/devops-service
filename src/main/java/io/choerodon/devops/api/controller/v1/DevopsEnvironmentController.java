@@ -305,7 +305,7 @@ public class DevopsEnvironmentController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params,
             @ApiParam(value = "环境id")
-            @RequestParam(value = "env_id") String envId) {
+            @RequestParam(value = "env_id", required = false) Long envId) {
         return Optional.ofNullable(devopsEnvironmentService
                 .listUserPermissionByEnvId(projectId, pageRequest, params, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

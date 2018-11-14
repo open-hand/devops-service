@@ -583,8 +583,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                      String searchParams, String envId) {
-        if ("null".equals(envId)) {
+                                                                      String searchParams, Long envId) {
+        if (envId == null) {
             // 根据项目成员id查询项目下所有的项目成员
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
@@ -701,16 +701,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
         Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
-                        memberId, projectId);
+                        memberId, projectId, true);
         // 如果项目成员查出来为空，则直接返回空列表
         if (allMemberWithOtherUsersPage.getContent().isEmpty()) {
             return allMemberWithOtherUsersPage;
         }
         // 所有项目所有者
-        // TODO 目前先设置为200，等iam接口修改后再做调整
         Page<UserDTO> allOwnerUsersPage = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 200), roleAssignmentSearchDTO,
-                        ownerId, projectId);
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO,
+                        ownerId, projectId, false);
         // 如果项目所有者查出来为空，则返回之前的项目成员列表
         if (allOwnerUsersPage.getContent().isEmpty()) {
             return allMemberWithOtherUsersPage;

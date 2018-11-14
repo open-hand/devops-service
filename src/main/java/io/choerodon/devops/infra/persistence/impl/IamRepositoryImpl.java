@@ -201,13 +201,11 @@ public class IamRepositoryImpl implements IamRepository {
     @Override
     public Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                                 RoleAssignmentSearchDTO roleAssignmentSearchDTO,
-                                                                Long roleId, Long projectId) {
+                                                                Long roleId, Long projectId, Boolean doPage) {
         try {
             return iamServiceClient
                     .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest.getPage(), pageRequest.getSize(), roleId,
-
-                            projectId, false, roleAssignmentSearchDTO)
-                    .getBody();
+                            projectId, doPage, roleAssignmentSearchDTO).getBody();
         } catch (FeignException e) {
             LOGGER.error("get users by role id {} and project id {} error", roleId, projectId);
         }
@@ -235,7 +233,6 @@ public class IamRepositoryImpl implements IamRepository {
             ResponseEntity<Page<UserDO>> userDOResponseEntity = iamServiceClient
                     .listUsersByEmail(projectId, 0, 10, email);
             return ConvertHelper.convert(userDOResponseEntity.getBody().getContent().get(0), UserE.class);
-
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);
             return null;

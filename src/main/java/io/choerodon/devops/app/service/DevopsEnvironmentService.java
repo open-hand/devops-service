@@ -127,7 +127,7 @@ public interface DevopsEnvironmentService {
      * @return page
      */
     Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                               String params, String envId);
+                                                               String params, Long envId);
 
     /**
      * 获取环境下所有用户权限

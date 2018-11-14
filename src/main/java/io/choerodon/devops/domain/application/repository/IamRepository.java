@@ -43,7 +43,7 @@ public interface IamRepository {
 
     Page<UserDTO> pagingQueryUsersByRoleIdOnProjectLevel(PageRequest pageRequest,
                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
-                                                         Long projectId);
+                                                         Long projectId, Boolean doPage);
 
     Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage, String searchParams);
 
