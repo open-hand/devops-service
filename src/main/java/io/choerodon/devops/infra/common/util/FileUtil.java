@@ -1204,7 +1204,7 @@ public class FileUtil {
      * @param filePath 文件路径
      */
     public static void downloadFile(HttpServletResponse res, String filePath) {
-        res.setHeader("content-type", "application/octet-stream");
+       // res.setHeader("content-type", "application/octet-stream");
         res.setContentType("application/octet-stream");
         res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
         byte[] buff = new byte[1024];
