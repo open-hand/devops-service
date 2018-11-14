@@ -253,12 +253,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
-        if (!active) {
-            List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
-            setEnvStatus(connectedClusterList, devopsEnvironmentE);
-        }
-        if (devopsEnvironmentE.getConnect()) {
-            throw new CommonException("error.env.connected");
+
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+        setEnvStatus(connectedClusterList, devopsEnvironmentE);
+        if (!active && devopsEnvironmentE.getConnect()) {
+            devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
