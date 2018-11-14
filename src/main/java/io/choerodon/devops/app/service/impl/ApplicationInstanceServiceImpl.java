@@ -693,7 +693,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String payload = gson.toJson(stopMap);
         Long envId = instanceE.getDevopsEnvironmentE().getId();
         sentInstance(payload, releaseName, HelmType.HELM_RELEASE_STOP.toValue(),
-                namespace, devopsEnvCommandE.getId(), envId);
+                namespace, devopsEnvCommandE.getId(), envId, devopsEnvironmentE.getClusterE().getId());
     }
 
     @Override
@@ -723,7 +723,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String payload = gson.toJson(stopMap);
         Long envId = instanceE.getDevopsEnvironmentE().getId();
         sentInstance(payload, releaseName, HelmType.HELM_RELEASE_START.toValue(),
-                namespace, devopsEnvCommandE.getId(), envId);
+                namespace, devopsEnvCommandE.getId(), envId, devopsEnvironmentE.getClusterE().getId());
     }
 
     @Override
@@ -851,9 +851,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return instanceE.getCode();
     }
 
-    private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
+    private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId, Long clusterId) {
         Msg msg = new Msg();
-        msg.setKey("env:" + namespace + ".envId:" + envId + ".release:" + name);
+        msg.setKey("cluster"+ clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
         msg.setType(type);
         msg.setPayload(payload);
         msg.setCommandId(commandId);

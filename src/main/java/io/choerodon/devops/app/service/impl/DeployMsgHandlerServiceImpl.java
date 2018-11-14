@@ -1514,7 +1514,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             logger.info("the cluster has bean init:" + devopsClusterE.getName());
             return;
         }
-        devopsClusterE.setSkipCheckProjectPermission(false);
         if (upgradeCluster.getEnvs() != null) {
             upgradeCluster.getEnvs().forEach(clusterEnv -> {
                 DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(clusterEnv.getEnvId());
@@ -1532,6 +1531,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     }
                 }
             });
+            devopsClusterE.setSkipCheckProjectPermission(false);
         }
         devopsClusterE.setInit(true);
         devopsClusterRepository.update(devopsClusterE);
