@@ -58,17 +58,20 @@
         JOIN devops_app_instance dai ON dai.app_id = da.id
         JOIN devops_env de ON de.id = dai.env_id
         left join devops_app_market dam on dam.app_id = da.id
+        RIGHT JOIN devops_env_pod dep ON dep.app_instance_id = dai.id
         WHERE
         de.project_id = #{projectId}
         AND de.id = #{envId}
-        <choose>
-            <when test="status == 'running'">
-                AND dai.`status` = 'running'
-            </when>
-            <when test="status == 'nodeleted'">
-                AND dai.`status` != 'deleted'
-            </when>
-        </choose>
+        <if test="status != null">
+            <choose>
+                <when test="status == 'running'">
+                    AND dai.`status` = 'running'
+                </when>
+                <when test="status == 'nodeleted'">
+                    AND dai.`status` != 'deleted'
+                </when>
+            </choose>
+        </if>
     </select>
 
     <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">

@@ -214,8 +214,8 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam Long envId,
-            @ApiParam(value = "实例运行状态", required = true)
-            @RequestParam String status,
+            @ApiParam(value = "实例运行状态")
+            @RequestParam(required = false) String status,
             @ApiParam(value = "应用 Id")
             @RequestParam(required = false) Long appId) {
         return Optional.ofNullable(applicationService.listByEnvId(projectId, envId, status, appId))
