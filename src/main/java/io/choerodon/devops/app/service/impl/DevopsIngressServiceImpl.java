@@ -273,6 +273,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         if (devopsEnvFileResourceE == null) {
             devopsIngressRepository.deleteIngress(ingressId);
             devopsIngressRepository.deleteIngressPath(ingressId);
+            return;
 
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());

@@ -790,6 +790,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
         if (devopsEnvFileResourceE == null) {
             applicationInstanceRepository.deleteById(instanceId);
+            return;
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());

@@ -391,6 +391,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, SERVICE);
         if (devopsEnvFileResourceE == null) {
             devopsServiceRepository.delete(id);
+            return;
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
