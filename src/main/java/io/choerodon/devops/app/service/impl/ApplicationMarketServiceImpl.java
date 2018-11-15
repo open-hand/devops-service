@@ -365,20 +365,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
             File[] chartsDirectory = zipDirectory.listFiles();
-            if (chartsDirectory != null
-                    && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals(fileName)) {
-                File[] appFiles = chartsDirectory[0].listFiles();
-                if (appFiles == null || appFiles.length == 0) {
-                    FileUtil.deleteDirectory(zipDirectory);
-                    throw new CommonException("error.file.empty");
-                }
-                List<File> appFileList = Arrays.stream(appFiles)
-                        .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
-                importAppFile(projectId, appFileList, isPublic);
-            } else {
-                throw new CommonException("error.zip.illegal");
+            File[] appFiles = chartsDirectory[0].listFiles();
+            if (appFiles == null || appFiles.length == 0) {
+                FileUtil.deleteDirectory(zipDirectory);
+                throw new CommonException("error.file.empty");
             }
+            List<File> appFileList = Arrays.stream(appFiles)
+                    .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
+            importAppFile(projectId, appFileList, isPublic);
+
         } else {
             throw new CommonException("error.zip.notFound");
         }
