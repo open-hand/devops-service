@@ -1407,10 +1407,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<Command> oldCommands = new ArrayList<>();
         getCommands(envId, oldCommands);
         if (!oldCommands.isEmpty()) {
-            oldCommands.stream().filter(oldComand-> oldComand.getId()!=null).forEach(command ->
-                    commands.stream().filter(command1 -> command1.getId() != null  && command1.getId().equals(command.getId())).forEach(command1 -> {
+            oldCommands.stream().filter(oldComand -> oldComand.getId() != null).forEach(command ->
+                    commands.stream().filter(command1 -> command1.getId() != null && command1.getId().equals(command.getId())).forEach(command1 -> {
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(command.getId());
-                        if (command1.getCommit() != null && command.getCommit().equals(command1.getCommit())) {
+                        if (command1.getCommit() != null && command.getCommit() != null && command.getCommit().equals(command1.getCommit())) {
                             devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                             updateResourceStatus(envId, devopsEnvCommandE, InstanceStatus.RUNNING, ServiceStatus.RUNNING, IngressStatus.RUNNING, CertificationStatus.ACTIVE);
                         } else {

@@ -427,6 +427,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult previewValues(ReplaceResult previewReplaceResult, Long appVersionId) {
         String versionValue = applicationVersionRepository.queryValue(appVersionId);
+        try {
+            FileUtil.checkYamlFormat(previewReplaceResult.getYaml());
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
         ReplaceResult replaceResult = getReplaceResult(versionValue, previewReplaceResult.getYaml());
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
