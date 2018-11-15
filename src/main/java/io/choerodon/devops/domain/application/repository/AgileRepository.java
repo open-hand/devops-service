@@ -6,7 +6,7 @@ import io.choerodon.devops.infra.feign.AgileServiceClient;
 
 public interface AgileRepository {
 
-    Issue queryIssue(Long projectId, Long issueId);
+    Issue queryIssue(Long projectId, Long issueId, Long organizationId);
 
     ProjectInfo queryProjectInfo(Long projectId);
 

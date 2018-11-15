@@ -223,7 +223,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         page.setContent(branches.stream().map(t -> {
             Issue issue = null;
             if (t.getIssueId() != null) {
-                issue = agileRepository.queryIssue(projectId, t.getIssueId());
+                issue = agileRepository.queryIssue(projectId, t.getIssueId(), organization.getId());
             }
             UserE userE = iamRepository.queryUserByUserId(
                     devopsGitRepository.getUserIdByGitlabUserId(t.getUserId()));
