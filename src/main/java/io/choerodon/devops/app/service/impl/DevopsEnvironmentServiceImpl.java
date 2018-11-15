@@ -314,6 +314,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public DevopsEnvironmentUpdateDTO update(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO, Long projectId) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(
                 devopsEnvironmentUpdateDTO, DevopsEnvironmentE.class);
+        Long clusterId = devopsEnviromentRepository.queryById(devopsEnvironmentUpdateDTO.getId()).getClusterE().getId();
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.initProjectE(projectId);
         if (checkNameChange(devopsEnvironmentUpdateDTO)) {
             devopsEnviromentRepository.checkName(devopsEnvironmentE);
