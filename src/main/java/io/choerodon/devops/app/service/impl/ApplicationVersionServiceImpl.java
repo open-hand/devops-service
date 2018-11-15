@@ -49,6 +49,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -153,7 +155,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     DeployEnvVersionDTO deployEnvVersionDTO = new DeployEnvVersionDTO();
                     deployEnvVersionDTO.setEnvName(devopsEnvironmentE.getName());
                     List<DeployInstanceVersionDTO> deployInstanceVersionDTOS = new ArrayList<>();
-                    Map<Long, List<ApplicationInstanceE>> versionInstances = value.stream().collect(Collectors.groupingBy(t -> t.getApplicationVersionE().getId()));
+                    Map<Long, List<ApplicationInstanceE>> versionInstances = value.stream().collect(Collectors.groupingBy(t -> {
+                        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(t.getCommandId());
+                        return devopsEnvCommandE.getObjectVersionId();
+                    }));
                     if (!versionInstances.isEmpty()) {
                         versionInstances.forEach((newkey, newvalue) -> {
                             ApplicationVersionE newApplicationVersionE = applicationVersionRepository.query(newkey);
