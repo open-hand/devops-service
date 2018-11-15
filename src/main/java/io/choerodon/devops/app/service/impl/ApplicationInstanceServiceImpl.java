@@ -732,14 +732,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
                 instanceE.getDevopsEnvironmentE().getId());
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
         ApplicationVersionE applicationVersionE = applicationVersionRepository
-                .query(instanceE.getApplicationVersionE().getId());
+                .query(devopsEnvCommandE.getObjectVersionId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
         String value = applicationInstanceRepository.queryValueByInstanceId(instanceId);
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
         devopsEnvCommandE.setId(null);
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();

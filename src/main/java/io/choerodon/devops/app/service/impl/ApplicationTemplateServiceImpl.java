@@ -21,7 +21,6 @@ import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
@@ -35,7 +34,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.Visibility;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -189,16 +187,13 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
     @Override
     public void operationApplicationTemplate(GitlabProjectPayload gitlabProjectPayload) {
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
-                TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
 
         ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(
                 gitlabProjectPayload.getOrganizationId(), gitlabProjectPayload.getPath());
 
-        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        Organization organization = iamRepository.queryOrganizationById(gitlabProjectPayload.getOrganizationId());
 
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationTemplateE.getCode(), gitlabProjectPayload.getUserId());
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "_template", applicationTemplateE.getCode(), gitlabProjectPayload.getUserId());
 
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
