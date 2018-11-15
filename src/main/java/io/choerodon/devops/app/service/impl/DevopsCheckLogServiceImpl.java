@@ -738,6 +738,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 fixPipelines(logs);
             } else if ("0.11.0".equals(version)) {
                 changeGitOpsUserAccess(logs);
+                updateWebHook(logs);
             } else {
                 LOGGER.info("version not matched");
             }

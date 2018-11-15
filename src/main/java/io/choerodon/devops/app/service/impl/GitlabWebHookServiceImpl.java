@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.devops.api.dto.DevopsMergeRequestDTO;
-import io.choerodon.devops.api.dto.JobWebHookDTO;
-import io.choerodon.devops.api.dto.PipelineWebHookDTO;
-import io.choerodon.devops.api.dto.PushWebHookDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
@@ -66,6 +63,10 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
             case "build":
                 JobWebHookDTO jobWebHookDTO = JSONArray.parseObject(body, JobWebHookDTO.class);
                 devopsGitlabPipelineService.updateStages(jobWebHookDTO);
+                break;
+            case "tag_push":
+                PushWebHookDTO tagPushWebHookDTO = JSONArray.parseObject(body, PushWebHookDTO.class);
+                devopsGitlabCommitService.create(tagPushWebHookDTO, token);
                 break;
             default:
                 break;
