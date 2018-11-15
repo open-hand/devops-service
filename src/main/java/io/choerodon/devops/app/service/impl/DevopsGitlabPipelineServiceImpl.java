@@ -233,7 +233,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             Long[] newPipelineSuccessFrequency = {0L};
             Long[] newPipelineFailFrequency = {0L};
             resultMaps.get(date).forEach(devopsGitlabPipelineDO -> {
-                if ("passed".equals(devopsGitlabPipelineDO.getStatus())) {
+                if ("success".equals(devopsGitlabPipelineDO.getStatus())) {
                     newPipelineSuccessFrequency[0] = newPipelineSuccessFrequency[0] + 1L;
                 }
                 if ("failed".equals(devopsGitlabPipelineDO.getStatus())) {

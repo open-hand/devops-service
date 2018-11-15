@@ -28,6 +28,7 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
+import io.choerodon.devops.infra.mapper.DevopsIngressPathMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -270,7 +271,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), ingressId, INGRESS);
         if (devopsEnvFileResourceE == null) {
-            throw new CommonException(ERROR_FILE_RESOURCE_NOT_EXIST);
+            devopsIngressRepository.deleteIngress(ingressId);
+            devopsIngressRepository.deleteIngressPath(ingressId);
+
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
 
