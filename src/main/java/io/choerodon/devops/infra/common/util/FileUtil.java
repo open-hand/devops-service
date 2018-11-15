@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.common.util;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -12,6 +11,7 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -1204,7 +1204,7 @@ public class FileUtil {
      * @param filePath 文件路径
      */
     public static void downloadFile(HttpServletResponse res, String filePath) {
-       // res.setHeader("content-type", "application/octet-stream");
+        res.setHeader("Content-type", "application/octet-stream");
         res.setContentType("application/octet-stream");
         res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
         byte[] buff = new byte[1024];

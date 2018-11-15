@@ -25,7 +25,6 @@ import io.choerodon.devops.api.dto.AppMarketVersionDTO;
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
@@ -358,10 +357,10 @@ public class ApplicationMarketController {
             HttpServletResponse res) {
         applicationMarketService.export(appMarkets, fileName);
         FileUtil.downloadFile(res, fileName + ".zip");
-        try {
-            Files.delete(new File(fileName + ".zip").toPath());
-        } catch (IOException e) {
-            throw new CommonException(e.getMessage());
-        }
+//        try {
+//            Files.delete(new File(fileName + ".zip").toPath());
+//        } catch (IOException e) {
+//            throw new CommonException(e.getMessage());
+//        }
     }
 }
