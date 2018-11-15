@@ -40,7 +40,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
-    private static final String CHARTS = "charts";
     private static final String IMAGES = "images";
     private static final String PUSH_IAMGES = "push_image.sh";
     private static final String JSON_FILE = ".json";
@@ -320,7 +319,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals(CHARTS)) {
+                    && chartsDirectory[0].getName().equals(file.getName())) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteDirectory(zipDirectory);
@@ -368,7 +367,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals(CHARTS)) {
+                    && chartsDirectory[0].getName().equals(fileName)) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteDirectory(zipDirectory);
