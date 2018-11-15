@@ -519,9 +519,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/push_image.sh");
             FileUtil.saveDataToFile(fileName, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream, null));
             FileUtil.saveDataToFile(fileName, IMAGES, stringBuilder.toString());
+            FileUtil.moveFiles("charts", fileName);
         }
         try (FileOutputStream outputStream = new FileOutputStream(fileName + ".zip")) {
             FileUtil.toZip(fileName, outputStream, true);
+            FileUtil.deleteDirectory(new File("charts"));
             FileUtil.deleteDirectory(new File(fileName));
         } catch (IOException e) {
             throw new CommonException(e.getMessage(), e);
