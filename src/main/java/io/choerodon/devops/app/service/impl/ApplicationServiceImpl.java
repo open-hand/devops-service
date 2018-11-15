@@ -87,6 +87,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private ApplicationMarketRepository applicationMarketRepository;
 
+
     @Override
     @Saga(code = "devops-create-gitlab-project",
             description = "devops create GitLab project", inputSchema = "{}")
@@ -147,8 +148,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         ApplicationE applicationE = applicationRepository.query(applicationId);
+        UserAttrE userAttrE = userAttrRepository.queryById(DetailsHelper.getUserDetails().getUserId());
         gitlabRepository.deleteDevOpsApp(organization.getCode() + "-" + projectE.getCode(),
-                applicationE.getCode(), DetailsHelper.getUserDetails().getUserId().intValue());
+                applicationE.getCode(), userAttrE.getGitlabUserId().intValue());
         applicationRepository.delete(applicationId);
     }
 
