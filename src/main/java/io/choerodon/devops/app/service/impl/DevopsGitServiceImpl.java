@@ -380,7 +380,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         //生成环境git仓库ssh地址
         final String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
 
-        LOGGER.info("The gitOps Repository ssh url:", url);
+        LOGGER.info("The gitOps Repository ssh url:" + url);
 
         final Long envId = devopsEnvironmentE.getId();
 
