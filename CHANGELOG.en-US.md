@@ -1,11 +1,74 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+## [0.11.0] - 2018-11-16
+### Added
+- Added cluster management module to support the creation, editing and distribution of Kubernetes clusters
+- Added permission allocation for the environment to support configuring specific operators for each environment
+- Added the ability to delete the environment and support the deletion of the environment in the environment deactivated area.
+- A new development console is added to the development pipeline, which integrates the main functions in the development pipeline to make development operations easier.
+- Add an entry to view code quality in the development pipeline code repository
+- The Dashboard page adds modules to quickly view branch status, code submissions, application builds and deployments, and provides a quick jump to the appropriate module entry.
+- The deployment section adds a deployments layer and supports multiple deployments in a single chart file.
+- New instance redeployment feature
+- Error message for deployment failure in new report
+### Changed
+- Reorganize the optimized development pipeline structure and apply application-centric operations
+- Reorganize the optimized deployment pipeline structure and operate in an environment-centric manner
+- You must select an associated cluster when creating your environment
+- Optimized the naming of application market export files and supports custom naming.
+- Optimize and unify the various empty interfaces of the platform
+- Optimized the delete operation prompt box, clearly indicating the deletion of the object name
+- Improve the platform guide copy and strengthen the understanding of the primary users
+- Optimized the target object content in the associated network list after deleting the instance
+- Optimized the display problem of the version in the list after the instance upgrade failed or the new failed
+- Optimized display of create action buttons at the top of the environment overview interface
+- Optimized icon display for rapid deployment of the deployment overview interface
+### Fixed
+- Fixed an issue where the capitalization of the input letters was not resolved when editing the app name
+- Fix logic issues when selecting instances and selecting apps when creating a network
+- Fixed an issue where the replacement instance failed
+- Fixed an issue that prevented operation after deployment timed out
+- Fixed an issue where the environment was not verified when creating a domain name
+- Fixed an issue that could not be processed after creating an application failed
+### Removed
+- Removed the deployment administrator role in the project and assigned all its permissions to the project owner
+- Removed deployment instance and single app view from deployment pipeline instance management
+- Removed upgrade instance and redeploy option after stopping instance
+
+## [0.10.0] - 2018-09-16
+### Added
+- Added environment grouping to support viewing of pipelines by environment
+- Added domain name certificate management function to support domain name certificate application and upload
+- Added DevOps reporting capabilities to support view of code submission, application build, and application deployment
+- Add a new deployment overview feature to see how all applications are deployed in each environment, and complete the rapid deployment of the latest version of the app on this page
+- Support for using shell commands to manipulate pods for debugging
+- Support for filling out notes when creating tags, and support viewing edits and modifications
+- Added Stop Following and Go Top functions when viewing container logs, and supports full-screen view of container logs
+- Add container interface Select environment and application drop-down box and application version interface Select application drop-down box for easy search and filtering
+### Changed
+- Optimized the status of container log long links
+- Unified icon for status display within the system
+- Relevant state optimization for service, domain name, instance, application deployment, etc.
+- Optimized the loading speed of the overview interface
+- Optimized pagination, filtering, sorting, and refreshing of tables
+### Fixed
+- Fix an issue that cannot be operated after a deployment timeout fails
+- Fix the problem that the deployment part replacement instance has not been modified.
+- Fix the 0.9.0 version service list prompt error, time component display error
+- Fix the problem of instance status error in service editing
+- Fix the problem of deleting the commit in the application template when creating the application
+- Fix gitlab group creation failed when creating project with the same name
+- Fix the problem that the icon of the page connection document is not uniform
+- Fix the problem of adding port button disappearing in service creation
+### Removed
+- Remove the multi-application view from the deployment pipeline instance management
+
 ## [0.9.0] - 2018-08-17
-### ADD
+### Added
 - Refactor deploy procedure of GitOps
 - Support to api  overview of thn environment
-### CHANGE
+### Changed
 - Optimize replace instance values to support standard yaml format
 - NetWork support multi port and support node port type network
 
