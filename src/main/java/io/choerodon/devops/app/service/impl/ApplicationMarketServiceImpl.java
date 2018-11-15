@@ -319,7 +319,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals(file.getName())) {
+                    && chartsDirectory[0].getName().equals(file.getOriginalFilename().split("\\.")[0])) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteDirectory(zipDirectory);
