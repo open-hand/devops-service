@@ -19,7 +19,7 @@
           </releases>
           <id>choerodon-release-repository</id>
           <name>choerodon Release Repository</name>
-          <url>http://nexus.choerodon.com.cn/repository/choerodon-release/</url>
+          <url>${env.MAVEN_REPOSITORY}</url>
         </repository>
       </repositories>
       <id>jdk-1.8</id>
