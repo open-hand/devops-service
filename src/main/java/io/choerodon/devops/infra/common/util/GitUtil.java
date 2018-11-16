@@ -93,8 +93,11 @@ public class GitUtil {
     }
 
     public static String getFileLatestCommit(String path, String filePath) {
-        String[] fileName = filePath.split("/");
-        return GitUtil.getLog(path, fileName[fileName.length - 1]);
+        if(filePath!=null) {
+            String[] fileName = filePath.split("/");
+            return GitUtil.getLog(path, fileName[fileName.length - 1]);
+        }
+        return "";
     }
 
     public static String getGitlabSshUrl(Pattern pattern, String url, String orgCode, String proCode, String envCode) {

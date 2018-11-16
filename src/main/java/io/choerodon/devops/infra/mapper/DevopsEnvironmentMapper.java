@@ -14,4 +14,6 @@ public interface DevopsEnvironmentMapper extends BaseMapper<DevopsEnvironmentDO>
 
     void updateDevopsEnvCommit(@Param("envId") Long envId, @Param("gitCommit") Long gitCommit,
                                @Param("devopsSyncCommit") Long devopsSyncCommit, @Param("agentSyncCommit") Long agentSyncCommit);
+
+    DevopsEnvironmentDO queryByToken(@Param("token") String token);
 }

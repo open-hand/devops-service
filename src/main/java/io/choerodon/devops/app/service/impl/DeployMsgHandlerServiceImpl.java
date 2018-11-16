@@ -372,16 +372,18 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 for (String release : releases) {
                     applicationInstanceE = applicationInstanceRepository
                             .selectByCode(release, envId);
-                    DevopsEnvResourceE newdevopsInsResourceE =
-                            devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                    applicationInstanceE.getId(),
-                                    KeyParseTool.getResourceType(key),
-                                    KeyParseTool.getResourceName(key));
-                    DevopsEnvResourceDetailE newDevopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
-                    newDevopsEnvResourceDetailE.setMessage(msg);
-                    saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
-                            newDevopsEnvResourceDetailE, applicationInstanceE);
-                    afterInstanceIds.add(applicationInstanceE.getId());
+                    if (applicationInstanceE != null) {
+                        DevopsEnvResourceE newdevopsInsResourceE =
+                                devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
+                                        applicationInstanceE.getId(),
+                                        KeyParseTool.getResourceType(key),
+                                        KeyParseTool.getResourceName(key));
+                        DevopsEnvResourceDetailE newDevopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
+                        newDevopsEnvResourceDetailE.setMessage(msg);
+                        saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
+                                newDevopsEnvResourceDetailE, applicationInstanceE);
+                        afterInstanceIds.add(applicationInstanceE.getId());
+                    }
                 }
                 //网络更新实例删除网络以前实例网络关联的resource
                 for (Long instanceId : beforeInstanceIdS) {
