@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.*;
+
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,6 +11,8 @@ import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -932,6 +936,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
         ReplaceResult replaceResult;
         try {
+            File file = new File(path + System.getProperty("file.separator") + fileName);
+            //读入文件
+            InputStreamResource inputStreamResource = new InputStreamResource(new FileInputStream(file));
+            YamlPropertySourceLoader yamlPropertySourceLoader = new YamlPropertySourceLoader();
+            try {
+                yamlPropertySourceLoader.load("test", inputStreamResource, null);
+            }catch (Exception e) {
+                throw new CommonException(e.getMessage());
+            }
             replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);

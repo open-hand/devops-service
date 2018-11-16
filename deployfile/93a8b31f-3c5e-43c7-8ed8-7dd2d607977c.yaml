@@ -1,0 +1,104 @@
+# Default values for api-gateway.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry.saas.hand-china.com/c7ncd-test-c7ncd-test/asdxcxcxc
+
+preJob:
+  preConfig:
+    mysql:
+      host: localhost
+      port: 3306
+      username: choerodon
+      password: 123456
+      dbname: iam_service
+
+service:
+  enable: false
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enable: false
+
+env:
+  open:
+    PRO_API_HOST: api.example.com.cn
+    PRO_CLIENT_ID: example
+    PRO_LOCAL: true
+    PRO_TITLE_NAME: Choerodon
+    PRO_HEADER_TITLE_NAME: Choerodon
+    PRO_COOKIE_SERVER: example.com.cn
+    PRO_HTTP: http
+
+logs:
+  parser: nginx
+
+resources: 
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources,such as Minikube. If you do want to specify resources,uncomment the following
+  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.
+  limits:
+    # cpu: 100m
+    # memory: 2Gi
+  requests:
+    # cpu: 100m
+    # memory: 1Gi
+
+
+
+---
+# Default values for api-gateway.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry.saas.hand-china.com/c7ncd-test-c7ncd-test/asdxcxcxc
+
+preJob:
+  preConfig:
+    mysql:
+      host: localhost
+      port: 3306
+      username: choerodon
+      password: 123456
+      dbname: iam_service
+
+  enable: false
+service:
+  enable: false
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enable: false
+
+env:
+  open:
+    PRO_API_HOST: api.example.com.cn
+    PRO_CLIENT_ID: example
+    PRO_LOCAL: true
+    PRO_TITLE_NAME: Choerodon
+    PRO_HEADER_TITLE_NAME: Choerodon
+    PRO_COOKIE_SERVER: example.com.cn
+    PRO_HTTP: http
+    PRO_HTTP: http
+
+logs:
+  parser: nginx
+
+resources:
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources,such as Minikube. If you do want to specify resources,uncomment the following
+  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.
+  limits:
+    # cpu: 100m
+    # memory: 2Gi
+  requests:

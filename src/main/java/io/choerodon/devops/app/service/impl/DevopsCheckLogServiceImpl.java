@@ -412,7 +412,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 }
                             }
                             checkLog.setResult(SUCCESS);
+                            LOGGER.info(SUCCESS);
                         } catch (Exception e) {
+                            LOGGER.info(FAILED + e.getMessage());
                             checkLog.setResult(FAILED + e.getMessage());
                         }
                         logs.add(checkLog);
