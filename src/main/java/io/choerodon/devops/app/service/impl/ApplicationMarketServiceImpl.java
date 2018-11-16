@@ -365,7 +365,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
             File[] chartsDirectory = zipDirectory.listFiles();
-            File[] appFiles = chartsDirectory[0].listFiles();
+            File[] appFiles = chartsDirectory != null ? chartsDirectory[0].listFiles() : new File[0];
             if (appFiles == null || appFiles.length == 0) {
                 FileUtil.deleteDirectory(zipDirectory);
                 throw new CommonException("error.file.empty");
@@ -497,7 +497,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         FILE_SEPARATOR,
                         projectE.getCode(),
                         FILE_SEPARATOR,
-                        fileName,
+                        "charts",
                         FILE_SEPARATOR,
                         applicationE.getCode(),
                         "-",

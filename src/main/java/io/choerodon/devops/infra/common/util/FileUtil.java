@@ -1207,9 +1207,11 @@ public class FileUtil {
         res.setHeader("Content-type", "application/octet-stream");
         res.setContentType("application/octet-stream");
         res.setHeader("Content-Disposition", "attachment;filename=" + filePath);
+        File file = new File(filePath);
+        res.setHeader("Content-Length", "" + file.length());
         byte[] buff = new byte[1024];
         OutputStream os;
-        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(filePath)))) {
+        try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
             os = res.getOutputStream();
             int i = bis.read(buff);
             while (i != -1) {
