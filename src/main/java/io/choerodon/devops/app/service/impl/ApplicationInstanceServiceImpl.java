@@ -422,6 +422,21 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
         try {
             FileUtil.checkYamlFormat(replaceResult.getYaml());
+
+            String fileName = GenerateUUID.generateUUID() + ".yaml";
+            String path = "deployfile";
+            FileUtil.saveDataToFile(path, fileName, replaceResult.getYaml());
+            //读入文件
+            File file = new File(path + System.getProperty("file.separator") + fileName);
+            InputStreamResource inputStreamResource = new InputStreamResource(new FileInputStream(file));
+            YamlPropertySourceLoader yamlPropertySourceLoader = new YamlPropertySourceLoader();
+            try {
+                yamlPropertySourceLoader.load("test", inputStreamResource, null);
+            }catch (Exception e) {
+                FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
+                return getErrorLine(e.getMessage());
+            }
+            FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
             return getErrorLine(e.getMessage());
         }
@@ -936,15 +951,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
         ReplaceResult replaceResult;
         try {
-            File file = new File(path + System.getProperty("file.separator") + fileName);
-            //读入文件
-            InputStreamResource inputStreamResource = new InputStreamResource(new FileInputStream(file));
-            YamlPropertySourceLoader yamlPropertySourceLoader = new YamlPropertySourceLoader();
-            try {
-                yamlPropertySourceLoader.load("test", inputStreamResource, null);
-            }catch (Exception e) {
-                throw new CommonException(e.getMessage());
-            }
             replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
