@@ -20,24 +20,6 @@ public class ProjectHookDO {
     private Boolean wikiPageEvents;
     private String token;
 
-    /**
-     * 重写构造方法
-     */
-    public ProjectHookDO(Boolean buildEvents, Boolean issuesEvents, Boolean mergeRequestsEvents, Boolean noteEvents, Boolean jobEvents, Boolean pipelineEvents, Boolean pushEvents, Boolean tagPushEvents, Boolean wikiPageEvents) {
-        this.buildEvents = buildEvents;
-        this.issuesEvents = issuesEvents;
-        this.mergeRequestsEvents = mergeRequestsEvents;
-        this.noteEvents = noteEvents;
-        this.jobEvents = jobEvents;
-        this.pipelineEvents = pipelineEvents;
-        this.pushEvents = pushEvents;
-        this.tagPushEvents = tagPushEvents;
-        this.wikiPageEvents = wikiPageEvents;
-    }
-
-    public ProjectHookDO() {
-    }
-
     public Boolean getBuildEvents() {
         return buildEvents;
     }

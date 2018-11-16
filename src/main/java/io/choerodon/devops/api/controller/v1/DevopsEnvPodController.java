@@ -11,6 +11,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
@@ -39,7 +40,9 @@ public class DevopsEnvPodController {
      * @param searchParam 查询参数
      * @return page of devopsEnvPodDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询容器管理")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
@@ -48,10 +51,14 @@ public class DevopsEnvPodController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "环境id")
+            @RequestParam(required = false) Long envId,
+            @ApiParam(value = "应用id")
+            @RequestParam(required = false) Long appId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
         return Optional.ofNullable(devopsEnvPodService.listAppPod(
-                projectId, pageRequest, searchParam))
+                projectId, envId, appId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.query"));
     }

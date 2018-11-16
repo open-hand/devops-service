@@ -17,5 +17,5 @@ public interface DevopsEnvPodService {
      * @param searchParam 查询参数
      * @return page of devopsEnvPodDTO
      */
-    Page<DevopsEnvPodDTO> listAppPod(Long projectId, PageRequest pageRequest, String searchParam);
+    Page<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam);
 }

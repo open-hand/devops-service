@@ -2,8 +2,11 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -31,6 +34,15 @@ public interface ApplicationService {
     ApplicationRepDTO query(Long projectId, Long applicationId);
 
     /**
+     * 项目下删除创建失败应用
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用Id
+     * @return ApplicationRepDTO
+     */
+    void delete(Long projectId, Long applicationId);
+
+    /**
      * 项目下更新应用信息
      *
      * @param projectId            项目id
@@ -54,12 +66,14 @@ public interface ApplicationService {
      *
      * @param projectId   项目id
      * @param isActive    是否启用
+     * @param hasVersion  是否存在版本
      * @param pageRequest 分页参数
      * @param params      参数
      * @return Page
      */
     Page<ApplicationRepDTO> listByOptions(Long projectId,
                                           Boolean isActive,
+                                          Boolean hasVersion,
                                           PageRequest pageRequest,
                                           String params);
 
@@ -68,7 +82,14 @@ public interface ApplicationService {
      *
      * @param gitlabProjectEventDTO 应用信息
      */
-    void operationApplication(GitlabProjectEventDTO gitlabProjectEventDTO);
+    void operationApplication(DevOpsAppPayload gitlabProjectEventDTO);
+
+
+    /**
+     * 设置应用创建失败状态
+     * @param gitlabProjectEventDTO 应用信息
+     */
+    void setAppErrStatus(String gitlabProjectEventDTO);
 
     Boolean applicationExist(String uuid);
 
@@ -78,7 +99,7 @@ public interface ApplicationService {
      * @param token token
      * @return File
      */
-    String queryFile(String token);
+    String queryFile(String token, String type);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用
@@ -88,7 +109,7 @@ public interface ApplicationService {
      * @param status    环境状态
      * @return list of ApplicationRepDTO
      */
-    List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status);
+    List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId);
 
     /**
      * 根据环境id获取已部署正在运行实例的应用
@@ -107,6 +128,14 @@ public interface ApplicationService {
      * @return list of ApplicationRepDTO
      */
     List<ApplicationRepDTO> listByActive(Long projectId);
+
+    /**
+     * 项目下查询所有可选已经启用的应用
+     *
+     * @param projectId 项目id
+     * @return list of ApplicationRepDTO
+     */
+    List<ApplicationRepDTO> listAll(Long projectId);
 
     /**
      * 创建应用校验名称是否存在
@@ -141,4 +170,18 @@ public interface ApplicationService {
      * @return list of ApplicationRepDTO
      */
     Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
+
+    /**
+     * 项目下分页查询代码仓库
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return page of ApplicationRepDTO
+     */
+    Page<ApplicationRepDTO> listCodeRepository(Long projectId,
+                                               PageRequest pageRequest,
+                                               String params);
+
+    void initMockService(SagaClient sagaClient);
 }

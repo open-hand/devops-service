@@ -1,8 +1,10 @@
 package io.choerodon.devops.domain.application.valueobject;
 
 import java.util.List;
+import java.util.Map;
 
-import io.choerodon.devops.infra.dataobject.ServiceVersionDO;
+import io.choerodon.devops.domain.application.entity.PortMapE;
+import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -12,19 +14,21 @@ public class DevopsServiceV {
     private Long id;
     private String name;
     private String externalIp;
-    private Long port;
-    private Long targetPort;
+    private List<PortMapE> ports;
     private String status;
     private Long envId;
+    private String type;
     private String envName;
     private Boolean envStatus;
     private String namespace;
     private Long appId;
+    private Long appProjectId;
     private String appName;
-    private String commandStatus;
+    private Map<String, String> labels;
+    private List<ServiceInstanceDO> appInstance;
     private String commandType;
+    private String commandStatus;
     private String error;
-    private List<ServiceVersionDO> appVersion;
 
     public Long getId() {
         return id;
@@ -48,14 +52,6 @@ public class DevopsServiceV {
 
     public void setExternalIp(String externalIp) {
         this.externalIp = externalIp;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
     }
 
     public Long getEnvId() {
@@ -90,12 +86,12 @@ public class DevopsServiceV {
         this.appName = appName;
     }
 
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
+    public List<ServiceInstanceDO> getAppInstance() {
+        return appInstance;
     }
 
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
+    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+        this.appInstance = appInstance;
     }
 
     public String getStatus() {
@@ -122,12 +118,36 @@ public class DevopsServiceV {
         this.namespace = namespace;
     }
 
-    public String getCommandStatus() {
-        return commandStatus;
+    public List<PortMapE> getPorts() {
+        return ports;
     }
 
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
+    public void setPorts(List<PortMapE> ports) {
+        this.ports = ports;
+    }
+
+    public Long getAppProjectId() {
+        return appProjectId;
+    }
+
+    public void setAppProjectId(Long appProjectId) {
+        this.appProjectId = appProjectId;
+    }
+
+    public Map<String, String> getLabels() {
+        return labels;
+    }
+
+    public void setLabels(Map<String, String> labels) {
+        this.labels = labels;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getCommandType() {
@@ -138,19 +158,19 @@ public class DevopsServiceV {
         this.commandType = commandType;
     }
 
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
     public String getError() {
         return error;
     }
 
     public void setError(String error) {
         this.error = error;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 }

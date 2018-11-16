@@ -4,20 +4,17 @@ public enum ObjectType {
 
     INSTANCE("instance"),
     SERVICE("service"),
-    INGRESS("ingress"),;
+    INGRESS("ingress"),
+    CERTIFICATE("certificate");
 
 
-    private String objectType;
+    private String type;
 
-    ObjectType(String objectType) {
-        this.objectType = objectType;
+    ObjectType(String type) {
+        this.type = type;
     }
 
-    public String getObjectType() {
-        return objectType;
-    }
-
-    public void setObjectType(String objectType) {
-        this.objectType = objectType;
+    public String getType() {
+        return type;
     }
 }

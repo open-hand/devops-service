@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.event;
 
+import java.util.List;
+
 /**
  * Created by younger on 2018/3/29.
  */
@@ -11,6 +13,10 @@ public class GitlabProjectPayload {
     private Integer groupId;
     private String type;
     private Long organizationId;
+    private List<Long> userIds;
+    private String loginName;
+    private String realName;
+    private Long clusterId;
 
     public Integer getUserId() {
         return userId;
@@ -58,5 +64,37 @@ public class GitlabProjectPayload {
 
     public void setOrganizationId(Long organizationId) {
         this.organizationId = organizationId;
+    }
+
+    public List<Long> getUserIds() {
+        return userIds;
+    }
+
+    public void setUserIds(List<Long> userIds) {
+        this.userIds = userIds;
+    }
+
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
+    }
+
+    public String getRealName() {
+        return realName;
+    }
+
+    public void setRealName(String realName) {
+        this.realName = realName;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }

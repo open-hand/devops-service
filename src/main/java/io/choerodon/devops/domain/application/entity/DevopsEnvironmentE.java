@@ -15,6 +15,12 @@ import org.springframework.stereotype.Component;
 public class DevopsEnvironmentE {
     private Long id;
     private ProjectE projectE;
+    private DevopsClusterE clusterE;
+    private Long gitlabEnvProjectId;
+    private Long devopsEnvGroupId;
+    private Long hookId;
+    private String envIdRsa;
+    private String envIdRsaPub;
     private String name;
     private String code;
     private String token;
@@ -22,8 +28,11 @@ public class DevopsEnvironmentE {
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
-    private Boolean isUpdate;
-    private String updateMessage;
+    private Boolean permission;
+
+    private Long devopsSyncCommit;
+    private Long agentSyncCommit;
+    private Long sagaSyncCommit;
 
     /**
      * 重写构造方法
@@ -115,14 +124,6 @@ public class DevopsEnvironmentE {
         isActive = active;
     }
 
-    public Boolean getConnect() {
-        return isConnected;
-    }
-
-    public void setConnect(Boolean connect) {
-        isConnected = connect;
-    }
-
     public ProjectE getProjectE() {
         return projectE;
     }
@@ -135,7 +136,6 @@ public class DevopsEnvironmentE {
         this.projectE = new ProjectE(id);
     }
 
-
     public void initActive(Boolean active) {
         this.isActive = active;
     }
@@ -143,22 +143,6 @@ public class DevopsEnvironmentE {
     public void initConnect(Boolean connect) {
         this.isConnected = connect;
 
-    }
-
-    public Boolean getUpdate() {
-        return isUpdate;
-    }
-
-    public void setUpdate(Boolean update) {
-        isUpdate = update;
-    }
-
-    public String getUpdateMessage() {
-        return updateMessage;
-    }
-
-    public void setUpdateMessage(String updateMessage) {
-        this.updateMessage = updateMessage;
     }
 
     public Long getSequence() {
@@ -169,8 +153,117 @@ public class DevopsEnvironmentE {
         this.sequence = sequence;
     }
 
+    public DevopsEnvironmentE resetOrder(Long sequence) {
+        this.sequence = sequence;
+        return this;
+    }
+
     public void initToken(String token) {
         this.token = token;
+    }
+
+    public Long getGitlabEnvProjectId() {
+        return gitlabEnvProjectId;
+    }
+
+    public void setGitlabEnvProjectId(Long gitlabEnvProjectId) {
+        this.gitlabEnvProjectId = gitlabEnvProjectId;
+    }
+
+    public void initGitlabEnvProjectId(Long gitlabEnvProjectId) {
+        this.gitlabEnvProjectId = gitlabEnvProjectId;
+    }
+
+    public String getEnvIdRsa() {
+        return envIdRsa;
+    }
+
+    public void setEnvIdRsa(String envIdRsa) {
+        this.envIdRsa = envIdRsa;
+    }
+
+    public String getEnvIdRsaPub() {
+        return envIdRsaPub;
+    }
+
+    public void setEnvIdRsaPub(String envIdRsaPub) {
+        this.envIdRsaPub = envIdRsaPub;
+    }
+
+    public Boolean getConnect() {
+        return isConnected;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnected = connect;
+    }
+
+    public Long getHookId() {
+        return hookId;
+    }
+
+    public void setHookId(Long hookId) {
+        this.hookId = hookId;
+    }
+
+    public void initHookId(Long hookId) {
+        this.hookId = hookId;
+    }
+
+    public Long getDevopsSyncCommit() {
+        return devopsSyncCommit;
+    }
+
+    public void setDevopsSyncCommit(Long devopsSyncCommit) {
+        this.devopsSyncCommit = devopsSyncCommit;
+    }
+
+    public Long getAgentSyncCommit() {
+        return agentSyncCommit;
+    }
+
+    public void setAgentSyncCommit(Long agentSyncCommit) {
+        this.agentSyncCommit = agentSyncCommit;
+    }
+
+    public Boolean getConnected() {
+        return isConnected;
+    }
+
+    public void setConnected(Boolean connected) {
+        isConnected = connected;
+    }
+
+    public Long getSagaSyncCommit() {
+        return sagaSyncCommit;
+    }
+
+    public void setSagaSyncCommit(Long sagaSyncCommit) {
+        this.sagaSyncCommit = sagaSyncCommit;
+    }
+
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
+    }
+
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
+    }
+
+    public DevopsClusterE getClusterE() {
+        return clusterE;
+    }
+
+    public void initDevopsClusterEById(Long id) {
+        this.clusterE = new DevopsClusterE(id);
     }
 
     /**
@@ -180,7 +273,7 @@ public class DevopsEnvironmentE {
         this.sequence = 1L;
         if (!devopsEnvironmentES.isEmpty()) {
             LongSummaryStatistics stats = devopsEnvironmentES
-                    .parallelStream()
+                    .stream()
                     .mapToLong(DevopsEnvironmentE::getSequence)
                     .summaryStatistics();
             this.sequence = stats.getMax() + 1;

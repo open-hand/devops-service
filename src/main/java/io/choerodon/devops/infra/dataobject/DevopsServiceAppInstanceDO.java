@@ -13,7 +13,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
  */
 @VersionAudit
 @ModifyAudit
-@Table(name = "devops_service_app_instance")
+@Table(name = "devops_service_instance")
 public class DevopsServiceAppInstanceDO extends AuditDomain {
 
     @Id

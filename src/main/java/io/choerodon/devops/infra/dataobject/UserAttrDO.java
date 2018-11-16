@@ -5,26 +5,29 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by zzy on 2018/3/26.
  */
 @ModifyAudit
+@VersionAudit
 @Table(name = "devops_user")
-public class UserAttrDO {
+public class UserAttrDO extends AuditDomain {
 
     @Id
-    private Long id;
+    private Long iamUserId;
 
     @NotNull
     private Long gitlabUserId;
 
-    public Long getId() {
-        return id;
+    public Long getIamUserId() {
+        return iamUserId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
     }
 
     public Long getGitlabUserId() {

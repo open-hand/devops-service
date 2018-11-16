@@ -24,6 +24,7 @@ public class ApplicationInstanceDO extends AuditDomain {
     private Long appId;
     private Long appVersionId;
     private Long envId;
+    private Long commandId;
     private String status;
 
     @Transient
@@ -49,7 +50,13 @@ public class ApplicationInstanceDO extends AuditDomain {
     @Transient
     private String commandType;
     @Transient
+    private String commandVersion;
+    @Transient
+    private Long commandVersionId;
+    @Transient
     private String error;
+    @Transient
+    private Long projectId;
 
     public Long getId() {
         return id;
@@ -193,5 +200,38 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
+
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
     }
 }

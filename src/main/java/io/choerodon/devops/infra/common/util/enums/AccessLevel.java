@@ -5,6 +5,8 @@ import java.util.HashMap;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import io.choerodon.devops.domain.application.valueobject.MemberHelper;
+
 /**
  * Created by Zenger on 2017/11/14.
  */
@@ -43,14 +45,21 @@ public enum AccessLevel {
      *
      * @param value String
      */
-    public static AccessLevel forString(String value) {
+    public static AccessLevel forString(String value, MemberHelper memberHelper) {
         switch (value) {
-            case "GITLAB.OWNER":
+            case "ORGANIZATION.GITLAB.OWNER":
+                memberHelper.setOrganizationAccessLevel(AccessLevel.OWNER);
+                return AccessLevel.OWNER;
+            case "PROJECT.GITLAB.OWNER":
+                memberHelper.setProjectOwnerAccessLevel(AccessLevel.OWNER);
                 return AccessLevel.OWNER;
             case "GITLAB.MASTER":
                 return AccessLevel.MASTER;
-            case "GITLAB.DEVELOPER":
+            case "PROJECT.GITLAB.DEVELOPER":
+                memberHelper.setProjectDevelopAccessLevel(AccessLevel.DEVELOPER);
                 return AccessLevel.DEVELOPER;
+            case "PROJECT.DEPLOY.ADMIN":
+                return AccessLevel.OWNER;
             case "GITLAB.REPORTER":
                 return AccessLevel.REPORTER;
             case "GITLAB.GUEST":

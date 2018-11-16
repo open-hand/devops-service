@@ -10,6 +10,10 @@ public class DevopsIngressE {
     private Boolean isUsable;
     private Long objectVersionNumber;
     private String status;
+    private Long certId;
+    private String certName;
+    private String certStatus;
+    private Long commandId;
 
     public DevopsIngressE() {
     }
@@ -80,5 +84,37 @@ public class DevopsIngressE {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Long getCertId() {
+        return certId;
+    }
+
+    public void setCertId(Long certId) {
+        this.certId = certId;
+    }
+
+    public String getCertName() {
+        return certName;
+    }
+
+    public void setCertName(String certName) {
+        this.certName = certName;
+    }
+
+    public String getCertStatus() {
+        return certStatus;
+    }
+
+    public void setCertStatus(String certStatus) {
+        this.certStatus = certStatus;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

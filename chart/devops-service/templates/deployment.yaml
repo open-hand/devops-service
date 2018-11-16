@@ -40,14 +40,12 @@ spec:
           #     scheme: HTTP
           readinessProbe:
             exec:
-              command:
-              - curl
-              - localhost:{{ .Values.deployment.managementPort }}/health
+              command: ["/bin/sh","-c","curl -s localhost:{{ .Values.deployment.managementPort }}/health --fail && nc -z localhost {{ .Values.service.port }}"]
             failureThreshold: 3
             initialDelaySeconds: 60
             periodSeconds: 10
             successThreshold: 1
-            timeoutSeconds: 10
+            timeoutSeconds: 60
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           volumeMounts:

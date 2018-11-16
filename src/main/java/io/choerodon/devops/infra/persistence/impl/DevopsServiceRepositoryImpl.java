@@ -3,7 +3,9 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Component;
@@ -39,14 +41,16 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
         int selectCount = devopsServiceMapper.selectCountByOptions(projectId, envId, name);
-        if (selectCount > 0) {
-            throw new CommonException("error.service.name.check");
-        }
-        return true;
+        return selectCount <= 0;
     }
 
     @Override
-    public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId, PageRequest pageRequest,
+                                                        String searchParam) {
+        String sort = Lists.newArrayList(pageRequest.getSort().iterator()).stream()
+                .filter(t -> checkServiceParam(t.getProperty()))
+                .map(t -> t.getProperty() + " " + t.getDirection())
+                .collect(Collectors.joining(","));
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("name", "ds.`name`");
@@ -67,28 +71,30 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (!StringUtils.isEmpty(searchParam)) {
             Map<String, Object> searchParamMap = json.deserialize(searchParam, Map.class);
             count = devopsServiceMapper.selectCountByName(
-                    projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                    projectId, envId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)));
             devopsServiceQueryDOList = PageHelper.doSort(
                     pageRequest.getSort(), () -> devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size));
+                            projectId, envId, TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), start, size, sort));
         } else {
             count = devopsServiceMapper
-                    .selectCountByName(projectId, null, null);
+                    .selectCountByName(projectId, envId, null, null);
             devopsServiceQueryDOList = PageHelper.doSort(pageRequest.getSort(), () ->
                     devopsServiceMapper.listDevopsServiceByPage(
-                            projectId, null, null, start, size));
+                            projectId, envId, null, null, start, size, sort));
         }
-
         return ConvertPageHelper.convertPage(
                 new Page<>(devopsServiceQueryDOList, pageInfo, count), DevopsServiceV.class);
     }
 
+    private Boolean checkServiceParam(String key) {
+        return key.equals("id") || key.equals("name") || key.equals("status");
+    }
+
     @Override
     public List<DevopsServiceV> listDevopsService(Long envId) {
-        List<DevopsServiceQueryDO> devopsServiceQueryDOList =
-                devopsServiceMapper.listDevopsService(envId);
+        List<DevopsServiceQueryDO> devopsServiceQueryDOList = devopsServiceMapper.listDevopsService(envId);
         return ConvertHelper.convertList(devopsServiceQueryDOList, DevopsServiceV.class);
     }
 
@@ -104,14 +110,12 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (devopsServiceMapper.insert(devopsServiceDO) != 1) {
             throw new CommonException("error.k8s.service.create");
         }
-        return ConvertHelper.convert(
-                devopsServiceDO, DevopsServiceE.class);
+        return ConvertHelper.convert(devopsServiceDO, DevopsServiceE.class);
     }
 
     @Override
     public DevopsServiceE query(Long id) {
-        return ConvertHelper.convert(
-                devopsServiceMapper.selectByPrimaryKey(id), DevopsServiceE.class);
+        return ConvertHelper.convert(devopsServiceMapper.selectByPrimaryKey(id), DevopsServiceE.class);
     }
 
     @Override
@@ -121,10 +125,20 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
 
     @Override
     public void update(DevopsServiceE devopsServiceE) {
-        if (devopsServiceMapper.updateByPrimaryKey(
-                ConvertHelper.convert(devopsServiceE, DevopsServiceDO.class)) != 1) {
+        DevopsServiceDO devopsServiceDO = devopsServiceMapper.selectByPrimaryKey(devopsServiceE.getId());
+        DevopsServiceDO devopsServiceDOUpdate = ConvertHelper.convert(devopsServiceE, DevopsServiceDO.class);
+        if (devopsServiceE.getLabels() == null) {
+            devopsServiceMapper.setLablesToNull(devopsServiceE.getId());
+        }
+        devopsServiceDOUpdate.setObjectVersionNumber(devopsServiceDO.getObjectVersionNumber());
+        if (devopsServiceMapper.updateByPrimaryKeySelective(devopsServiceDOUpdate) != 1) {
             throw new CommonException("error.k8s.service.update");
         }
+    }
+
+    @Override
+    public void setLablesToNull(Long id) {
+        devopsServiceMapper.setLablesToNull(id);
     }
 
     @Override
@@ -133,10 +147,40 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public DevopsServiceE selectByNameAndNamespace(String name, String namespace) {
+    public DevopsServiceE selectByNameAndEnvId(String name, Long envId) {
         DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
         devopsServiceDO.setName(name);
-        devopsServiceDO.setNamespace(namespace);
+        devopsServiceDO.setEnvId(envId);
         return ConvertHelper.convert(devopsServiceMapper.selectOne(devopsServiceDO), DevopsServiceE.class);
+    }
+
+    @Override
+    public Boolean checkEnvHasService(Long envId) {
+        return devopsServiceMapper.checkEnvHasService(envId);
+    }
+
+    @Override
+    public List<DevopsServiceE> list() {
+        return ConvertHelper.convertList(devopsServiceMapper.selectAll(), DevopsServiceE.class);
+    }
+
+    @Override
+    public List<DevopsServiceE> selectByEnvId(Long envId) {
+        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
+        devopsServiceDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsServiceMapper.select(devopsServiceDO), DevopsServiceE.class);
+    }
+
+    @Override
+    public void deleteServiceAndInstanceByEnvId(Long envId) {
+        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
+        devopsServiceDO.setEnvId(envId);
+        // 环境下的serviceIds
+        List<Long> serviceIds = devopsServiceMapper.select(devopsServiceDO).stream().map(DevopsServiceDO::getId)
+                .collect(Collectors.toList());
+        devopsServiceMapper.delete(devopsServiceDO);
+        if (!serviceIds.isEmpty()) {
+            devopsServiceMapper.deleteServiceInstance(serviceIds);
+        }
     }
 }

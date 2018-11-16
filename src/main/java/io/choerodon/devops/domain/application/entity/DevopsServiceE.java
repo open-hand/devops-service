@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.List;
+
 /**
  * Created by Zenger on 2018/4/18.
  */
@@ -9,12 +11,13 @@ public class DevopsServiceE {
     private Long envId;
     private Long appId;
     private String name;
-    private String namespace;
     private String status;
-    private Long port;
-    private Long targetPort;
+    private List<PortMapE> ports;
     private String externalIp;
-    private String label;
+    private String type;
+    private String labels;
+    private String annotations;
+    private Long commandId;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -49,13 +52,6 @@ public class DevopsServiceE {
         this.name = name;
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
 
     public String getStatus() {
         return status;
@@ -63,22 +59,6 @@ public class DevopsServiceE {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 
     public String getExternalIp() {
@@ -89,12 +69,20 @@ public class DevopsServiceE {
         this.externalIp = externalIp;
     }
 
-    public String getLabel() {
-        return label;
+    public String getLabels() {
+        return labels;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setLabels(String labels) {
+        this.labels = labels;
+    }
+
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
     }
 
     public Long getObjectVersionNumber() {
@@ -103,5 +91,29 @@ public class DevopsServiceE {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public List<PortMapE> getPorts() {
+        return ports;
+    }
+
+    public void setPorts(List<PortMapE> ports) {
+        this.ports = ports;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

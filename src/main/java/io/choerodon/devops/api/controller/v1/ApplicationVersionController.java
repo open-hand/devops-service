@@ -12,8 +12,10 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -41,7 +43,9 @@ public class ApplicationVersionController {
      * @param searchParam 查询参数
      * @return ApplicationVersionRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询应用版本")
     @CustomPageRequest
     @PostMapping(value = "/app_version/list_by_options")
@@ -50,10 +54,12 @@ public class ApplicationVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "应用Id")
+            @RequestParam(required = false) Long appId,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String searchParam) {
-        return Optional.ofNullable(applicationVersionService.listApplicationVersion(
-                projectId, pageRequest, searchParam))
+        return Optional.ofNullable(applicationVersionService.listApplicationVersionInApp(
+                projectId, appId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -63,17 +69,44 @@ public class ApplicationVersionController {
      *
      * @param projectId 项目id
      * @param appId     应用Id
+     * @param isPublish 版本是否发布
      * @return List
      */
     @ApiOperation(value = "应用下查询应用所有版本")
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @GetMapping("/apps/{appId}/version/list")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")
-            @PathVariable Long appId) {
-        return Optional.ofNullable(applicationVersionService.listByAppId(appId))
+            @PathVariable Long appId,
+            @ApiParam(value = "是否发布", required = false)
+            @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
+        return Optional.ofNullable(applicationVersionService.listByAppId(appId, isPublish))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+    /**
+     * 项目下查询应用所有已部署版本
+     *
+     * @param projectId 项目id
+     * @param appId     应用Id
+     * @return List
+     */
+    @ApiOperation(value = "项目下查询应用所有已部署版本")
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/apps/{app_id}/version/list_deployed")
+    public ResponseEntity<List<ApplicationVersionRepDTO>> queryDeployedByAppId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id")
+            @PathVariable(value = "app_id") Long appId) {
+        return Optional.ofNullable(applicationVersionService.listDeployedByAppId(projectId, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -86,7 +119,9 @@ public class ApplicationVersionController {
      * @param envId     环境Id
      * @return List
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询部署在某个环境应用的应用版本")
     @GetMapping("/apps/{appId}/version")
     public ResponseEntity<List<ApplicationVersionRepDTO>> queryByAppIdAndEnvId(
@@ -110,7 +145,9 @@ public class ApplicationVersionController {
      * @param searchParam 查询参数
      * @return ApplicationVersionRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "分页查询某应用下的所有版本")
     @CustomPageRequest
     @PostMapping(value = "/apps/{appId}/version/list_by_options")
@@ -128,4 +165,49 @@ public class ApplicationVersionController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
+
+    /**
+     * 根据应用版本ID查询，可升级的应用版本
+     *
+     * @param projectId    项目ID
+     * @param appVersionId 应用版本ID
+     * @return ApplicationVersionRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "实例下查询可升级版本")
+    @GetMapping(value = "/version/{app_version_id}/upgrade_version")
+    public ResponseEntity<List<ApplicationVersionRepDTO>> getUpgradeAppVersion(
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用版本ID", required = true)
+            @PathVariable(value = "app_version_id") Long appVersionId) {
+        return Optional.ofNullable(applicationVersionService.getUpgradeAppVersion(projectId, appVersionId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+    /**
+     * 项目下查询应用最新的版本和各环境下部署的版本
+     *
+     * @param projectId 项目ID
+     * @param appId     应用ID
+     * @return DeployVersionDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下查询应用最新的版本和各环境下部署的版本")
+    @GetMapping(value = "/deployVersions")
+    public ResponseEntity<DeployVersionDTO> getDeployVersions(
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用ID", required = true)
+            @RequestParam(value = "app_id") Long appId) {
+        return Optional.ofNullable(applicationVersionService.listDeployVersions(appId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
 }

@@ -12,6 +12,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationService;
@@ -41,7 +42,7 @@ public class ApplicationController {
      * @param applicationDTO 应用信息
      * @return ApplicationTemplateDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建应用")
     @PostMapping
     public ResponseEntity<ApplicationRepDTO> create(
@@ -61,9 +62,10 @@ public class ApplicationController {
      * @param applicationId 应用Id
      * @return ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
-    @GetMapping("/{applicationId}")
+    @GetMapping("/{applicationId}/detail")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -74,6 +76,7 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.query"));
     }
 
+
     /**
      * 项目下更新应用信息
      *
@@ -81,7 +84,7 @@ public class ApplicationController {
      * @param applicationUpdateDTO 应用Id
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新应用信息")
     @PutMapping
     public ResponseEntity<Boolean> update(
@@ -103,7 +106,7 @@ public class ApplicationController {
      * @param active        启用停用
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下启用停用应用信息")
     @PutMapping("/{applicationId}")
     public ResponseEntity<Boolean> queryByAppIdAndActive(
@@ -119,6 +122,25 @@ public class ApplicationController {
     }
 
     /**
+     * 项目下删除创建失败应用
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用id
+     * @return Boolean
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下删除创建失败应用")
+    @DeleteMapping("/{applicationId}")
+    public ResponseEntity deleteByAppId(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable Long applicationId) {
+        applicationService.delete(projectId, applicationId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
      * 项目下分页查询应用
      *
      * @param projectId   项目id
@@ -127,21 +149,25 @@ public class ApplicationController {
      * @param params      参数
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询应用")
     @CustomPageRequest
     @PostMapping("/list_by_options")
     public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "项目是否启用", required = false)
+            @ApiParam(value = "应用是否启用", required = false)
             @RequestParam(value = "active", required = false) Boolean isActive,
+            @ApiParam(value = "应用是否存在版本", required = false)
+            @RequestParam(value = "has_version", required = false) Boolean hasVersion,
             @ApiParam(value = "分页参数")
-            @SortDefault(value = "id", direction = Sort.Direction.DESC)
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
-        return Optional.ofNullable(applicationService.listByOptions(projectId, isActive, pageRequest, params))
+        return Optional.ofNullable(
+                applicationService.listByOptions(projectId, isActive, hasVersion, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
@@ -152,7 +178,9 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return page of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id分页获取已部署正在运行实例的应用")
     @CustomPageRequest
     @GetMapping("/pages")
@@ -160,7 +188,7 @@ public class ApplicationController {
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
-            @RequestParam Long envId,
+            @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
         return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, pageRequest))
@@ -176,7 +204,9 @@ public class ApplicationController {
      * @param status    实例状态
      * @return list of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据环境id获取已部署正在运行实例的应用")
     @GetMapping("/options")
     public ResponseEntity<List<ApplicationCodeDTO>> listByEnvIdAndStatus(
@@ -185,8 +215,10 @@ public class ApplicationController {
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam Long envId,
             @ApiParam(value = "实例运行状态", required = true)
-            @RequestParam String status) {
-        return Optional.ofNullable(applicationService.listByEnvId(projectId, envId, status))
+            @RequestParam String status,
+            @ApiParam(value = "应用 Id")
+            @RequestParam(required = false) Long appId) {
+        return Optional.ofNullable(applicationService.listByEnvId(projectId, envId, status, appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appName.query"));
     }
@@ -197,7 +229,10 @@ public class ApplicationController {
      * @param projectId 项目id
      * @return list of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {
+            InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER
+    })
     @ApiOperation(value = "项目下查询所有已经启用的应用")
     @GetMapping
     public ResponseEntity<List<ApplicationRepDTO>> listByActive(
@@ -208,6 +243,27 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.get"));
     }
 
+
+    /**
+     * 本项目下或者应用市场在该项目下部署过的应用
+     *
+     * @param projectId 项目id
+     * @return list of ApplicationRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {
+            InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER
+    })
+    @ApiOperation(value = "本项目下或者应用市场在该项目下部署过的应用")
+    @GetMapping(value = "/list_all")
+    public ResponseEntity<List<ApplicationRepDTO>> listAll(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(applicationService.listAll(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.applications.get"));
+    }
+
     /**
      * 创建应用校验名称是否存在
      *
@@ -215,7 +271,7 @@ public class ApplicationController {
      * @param name      应用name
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建应用校验名称是否存在")
     @GetMapping(value = "/checkName")
     public ResponseEntity checkName(
@@ -234,7 +290,7 @@ public class ApplicationController {
      * @param code      应用code
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建应用校验编码是否存在")
     @GetMapping(value = "/checkCode")
     public ResponseEntity checkCode(
@@ -252,7 +308,7 @@ public class ApplicationController {
      * @param projectId 项目ID
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "查询所有应用模板")
     @GetMapping("/template")
     public ResponseEntity<List<ApplicationTemplateRepDTO>> listTemplate(
@@ -271,7 +327,7 @@ public class ApplicationController {
      * @param params      查询参数
      * @return page of ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT)
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_unpublish")
@@ -285,5 +341,34 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.get"));
+    }
+
+
+    /**
+     * 项目下分页查询代码仓库
+     *
+     * @param projectId   项目id
+     * @param pageRequest 分页参数
+     * @param params      参数
+     * @return Page
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下分页查询代码仓库")
+    @CustomPageRequest
+    @PostMapping("/list_code_repository")
+    public ResponseEntity<Page<ApplicationRepDTO>> listCodeRepository(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @SortDefault(value = "id", direction = Sort.Direction.DESC)
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(
+                applicationService.listCodeRepository(projectId, pageRequest, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
 }

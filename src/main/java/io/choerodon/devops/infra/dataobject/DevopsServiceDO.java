@@ -21,13 +21,14 @@ public class DevopsServiceDO extends AuditDomain {
     private Long id;
     private Long envId;
     private Long appId;
+    private Long commandId;
     private String name;
-    private String namespace;
     private String status;
-    private Long port;
-    private Long targetPort;
+    private String ports;
+    private String type;
     private String externalIp;
-    private String label;
+    private String labels;
+    private String annotations;
 
     public Long getId() {
         return id;
@@ -61,29 +62,6 @@ public class DevopsServiceDO extends AuditDomain {
         this.name = name;
     }
 
-    public String getNamespace() {
-        return namespace;
-    }
-
-    public void setNamespace(String namespace) {
-        this.namespace = namespace;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
-    }
 
     public String getExternalIp() {
         return externalIp;
@@ -93,12 +71,20 @@ public class DevopsServiceDO extends AuditDomain {
         this.externalIp = externalIp;
     }
 
-    public String getLabel() {
-        return label;
+    public String getLabels() {
+        return labels;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setLabels(String labels) {
+        this.labels = labels;
+    }
+
+    public String getAnnotations() {
+        return annotations;
+    }
+
+    public void setAnnotations(String annotations) {
+        this.annotations = annotations;
     }
 
     public String getStatus() {
@@ -107,5 +93,29 @@ public class DevopsServiceDO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getPorts() {
+        return ports;
+    }
+
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

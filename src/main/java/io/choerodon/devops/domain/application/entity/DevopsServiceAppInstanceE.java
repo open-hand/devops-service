@@ -26,19 +26,19 @@ public class DevopsServiceAppInstanceE {
         this.appInstanceId = appInstanceId;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
     public Long getServiceId() {
         return serviceId;
     }
 
     public void setServiceId(Long serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 }

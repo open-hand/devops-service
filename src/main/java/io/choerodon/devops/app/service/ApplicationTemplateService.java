@@ -2,11 +2,13 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
-import io.choerodon.devops.api.dto.GitlabProjectEventDTO;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -62,7 +64,7 @@ public interface ApplicationTemplateService {
      *
      * @param gitlabProjectEventDTO 模板信息
      */
-    void operationApplicationTemplate(GitlabProjectEventDTO gitlabProjectEventDTO);
+    void operationApplicationTemplate(GitlabProjectPayload gitlabProjectEventDTO);
 
     /**
      * 组织下查询应用模板
@@ -95,4 +97,6 @@ public interface ApplicationTemplateService {
      * @return boolean
      */
     Boolean applicationTemplateExist(String uuid);
+
+    void initMockService(SagaClient sagaClient);
 }

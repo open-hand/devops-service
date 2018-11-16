@@ -29,7 +29,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/organizations/{organization_id}/app_templates")
 public class ApplicationTemplateController {
-    private static String ERRORGET = "error.appTemplate.get";
+    private static final String ERROR_GET = "error.appTemplate.get";
 
     private ApplicationTemplateService applicationTemplateService;
 
@@ -113,7 +113,7 @@ public class ApplicationTemplateController {
             @PathVariable Long appTemplateId) {
         return Optional.ofNullable(applicationTemplateService.query(appTemplateId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERRORGET));
+                .orElseThrow(() -> new CommonException(ERROR_GET));
     }
 
     /**
@@ -138,7 +138,7 @@ public class ApplicationTemplateController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(applicationTemplateService.listByOptions(pageRequest, organizationId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERRORGET));
+                .orElseThrow(() -> new CommonException(ERROR_GET));
     }
 
     /**
@@ -155,7 +155,7 @@ public class ApplicationTemplateController {
             @PathVariable(value = "organization_id") Long organizationId) {
         return Optional.ofNullable(applicationTemplateService.list(organizationId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERRORGET));
+                .orElseThrow(() -> new CommonException(ERROR_GET));
     }
 
     /**

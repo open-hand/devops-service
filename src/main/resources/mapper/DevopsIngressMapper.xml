@@ -31,20 +31,22 @@
         di.`domain` domain,
         di.status,
         di.is_usable isUsable,
+        di.cert_id certId,
         de.`name` envName,
-        de.`code` namespace,
         cmd.`status` commandStatus,
-        cmd.command_type commandType,
-        cmd.error error
+        cmd.command_type  commandType,
+        cmd.error  error,
+        de.`code` namespace
         FROM
         devops_ingress di
         JOIN devops_ingress_path dip ON dip.ingress_id = di.id
         JOIN devops_env de on de.id = di.env_id
-        JOIN devops_env_command cmd ON cmd.object_id = di.id
-        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "ingress" GROUP BY
-        decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
+        LEFT JOIN devops_env_command cmd on di.command_id = cmd.id
         LEFT JOIN devops_service ds on ds.id = dip.service_id
         WHERE di.project_id = #{projectId}
+        <if test="envId != null">
+            AND de.id = #{envId}
+        </if>
         <if test='searchParam != null'>
             <if test='searchParam.domain != null and searchParam.domain.size > 0'>
                 AND
@@ -111,4 +113,12 @@
         </if>
     </select>
 
+    <select id="checkEnvHasIngress" resultType="java.lang.Boolean">
+        SELECT
+        COUNT( 1 ) > 0 exist
+        FROM
+        devops_ingress
+        WHERE
+        env_id = #{envId};
+    </select>
 </mapper>

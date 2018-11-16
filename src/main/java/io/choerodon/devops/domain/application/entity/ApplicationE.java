@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,10 @@ public class ApplicationE {
     private String publishLevel;
     private String contributor;
     private String description;
+    private Date lastUpdateDate;
+    private String sonarUrl;
+    private Long hookId;
+    private Boolean isFailed;
 
     public ApplicationE() {
     }
@@ -192,5 +198,37 @@ public class ApplicationE {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public String getSonarUrl() {
+        return sonarUrl;
+    }
+
+    public void initSonarUrl(String sonarUrl) {
+        this.sonarUrl = sonarUrl;
+    }
+
+    public Long getHookId() {
+        return hookId;
+    }
+
+    public void initHookId(Long hookId) {
+        this.hookId = hookId;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 }

@@ -4,19 +4,15 @@ public enum CommandStatus {
 
     SUCCESS("success"),
     FAILED("failed"),
-    DOING("doing");
+    OPERATING("operating");
 
-    private String commandStatus;
+    private String status;
 
-    CommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
+    CommandStatus(String status) {
+        this.status = status;
     }
 
-    public String getCommandStatus() {
-        return commandStatus;
-    }
-
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
+    public String getStatus() {
+        return status;
     }
 }

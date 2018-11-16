@@ -55,6 +55,9 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
                 devopsEnvironmentE.getId());
         DevopsEnvironmentDO devopsEnvironmentDO = ConvertHelper.convert(devopsEnvironmentE, DevopsEnvironmentDO.class);
         devopsEnvironmentDO.setObjectVersionNumber(newDevopsEnvironmentDO.getObjectVersionNumber());
+        if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
+            devopsEnvironmentMapper.updateDevopsEnvGroupId(devopsEnvironmentDO.getId());
+        }
         if (devopsEnvironmentMapper.updateByPrimaryKeySelective(devopsEnvironmentDO) != 1) {
             throw new CommonException("error.environment.update");
         }
@@ -64,7 +67,7 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     @Override
     public void checkName(DevopsEnvironmentE devopsEnvironmentE) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
-        devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
+        devopsEnvironmentDO.setClusterId(devopsEnvironmentE.getClusterE().getId());
         devopsEnvironmentDO.setName(devopsEnvironmentE.getName());
         if (!devopsEnvironmentMapper.select(devopsEnvironmentDO).isEmpty()) {
             throw new CommonException("error.name.exist");
@@ -74,7 +77,7 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     @Override
     public void checkCode(DevopsEnvironmentE devopsEnvironmentE) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
-        devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
+        devopsEnvironmentDO.setClusterId(devopsEnvironmentE.getClusterE().getId());
         devopsEnvironmentDO.setCode(devopsEnvironmentE.getCode());
         if (!devopsEnvironmentMapper.select(devopsEnvironmentDO).isEmpty()) {
             throw new CommonException("error.code.exist");
@@ -89,7 +92,6 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         return ConvertHelper.convertList(devopsEnvironmentDOS, DevopsEnvironmentE.class);
     }
 
-
     @Override
     public List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
@@ -98,4 +100,45 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         List<DevopsEnvironmentDO> devopsEnvironmentDOS = devopsEnvironmentMapper.select(devopsEnvironmentDO);
         return ConvertHelper.convertList(devopsEnvironmentDOS, DevopsEnvironmentE.class);
     }
+
+    @Override
+    public DevopsEnvironmentE queryByClusterIdAndCode(Long clusterId, String code) {
+        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
+        devopsEnvironmentDO.setClusterId(clusterId);
+        devopsEnvironmentDO.setCode(code);
+        return ConvertHelper.convert(devopsEnvironmentMapper.selectOne(devopsEnvironmentDO), DevopsEnvironmentE.class);
+    }
+
+    @Override
+    public DevopsEnvironmentE queryByToken(String token) {
+        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
+        devopsEnvironmentDO.setToken(token);
+        devopsEnvironmentMapper.selectOne(devopsEnvironmentDO);
+        return ConvertHelper.convert(devopsEnvironmentMapper.selectOne(devopsEnvironmentDO), DevopsEnvironmentE.class);
+    }
+
+    @Override
+    public List<DevopsEnvironmentE> list() {
+        return ConvertHelper.convertList(devopsEnvironmentMapper.selectAll(), DevopsEnvironmentE.class);
+    }
+
+    @Override
+    public void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(),
+                devopsEnvironmentE.getSagaSyncCommit(), devopsEnvironmentE.getDevopsSyncCommit(),
+                devopsEnvironmentE.getAgentSyncCommit());
+    }
+
+    @Override
+    public void deleteById(Long id) {
+        devopsEnvironmentMapper.deleteByPrimaryKey(id);
+    }
+
+    @Override
+    public List<DevopsEnvironmentE> listByClusterId(Long clusterId) {
+        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
+        devopsEnvironmentDO.setClusterId(clusterId);
+        return ConvertHelper.convertList(devopsEnvironmentMapper.select(devopsEnvironmentDO), DevopsEnvironmentE.class);
+    }
+
 }

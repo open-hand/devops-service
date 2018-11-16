@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 /**
  * Created by younger on 2018/4/25.
  */
@@ -10,6 +12,7 @@ public class DeploymentDTO {
     private Long upToDate;
     private Long available;
     private String age;
+    private List<DevopsEnvPodDTO> devopsEnvPodDTOS;
 
     public String getName() {
         return name;
@@ -57,5 +60,13 @@ public class DeploymentDTO {
 
     public void setAge(String age) {
         this.age = age;
+    }
+
+    public List<DevopsEnvPodDTO> getDevopsEnvPodDTOS() {
+        return devopsEnvPodDTOS;
+    }
+
+    public void setDevopsEnvPodDTOS(List<DevopsEnvPodDTO> devopsEnvPodDTOS) {
+        this.devopsEnvPodDTOS = devopsEnvPodDTOS;
     }
 }

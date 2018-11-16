@@ -38,4 +38,13 @@ public class DevopsEnvPodConvertor implements ConvertorI<DevopsEnvPodE, DevopsEn
         BeanUtils.copyProperties(entity, devopsEnvPodDO);
         return devopsEnvPodDO;
     }
+
+
+    @Override
+    public DevopsEnvPodDTO doToDto(DevopsEnvPodDO devopsEnvPodDO) {
+        DevopsEnvPodDTO devopsEnvPodDTO = new DevopsEnvPodDTO();
+        BeanUtils.copyProperties(devopsEnvPodDO, devopsEnvPodDTO);
+        devopsEnvPodDTO.setCreationDate(devopsEnvPodDO.getCreationDate());
+        return devopsEnvPodDTO;
+    }
 }

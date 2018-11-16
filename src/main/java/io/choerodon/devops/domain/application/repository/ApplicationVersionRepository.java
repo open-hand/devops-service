@@ -11,14 +11,13 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Created by Zenger on 2018/4/3.
  */
 public interface ApplicationVersionRepository {
-
-    Page<ApplicationVersionE> listApplicationVersion(Long projectId, PageRequest pageRequest, String searchParam);
-
     List<ApplicationLatestVersionDO> listAppLatestVersion(Long projectId);
 
     ApplicationVersionE create(ApplicationVersionE applicationVersionE);
 
-    List<ApplicationVersionE> listByAppId(Long appId);
+    List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
+
+    List<ApplicationVersionE> listDeployedByAppId(Long projectId, Long appId);
 
     ApplicationVersionE query(Long appVersionId);
 
@@ -39,4 +38,17 @@ public interface ApplicationVersionRepository {
 
     Boolean checkAppAndVersion(Long appId, List<Long> appVersionIds);
 
+    Long setReadme(String readme);
+
+    String getReadme(Long readmeValueId);
+
+    void updateVersion(ApplicationVersionE applicationVersionE);
+
+    List<ApplicationVersionE> selectUpgradeVersions(Long appVersionId);
+
+    void checkProIdAndVerId(Long projectId, Long appVersionId);
+
+    ApplicationVersionE queryByCommitSha(String sha);
+
+    ApplicationVersionE getLatestVersion(Long appId);
 }

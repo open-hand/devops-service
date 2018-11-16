@@ -6,6 +6,7 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by younger on 2018/4/24.
@@ -13,18 +14,17 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_env_resource")
-public class DevopsEnvResourceDO {
+public class DevopsEnvResourceDO extends AuditDomain {
 
     @Id
     @GeneratedValue
     private Long id;
     private Long appInstanceId;
-    private Long messageId;
+    private Long resourceDetailId;
     private String kind;
     private String name;
     private Long weight;
     private Long reversion;
-    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -42,12 +42,12 @@ public class DevopsEnvResourceDO {
         this.appInstanceId = appInstanceId;
     }
 
-    public Long getMessageId() {
-        return messageId;
+    public Long getResourceDetailId() {
+        return resourceDetailId;
     }
 
-    public void setMessageId(Long messageId) {
-        this.messageId = messageId;
+    public void setResourceDetailId(Long resourceDetailId) {
+        this.resourceDetailId = resourceDetailId;
     }
 
     public String getKind() {
@@ -82,11 +82,4 @@ public class DevopsEnvResourceDO {
         this.reversion = reversion;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
 }

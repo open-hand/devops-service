@@ -19,18 +19,6 @@
             AND da.id= #{appId}
         </if>
         <if test='searchParam != null'>
-            <if test='searchParam.appCode != null and searchParam.appCode.size > 0'>
-                AND
-                <foreach collection="searchParam.appCode" item="appCode" open="(" separator=" OR " close=")">
-                    da.code LIKE CONCAT(CONCAT('%', #{appCode, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
-                AND
-                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
-                    da.name LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
             <if test='searchParam.version != null and searchParam.version.size > 0'>
                 AND
                 <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
@@ -39,9 +27,7 @@
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (da.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+           AND dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
         </if>
     </select>
 
@@ -62,10 +48,17 @@
         dappv.app_id
         ) lv ON lv.id = dap.id
         JOIN devops_application da ON lv.app_id = da.id
-        <if test="projectId != null">
-            WHERE
-            da.project_id = #{projectId};
-        </if>
+        LEFT JOIN devops_app_market dam on dam.app_id = da.id
+        WHERE
+        da.project_id = #{projectId}
+        OR (
+        da.project_id IN
+        <foreach collection="projectIds" item="project" open="(" separator="," close=")">
+            #{project}
+        </foreach>
+        AND dam.publish_level = 'organization'
+        )
+        OR dam.publish_level = 'public'
     </select>
 
     <select id="listByAppIdAndEnvId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
@@ -82,11 +75,11 @@
         AND de.id = dai.env_id
         AND dai.`status` = 'running'
         AND dai.app_version_id = dav.id
-        AND da.project_id = #{projectId}
+        AND de.project_id = #{projectId}
         AND de.id = #{envId}
         AND da.id = #{appId}
         GROUP BY
-        dav.version
+        dav.id,dav.version
     </select>
 
     <select id="queryValue" resultType="java.lang.String">
@@ -107,7 +100,30 @@
         FROM
         devops_app_version dav
         WHERE
-        1 = 1
+        dav.app_id = #{appId}
+        <if test="isPublish != null">
+            <if test="isPublish == true">
+                AND dav.is_publish = TRUE
+            </if>
+            <if test="isPublish != true">
+                AND ( is_publish != TRUE OR is_publish IS NULL )
+            </if>
+        </if>
+        ORDER BY
+        dav.id DESC
+    </select>
+
+    <select id="selectDeployedByAppId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT DISTINCT
+        dav.id,
+        dav.version
+        FROM
+        devops_app_version dav
+        JOIN devops_app_instance dai ON dai.app_version_id = dav.id
+        AND dai.`status` != 'deleted'
+        JOIN devops_env de ON de.id = dai.env_id
+        WHERE
+        de.project_id = #{projectId}
         AND dav.app_id = #{appId}
         ORDER BY
         dav.id DESC
@@ -125,13 +141,45 @@
 
     <select id="selectVersionsByAppId" resultType="java.lang.Long">
         SELECT
-            dav.id
+        dav.id
         FROM
-            devops_app_version dav
-            JOIN devops_application da ON da.is_active = TRUE
-            AND da.id = dav.app_id
+        devops_app_version dav
+        JOIN devops_application da ON da.is_active = TRUE
+        AND da.id = dav.app_id
         WHERE
-            dav.app_id = #{applicationId}
+        dav.app_id = #{applicationId}
+    </select>
+
+    <select id="selectUpgradeVersions" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT id, app_id, version,creation_date
+        FROM
+        devops_app_version
+        WHERE
+        app_id = (
+        SELECT
+        app_id
+        FROM
+        devops_app_version
+        WHERE
+        id = #{appVersionId}
+        )
+        AND id > #{appVersionId}
+        ORDER BY id DESC
+    </select>
+    <select id="checkProIdAndVerId" resultType="java.lang.Integer">
+        SELECT
+        COUNT(0)
+        FROM
+        devops_application da
+        JOIN devops_app_version dav ON dav.app_id = da.id
+        WHERE
+        da.project_id = #{projectId}
+        AND dav.id = #{appVersionId}
+    </select>
+
+
+    <select id="getLatestVersion" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        select * from devops_app_version where app_id = #{appId} order by id desc limit 1
     </select>
 
 </mapper>

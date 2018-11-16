@@ -20,13 +20,16 @@ public class ApplicationInstanceE {
     private DevopsEnvironmentE devopsEnvironmentE;
     private Long objectVersionNumber;
     private String status;
-
+    private Long commandId;
     private Long podCount;
     private Long podRunningCount;
     private String commandStatus;
     private String commandType;
+    private String commandVersion;
+    private Long commandVersionId;
     private String error;
     private Boolean isConnect;
+    private Long projectId;
 
     public ApplicationInstanceE() {
     }
@@ -185,5 +188,37 @@ public class ApplicationInstanceE {
 
     public void setConnect(Boolean connect) {
         isConnect = connect;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
     }
 }

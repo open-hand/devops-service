@@ -24,4 +24,16 @@ public interface DevopsEnvironmentRepository {
     List<DevopsEnvironmentE> queryByProject(Long projectId);
 
     List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active);
+
+    DevopsEnvironmentE queryByClusterIdAndCode(Long projectId, String code);
+
+    DevopsEnvironmentE queryByToken(String token);
+
+    List<DevopsEnvironmentE> list();
+
+    void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+
+    void deleteById(Long id);
+
+    List<DevopsEnvironmentE> listByClusterId(Long clusterId);
 }

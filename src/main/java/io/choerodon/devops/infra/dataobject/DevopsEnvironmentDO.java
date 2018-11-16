@@ -6,6 +6,7 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by younger on 2018/4/9.
@@ -13,11 +14,16 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_env")
-public class DevopsEnvironmentDO {
+public class DevopsEnvironmentDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
     private Long projectId;
+    private Long clusterId;
+    private Long gitlabEnvProjectId;
+    private Long hookId;
+    private String envIdRsa;
+    private String envIdRsaPub;
     private String name;
     private String code;
     private String token;
@@ -25,7 +31,10 @@ public class DevopsEnvironmentDO {
     private String description;
     private Boolean isConnected;
     private Boolean isActive;
-    private Long objectVersionNumber;
+    private Long devopsEnvGroupId;
+    private Long sagaSyncCommit;
+    private Long devopsSyncCommit;
+    private Long agentSyncCommit;
 
     public Long getId() {
         return id;
@@ -92,19 +101,84 @@ public class DevopsEnvironmentDO {
         isConnected = connect;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
-
     public Long getSequence() {
         return sequence;
     }
 
     public void setSequence(Long sequence) {
         this.sequence = sequence;
+    }
+
+    public Long getGitlabEnvProjectId() {
+        return gitlabEnvProjectId;
+    }
+
+    public void setGitlabEnvProjectId(Long gitlabEnvProjectId) {
+        this.gitlabEnvProjectId = gitlabEnvProjectId;
+    }
+
+    public String getEnvIdRsa() {
+        return envIdRsa;
+    }
+
+    public void setEnvIdRsa(String envIdRsa) {
+        this.envIdRsa = envIdRsa;
+    }
+
+    public String getEnvIdRsaPub() {
+        return envIdRsaPub;
+    }
+
+    public void setEnvIdRsaPub(String envIdRsaPub) {
+        this.envIdRsaPub = envIdRsaPub;
+    }
+
+    public Long getHookId() {
+        return hookId;
+    }
+
+    public void setHookId(Long hookId) {
+        this.hookId = hookId;
+    }
+
+
+    public Long getSagaSyncCommit() {
+        return sagaSyncCommit;
+    }
+
+    public void setSagaSyncCommit(Long sagaSyncCommit) {
+        this.sagaSyncCommit = sagaSyncCommit;
+    }
+
+    public Long getDevopsSyncCommit() {
+        return devopsSyncCommit;
+    }
+
+    public void setDevopsSyncCommit(Long devopsSyncCommit) {
+        this.devopsSyncCommit = devopsSyncCommit;
+    }
+
+    public Long getAgentSyncCommit() {
+        return agentSyncCommit;
+    }
+
+    public void setAgentSyncCommit(Long agentSyncCommit) {
+        this.agentSyncCommit = agentSyncCommit;
+    }
+
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
+    }
+
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }

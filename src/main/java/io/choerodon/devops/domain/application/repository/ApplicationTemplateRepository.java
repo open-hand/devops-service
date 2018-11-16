@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -30,4 +31,6 @@ public interface ApplicationTemplateRepository {
     void checkCode(ApplicationTemplateE applicationTemplateE);
 
     Boolean applicationTemplateExist(String uuid);
+
+    void initMockService(IamServiceClient iamServiceClient);
 }

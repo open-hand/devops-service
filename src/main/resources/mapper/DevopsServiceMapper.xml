@@ -28,18 +28,21 @@
         SELECT
         ds.*
         FROM
-        devops_service ds,
-        devops_application da
+        devops_service ds
+        INNER JOIN devops_env denv ON ds.env_id = denv.id
         WHERE
-        ds.app_id = da.id
-        AND da.project_id = #{projectId}
+        denv.project_id = #{projectId}
         AND ds.`status` != 'deleted'
+        <if test="envId != null">
+            AND ds.env_id = #{envId}
+        </if>
         ) ds
-        INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
-        INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
-        INNER JOIN devops_application da ON da.id = dai.app_id
-        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
-        INNER JOIN devops_env de ON ds.env_id = de.id
+        JOIN devops_env de ON ds.env_id = de.id
+        LEFT JOIN devops_application da ON da.id = ds.app_id
+        LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
+        LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        WHERE
+        1=1
         <include refid="sqlparam"/>
         ) t
     </select>
@@ -47,7 +50,8 @@
     <select id="listDevopsService" resultType="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
         SELECT
         ds.id,
-        ds.`name`
+        ds.`name`,
+        ds.ports
         FROM
         devops_service ds
         WHERE ds.`status` = 'running'
@@ -61,45 +65,48 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
-        ds.port,
-        ds.target_port,
+        ds.ports,
         ds.`status`,
+        ds.`type`,
+        ds.labels,
         da.id AS app_id,
         da.`name` AS app_name,
         de.id AS env_id,
         de.`name` AS env_name,
         de.`code` AS namespace,
-        dav.id AS app_version_id,
-        dav.version AS version,
-        dsai.app_instance_id AS app_instance_id,
-        dsai.`code` AS code,
-        dai.`status` AS intance_status,
         cmd.`status` commandStatus,
         cmd.command_type commandType,
-        cmd.error error
+        cmd.error error,
+        da.project_id AS appProjectId,
+        dsai.app_instance_id AS app_instance_id,
+        dsai.code AS code,
+        dai.`status` AS instance_status
         FROM
         (
         SELECT
-        ds.*
+        devs.*
         FROM
-        devops_service ds,
-        devops_application da
+        devops_service devs
+        INNER JOIN devops_env denv ON devs.env_id = denv.id
         WHERE
-        ds.app_id = da.id
-        AND da.project_id = #{projectId}
-        AND ds.`status` != 'deleted'
-        <if test="start != null and  size != null">
+        denv.project_id = #{projectId}
+        AND devs.`status` != 'deleted'
+        <if test="envId != null">
+            AND devs.env_id = #{envId}
+        </if>
+        <if test="sort != null and !sort.isEmpty()">
+            ORDER BY ${sort}
+        </if>
+        <if test="start != null and size != null">
             LIMIT #{start}, #{size}
         </if>
         ) ds
-        INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
-        INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
-        INNER JOIN devops_application da ON da.id = dai.app_id
-        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
-        INNER JOIN devops_env de ON ds.env_id = de.id
-        JOIN devops_env_command cmd ON cmd.object_id = ds.id
-        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd WHERE decmd.object = "service" GROUP BY
-        decmd.object, decmd.object_id ) mcmd ON mcmd.id = cmd.id
+        JOIN devops_env de ON ds.env_id = de.id
+        LEFT JOIN devops_env_command cmd ON ds.command_id = cmd.id
+        LEFT JOIN devops_application da ON da.id = ds.app_id
+        LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
+        LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        WHERE 1
         <include refid="sqlparam"/>
     </select>
 
@@ -108,25 +115,24 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
-        ds. port,
-        ds.target_port,
+        ds.labels,
+        da.project_id appProjectId,
+        ds. ports,
         ds.`status`,
+        ds.`type`,
         da.id AS app_id,
         da.`name` AS app_name,
         de.id AS env_id,
         de.`name` AS env_name,
-        dav.id AS app_version_id,
-        dav.version AS version,
         dsai.app_instance_id AS app_instance_id,
-        dsai.`code` AS code,
-        dai.`status` AS intance_status
+        dai.`status` AS instance_status,
+        dsai.code AS code
         FROM
         devops_service ds
-        INNER JOIN devops_service_app_instance dsai ON dsai.service_id = ds.id
-        INNER JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
-        INNER JOIN devops_application da ON da.id = dai.app_id
-        INNER JOIN devops_app_version dav ON dav.id = dai.app_version_id
         INNER JOIN devops_env de ON ds.env_id = de.id
+        LEFT JOIN devops_service_instance dsai ON dsai.service_id = ds.id
+        LEFT JOIN devops_app_instance dai ON dai.id = dsai.app_instance_id
+        LEFT JOIN devops_application da ON da.id = dai.app_id
         WHERE
         ds.id = #{id}
         AND ds.`status` != 'deleted'
@@ -138,32 +144,30 @@
         FROM
         devops_service
         WHERE
-        `status` = "running";
+        `status` = 'running';
     </select>
 
     <resultMap id="devopsServiceResult" type="io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO">
         <id property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="externalIp" column="external_ip"/>
-        <result property="port" column="port"/>
-        <result property="targetPort" column="target_port"/>
+        <result property="ports" column="ports"/>
         <result property="status" column="status"/>
         <result property="appId" column="app_id"/>
         <result property="appName" column="app_name"/>
+        <result property="type" column="type"/>
         <result property="envId" column="env_id"/>
-        <result property="envName" column="env_name"/>
-        <result property="namespace" column="namespace"/>
+        <result property="appProjectId" column="appProjectId"/>
         <result property="commandStatus" column="commandStatus"/>
         <result property="commandType" column="commandType"/>
         <result property="error" column="error"/>
-        <collection property="appVersion" ofType="io.choerodon.devops.infra.dataobject.ServiceVersionDO">
-            <result column="app_version_id" property="id" jdbcType="VARCHAR"/>
-            <result column="version" property="version" jdbcType="VARCHAR"/>
-            <collection property="appInstance" ofType="io.choerodon.devops.infra.dataobject.ServiceInstanceDO">
-                <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
-                <result column="code" property="code" jdbcType="VARCHAR"/>
-                <result column="intance_status" property="intanceStatus" jdbcType="VARCHAR"/>
-            </collection>
+        <result property="envName" column="env_name"/>
+        <result property="namespace" column="namespace"/>
+        <result property="labels" column="labels"/>
+        <collection property="appInstance" ofType="io.choerodon.devops.infra.dataobject.ServiceInstanceDO">
+            <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
+            <result column="code" property="code" jdbcType="VARCHAR"/>
+            <result column="instance_status" property="instanceStatus" jdbcType="VARCHAR"/>
         </collection>
     </resultMap>
 
@@ -199,34 +203,37 @@
                     ds.external_ip LIKE CONCAT(CONCAT('%', #{externalIp, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.targetPort != null and searchParam.targetPort.size > 0'>
-                AND
-                <foreach collection="searchParam.targetPort" item="targetPort" open="(" separator=" OR " close=")">
-                    ds.target_port LIKE CONCAT(CONCAT('%', #{targetPort, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.version != null and searchParam.version.size > 0'>
-                AND
-                <foreach collection="searchParam.version" item="version" open="(" separator=" OR " close=")">
-                    dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
-            <if test='searchParam.code != null and searchParam.code.size > 0'>
-                AND
-                <foreach collection="searchParam.code" item="code" open="(" separator=" OR " close=")">
-                    dsai.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
-                </foreach>
-            </if>
         </if>
         <if test='param != null and param != ""'>
             AND (ds.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR da.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR de.`name` LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR de.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR ds.target_port LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dsai.code LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+            OR ds.external_ip LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%') )
         </if>
     </sql>
+
+    <select id="checkEnvHasService" resultType="java.lang.Boolean">
+        SELECT
+        COUNT( 1 ) > 0 exist
+        FROM
+        devops_service
+        WHERE
+        env_id = #{envId}
+        AND `status` != 'deleted';
+    </select>
+
+    <update id="setLablesToNull">
+        UPDATE devops_service ds
+        SET ds.labels = null
+        WHERE ds.id = #{serviceId}
+    </update>
+
+    <delete id="deleteServiceInstance">
+        DELETE FROM devops_service_instance
+        WHERE service_id IN
+        <foreach collection="serviceIds" item="serviceId" open="(" separator="," close=")">
+            #{serviceId}
+        </foreach>
+    </delete>
 </mapper>

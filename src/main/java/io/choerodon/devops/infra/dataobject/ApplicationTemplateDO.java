@@ -6,6 +6,7 @@ import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by younger on 2018/3/27.
@@ -13,7 +14,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_app_template")
-public class ApplicationTemplateDO {
+public class ApplicationTemplateDO  extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -27,7 +28,6 @@ public class ApplicationTemplateDO {
     private Boolean type;
     private String uuid;
     private Long gitlabProjectId;
-    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -109,11 +109,4 @@ public class ApplicationTemplateDO {
         this.gitlabProjectId = gitlabProjectId;
     }
 
-    public Long getObjectVersionNumber() {
-        return objectVersionNumber;
-    }
-
-    public void setObjectVersionNumber(Long objectVersionNumber) {
-        this.objectVersionNumber = objectVersionNumber;
-    }
 }

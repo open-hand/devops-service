@@ -1,35 +1,64 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.InputStream;
+import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson.JSONArray;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsEnviromentDTO;
-import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
-import io.choerodon.devops.api.dto.DevopsEnvironmentUpdateDTO;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsServiceRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.ProjectHook;
+import io.choerodon.devops.domain.service.DeployService;
+import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
-import io.choerodon.websocket.helper.EnvSession;
-
 
 /**
  * Created by younger on 2018/4/9.
  */
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
+
+    private static final Gson gson = new Gson();
+    private static final String MASTER = "master";
+    private static final String README = "README.md";
+    private static final String README_CONTENT =
+            "# This is gitops env repository!";
+    private static final String ENV = "ENV";
+    private static final String PROJECT_OWNER = "role/project/default/project-owner";
+    private static final String PROJECT_MEMBER = "role/project/default/project-member";
+    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${agent.version}")
     private String agentExpectVersion;
@@ -39,75 +68,178 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Value("${agent.repoUrl}")
     private String agentRepoUrl;
-    ;
+
+    @Value("${services.gateway.url}")
+    private String gatewayUrl;
+
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
+
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
+
+    @Autowired
     private IamRepository iamRepository;
+    @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
     private EnvListener envListener;
+    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
-
-    public DevopsEnvironmentServiceImpl(IamRepository iamRepository,
-                                        DevopsEnvironmentRepository devopsEnviromentRepository,
-                                        EnvListener envListener,
-                                        DevopsServiceRepository devopsServiceRepository,
-                                        ApplicationInstanceRepository applicationInstanceRepository) {
-        this.iamRepository = iamRepository;
-        this.devopsEnviromentRepository = devopsEnviromentRepository;
-        this.envListener = envListener;
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.applicationInstanceRepository = applicationInstanceRepository;
-    }
-
+    @Autowired
+    private DevopsEnvironmentValidator devopsEnvironmentValidator;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private SagaClient sagaClient;
+    @Autowired
+    private DevopsProjectRepository devopsProjectRepository;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
+    @Autowired
+    private DevopsEnvCommitRepository devopsEnvCommitRepository;
+    @Autowired
+    private DevopsEnvGroupRepository devopsEnvGroupRepository;
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository;
+    @Autowired
+    private DevopsIngressRepository devopsIngressRepository;
+    @Autowired
+    private DevopsClusterRepository devopsClusterRepository;
+    @Autowired
+    private DeployService deployService;
 
     @Override
-    public String create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
+    @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
+    public void create(Long projectId, DevopsEnviromentDTO devopsEnviromentDTO) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
         devopsEnvironmentE.initProjectE(projectId);
-        devopsEnviromentRepository.checkCode(devopsEnvironmentE);
-        devopsEnviromentRepository.checkName(devopsEnvironmentE);
+        checkCode(projectId, devopsEnviromentDTO.getClusterId(), devopsEnviromentDTO.getCode());
+        checkName(projectId, devopsEnviromentDTO.getClusterId(), devopsEnviromentDTO.getName());
         devopsEnvironmentE.initActive(true);
         devopsEnvironmentE.initConnect(false);
+        devopsEnvironmentE.initDevopsClusterEById(devopsEnviromentDTO.getClusterId());
         devopsEnvironmentE.initToken(GenerateUUID.generateUUID());
         devopsEnvironmentE.initProjectE(projectId);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
-        devopsEnvironmentE.initSequence(devopsEnvironmentES);
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
-        Map<String, String> params = new HashMap<>();
-        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
-        params.put("{VERSION}", agentExpectVersion);
-        params.put("{SERVICEURL}", agentServiceUrl);
-        params.put("{TOKEN}", devopsEnvironmentE.getToken());
-        params.put("{REPOURL}", agentRepoUrl);
-        params.put("{ENVID}", devopsEnviromentRepository.create(devopsEnvironmentE)
-                .getId().toString());
-        return FileUtil.replaceReturnString(inputStream, params);
+        //创建环境没有选环境组，序列从默认组环境递增，创建环境选了环境组，序列从该环境组环境递增
+        if (devopsEnviromentDTO.getDevopsEnvGroupId() == null) {
+            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                    devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+        } else {
+            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                    devopsEnviromentDTO.getDevopsEnvGroupId().equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                    .collect(Collectors.toList()));
+        }
+        List<String> sshKeys = FileUtil.getSshKey(
+                organization.getCode() + "/" + projectE.getCode() + "/" + devopsEnviromentDTO.getCode());
+        devopsEnvironmentE.setEnvIdRsa(sshKeys.get(0));
+        devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
+        Long envId = devopsEnviromentRepository.create(devopsEnvironmentE).getId();
+        devopsEnvironmentE.setId(envId);
+
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
+        gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()));
+        gitlabProjectPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
+        gitlabProjectPayload.setOrganizationId(null);
+        gitlabProjectPayload.setType(ENV);
+        UserE userE = iamRepository.queryById(userAttrE.getIamUserId());
+        gitlabProjectPayload.setLoginName(userE.getLoginName());
+        gitlabProjectPayload.setRealName(userE.getRealName());
+        gitlabProjectPayload.setClusterId(devopsEnviromentDTO.getClusterId());
+
+        // 创建环境时将项目下所有用户装入payload以便于saga消费
+        gitlabProjectPayload.setUserIds(devopsEnviromentDTO.getUserIds());
+
+        String input;
+        try {
+            input = objectMapper.writeValueAsString(gitlabProjectPayload);
+            sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", ""));
+            deployService.initEnv(devopsEnvironmentE, devopsEnviromentDTO.getClusterId());
+        } catch (JsonProcessingException e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
+        List<DevopsEnvGroupEnvsDTO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
+        List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOS = listByProjectIdAndActive(projectId, active);
+        if (!active) {
+            DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnviromentRepDTOS);
+            devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+            return devopsEnvGroupEnvsDTOS;
+        }
+        List<DevopsEnvGroupE> devopsEnvGroupES = devopsEnvGroupRepository.listByProjectId(projectId);
+        devopsEnviromentRepDTOS.forEach(devopsEnviromentRepDTO -> {
+            if (devopsEnviromentRepDTO.getDevopsEnvGroupId() == null) {
+                devopsEnviromentRepDTO.setDevopsEnvGroupId(0L);
+            }
+        });
+        //按照环境组分组查询，有环境的环境组放前面，没环境的环境组放后面
+        Map<Long, List<DevopsEnviromentRepDTO>> resultMaps = devopsEnviromentRepDTOS.stream()
+                .collect(Collectors.groupingBy(DevopsEnviromentRepDTO::getDevopsEnvGroupId));
+        List<Long> envGroupIds = new ArrayList<>();
+        resultMaps.forEach((key, value) -> {
+            envGroupIds.add(key);
+            DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+            DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
+            if (key != 0) {
+                devopsEnvGroupE = devopsEnvGroupRepository.query(key);
+            }
+            devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
+            devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(value);
+            devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+        });
+        if (active) {
+            devopsEnvGroupES.forEach(devopsEnvGroupE -> {
+                if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
+                    DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
+                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+                    devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+                }
+            });
+        }
+        return devopsEnvGroupEnvsDTOS;
     }
 
     @Override
     public List<DevopsEnviromentRepDTO> listByProjectIdAndActive(Long projectId, Boolean active) {
-        Map<String, EnvSession> envs = envListener.connectedEnv();
+
+        // 查询当前用户的环境权限
+        List<Long> permissionEnvIds = devopsEnvUserPermissionRepository
+                .listByUserId(TypeUtil.objToLong(GitUserNameUtil.getUserId())).stream()
+                .filter(DevopsEnvUserPermissionE::getPermitted)
+                .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        // 查询当前用户是否为项目所有者
+        Boolean isProjectOwner = devopsEnvUserPermissionRepository
+                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
+
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
-                .queryByprojectAndActive(projectId, active).parallelStream()
+                .queryByprojectAndActive(projectId, active).stream().peek(t -> {
+                    setEnvStatus(connectedClusterList, t);
+                    // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
+                    setPermission(t, permissionEnvIds, isProjectOwner);
+                })
                 .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
                 .collect(Collectors.toList());
-        for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-            Integer flag = 0;
-            devopsEnvironmentE.setUpdate(false);
-            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
-                EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
-                    flag = agentExpectVersion.compareTo(envSession.getVersion());
-                    devopsEnvironmentE.initConnect(true);
-                }
-                if (flag > 0) {
-                    devopsEnvironmentE.setUpdate(true);
-                    devopsEnvironmentE.initConnect(false);
-                    devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");
-                }
-            }
-        }
-
         return ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class);
     }
 
@@ -120,25 +252,46 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
-        if (!active && applicationInstanceRepository.selectByEnvId(environmentId) > 0) {
-            throw new CommonException("error.env.stop");
-        }
-
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
+        if (!active) {
+            List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+            setEnvStatus(connectedClusterList, devopsEnvironmentE);
+        }
+        if (devopsEnvironmentE.getConnect()) {
+            throw new CommonException("error.env.connected");
+        }
+        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
+                .queryByprojectAndActive(projectId, true);
         devopsEnvironmentE.setActive(active);
+        //启用环境，原环境不在环境组内，则序列在默认组内环境递增，员环境在环境组内，则序列在环境组内环境递增
         if (active) {
-            devopsEnvironmentE.initSequence(devopsEnviromentRepository
-                    .queryByprojectAndActive(projectId, active));
+            if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+            } else {
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        (devopsEnvironmentE.getDevopsEnvGroupId()).equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .collect(Collectors.toList()));
+            }
         } else {
-            List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
-                    .queryByprojectAndActive(projectId, true).parallelStream()
-                    .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
-                    .collect(Collectors.toList());
-            List<Long> environmentIds = devopsEnvironmentES
-                    .stream()
-                    .map(devopsEnvironmentE1
-                            -> devopsEnvironmentE1.getId().longValue())
-                    .collect(Collectors.toList());
+            // 停用环境，环境停用后，原组sequence重新排序
+            List<Long> environmentIds;
+            if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
+                environmentIds = devopsEnvironmentES.stream()
+                        .filter(devopsEnvironmentE1 -> devopsEnvironmentE1.getDevopsEnvGroupId() == null)
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
+                        .collect(Collectors.toList()).stream()
+                        .map(DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
+            } else {
+                environmentIds = devopsEnvironmentES.stream()
+                        .filter(devopsEnvironmentE1 -> (devopsEnvironmentE.getDevopsEnvGroupId())
+                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
+                        .collect(Collectors.toList()).stream()
+                        .map(DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
+            }
             environmentIds.remove(environmentId);
             Long[] ids = new Long[environmentIds.size()];
             sort(environmentIds.toArray(ids));
@@ -161,98 +314,465 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (checkNameChange(devopsEnvironmentUpdateDTO)) {
             devopsEnviromentRepository.checkName(devopsEnvironmentE);
         }
+        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
+                .queryByprojectAndActive(projectId, true);
+        DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository
+                .queryById(devopsEnvironmentUpdateDTO.getId());
+        List<Long> ids;
+        //更新环境，包含默认组到环境组，环境组到环境组，环境组到默认组,此时将初始组sequence重新排列,新环境在所选环境组中环境sequence递增
+        if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
+            if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
+                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        devopsEnvironmentE1.getDevopsEnvGroupId() == null)
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
+            } else {
+                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        beforeDevopsEnvironmentE.getDevopsEnvGroupId()
+                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
+            }
+            ids.remove(devopsEnvironmentUpdateDTO.getId());
+            sort(ids.toArray(new Long[ids.size()]));
+            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                    (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())
+                            .equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
+        } else {
+            if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null) {
+                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        beforeDevopsEnvironmentE.getDevopsEnvGroupId()
+                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                DevopsEnvironmentE::getId)
+                        .collect(Collectors.toList());
+                ids.remove(devopsEnvironmentUpdateDTO.getId());
+                sort(ids.toArray(new Long[ids.size()]));
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
+            }
+        }
+        //
+        if (devopsEnvironmentUpdateDTO.getClusterId() != null && !devopsEnvironmentUpdateDTO.getClusterId()
+                .equals(beforeDevopsEnvironmentE.getClusterE().getId())) {
+            deployService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
+        }
         return ConvertHelper.convert(devopsEnviromentRepository.update(
                 devopsEnvironmentE), DevopsEnvironmentUpdateDTO.class);
     }
 
     @Override
-    public List<DevopsEnviromentRepDTO> sort(Long[] environmentIds) {
+    public DevopsEnvGroupEnvsDTO sort(Long[] environmentIds) {
+        DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
         List<Long> ids = new ArrayList<>();
         Collections.addAll(ids, environmentIds);
         List<DevopsEnvironmentE> devopsEnvironmentES = ids.stream()
                 .map(id -> devopsEnviromentRepository.queryById(id))
                 .collect(Collectors.toList());
-        Long sequence = 1L;
+        long sequence = 1L;
         for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
             devopsEnvironmentE.setSequence(sequence);
             devopsEnviromentRepository.update(devopsEnvironmentE);
             sequence = sequence + 1;
         }
-        Map<String, EnvSession> envs = envListener.connectedEnv();
-        for (DevopsEnvironmentE devopsEnvironmentE : devopsEnvironmentES) {
-            Integer flag = 0;
-            devopsEnvironmentE.setUpdate(false);
-            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
-                EnvSession envSession = entry.getValue();
-                if (envSession.getEnvId().equals(devopsEnvironmentE.getId())) {
-                    flag = agentExpectVersion.compareTo(envSession.getVersion());
-                    devopsEnvironmentE.initConnect(true);
-                }
-                if (flag > 0) {
-                    devopsEnvironmentE.setUpdate(true);
-                    devopsEnvironmentE.initConnect(false);
-                    devopsEnvironmentE.setUpdateMessage("Version is too low, please upgrade!");
-                }
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        devopsEnvironmentES.forEach(t -> {
+            setEnvStatus(connectedEnvList, t);
+        });
+        if (!devopsEnvironmentES.isEmpty()) {
+            DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
+            if (devopsEnvironmentES.get(0).getDevopsEnvGroupId() != null) {
+                devopsEnvGroupE = devopsEnvGroupRepository.query(devopsEnvironmentES.get(0).getDevopsEnvGroupId());
             }
+            devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(ConvertHelper.convertList(devopsEnvironmentES,
+                    DevopsEnviromentRepDTO.class));
+            devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+            devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
         }
-        return ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class);
+        return devopsEnvGroupEnvsDTO;
     }
 
-    @Override
-    public String queryShell(Long environmentId, Boolean update) {
-        if (update == null) {
-            update = false;
-        }
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
-        InputStream inputStream = null;
-        Map<String, String> params = new HashMap<>();
-        if (update) {
-            inputStream = this.getClass().getResourceAsStream("/shell/environment-upgrade.sh");
+    private void setEnvStatus(List<Long> connectedEnvList, DevopsEnvironmentE t) {
+        if (connectedEnvList.contains(t.getClusterE().getId())) {
+            t.initConnect(true);
         } else {
-            inputStream = this.getClass().getResourceAsStream("/shell/environment.sh");
+            t.initConnect(false);
         }
-        params.put("{NAMESPACE}", devopsEnvironmentE.getCode());
-        params.put("{VERSION}", agentExpectVersion);
-        params.put("{SERVICEURL}", agentServiceUrl);
-        params.put("{TOKEN}", devopsEnvironmentE.getToken());
-        params.put("{REPOURL}", agentRepoUrl);
-        params.put("{ENVID}", devopsEnvironmentE.getId().toString());
-        return FileUtil.replaceReturnString(inputStream, params);
     }
 
+
     @Override
-    public void checkName(Long projectId, String name) {
+    public void checkName(Long projectId, Long clusterId, String name) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         devopsEnvironmentE.initProjectE(projectId);
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setName(name);
         devopsEnviromentRepository.checkName(devopsEnvironmentE);
     }
 
     @Override
-    public void checkCode(Long projectId, String code) {
+    public void checkCode(Long projectId, Long clusterId, String code) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
+        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
         devopsEnvironmentE.initProjectE(projectId);
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.setCode(code);
+        if (devopsClusterE.getNamespaces() != null) {
+            JSONArray.parseArray(devopsClusterE.getNamespaces(), String.class).forEach(namespace -> {
+                if (namespace.equals(code)) {
+                    throw new CommonException("error.code.exist");
+                }
+            });
+        }
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
     }
 
-    /**
-     * 校验name是否改变
-     *
-     * @param devopsEnvironmentUpdateDTO 环境参数
-     * @return boolean
-     */
-    public Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
+    private Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
                 .queryById(devopsEnvironmentUpdateDTO.getId());
-        return devopsEnvironmentE.getName().equals(devopsEnvironmentUpdateDTO.getName()) ? false : true;
+        return !devopsEnvironmentE.getName().equals(devopsEnvironmentUpdateDTO.getName());
     }
 
     @Override
-    public List<DevopsEnviromentRepDTO> listByProjectId(Long projectId) {
+    public List<DevopsEnviromentRepDTO> listByProjectId(Long projectId, Long appId) {
         List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOList = listByProjectIdAndActive(projectId, true);
-        return devopsEnviromentRepDTOList.stream().filter(t ->
-                applicationInstanceRepository.selectByEnvId(t.getId()) > 0)
+
+        if (appId == null) {
+            return devopsEnviromentRepDTOList.stream().filter(t ->
+                    applicationInstanceRepository.selectByEnvId(t.getId()).stream()
+                            .anyMatch(applicationInstanceE ->
+                                    applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())))
+                    .collect(Collectors.toList());
+        } else {
+            return devopsEnviromentRepDTOList.stream().filter(t ->
+                    applicationInstanceRepository.selectByEnvId(t.getId()).stream()
+                            .anyMatch(applicationInstanceE ->
+                                    applicationInstanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())
+                                            && applicationInstanceE.getApplicationE().getId().equals(appId)))
+                    .collect(Collectors.toList());
+        }
+    }
+
+    @Override
+    public void handleCreateEnvSaga(GitlabProjectPayload gitlabProjectPayload) {
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByEnvGroupId(
+                TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
+                .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
+        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode()
+                + "-" + projectE.getCode() + "-gitops", devopsEnvironmentE.getCode(), gitlabProjectPayload.getUserId());
+        if (gitlabProjectDO.getId() == null) {
+            gitlabProjectDO = gitlabRepository.createProject(
+                    gitlabProjectPayload.getGroupId(),
+                    gitlabProjectPayload.getPath(),
+                    gitlabProjectPayload.getUserId(),
+                    false);
+        }
+        devopsEnvironmentE.initGitlabEnvProjectId(TypeUtil.objToLong(gitlabProjectDO.getId()));
+        if (gitlabRepository.getDeployKeys(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId()).isEmpty()) {
+            gitlabRepository.createDeployKey(
+                    gitlabProjectDO.getId(),
+                    gitlabProjectPayload.getPath(),
+                    devopsEnvironmentE.getEnvIdRsaPub(),
+                    true,
+                    gitlabProjectPayload.getUserId());
+        }
+        ProjectHook projectHook = ProjectHook.allHook();
+        projectHook.setEnableSslVerification(true);
+        projectHook.setProjectId(gitlabProjectDO.getId());
+        projectHook.setToken(devopsEnvironmentE.getToken());
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook/git_ops";
+        projectHook.setUrl(uri);
+        List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(),
+                gitlabProjectPayload.getUserId());
+        if (projectHooks == null) {
+            devopsEnvironmentE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
+                    gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(), projectHook).getId()));
+        } else {
+            devopsEnvironmentE.initHookId(TypeUtil.objToLong(projectHooks.get(0).getId()));
+        }
+        if (!gitlabRepository.getFile(gitlabProjectDO.getId(), MASTER, README)) {
+            gitlabRepository.createFile(gitlabProjectDO.getId(),
+                    README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
+        }
+
+        devopsEnviromentRepository.update(devopsEnvironmentE);
+        // 创建环境时初始化用户权限，分为gitlab权限和devops环境用户表权限
+        initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentE.getId(),
+                TypeUtil.objToLong(gitlabProjectDO.getId()), projectE.getId());
+    }
+
+    private void initUserPermissionWhenCreatingEnv(GitlabProjectPayload gitlabProjectPayload, Long envId,
+                                                   Long gitlabProjectId, Long projectId) {
+
+        List<Long> userIds = gitlabProjectPayload.getUserIds();
+        // 获取项目下所有项目成员
+        Page<UserDTO> allProjectMemberPage = getMembersFromProject(new PageRequest(), projectId, "");
+        // 所有项目成员中有权限的
+        if (userIds != null && !userIds.isEmpty()) {
+            allProjectMemberPage.getContent().stream().filter(e -> userIds.contains(e.getId())).forEach(e -> {
+                Long userId = e.getId();
+                String loginName = e.getLoginName();
+                String realName = e.getRealName();
+                UserAttrE userAttrE = userAttrRepository.queryById(userId);
+                Long gitlabUserId = userAttrE.getGitlabUserId();
+                updateGitlabProjectMember(gitlabProjectId, gitlabUserId, 40);
+                devopsEnvUserPermissionRepository
+                        .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
+            });
+        }
+    }
+
+    @Override
+    public EnvSyncStatusDTO queryEnvSyncStatus(Long projectId, Long envId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
+        EnvSyncStatusDTO envSyncStatusDTO = new EnvSyncStatusDTO();
+        if (devopsEnvironmentE.getAgentSyncCommit() != null) {
+            envSyncStatusDTO.setAgentSyncCommit(devopsEnvCommitRepository
+                    .query(devopsEnvironmentE.getAgentSyncCommit()).getCommitSha());
+        }
+        if (devopsEnvironmentE.getDevopsSyncCommit() != null) {
+            envSyncStatusDTO.setDevopsSyncCommit(devopsEnvCommitRepository
+                    .query(devopsEnvironmentE.getDevopsSyncCommit())
+                    .getCommitSha());
+        }
+        if (devopsEnvironmentE.getSagaSyncCommit() != null) {
+            envSyncStatusDTO.setSagaSyncCommit(devopsEnvCommitRepository
+                    .query(devopsEnvironmentE.getSagaSyncCommit()).getCommitSha());
+        }
+
+        gitlabUrl = gitlabUrl.endsWith("/") ? gitlabUrl.substring(0, gitlabUrl.length() - 1) : gitlabUrl;
+        envSyncStatusDTO.setCommitUrl(String.format("%s/%s-%s-gitops/%s/commit/",
+                gitlabUrl, organization.getCode(), projectE.getCode(),
+                devopsEnvironmentE.getCode()));
+        return envSyncStatusDTO;
+    }
+
+    @Override
+    public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
+        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        //本地路径
+        String path = String.format("gitops/%s/%s/%s",
+                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        //生成环境git仓库ssh地址
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
+                projectE.getCode(), devopsEnvironmentE.getCode());
+
+        File file = new File(path);
+        GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
+        if (!file.exists()) {
+            gitUtil.cloneBySsh(path, url);
+        }
+        return path;
+    }
+
+    @Override
+    public Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
+                                                                      String searchParams, String envId) {
+        if ("null".equals(envId)) {
+            // 根据项目成员id查询项目下所有的项目成员
+            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
+
+            List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
+            Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
+            allProjectMemberPage.getContent().forEach(e -> {
+                DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+                devopsEnvUserPermissionDTO.setIamUserId(e.getId());
+                devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
+                devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+                devopsEnvUserPermissionDTO.setPermitted(false);
+                allProjectMemberList.add(devopsEnvUserPermissionDTO);
+            });
+            BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
+            devopsEnvUserPermissionDTOPage.setContent(allProjectMemberList);
+            return devopsEnvUserPermissionDTOPage;
+        } else {
+            // 普通的分页查询
+            // 查询表中已经有权限的项目成员
+            Page<DevopsEnvUserPermissionDTO> allUsersDTOPage = devopsEnvUserPermissionRepository
+                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams);
+            List<DevopsEnvUserPermissionDTO> allUsersDTOList = allUsersDTOPage.getContent();
+            List<Long> allUsersId = allUsersDTOPage.getContent().stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
+                    .collect(Collectors.toList());
+            // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
+            Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
+            allProjectMemberPage.getContent().forEach(e -> {
+                DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+                devopsEnvUserPermissionDTO.setIamUserId(e.getId());
+                devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
+                devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+                if (!allUsersId.contains(e.getId())) {
+                    devopsEnvUserPermissionDTO.setPermitted(false);
+                    allUsersDTOList.add(devopsEnvUserPermissionDTO);
+                }
+            });
+            Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
+            BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
+            devopsEnvUserPermissionDTOPage.setContent(allUsersDTOList);
+            return devopsEnvUserPermissionDTOPage;
+        }
+    }
+
+    @Override
+    public List<DevopsEnvUserPermissionDTO> listAllUserPermission(Long envId) {
+        return devopsEnvUserPermissionRepository.listALlUserPermission(envId);
+    }
+
+    @Override
+    public Boolean updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
+        // 更新以前有权限的所有用户
+        List<Long> currentRecord = devopsEnvUserPermissionRepository.listAll(envId).stream()
+                .map(DevopsEnvUserPermissionE::getIamUserId).collect(
+                        Collectors.toList());
+        // 待添加的用户
+        List<Long> addUsersList = userIds.stream().filter(e -> !currentRecord.contains(e)).collect(Collectors.toList());
+        // 待删除的用户
+        List<Long> deleteUsersList = currentRecord.stream().filter(e -> !userIds.contains(e))
                 .collect(Collectors.toList());
+
+        // 更新gitlab权限
+        Long gitlabProjectId = devopsEnviromentRepository.queryById(envId).getGitlabEnvProjectId();
+        addUsersList.forEach(e -> {
+            Integer permissionNumber = 40;
+            UserAttrE userAttrE = userAttrRepository.queryById(e);
+            Long gitlabUserId = userAttrE.getGitlabUserId();
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
+        });
+        deleteUsersList.forEach(e -> {
+            Integer permissionNumber = 0;
+            UserAttrE userAttrE = userAttrRepository.queryById(e);
+            Long gitlabUserId = userAttrE.getGitlabUserId();
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
+        });
+        // 事务如果失败，数据库会回滚
+        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, addUsersList, deleteUsersList);
+        return true;
+    }
+
+    private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
+        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
+        if (searchParams != null && !"".equals(searchParams)) {
+            Map maps = gson.fromJson(searchParams, Map.class);
+            Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            roleAssignmentSearchDTO.setParam(new String[]{param});
+            if (searchParamMap.get("loginName") != null) {
+                String loginName = TypeUtil.objToString(searchParamMap.get("loginName"));
+                String subLogin = loginName.substring(1, loginName.length() - 1);
+                roleAssignmentSearchDTO.setLoginName(subLogin);
+            }
+            if (searchParamMap.get("realName") != null) {
+                String realName = TypeUtil.objToString(searchParamMap.get("realName"));
+                String subReal = realName.substring(1, realName.length() - 1);
+                roleAssignmentSearchDTO.setRealName(subReal);
+            }
+        }
+        // 获取项目所有者角色id和数量
+        Long ownerId;
+        Page<RoleDTO> ownerRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
+        if (ownerRoleDTOPage.getTotalElements() == 0) {
+            throw new CommonException("error.get.projectOwner.roleId");
+        } else {
+            ownerId = ownerRoleDTOPage.getContent().get(0).getId();
+        }
+        // 获取项目成员id
+        Long memberId;
+        Page<RoleDTO> memberRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
+        if (memberRoleDTOPage.getTotalElements() == 0) {
+            throw new CommonException("error.get.projectMember.roleId");
+        } else {
+            memberId = memberRoleDTOPage.getContent().get(0).getId();
+        }
+        // 所有项目成员，可能还带有项目所有者的角色，需要过滤
+        Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
+                .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
+                        memberId, projectId);
+        // 如果项目成员查出来为空，则直接返回空列表
+        if (allMemberWithOtherUsersPage.getContent().isEmpty()) {
+            return allMemberWithOtherUsersPage;
+        }
+        // 所有项目所有者
+        // TODO 目前先设置为200，等iam接口修改后再做调整
+        Page<UserDTO> allOwnerUsersPage = iamRepository
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 200), roleAssignmentSearchDTO,
+                        ownerId, projectId);
+        // 如果项目所有者查出来为空，则返回之前的项目成员列表
+        if (allOwnerUsersPage.getContent().isEmpty()) {
+            return allMemberWithOtherUsersPage;
+        } else {
+            // 否则过滤项目成员中含有项目所有者的人
+            List<UserDTO> returnUserDTOList = allMemberWithOtherUsersPage.stream()
+                    .filter(e -> !allOwnerUsersPage.getContent().contains(e)).collect(Collectors.toList());
+            // 设置过滤后的分页显示参数
+            allMemberWithOtherUsersPage.setContent(returnUserDTOList);
+            return allMemberWithOtherUsersPage;
+        }
+    }
+
+    private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
+        if (permission == 0) {
+            // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
+            GitlabMemberE gitlabMemberE = gitlabProjectRepository
+                    .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
+            if (gitlabMemberE.getId() != null) {
+                gitlabRepository
+                        .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
+            }
+        } else {
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setUserId(TypeUtil.objToInteger(userId));
+            memberDTO.setAccessLevel(permission);
+            memberDTO.setExpiresAt("");
+            gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
+        }
+    }
+
+    private void setPermission(DevopsEnvironmentE devopsEnvironmentE, List<Long> permissionEnvIds,
+                               Boolean isProjectOwner) {
+        if (permissionEnvIds.contains(devopsEnvironmentE.getId()) || isProjectOwner) {
+            devopsEnvironmentE.setPermission(true);
+        } else {
+            devopsEnvironmentE.setPermission(false);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void deleteDeactivatedEnvironment(Long envId) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(envId);
+        // 删除环境对应的实例
+        applicationInstanceRepository.deleteAppInstanceByEnvId(envId);
+        // 删除环境对应的域名、域名路径
+        devopsIngressRepository.deleteIngressAndIngressPathByEnvId(envId);
+        // 删除环境对应的网络和网络实例
+        devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
+        // 删除环境
+        devopsEnviromentRepository.deleteById(envId);
+        // 删除gitlab库
+        Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+        gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+        // 删除环境命名空间
+        deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
+    }
+
+    @Override
+    public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
+        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
+    }
+
+    @Override
+    public void initMockService(SagaClient sagaClient) {
+        this.sagaClient = sagaClient;
     }
 }

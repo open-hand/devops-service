@@ -5,36 +5,48 @@
 
     <select id="selectByEnvIdAndServiceName" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressPathDO">
         SELECT
-        dda.*
+        dip.*
         FROM
-        devops_ingress dd,
-        devops_ingress_path dda
+        devops_ingress di,
+        devops_ingress_path dip
         WHERE
-        dd.id = dda.ingress_id
-        AND dd.env_id = #{envId}
-        AND dda.service_name = #{serviceName}
+        di.id = dip.ingress_id
+        AND di.env_id = #{envId}
+        AND dip.service_name = #{serviceName}
     </select>
 
     <select id="checkDomainAndPath" resultType="java.lang.Boolean">
         SELECT
         count(1) > 0 exist
         FROM
-        devops_ingress dd
-        INNER JOIN devops_ingress_path dda ON dd.id = dda.ingress_id
+        devops_ingress di
+        INNER JOIN devops_ingress_path dip ON di.id = dip.ingress_id
         WHERE
-        dd.domain = #{domain}
-        AND dda.path = #{path}
+        di.domain = #{domain}
+        <if test="ingressId != null">
+            AND di.id != #{ingressId}
+        </if>
+        AND dip.path = #{path}
+        AND di.env_id = #{envId}
     </select>
 
     <select id="selectByEnvIdAndServiceId" resultType="io.choerodon.devops.infra.dataobject.DevopsIngressPathDO">
         SELECT
-        dda.*
+        dip.*
         FROM
-        devops_ingress dd,
-        devops_ingress_path dda
+        devops_ingress di,
+        devops_ingress_path dip
         WHERE
-        dd.id = dda.ingress_id
-        AND dd.env_id = #{envId}
-        AND dda.service_id = #{serviceId}
+        di.id = dip.ingress_id
+        AND di.env_id = #{envId}
+        AND dip.service_id = #{serviceId}
     </select>
+
+    <delete id="deleteByIngressIds">
+        DELETE FROM devops_ingress_path
+        WHERE ingress_id IN
+        <foreach collection="ingressIds" item="ingressId" open="(" close=")" separator=",">
+            #{ingressId}
+        </foreach>
+    </delete>
 </mapper>

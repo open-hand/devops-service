@@ -5,7 +5,9 @@
     <select id="listJobByInstanceId" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
         SELECT
         *
-        FROM devops_env_resource dir where dir.app_instance_id = #{instanceId} and dir.kind = "Job"
+        FROM devops_env_resource dir
+        WHERE dir.app_instance_id = #{instanceId}
+        AND dir.kind = 'Job'
         ORDER BY dir.weight ASC
     </select>
 
@@ -32,6 +34,17 @@
         LEFT JOIN devops_app_instance dai
         on der.app_instance_id = dai.id where dai.env_id = #{envId}
         AND der.kind = #{type}
+    </select>
+
+    <select id="queryLatestJob"
+            resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
+        SELECT
+        *
+        FROM devops_env_resource dir where dir.kind = #{kind}
+        and dir.name = #{name}
+        ORDER BY
+        dir.creation_date DESC
+        LIMIT 1
     </select>
 
 </mapper>

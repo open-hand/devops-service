@@ -18,9 +18,4 @@ public interface ProjectService {
      */
     void createProject(ProjectEvent projectEvent);
 
-    Boolean groupExist(String uuid);
-
-    Boolean harborExist(String uuid);
-
-    Boolean memberExist(String uuid);
 }

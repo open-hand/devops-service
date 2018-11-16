@@ -1,14 +1,25 @@
 package io.choerodon.devops.domain.application.valueobject;
 
 /**
+ * 标记高亮
+ *
  * @author crockitwood
  */
 public class HighlightMarker {
     private int line;
+    private int endLine;
     private int startIndex;
     private int endIndex;
     private int startColumn;
     private int endColumn;
+
+    public int getEndLine() {
+        return endLine;
+    }
+
+    public void setEndLine(int endLine) {
+        this.endLine = endLine;
+    }
 
     public int getLine() {
         return line;

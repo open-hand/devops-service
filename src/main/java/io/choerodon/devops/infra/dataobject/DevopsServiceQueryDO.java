@@ -1,7 +1,7 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.List;
 import javax.persistence.Transient;
+import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/19.
@@ -11,22 +11,26 @@ public class DevopsServiceQueryDO {
     private Long id;
     private String name;
     private String externalIp;
-    private Long port;
-    private Long targetPort;
+    private String ports;
     private String status;
     private Long envId;
+    private String type;
     private String envName;
     private String namespace;
     private Long appId;
     private String appName;
-    private List<ServiceVersionDO> appVersion;
+    private String labels;
+    private List<ServiceInstanceDO> appInstance;
 
     @Transient
-    private String commandStatus;
+    private Long appProjectId;
     @Transient
     private String commandType;
     @Transient
+    private String commandStatus;
+    @Transient
     private String error;
+
 
     public Long getId() {
         return id;
@@ -50,14 +54,6 @@ public class DevopsServiceQueryDO {
 
     public void setExternalIp(String externalIp) {
         this.externalIp = externalIp;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
     }
 
     public Long getEnvId() {
@@ -92,12 +88,12 @@ public class DevopsServiceQueryDO {
         this.appName = appName;
     }
 
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
+    public List<ServiceInstanceDO> getAppInstance() {
+        return appInstance;
     }
 
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
+    public void setAppInstance(List<ServiceInstanceDO> appInstance) {
+        this.appInstance = appInstance;
     }
 
     public String getStatus() {
@@ -116,12 +112,36 @@ public class DevopsServiceQueryDO {
         this.namespace = namespace;
     }
 
-    public String getCommandStatus() {
-        return commandStatus;
+    public String getPorts() {
+        return ports;
     }
 
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
+    public void setPorts(String ports) {
+        this.ports = ports;
+    }
+
+    public Long getAppProjectId() {
+        return appProjectId;
+    }
+
+    public void setAppProjectId(Long appProjectId) {
+        this.appProjectId = appProjectId;
+    }
+
+    public String getLabels() {
+        return labels;
+    }
+
+    public void setLabels(String labels) {
+        this.labels = labels;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getCommandType() {
@@ -132,19 +152,19 @@ public class DevopsServiceQueryDO {
         this.commandType = commandType;
     }
 
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
     public String getError() {
         return error;
     }
 
     public void setError(String error) {
         this.error = error;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 }

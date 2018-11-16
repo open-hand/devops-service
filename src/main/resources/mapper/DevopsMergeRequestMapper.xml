@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper">
+    <select id="queryByAppIdAndGitlabId" resultType="java.lang.Integer">
+        SELECT
+        COUNT(1)
+        FROM
+        devops_merge_request
+        WHERE
+        project_id = #{projectId}
+        AND gitlab_merge_request_id = #{gitlabMergeRequestId}
+    </select>
+    <select id="getByProjectIdAndState" resultType="io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO">
+        SELECT
+        *
+        FROM
+        devops_merge_request
+        WHERE
+        project_id = #{projectId}
+        AND state = #{state}
+    </select>
+
+</mapper>
+
+

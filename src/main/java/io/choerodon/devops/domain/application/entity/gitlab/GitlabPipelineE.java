@@ -2,6 +2,8 @@ package io.choerodon.devops.domain.application.entity.gitlab;
 
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus;
 
 /**
@@ -14,9 +16,17 @@ public class GitlabPipelineE {
     private String ref;
     private String sha;
     private GitlabUserE user;
-    private Date createdAt;
-    private Date started_at;
-    private Date finished_at;
+
+    @JsonProperty(value = "created_at")
+    private String createdAt;
+    @JsonProperty(value = "updated_at")
+    private Date updatedAt;
+    @JsonProperty(value = "started_at")
+    private Date startedAt;
+    @JsonProperty(value = "finished_at")
+    private Date finishedAt;
+    @JsonProperty(value = "committed_at")
+    private Date committedAt;
 
     public Integer getId() {
         return id;
@@ -58,32 +68,49 @@ public class GitlabPipelineE {
         this.user = user;
     }
 
-    public Date getStarted_at() {
-        return started_at;
-    }
-
-    public void setStarted_at(Date started_at) {
-        this.started_at = started_at;
-    }
-
-    public Date getFinished_at() {
-        return finished_at;
-    }
-
-    public void setFinished_at(Date finished_at) {
-        this.finished_at = finished_at;
-    }
 
     public void initUser(Integer id, String username) {
         this.user = new GitlabUserE(id, username);
     }
 
-    public Date getCreatedAt() {
+    public String getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Date createdAt) {
+    public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public Date getStartedAt() {
+        return startedAt;
+    }
+
+    public void setStartedAt(Date startedAt) {
+        this.startedAt = startedAt;
+    }
+
+    public Date getFinishedAt() {
+        return finishedAt;
+    }
+
+    public void setFinishedAt(Date finishedAt) {
+        this.finishedAt = finishedAt;
+    }
+
+    public Date getCommittedAt() {
+        return committedAt;
+    }
+
+    public void setCommittedAt(Date committedAt) {
+        this.committedAt = committedAt;
     }
 }
 

@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.dataobject;
 
+import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -26,6 +27,7 @@ public class DevopsIngressPathDO extends AuditDomain {
     private String path;
     private Long serviceId;
     private String serviceName;
+    private Long servicePort;
 
     public DevopsIngressPathDO() {
     }
@@ -34,29 +36,15 @@ public class DevopsIngressPathDO extends AuditDomain {
         this.ingressId = ingressId;
     }
 
-    public DevopsIngressPathDO(Long ingressId, String path) {
-        this.ingressId = ingressId;
-        this.path = path;
-    }
-
     /**
      * 构造函数
      */
-    public DevopsIngressPathDO(Long ingressId, String path, Long serviceId, String serviceName) {
+    public DevopsIngressPathDO(Long ingressId, String path, Long serviceId, String serviceName, Long servicePort) {
         this.ingressId = ingressId;
         this.path = path;
         this.serviceId = serviceId;
         this.serviceName = serviceName;
-    }
-
-    /**
-     * 构造函数
-     */
-    public DevopsIngressPathDO(Long id, Long ingressId, String path, Long serviceId) {
-        this.id = id;
-        this.ingressId = ingressId;
-        this.path = path;
-        this.serviceId = serviceId;
+        this.servicePort = servicePort;
     }
 
     public Long getId() {
@@ -99,5 +87,33 @@ public class DevopsIngressPathDO extends AuditDomain {
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public Long getServicePort() {
+        return servicePort;
+    }
+
+    public void setServicePort(Long servicePort) {
+        this.servicePort = servicePort;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        DevopsIngressPathDO that = (DevopsIngressPathDO) o;
+        return Objects.equals(ingressId, that.ingressId)
+                && Objects.equals(path, that.path)
+                && Objects.equals(serviceId, that.serviceId)
+                && Objects.equals(servicePort,that.servicePort);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(ingressId, path, serviceId);
     }
 }

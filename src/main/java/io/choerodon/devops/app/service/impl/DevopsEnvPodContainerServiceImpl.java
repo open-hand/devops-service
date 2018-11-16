@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -43,8 +46,8 @@ public class DevopsEnvPodContainerServiceImpl implements DevopsEnvPodContainerSe
     }
 
     @Override
-    public DevopsEnvPodContainerLogDTO logByPodId(Long podId) {
-        DevopsEnvPodContainerDO container = containerRepository.get(new DevopsEnvPodContainerDO(podId));
+    public List<DevopsEnvPodContainerLogDTO> logByPodId(Long podId) {
+        List<DevopsEnvPodContainerDO> container = containerRepository.list(new DevopsEnvPodContainerDO(podId));
         if (container == null) {
             throw new CommonException("error.container.notExist");
         }
@@ -52,8 +55,9 @@ public class DevopsEnvPodContainerServiceImpl implements DevopsEnvPodContainerSe
         if (pod == null) {
             throw new CommonException("error.pod.notExist");
         }
-        return new DevopsEnvPodContainerLogDTO(pod.getName(),
-                container.getContainerName());
+        return container.stream().map(t ->
+                new DevopsEnvPodContainerLogDTO(pod.getName(), t.getContainerName()))
+                .collect(Collectors.toList());
     }
 
     @Override

@@ -10,7 +10,7 @@ public enum InstanceStatus {
     OPERATIING("operating"),
     RUNNING("running"),
     FAILED("failed"),
-    STOPED("stoped"),
+    STOPPED("stopped"),
     DELETED("deleted");
 
 
@@ -22,9 +22,5 @@ public enum InstanceStatus {
 
     public String getStatus() {
         return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 }

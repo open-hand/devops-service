@@ -7,7 +7,6 @@ import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.domain.application.entity.DevopsIngressE;
 import io.choerodon.devops.domain.application.entity.DevopsIngressPathE;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
-import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -17,13 +16,13 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface DevopsIngressRepository {
-    void createIngress(DevopsIngressDO devopsIngressDO, List<DevopsIngressPathDO> devopsIngressPathDOList);
+    DevopsIngressDO createIngress(DevopsIngressDO devopsIngressDO);
 
-    void updateIngress(DevopsIngressDO devopsIngressDO, List<DevopsIngressPathDO> devopsIngressPathDOList);
+    void updateIngressAndIngressPath(DevopsIngressDO devopsIngressDO);
 
     void updateIngress(DevopsIngressDO devopsIngressDO);
 
-    Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params);
+    Page<DevopsIngressDTO> getIngress(Long projectId, Long envId, PageRequest pageRequest, String params);
 
     DevopsIngressDTO getIngress(Long projectId, Long ingressId);
 
@@ -31,15 +30,13 @@ public interface DevopsIngressRepository {
 
     void deleteIngress(Long ingressId);
 
-    void setUsable(String name);
-
     Long setStatus(Long envId, String name, String status);
 
     List<String> queryIngressNameByServiceId(Long serviceId);
 
     Boolean checkIngressName(Long envId, String name);
 
-    Boolean checkIngressAndPath(String domain, String path);
+    Boolean checkIngressAndPath(Long envId, String domain, String path, Long id);
 
     DevopsIngressE selectByEnvAndName(Long envId, String name);
 
@@ -58,4 +55,10 @@ public interface DevopsIngressRepository {
     void updateIngressPath(DevopsIngressPathE devopsIngressPathE);
 
     void deleteIngressPath(Long ingressId);
+
+    Boolean checkEnvHasIngress(Long envId);
+
+    List<DevopsIngressE> list();
+
+    void deleteIngressAndIngressPathByEnvId(Long envId);
 }

@@ -21,9 +21,11 @@ public class DevopsEnvPodE {
     private String namespace;
     private String instanceCode;
     private Long envId;
+    private Long projectId;
     private String envCode;
     private String envName;
     private Long objectVersionNumber;
+    private Boolean isConnect;
 
     public DevopsEnvPodE() {
     }
@@ -171,5 +173,23 @@ public class DevopsEnvPodE {
 
     public void setEnvId(Long envId) {
         this.envId = envId;
+    }
+
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+
+    public Boolean getConnect() {
+        return isConnect;
+    }
+
+    public void setConnect(Boolean connect) {
+        isConnect = connect;
     }
 }

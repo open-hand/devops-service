@@ -39,18 +39,24 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
 
     @Override
     public DevopsEnvPodE get(DevopsEnvPodE pod) {
-        List<DevopsEnvPodDO> DevopsEnvPodDOs = devopsEnvPodMapper.select(ConvertHelper.convert(pod, DevopsEnvPodDO.class));
-        if (DevopsEnvPodDOs.isEmpty()) {
+        List<DevopsEnvPodDO> devopsEnvPodDOS =
+                devopsEnvPodMapper.select(ConvertHelper.convert(pod, DevopsEnvPodDO.class));
+        if (devopsEnvPodDOS.isEmpty()) {
             return null;
         }
-        return ConvertHelper.convert(DevopsEnvPodDOs.get(0),
+        return ConvertHelper.convert(devopsEnvPodDOS.get(0),
                 DevopsEnvPodE.class);
     }
 
     @Override
     public void insert(DevopsEnvPodE devopsEnvPodE) {
-        DevopsEnvPodDO pod = ConvertHelper.convert(devopsEnvPodE, DevopsEnvPodDO.class);
-        devopsEnvPodMapper.insert(pod);
+        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
+        devopsEnvPodDO.setName(devopsEnvPodE.getName());
+        devopsEnvPodDO.setNamespace(devopsEnvPodE.getNamespace());
+        if (devopsEnvPodMapper.selectOne(devopsEnvPodDO) == null) {
+            DevopsEnvPodDO pod = ConvertHelper.convert(devopsEnvPodE, DevopsEnvPodDO.class);
+            devopsEnvPodMapper.insert(pod);
+        }
     }
 
     @Override
@@ -66,7 +72,7 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
     }
 
     @Override
-    public Page<DevopsEnvPodE> listAppPod(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<DevopsEnvPodE> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("name", "dp.`name`");
@@ -82,11 +88,13 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
             devopsEnvPodDOPage = PageHelper.doPageAndSort(
                     pageRequest, () -> devopsEnvPodMapper.listAppPod(
                             projectId,
+                            envId,
+                            appId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
         } else {
             devopsEnvPodDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> devopsEnvPodMapper.listAppPod(projectId, null, null));
+                    pageRequest, () -> devopsEnvPodMapper.listAppPod(projectId, envId, appId, null, null));
         }
 
         return ConvertPageHelper.convertPage(devopsEnvPodDOPage, DevopsEnvPodE.class);
@@ -101,5 +109,13 @@ public class DevopsEnvPodRepositoryImpl implements DevopsEnvPodRepository {
         if (!devopsEnvPodDOs.isEmpty()) {
             devopsEnvPodMapper.delete(devopsEnvPodDOs.get(0));
         }
+    }
+
+    @Override
+    public DevopsEnvPodE getByNameAndEnv(String name, String namespace) {
+        DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO();
+        devopsEnvPodDO.setName(name);
+        devopsEnvPodDO.setNamespace(namespace);
+        return ConvertHelper.convert(devopsEnvPodMapper.selectOne(devopsEnvPodDO), DevopsEnvPodE.class);
     }
 }

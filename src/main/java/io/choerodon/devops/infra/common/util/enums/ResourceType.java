@@ -6,7 +6,13 @@ public enum ResourceType {
     POD("Pod"),
     INGRESS("Ingress"),
     DEPLOYMENT("Deployment"),
-    REPLICASET("ReplicaSet");
+    REPLICASET("ReplicaSet"),
+    CONFIGMAP("ConfigMap"),
+    SERVICEACCOUNT("ServiceAccount"),
+    DAEMONSET("DaemonSet"),
+    STATEFULSET("StatefulSet"),
+    SECRET("SECRET"),
+    MISSTYPE("MissType");
 
 
     private String type;
@@ -32,6 +38,18 @@ public enum ResourceType {
                 return ResourceType.DEPLOYMENT;
             case "ReplicaSet":
                 return ResourceType.REPLICASET;
+            case "ConfigMap":
+                return ResourceType.CONFIGMAP;
+            case "ServiceAccount":
+                return ResourceType.SERVICEACCOUNT;
+            case "DaemonSet":
+                return ResourceType.DAEMONSET;
+            case "StatefulSet":
+                return ResourceType.STATEFULSET;
+            case "MissType":
+                return ResourceType.MISSTYPE;
+            case "Secret":
+                return ResourceType.SECRET;
             default:
                 break;
         }

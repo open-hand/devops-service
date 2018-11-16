@@ -4,6 +4,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -40,6 +41,10 @@ public class DevopsAppMarketDO extends AuditDomain {
     private List<ApplicationVersionDO> applicationVersionDOList;
     @Transient
     private Boolean isDeployed;
+    @Transient
+    private Date appUpdatedDate;
+    @Transient
+    private Date marketUpdatedDate;
 
     public Long getId() {
         return id;
@@ -143,6 +148,22 @@ public class DevopsAppMarketDO extends AuditDomain {
 
     public void setDeployed(Boolean deployed) {
         isDeployed = deployed;
+    }
+
+    public Date getAppUpdatedDate() {
+        return appUpdatedDate;
+    }
+
+    public void setAppUpdatedDate(Date appUpdatedDate) {
+        this.appUpdatedDate = appUpdatedDate;
+    }
+
+    public Date getMarketUpdatedDate() {
+        return marketUpdatedDate;
+    }
+
+    public void setMarketUpdatedDate(Date marketUpdatedDate) {
+        this.marketUpdatedDate = marketUpdatedDate;
     }
 
     @Override

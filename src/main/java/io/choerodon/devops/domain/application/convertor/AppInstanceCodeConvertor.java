@@ -17,6 +17,9 @@ public class AppInstanceCodeConvertor implements ConvertorI<ApplicationInstanceE
         AppInstanceCodeDTO appInstanceCodeDTO = new AppInstanceCodeDTO();
         appInstanceCodeDTO.setId(entity.getId().toString());
         appInstanceCodeDTO.setCode(entity.getCode());
+        if (appInstanceCodeDTO.getAppVersion() != null) {
+            appInstanceCodeDTO.setAppVersion(entity.getApplicationVersionE().getVersion());
+        }
         return appInstanceCodeDTO;
     }
 }

@@ -7,6 +7,9 @@ public class ApplicationDeployDTO {
     private Long appId;
     private String type;
     private Long appInstanceId;
+    private Long commandId;
+    private String instanceName;
+    private boolean isNotChange;
 
     public Long getAppVerisonId() {
         return appVerisonId;
@@ -54,5 +57,29 @@ public class ApplicationDeployDTO {
 
     public void setAppInstanceId(Long appInstanceId) {
         this.appInstanceId = appInstanceId;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
+
+    public boolean getIsNotChange() {
+        return isNotChange;
+    }
+
+    public void setIsNotChange(boolean isNotChange) {
+        this.isNotChange = isNotChange;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 }

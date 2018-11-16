@@ -24,6 +24,14 @@ public interface DevopsIngressService {
     void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId);
 
     /**
+     * 项目下创建域名,GitOps
+     *
+     * @param devopsIngressDTO 域名参数
+     * @param projectId        项目Id
+     */
+    void addIngressByGitOps(DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
+
+    /**
      * 项目下更新域名
      *
      * @param id               域名Id
@@ -32,15 +40,16 @@ public interface DevopsIngressService {
      */
     void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId);
 
+
     /**
-     * 项目下查询域
+     * 项目下更新域名,GitOps
      *
-     * @param projectId   项目Id
-     * @param pageRequest 分页参数
-     * @param params      模糊查询参数
-     * @return Page
+     * @param id               域名Id
+     * @param devopsIngressDTO 域名参数
+     * @param projectId        项目Id
      */
-    Page<DevopsIngressDTO> getIngress(Long projectId, PageRequest pageRequest, String params);
+    void updateIngressByGitOps(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId, Long userId);
+
 
     /**
      * 项目下查询域名
@@ -58,6 +67,14 @@ public interface DevopsIngressService {
      */
     void deleteIngress(Long ingressId);
 
+
+    /**
+     * 项目下删除域名,GitOps
+     *
+     * @param ingressId 域名Id
+     */
+    void deleteIngressByGitOps(Long ingressId);
+
     /**
      * 检查域名唯一性
      *
@@ -72,19 +89,21 @@ public interface DevopsIngressService {
      *
      * @param domain 域名
      * @param path   路径
+     * @param id     ingress ID
      * @return boolean
      */
-    Boolean checkDomainAndPath(String domain, String path);
+    Boolean checkDomainAndPath(Long envId, String domain, String path, Long id);
 
     /**
      * 项目下创建域名
      *
-     * @param host      主机
-     * @param name      域名名称
-     * @param namespace 命名空间
+     * @param host     主机
+     * @param name     域名名称
+     * @param certName 证书名称
      * @return V1beta1Ingress
      */
-    V1beta1Ingress createIngress(String host, String name, String namespace);
+    V1beta1Ingress initV1beta1Ingress(String host, String name, String certName);
+
 
     /**
      * 项目下创建path
@@ -93,5 +112,16 @@ public interface DevopsIngressService {
      * @param serviceId 网络Id
      * @return V1beta1HTTPIngressPath
      */
-    V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId);
+    V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId, Long port);
+
+
+    /**
+     * 环境总览域名查询
+     *
+     * @param projectId   项目Id
+     * @param pageRequest 分页参数
+     * @param params      模糊查询参数
+     * @return Page
+     */
+    Page<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params);
 }

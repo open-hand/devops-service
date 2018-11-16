@@ -10,6 +10,7 @@
         dam.contributor,
         dam.description,
         da.id appId,
+        da.project_id projectId,
         da.`name` appName,
         dav.version appVersion,
         dav.id appVersionId,
@@ -24,6 +25,8 @@
         devops_env_pod dp
         WHERE
         dp.app_instance_id = dai.id
+        AND dp.namespace = de.code
+        AND de.id = dai.env_id
         ) podCount,
         (
         SELECT
@@ -34,20 +37,27 @@
         dp.app_instance_id = dai.id
         AND dp.`status` = 'Running'
         AND dp.is_ready = TRUE
+        AND dp.namespace = de.code
+        AND de.id = dai.env_id
         ) podRunningCount,
         dai.object_version_number,
         cmd.`status` commandStatus,
+        cmd.object_version_id commandVersionId,
+        (
+        select
+        ndav.version
+        from
+        devops_app_version ndav
+        where ndav.id = cmd.object_version_id
+        ) commandVersion,
         cmd.command_type commandType,
         cmd.error error
         FROM
         devops_app_instance dai
-        JOIN devops_app_version dav ON dai.app_version_id = dav.id
         JOIN devops_env de ON dai.env_id = de.id
-        JOIN devops_application da ON da.id = dav.app_id
-        JOIN devops_env_command cmd ON cmd.object_id = dai.id
-        JOIN ( SELECT max( decmd.id ) id FROM devops_env_command decmd where decmd.object = "instance" GROUP BY
-        decmd.object,decmd.object_id ) mcmd ON mcmd.id =
-        cmd.id
+        JOIN devops_application da ON da.id = dai.app_id
+        LEFT JOIN devops_app_version dav ON dai.app_version_id = dav.id
+        LEFT JOIN devops_env_command cmd ON cmd.id = dai.command_id
         LEFT JOIN devops_app_market dam ON dam.app_id = da.id
         WHERE de.project_id = #{projectId}
         AND dai.`status` != 'deleted'
@@ -58,14 +68,19 @@
     <select id="listApplicationInstanceCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
         SELECT
         dai.id id,
-        dai.`code` CODE
+        dai.`code` CODE,
+        dav.version appVersion
         FROM
         devops_app_instance dai,
-        devops_application da
+        devops_application da,
+        devops_env de,
+        devops_app_version dav
         WHERE
         dai.app_id = da.id
+        AND dai.env_id = de.id
         AND dai.`status` = 'running'
-        AND da.project_id = #{projectId}
+        AND de.project_id = #{projectId}
+        AND dai.app_version_id = dav.id
         <if test="envId != null">
             AND dai.env_id = #{envId}
         </if>
@@ -79,19 +94,43 @@
         dai.id DESC
     </select>
 
+    <select id="listRunningAndFailedInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+        SELECT
+        dai.id id,
+        dai.`code` CODE,
+        dav.version appVersion
+        FROM
+        devops_app_instance dai,
+        devops_application da,
+        devops_env de,
+        devops_app_version dav
+        WHERE
+        dai.app_id = da.id
+        AND dai.env_id = de.id
+        AND dai.`status` in ('running','failed')
+        AND de.project_id = #{projectId}
+        AND dai.app_version_id = dav.id
+        <if test="envId != null">
+            AND dai.env_id = #{envId}
+        </if>
+        <if test="appId != null">
+            AND dai.app_id = #{appId}
+        </if>
+        ORDER BY
+        dai.id DESC
+    </select>
 
     <select id="checkOptions" resultType="java.lang.Integer">
         SELECT
         COUNT(1)
         FROM
         devops_app_instance dai
-        WHERE
-        1 = 1
-        AND dai.app_id = #{appId}
-        AND dai.env_id = #{envId}
-        AND dai.status = 'running'
-        <if test="appVersionId != null">
-            AND dai.app_version_id = #{appVersionId}
+        WHERE 1=1
+        <if test="envId != null">
+            AND dai.env_id = #{envId}
+        </if>
+        <if test="appId != null">
+            AND dai.app_id = #{appId}
         </if>
         <if test="appInstanceId != null">
             AND dai.id = #{appInstanceId}
@@ -107,7 +146,7 @@
         (
         SELECT
         dai.id instance_id,
-        de.id command_id,
+        de.id commandId,
         de.value_id value_id
         FROM
         devops_env_command de,
@@ -116,6 +155,33 @@
         de.object_id = dai.id
         AND dai.app_id = #{appId}
         AND dai.env_id = #{envId}
+        AND de.object = 'instance'
+        ORDER BY
+        de.creation_date DESC
+        LIMIT 1
+        ) r,
+        devops_env_command_value dv
+        WHERE
+        r.value_id = dv.id
+    </select>
+
+    <select id="queryByInstanceId" resultType="java.lang.String">
+        SELECT
+        dv.
+        VALUE
+
+        FROM
+        (
+        SELECT
+        dai.id instance_id,
+        de.id commandId,
+        de.value_id value_id
+        FROM
+        devops_env_command de,
+        devops_app_instance dai
+        WHERE
+        de.object_id = dai.id
+        AND de.object_id = #{instanceId}
         AND de.object = 'instance'
         ORDER BY
         de.creation_date DESC
@@ -143,10 +209,10 @@
                     dai.`code` LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
-            <if test='searchParam.name != null and searchParam.name.size > 0'>
+            <if test='searchParam.appName != null and searchParam.appName.size > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
-                    da.`name` LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                <foreach collection="searchParam.appName" item="appName" open="(" separator=" OR " close=")">
+                    da.`name` LIKE CONCAT(CONCAT('%', #{appName, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.version != null and searchParam.version.size > 0'>
@@ -197,13 +263,13 @@
         </if>
     </sql>
 
-
     <select id="listApplicationInstances" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstancesDO">
         SELECT
         da.id appId,
         dam.publish_level publishLevel,
         da.`code` appCode,
         da.`name` appName,
+        da.project_id projectId,
         dav.id versionId,
         dai.id instanceId,
         dai.status instanceStatus,
@@ -223,6 +289,16 @@
         <if test="appId != null">
             AND da.id = #{appId}
         </if>
+        <if test="envIds != null">
+            AND de.id in
+            <foreach collection="envIds" item="envIds" index="index"
+                     open="(" close=")" separator=",">
+                #{envIds}
+            </foreach>
+        </if>
+        <if test="envIds == null">
+            AND de.id is null
+        </if>
         ORDER BY
         da.last_update_date DESC,
         de.sequence ASC,
@@ -230,5 +306,79 @@
         dai.last_update_date DESC;
     </select>
 
+    <select id="listDeployTime" resultType="io.choerodon.devops.infra.dataobject.DeployDO">
+        select
+        dai.code appInstanceCode,
+        da.code appCode,
+        da.name appName,
+        dav.version appVersion,
+        cmd.creation_date,
+        cmd.status status,
+        cmd.error error,
+        cmd.last_update_date,
+        cmd.last_updated_by,
+        cmd.created_by
+        from devops_app_instance dai
+        JOIN devops_application da ON dai.app_id = da.id
+        JOIN devops_app_version dav ON dai.app_version_id = dav.id
+        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
+        where da.project_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
+        ('doing','operating')
+        <if test="startTime != null">
+            AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND cmd.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        <if test="envId != null">
+            AND de.id = #{envId}
+        </if>
+        <if test="appIds != null">
+            AND da.id in
+            <foreach collection="appIds" item="appIds" index="index"
+                     open="(" close=")" separator=",">
+                #{appIds}
+            </foreach>
+        </if>
+        order by cmd.last_update_date DESC
+    </select>
 
+    <select id="listDeployFrequency" resultType="io.choerodon.devops.infra.dataobject.DeployDO">
+        select
+        dai.code appInstanceCode,
+        da.code appCode,
+        da.name appName,
+        dav.version appVersion,
+        cmd.creation_date,
+        cmd.error error,
+        cmd.status status,
+        cmd.last_update_date,
+        cmd.last_updated_by,
+        cmd.created_by
+        from devops_app_instance dai
+        JOIN devops_application da ON dai.app_id = da.id
+        JOIN devops_app_version dav ON dai.app_version_id = dav.id
+        JOIN devops_env de ON de.id = dai.env_id
+        LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
+        where da.project_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
+        ('doing','operating')
+        <if test="startTime != null">
+            AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND cmd.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        <if test="appId != null">
+            AND da.id = #{appId}
+        </if>
+        <if test="envIds != null">
+            AND de.id in
+            <foreach collection="envIds" item="envIds" index="index"
+                     open="(" close=")" separator=",">
+                #{envIds}
+            </foreach>
+        </if>
+        order by cmd.creation_date DESC
+    </select>
 </mapper>

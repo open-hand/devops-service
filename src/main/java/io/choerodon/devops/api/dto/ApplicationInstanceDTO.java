@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 /**
  * Created by Zenger on 2018/4/12.
  */
@@ -18,13 +20,18 @@ public class ApplicationInstanceDTO {
     private String envCode;
     private String envName;
     private String status;
+    private Long commandId;
     private Long podCount;
     private Long podRunningCount;
     private String commandStatus;
     private String commandType;
+    private String commandVersion;
+    private Long commandVersionId;
     private String error;
     private Boolean isConnect;
     private Long objectVersionNumber;
+    private Long projectId;
+    private List<DeploymentDTO> deploymentDTOS;
 
     public Long getId() {
         return id;
@@ -184,5 +191,45 @@ public class ApplicationInstanceDTO {
 
     public void setConnect(Boolean connect) {
         isConnect = connect;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
+
+    public String getCommandVersion() {
+        return commandVersion;
+    }
+
+    public void setCommandVersion(String commandVersion) {
+        this.commandVersion = commandVersion;
+    }
+
+    public Long getCommandVersionId() {
+        return commandVersionId;
+    }
+
+    public void setCommandVersionId(Long commandVersionId) {
+        this.commandVersionId = commandVersionId;
+    }
+
+    public List<DeploymentDTO> getDeploymentDTOS() {
+        return deploymentDTOS;
+    }
+
+    public void setDeploymentDTOS(List<DeploymentDTO> deploymentDTOS) {
+        this.deploymentDTOS = deploymentDTOS;
     }
 }

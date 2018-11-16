@@ -6,38 +6,60 @@ import org.apache.commons.lang.StringUtils;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
+import io.choerodon.devops.domain.application.entity.PortMapE;
 
 /**
  * Created by Zenger on 2018/4/26.
  */
 public class DevopsServiceValidator {
 
-    //仅支持ip4地址
-    private static final String IP_PATTERN = "^(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|[1-9])\\."
-            + "(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|\\d)\\."
-            + "(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|\\d)\\."
-            + "(1\\d{2}|2[0-4]\\d|25[0-5]|[1-9]\\d|\\d)$";
+    private static final String NUM_0_255 = "(25[0-5]|2[0-4]\\d|[0-1]\\d{2}|[1-9]?\\d)";
+
+    // ip
+    private static final String IP_PATTERN =
+            String.format("(%s\\.%s\\.%s\\.%s)", NUM_0_255, NUM_0_255, NUM_0_255, NUM_0_255);
+    // ip,ip,ip ...
+    private static final String EXTERNAL_IP_PATTERN = String.format("(%s,)*%s", IP_PATTERN, IP_PATTERN);
 
     //service name
     private static final String NAME_PATTERN = "[a-z]([-a-z0-9]*[a-z0-9])?";
+
+    private DevopsServiceValidator() {
+    }
 
     /**
      * 参数校验
      */
     public static void checkService(DevopsServiceReqDTO devopsServiceReqDTO) {
-        if (devopsServiceReqDTO.getTargetPort() == null) {
-            throw new CommonException("error.targetPort.notPresent");
+        devopsServiceReqDTO.getPorts().forEach(DevopsServiceValidator::checkPorts);
+        checkName(devopsServiceReqDTO.getName());
+        if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())
+                && !Pattern.matches(EXTERNAL_IP_PATTERN, devopsServiceReqDTO.getExternalIp())) {
+            throw new CommonException("error.externalIp.notMatch");
+
         }
-        if (devopsServiceReqDTO.getPort() == null) {
-            throw new CommonException("error.port.notPresent");
-        }
-        if (!Pattern.matches(NAME_PATTERN, devopsServiceReqDTO.getName())) {
+    }
+
+    public static void checkName(String name) {
+        if (!Pattern.matches(NAME_PATTERN, name)) {
             throw new CommonException("error.network.name.notMatch");
         }
-        if (!StringUtils.isEmpty(devopsServiceReqDTO.getExternalIp())) {
-            if (!Pattern.matches(IP_PATTERN, devopsServiceReqDTO.getExternalIp())) {
-                throw new CommonException("error.externalIp.notMatch");
-            }
+    }
+
+    private static void checkPorts(PortMapE port) {
+        if (!checkPort(port.getPort())) {
+            throw new CommonException("error.port.illegal");
         }
+        if (!checkPort(Long.valueOf(port.getTargetPort()))) {
+            throw new CommonException("error.targetPort.illegal");
+        }
+        if (port.getNodePort() != null && !checkPort(port.getNodePort())) {
+            throw new CommonException("error.nodePort.illegal");
+        }
+
+    }
+
+    private static Boolean checkPort(Long port) {
+        return port >= 1 && port <= 65535;
     }
 }

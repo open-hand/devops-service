@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import org.springframework.http.HttpStatus;
+import feign.FeignException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
@@ -25,39 +26,54 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
 
     @Override
     public GitlabUserE createGitLabUser(String password, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
-        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.createGitLabUser(
-                password, projectsLimit, gitlabUserEvent);
-        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
-            return null;
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.createGitLabUser(
+                    password, projectsLimit, gitlabUserEvent);
+        } catch (FeignException e) {
+            throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
 
     @Override
     public GitlabUserE updateGitLabUser(Integer userId, Integer projectsLimit, GitlabUserEvent gitlabUserEvent) {
-        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.updateGitLabUser(
-                userId, projectsLimit, gitlabUserEvent);
-        if (responseEntity.getStatusCode() != HttpStatus.CREATED) {
-            return null;
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.updateGitLabUser(
+                    userId, projectsLimit, gitlabUserEvent);
+        } catch (FeignException e) {
+            throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
 
     @Override
     public void isEnabledGitlabUser(Integer userId) {
-        gitlabServiceClient.enabledUserByUserId(userId);
+
+        try {
+            gitlabServiceClient.enabledUserByUserId(userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
     public void disEnabledGitlabUser(Integer userId) {
-        gitlabServiceClient.disEnabledUserByUserId(userId);
+        try {
+            gitlabServiceClient.disEnabledUserByUserId(userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 
     @Override
     public GitlabUserE getGitlabUserByUserId(Integer userId) {
-        ResponseEntity<UserDO> responseEntity = gitlabServiceClient.queryUserByUserId(userId);
-        if (responseEntity.getStatusCode() != HttpStatus.OK) {
-            return null;
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.queryUserByUserId(userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }

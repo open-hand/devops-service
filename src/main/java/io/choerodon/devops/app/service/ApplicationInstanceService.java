@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
@@ -49,17 +50,17 @@ public interface ApplicationInstanceService {
      * 部署应用
      *
      * @param applicationDeployDTO 部署信息
-     * @return boolean
+     * @return ApplicationInstanceDTO
      */
-    Boolean create(ApplicationDeployDTO applicationDeployDTO);
+    ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO);
 
     /**
-     * 获取版本特性
+     * 部署应用,GitOps
      *
-     * @param appInstanceId 实例id
-     * @return list of versionFeaturesDTO
+     * @param applicationDeployDTO 部署信息
+     * @return ApplicationInstanceDTO
      */
-    List<VersionFeaturesDTO> queryVersionFeatures(Long appInstanceId);
+    ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId);
 
     /**
      * 查询运行中的实例
@@ -73,15 +74,14 @@ public interface ApplicationInstanceService {
     List<AppInstanceCodeDTO> listByOptions(Long projectId, Long appId, Long appVersionId, Long envId);
 
     /**
-     * 实例升级
+     * 环境下某应用运行中或失败的实例
      *
-     * @param instanceId   实例id
-     * @param repoURL      仓库地址
-     * @param chartName    chart名
-     * @param chartVersion chart版本
-     * @param values       部署参数
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param envId     环境id
+     * @return list of AppInstanceCodeDTO
      */
-    void instanceUpgrade(Long instanceId, String repoURL, String chartName, String chartVersion, String values);
+    List<AppInstanceCodeDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
     /**
      * 实例停止
@@ -97,6 +97,14 @@ public interface ApplicationInstanceService {
      */
     void instanceStart(Long instanceId);
 
+
+    /**
+     * 实例重新部署
+     *
+     * @param instanceId 实例id
+     */
+    void instanceReStart(Long instanceId);
+
     /**
      * 实例删除
      *
@@ -104,13 +112,14 @@ public interface ApplicationInstanceService {
      */
     void instanceDelete(Long instanceId);
 
+
     /**
-     * 实例回滚
+     * 实例删除
      *
-     * @param version    版本
      * @param instanceId 实例id
      */
-    void instanceRollback(Integer version, Long instanceId);
+    void instanceDeleteByGitOps(Long instanceId);
+
 
     /**
      * 获取部署 Value
@@ -119,4 +128,44 @@ public interface ApplicationInstanceService {
      * @return string
      */
     ReplaceResult queryValue(Long instanceId);
+
+    /**
+     * 校验values
+     *
+     * @param replaceResult values对象
+     * @return List
+     */
+    List<ErrorLineDTO> formatValue(ReplaceResult replaceResult);
+
+    /**
+     * 获取预览 Value
+     *
+     * @param replaceResult yaml
+     * @param appVersionId  版本Id
+     * @return ReplaceResult
+     */
+    ReplaceResult previewValues(ReplaceResult replaceResult, Long appVersionId);
+
+
+    /**
+     * 环境总览实例查询
+     *
+     * @param projectId 项目id
+     * @param envId     环境Id
+     * @param params    搜索参数
+     * @return DevopsEnvPreviewDTO
+     */
+    DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
+
+    ReplaceResult getReplaceResult(String versionValue, String deployValue);
+
+    ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
+
+    DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
+
+    DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
+
+    Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
+
+    Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
 }

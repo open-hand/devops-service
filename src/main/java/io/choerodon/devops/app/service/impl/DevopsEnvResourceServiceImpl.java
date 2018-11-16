@@ -1,11 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.devops.api.dto.*;
@@ -23,42 +23,43 @@ import io.choerodon.devops.infra.common.util.enums.ResourceType;
 @Service
 public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
 
+    private static final String LINE_SEPARATOR = "line.separator";
+    private static final String NONE_LABEL = "<none>";
     private static JSON json = new JSON();
-
+    @Autowired
     private DevopsEnvResourceRepository devopsEnvResourceRepository;
+    @Autowired
     private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
+    @Autowired
     private DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
+    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
     private DevopsIngressRepository devopsIngressRepository;
-
-    public DevopsEnvResourceServiceImpl(DevopsEnvResourceRepository devopsEnvResourceRepository,
-                                        DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository,
-                                        DevopsEnvCommandLogRepository devopsEnvCommandLogRepository,
-                                        DevopsServiceRepository devopsServiceRepository,
-                                        DevopsIngressRepository devopsIngressRepository,
-                                        DevopsEnvCommandRepository devopsEnvCommandRepository) {
-        this.devopsEnvCommandLogRepository = devopsEnvCommandLogRepository;
-        this.devopsEnvResourceDetailRepository = devopsEnvResourceDetailRepository;
-        this.devopsEnvResourceRepository = devopsEnvResourceRepository;
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.devopsIngressRepository = devopsIngressRepository;
-    }
+    @Autowired
+    private DevopsCommandEventRepository devopsCommandEventRepository;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
 
     @Override
     public DevopsEnvResourceDTO listResources(Long instanceId) {
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
         List<DevopsEnvResourceE> devopsEnvResourceES =
                 devopsEnvResourceRepository.listByInstanceId(instanceId);
         DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
         if (devopsEnvResourceES == null) {
             return devopsEnvResourceDTO;
         }
-        devopsEnvResourceES.parallelStream().forEach(devopsInstanceResourceE -> {
+        devopsEnvResourceES.forEach(devopsInstanceResourceE -> {
             DevopsEnvResourceDetailE devopsEnvResourceDetailE =
                     devopsEnvResourceDetailRepository.query(
                             devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
             ResourceType resourceType = ResourceType.forString(devopsInstanceResourceE.getKind());
+            if (resourceType == null) {
+                resourceType = ResourceType.forString("MissType");
+            }
             switch (resourceType) {
                 case POD:
                     V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Pod.class);
@@ -73,13 +74,13 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 case SERVICE:
                     V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
                             V1Service.class);
-                    DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndNamespace(
-                            devopsInstanceResourceE.getName(), v1Service.getMetadata().getNamespace());
+                    DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                            devopsInstanceResourceE.getName(), applicationInstanceE.getDevopsEnvironmentE().getId());
                     if (devopsServiceE != null) {
                         List<String> domainNames =
                                 devopsIngressRepository.queryIngressNameByServiceId(
                                         devopsServiceE.getId());
-                        domainNames.parallelStream().forEach(domainName -> {
+                        domainNames.stream().forEach(domainName -> {
                             DevopsEnvResourceE devopsEnvResourceE1 =
                                     devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
                                             null,
@@ -98,6 +99,14 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     }
                     addServiceToResource(devopsEnvResourceDTO, v1Service);
                     break;
+                case INGRESS:
+                    if (devopsInstanceResourceE.getApplicationInstanceE() != null) {
+                        V1beta1Ingress v1beta1Ingress = json.deserialize(
+                                devopsEnvResourceDetailE.getMessage(),
+                                V1beta1Ingress.class);
+                        addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
+                    }
+                    break;
                 case REPLICASET:
                     V1beta2ReplicaSet v1beta2ReplicaSet = json.deserialize(
                             devopsEnvResourceDetailE.getMessage(),
@@ -114,42 +123,80 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public List<InstanceStageDTO> listStages(Long instanceId) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getObjectType(), instanceId);
+                .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
         List<DevopsEnvResourceE> devopsEnvResourceES =
                 devopsEnvResourceRepository.listJobByInstanceId(instanceId);
         List<InstanceStageDTO> instanceStageDTOS = new ArrayList<>();
-        devopsEnvResourceES.stream().forEach(devopsInstanceResourceE -> {
+        devopsEnvResourceES.forEach(devopsInstanceResourceE -> {
             if (devopsInstanceResourceE.getKind().equals(ResourceType.JOB.getType())) {
                 DevopsEnvResourceDetailE devopsEnvResourceDetailE =
                         devopsEnvResourceDetailRepository.query(
                                 devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
                 V1Job v1Job = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Job.class);
                 InstanceStageDTO instanceStageDTO = new InstanceStageDTO();
-                instanceStageDTO.setStageName(v1Job.getMetadata().getName());
-                instanceStageDTO.setWeight(devopsInstanceResourceE.getWeight());
-                if (v1Job.getStatus() != null) {
-                    if (v1Job.getStatus().getSucceeded() != null) {
-                        if (v1Job.getStatus().getSucceeded() == 1) {
-                            instanceStageDTO.setStatus("success");
-                            instanceStageDTO.setStageTime(
-                                    getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
-                                            new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime())));
-                        } else {
-                            instanceStageDTO.setStatus("fail");
-                        }
-                    }
-                }
+                getInstanceStage(v1Job, instanceStageDTO, devopsInstanceResourceE.getWeight());
                 instanceStageDTOS.add(instanceStageDTO);
             }
         });
         List<DevopsEnvCommandLogE> devopsEnvCommandLogES = devopsEnvCommandLogRepository
                 .queryByDeployId(devopsEnvCommandE.getId());
-        for (int i = 0; i < devopsEnvCommandLogES.size(); i++) {
-            DevopsEnvCommandLogE devopsEnvCommandLogE = devopsEnvCommandLogES.get(i);
+        List<String> results = new ArrayList<>();
+        getDevopsCommandEvent(devopsEnvCommandE, results);
+        for (int i = 0; i < results.size(); i++) {
+            String log = "";
+            if (devopsEnvCommandLogES.size() - i > 0) {
+                log = devopsEnvCommandLogES.get(i).getLog();
+            }
             InstanceStageDTO instanceStageDTO = instanceStageDTOS.get(i);
-            instanceStageDTO.setLog(devopsEnvCommandLogE.getLog());
+            instanceStageDTO.setLog(results.get(i) + System.getProperty(LINE_SEPARATOR)
+                    + System.getProperty(LINE_SEPARATOR) + log);
         }
         return instanceStageDTOS;
+    }
+
+    private void getInstanceStage(V1Job v1Job, InstanceStageDTO instanceStageDTO, Long weight) {
+        instanceStageDTO.setStageName(v1Job.getMetadata().getName());
+        instanceStageDTO.setWeight(weight);
+        if (v1Job.getStatus() != null
+                && v1Job.getStatus().getSucceeded() != null) {
+            if (v1Job.getStatus().getSucceeded() == 1) {
+                instanceStageDTO.setStatus("success");
+                if (v1Job.getStatus().getStartTime() != null
+                        && v1Job.getStatus().getCompletionTime() != null) {
+                    instanceStageDTO.setStageTime(
+                            getStageTime(new Timestamp(v1Job.getStatus().getStartTime().toDate().getTime()),
+                                    new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime()))
+                    );
+                }
+            } else {
+                instanceStageDTO.setStatus("fail");
+            }
+        }
+    }
+
+
+    private void getDevopsCommandEvent(DevopsEnvCommandE devopsEnvCommandE, List<String> results) {
+        List<DevopsCommandEventE> devopsCommandEventES = devopsCommandEventRepository
+                .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
+        devopsCommandEventES.sort(Comparator.comparing(DevopsCommandEventE::getId));
+        LinkedHashMap<String, List<DevopsCommandEventE>> event = new LinkedHashMap<>();
+        for (DevopsCommandEventE devopsCommandEventE : devopsCommandEventES) {
+            if (!event.containsKey(devopsCommandEventE.getName())) {
+                List<DevopsCommandEventE> commandEventES = new ArrayList<>();
+                commandEventES.add(devopsCommandEventE);
+                event.put(devopsCommandEventE.getName(), commandEventES);
+            } else {
+                event.get(devopsCommandEventE.getName()).add(devopsCommandEventE);
+            }
+        }
+        for (Map.Entry<String, List<DevopsCommandEventE>> entry : event.entrySet()) {
+            String[] a = {""};
+            entry.getValue().stream().forEach(t -> {
+                a[0] += t.getMessage();
+                a[0] += System.getProperty(LINE_SEPARATOR);
+            });
+            results.add(a[0]);
+        }
     }
 
     /**
@@ -158,17 +205,19 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
      * @param devopsEnvResourceDTO 实例资源参数
      * @param v1Pod                pod对象
      */
-    public void addPodToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1Pod v1Pod) {
+    private void addPodToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1Pod v1Pod) {
         PodDTO podDTO = new PodDTO();
         podDTO.setName(v1Pod.getMetadata().getName());
         podDTO.setDesire(TypeUtil.objToLong(v1Pod.getSpec().getContainers().size()));
-        Long ready = 0L;
+        long ready = 0L;
         Long restart = 0L;
-        for (V1ContainerStatus v1ContainerStatus : v1Pod.getStatus().getContainerStatuses()) {
-            if (v1ContainerStatus.isReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
-                ready = ready + 1;
+        if (v1Pod.getStatus().getContainerStatuses() != null) {
+            for (V1ContainerStatus v1ContainerStatus : v1Pod.getStatus().getContainerStatuses()) {
+                if (v1ContainerStatus.isReady() && v1ContainerStatus.getState().getRunning().getStartedAt() != null) {
+                    ready = ready + 1;
+                }
+                restart = restart + v1ContainerStatus.getRestartCount();
             }
-            restart = restart + v1ContainerStatus.getRestartCount();
         }
         podDTO.setReady(ready);
         podDTO.setStatus(K8sUtil.changePodStatus(v1Pod));
@@ -205,16 +254,21 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         serviceDTO.setName(v1Service.getMetadata().getName());
         serviceDTO.setType(v1Service.getSpec().getType());
         if (v1Service.getSpec().getClusterIP().length() == 0) {
-            serviceDTO.setClusterIp("<none>");
+            serviceDTO.setClusterIp(NONE_LABEL);
         } else {
             serviceDTO.setClusterIp(v1Service.getSpec().getClusterIP());
         }
         serviceDTO.setExternalIp(K8sUtil.getServiceExternalIp(v1Service));
         String port = K8sUtil.makePortString(v1Service.getSpec().getPorts());
         if (port.length() == 0) {
-            port = "<none>";
+            port = NONE_LABEL;
+        }
+        String targetPort = K8sUtil.makeTargetPortString(v1Service.getSpec().getPorts());
+        if (targetPort.length() == 0) {
+            targetPort = NONE_LABEL;
         }
         serviceDTO.setPort(port);
+        serviceDTO.setTargetPort(targetPort);
         serviceDTO.setAge(v1Service.getMetadata().getCreationTimestamp().toString());
         devopsEnvResourceDTO.getServiceDTOS().add(serviceDTO);
     }
@@ -278,7 +332,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         hour = (diff / (60 * 60 * 1000) - day * 24);
         min = ((diff / (60 * 1000)) - day * 24 * 60 - hour * 60);
         sec = (diff / 1000 - day * 24 * 60 * 60 - hour * 60 * 60 - min * 60);
-        Long[] times = {day, hour, min, sec};
-        return times;
+        return new Long[]{day, hour, min, sec};
     }
 }

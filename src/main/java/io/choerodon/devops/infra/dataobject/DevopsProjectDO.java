@@ -4,67 +4,49 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 /**
  * Created by younger on 2018/3/29.
  */
 @ModifyAudit
 @Table(name = "devops_project")
-public class DevopsProjectDO {
+public class DevopsProjectDO extends AuditDomain {
 
     @Id
-    private Long id;
-    private Integer gitlabGroupId;
-
-    private String gitlabUuid;
-    private String harborUuid;
-    private String memberUuid;
+    private Long iamProjectId;
+    private Long devopsAppGroupId;
+    private Long devopsEnvGroupId;
 
     public DevopsProjectDO() {
 
     }
 
-    public DevopsProjectDO(Long id) {
-        this.id = id;
+    public DevopsProjectDO(Long iamProjectId) {
+        this.iamProjectId = iamProjectId;
     }
 
-    public Long getId() {
-        return id;
+    public Long getIamProjectId() {
+        return iamProjectId;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setIamProjectId(Long iamProjectId) {
+        this.iamProjectId = iamProjectId;
     }
 
-    public Integer getGitlabGroupId() {
-        return gitlabGroupId;
+    public Long getDevopsAppGroupId() {
+        return devopsAppGroupId;
     }
 
-    public void setGitlabGroupId(Integer gitlabGroupId) {
-        this.gitlabGroupId = gitlabGroupId;
+    public void setDevopsAppGroupId(Long devopsAppGroupId) {
+        this.devopsAppGroupId = devopsAppGroupId;
     }
 
-    public String getGitlabUuid() {
-        return gitlabUuid;
+    public Long getDevopsEnvGroupId() {
+        return devopsEnvGroupId;
     }
 
-    public void setGitlabUuid(String gitlabUuid) {
-        this.gitlabUuid = gitlabUuid;
-    }
-
-    public String getHarborUuid() {
-        return harborUuid;
-    }
-
-    public void setHarborUuid(String harborUuid) {
-        this.harborUuid = harborUuid;
-    }
-
-    public String getMemberUuid() {
-        return memberUuid;
-    }
-
-    public void setMemberUuid(String memberUuid) {
-        this.memberUuid = memberUuid;
+    public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
+        this.devopsEnvGroupId = devopsEnvGroupId;
     }
 }

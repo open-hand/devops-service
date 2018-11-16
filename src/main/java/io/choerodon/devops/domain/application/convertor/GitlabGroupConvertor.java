@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 
 /**
@@ -17,6 +18,7 @@ public class GitlabGroupConvertor implements ConvertorI<GitlabGroupE, GroupDO, O
     public GitlabGroupE doToEntity(GroupDO groupDO) {
         GitlabGroupE gitlabGroupE = new GitlabGroupE();
         BeanUtils.copyProperties(groupDO, gitlabGroupE);
+        gitlabGroupE.setDevopsAppGroupId(TypeUtil.objToLong(groupDO.getId()));
         return gitlabGroupE;
     }
 

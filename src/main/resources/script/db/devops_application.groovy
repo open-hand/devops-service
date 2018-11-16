@@ -27,4 +27,32 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         addUniqueConstraint(tableName: 'devops_application',
                 constraintName: 'uk_project_id_name', columnNames: 'project_id,name')
     }
+
+    changeSet(author: 'younger', id: '2018-07-11-add-column') {
+        addColumn(tableName: 'devops_application') {
+            column(name: 'hook_id', type: 'BIGINT UNSIGNED', remarks: 'gitlab webhook', afterColumn: 'gitlab_project_id')
+        }
+
+    }
+
+    changeSet(author: 'younger', id: '2018-09-03-modify-UniqueConstraint') {
+        dropUniqueConstraint(constraintName: "uk_project_id_name",tableName: "devops_application")
+        addUniqueConstraint(tableName: 'devops_application',
+                constraintName: 'devops_app_uk_project_id_name', columnNames: 'project_id,name')
+    }
+
+    changeSet(author: 'younger', id: '2018-09-03-modify-index') {
+        dropIndex(indexName: "idx_project_id",tableName: "devops_application")
+
+        createIndex(indexName: "devops_app_idx_project_id", tableName: "devops_application") {
+            column(name: "project_id")
+        }
+    }
+
+    changeSet(author: 'crockitwood', id: '2018-09-29-add-column') {
+        addColumn(tableName: 'devops_application') {
+            column(name: 'is_failed', type: 'TINYINT UNSIGNED', remarks: '是否创建失败', afterColumn: 'is_synchro')
+        }
+
+    }
 }

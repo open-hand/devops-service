@@ -22,7 +22,8 @@ public interface DevopsServiceRepository {
 
     Boolean checkName(Long projectId, Long envId, String name);
 
-    Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam);
+    Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId,
+                                                 PageRequest pageRequest, String searchParam);
 
     List<DevopsServiceV> listDevopsService(Long envId);
 
@@ -30,5 +31,15 @@ public interface DevopsServiceRepository {
 
     List<Long> selectDeployedEnv();
 
-    DevopsServiceE selectByNameAndNamespace(String name, String namespace);
+    DevopsServiceE selectByNameAndEnvId(String name, Long envId);
+
+    Boolean checkEnvHasService(Long envId);
+
+    List<DevopsServiceE> list();
+
+    List<DevopsServiceE> selectByEnvId(Long envId);
+
+    void setLablesToNull(Long id);
+
+    void deleteServiceAndInstanceByEnvId(Long envId);
 }

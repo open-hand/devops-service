@@ -19,6 +19,14 @@ spring:
         percentage: 1.0
   redis:
     host: localhost
+  http:
+    encoding:
+     charset: UTF-8
+     force: true
+     enabled: true
+    multipart:
+     max-file-size: 30MB
+     max-request-size: 30MB
 services:
   harbor:
     baseUrl: "harbor.example.com"
@@ -26,10 +34,20 @@ services:
     password: "123456"
   gitlab:
     url: "gitlab.example.com"
+    sshUrl: "gitlab.example.com"
     password: 123456
     projectLimit: 100
   helm:
     url: "helm.example.com"
+  sonarqube:
+    url: "http://sonarqube.example.com"
+  gateway:
+    url: "http://api.example.com"
+template:
+  version:
+    MicroService: 0.7.0
+    MicroServiceFront: 0.7.0
+    JavaLib: 0.7.0
 choerodon:
   event:
     consumer:
@@ -60,7 +78,7 @@ eureka:
 security:
   basic:
       enabled: false
-  ignored: /ci,/v2/api-docs,/agent/**,/ws/**
+  ignored: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:
@@ -77,3 +95,9 @@ feign:
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
+cert:
+  testCert: false # 证书是否为测试证书
+logging:
+  level:
+    io.choerodon.event.consumer: debug
+  config: classpath:logback-spring.xml

@@ -29,4 +29,21 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     public UserAttrE queryById(Long id) {
         return ConvertHelper.convert(userAttrMapper.selectByPrimaryKey(id), UserAttrE.class);
     }
+
+    @Override
+    public Long queryUserIdByGitlabUserId(Long gitLabUserId) {
+        UserAttrDO userAttrDO = new UserAttrDO();
+        userAttrDO.setGitlabUserId(gitLabUserId);
+        if (gitLabUserId == null) {
+            return null;
+        }
+        userAttrDO = userAttrMapper.selectOne(userAttrDO);
+        if(userAttrDO==null) {
+            return null;
+        }else {
+            return userAttrDO.getIamUserId();
+
+        }
+    }
+
 }

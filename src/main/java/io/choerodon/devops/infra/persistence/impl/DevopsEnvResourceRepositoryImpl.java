@@ -77,7 +77,22 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
 
     @Override
     public List<DevopsEnvResourceE> listByEnvAndType(Long envId, String type) {
-        return ConvertHelper.convertList(devopsEnvResourceMapper.listByEnvAndType(envId, type), DevopsEnvResourceE.class);
+        return ConvertHelper.convertList(
+                devopsEnvResourceMapper.listByEnvAndType(envId, type), DevopsEnvResourceE.class);
+    }
+
+    @Override
+    public DevopsEnvResourceE queryLatestJob(String kind, String name) {
+        return ConvertHelper.convert(devopsEnvResourceMapper.queryLatestJob(kind, name), DevopsEnvResourceE.class);
+    }
+
+    @Override
+    public void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId) {
+        DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO();
+        devopsEnvResourceDO.setKind(kind);
+        devopsEnvResourceDO.setName(name);
+        devopsEnvResourceDO.setAppInstanceId(instanceId);
+        devopsEnvResourceMapper.delete(devopsEnvResourceDO);
     }
 
 }

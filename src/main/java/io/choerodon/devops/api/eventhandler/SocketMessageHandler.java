@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
-import io.choerodon.devops.app.service.ServiceMsgHandlerService;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
@@ -24,14 +23,11 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
     private static final Logger logger = LoggerFactory.getLogger(SocketMessageHandler.class);
 
     private DeployMsgHandlerService deployMsgHandlerService;
-    private ServiceMsgHandlerService serviceMsgHandlerService;
 
 
     @Autowired
-    public SocketMessageHandler(DeployMsgHandlerService deployMsgHandlerService,
-                                ServiceMsgHandlerService serviceMsgHandlerService) {
+    public SocketMessageHandler(DeployMsgHandlerService deployMsgHandlerService) {
         this.deployMsgHandlerService = deployMsgHandlerService;
-        this.serviceMsgHandlerService = serviceMsgHandlerService;
     }
 
 
@@ -45,106 +41,154 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             logger.debug(msg.toString());
         }
         switch (helmType) {
-            case HelmReleasePreInstall:
-                deployMsgHandlerService.handlerPreInstall(msg.getPayload());
+            case HELM_RELEASE_PRE_INSTALL:
+                deployMsgHandlerService.handlerPreInstall(
+                        msg.getKey(),
+                        msg.getPayload(),
+                        TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmInstallRelease:
-                deployMsgHandlerService.handlerReleaseInstall(msg.getPayload());
+            case HELM_INSTALL_RELEASE:
+                deployMsgHandlerService.handlerReleaseInstall(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseUpgrade:
-                deployMsgHandlerService.handlerReleaseUpgrade(msg.getPayload());
+            case HELM_RELEASE_UPGRADE:
+                deployMsgHandlerService.handlerReleaseUpgrade(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
+                        TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.RUNNING.getStatus(),
-                        CommandStatus.SUCCESS.getCommandStatus(),
+                        CommandStatus.SUCCESS.getStatus(),
                         "");
                 break;
-            case HelmReleaseRollback:
+            case HELM_RELEASE_ROLLBACK:
                 break;
-            case HelmReleaseStart:
+            case HELM_RELEASE_START:
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
+                        TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.RUNNING.getStatus(),
-                        CommandStatus.SUCCESS.getCommandStatus(),
+                        CommandStatus.SUCCESS.getStatus(),
                         "");
                 break;
-            case HelmReleaseStop:
+            case HELM_RELEASE_STOP:
                 deployMsgHandlerService.updateInstanceStatus(
                         KeyParseTool.getResourceName(msg.getKey()),
-                        InstanceStatus.STOPED.getStatus(),
-                        CommandStatus.SUCCESS.getCommandStatus(),
+                        TypeUtil.objToLong(msg.getClusterId()),
+                        InstanceStatus.STOPPED.getStatus(),
+                        CommandStatus.SUCCESS.getStatus(),
                         "");
                 break;
-            case HelmReleaseDelete:
-                deployMsgHandlerService.updateInstanceStatus(
-                        KeyParseTool.getResourceName(msg.getKey()),
-                        InstanceStatus.DELETED.getStatus(),
-                        CommandStatus.SUCCESS.getCommandStatus(),
-                        "");
+            case HELM_RELEASE_DELETE:
+                deployMsgHandlerService.helmReleaseDelete(KeyParseTool.getResourceName(msg.getKey()), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleasePreUpgrade:
-                deployMsgHandlerService.helmReleasePreUpgrade(msg.getPayload());
+            case HELM_RELEASE_PRE_UPGRADE:
+                deployMsgHandlerService.helmReleasePreUpgrade(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NetworkService:
-                serviceMsgHandlerService.handlerServiceCreateMessage(msg.getKey(), msg.getPayload());
+            case NETWORK_SERVICE:
+                deployMsgHandlerService.handlerServiceCreateMessage(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NetworkIngress:
-                deployMsgHandlerService.handlerDomainCreateMessage(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getEnvId()));
+            case NETWORK_INGRESS:
+                deployMsgHandlerService.handlerDomainCreateMessage(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NetworkIngressDelete:
+            case NETWORK_INGRESS_DELETE:
                 break;
-            case ResourceUpdate:
-                deployMsgHandlerService.resourceUpdate(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+            case RESOURCE_UPDATE:
+                deployMsgHandlerService.resourceUpdate(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case ResourceDelete:
-                deployMsgHandlerService.resourceDelete(TypeUtil.objToLong(msg.getEnvId()), msg.getKey());
+            case RESOURCE_DELETE:
+                deployMsgHandlerService.resourceDelete(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseHookLogs:
-                deployMsgHandlerService.helmReleaseHookLogs(msg.getKey(), msg.getPayload());
+            case HELM_RELEASE_HOOK_LOGS:
+                deployMsgHandlerService.helmReleaseHookLogs(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NetworkServiceUpdate:
-                deployMsgHandlerService.netWorkUpdate(msg.getKey(), msg.getPayload());
+            case NETWORK_SERVICE_UPDATE:
+                deployMsgHandlerService.netWorkUpdate(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseDeleteFailed:
-                deployMsgHandlerService.helmReleaseDeleteFail(msg.getKey(), msg.getPayload());
+            case HELM_RELEASE_DELETE_FAILED:
+                deployMsgHandlerService.helmReleaseDeleteFail(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseInstallFailed:
-                deployMsgHandlerService.helmReleaseInstallFail(msg.getKey(), msg.getPayload());
+            case HELM_RELEASE_INSTALL_FAILED:
+                deployMsgHandlerService.helmReleaseInstallFail(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseStartFailed:
-                deployMsgHandlerService.helmReleaseStartFail(msg.getKey(), msg.getPayload());
+            case HELM_RELEASE_START_FAILED:
+                deployMsgHandlerService.helmReleaseStartFail(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseStopFailed:
-                deployMsgHandlerService.helmReleaeStopFail(msg.getKey(), msg.getPayload());
+            case HELM_RELEASE_STOP_FAILED:
+                deployMsgHandlerService.helmReleaeStopFail(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseRollbackFailed:
+            case HELM_RELEASE_ROLLBACK_FAILED:
                 deployMsgHandlerService.helmReleaseRollBackFail(msg.getKey(), msg.getPayload());
                 break;
-            case HelmReleaseUpgradeFailed:
-                deployMsgHandlerService.helmReleaseUpgradeFail(msg.getKey(), msg.getPayload());
+            case HELM_RELEASE_UPGRADE_FAILED:
+                deployMsgHandlerService.helmReleaseUpgradeFail(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HelmReleaseGetContent:
-                deployMsgHandlerService.helmReleaseGetContent(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+            case HELM_RELEASE_GET_CONTENT:
+                deployMsgHandlerService.helmReleaseGetContent(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case CommandNotSend:
+            case COMMAND_NOT_SEND:
                 deployMsgHandlerService.commandNotSend(msg.getCommandId(), msg.getPayload());
                 break;
-            case NetworkServiceFailed:
-                deployMsgHandlerService.netWorkServiceFail(msg.getKey(), msg.getPayload());
+            case NETWORK_SERVICE_FAILED:
+                deployMsgHandlerService.netWorkServiceFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NetworkIngressFailed:
-                deployMsgHandlerService.netWorkIngressFail(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+            case NETWORK_INGRESS_FAILED:
+                deployMsgHandlerService.netWorkIngressFail(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NetworkServiceDeleteFailed:
-                deployMsgHandlerService.netWorkServiceDeleteFail(msg.getKey(), msg.getPayload());
+            case NETWORK_SERVICE_DELETE_FAILED:
+                deployMsgHandlerService.netWorkServiceDeleteFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NetworkIngressDeleteFailed:
-                deployMsgHandlerService.netWorkIngressDeleteFail(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+            case NETWORK_INGRESS_DELETE_FAILED:
+                deployMsgHandlerService.netWorkIngressDeleteFail(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case ResourceSync:
-                deployMsgHandlerService.resourceSync(msg.getKey(), TypeUtil.objToLong(msg.getEnvId()), msg.getPayload());
+            case RESOURCE_SYNC:
+                deployMsgHandlerService.resourceSync(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case JOB_EVENT:
+                deployMsgHandlerService.jobEvent(msg.getPayload());
+                break;
+            case RELEASE_POD_EVENT:
+                deployMsgHandlerService.releasePodEvent(
+                        msg.getPayload());
+                break;
+            case GIT_OPS_SYNC_EVENT:
+                deployMsgHandlerService.gitOpsSyncEvent(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case STATUS_SYNC_EVENT:
+                deployMsgHandlerService.gitOpsCommandSyncEvent(msg.getKey(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case CERT_ISSUED:
+                deployMsgHandlerService.certIssued(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case CERT_FAILED:
+                deployMsgHandlerService.certFailed(
+                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case STATUS_SYNC:
+                deployMsgHandlerService.gitOpsCommandSyncEventResult(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case NAMESPACE_UPDATE:
+                deployMsgHandlerService.updateNamespaces(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case UPGRADE_CLUSTER:
+                deployMsgHandlerService.upgradeCluster(msg.getKey(), msg.getPayload());
                 break;
             default:
+                msg.setDispatch(false);
                 break;
         }
 

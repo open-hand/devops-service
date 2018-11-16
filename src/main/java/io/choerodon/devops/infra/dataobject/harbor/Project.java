@@ -6,26 +6,23 @@ public class Project {
     @JsonProperty("project_name")
     private String name;
     @JsonProperty("public")
-    private Integer _public;
+    private Integer isPublic;
 
-    public Project(String name, Integer _public) {
+    public Project(String name, Integer isPublic) {
         this.name = name;
-        this._public = _public;
-    }
-
-    public Project() {
-    }
-
-    public Integer get_public() {
-        return _public;
-    }
-
-    public void set_public(Integer _public) {
-        this._public = _public;
+        this.isPublic = isPublic;
     }
 
     public String getName() {
         return name;
+    }
+
+    public Integer getIsPublic() {
+        return isPublic;
+    }
+
+    public void setIsPublic(Integer isPublic) {
+        this.isPublic = isPublic;
     }
 
     public void setName(String name) {

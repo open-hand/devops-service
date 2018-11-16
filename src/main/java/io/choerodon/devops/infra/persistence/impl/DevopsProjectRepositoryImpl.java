@@ -5,8 +5,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 
@@ -25,7 +27,11 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
 
     @Override
     public GitlabGroupE queryDevopsProject(Long projectId) {
-        return ConvertHelper.convert(devopsProjectMapper.selectByPrimaryKey(projectId), GitlabGroupE.class);
+        DevopsProjectDO devopsProjectDO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        if (devopsProjectDO.getDevopsAppGroupId() == null || devopsProjectDO.getDevopsEnvGroupId() == null) {
+            throw new CommonException("error.gitlab.groupId.select");
+        }
+        return ConvertHelper.convert(devopsProjectDO, GitlabGroupE.class);
     }
 
     @Override
@@ -34,24 +40,10 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     }
 
     @Override
-    public Boolean checkGroupExist(String uuid) {
+    public GitlabGroupE queryByEnvGroupId(Integer envGroupId) {
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setGitlabUuid(uuid);
-        return devopsProjectMapper.selectCount(devopsProjectDO) > 0;
-    }
-
-    @Override
-    public Boolean checkHarborExist(String uuid) {
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setHarborUuid(uuid);
-        return devopsProjectMapper.selectCount(devopsProjectDO) > 0;
-    }
-
-    @Override
-    public Boolean checkMemberExist(String uuid) {
-        DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
-        devopsProjectDO.setMemberUuid(uuid);
-        return devopsProjectMapper.selectCount(devopsProjectDO) > 0;
+        devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(envGroupId));
+        return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), GitlabGroupE.class);
     }
 
     @Override
@@ -63,6 +55,8 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
 
     @Override
     public void updateProjectAttr(DevopsProjectDO devopsProjectDO) {
+        DevopsProjectDO oldDevopsProjectDO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDO.getIamProjectId());
+        devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
         devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);
     }
 }

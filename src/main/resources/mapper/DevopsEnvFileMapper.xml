@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsEnvFileMapper">
+    <select id="queryLatestByEnvAndPath" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvFileDO">
+        SELECT
+        d.*
+        FROM
+        devops_env_file d
+        WHERE
+        d.env_id = #{envId} and d.file_path = #{filePath}
+        ORDER BY d.id DESC LIMIT 1
+    </select>
+
+    <select id="queryByEnvAndPathAndCommits" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvFileDO">
+        SELECT
+        d.*
+        FROM
+        devops_env_file d
+        WHERE
+        d.env_id = #{envId} and d.file_path = #{filePath}
+        and d.commit_sha in
+        <foreach collection="commits" index="index" item="commit" open="(" separator="," close=")">
+            #{commit}
+        </foreach>
+    </select>
+</mapper>

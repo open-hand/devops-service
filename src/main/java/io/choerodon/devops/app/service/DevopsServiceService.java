@@ -21,6 +21,16 @@ public interface DevopsServiceService {
      */
     Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO);
 
+
+    /**
+     * 部署网络,GitOps
+     *
+     * @param projectId           项目id
+     * @param devopsServiceReqDTO 部署网络参数
+     * @return Boolean
+     */
+    Boolean insertDevopsServiceByGitOps(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
+
     /**
      * 更新网络
      *
@@ -32,11 +42,30 @@ public interface DevopsServiceService {
     Boolean updateDevopsService(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO);
 
     /**
+     * 更新网络
+     *
+     * @param projectId           项目id
+     * @param id                  网络Id
+     * @param devopsServiceReqDTO 部署网络参数
+     * @return boolean
+     */
+    Boolean updateDevopsServiceByGitOps(Long projectId, Long id, DevopsServiceReqDTO devopsServiceReqDTO, Long userId);
+
+
+    /**
      * 删除网络
      *
      * @param id 网络ID
      */
     void deleteDevopsService(Long id);
+
+
+    /**
+     * 删除网络
+     *
+     * @param id 网络ID
+     */
+    void deleteDevopsServiceByGitOps(Long id);
 
     /**
      * 检查网络唯一性
@@ -48,15 +77,6 @@ public interface DevopsServiceService {
      */
     Boolean checkName(Long projectId, Long envId, String name);
 
-    /**
-     * 分页查询网络列表
-     *
-     * @param projectId   项目id
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
-     * @return Page of DevopsServiceDTO
-     */
-    Page<DevopsServiceDTO> listDevopsServiceByPage(Long projectId, PageRequest pageRequest, String searchParam);
 
     /**
      * 分页查询网络列表
@@ -73,4 +93,18 @@ public interface DevopsServiceService {
      * @return DevopsServiceDTO
      */
     DevopsServiceDTO query(Long id);
+
+    /**
+     * /**
+     * 环境总览网络查询
+     *
+     * @param projectId   项目id
+     * @param envId       环境id
+     * @param pageRequest 分页参数
+     * @param searchParam 查询参数
+     * @return Page of DevopsServiceDTO
+     */
+    Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
+
+
 }

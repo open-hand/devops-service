@@ -10,7 +10,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Created by younger on 2018/3/28.
  */
 public interface ApplicationRepository {
-    void checkName(ApplicationE applicationE);
+    void checkApp(Long projectId, Long appId);
+
+    void checkName(Long projectId, String appName);
 
     void checkCode(ApplicationE applicationE);
 
@@ -18,14 +20,19 @@ public interface ApplicationRepository {
 
     int update(ApplicationE applicationE);
 
-    int create(ApplicationE applicationE);
+    ApplicationE create(ApplicationE applicationE);
 
     ApplicationE query(Long applicationId);
 
     Page<ApplicationE> listByOptions(Long projectId,
                                      Boolean isActive,
+                                     Boolean hasVersion,
                                      PageRequest pageRequest,
                                      String params);
+
+    Page<ApplicationE> listCodeRepository(Long projectId,
+                                          PageRequest pageRequest,
+                                          String params);
 
     Boolean applicationExist(String uuid);
 
@@ -35,10 +42,21 @@ public interface ApplicationRepository {
 
     List<ApplicationE> listByActive(Long projectId);
 
+    List<ApplicationE> listAll(Long projectId);
+
     Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive,
                                                     PageRequest pageRequest, String params);
 
     ApplicationE queryByToken(String token);
 
     void checkAppCanDisable(Long applicationId);
+
+    List<ApplicationE> listByCode(String code);
+
+    String checkSortIsEmpty(PageRequest pageRequest);
+
+    ApplicationE getAppByGitLabId(Long gitLabProjectId);
+
+    void delete(Long appId);
+
 }

@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +20,7 @@ public class ApplicationMarketE {
     private String contributor;
     private String description;
     private Boolean isDeployed;
+    private Date marketUpdatedDate;
 
     public ApplicationMarketE() {
 
@@ -117,5 +120,13 @@ public class ApplicationMarketE {
 
     public void setDeployed(Boolean deployed) {
         isDeployed = deployed;
+    }
+
+    public Date getMarketUpdatedDate() {
+        return marketUpdatedDate;
+    }
+
+    public void setMarketUpdatedDate(Date marketUpdatedDate) {
+        this.marketUpdatedDate = marketUpdatedDate;
     }
 }

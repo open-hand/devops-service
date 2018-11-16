@@ -1,9 +1,5 @@
 package io.choerodon.devops.api.dto;
 
-import java.util.List;
-
-import io.choerodon.devops.infra.dataobject.ServiceVersionDO;
-
 /**
  * Created by Zenger on 2018/4/19.
  */
@@ -11,19 +7,19 @@ public class DevopsServiceDTO {
 
     private Long id;
     private String name;
-    private String externalIp;
-    private Long port;
-    private Long targetPort;
     private String status;
     private Long envId;
     private String envName;
+    private String type;
     private Boolean envStatus;
     private Long appId;
+    private Long appProjectId;
     private String appName;
-    private String commandStatus;
+    private DevopsServiceTargetDTO target;
+    private DevopsServiceConfigDTO config;
     private String commandType;
+    private String commandStatus;
     private String error;
-    private List<ServiceVersionDO> appVersion;
 
     public Long getId() {
         return id;
@@ -39,22 +35,6 @@ public class DevopsServiceDTO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getExternalIp() {
-        return externalIp;
-    }
-
-    public void setExternalIp(String externalIp) {
-        this.externalIp = externalIp;
-    }
-
-    public Long getPort() {
-        return port;
-    }
-
-    public void setPort(Long port) {
-        this.port = port;
     }
 
     public Long getEnvId() {
@@ -89,14 +69,6 @@ public class DevopsServiceDTO {
         this.appName = appName;
     }
 
-    public List<ServiceVersionDO> getAppVersion() {
-        return appVersion;
-    }
-
-    public void setAppVersion(List<ServiceVersionDO> appVersion) {
-        this.appVersion = appVersion;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -113,12 +85,36 @@ public class DevopsServiceDTO {
         this.envStatus = envStatus;
     }
 
-    public String getCommandStatus() {
-        return commandStatus;
+    public Long getAppProjectId() {
+        return appProjectId;
     }
 
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
+    public void setAppProjectId(Long appProjectId) {
+        this.appProjectId = appProjectId;
+    }
+
+    public DevopsServiceTargetDTO getTarget() {
+        return target;
+    }
+
+    public void setTarget(DevopsServiceTargetDTO target) {
+        this.target = target;
+    }
+
+    public DevopsServiceConfigDTO getConfig() {
+        return config;
+    }
+
+    public void setConfig(DevopsServiceConfigDTO config) {
+        this.config = config;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public String getCommandType() {
@@ -129,19 +125,19 @@ public class DevopsServiceDTO {
         this.commandType = commandType;
     }
 
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
     public String getError() {
         return error;
     }
 
     public void setError(String error) {
         this.error = error;
-    }
-
-    public Long getTargetPort() {
-        return targetPort;
-    }
-
-    public void setTargetPort(Long targetPort) {
-        this.targetPort = targetPort;
     }
 }

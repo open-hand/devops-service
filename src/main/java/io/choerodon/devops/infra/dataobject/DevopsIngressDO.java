@@ -1,10 +1,11 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.Objects;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+import java.util.List;
+import java.util.Objects;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
@@ -25,19 +26,23 @@ public class DevopsIngressDO extends AuditDomain {
     private Long id;
     private Long projectId;
     private Long envId;
+    private Long commandId;
     private String name;
     private String domain;
     private Boolean isUsable;
     private String status;
+    private Long certId;
 
     @Transient
     private String envName;
     @Transient
     private String namespace;
     @Transient
-    private String commandStatus;
+    private List<DevopsIngressPathDO> devopsIngressPathDOS;
     @Transient
     private String commandType;
+    @Transient
+    private String commandStatus;
     @Transient
     private String error;
 
@@ -45,6 +50,16 @@ public class DevopsIngressDO extends AuditDomain {
     }
 
     public DevopsIngressDO(String name) {
+        this.name = name;
+    }
+
+    /**
+     * 构造函数
+     */
+    public DevopsIngressDO(Long projectId, Long envId, String domain, String name) {
+        this.projectId = projectId;
+        this.envId = envId;
+        this.domain = domain;
         this.name = name;
     }
 
@@ -62,25 +77,17 @@ public class DevopsIngressDO extends AuditDomain {
         this.domain = domain;
     }
 
-    /**
-     * 构造函数
-     */
-    public DevopsIngressDO(Long projectId, Long envId, String domain, String name) {
-        this.projectId = projectId;
-        this.envId = envId;
-        this.domain = domain;
-        this.name = name;
-    }
 
     /**
      * 构造函数
      */
-    public DevopsIngressDO(Long id, Long projectId, Long envId, String domain, String name) {
+    public DevopsIngressDO(Long id, Long projectId, Long envId, String domain, String name, String status) {
         this.id = id;
         this.name = name;
         this.projectId = projectId;
         this.envId = envId;
         this.domain = domain;
+        this.status = status;
     }
 
     public Long getId() {
@@ -148,12 +155,36 @@ public class DevopsIngressDO extends AuditDomain {
         this.namespace = namespace;
     }
 
-    public String getCommandStatus() {
-        return commandStatus;
+    public String getStatus() {
+        return status;
     }
 
-    public void setCommandStatus(String commandStatus) {
-        this.commandStatus = commandStatus;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Long getCertId() {
+        return certId;
+    }
+
+    public void setCertId(Long certId) {
+        this.certId = certId;
+    }
+
+    public List<DevopsIngressPathDO> getDevopsIngressPathDOS() {
+        return devopsIngressPathDOS;
+    }
+
+    public void setDevopsIngressPathDOS(List<DevopsIngressPathDO> devopsIngressPathDOS) {
+        this.devopsIngressPathDOS = devopsIngressPathDOS;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
     }
 
     public String getCommandType() {
@@ -164,20 +195,20 @@ public class DevopsIngressDO extends AuditDomain {
         this.commandType = commandType;
     }
 
+    public String getCommandStatus() {
+        return commandStatus;
+    }
+
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
     public String getError() {
         return error;
     }
 
     public void setError(String error) {
         this.error = error;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     @Override
