@@ -604,12 +604,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvUserPermissionDTOPage.setContent(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
         } else {
-            // 普通的分页查询
             // 查询表中已经有权限的项目成员
-            Page<DevopsEnvUserPermissionDTO> allUsersDTOPage = devopsEnvUserPermissionRepository
-                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams);
-            List<DevopsEnvUserPermissionDTO> allUsersDTOList = allUsersDTOPage.getContent();
-            List<Long> allUsersId = allUsersDTOPage.getContent().stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
+            List<DevopsEnvUserPermissionDTO> allUsersDTOList = devopsEnvUserPermissionRepository
+                    .listALlUserPermission(envId);
+            List<DevopsEnvUserPermissionDTO> retureUsersDTOList = new ArrayList<>();
+            List<Long> allUsersId = allUsersDTOList.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
                     .collect(Collectors.toList());
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
@@ -618,14 +617,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                if (!allUsersId.contains(e.getId())) {
+                if (allUsersId.contains(e.getId())) {
+                    devopsEnvUserPermissionDTO.setPermitted(true);
+                } else {
                     devopsEnvUserPermissionDTO.setPermitted(false);
-                    allUsersDTOList.add(devopsEnvUserPermissionDTO);
                 }
+                retureUsersDTOList.add(devopsEnvUserPermissionDTO);
             });
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
-            devopsEnvUserPermissionDTOPage.setContent(allUsersDTOList);
+            devopsEnvUserPermissionDTOPage.setContent(retureUsersDTOList);
             return devopsEnvUserPermissionDTOPage;
         }
     }
