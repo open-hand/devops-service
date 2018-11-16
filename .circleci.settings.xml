@@ -4,44 +4,16 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
 
-  <servers>
-    <server>
-      <id>choeronmaven</id>
-      <username>${env.MAVEN_USERNAME}</username>
-      <password>${env.MAVEN_PASSWORDPASSWORD}</password>
-    </server>
-  </servers>
-
-  <mirrors>
-    <mirror>  
-      <id>apache</id>  
-      <name>apache maven</name>  
-      <url>https://repo.maven.apache.org/maven2</url>  
-      <mirrorOf>central</mirrorOf>          
-    </mirror>
-    <mirror>  
-      <id>choeron</id>  
-      <name>choerodon maven</name>  
-      <url>${env.MAVEN_REPOSITORY}</url>  
-      <mirrorOf>choerodon</mirrorOf>          
-    </mirror>
-  </mirrors>
-  <!-- <profiles xmlns="http://maven.apache.org/SETTINGS/1.1.0">
-    <profile>
-      <activation>
-        <jdk>1.8</jdk>
-      </activation>
-      <repositories>
+    <repositories>
         <repository>
-          <releases>
-            <updatePolicy>always</updatePolicy>
-          </releases>
-          <id>choerodon-repository</id>
-          <name>choerodon Release Repository</name>
+          <id>center</id>
+          <name>center Repository</name>
+          <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+          <id>choerodon</id>
+          <name>choerodon Repository</name>
           <url>${env.MAVEN_REPOSITORY}</url>
         </repository>
-      </repositories>
-      <id>jdk-1.8</id>
-    </profile>
-  </profiles> -->
+    </repositories>
 </settings>
