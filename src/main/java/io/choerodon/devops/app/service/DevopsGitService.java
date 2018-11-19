@@ -70,11 +70,20 @@ public interface DevopsGitService {
     /**
      * 删除分支
      *
-     * @param projectId     项目 ID
      * @param applicationId 应用ID
      * @param branchName    分支名
      */
-    void deleteBranch(Long projectId, Long applicationId, String branchName);
+    void deleteBranch(Long applicationId, String branchName);
+
+    /**
+     * 校验分支名唯一性
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用id
+     * @param branchName    分支名
+     * @return Boolean
+     */
+    Boolean checkName(Long projectId, Long applicationId, String branchName);
 
     Map<String, Object> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 
@@ -89,16 +98,6 @@ public interface DevopsGitService {
     void fileResourceSync(PushWebHookDTO pushWebHookDTO);
 
     void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token);
-
-    /**
-     * 校验分支名唯一性
-     *
-     * @param projectId     项目id
-     * @param applicationId 应用id
-     * @param branchName    分支名
-     * @return Boolean
-     */
-    Boolean checkName(Long projectId, Long applicationId, String branchName);
 
     void initMockService(SagaClient sagaClient);
 }

@@ -149,6 +149,15 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
     }
 
     @Override
+    public void deleteBranch(Integer projectId, String branchName, Integer userId) {
+        try {
+            gitlabServiceClient.deleteBranch(projectId, branchName, userId);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
     public void initMockService(GitlabServiceClient gitlabServiceClient) {
         this.gitlabServiceClient = gitlabServiceClient;
     }

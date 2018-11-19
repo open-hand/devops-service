@@ -2,6 +2,9 @@ package io.choerodon.devops.domain.application.repository;
 
 import java.util.List;
 
+import feign.FeignException;
+
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.*;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
@@ -33,6 +36,8 @@ public interface GitlabProjectRepository {
     List<CommitDO> listCommits(Integer projectId, Integer userId);
 
     GitlabMemberE getProjectMember(Integer projectId, Integer userId);
+
+    void deleteBranch(Integer projectId, String branchName, Integer userId);
 
     void initMockService(GitlabServiceClient gitlabServiceClient);
 }

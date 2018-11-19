@@ -312,7 +312,6 @@ public class DevopsGitController {
     /**
      * 删除分支
      *
-     * @param projectId     项目 ID
      * @param applicationId 应用ID
      * @param branchName    分支名
      */
@@ -326,8 +325,8 @@ public class DevopsGitController {
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "分支名", required = true)
-            @RequestParam String branchName) {
-        devopsGitService.deleteBranch(projectId, applicationId, branchName);
+            @RequestParam(value = "branch_name") String branchName) {
+        devopsGitService.deleteBranch(applicationId, branchName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 

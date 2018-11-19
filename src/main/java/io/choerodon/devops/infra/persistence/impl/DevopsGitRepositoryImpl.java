@@ -22,7 +22,6 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
@@ -208,20 +207,12 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     }
 
     @Override
-    public void deleteBranch(Integer projectId, String branchName, Integer userId) {
-        try {
-            gitlabServiceClient.deleteBranch(projectId, branchName, userId);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
-    }
-
-    @Override
     public void deleteDevopsBranch(Long appId, String branchName) {
-        DevopsBranchDO devopsBranchDO = devopsBranchMapper
-                .queryByAppAndBranchName(appId, branchName);
-        devopsBranchDO.setDeleted(true);
-        devopsBranchMapper.updateByPrimaryKeySelective(devopsBranchDO);
+        DevopsBranchDO devopsBranchDO = devopsBranchMapper.queryByAppAndBranchName(appId, branchName);
+        if (devopsBranchDO != null) {
+            devopsBranchDO.setDeleted(true);
+            devopsBranchMapper.updateByPrimaryKeySelective(devopsBranchDO);
+        }
     }
 
     @Override
