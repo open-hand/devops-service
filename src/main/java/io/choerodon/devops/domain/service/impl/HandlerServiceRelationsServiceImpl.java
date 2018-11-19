@@ -131,8 +131,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
-                        devopsServiceService.updateDevopsServiceByGitOps(
-                                projectId, devopsServiceE.getId(), devopsServiceReqDTO, userId);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                                 .queryByEnvIdAndResource(envId, devopsServiceE.getId(), v1Service.getKind());
                         devopsEnvFileResourceService.updateOrCreateFileResource(objectPath,
@@ -272,13 +270,16 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
             }
             if (devopsServiceReqDTO.getAppInstance() != null) {
-                isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
-                        .sorted().collect(Collectors.toList())
-                        .equals(devopsServiceInstanceEList.stream()
-                                .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
-                                .collect(Collectors.toList()));
+                List<String> newInstanceCode = devopsServiceReqDTO.getAppInstance().stream().map(instanceId -> applicationInstanceRepository.selectById(instanceId).getCode()).collect(Collectors.toList());
+                List<String> oldInstanceCode = devopsServiceInstanceEList.stream().map(DevopsServiceAppInstanceE::getCode).collect(Collectors.toList());
+                for (String instanceCode : newInstanceCode) {
+                    if (!oldInstanceCode.contains(instanceCode)) {
+                        isUpdate = true;
+                    }
+                }
             }
         }
+
         if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
             isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
         }

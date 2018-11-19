@@ -9,6 +9,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +51,7 @@ import io.choerodon.websocket.helper.EnvListener;
 @Service
 public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsEnvironmentServiceImpl.class);
     private static final Gson gson = new Gson();
     private static final String MASTER = "master";
     private static final String README = "README.md";
@@ -232,9 +235,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
         List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t -> {
-                    setEnvStatus(connectedClusterList, t);
+                    setEnvStatus(connectedClusterList, upgradeClusterList, t);
                     // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);
                 })
@@ -253,12 +257,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
-        if (!active) {
-            List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
-            setEnvStatus(connectedClusterList, devopsEnvironmentE);
-        }
-        if (devopsEnvironmentE.getConnect()) {
-            throw new CommonException("error.env.connected");
+
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+        setEnvStatus(connectedClusterList, upgradeClusterList, devopsEnvironmentE);
+        if (!active && devopsEnvironmentE.getConnect()) {
+            devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
         }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
@@ -310,6 +314,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public DevopsEnvironmentUpdateDTO update(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO, Long projectId) {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(
                 devopsEnvironmentUpdateDTO, DevopsEnvironmentE.class);
+        Long clusterId = devopsEnviromentRepository.queryById(devopsEnvironmentUpdateDTO.getId()).getClusterE().getId();
+        devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.initProjectE(projectId);
         if (checkNameChange(devopsEnvironmentUpdateDTO)) {
             devopsEnviromentRepository.checkName(devopsEnvironmentE);
@@ -378,9 +384,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             sequence = sequence + 1;
         }
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        devopsEnvironmentES.forEach(t -> {
-            setEnvStatus(connectedEnvList, t);
-        });
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+
+        devopsEnvironmentES.forEach(t ->
+                setEnvStatus(connectedEnvList, upgradeClusterList, t)
+        );
         if (!devopsEnvironmentES.isEmpty()) {
             DevopsEnvGroupE devopsEnvGroupE = new DevopsEnvGroupE();
             if (devopsEnvironmentES.get(0).getDevopsEnvGroupId() != null) {
@@ -394,8 +402,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         return devopsEnvGroupEnvsDTO;
     }
 
-    private void setEnvStatus(List<Long> connectedEnvList, DevopsEnvironmentE t) {
-        if (connectedEnvList.contains(t.getClusterE().getId())) {
+    private void setEnvStatus(List<Long> connectedEnvList, List<Long> upgradeEnvList, DevopsEnvironmentE t) {
+        if (connectedEnvList.contains(t.getClusterE().getId()) && upgradeEnvList.contains(t.getClusterE().getId())) {
             t.initConnect(true);
         } else {
             t.initConnect(false);
@@ -577,8 +585,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public Page<DevopsEnvUserPermissionDTO> listUserPermissionByEnvId(Long projectId, PageRequest pageRequest,
-                                                                      String searchParams, String envId) {
-        if ("null".equals(envId)) {
+                                                                      String searchParams, Long envId) {
+        if (envId == null) {
             // 根据项目成员id查询项目下所有的项目成员
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
 
@@ -596,12 +604,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvUserPermissionDTOPage.setContent(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
         } else {
-            // 普通的分页查询
             // 查询表中已经有权限的项目成员
-            Page<DevopsEnvUserPermissionDTO> allUsersDTOPage = devopsEnvUserPermissionRepository
-                    .pageUserPermissionByOption(TypeUtil.objToLong(envId), pageRequest, searchParams);
-            List<DevopsEnvUserPermissionDTO> allUsersDTOList = allUsersDTOPage.getContent();
-            List<Long> allUsersId = allUsersDTOPage.getContent().stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
+            List<DevopsEnvUserPermissionDTO> allUsersDTOList = devopsEnvUserPermissionRepository
+                    .listALlUserPermission(envId);
+            List<DevopsEnvUserPermissionDTO> retureUsersDTOList = new ArrayList<>();
+            List<Long> allUsersId = allUsersDTOList.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
                     .collect(Collectors.toList());
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
@@ -610,14 +617,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                if (!allUsersId.contains(e.getId())) {
+                if (allUsersId.contains(e.getId())) {
+                    devopsEnvUserPermissionDTO.setPermitted(true);
+                } else {
                     devopsEnvUserPermissionDTO.setPermitted(false);
-                    allUsersDTOList.add(devopsEnvUserPermissionDTO);
                 }
+                retureUsersDTOList.add(devopsEnvUserPermissionDTO);
             });
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
-            devopsEnvUserPermissionDTOPage.setContent(allUsersDTOList);
+            devopsEnvUserPermissionDTOPage.setContent(retureUsersDTOList);
             return devopsEnvUserPermissionDTOPage;
         }
     }
@@ -695,16 +704,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
         Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
-                        memberId, projectId);
+                        memberId, projectId, true);
         // 如果项目成员查出来为空，则直接返回空列表
         if (allMemberWithOtherUsersPage.getContent().isEmpty()) {
             return allMemberWithOtherUsersPage;
         }
         // 所有项目所有者
-        // TODO 目前先设置为200，等iam接口修改后再做调整
         Page<UserDTO> allOwnerUsersPage = iamRepository
-                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(0, 200), roleAssignmentSearchDTO,
-                        ownerId, projectId);
+                .pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), roleAssignmentSearchDTO,
+                        ownerId, projectId, false);
         // 如果项目所有者查出来为空，则返回之前的项目成员列表
         if (allOwnerUsersPage.getContent().isEmpty()) {
             return allMemberWithOtherUsersPage;
@@ -763,12 +771,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
         gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
         // 删除环境命名空间
-        deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
+        if (devopsEnvironmentE.getClusterE().getId() != null) {
+            deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
+        }
     }
 
     @Override
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
-        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId), DevopsClusterRepDTO.class);
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
     }
 
     @Override

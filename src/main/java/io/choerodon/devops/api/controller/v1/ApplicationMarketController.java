@@ -46,7 +46,7 @@ public class ApplicationMarketController {
      *
      * @param projectId             项目id
      * @param applicationReleaseDTO 发布应用的信息
-     * @return
+     * @return Long
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用发布")
@@ -55,7 +55,7 @@ public class ApplicationMarketController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody(required = true) ApplicationReleasingDTO applicationReleaseDTO) {
+            @RequestBody ApplicationReleasingDTO applicationReleaseDTO) {
         return Optional.ofNullable(
                 applicationMarketService.release(projectId, applicationReleaseDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
@@ -269,11 +269,10 @@ public class ApplicationMarketController {
             @ApiParam(value = "发布ID", required = true)
             @PathVariable("app_market_id") Long appMarketId,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody(required = true) List<AppMarketVersionDTO> versionList) {
+            @RequestBody List<AppMarketVersionDTO> versionList) {
         applicationMarketService.update(projectId, appMarketId, versionList);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 
     /**
      * 应用市场解析导入应用
@@ -312,7 +311,7 @@ public class ApplicationMarketController {
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "文件名", required = true)
             @RequestParam(value = "file_name") String fileName,
-            @ApiParam(value = "是否公开", required = false)
+            @ApiParam(value = "是否公开")
             @RequestParam(value = "public", required = false) Boolean isPublic) {
         return Optional.ofNullable(
                 applicationMarketService.importApps(projectId, fileName, isPublic))
@@ -356,10 +355,10 @@ public class ApplicationMarketController {
             @ApiParam(value = "导出包名字")
             @RequestParam(value = "fileName", required = false) String fileName,
             HttpServletResponse res) {
-        applicationMarketService.export(appMarkets);
-        FileUtil.downloadFile(res, fileName);
+        applicationMarketService.export(appMarkets, fileName);
+        FileUtil.downloadFile(res, fileName + ".zip");
         try {
-            Files.delete(new File(fileName).toPath());
+            Files.delete(new File(fileName + ".zip").toPath());
         } catch (IOException e) {
             throw new CommonException(e.getMessage());
         }

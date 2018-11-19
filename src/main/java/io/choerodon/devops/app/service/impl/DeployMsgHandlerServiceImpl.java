@@ -372,16 +372,18 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 for (String release : releases) {
                     applicationInstanceE = applicationInstanceRepository
                             .selectByCode(release, envId);
-                    DevopsEnvResourceE newdevopsInsResourceE =
-                            devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
-                                    applicationInstanceE.getId(),
-                                    KeyParseTool.getResourceType(key),
-                                    KeyParseTool.getResourceName(key));
-                    DevopsEnvResourceDetailE newDevopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
-                    newDevopsEnvResourceDetailE.setMessage(msg);
-                    saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
-                            newDevopsEnvResourceDetailE, applicationInstanceE);
-                    afterInstanceIds.add(applicationInstanceE.getId());
+                    if (applicationInstanceE != null) {
+                        DevopsEnvResourceE newdevopsInsResourceE =
+                                devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
+                                        applicationInstanceE.getId(),
+                                        KeyParseTool.getResourceType(key),
+                                        KeyParseTool.getResourceName(key));
+                        DevopsEnvResourceDetailE newDevopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
+                        newDevopsEnvResourceDetailE.setMessage(msg);
+                        saveOrUpdateResource(devopsEnvResourceE, newdevopsInsResourceE,
+                                newDevopsEnvResourceDetailE, applicationInstanceE);
+                        afterInstanceIds.add(applicationInstanceE.getId());
+                    }
                 }
                 //网络更新实例删除网络以前实例网络关联的resource
                 for (Long instanceId : beforeInstanceIdS) {
@@ -426,6 +428,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandE.setObjectId(devopsServiceE.getId());
                 devopsEnvCommandE.setObject(SERVICE_KIND);
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
                 devopsServiceRepository.delete(devopsServiceE.getId());
             }
         }
@@ -440,6 +443,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 devopsEnvCommandE.setObjectId(devopsIngressE.getId());
                 devopsEnvCommandE.setObject(INGRESS_KIND);
                 devopsEnvCommandRepository.create(devopsEnvCommandE);
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
                 devopsIngressRepository.deleteIngress(devopsIngressE.getId());
                 devopsIngressRepository.deleteIngressPath(devopsIngressE.getId());
             }
@@ -473,13 +477,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     }
 
     @Override
-    public void updateInstanceStatus(String key, Long clusterId, String instanceStatus, String commandStatus, String msg) {
+    public void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String msg) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
             logger.info("env not exist" + KeyParseTool.getNamespace(key));
             return;
         }
-        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(key, envId);
+        ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
         if (instanceE != null) {
             instanceE.setStatus(instanceStatus);
             applicationInstanceRepository.update(instanceE);
@@ -508,6 +512,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvCommandE.setObjectId(instanceE.getId());
             devopsEnvCommandE.setObject(INSTANCE_KIND);
             devopsEnvCommandRepository.create(devopsEnvCommandE);
+            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, instanceE.getId(), "C7NHelmRelease");
             applicationInstanceRepository.deleteById(instanceE.getId());
         }
     }
@@ -616,14 +621,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseDeleteFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
 
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.DELETED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -631,14 +631,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseStartFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
-
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(
+                key,
+                KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.STOPPED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -651,14 +647,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseInstallFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
-
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(
+                key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.FAILED.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -666,14 +657,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaseUpgradeFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
 
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -681,14 +667,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     public void helmReleaeStopFail(String key, String msg, Long clusterId) {
-        Long envId = getEnvId(key, clusterId);
-        if (envId == null) {
-            logger.info("env not exist" + KeyParseTool.getNamespace(key));
-            return;
-        }
 
-        updateInstanceStatus(KeyParseTool.getReleaseName(key),
-                envId,
+        updateInstanceStatus(key, KeyParseTool.getReleaseName(key),
+                clusterId,
                 InstanceStatus.RUNNING.getStatus(),
                 CommandStatus.FAILED.getStatus(),
                 msg);
@@ -1428,10 +1409,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<Command> oldCommands = new ArrayList<>();
         getCommands(envId, oldCommands);
         if (!oldCommands.isEmpty()) {
-            oldCommands.forEach(command ->
-                    commands.stream().filter(command1 -> command1.getId().equals(command.getId())).forEach(command1 -> {
+            oldCommands.stream().filter(oldComand -> oldComand.getId() != null).forEach(command ->
+                    commands.stream().filter(command1 -> command1.getId() != null && command1.getId().equals(command.getId())).forEach(command1 -> {
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(command.getId());
-                        if (command1.getCommit() != null && command.getCommit().equals(command1.getCommit())) {
+                        if (command1.getCommit() != null && command.getCommit() != null && command.getCommit().equals(command1.getCommit())) {
                             devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
                             updateResourceStatus(envId, devopsEnvCommandE, InstanceStatus.RUNNING, ServiceStatus.RUNNING, IngressStatus.RUNNING, CertificationStatus.ACTIVE);
                         } else {
@@ -1506,8 +1487,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         logger.info("upgradeCluster message:" + msg);
         UpgradeCluster upgradeCluster = json.deserialize(msg, UpgradeCluster.class);
         DevopsClusterE devopsClusterE = devopsClusterRepository.queryByToken(upgradeCluster.getToken());
-        devopsClusterE.setSkipCheckProjectPermission(false);
-        if (devopsClusterE.getId() == null) {
+        if (devopsClusterE == null) {
             logger.info("the cluster is not exist:" + upgradeCluster.getToken());
             return;
         }
@@ -1532,6 +1512,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     }
                 }
             });
+            devopsClusterE.setSkipCheckProjectPermission(false);
         }
         devopsClusterE.setInit(true);
         devopsClusterRepository.update(devopsClusterE);

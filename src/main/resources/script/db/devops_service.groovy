@@ -77,6 +77,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
 
 
     changeSet(id: '2018-10-08-drop-column', author: 'younger') {
+        dropUniqueConstraint(constraintName: "devops_service_uk_namespace_name",tableName: "devops_service")
         dropColumn(columnName: "namespace", tableName: "devops_service")
 
     }

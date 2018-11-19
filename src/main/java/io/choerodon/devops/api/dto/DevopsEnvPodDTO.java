@@ -21,6 +21,7 @@ public class DevopsEnvPodDTO {
     private String envName;
     private Long objectVersionNumber;
     private Boolean isConnect;
+    private Long clusterId;
 
     public Long getId() {
         return id;
@@ -156,5 +157,13 @@ public class DevopsEnvPodDTO {
 
     public void setConnect(Boolean connect) {
         isConnect = connect;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
     }
 }

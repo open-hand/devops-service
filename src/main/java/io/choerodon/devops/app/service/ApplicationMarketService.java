@@ -86,5 +86,5 @@ public interface ApplicationMarketService {
      *
      * @param appMarkets 应用市场应用信息
      */
-    void export(List<AppMarketDownloadDTO> appMarkets);
+    void export(List<AppMarketDownloadDTO> appMarkets, String fileName);
 }

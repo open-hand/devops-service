@@ -111,10 +111,7 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
 
     @Override
     public DevopsEnvironmentE queryByToken(String token) {
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
-        devopsEnvironmentDO.setToken(token);
-        devopsEnvironmentMapper.selectOne(devopsEnvironmentDO);
-        return ConvertHelper.convert(devopsEnvironmentMapper.selectOne(devopsEnvironmentDO), DevopsEnvironmentE.class);
+        return ConvertHelper.convert(devopsEnvironmentMapper.queryByToken(token), DevopsEnvironmentE.class);
     }
 
     @Override

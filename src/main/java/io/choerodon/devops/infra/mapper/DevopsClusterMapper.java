@@ -11,7 +11,7 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsClusterMapper extends BaseMapper<DevopsClusterDO> {
 
-    List<DevopsClusterDO> listByProjectId(@Param("projectId") Long projectId);
+    List<DevopsClusterDO> listByProjectId(@Param("projectId") Long projectId,@Param("organizationId") Long organizationId);
 
     void updateSkipCheckPro(@Param("clusterId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 

@@ -9,10 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.CommitFormRecordDTO;
-import io.choerodon.devops.api.dto.CommitFormUserDTO;
-import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
-import io.choerodon.devops.api.dto.PushWebHookDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsGitlabCommitService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
@@ -141,6 +138,11 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
         return getCommitFormRecordDTOS(projectId, appIdsMap, pageRequest, userMap, startDate, endDate);
+    }
+
+    @Override
+    public void createByTag(TagHookDTO tagHookDTO, String token) {
+
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {

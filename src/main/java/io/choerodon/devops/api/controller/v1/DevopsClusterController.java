@@ -46,7 +46,7 @@ public class DevopsClusterController {
             @RequestBody DevopsClusterReqDTO devopsClusterReqDTO) {
         return Optional.ofNullable(devopsClusterService.createCluster(organizationId, devopsClusterReqDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.cluster.create"));
+                .orElseThrow(() -> new CommonException("error.devops.cluster.insert"));
     }
 
 
@@ -85,7 +85,7 @@ public class DevopsClusterController {
             @PathVariable Long clusterId) {
         return Optional.ofNullable(devopsClusterService.getCluster(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devops.cluster.get"));
+                .orElseThrow(() -> new CommonException("error.cluster.query"));
     }
 
     /**

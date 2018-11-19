@@ -63,8 +63,8 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     }
 
     @Override
-    public List<DevopsClusterE> listByProjectId(Long projectId) {
-        return ConvertHelper.convertList(devopsClusterMapper.listByProjectId(projectId), DevopsClusterE.class);
+    public List<DevopsClusterE> listByProjectId(Long projectId, Long organizationId) {
+        return ConvertHelper.convertList(devopsClusterMapper.listByProjectId(projectId, organizationId), DevopsClusterE.class);
     }
 
     @Override

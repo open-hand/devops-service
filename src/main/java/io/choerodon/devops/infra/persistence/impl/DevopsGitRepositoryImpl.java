@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import feign.FeignException;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
@@ -52,6 +55,9 @@ import io.choerodon.mybatis.util.StringUtil;
 public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     private JSON json = new JSON();
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitRepositoryImpl.class);
+
 
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -450,10 +456,15 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 .getUserIdByGitlabUserId(devopsMergeRequestE.getAssigneeId());
         Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
         Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
-        List<CommitDO> commitDOS = gitlabServiceClient.listCommits(
-                devopsMergeRequestE.getProjectId().intValue(),
-                gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
-        mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS, CommitDTO.class));
+        List<CommitDO> commitDOS = new ArrayList<>();
+        try {
+             commitDOS = gitlabServiceClient.listCommits(
+                    devopsMergeRequestE.getProjectId().intValue(),
+                    gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
+            mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS, CommitDTO.class));
+        }catch (FeignException e) {
+            LOGGER.info(e.getMessage());
+        }
         UserE authorUser = iamRepository.queryUserByUserId(authorUserId);
         if (authorUser != null) {
             AuthorDTO authorDTO = new AuthorDTO();

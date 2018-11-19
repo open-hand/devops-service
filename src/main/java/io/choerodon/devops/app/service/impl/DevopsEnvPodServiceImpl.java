@@ -10,7 +10,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
@@ -28,6 +30,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private EnvUtil envUtil;
     @Autowired
     private DevopsEnvPodRepository devopsEnvPodRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
 
     @Override
@@ -36,8 +40,10 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         Page<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
         devopsEnvPodEPage.stream().forEach(devopsEnvPodE -> {
-            if (connectedEnvList.contains(devopsEnvPodE.getEnvId())
-                    && updatedEnvList.contains(devopsEnvPodE.getEnvId())) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsEnvPodE.getEnvId());
+            devopsEnvPodE.setClusterId(devopsEnvironmentE.getClusterE().getId());
+            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsEnvPodE.setConnect(true);
             }
         });

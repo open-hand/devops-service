@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.*;
+
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -9,6 +11,8 @@ import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -418,6 +422,21 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public List<ErrorLineDTO> formatValue(ReplaceResult replaceResult) {
         try {
             FileUtil.checkYamlFormat(replaceResult.getYaml());
+
+            String fileName = GenerateUUID.generateUUID() + ".yaml";
+            String path = "deployfile";
+            FileUtil.saveDataToFile(path, fileName, replaceResult.getYaml());
+            //读入文件
+            File file = new File(path + System.getProperty("file.separator") + fileName);
+            InputStreamResource inputStreamResource = new InputStreamResource(new FileInputStream(file));
+            YamlPropertySourceLoader yamlPropertySourceLoader = new YamlPropertySourceLoader();
+            try {
+                yamlPropertySourceLoader.load("test", inputStreamResource, null);
+            }catch (Exception e) {
+                FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
+                return getErrorLine(e.getMessage());
+            }
+            FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
         } catch (Exception e) {
             return getErrorLine(e.getMessage());
         }
@@ -427,6 +446,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult previewValues(ReplaceResult previewReplaceResult, Long appVersionId) {
         String versionValue = applicationVersionRepository.queryValue(appVersionId);
+        try {
+            FileUtil.checkYamlFormat(previewReplaceResult.getYaml());
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
         ReplaceResult replaceResult = getReplaceResult(versionValue, previewReplaceResult.getYaml());
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()) + 1);
         return replaceResult;
@@ -693,7 +717,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String payload = gson.toJson(stopMap);
         Long envId = instanceE.getDevopsEnvironmentE().getId();
         sentInstance(payload, releaseName, HelmType.HELM_RELEASE_STOP.toValue(),
-                namespace, devopsEnvCommandE.getId(), envId);
+                namespace, devopsEnvCommandE.getId(), envId, devopsEnvironmentE.getClusterE().getId());
     }
 
     @Override
@@ -723,7 +747,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String payload = gson.toJson(stopMap);
         Long envId = instanceE.getDevopsEnvironmentE().getId();
         sentInstance(payload, releaseName, HelmType.HELM_RELEASE_START.toValue(),
-                namespace, devopsEnvCommandE.getId(), envId);
+                namespace, devopsEnvCommandE.getId(), envId, devopsEnvironmentE.getClusterE().getId());
     }
 
     @Override
@@ -732,14 +756,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
                 instanceE.getDevopsEnvironmentE().getId());
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
         ApplicationVersionE applicationVersionE = applicationVersionRepository
-                .query(instanceE.getApplicationVersionE().getId());
+                .query(devopsEnvCommandE.getObjectVersionId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
         String value = applicationInstanceRepository.queryValueByInstanceId(instanceId);
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
-        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
         devopsEnvCommandE.setId(null);
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
@@ -789,7 +813,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
         if (devopsEnvFileResourceE == null) {
-            throw new CommonException("error.fileResource.not.exist");
+            applicationInstanceRepository.deleteById(instanceId);
+            return;
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
@@ -851,9 +876,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return instanceE.getCode();
     }
 
-    private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId) {
+    private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId, Long clusterId) {
         Msg msg = new Msg();
-        msg.setKey("env:" + namespace + ".envId:" + envId + ".release:" + name);
+        msg.setKey("cluster:" + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
         msg.setType(type);
         msg.setPayload(payload);
         msg.setCommandId(commandId);

@@ -40,7 +40,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
-    private static final String CHARTS = "charts";
     private static final String IMAGES = "images";
     private static final String PUSH_IAMGES = "push_image.sh";
     private static final String JSON_FILE = ".json";
@@ -100,7 +99,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public Page<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest, String searchParam) {
+    public Page<ApplicationReleasingDTO> listMarketAppsByProjectId(Long projectId, PageRequest pageRequest,
+                                                                   String searchParam) {
         Page<ApplicationMarketE> applicationMarketEPage = applicationMarketRepository.listMarketAppsByProjectId(
                 projectId, pageRequest, searchParam);
         return getReleasingDTOs(projectId, applicationMarketEPage);
@@ -177,7 +177,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     : versionId;
         }
         ApplicationVersionE applicationVersionE = applicationVersionRepository.query(latestVersionId);
-        String readme = applicationVersionRepository.getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
+        String readme = applicationVersionRepository
+                .getReadme(applicationVersionE.getApplicationVersionReadmeV().getId());
 
         applicationReleasingDTO.setReadme(readme);
 
@@ -318,7 +319,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null
                     && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals(CHARTS)) {
+                    && chartsDirectory[0].getName().equals(file.getOriginalFilename().split("\\.")[0])) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteDirectory(zipDirectory);
@@ -364,20 +365,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
             File[] chartsDirectory = zipDirectory.listFiles();
-            if (chartsDirectory != null
-                    && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals(CHARTS)) {
-                File[] appFiles = chartsDirectory[0].listFiles();
-                if (appFiles == null || appFiles.length == 0) {
-                    FileUtil.deleteDirectory(zipDirectory);
-                    throw new CommonException("error.file.empty");
-                }
-                List<File> appFileList = Arrays.stream(appFiles)
-                        .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
-                importAppFile(projectId, appFileList, isPublic);
-            } else {
-                throw new CommonException("error.zip.illegal");
+            File[] appFiles = chartsDirectory != null ? chartsDirectory[0].listFiles() : new File[0];
+            if (appFiles == null || appFiles.length == 0) {
+                FileUtil.deleteDirectory(zipDirectory);
+                throw new CommonException("error.file.empty");
             }
+            List<File> appFileList = Arrays.stream(appFiles)
+                    .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
+            importAppFile(projectId, appFileList, isPublic);
+
         } else {
             throw new CommonException("error.zip.notFound");
         }
@@ -475,7 +471,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
      *
      * @param appMarkets 应用市场应用信息
      */
-    public void export(List<AppMarketDownloadDTO> appMarkets) {
+    public void export(List<AppMarketDownloadDTO> appMarkets, String fileName) {
         List<String> images = new ArrayList<>();
         for (AppMarketDownloadDTO appMarketDownloadDTO : appMarkets) {
             ApplicationReleasingDTO applicationReleasingDTO = getMarketApp(appMarketDownloadDTO.getAppMarketId(), null);
@@ -492,7 +488,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             );
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
-            appMarketDownloadDTO.getAppVersionIds().stream().forEach(appVersionId -> {
+            appMarketDownloadDTO.getAppVersionIds().forEach(appVersionId -> {
                 ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
                 images.add(applicationVersionE.getImage());
                 String repoUrl = String.format("%s%s%s%s%s%s%s%s%s%s%s%s", helmUrl,
@@ -501,7 +497,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         FILE_SEPARATOR,
                         projectE.getCode(),
                         FILE_SEPARATOR,
-                        CHARTS,
+                        "charts",
                         FILE_SEPARATOR,
                         applicationE.getCode(),
                         "-",
@@ -514,7 +510,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                                 FILE_SEPARATOR,
                                 applicationE.getCode(),
                                 applicationVersionE.getVersion()));
-
             });
             StringBuilder stringBuilder = new StringBuilder();
             for (String image : images) {
@@ -522,17 +517,18 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 stringBuilder.append(System.getProperty("line.separator"));
             }
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/push_image.sh");
-            FileUtil.saveDataToFile(CHARTS, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream, null));
-            FileUtil.saveDataToFile(CHARTS, IMAGES, stringBuilder.toString());
+            FileUtil.saveDataToFile(fileName, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream, null));
+            FileUtil.saveDataToFile(fileName, IMAGES, stringBuilder.toString());
+            FileUtil.moveFiles("charts", fileName);
         }
-        try (FileOutputStream outputStream = new FileOutputStream(CHARTS + ".zip")) {
-            FileUtil.toZip(CHARTS, outputStream, true);
-            FileUtil.deleteDirectory(new File(CHARTS));
+        try (FileOutputStream outputStream = new FileOutputStream(fileName + ".zip")) {
+            FileUtil.toZip(fileName, outputStream, true);
+            FileUtil.deleteDirectory(new File("charts"));
+            FileUtil.deleteDirectory(new File(fileName));
         } catch (IOException e) {
             throw new CommonException(e.getMessage(), e);
         }
     }
-
 
     private Page<ApplicationReleasingDTO> getReleasingDTOs(Long projectId,
                                                            Page<ApplicationMarketE> applicationMarketEPage) {

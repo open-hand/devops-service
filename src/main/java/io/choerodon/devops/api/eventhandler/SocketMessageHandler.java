@@ -53,6 +53,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case HELM_RELEASE_UPGRADE:
                 deployMsgHandlerService.handlerReleaseUpgrade(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 deployMsgHandlerService.updateInstanceStatus(
+                        msg.getKey(),
                         KeyParseTool.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.RUNNING.getStatus(),
@@ -63,6 +64,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 break;
             case HELM_RELEASE_START:
                 deployMsgHandlerService.updateInstanceStatus(
+                        msg.getKey(),
                         KeyParseTool.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.RUNNING.getStatus(),
@@ -71,6 +73,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 break;
             case HELM_RELEASE_STOP:
                 deployMsgHandlerService.updateInstanceStatus(
+                        msg.getKey(),
                         KeyParseTool.getResourceName(msg.getKey()),
                         TypeUtil.objToLong(msg.getClusterId()),
                         InstanceStatus.STOPPED.getStatus(),

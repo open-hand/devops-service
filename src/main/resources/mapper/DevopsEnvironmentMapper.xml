@@ -11,4 +11,10 @@
         UPDATE devops_env de set de.saga_sync_commit = #{gitCommit} , de.devops_sync_commit = #{devopsSyncCommit} ,
         de.agent_sync_commit = #{agentSyncCommit} where de.id = #{envId}
     </update>
+
+
+    <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+      select * from devops_env de where de.token = #{token}
+    </select>
+
 </mapper>

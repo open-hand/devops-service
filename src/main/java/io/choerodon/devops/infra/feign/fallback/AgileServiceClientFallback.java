@@ -9,7 +9,7 @@ import io.choerodon.devops.infra.feign.AgileServiceClient;
 
 public class AgileServiceClientFallback implements AgileServiceClient {
     @Override
-    public ResponseEntity<Issue> queryIssue(Long projectId, Long issueId) {
+    public ResponseEntity<Issue> queryIssue(Long projectId, Long issueId, Long organizationId) {
         return new ResponseEntity("error.issue.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
