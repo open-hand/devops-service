@@ -369,7 +369,6 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验分支名唯一性")
     @GetMapping(value = "/check_name")
-    @CustomPageRequest
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
