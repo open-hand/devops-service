@@ -90,5 +90,15 @@ public interface DevopsGitService {
 
     void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token);
 
+    /**
+     * 校验分支名唯一性
+     *
+     * @param projectId     项目id
+     * @param applicationId 应用id
+     * @param branchName    分支名
+     * @return Boolean
+     */
+    Boolean checkName(Long projectId, Long applicationId, String branchName);
+
     void initMockService(SagaClient sagaClient);
 }
