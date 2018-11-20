@@ -135,7 +135,7 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
         if (Arrays.asList(models).contains(applicationTemplateE.getName())) {
             throw new CommonException("error.name.exist");
         }
-        if (!applicationTemplateMapper.select(applicationTemplateDO).isEmpty()) {
+        if (applicationTemplateMapper.selectOne(applicationTemplateDO) != null) {
             throw new CommonException("error.name.exist");
         }
     }
