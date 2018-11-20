@@ -57,4 +57,6 @@ public interface ApplicationInstanceRepository {
     List<ApplicationInstanceE> listByAppId(Long appId);
 
     void deleteAppInstanceByEnvId(Long envId);
+
+    void checkName(String instanceName);
 }

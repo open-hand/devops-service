@@ -157,6 +157,13 @@ public interface ApplicationInstanceService {
      */
     DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params);
 
+    /**
+     * 校验实例名唯一性
+     *
+     * @param instanceName 实例名
+     */
+    void checkName(String instanceName);
+
     ReplaceResult getReplaceResult(String versionValue, String deployValue);
 
     ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);

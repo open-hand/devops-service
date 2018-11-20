@@ -183,4 +183,13 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
         applicationInstanceDO.setEnvId(envId);
         applicationInstanceMapper.delete(applicationInstanceDO);
     }
+
+    @Override
+    public void checkName(String instanceName) {
+        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
+        applicationInstanceDO.setCode(instanceName);
+        if (applicationInstanceMapper.selectOne(applicationInstanceDO) != null) {
+            throw new CommonException("error.app.instance.name.already.exist");
+        }
+    }
 }

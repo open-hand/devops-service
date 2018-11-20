@@ -1,7 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.*;
-
+import java.io.File;
+import java.io.FileInputStream;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,6 +20,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -537,10 +538,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
-        //初始化实例名
+        // 初始化自定义实例名
         String code;
         if (applicationDeployDTO.getType().equals(CREATE)) {
-            code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+            code = applicationDeployDTO.getInstanceName();
         } else {
             code = applicationInstanceE.getCode();
         }
@@ -865,6 +866,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceRepository.deleteById(instanceId);
     }
 
+    @Override
+    public void checkName(String instanceName) {
+        AppInstanceValidator.checkName(instanceName);
+        ApplicationInstanceE applicationInstanceE = new ApplicationInstanceE();
+        applicationInstanceE.setCode(instanceName);
+        applicationInstanceRepository.checkName(instanceName);
+    }
+
     private String getNameSpace(Long envId) {
         return devopsEnvironmentRepository.queryById(envId).getCode();
     }
@@ -876,7 +885,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return instanceE.getCode();
     }
 
-    private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId, Long clusterId) {
+    private void sentInstance(String payload, String name, String type, String namespace, Long commandId, Long envId,
+                              Long clusterId) {
         Msg msg = new Msg();
         msg.setKey("cluster:" + clusterId + ".env:" + namespace + ".envId:" + envId + ".release:" + name);
         msg.setType(type);
@@ -919,11 +929,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         })));
     }
 
-    private C7nHelmRelease getC7NHelmRelease(String code,
-                                             ApplicationVersionE applicationVersionE,
-                                             ApplicationDeployDTO applicationDeployDTO,
-                                             ApplicationE applicationE
-    ) {
+    private C7nHelmRelease getC7NHelmRelease(String code, ApplicationVersionE applicationVersionE,
+                                             ApplicationDeployDTO applicationDeployDTO, ApplicationE applicationE) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
         c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
@@ -933,7 +940,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
                         applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return c7nHelmRelease;
-
     }
 
     @Override

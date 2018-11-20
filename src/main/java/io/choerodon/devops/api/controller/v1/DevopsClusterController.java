@@ -92,8 +92,7 @@ public class DevopsClusterController {
      * 校验集群名唯一性
      *
      * @param organizationId 项目id
-     * @param name
-     * @return boolean
+     * @param name           集群name
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验集群名唯一性")
@@ -110,8 +109,7 @@ public class DevopsClusterController {
      * 校验集群编码唯一性
      *
      * @param organizationId 项目id
-     * @param code
-     * @return boolean
+     * @param code           集群code
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验集群名唯一性")
@@ -123,7 +121,6 @@ public class DevopsClusterController {
             @RequestParam String code) {
         devopsClusterService.checkCode(organizationId, code);
     }
-
 
     /**
      * 分页查询项目列表
