@@ -404,6 +404,23 @@ public class ApplicationInstanceController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
+    /**
+     * 校验实例名唯一性
+     *
+     * @param projectId    项目id
+     * @param instanceName 实例名
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "校验实例名唯一性")
+    @GetMapping(value = "/check_name")
+    public void delete(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例ID", required = true)
+            @RequestParam(value = "instance_name") String instanceName) {
+        applicationInstanceService.checkName(instanceName);
+    }
 
     /**
      * 环境总览实例查询

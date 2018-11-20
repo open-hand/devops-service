@@ -11,12 +11,13 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 public interface DeployService {
     void sendCommand(DevopsEnvironmentE devopsEnvironmentE);
 
-    void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId);
+    void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE,
+                ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values,
+                Long commandId);
 
     void initCluster(Long clusterId);
 
     void deleteEnv(Long envId, String code, Long clusterId);
 
     void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId);
-
 }
