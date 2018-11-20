@@ -49,7 +49,10 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public void checkName(Long projectId, String appName) {
-         if (applicationMapper.selectOneWithCaseSensitive(projectId, appName) != null) {
+        ApplicationDO applicationDO = new ApplicationDO();
+        applicationDO.setProjectId(projectId);
+        applicationDO.setName(appName);
+        if (applicationMapper.selectOne(applicationDO) != null) {
             throw new CommonException("error.name.exist");
         }
     }
