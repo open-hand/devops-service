@@ -205,20 +205,18 @@ public class DevopsEnvironmentController {
      *
      * @param projectId 项目id
      * @param name      环境名
-     * @return ResponseEntity
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建环境校验名称是否存在")
-    @GetMapping(value = "/checkName")
-    public ResponseEntity checkName(
+    @GetMapping(value = "/check_name")
+    public void checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "集群Id")
-            @RequestParam(required = true) Long clusterId,
+            @ApiParam(value = "集群Id", required = true)
+            @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam(value = "name") String name) {
         devopsEnvironmentService.checkName(projectId, clusterId, name);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -226,20 +224,18 @@ public class DevopsEnvironmentController {
      *
      * @param projectId 项目ID
      * @param code      应用code
-     * @return ResponseEntity
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建环境校验编码是否存在")
-    @GetMapping(value = "/checkCode")
-    public ResponseEntity checkCode(
+    @GetMapping(value = "/check_code")
+    public void checkCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "集群Id")
-            @RequestParam(required = true) Long clusterId,
+            @ApiParam(value = "集群Id", required = true)
+            @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "环境编码", required = true)
             @RequestParam(value = "code") String code) {
         devopsEnvironmentService.checkCode(projectId, clusterId, code);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
