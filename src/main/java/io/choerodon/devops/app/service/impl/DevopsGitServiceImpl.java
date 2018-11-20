@@ -251,12 +251,22 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public void deleteBranch(Long projectId, Long applicationId, String branchName) {
-        Integer gitLabId = devopsGitRepository.getGitLabId(applicationId);
-        devopsGitRepository.deleteBranch(gitLabId, branchName, getGitlabUserId());
-        devopsGitRepository.deleteDevopsBranch(applicationId, branchName);
+    public void deleteBranch(Long applicationId, String branchName) {
+        ApplicationE applicationE = applicationRepository.query(applicationId);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        List<BranchE> branchEList = gitlabProjectRepository.listBranches(applicationE.getGitlabProjectE().getId(),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        Optional<BranchE> branchEOptional = branchEList
+                .stream().filter(e -> branchName.equals(e.getName())).findFirst();
+        if (branchEOptional.isPresent()) {
+            Integer gitLabId = devopsGitRepository.getGitLabId(applicationId);
+            gitlabProjectRepository.deleteBranch(applicationE.getGitlabProjectE().getId(), branchName,
+                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            devopsGitRepository.deleteDevopsBranch(applicationId, branchName);
+        } else {
+            devopsGitRepository.deleteDevopsBranch(applicationId, branchName);
+        }
     }
-
 
     private BranchDTO getBranchDTO(DevopsBranchE devopsBranchE, String lastCommitUrl, UserE commitUserE, UserE userE,
                                    Issue issue) {

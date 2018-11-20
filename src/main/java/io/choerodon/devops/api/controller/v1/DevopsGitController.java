@@ -312,7 +312,6 @@ public class DevopsGitController {
     /**
      * 删除分支
      *
-     * @param projectId     项目 ID
      * @param applicationId 应用ID
      * @param branchName    分支名
      */
@@ -326,8 +325,8 @@ public class DevopsGitController {
             @ApiParam(value = "应用id", required = true)
             @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "分支名", required = true)
-            @RequestParam String branchName) {
-        devopsGitService.deleteBranch(projectId, applicationId, branchName);
+            @RequestParam(value = "branch_name") String branchName) {
+        devopsGitService.deleteBranch(applicationId, branchName);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -370,7 +369,6 @@ public class DevopsGitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验分支名唯一性")
     @GetMapping(value = "/check_name")
-    @CustomPageRequest
     public ResponseEntity<Boolean> checkName(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
