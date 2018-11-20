@@ -55,4 +55,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         }
 
     }
+
+    changeSet(author: 'n1ck', id: '2018-11-20-modify-column-collate') {
+        sql("ALTER TABLE devops_application MODIFY COLUMN `name` VARCHAR(64) BINARY")
+    }
 }

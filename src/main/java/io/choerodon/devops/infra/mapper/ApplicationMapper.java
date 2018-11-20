@@ -41,6 +41,4 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     Integer checkAppCanDisable(@Param("applicationId") Long applicationId);
 
     List<ApplicationDO> listByCode(@Param("code") String code);
-
-    Integer selectOneWithCaseSensitive(@Param("projectId") Long projectId, @Param("appName") String appName);
 }

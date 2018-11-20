@@ -31,4 +31,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
                 constraintName: 'uk_org_id_code', columnNames: 'organization_id,code')
     }
 
+    changeSet(author: 'n1ck', id: '2018-11-20-modify-column-collate') {
+        sql("ALTER TABLE devops_app_template MODIFY COLUMN `name` VARCHAR(32) BINARY")
+    }
 }

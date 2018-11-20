@@ -69,7 +69,7 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
         devopsEnvironmentDO.setClusterId(devopsEnvironmentE.getClusterE().getId());
         devopsEnvironmentDO.setName(devopsEnvironmentE.getName());
-        if (!devopsEnvironmentMapper.select(devopsEnvironmentDO).isEmpty()) {
+        if (devopsEnvironmentMapper.selectOne(devopsEnvironmentDO) != null) {
             throw new CommonException("error.name.exist");
         }
     }

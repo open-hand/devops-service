@@ -163,18 +163,16 @@ public class ApplicationTemplateController {
      *
      * @param organizationId 组织id
      * @param name           模板name
-     * @return responseEntity
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "创建模板校验名称是否存在")
-    @GetMapping(value = "/checkName")
-    public ResponseEntity checkName(
+    @GetMapping(value = "/check_name")
+    public void checkName(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
         applicationTemplateService.checkName(organizationId, name);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**
@@ -182,17 +180,15 @@ public class ApplicationTemplateController {
      *
      * @param organizationId 组织id
      * @param code           模板code
-     * @return responseEntity
      */
     @Permission(level = ResourceLevel.ORGANIZATION)
     @ApiOperation(value = "创建模板校验编码是否存在")
-    @GetMapping(value = "/checkCode")
-    public ResponseEntity checkCode(
+    @GetMapping(value = "/check_code")
+    public void checkCode(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "环境名", required = true)
             @RequestParam String code) {
         applicationTemplateService.checkCode(organizationId, code);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }
