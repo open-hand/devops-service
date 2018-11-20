@@ -12,4 +12,16 @@
         d.object = #{objectType} and d.object_id = #{objectId}
         ORDER BY d.id DESC LIMIT 1
     </select>
+
+
+    <select id="queryInstanceCommand" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+        SELECT
+        d.*
+        FROM
+        devops_env_command d
+        WHERE
+        d.object = #{objectType} and d.object_id = #{objectId}
+        and d.command_type in ('update','create')
+        ORDER BY d.id DESC LIMIT 1
+    </select>
 </mapper>

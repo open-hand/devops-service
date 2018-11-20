@@ -433,7 +433,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             YamlPropertySourceLoader yamlPropertySourceLoader = new YamlPropertySourceLoader();
             try {
                 yamlPropertySourceLoader.load("test", inputStreamResource, null);
-            }catch (Exception e) {
+            } catch (Exception e) {
                 FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
                 return getErrorLine(e.getMessage());
             }
@@ -766,6 +766,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String value = applicationInstanceRepository.queryValueByInstanceId(instanceId);
         instanceE.setStatus(InstanceStatus.OPERATIING.getStatus());
         devopsEnvCommandE.setId(null);
+        devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
         instanceE.setCommandId(commandId);

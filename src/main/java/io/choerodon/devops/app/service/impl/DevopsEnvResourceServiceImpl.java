@@ -123,7 +123,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     @Override
     public List<InstanceStageDTO> listStages(Long instanceId) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                .queryByObject(ObjectType.INSTANCE.getType(), instanceId);
+                .queryInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
+        List<DevopsEnvCommandLogE> devopsEnvCommandLogES = devopsEnvCommandLogRepository
+                .queryByDeployId(devopsEnvCommandE.getId());
+        if (devopsEnvCommandLogES.isEmpty()) {
+            return new ArrayList<>();
+        }
         List<DevopsEnvResourceE> devopsEnvResourceES =
                 devopsEnvResourceRepository.listJobByInstanceId(instanceId);
         List<InstanceStageDTO> instanceStageDTOS = new ArrayList<>();
@@ -138,8 +143,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 instanceStageDTOS.add(instanceStageDTO);
             }
         });
-        List<DevopsEnvCommandLogE> devopsEnvCommandLogES = devopsEnvCommandLogRepository
-                .queryByDeployId(devopsEnvCommandE.getId());
         List<String> results = new ArrayList<>();
         getDevopsCommandEvent(devopsEnvCommandE, results);
         for (int i = 0; i < results.size(); i++) {

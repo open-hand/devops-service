@@ -8,4 +8,6 @@ import io.choerodon.mybatis.common.BaseMapper;
 public interface DevopsEnvCommandMapper extends BaseMapper<DevopsEnvCommandDO> {
 
     DevopsEnvCommandDO queryByObject(@Param("objectType") String objectType, @Param("objectId") Long objectId);
+
+    DevopsEnvCommandDO queryInstanceCommand(@Param("objectType") String objectType, @Param("objectId") Long objectId);
 }

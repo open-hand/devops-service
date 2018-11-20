@@ -324,8 +324,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .queryByprojectAndActive(projectId, true);
         DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository
                 .queryById(devopsEnvironmentUpdateDTO.getId());
-        List<Long> ids;
-        //更新环境，包含默认组到环境组，环境组到环境组，环境组到默认组,此时将初始组sequence重新排列,新环境在所选环境组中环境sequence递增
+        List<Long> ids = new ArrayList<>();
+        //更新环境,默认组到环境组,此时将默认组sequence重新排列,环境在所选新环境组中环境sequence递增
         if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
             if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
                 ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
@@ -333,7 +333,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                         .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
                                 DevopsEnvironmentE::getId)
                         .collect(Collectors.toList());
-            } else {
+            }
+            //更新环境,环境组到环境组,此时将初始环境组sequence重新排列,环境在所选新环境组中环境sequence递增
+            else if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null && !beforeDevopsEnvironmentE.getDevopsEnvGroupId().equals(devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())) {
                 ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
                         beforeDevopsEnvironmentE.getDevopsEnvGroupId()
                                 .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
@@ -347,6 +349,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())
                             .equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
         } else {
+            //更新环境,环境组到默认组
             if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null) {
                 ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
                         beforeDevopsEnvironmentE.getDevopsEnvGroupId()
@@ -355,12 +358,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                                 DevopsEnvironmentE::getId)
                         .collect(Collectors.toList());
                 ids.remove(devopsEnvironmentUpdateDTO.getId());
+                //此时将初始环境组sequence重新排列
                 sort(ids.toArray(new Long[ids.size()]));
+                //环境默认环境组中环境sequence递增
                 devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
                         devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             }
         }
-        //
         if (devopsEnvironmentUpdateDTO.getClusterId() != null && !devopsEnvironmentUpdateDTO.getClusterId()
                 .equals(beforeDevopsEnvironmentE.getClusterE().getId())) {
             deployService.initCluster(devopsEnvironmentUpdateDTO.getClusterId());
@@ -778,7 +782,17 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        return ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
+        List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+        devopsClusterRepDTOS.stream().forEach(t -> {
+            if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
+                t.setConnect(true);
+            } else {
+                t.setConnect(false);
+            }
+        });
+        return devopsClusterRepDTOS;
     }
 
     @Override
