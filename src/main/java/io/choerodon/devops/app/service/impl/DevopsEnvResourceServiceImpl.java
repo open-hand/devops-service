@@ -1,13 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.sql.Timestamp;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.devops.api.controller.v1.InstanceEventDTO;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -124,6 +128,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     public List<InstanceStageDTO> listStages(Long instanceId) {
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                 .queryInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
+        //获取实例中job的log
         List<DevopsEnvCommandLogE> devopsEnvCommandLogES = devopsEnvCommandLogRepository
                 .queryByDeployId(devopsEnvCommandE.getId());
         if (devopsEnvCommandLogES.isEmpty()) {
@@ -143,8 +148,15 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 instanceStageDTOS.add(instanceStageDTO);
             }
         });
+        //获取实例中job的event
+        List<DevopsCommandEventE> devopsCommandJobEventES = devopsCommandEventRepository
+                .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
+        LinkedHashMap<String, String> jobEvents = getDevopsCommandEvent(devopsCommandJobEventES);
         List<String> results = new ArrayList<>();
-        getDevopsCommandEvent(devopsEnvCommandE, results);
+        jobEvents.forEach((key, value) -> {
+            results.add(value);
+        });
+        //合并实例job的event和log
         for (int i = 0; i < results.size(); i++) {
             String log = "";
             if (devopsEnvCommandLogES.size() - i > 0) {
@@ -157,12 +169,44 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         return instanceStageDTOS;
     }
 
+    @Override
+    public List<InstanceEventDTO> listInstancePodEvent(Long instanceId) {
+        List<InstanceEventDTO> instanceEventDTOS = new ArrayList<>();
+        DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                .queryInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
+        //获取实例中job的event
+        List<DevopsCommandEventE> devopsCommandJobEventES = devopsCommandEventRepository
+                .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
+        if (!devopsCommandJobEventES.isEmpty()) {
+            LinkedHashMap<String, String> jobEvents = getDevopsCommandEvent(devopsCommandJobEventES);
+            jobEvents.forEach((key, value) -> {
+                InstanceEventDTO instanceEventDTO = new InstanceEventDTO();
+                instanceEventDTO.setName(key);
+                instanceEventDTO.setEvent(value);
+                instanceEventDTOS.add(instanceEventDTO);
+            });
+        }
+        //获取实例中pod的event
+        List<DevopsCommandEventE> devopsCommandPodEventES = devopsCommandEventRepository
+                .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.POD.getType());
+        if (!devopsCommandPodEventES.isEmpty()) {
+            LinkedHashMap<String, String> podEvents = getDevopsCommandEvent(devopsCommandPodEventES);
+            podEvents.forEach((key, value) -> {
+                InstanceEventDTO instanceEventDTO = new InstanceEventDTO();
+                instanceEventDTO.setName(key);
+                instanceEventDTO.setEvent(value);
+                instanceEventDTOS.add(instanceEventDTO);
+            });
+        }
+        return instanceEventDTOS;
+    }
+
+
     private void getInstanceStage(V1Job v1Job, InstanceStageDTO instanceStageDTO, Long weight) {
         instanceStageDTO.setStageName(v1Job.getMetadata().getName());
         instanceStageDTO.setWeight(weight);
-        if (v1Job.getStatus() != null
-                && v1Job.getStatus().getSucceeded() != null) {
-            if (v1Job.getStatus().getSucceeded() == 1) {
+        if (v1Job.getStatus() != null) {
+            if (v1Job.getStatus().getSucceeded() != null && v1Job.getStatus().getSucceeded() == 1) {
                 instanceStageDTO.setStatus("success");
                 if (v1Job.getStatus().getStartTime() != null
                         && v1Job.getStatus().getCompletionTime() != null) {
@@ -171,36 +215,28 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                                     new Timestamp(v1Job.getStatus().getCompletionTime().toDate().getTime()))
                     );
                 }
-            } else {
+            } else if (v1Job.getStatus().getFailed() == 1) {
                 instanceStageDTO.setStatus("fail");
+            } else {
+                instanceStageDTO.setStatus("running");
             }
         }
     }
 
 
-    private void getDevopsCommandEvent(DevopsEnvCommandE devopsEnvCommandE, List<String> results) {
-        List<DevopsCommandEventE> devopsCommandEventES = devopsCommandEventRepository
-                .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.JOB.getType());
+    private LinkedHashMap<String, String> getDevopsCommandEvent(List<DevopsCommandEventE> devopsCommandEventES) {
         devopsCommandEventES.sort(Comparator.comparing(DevopsCommandEventE::getId));
-        LinkedHashMap<String, List<DevopsCommandEventE>> event = new LinkedHashMap<>();
+        LinkedHashMap<String, String> event = new LinkedHashMap<>();
         for (DevopsCommandEventE devopsCommandEventE : devopsCommandEventES) {
             if (!event.containsKey(devopsCommandEventE.getName())) {
-                List<DevopsCommandEventE> commandEventES = new ArrayList<>();
-                commandEventES.add(devopsCommandEventE);
-                event.put(devopsCommandEventE.getName(), commandEventES);
+                event.put(devopsCommandEventE.getName(), devopsCommandEventE.getMessage() + System.getProperty(LINE_SEPARATOR));
             } else {
-                event.get(devopsCommandEventE.getName()).add(devopsCommandEventE);
+                event.put(devopsCommandEventE.getName(), event.get(devopsCommandEventE.getName()) + devopsCommandEventE.getMessage() + System.getProperty(LINE_SEPARATOR));
             }
         }
-        for (Map.Entry<String, List<DevopsCommandEventE>> entry : event.entrySet()) {
-            String[] a = {""};
-            entry.getValue().stream().forEach(t -> {
-                a[0] += t.getMessage();
-                a[0] += System.getProperty(LINE_SEPARATOR);
-            });
-            results.add(a[0]);
-        }
+        return event;
     }
+
 
     /**
      * 增加pod资源
