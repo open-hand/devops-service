@@ -13,6 +13,8 @@
         dat.repo_url,
         dat.type,
         dat.uuid,
+        dat.is_synchro,
+        dat.is_failed,
         dat.gitlab_project_id
         FROM devops_app_template dat
         where (dat.organization_id = #{organizationId} or dat.organization_id is null)

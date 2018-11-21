@@ -99,6 +99,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         Organization organization = iamRepository.queryOrganizationById(organizationId);
         applicationTemplateE.initOrganization(organization.getId());
+        applicationTemplateE.setSynchro(false);
+        applicationTemplateE.setFailed(false);
         GitlabGroupE gitlabGroupE = gitlabRepository.queryGroupByName(
                 organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (gitlabGroupE == null) {
@@ -204,7 +206,6 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
         applicationTemplateE.initGitlabProjectE(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
-        applicationTemplateRepository.update(applicationTemplateE);
         String applicationDir = gitlabProjectPayload.getType() + System.currentTimeMillis();
         if (applicationTemplateE.getCopyFrom() != null) {
             ApplicationTemplateRepDTO templateRepDTO = ConvertHelper.convert(applicationTemplateRepository
@@ -241,6 +242,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
                         gitlabProjectPayload.getUserId());
             }
         }
+        applicationTemplateE.setSynchro(true);
+        applicationTemplateRepository.update(applicationTemplateE);
     }
 
     private String getToken(GitlabProjectPayload gitlabProjectPayload, String applicationDir) {
@@ -280,6 +283,13 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Override
     public Boolean applicationTemplateExist(String uuid) {
         return applicationTemplateRepository.applicationTemplateExist(uuid);
+    }
+
+    @Override
+    @Saga(code = "devops-set-appTemplate-err",
+            description = "devops set app template status create err", inputSchema = "{}")
+    public void setAppTemplateErrStatus(String input) {
+        sagaClient.startSaga("devops-set-appTemplate-err", new StartInstanceDTO(input, "", ""));
     }
 
     @Override

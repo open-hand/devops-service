@@ -14,6 +14,8 @@ public class DevopsEnviromentRepDTO {
     private Long sequence;
     private Long devopsEnvGroupId;
     private Boolean permission;
+    private Boolean isSynchro;
+    private Boolean isFailed;
 
     public Long getId() {
         return id;
@@ -86,6 +88,22 @@ public class DevopsEnviromentRepDTO {
 
     public void setPermission(Boolean permission) {
         this.permission = permission;
+    }
+
+    public Boolean getSynchro() {
+        return isSynchro;
+    }
+
+    public void setSynchro(Boolean synchro) {
+        isSynchro = synchro;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 
 }

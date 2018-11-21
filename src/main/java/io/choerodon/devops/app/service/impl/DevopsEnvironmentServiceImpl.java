@@ -127,6 +127,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         checkName(projectId, devopsEnviromentDTO.getClusterId(), devopsEnviromentDTO.getName());
         devopsEnvironmentE.initActive(true);
         devopsEnvironmentE.initConnect(false);
+        devopsEnvironmentE.initSynchro(false);
+        devopsEnvironmentE.initFailed(false);
         devopsEnvironmentE.initDevopsClusterEById(devopsEnviromentDTO.getClusterId());
         devopsEnvironmentE.initToken(GenerateUUID.generateUUID());
         devopsEnvironmentE.initProjectE(projectId);
@@ -512,11 +514,11 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             gitlabRepository.createFile(gitlabProjectDO.getId(),
                     README, README_CONTENT, "ADD README", gitlabProjectPayload.getUserId());
         }
-
-        devopsEnviromentRepository.update(devopsEnvironmentE);
         // 创建环境时初始化用户权限，分为gitlab权限和devops环境用户表权限
         initUserPermissionWhenCreatingEnv(gitlabProjectPayload, devopsEnvironmentE.getId(),
                 TypeUtil.objToLong(gitlabProjectDO.getId()), projectE.getId());
+        devopsEnvironmentE.initSynchro(true);
+        devopsEnviromentRepository.update(devopsEnvironmentE);
     }
 
     private void initUserPermissionWhenCreatingEnv(GitlabProjectPayload gitlabProjectPayload, Long envId,
@@ -793,6 +795,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         });
         return devopsClusterRepDTOS;
+    }
+
+    @Override
+    @Saga(code = "devops-set-env-err",
+            description = "devops set env status create err", inputSchema = "{}")
+    public void setEnvErrStatus(String data) {
+        sagaClient.startSaga("devops-set-env-err", new StartInstanceDTO(data, "", ""));
     }
 
     @Override

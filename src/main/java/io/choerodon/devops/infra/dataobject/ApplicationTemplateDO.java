@@ -14,7 +14,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_app_template")
-public class ApplicationTemplateDO  extends AuditDomain {
+public class ApplicationTemplateDO extends AuditDomain {
 
     @Id
     @GeneratedValue
@@ -28,6 +28,9 @@ public class ApplicationTemplateDO  extends AuditDomain {
     private Boolean type;
     private String uuid;
     private Long gitlabProjectId;
+    private Boolean isSynchro;
+    private Boolean isFailed;
+
 
     public Long getId() {
         return id;
@@ -109,4 +112,19 @@ public class ApplicationTemplateDO  extends AuditDomain {
         this.gitlabProjectId = gitlabProjectId;
     }
 
+    public Boolean getSynchro() {
+        return isSynchro;
+    }
+
+    public void setSynchro(Boolean synchro) {
+        isSynchro = synchro;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
+    }
 }

@@ -13,6 +13,8 @@ public class ApplicationTemplateRepDTO {
     private Long copyFrom;
     private String repoUrl;
     private Boolean type;
+    private Boolean isSynchro;
+    private Boolean isFailed;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -85,5 +87,21 @@ public class ApplicationTemplateRepDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Boolean getSynchro() {
+        return isSynchro;
+    }
+
+    public void setSynchro(Boolean synchro) {
+        isSynchro = synchro;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 }
