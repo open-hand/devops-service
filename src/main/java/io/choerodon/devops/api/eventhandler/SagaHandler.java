@@ -119,7 +119,7 @@ public class SagaHandler {
             description = "devops 创建 Harbor",
             sagaCode = "iam-create-project",
             maxRetryCount = 0,
-            seq = 2)
+            seq = 1)
     public String handleHarborEvent(String msg) {
         ProjectEvent projectEvent = gson.fromJson(msg, ProjectEvent.class);
         HarborPayload harborPayload = new HarborPayload(
