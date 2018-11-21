@@ -612,8 +612,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
             List<DevopsEnvUserPermissionDTO> allProjectMemberList = new ArrayList<>();
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
-            allProjectMemberPage.getContent().forEach(e -> allProjectMemberList
-                    .add(new DevopsEnvUserPermissionDTO(e.getId(), e.getLoginName(), e.getRealName())));
+            allProjectMemberPage.getContent().forEach(e -> {
+                DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+                devopsEnvUserPermissionDTO.setIamUserId(e.getId());
+                devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
+                devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+                allProjectMemberList.add(devopsEnvUserPermissionDTO);
+            });
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setContent(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
@@ -626,8 +631,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                     .collect(Collectors.toList());
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
-            allProjectMemberPage.getContent().forEach(e -> retureUsersDTOList
-                    .add(new DevopsEnvUserPermissionDTO(e.getId(), e.getLoginName(), e.getRealName())));
+            allProjectMemberPage.getContent().forEach(e -> {
+                DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
+                devopsEnvUserPermissionDTO.setIamUserId(e.getId());
+                devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
+                devopsEnvUserPermissionDTO.setRealName(e.getRealName());
+                retureUsersDTOList.add(devopsEnvUserPermissionDTO);
+            });
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
             devopsEnvUserPermissionDTOPage.setContent(retureUsersDTOList);
@@ -641,9 +651,33 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Boolean updateEnvUserPermission(Long envId, List<Long> userIds) {
-        UpdateUserPermissionService updateEnvUserPermissionService = new UpdateEnvUserPermissionServiceImpl();
-        return updateEnvUserPermissionService.updateUserPermission(envId, userIds);
+    public Boolean updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
+        // 更新以前有权限的所有用户
+        List<Long> currentUserIds = devopsEnvUserPermissionRepository.listAll(envId).stream()
+                .map(DevopsEnvUserPermissionE::getIamUserId).collect(Collectors.toList());
+        // 待添加的用户
+        List<Long> addUsersList = userIds.stream().filter(e -> !currentUserIds.contains(e)).collect(Collectors.toList());
+        // 待删除的用户
+        List<Long> deleteUsersList = currentUserIds.stream().filter(e -> !userIds.contains(e))
+                .collect(Collectors.toList());
+
+        // 更新gitlab权限
+        Long gitlabProjectId = devopsEnviromentRepository.queryById(envId).getGitlabEnvProjectId();
+        addUsersList.forEach(e -> {
+            Integer permissionNumber = 40;
+            UserAttrE userAttrE = userAttrRepository.queryById(e);
+            Long gitlabUserId = userAttrE.getGitlabUserId();
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
+        });
+        deleteUsersList.forEach(e -> {
+            Integer permissionNumber = 0;
+            UserAttrE userAttrE = userAttrRepository.queryById(e);
+            Long gitlabUserId = userAttrE.getGitlabUserId();
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
+        });
+        // 事务如果失败，数据库会回滚
+        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, addUsersList, deleteUsersList);
+        return true;
     }
 
     private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {

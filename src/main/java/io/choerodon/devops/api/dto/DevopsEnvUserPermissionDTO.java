@@ -14,18 +14,11 @@ public class DevopsEnvUserPermissionDTO {
     public DevopsEnvUserPermissionDTO() {
     }
 
-    public DevopsEnvUserPermissionDTO(Long iamUserId, String loginName, String realName) {
+    public DevopsEnvUserPermissionDTO(String loginName, Long iamUserId, String realName) {
+        this.loginName = loginName;
         this.iamUserId = iamUserId;
         this.loginName = loginName;
         this.realName = realName;
-    }
-
-    public Long getIamUserId() {
-        return iamUserId;
-    }
-
-    public void setIamUserId(Long iamUserId) {
-        this.iamUserId = iamUserId;
     }
 
     public String getRealName() {
@@ -36,11 +29,11 @@ public class DevopsEnvUserPermissionDTO {
         return loginName;
     }
 
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
+    public Long getIamUserId() {
+        return iamUserId;
     }
 
-    public void setRealName(String realName) {
-        this.realName = realName;
+    public void setIamUserId(Long iamUserId) {
+        this.iamUserId = iamUserId;
     }
 }

@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import retrofit2.http.HEAD;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
@@ -240,7 +241,6 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.get"));
     }
 
-
     /**
      * 本项目下或者应用市场在该项目下部署过的应用
      *
@@ -334,7 +334,6 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.get"));
     }
 
-
     /**
      * 项目下分页查询代码仓库
      *
@@ -385,9 +384,9 @@ public class ApplicationController {
     /**
      * 应用下为用户分配权限
      *
-     * @param projectId               项目id
-     * @param appId                   应用id
-     * @param appUserPermissionReqDTO 请求体
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param userIds   有权限的用户ids
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用下为用户分配权限")
@@ -397,9 +396,9 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long appId,
-            @ApiParam(value = "请求体")
-            @RequestBody AppUserPermissionReqDTO appUserPermissionReqDTO) {
-        return Optional.ofNullable(applicationService.updateAppUserPermission(appId, appUserPermissionReqDTO))
+            @ApiParam(value = "有权限的用户ids")
+            @RequestBody List<Long> userIds) {
+        return Optional.ofNullable(applicationService.updateAppUserPermission(appId, userIds))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.user.permission.update"));
     }

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.domain.application.entity.AppUserPermissionE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.dataobject.AppUserPermissionDO;
@@ -37,8 +38,14 @@ public class AppUserPermissionRepositoryImpl implements AppUserPermissionReposit
     @Transactional
     public void updateAppUserPermission(Long appId, List<Long> addUserIds, List<Long> deleteUserIds) {
         // 待添加的用户列表
-        addUserIds.forEach(e -> appUserPermissionMapper.insert(new AppUserPermissionDO(e, appId)));
+        List<UserE> addIamUsers = iamRepository.listUsersByIds(addUserIds);
+        addIamUsers.forEach(e -> appUserPermissionMapper
+                .insert(new AppUserPermissionDO(e.getId(), e.getLoginName(), e.getRealName(), appId)));
         // 待删除的用户列表
-        deleteUserIds.forEach(e -> appUserPermissionMapper.delete(new AppUserPermissionDO(e, appId)));
+        deleteUserIds.forEach(e -> {
+            AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO();
+            appUserPermissionDO.setIamUserId(e);
+            appUserPermissionMapper.delete(appUserPermissionDO);
+        });
     }
 }
