@@ -49,7 +49,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     @Override
     public void createProject(DevopsProjectDO devopsProjectDO) {
         if (devopsProjectMapper.insert(devopsProjectDO) != 1) {
-            LOGGER.error("insert project attr error");
+            throw new CommonException("insert project attr error");
         }
     }
 
