@@ -55,10 +55,12 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
 
     @Override
     public void updateProjectAttr(DevopsProjectDO devopsProjectDO) {
-        System.out.println("zzzzzzz: "+ devopsProjectDO.getIamProjectId());
         DevopsProjectDO oldDevopsProjectDO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDO.getIamProjectId());
-        System.out.print("asdasdasdasd"+ oldDevopsProjectDO);
-        devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
-        devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);
+        if (oldDevopsProjectDO == null) {
+            devopsProjectMapper.insert(devopsProjectDO);
+        } else {
+            devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
+            devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);
+        }
     }
 }
