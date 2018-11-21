@@ -32,7 +32,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class IamRepositoryImpl implements IamRepository {
 
     private static final Gson gson = new Gson();
-
     private static final Logger LOGGER = LoggerFactory.getLogger(IamRepositoryImpl.class);
 
     private IamServiceClient iamServiceClient;

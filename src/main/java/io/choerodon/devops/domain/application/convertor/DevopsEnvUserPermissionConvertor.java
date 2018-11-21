@@ -20,7 +20,6 @@ public class DevopsEnvUserPermissionConvertor implements ConvertorI<DevopsEnvUse
     public DevopsEnvUserPermissionDTO doToDto(DevopsEnvUserPermissionDO dataObject) {
         DevopsEnvUserPermissionDTO devopsEnvUserPermissionDTO = new DevopsEnvUserPermissionDTO();
         BeanUtils.copyProperties(dataObject, devopsEnvUserPermissionDTO);
-        devopsEnvUserPermissionDTO.setPermitted(dataObject.getPermitted());
         return devopsEnvUserPermissionDTO;
     }
 

@@ -610,7 +610,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                devopsEnvUserPermissionDTO.setPermitted(false);
                 allProjectMemberList.add(devopsEnvUserPermissionDTO);
             });
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
@@ -630,11 +629,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                if (allUsersId.contains(e.getId())) {
-                    devopsEnvUserPermissionDTO.setPermitted(true);
-                } else {
-                    devopsEnvUserPermissionDTO.setPermitted(false);
-                }
                 retureUsersDTOList.add(devopsEnvUserPermissionDTO);
             });
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
@@ -652,13 +646,12 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public Boolean updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
         // 更新以前有权限的所有用户
-        List<Long> currentRecord = devopsEnvUserPermissionRepository.listAll(envId).stream()
-                .map(DevopsEnvUserPermissionE::getIamUserId).collect(
-                        Collectors.toList());
+        List<Long> currentUserIds = devopsEnvUserPermissionRepository.listAll(envId).stream()
+                .map(DevopsEnvUserPermissionE::getIamUserId).collect(Collectors.toList());
         // 待添加的用户
-        List<Long> addUsersList = userIds.stream().filter(e -> !currentRecord.contains(e)).collect(Collectors.toList());
+        List<Long> addUsersList = userIds.stream().filter(e -> !currentUserIds.contains(e)).collect(Collectors.toList());
         // 待删除的用户
-        List<Long> deleteUsersList = currentRecord.stream().filter(e -> !userIds.contains(e))
+        List<Long> deleteUsersList = currentUserIds.stream().filter(e -> !userIds.contains(e))
                 .collect(Collectors.toList());
 
         // 更新gitlab权限

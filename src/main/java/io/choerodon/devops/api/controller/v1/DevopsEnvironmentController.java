@@ -38,7 +38,6 @@ public class DevopsEnvironmentController {
      *
      * @param projectId           项目id
      * @param devopsEnviromentDTO 环境信息
-     * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建环境")
@@ -90,7 +89,6 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.environment.get"));
     }
 
-
     /**
      * 项目下环境流水线查询环境
      *
@@ -111,8 +109,6 @@ public class DevopsEnvironmentController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.get"));
     }
-
-
 
     /**
      * 项目下启用停用环境
@@ -318,12 +314,12 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "获取环境下所有用户权限")
-    @GetMapping(value = "/{env_id}/list_all")
+    @GetMapping(value = "/{envId}/list_all")
     public ResponseEntity<List<DevopsEnvUserPermissionDTO>> listAllUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @PathVariable Long envId) {
         return Optional.ofNullable(devopsEnvironmentService.listAllUserPermission(envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.get"));
@@ -339,12 +335,12 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "环境下为用户分配权限")
-    @PostMapping(value = "/{env_id}/permission")
+    @PostMapping(value = "/{envId}/permission")
     public ResponseEntity<Boolean> updateEnvUserPermission(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId,
+            @PathVariable Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody List<Long> userIds) {
         return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds))
@@ -362,12 +358,12 @@ public class DevopsEnvironmentController {
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "删除已停用的环境")
-    @DeleteMapping(value = "/{env_id}")
+    @DeleteMapping(value = "/{envId}")
     public ResponseEntity deleteDeactivatedEnvironment(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境id", required = true)
-            @PathVariable(value = "env_id") Long envId) {
+            @PathVariable Long envId) {
         devopsEnvironmentService.deleteDeactivatedEnvironment(envId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

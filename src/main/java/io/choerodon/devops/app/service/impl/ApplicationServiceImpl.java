@@ -24,6 +24,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -87,7 +88,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     private SagaClient sagaClient;
     @Autowired
     private ApplicationMarketRepository applicationMarketRepository;
-
+    @Autowired
+    private AppUserPermissionRepository appUserPermissionRepository;
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository;
 
     @Override
     @Saga(code = "devops-create-gitlab-project",
@@ -299,7 +303,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                 gitlabGroupE.getProjectE().getId());
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(), gitlabProjectPayload.getUserId());
+        GitlabProjectDO gitlabProjectDO = gitlabRepository
+                .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(),
+                        gitlabProjectPayload.getUserId());
         if (gitlabProjectDO.getId() == null) {
             gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getPath(),
@@ -341,7 +347,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                 if (!branchDO.getProtected()) {
                     try {
                         gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
-                                AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                                AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
+                                gitlabProjectPayload.getUserId());
                     } catch (CommonException e) {
                         branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
                         if (!branchDO.getProtected()) {
@@ -352,14 +359,16 @@ public class ApplicationServiceImpl implements ApplicationService {
             } else {
                 if (!branchDO.getProtected()) {
                     gitlabRepository.createProtectBranch(gitlabProjectPayload.getGitlabProjectId(), MASTER,
-                            AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), gitlabProjectPayload.getUserId());
+                            AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
+                            gitlabProjectPayload.getUserId());
                 }
             }
             initMasterBranch(gitlabProjectPayload, applicationE);
         }
         try {
             String token = GenerateUUID.generateUUID();
-            List<Variable> variables = gitlabRepository.getVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
+            List<Variable> variables = gitlabRepository
+                    .getVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
             if (variables.isEmpty()) {
                 gitlabRepository.addVariable(gitlabProjectPayload.getGitlabProjectId(), "Token",
                         token,
@@ -378,7 +387,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
             uri += "devops/webhook";
             projectHook.setUrl(uri);
-            List<ProjectHook> projectHooks = gitlabRepository.getHooks(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
+            List<ProjectHook> projectHooks = gitlabRepository
+                    .getHooks(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
             if (projectHooks == null) {
                 applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
                         gitlabProjectPayload.getGitlabProjectId(), gitlabProjectPayload.getUserId(), projectHook)
@@ -424,7 +434,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         devopsGitRepository.createDevopsBranch(devopsBranchE);
     }
 
-    private void replaceParams(ApplicationE applicationE, ProjectE projectE, Organization organization, String applicationDir) {
+    private void replaceParams(ApplicationE applicationE, ProjectE projectE, Organization organization,
+                               String applicationDir) {
         try {
             File file = new File(gitUtil.getWorkingDirectory(applicationDir));
             Map<String, String> params = new HashMap<>();
@@ -483,8 +494,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<ApplicationCodeDTO> listByEnvId(Long projectId, Long envId, String status, Long appId) {
-        List<ApplicationCodeDTO> applicationCodeDTOS = ConvertHelper.convertList(applicationRepository.listByEnvId(projectId, envId, status),
-                ApplicationCodeDTO.class);
+        List<ApplicationCodeDTO> applicationCodeDTOS = ConvertHelper
+                .convertList(applicationRepository.listByEnvId(projectId, envId, status),
+                        ApplicationCodeDTO.class);
         if (appId != null) {
             ApplicationE applicationE = applicationRepository.query(appId);
             ApplicationCodeDTO applicationCodeDTO = new ApplicationCodeDTO();
@@ -516,6 +528,58 @@ public class ApplicationServiceImpl implements ApplicationService {
         return ConvertPageHelper.convertPage(applicationRepository
                         .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
                 ApplicationDTO.class);
+    }
+
+    @Override
+    public List<AppUserPermissionRepDTO> listAllUserPermission(Long appId) {
+        return ConvertHelper.convertList(appUserPermissionRepository.listAll(appId), AppUserPermissionRepDTO.class);
+    }
+
+    @Override
+    public Boolean updateAppUserPermission(Long appId, List<Long> userIds) {
+        // 更新以前所有有权限的用户
+        List<Long> currentUserIds = appUserPermissionRepository.listAll(appId).stream()
+                .map(AppUserPermissionE::getIamUserId).collect(Collectors.toList());
+        // 待添加的用户
+        List<Long> addUserIds = userIds.stream().filter(e -> !currentUserIds.contains(e)).collect(Collectors.toList());
+        // 待删除的用户
+        List<Long> deleteUserIds = currentUserIds.stream().filter(e -> !userIds.contains(e))
+                .collect(Collectors.toList());
+        // 更新gitlab权限
+        Long gitlabProjectId = TypeUtil.objToLong(applicationRepository.query(appId).getGitlabProjectE().getId());
+        addUserIds.forEach(e -> {
+            Integer permissionNumber = 40;
+            UserAttrE userAttrE = userAttrRepository.queryById(e);
+            Long gitlabUserId = userAttrE.getGitlabUserId();
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
+        });
+        deleteUserIds.forEach(e -> {
+            Integer permissionNumber = 0;
+            UserAttrE userAttrE = userAttrRepository.queryById(e);
+            Long gitlabUserId = userAttrE.getGitlabUserId();
+            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
+        });
+        // 事务如果失败，数据库会回滚
+        appUserPermissionRepository.updateAppUserPermission(appId, addUserIds, deleteUserIds);
+        return true;
+    }
+
+    private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
+        if (permission == 0) {
+            // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
+            GitlabMemberE gitlabMemberE = gitlabProjectRepository
+                    .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
+            if (gitlabMemberE.getId() != null) {
+                gitlabRepository
+                        .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
+            }
+        } else {
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setUserId(TypeUtil.objToInteger(userId));
+            memberDTO.setAccessLevel(permission);
+            memberDTO.setExpiresAt("");
+            gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
+        }
     }
 
     @Override

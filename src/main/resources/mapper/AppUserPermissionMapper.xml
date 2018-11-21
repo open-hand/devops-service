@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.AppUserPermissionMapper">
+    <select id="listAllUserPermissionByAppId" resultType="io.choerodon.devops.infra.dataobject.AppUserPermissionDO">
+        SELECT
+        daup.iam_user_id,
+        daup.login_name,
+        daup.real_name
+        FROM devops_app_user_permission daup
+        WHERE daup.app_id = #{appId}
+    </select>
+</mapper>
