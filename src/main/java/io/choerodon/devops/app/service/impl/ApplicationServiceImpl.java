@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import org.eclipse.jgit.api.Git;
@@ -30,6 +31,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.domain.application.repository.*;
@@ -292,7 +294,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     public List<ApplicationTemplateRepDTO> listTemplate(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         return ConvertHelper.convertList(applicationTemplateRepository.list(projectE.getOrganization().getId()),
-                ApplicationTemplateRepDTO.class).stream().filter(applicationTemplateRepDTO -> applicationTemplateRepDTO.getSynchro() == true).collect(Collectors.toList());
+                ApplicationTemplateRepDTO.class).stream()
+                .filter(applicationTemplateRepDTO -> applicationTemplateRepDTO.getSynchro() == true).collect(
+                        Collectors.toList());
     }
 
     @Override
@@ -532,7 +536,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<AppUserPermissionRepDTO> listAllUserPermission(Long appId) {
-        return ConvertHelper.convertList(appUserPermissionRepository.listAll(appId), AppUserPermissionRepDTO.class);
+        List<Long> userIds = appUserPermissionRepository.listAll(appId).stream().map(AppUserPermissionE::getIamUserId)
+                .collect(Collectors.toList());
+        List<UserE> userEList = iamRepository.listUsersByIds(userIds);
+        List<AppUserPermissionRepDTO> resultDTOList = new ArrayList<>();
+        userEList.forEach(
+                e -> resultDTOList.add(new AppUserPermissionRepDTO(e.getId(), e.getLoginName(), e.getRealName())));
+        return resultDTOList;
     }
 
     @Override

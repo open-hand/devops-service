@@ -11,6 +11,15 @@ public class AppUserPermissionRepDTO {
     private String loginName;
     private String realName;
 
+    public AppUserPermissionRepDTO() {
+    }
+
+    public AppUserPermissionRepDTO(Long iamUserId, String loginName, String realName) {
+        this.iamUserId = iamUserId;
+        this.loginName = loginName;
+        this.realName = realName;
+    }
+
     public Long getIamUserId() {
         return iamUserId;
     }

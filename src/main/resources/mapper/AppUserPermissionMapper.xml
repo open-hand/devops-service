@@ -4,10 +4,8 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.AppUserPermissionMapper">
     <select id="listAllUserPermissionByAppId" resultType="io.choerodon.devops.infra.dataobject.AppUserPermissionDO">
         SELECT
-        daup.iam_user_id,
-        daup.login_name,
-        daup.real_name
-        FROM devops_app_user_permission daup
-        WHERE daup.app_id = #{appId}
+        daur.iam_user_id
+        FROM devops_app_user_rel daur
+        WHERE daur.app_id = #{appId}
     </select>
 </mapper>
