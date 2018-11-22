@@ -158,7 +158,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 memberHelper.getProjectOwnerAccessLevel().toValue(),
                 memberHelper.getOrganizationAccessLevel().toValue()};
         AccessLevel accessLevel = AccessLevel.forValue(Collections.max(Arrays.asList(roles)));
-        if (!accessLevel.equals(AccessLevel.NONE)) {
+        if (!accessLevel.equals(AccessLevel.NONE) && accessLevel.equals(AccessLevel.OWNER)) {
             if (resourceType.equals(PROJECT)) {
                 try {
                     //给gitlab应用组分配owner角色
@@ -166,17 +166,18 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                             TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                             (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                    addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
+                    addOrUpdateGilabRole(accessLevel, groupMemberE,
+                            TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
                     if (accessLevel.equals(AccessLevel.OWNER)) {
                         //给gitlab环境组分配owner角色
                         groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                 TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
                                 (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                        addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), userAttrE);
+                        addOrUpdateGilabRole(accessLevel, groupMemberE,
+                                TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), userAttrE);
                     }
                 } catch (Exception e) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
-                    return;
                 }
             } else {
                 //给组织对应的模板库分配owner角色
@@ -191,7 +192,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                         TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                         (TypeUtil.objToInteger(userAttrE.getGitlabUserId())));
-                addOrUpdateGilabRole(accessLevel, groupMemberE, TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
+                addOrUpdateGilabRole(accessLevel, groupMemberE,
+                        TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), userAttrE);
             }
         }
     }

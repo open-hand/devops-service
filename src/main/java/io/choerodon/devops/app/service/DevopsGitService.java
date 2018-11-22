@@ -81,9 +81,8 @@ public interface DevopsGitService {
      * @param projectId     项目id
      * @param applicationId 应用id
      * @param branchName    分支名
-     * @return Boolean
      */
-    Boolean checkName(Long projectId, Long applicationId, String branchName);
+    void checkName(Long projectId, Long applicationId, String branchName);
 
     Map<String, Object> getMergeRequestList(Long projectId, Long aplicationId, String state, PageRequest pageRequest);
 

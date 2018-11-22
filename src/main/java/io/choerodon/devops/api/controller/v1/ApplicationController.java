@@ -76,7 +76,6 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.query"));
     }
 
-
     /**
      * 项目下更新应用信息
      *
@@ -96,7 +95,6 @@ public class ApplicationController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.query"));
     }
-
 
     /**
      * 项目下启用停用应用信息
@@ -387,9 +385,9 @@ public class ApplicationController {
     /**
      * 应用下为用户分配权限
      *
-     * @param projectId 项目id
-     * @param appId     应用id
-     * @param userIds   有权限的用户ids
+     * @param projectId               项目id
+     * @param appId                   应用id
+     * @param appUserPermissionReqDTO 请求体
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "应用下为用户分配权限")
@@ -399,9 +397,9 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用id", required = true)
             @PathVariable Long appId,
-            @ApiParam(value = "有权限的用户ids")
-            @RequestBody List<Long> userIds) {
-        return Optional.ofNullable(applicationService.updateAppUserPermission(appId, userIds))
+            @ApiParam(value = "请求体")
+            @RequestBody AppUserPermissionReqDTO appUserPermissionReqDTO) {
+        return Optional.ofNullable(applicationService.updateAppUserPermission(appId, appUserPermissionReqDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.user.permission.update"));
     }

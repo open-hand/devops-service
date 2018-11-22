@@ -165,11 +165,22 @@ public class ApplicationServiceImpl implements ApplicationService {
     public Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO) {
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
         applicationE.initProjectE(projectId);
-        applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
+
+        ApplicationE temp = applicationRepository.query(applicationUpdateDTO.getId());
+        if (!temp.getName().equals(applicationUpdateDTO.getName())) {
+            applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
+        }
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException("error.application.update");
         }
-        return true;
+        if (!applicationUpdateDTO.getSkipCheckPermission()) {
+            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
+            return updateUserPermissionService
+                    .updateUserPermission(applicationUpdateDTO.getId(), applicationUpdateDTO.getUserIds());
+        } else {
+            // TODO
+            return null;
+        }
     }
 
     @Override
@@ -546,9 +557,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Boolean updateAppUserPermission(Long appId, List<Long> userIds) {
-        UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
-        return updateUserPermissionService.updateUserPermission(appId, userIds);
+    public Boolean updateAppUserPermission(Long appId, AppUserPermissionReqDTO appUserPermissionReqDTO) {
+        if (appUserPermissionReqDTO.getSkipCheckAppPermission()) {
+            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
+            return updateUserPermissionService.updateUserPermission(appId, appUserPermissionReqDTO.getUserIds());
+        } else {
+            return null;
+        }
     }
 
     @Override
