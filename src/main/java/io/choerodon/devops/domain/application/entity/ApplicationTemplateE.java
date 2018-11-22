@@ -22,6 +22,8 @@ public class ApplicationTemplateE {
     private String repoUrl;
     private Boolean type;
     private String uuid;
+    private Boolean isSynchro;
+    private Boolean isFailed;
 
 
     public ApplicationTemplateE() {
@@ -118,5 +120,21 @@ public class ApplicationTemplateE {
 
     public void initGitlabProjectE(Integer id) {
         this.gitlabProjectE = new GitlabProjectE(id);
+    }
+
+    public Boolean getSynchro() {
+        return isSynchro;
+    }
+
+    public void setSynchro(Boolean synchro) {
+        isSynchro = synchro;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 }

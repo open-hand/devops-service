@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.controller.v1.InstanceEventDTO;
 import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
 import io.choerodon.devops.api.dto.InstanceStageDTO;
 
@@ -12,4 +13,6 @@ public interface DevopsEnvResourceService {
     DevopsEnvResourceDTO listResources(Long instanceId);
 
     List<InstanceStageDTO> listStages(Long instanceId);
+
+    List<InstanceEventDTO> listInstancePodEvent(Long instanceId);
 }

@@ -33,6 +33,8 @@ public class DevopsEnvironmentE {
     private Long devopsSyncCommit;
     private Long agentSyncCommit;
     private Long sagaSyncCommit;
+    private Boolean isSynchro;
+    private Boolean isFailed;
 
     /**
      * 重写构造方法
@@ -264,6 +266,30 @@ public class DevopsEnvironmentE {
 
     public void initDevopsClusterEById(Long id) {
         this.clusterE = new DevopsClusterE(id);
+    }
+
+    public Boolean getSynchro() {
+        return isSynchro;
+    }
+
+    public void setSynchro(Boolean synchro) {
+        isSynchro = synchro;
+    }
+
+    public void initSynchro(Boolean synchro) {
+        isSynchro = synchro;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
+    }
+
+    public void initFailed(Boolean failed) {
+        isFailed = failed;
     }
 
     /**

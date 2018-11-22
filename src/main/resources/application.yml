@@ -59,6 +59,11 @@ choerodon:
         enabled: true # 是否开启重试功能
       kafka:
         bootstrap-servers: localhost:9092 # kafka地址
+  saga:
+    consumer:
+      thread-num: 5  # 消费线程数
+      poll-interval: 3 # 拉取消息的间隔(秒)，默认1秒
+      enabled: true # 是否启用消费端
   websocket:
     max-redis-msg-listener-concurrency: 500
     security: false

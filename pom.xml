@@ -57,7 +57,7 @@
     </build>
 
     <properties>
-        <choerodon.starters.version>0.6.1.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.7.0.RELEASE</choerodon.starters.version>
     </properties>
 
     <dependencies>
@@ -189,6 +189,11 @@
             <version>2.3.0</version>
         </dependency>
         <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>2.5.1</version>
+        </dependency>
+        <dependency>
             <groupId>io.codearte.props2yaml</groupId>
             <artifactId>props2yaml</artifactId>
             <version>0.5</version>
@@ -197,16 +202,6 @@
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>converter-jackson</artifactId>
             <version>2.3.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-event-consumer</artifactId>
-            <version>${choerodon.starters.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.choerodon</groupId>
-            <artifactId>choerodon-starter-event-producer</artifactId>
-            <version>${choerodon.starters.version}</version>
         </dependency>
         <dependency>
             <groupId>io.kubernetes</groupId>

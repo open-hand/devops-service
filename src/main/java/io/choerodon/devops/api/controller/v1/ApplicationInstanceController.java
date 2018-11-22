@@ -303,6 +303,28 @@ public class ApplicationInstanceController {
                 .orElseThrow(() -> new CommonException("error.resource.query"));
     }
 
+
+    /**
+     * 获取部署实例Event事件
+     *
+     * @param projectId     项目id
+     * @param appInstanceId 实例id
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取部署实例Event事件")
+    @GetMapping("/{appInstanceId}/events")
+    public ResponseEntity<List<InstanceEventDTO>> listEvents(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable Long appInstanceId) {
+        return Optional.ofNullable(devopsEnvResourceService.listInstancePodEvent(appInstanceId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.event.query"));
+    }
+
     /**
      * 获取部署实例hook阶段
      *

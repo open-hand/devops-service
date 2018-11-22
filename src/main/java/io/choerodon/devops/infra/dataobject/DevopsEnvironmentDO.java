@@ -29,12 +29,13 @@ public class DevopsEnvironmentDO extends AuditDomain {
     private String token;
     private Long sequence;
     private String description;
-    private Boolean isConnected;
     private Boolean isActive;
     private Long devopsEnvGroupId;
     private Long sagaSyncCommit;
     private Long devopsSyncCommit;
     private Long agentSyncCommit;
+    private Boolean isSynchro;
+    private Boolean isFailed;
 
     public Long getId() {
         return id;
@@ -91,14 +92,6 @@ public class DevopsEnvironmentDO extends AuditDomain {
 
     public void setActive(Boolean active) {
         isActive = active;
-    }
-
-    public Boolean getConnect() {
-        return isConnected;
-    }
-
-    public void setConnect(Boolean connect) {
-        isConnected = connect;
     }
 
     public Long getSequence() {
@@ -180,5 +173,21 @@ public class DevopsEnvironmentDO extends AuditDomain {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Boolean getSynchro() {
+        return isSynchro;
+    }
+
+    public void setSynchro(Boolean synchro) {
+        isSynchro = synchro;
+    }
+
+    public Boolean getFailed() {
+        return isFailed;
+    }
+
+    public void setFailed(Boolean failed) {
+        isFailed = failed;
     }
 }

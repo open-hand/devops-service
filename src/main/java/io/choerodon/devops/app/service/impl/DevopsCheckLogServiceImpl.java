@@ -15,7 +15,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import com.zaxxer.hikari.util.DefaultThreadFactory;
+import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -90,7 +90,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(), new DefaultThreadFactory("devops-upgrade", false));
+            new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
 
     private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
     private Gson gson = new Gson();
@@ -299,16 +299,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     .getCommitStatuse(applicationDO.getGitlabProjectId(), gitlabPipelineE.getSha(),
                                             ADMIN)
                                     .forEach(commitStatuseDO -> {
-                                if (gitlabJobIds.contains(commitStatuseDO.getId())) {
-                                    Stage stage = getPipelineStage(commitStatuseDO);
-                                    stages.add(stage);
-                                } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
-                                        .contains("sonarqube") && !stages.isEmpty()) {
-                                    Stage stage = getPipelineStage(commitStatuseDO);
-                                    stages.add(stage);
-                                    stageNames.add(commitStatuseDO.getName());
-                                }
-                            });
+                                        if (gitlabJobIds.contains(commitStatuseDO.getId())) {
+                                            Stage stage = getPipelineStage(commitStatuseDO);
+                                            stages.add(stage);
+                                        } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
+                                                .contains("sonarqube") && !stages.isEmpty()) {
+                                            Stage stage = getPipelineStage(commitStatuseDO);
+                                            stages.add(stage);
+                                            stageNames.add(commitStatuseDO.getName());
+                                        }
+                                    });
                             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
                             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
                         });
@@ -344,16 +344,16 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         gitlabProjectRepository.getCommitStatuse(applicationDO.getGitlabProjectId(),
                                 devopsGitlabCommitDO.getCommitSha(), ADMIN)
                                 .forEach(commitStatuseDO -> {
-                            if (gitlabJobIds.contains(commitStatuseDO.getId())) {
-                                Stage stage = getPipelineStage(commitStatuseDO);
-                                stages.add(stage);
-                            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
-                                    .contains("sonarqube") && !stages.isEmpty()) {
-                                Stage stage = getPipelineStage(commitStatuseDO);
-                                stages.add(stage);
-                                stageNames.add(commitStatuseDO.getName());
-                            }
-                        });
+                                    if (gitlabJobIds.contains(commitStatuseDO.getId())) {
+                                        Stage stage = getPipelineStage(commitStatuseDO);
+                                        stages.add(stage);
+                                    } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
+                                            .contains("sonarqube") && !stages.isEmpty()) {
+                                        Stage stage = getPipelineStage(commitStatuseDO);
+                                        stages.add(stage);
+                                        stageNames.add(commitStatuseDO.getName());
+                                    }
+                                });
                         devopsGitlabPipelineDO.setStatus(gitlabPipelineE.getStatus().toString());
                         devopsGitlabPipelineDO.setStage(JSONArray.toJSONString(stages));
                         devopsGitlabPipelineMapper.updateByPrimaryKeySelective(devopsGitlabPipelineDO);
@@ -685,11 +685,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<DevopsIngressPathE> devopsIngressPathES =
                     devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
             devopsIngressPathES.forEach(devopsIngressPathE ->
-                            v1beta1Ingress.getSpec().getRules().get(0).getHttp()
-                                    .addPathsItem(devopsIngressService.createPath(
-                                            devopsIngressPathE.getPath(),
-                                            devopsIngressPathE.getServiceId(),
-                                            devopsIngressPathE.getServicePort())));
+                    v1beta1Ingress.getSpec().getRules().get(0).getHttp()
+                            .addPathsItem(devopsIngressService.createPath(
+                                    devopsIngressPathE.getPath(),
+                                    devopsIngressPathE.getServiceId(),
+                                    devopsIngressPathE.getServicePort())));
 
             return v1beta1Ingress;
         }

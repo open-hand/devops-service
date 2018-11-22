@@ -34,4 +34,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
     changeSet(author: 'n1ck', id: '2018-11-20-modify-column-collate') {
         sql("ALTER TABLE devops_app_template MODIFY COLUMN `name` VARCHAR(32) BINARY")
     }
+
+    changeSet(author: 'younger', id: '2018-11-21-add-column') {
+        addColumn(tableName: 'devops_app_template') {
+            column(name: 'is_synchro', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: 'is synchro', afterColumn: 'gitlab_project_id')
+            column(name: 'is_failed', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: 'is failed', afterColumn: 'is_synchro')
+        }
+        sql("UPDATE  devops_app_template  dat SET dat.is_synchro= (CASE when dat.gitlab_project_id is not null THEN 1  else  0  END)")
+        sql("UPDATE devops_app_template  dat SET dat.is_failed= (CASE when dat.gitlab_project_id  is  null THEN 1  else  0  END)")
+    }
 }

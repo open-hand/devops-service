@@ -15,9 +15,13 @@ import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 
 /**
  * Creator: Runge
@@ -46,6 +50,10 @@ public class DevopsSagaHandler {
     private DevopsGitlabPipelineService devopsGitlabPipelineService;
     @Autowired
     private ApplicationRepository applicationRepository;
+    @Autowired
+    private ApplicationTemplateRepository applicationTemplateRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     /**
      * devops创建环境
@@ -57,7 +65,36 @@ public class DevopsSagaHandler {
             seq = 1)
     public String devopsCreateEnv(String data) {
         GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
-        devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
+        try {
+            devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
+        } catch (Exception e) {
+            devopsEnvironmentService.setEnvErrStatus(data);
+            throw e;
+        }
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
+        if (devopsEnvironmentE.getFailed() != null && devopsEnvironmentE.getFailed()) {
+            devopsEnvironmentE.initFailed(false);
+            devopsEnvironmentRepository.update(devopsEnvironmentE);
+
+        }
+        return data;
+    }
+
+    /**
+     * 环境创建失败
+     */
+    @SagaTask(code = "devopsCreateEnvError",
+            description = "set  DevOps app status error",
+            sagaCode = "devops-set-env-err",
+            maxRetryCount = 0,
+            seq = 1)
+    public String setEnvErr(String data) {
+        GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryByClusterIdAndCode(gitlabProjectPayload.getClusterId(), gitlabProjectPayload.getPath());
+        devopsEnvironmentE.initFailed(true);
+        devopsEnvironmentRepository.update(devopsEnvironmentE);
         return data;
     }
 
@@ -110,6 +147,9 @@ public class DevopsSagaHandler {
         return data;
     }
 
+    /**
+     * GitOps 应用创建失败处理
+     */
     @SagaTask(code = "devopsCreateGitlabProjectErr",
             description = "set  DevOps app status error",
             sagaCode = "devops-set-app-err",
@@ -126,6 +166,23 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * GitOps 应用模板创建失败处理
+     */
+    @SagaTask(code = "devopsCreateGitlabProjectTemplateErr",
+            description = "set  DevOps app template status error",
+            sagaCode = "devops-set-appTemplate-err",
+            maxRetryCount = 0,
+            seq = 1)
+    public String setAppTemplateErr(String data) {
+        DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
+        ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(
+                devOpsAppPayload.getOrganizationId(), devOpsAppPayload.getPath());
+        applicationTemplateE.setFailed(true);
+        applicationTemplateRepository.update(applicationTemplateE);
+        return data;
+    }
+
+    /**
      * GitOps 模板事件处理
      */
     @SagaTask(code = "devopsOperationGitlabTemplateProject",
@@ -136,8 +193,20 @@ public class DevopsSagaHandler {
     public String createTemplate(String data) {
         GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);
         if (gitlabProjectEventDTO.getType().equals(TEMPLATE)) {
-            applicationTemplateService.operationApplicationTemplate(gitlabProjectEventDTO);
+            try {
+                applicationTemplateService.operationApplicationTemplate(gitlabProjectEventDTO);
+            } catch (Exception e) {
+                applicationTemplateService.setAppTemplateErrStatus(data);
+                throw e;
+            }
+            ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(
+                    gitlabProjectEventDTO.getOrganizationId(), gitlabProjectEventDTO.getPath());
+            if (applicationTemplateE.getFailed() != null && applicationTemplateE.getFailed()) {
+                applicationTemplateE.setFailed(false);
+                applicationTemplateRepository.update(applicationTemplateE);
+            }
         }
+
         return data;
     }
 

@@ -49,14 +49,18 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     @Override
     public void createProject(DevopsProjectDO devopsProjectDO) {
         if (devopsProjectMapper.insert(devopsProjectDO) != 1) {
-            LOGGER.error("insert project attr error");
+            throw new CommonException("insert project attr error");
         }
     }
 
     @Override
     public void updateProjectAttr(DevopsProjectDO devopsProjectDO) {
         DevopsProjectDO oldDevopsProjectDO = devopsProjectMapper.selectByPrimaryKey(devopsProjectDO.getIamProjectId());
-        devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
-        devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);
+        if (oldDevopsProjectDO == null) {
+            devopsProjectMapper.insert(devopsProjectDO);
+        } else {
+            devopsProjectDO.setObjectVersionNumber(oldDevopsProjectDO.getObjectVersionNumber());
+            devopsProjectMapper.updateByPrimaryKeySelective(devopsProjectDO);
+        }
     }
 }

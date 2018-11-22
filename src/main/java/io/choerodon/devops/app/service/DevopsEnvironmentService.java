@@ -161,6 +161,8 @@ public interface DevopsEnvironmentService {
      */
     List<DevopsClusterRepDTO> listDevopsCluster(Long projectId);
 
+    void setEnvErrStatus(String data);
+
     void initMockService(SagaClient sagaClient);
 
 }

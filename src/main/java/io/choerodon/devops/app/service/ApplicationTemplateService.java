@@ -8,7 +8,6 @@ import io.choerodon.devops.api.dto.ApplicationTemplateDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -97,6 +96,13 @@ public interface ApplicationTemplateService {
      * @return boolean
      */
     Boolean applicationTemplateExist(String uuid);
+
+    /**
+     * 设置应用应用模板创建失败状态
+     *
+     * @param gitlabProjectEventDTO 应用信息
+     */
+    void setAppTemplateErrStatus(String gitlabProjectEventDTO);
 
     void initMockService(SagaClient sagaClient);
 }

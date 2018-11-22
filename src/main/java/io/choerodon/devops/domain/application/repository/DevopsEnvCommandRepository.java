@@ -15,4 +15,6 @@ public interface DevopsEnvCommandRepository {
     DevopsEnvCommandE query(Long id);
 
     List<DevopsEnvCommandE> listByEnvId(Long envId);
+
+    DevopsEnvCommandE queryInstanceCommand(String objectType, Long objectId);
 }

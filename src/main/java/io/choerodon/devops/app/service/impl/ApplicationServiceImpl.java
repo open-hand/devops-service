@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import org.eclipse.jgit.api.Git;
@@ -286,7 +287,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public List<ApplicationTemplateRepDTO> listTemplate(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         return ConvertHelper.convertList(applicationTemplateRepository.list(projectE.getOrganization().getId()),
-                ApplicationTemplateRepDTO.class);
+                ApplicationTemplateRepDTO.class).stream().filter(applicationTemplateRepDTO -> applicationTemplateRepDTO.getSynchro() == true).collect(Collectors.toList());
     }
 
     @Override
