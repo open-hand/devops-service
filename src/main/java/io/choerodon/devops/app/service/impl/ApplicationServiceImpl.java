@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import org.eclipse.jgit.api.Git;
@@ -24,7 +23,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -38,6 +36,8 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
+import io.choerodon.devops.domain.service.UpdateUserPermissionService;
+import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
@@ -537,49 +537,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Boolean updateAppUserPermission(Long appId, List<Long> userIds) {
-        // 更新以前所有有权限的用户
-        List<Long> currentUserIds = appUserPermissionRepository.listAll(appId).stream()
-                .map(AppUserPermissionE::getIamUserId).collect(Collectors.toList());
-        // 待添加的用户
-        List<Long> addUserIds = userIds.stream().filter(e -> !currentUserIds.contains(e)).collect(Collectors.toList());
-        // 待删除的用户
-        List<Long> deleteUserIds = currentUserIds.stream().filter(e -> !userIds.contains(e))
-                .collect(Collectors.toList());
-        // 更新gitlab权限
-        Long gitlabProjectId = TypeUtil.objToLong(applicationRepository.query(appId).getGitlabProjectE().getId());
-        addUserIds.forEach(e -> {
-            Integer permissionNumber = 40;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        deleteUserIds.forEach(e -> {
-            Integer permissionNumber = 0;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        // 事务如果失败，数据库会回滚
-        appUserPermissionRepository.updateAppUserPermission(appId, addUserIds, deleteUserIds);
-        return true;
-    }
-
-    private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
-        if (permission == 0) {
-            // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
-            GitlabMemberE gitlabMemberE = gitlabProjectRepository
-                    .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            if (gitlabMemberE.getId() != null) {
-                gitlabRepository
-                        .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            }
-        } else {
-            MemberDTO memberDTO = new MemberDTO();
-            memberDTO.setUserId(TypeUtil.objToInteger(userId));
-            memberDTO.setAccessLevel(permission);
-            memberDTO.setExpiresAt("");
-            gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
-        }
+        UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
+        return updateUserPermissionService.updateUserPermission(appId, userIds);
     }
 
     @Override

@@ -328,7 +328,6 @@ public class DevopsEnvironmentController {
     /**
      * 环境下为用户分配权限
      *
-     * @param projectId 项目id
      * @param envId     环境id
      * @param userIds   有权限的用户ids
      */
@@ -343,7 +342,7 @@ public class DevopsEnvironmentController {
             @PathVariable Long envId,
             @ApiParam(value = "有权限的用户ids")
             @RequestBody List<Long> userIds) {
-        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(projectId, envId, userIds))
+        return Optional.ofNullable(devopsEnvironmentService.updateEnvUserPermission(envId, userIds))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.env.user.permission.update"));
     }
