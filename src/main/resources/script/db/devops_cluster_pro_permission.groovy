@@ -16,4 +16,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster_pro_permission.groovy') {
         }
     }
 
+
+    changeSet(author: 'younger', id: '2018-11-21-add-column') {
+        dropColumn(columnName: "project_name", tableName: "devops_cluster_pro_permission")
+        dropColumn(columnName: "project_code", tableName: "devops_cluster_pro_permission")
+        renameTable(newTableName: 'devops_cluster_pro_rel', oldTableName: 'devops_cluster_pro_permission')
+    }
+
 }

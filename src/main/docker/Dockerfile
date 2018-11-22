@@ -8,4 +8,4 @@ RUN /pyinstaller/pyinstaller.sh --noconfirm --clean values_yaml.py
 FROM registry.cn-hangzhou.aliyuncs.com/choerodon-tools/javabase:0.7.1
 COPY --from=pyinstaller /home/yaml/dist/values_yaml /usr/lib/yaml
 COPY app.jar /devops-service.jar
-EENTRYPOINT exec java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap $JAVA_OPTS $SKYWALKING_OPTS  -jar /devops-service.jar
+ENTRYPOINT exec java -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap $JAVA_OPTS $SKYWALKING_OPTS  -jar /devops-service.jar

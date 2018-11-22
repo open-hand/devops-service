@@ -1502,8 +1502,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
                     if (projectE.getOrganization().getId().equals(devopsClusterE.getOrganizationId())) {
                         DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
-                        devopsClusterProPermissionE.setProjectCode(projectE.getCode());
-                        devopsClusterProPermissionE.setProjectName(projectE.getName());
                         devopsClusterProPermissionE.setProjectId(projectE.getId());
                         devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
                         devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
