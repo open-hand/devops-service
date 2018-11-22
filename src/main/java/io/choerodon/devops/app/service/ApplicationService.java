@@ -6,7 +6,6 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
-import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -74,6 +73,7 @@ public interface ApplicationService {
     Page<ApplicationRepDTO> listByOptions(Long projectId,
                                           Boolean isActive,
                                           Boolean hasVersion,
+                                          String type,
                                           PageRequest pageRequest,
                                           String params);
 
@@ -87,6 +87,7 @@ public interface ApplicationService {
 
     /**
      * 设置应用创建失败状态
+     *
      * @param gitlabProjectEventDTO 应用信息
      */
     void setAppErrStatus(String gitlabProjectEventDTO);

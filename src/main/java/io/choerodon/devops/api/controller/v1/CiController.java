@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
@@ -48,8 +47,7 @@ public class CiController {
             @ApiParam(value = "类型")
             @RequestParam(required = false) String type) {
         return Optional.ofNullable(applicationService.queryFile(token, type))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.file.get"));
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK)).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
 

@@ -91,11 +91,11 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
-                                            PageRequest pageRequest, String params) {
+                                            String type, PageRequest pageRequest, String params) {
         Page<ApplicationDO> applicationES;
         Map maps = gson.fromJson(params, Map.class);
         applicationES = PageHelper
-                .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion,
+                .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
 

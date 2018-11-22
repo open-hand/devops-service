@@ -182,9 +182,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
+                                                 String type,
                                                  PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES =
-                applicationRepository.listByOptions(projectId, isActive, hasVersion, pageRequest, params);
+                applicationRepository.listByOptions(projectId, isActive, hasVersion, type, pageRequest, params);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -460,20 +461,24 @@ public class ApplicationServiceImpl implements ApplicationService {
     public String queryFile(String token, String type) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
         if (applicationE == null) {
-            throw new CommonException("error.app.query.by.token");
+            return null;
         }
-        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        InputStream inputStream;
-        if (type == null) {
-            inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
-        } else {
-            inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
+        try {
+            ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            InputStream inputStream;
+            if (type == null) {
+                inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
+            } else {
+                inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
+            }
+            Map<String, String> params = new HashMap<>();
+            params.put("{{ GROUP_NAME }}", organization.getCode() + "-" + projectE.getCode());
+            params.put("{{ PROJECT_NAME }}", applicationE.getCode());
+            return FileUtil.replaceReturnString(inputStream, params);
+        } catch (CommonException e) {
+            return null;
         }
-        Map<String, String> params = new HashMap<>();
-        params.put("{{ GROUP_NAME }}", organization.getCode() + "-" + projectE.getCode());
-        params.put("{{ PROJECT_NAME }}", applicationE.getCode());
-        return FileUtil.replaceReturnString(inputStream, params);
     }
 
     @Override
