@@ -181,7 +181,15 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsDTO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
-        List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOS = listByProjectIdAndActive(projectId, active);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+        List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
+                .queryByprojectAndActive(projectId, active).stream().peek(t ->
+                        setEnvStatus(connectedClusterList, upgradeClusterList, t)
+                )
+                .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence))
+                .collect(Collectors.toList());
+        List<DevopsEnviromentRepDTO> devopsEnviromentRepDTOS = ConvertHelper.convertList(devopsEnvironmentES, DevopsEnviromentRepDTO.class);
         if (!active) {
             DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
             devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(devopsEnviromentRepDTOS);
