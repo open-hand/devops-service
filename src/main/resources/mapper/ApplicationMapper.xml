@@ -8,6 +8,7 @@
         da.project_id,
         da.name,
         da.code,
+        da.type,
         da.is_active,
         da.is_synchro,
         da.gitlab_project_id,
@@ -23,6 +24,9 @@
             <if test="!isActive">
                 AND da.is_active = FALSE
             </if>
+        </if>
+        <if test="type != null">
+            AND da.type = #{type}
         </if>
         <if test="hasVersion != null">
             <if test="hasVersion">
@@ -159,6 +163,7 @@
         AND da.is_active = #{active}
         AND ((select count(1) from devops_app_market dam where da.id=dam.app_id)=0)
         AND ((select count(1) from devops_app_version dav where da.id=dav.app_id)>0)
+        AND da.type = 'normal'
         <include refid="sqlparam"/>
     </select>
 

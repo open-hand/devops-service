@@ -27,6 +27,7 @@ public interface ApplicationRepository {
     Page<ApplicationE> listByOptions(Long projectId,
                                      Boolean isActive,
                                      Boolean hasVersion,
+                                     String type,
                                      PageRequest pageRequest,
                                      String params);
 

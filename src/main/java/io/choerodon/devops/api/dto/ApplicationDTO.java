@@ -9,6 +9,7 @@ public class ApplicationDTO {
     private String name;
     private String code;
     private Long projectId;
+    private String type;
     private Long applictionTemplateId;
 
     public Long getId() {
@@ -49,5 +50,13 @@ public class ApplicationDTO {
 
     public void setApplictionTemplateId(Long applictionTemplateId) {
         this.applictionTemplateId = applictionTemplateId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }

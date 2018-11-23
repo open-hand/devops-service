@@ -10,13 +10,6 @@ spring:
             brokers: 127.0.0.1:9092
             zkNodes: 127.0.0.1:2181
         default-binder: kafka
-  sleuth:
-      integration:
-        enabled: false
-      scheduled:
-        enabled: false
-      sampler:
-        percentage: 1.0
   redis:
     host: localhost
   http:

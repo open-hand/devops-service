@@ -63,7 +63,7 @@ public class ApplicationController {
      * @return ApplicationRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,InitRoleCode.PROJECT_MEMBER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询单个应用信息")
     @GetMapping("/{applicationId}/detail")
     public ResponseEntity<ApplicationRepDTO> queryByAppId(
@@ -158,16 +158,18 @@ public class ApplicationController {
     public ResponseEntity<Page<ApplicationRepDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用是否启用", required = false)
+            @ApiParam(value = "应用是否启用")
             @RequestParam(value = "active", required = false) Boolean isActive,
-            @ApiParam(value = "应用是否存在版本", required = false)
+            @ApiParam(value = "应用是否存在版本")
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
+            @ApiParam(value = "应用类型")
+            @RequestParam(value = "type", required = false) String type,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationService.listByOptions(projectId, isActive, hasVersion, pageRequest, params))
+                applicationService.listByOptions(projectId, isActive, hasVersion, type, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }

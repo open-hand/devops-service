@@ -78,9 +78,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                 devopsClusterProPermissionE.setClusterId(devopsClusterE.getId());
                 devopsClusterProPermissionE.setProjectId(projectId);
-                ProjectE projectE = iamRepository.queryIamProject(projectId);
-                devopsClusterProPermissionE.setProjectName(projectE.getName());
-                devopsClusterProPermissionE.setProjectCode(projectE.getCode());
                 devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
             }
         }
@@ -123,9 +120,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 DevopsClusterProPermissionE devopsClusterProPermissionE = new DevopsClusterProPermissionE();
                 devopsClusterProPermissionE.setClusterId(clusterId);
                 devopsClusterProPermissionE.setProjectId(addProject);
-                ProjectE projectE = iamRepository.queryIamProject(addProject);
-                devopsClusterProPermissionE.setProjectName(projectE.getName());
-                devopsClusterProPermissionE.setProjectCode(projectE.getCode());
                 devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
             });
             projectIds.forEach(deleteProject -> {
@@ -233,8 +227,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 .map(devopsClusterProPermissionE -> {
                     ProjectDTO projectDTO = new ProjectDTO();
                     projectDTO.setId(devopsClusterProPermissionE.getProjectId());
-                    projectDTO.setName(devopsClusterProPermissionE.getProjectName());
-                    projectDTO.setCode(devopsClusterProPermissionE.getProjectCode());
+                    ProjectE projectE = iamRepository.queryIamProject(devopsClusterProPermissionE.getProjectId());
+                    projectDTO.setName(projectE.getName());
+                    projectDTO.setCode(projectE.getCode());
                     return projectDTO;
                 }).collect(Collectors.toList());
     }

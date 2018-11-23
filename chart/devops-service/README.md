@@ -111,5 +111,7 @@ env.open.AGENT_REPOURL|agent仓库地址
 env.open.TEMPLATE_VERSION_MICROSERVICE|微服务模板版本
 env.open.TEMPLATE_VERSION_MICROSERVICEFRONT|前端服务模板版本
 env.open.TEMPLATE_VERSION_JAVALIB|javalib模板版本
+env.open.SKYWALKING_OPTS | skywalking 代理端配置
 persistence.enabled|是否启用持久化存储
 persistence.existingClaim|绑定的pvc名称
+

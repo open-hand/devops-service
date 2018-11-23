@@ -32,6 +32,7 @@ public class ApplicationE {
     private String sonarUrl;
     private Long hookId;
     private Boolean isFailed;
+    private String type;
 
     public ApplicationE() {
     }
@@ -230,5 +231,13 @@ public class ApplicationE {
 
     public void setFailed(Boolean failed) {
         isFailed = failed;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
