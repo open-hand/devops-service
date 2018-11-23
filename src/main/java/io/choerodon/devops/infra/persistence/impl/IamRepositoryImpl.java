@@ -232,6 +232,9 @@ public class IamRepositoryImpl implements IamRepository {
         try {
             ResponseEntity<Page<UserDO>> userDOResponseEntity = iamServiceClient
                     .listUsersByEmail(projectId, 0, 10, email);
+            if (userDOResponseEntity.getBody().getContent().isEmpty()) {
+                return null;
+            }
             return ConvertHelper.convert(userDOResponseEntity.getBody().getContent().get(0), UserE.class);
         } catch (FeignException e) {
             LOGGER.error("get user by email {} error", email);

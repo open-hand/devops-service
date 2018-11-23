@@ -147,7 +147,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         DeployVersionDTO deployVersionDTO = new DeployVersionDTO();
         List<DeployEnvVersionDTO> deployEnvVersionDTOS = new ArrayList<>();
         if (applicationVersionE != null) {
-            Map<Long, List<ApplicationInstanceE>> envInstances = applicationInstanceRepository.listByAppId(appId).stream()
+            Map<Long, List<ApplicationInstanceE>> envInstances = applicationInstanceRepository.listByAppId(appId).stream().filter(applicationInstanceE -> applicationInstanceE.getCommandId() != null)
                     .collect(Collectors.groupingBy(t -> t.getDevopsEnvironmentE().getId()));
             if (!envInstances.isEmpty()) {
                 envInstances.forEach((key, value) -> {

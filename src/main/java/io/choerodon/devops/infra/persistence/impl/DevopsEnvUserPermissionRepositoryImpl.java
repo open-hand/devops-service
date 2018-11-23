@@ -86,12 +86,12 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
         // 待添加的用户列表
         List<UserE> addIamUsers = iamRepository.listUsersByIds(addUsersList);
         addIamUsers.forEach(e -> devopsEnvUserPermissionMapper
-                .insert(new DevopsEnvUserPermissionDO(e.getLoginName(), e.getId(), e.getRealName(), envId,
-                        true)));
+                .insert(new DevopsEnvUserPermissionDO(e.getLoginName(), e.getId(), e.getRealName(), envId, true)));
         // 待删除的用户列表
         deleteUsersList.forEach(e -> {
             DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
             devopsEnvUserPermissionDO.setIamUserId(e);
+            devopsEnvUserPermissionDO.setEnvId(envId);
             devopsEnvUserPermissionMapper.delete(devopsEnvUserPermissionDO);
         });
     }

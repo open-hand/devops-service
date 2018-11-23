@@ -9,7 +9,7 @@ image:
   pullPolicy: Always
 
 preJob:
-  timeout: 300
+  timeout: 1200
   image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.6
   preConfig:
     enable: true
