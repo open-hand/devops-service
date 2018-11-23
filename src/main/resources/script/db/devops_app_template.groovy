@@ -43,4 +43,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
         sql("UPDATE  devops_app_template  dat SET dat.is_synchro= (CASE when dat.gitlab_project_id is not null THEN 1  else  0  END)")
         sql("UPDATE devops_app_template  dat SET dat.is_failed= (CASE when dat.gitlab_project_id  is  null THEN 1  else  0  END)")
     }
+
+    changeSet(author: 'younger', id: '2018-11-23-add-sql') {
+        sql("UPDATE devops_app_template  dat SET dat.is_failed= 0,dat.is_synchro= 1 where organization_id is null")
+    }
 }

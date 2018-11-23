@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import io.kubernetes.client.JSON;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -82,11 +81,15 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     }
 
     @Override
-    public Page<DevopsClusterE> pageClusters(Long organizationId, PageRequest pageRequest, String params) {
-        DevopsClusterDO devopsClusterDO = new DevopsClusterDO();
-        devopsClusterDO.setOrganizationId(organizationId);
+    public Page<DevopsClusterE> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> maps = json.deserialize(params, Map.class);
-        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAM)))), DevopsClusterE.class);
+        Page<DevopsClusterDO> devopsClusterEPage = new Page<>();
+        if (doPage != null && doPage == false) {
+            devopsClusterEPage.setContent(devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+        } else {
+            devopsClusterEPage = PageHelper.doPageAndSort(pageRequest, () -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+        }
+        return ConvertPageHelper.convertPage(devopsClusterEPage, DevopsClusterE.class);
     }
 
     @Override

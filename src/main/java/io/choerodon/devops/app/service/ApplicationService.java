@@ -74,6 +74,7 @@ public interface ApplicationService {
                                           Boolean isActive,
                                           Boolean hasVersion,
                                           String type,
+                                          Boolean doPage,
                                           PageRequest pageRequest,
                                           String params);
 

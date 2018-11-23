@@ -3,10 +3,11 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsClusterMapper">
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dataobject.DevopsClusterDO">
-        select dc.id,dc.`name` from devops_cluster dc where dc.skip_check_project_permission is true and dc.organization_id = #{organizationId}
+        select dc.id,dc.`name` from devops_cluster dc where dc.skip_check_project_permission is true and
+        dc.organization_id = #{organizationId}
         UNION
         select dc.id,dc.`name` from devops_cluster dc
-        join devops_cluster_pro_permission dcp on dc.id = dcp.cluster_id
+        join devops_cluster_pro_rel dcp on dc.id = dcp.cluster_id
         where dcp.project_id = #{projectId}
     </select>
 

@@ -6,4 +6,6 @@ public interface ApplicationVersionValueRepository {
 
     ApplicationVersionValueE create(ApplicationVersionValueE applicationVersionValueE);
 
+    ApplicationVersionValueE query(Long appVersionValueId);
+
 }

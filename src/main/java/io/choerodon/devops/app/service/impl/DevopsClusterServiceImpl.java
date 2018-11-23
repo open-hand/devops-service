@@ -207,9 +207,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Page<DevopsClusterRepDTO> pageClusters(Long organizationId, PageRequest pageRequest, String params) {
+    public Page<DevopsClusterRepDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
         Page<DevopsClusterE> devopsClusterEPage = devopsClusterRepository
-                .pageClusters(organizationId, pageRequest, params);
+                .pageClusters(organizationId, doPage, pageRequest, params);
         Page<DevopsClusterRepDTO> devopsClusterRepDTOPage = new Page<>();
         BeanUtils.copyProperties(devopsClusterEPage, devopsClusterRepDTOPage);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);

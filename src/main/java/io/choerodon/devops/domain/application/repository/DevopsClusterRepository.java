@@ -20,7 +20,7 @@ public interface DevopsClusterRepository {
 
     void update(DevopsClusterE devopsClusterE);
 
-    Page<DevopsClusterE> pageClusters(Long organizationId, PageRequest pageRequest, String params);
+    Page<DevopsClusterE> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
     void delete(Long clusterId);
 

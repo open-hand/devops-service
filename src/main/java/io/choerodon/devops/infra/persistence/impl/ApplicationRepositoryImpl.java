@@ -91,14 +91,20 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
-                                            String type, PageRequest pageRequest, String params) {
-        Page<ApplicationDO> applicationES;
+                                            String type, Boolean doPage, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
-        applicationES = PageHelper
-                .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
-                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
-
+        Page<ApplicationDO> applicationES = new Page<>();
+        //是否需要分页
+        if (doPage != null && doPage == false) {
+            applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
+                    TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                    TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
+        } else {
+            applicationES = PageHelper
+                    .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
+                            TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                            TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
+        }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
 

@@ -182,10 +182,10 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
-                                                 String type,
+                                                 String type, Boolean doPage,
                                                  PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES =
-                applicationRepository.listByOptions(projectId, isActive, hasVersion, type, pageRequest, params);
+                applicationRepository.listByOptions(projectId, isActive, hasVersion, type, doPage, pageRequest, params);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";

@@ -22,7 +22,7 @@ public interface DevopsClusterService {
 
     void checkCode(Long organizationId, String code);
 
-    Page<DevopsClusterRepDTO> pageClusters(Long organizationId, PageRequest pageRequest, String params);
+    Page<DevopsClusterRepDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
     List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId);
 

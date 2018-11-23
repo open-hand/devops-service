@@ -164,12 +164,14 @@ public class ApplicationController {
             @RequestParam(value = "has_version", required = false) Boolean hasVersion,
             @ApiParam(value = "应用类型")
             @RequestParam(value = "type", required = false) String type,
+            @ApiParam(value = "是否分页")
+            @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                applicationService.listByOptions(projectId, isActive, hasVersion, type, pageRequest, params))
+                applicationService.listByOptions(projectId, isActive, hasVersion, type, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appTemplate.get"));
     }
