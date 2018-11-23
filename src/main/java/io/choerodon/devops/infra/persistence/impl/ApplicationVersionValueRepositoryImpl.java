@@ -27,4 +27,9 @@ public class ApplicationVersionValueRepositoryImpl implements ApplicationVersion
         }
         return ConvertHelper.convert(applicationVersionValueDO, ApplicationVersionValueE.class);
     }
+
+    @Override
+    public ApplicationVersionValueE query(Long appVersionValueId) {
+        return ConvertHelper.convert(applcationVersionValueMapper.selectByPrimaryKey(appVersionValueId), ApplicationVersionValueE.class);
+    }
 }

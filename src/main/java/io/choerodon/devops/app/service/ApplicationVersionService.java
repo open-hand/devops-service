@@ -72,6 +72,14 @@ public interface ApplicationVersionService {
      */
     List<ApplicationVersionRepDTO> getUpgradeAppVersion(Long projectId, Long appVersionId);
 
-
+    /**
+     * 项目下查询应用最新的版本和各环境下部署的版本
+     *
+     * @param appId 应用ID
+     * @return DeployVersionDTO
+     */
     DeployVersionDTO listDeployVersions(Long appId);
+
+
+    String queryVersionValue(Long appVersionId);
 }

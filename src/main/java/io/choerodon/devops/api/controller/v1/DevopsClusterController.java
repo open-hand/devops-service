@@ -132,7 +132,7 @@ public class DevopsClusterController {
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "分页查询项目列表")
     @CustomPageRequest
-    @PostMapping("/pageProjects")
+    @PostMapping("/page_projects")
     public ResponseEntity<Page<ProjectDTO>> pageProjects(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
@@ -206,9 +206,11 @@ public class DevopsClusterController {
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "是否需要分页")
+            @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "查询参数")
             @RequestBody String params) {
-        return Optional.ofNullable(devopsClusterService.pageClusters(organizationId, pageRequest, params))
+        return Optional.ofNullable(devopsClusterService.pageClusters(organizationId, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cluster.query"));
     }

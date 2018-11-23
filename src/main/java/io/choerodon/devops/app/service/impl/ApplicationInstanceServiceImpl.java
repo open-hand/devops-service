@@ -110,6 +110,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DeployMsgHandlerService deployMsgHandlerService;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private ApplicationVersionService applicationVersionService;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -955,7 +957,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         String fileName = GenerateUUID.generateUUID() + ".yaml";
         String path = "deployfile";
-        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
+        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue.replace("\"", ""));
         ReplaceResult replaceResult;
         try {
             replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);

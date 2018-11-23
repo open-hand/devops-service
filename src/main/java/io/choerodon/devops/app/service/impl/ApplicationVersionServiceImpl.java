@@ -181,4 +181,11 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         return deployVersionDTO;
     }
+
+    @Override
+    public String queryVersionValue(Long appVersionId) {
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
+        ApplicationVersionValueE applicationVersionValueE = applicationVersionValueRepository.query(applicationVersionE.getApplicationVersionValueE().getId());
+        return applicationVersionValueE.getValue();
+    }
 }
