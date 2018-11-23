@@ -60,7 +60,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         sql("ALTER TABLE devops_application MODIFY COLUMN `name` VARCHAR(64) BINARY")
     }
 
-    changeSet(author: 'crockitwood', id: '2018-09-29-add-column') {
+    changeSet(author: 'younger', id: '2018-11-22-add-column') {
         addColumn(tableName: 'devops_application') {
             column(name: 'type', type: 'VARCHAR(50)', remarks: '应用类型', afterColumn: 'code')
         }
