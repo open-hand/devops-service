@@ -1,7 +1,7 @@
-FROM six8/pyinstaller-alpine:latest as pyinstaller
+FROM registry.cn-hangzhou.aliyuncs.com/choerodon-tools/devops-base:0.7.1 as pyinstaller
 WORKDIR /home/yaml
 COPY values_yaml.py requirements.txt  ./
-RUN /pyinstaller/pyinstaller.sh --noconfirm --clean values_yaml.py
+RUN pyinstaller --noconfirm --clean values_yaml.py
 #RUN ls -R /src/
 #RUN cat /src/warn*.txt
 
