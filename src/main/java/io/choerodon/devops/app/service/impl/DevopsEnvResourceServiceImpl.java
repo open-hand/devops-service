@@ -86,10 +86,21 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                                         devopsServiceE.getId());
                         domainNames.stream().forEach(domainName -> {
                             DevopsEnvResourceE devopsEnvResourceE1 =
-                                    devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
+                                    devopsEnvResourceRepository.queryResource(
                                             null,
+                                            null,
+                                            applicationInstanceE.getDevopsEnvironmentE().getId(),
                                             "Ingress",
                                             domainName);
+                            //升级0.11.0-0.12.0,资源表新增envId,修复以前的域名数据
+                            if (devopsEnvResourceE1 == null) {
+                                devopsEnvResourceE1 = devopsEnvResourceRepository.queryResource(
+                                        null,
+                                        null,
+                                        null,
+                                        "Ingress",
+                                        domainName);
+                            }
                             if (devopsEnvResourceE1 != null) {
                                 DevopsEnvResourceDetailE devopsEnvResourceDetailE1 =
                                         devopsEnvResourceDetailRepository.query(
@@ -186,6 +197,8 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 instanceEventDTOS.add(instanceEventDTO);
             });
         }
+
+
         //获取实例中pod的event
         List<DevopsCommandEventE> devopsCommandPodEventES = devopsCommandEventRepository
                 .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.POD.getType());

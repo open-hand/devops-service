@@ -23,6 +23,8 @@ public class DevopsEnvResourceDO extends AuditDomain {
     private Long resourceDetailId;
     private String kind;
     private String name;
+    private Long envId;
+    private Long commandId;
     private Long weight;
     private Long reversion;
 
@@ -82,4 +84,19 @@ public class DevopsEnvResourceDO extends AuditDomain {
         this.reversion = reversion;
     }
 
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public Long getCommandId() {
+        return commandId;
+    }
+
+    public void setCommandId(Long commandId) {
+        this.commandId = commandId;
+    }
 }

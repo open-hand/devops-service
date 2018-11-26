@@ -14,6 +14,8 @@ public class DevopsEnvResourceE {
     private Long id;
     private ApplicationInstanceE applicationInstanceE;
     private DevopsEnvResourceDetailE devopsEnvResourceDetailE;
+    private DevopsEnvCommandE devopsEnvCommandE;
+    private DevopsEnvironmentE devopsEnvironmentE;
     private String kind;
     private String name;
     private Long weight;
@@ -91,5 +93,21 @@ public class DevopsEnvResourceE {
 
     public void initDevopsInstanceResourceMessageE(Long id) {
         this.devopsEnvResourceDetailE = new DevopsEnvResourceDetailE(id);
+    }
+
+    public DevopsEnvCommandE getDevopsEnvCommandE() {
+        return devopsEnvCommandE;
+    }
+
+    public void initDevopsEnvCommandE(Long devopsEnvCommandId) {
+        this.devopsEnvCommandE = new DevopsEnvCommandE(devopsEnvCommandId);
+    }
+
+    public DevopsEnvironmentE getDevopsEnvironmentE() {
+        return devopsEnvironmentE;
+    }
+
+    public void initDevopsEnvironmentE(Long envId) {
+        this.devopsEnvironmentE = new DevopsEnvironmentE(envId);
     }
 }

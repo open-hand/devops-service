@@ -19,6 +19,8 @@ public class DevopsEnvResourceConvertor implements ConvertorI<DevopsEnvResourceE
         DevopsEnvResourceE devopsEnvResourceE = DevopsInstanceResourceFactory.createDevopsInstanceResourceE();
         devopsEnvResourceE.initApplicationInstanceE(devopsEnvResourceDO.getAppInstanceId());
         devopsEnvResourceE.initDevopsInstanceResourceMessageE(devopsEnvResourceDO.getResourceDetailId());
+        devopsEnvResourceE.initDevopsEnvCommandE(devopsEnvResourceDO.getCommandId());
+        devopsEnvResourceE.initDevopsEnvironmentE(devopsEnvResourceDO.getEnvId());
         BeanUtils.copyProperties(devopsEnvResourceDO, devopsEnvResourceE);
         return devopsEnvResourceE;
     }
@@ -30,7 +32,15 @@ public class DevopsEnvResourceConvertor implements ConvertorI<DevopsEnvResourceE
         if (devopsEnvResourceE.getApplicationInstanceE() != null) {
             devopsEnvResourceDO.setAppInstanceId(devopsEnvResourceE.getApplicationInstanceE().getId());
         }
-        devopsEnvResourceDO.setResourceDetailId(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
+        if (devopsEnvResourceE.getDevopsEnvCommandE() != null) {
+            devopsEnvResourceDO.setCommandId(devopsEnvResourceE.getDevopsEnvCommandE().getId());
+        }
+        if (devopsEnvResourceE.getDevopsEnvResourceDetailE() != null) {
+            devopsEnvResourceDO.setResourceDetailId(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
+        }
+        if (devopsEnvResourceE.getDevopsEnvironmentE() != null) {
+            devopsEnvResourceDO.setEnvId(devopsEnvResourceE.getDevopsEnvironmentE().getId());
+        }
         return devopsEnvResourceDO;
     }
 }

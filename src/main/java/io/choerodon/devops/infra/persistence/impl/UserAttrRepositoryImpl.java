@@ -42,8 +42,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
         userAttrDO = userAttrMapper.selectOne(userAttrDO);
         if (userAttrDO == null) {
             return null;
-        }
-        else {
+        } else {
             return userAttrDO.getIamUserId();
         }
     }
@@ -52,4 +51,18 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     public List<UserAttrE> listByUserIds(List<Long> userIds) {
         return ConvertHelper.convertList(userAttrMapper.listByUserIds(userIds), UserAttrE.class);
     }
+
+    public UserAttrE queryByGitlabUserId(Long gitlabUserId) {
+        UserAttrDO userAttrDO = new UserAttrDO();
+        userAttrDO.setGitlabUserId(gitlabUserId);
+        return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO), UserAttrE.class);
+    }
+
+    @Override
+    public void update(UserAttrE userAttrE) {
+        UserAttrDO userAttrDO = userAttrMapper.selectByPrimaryKey(userAttrE.getIamUserId());
+        userAttrDO.setGitlabToken(userAttrE.getGitlabToken());
+        userAttrMapper.updateByPrimaryKey(userAttrDO);
+    }
+
 }

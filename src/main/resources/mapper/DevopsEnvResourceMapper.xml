@@ -12,13 +12,19 @@
     </select>
 
 
-    <select id="queryByInstanceIdAndKindAndName"
+    <select id="queryResource"
             resultType="io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO">
         SELECT
         *
         FROM devops_env_resource dir where 1=1
         <if test="instanceId != null">
             AND dir.app_instance_id = #{instanceId}
+        </if>
+        <if test="command_id != null">
+            AND dir.command_id = #{commandId}
+        </if>
+        <if test="env_id != null">
+            AND dir.env_id = #{envId}
         </if>
         <if test="kind != null">
             AND dir.kind = #{kind}
