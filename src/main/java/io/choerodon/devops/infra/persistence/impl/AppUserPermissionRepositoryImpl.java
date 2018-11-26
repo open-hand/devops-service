@@ -63,8 +63,7 @@ public class AppUserPermissionRepositoryImpl implements AppUserPermissionReposit
     public void updateAppUserPermission(Long appId, List<Long> addUserIds, List<Long> deleteUserIds) {
         // 待添加的用户列表
         List<UserE> addIamUsers = iamRepository.listUsersByIds(addUserIds);
-        addIamUsers.forEach(e -> appUserPermissionMapper
-                .insert(new AppUserPermissionDO(e.getId(), e.getLoginName(), e.getRealName(), appId)));
+        addIamUsers.forEach(e -> appUserPermissionMapper.insert(new AppUserPermissionDO(e.getId(), appId)));
         // 待删除的用户列表
         deleteUserIds.forEach(e -> {
             AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO();
