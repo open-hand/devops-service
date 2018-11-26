@@ -71,4 +71,12 @@ public class ApplicationDTO {
     public void setPermission(Boolean permission) {
         this.permission = permission;
     }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 }
