@@ -25,7 +25,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -651,33 +650,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Boolean updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
-        // 更新以前有权限的所有用户
-        List<Long> currentUserIds = devopsEnvUserPermissionRepository.listAll(envId).stream()
-                .map(DevopsEnvUserPermissionE::getIamUserId).collect(Collectors.toList());
-        // 待添加的用户
-        List<Long> addUsersList = userIds.stream().filter(e -> !currentUserIds.contains(e)).collect(Collectors.toList());
-        // 待删除的用户
-        List<Long> deleteUsersList = currentUserIds.stream().filter(e -> !userIds.contains(e))
-                .collect(Collectors.toList());
-
-        // 更新gitlab权限
-        Long gitlabProjectId = devopsEnviromentRepository.queryById(envId).getGitlabEnvProjectId();
-        addUsersList.forEach(e -> {
-            Integer permissionNumber = 40;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        deleteUsersList.forEach(e -> {
-            Integer permissionNumber = 0;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        // 事务如果失败，数据库会回滚
-        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, addUsersList, deleteUsersList);
-        return true;
+    public Boolean updateEnvUserPermission(Long envId, List<Long> userIds) {
+        UpdateUserPermissionService updateEnvUserPermissionService = new UpdateEnvUserPermissionServiceImpl();
+        return updateEnvUserPermissionService.updateUserPermission(null, envId, userIds, null);
     }
 
     private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
@@ -699,21 +674,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         }
         // 获取项目所有者角色id和数量
-        Long ownerId;
-        Page<RoleDTO> ownerRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
-        if (ownerRoleDTOPage.getTotalElements() == 0) {
-            throw new CommonException("error.get.projectOwner.roleId");
-        } else {
-            ownerId = ownerRoleDTOPage.getContent().get(0).getId();
-        }
+        Long ownerId = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
         // 获取项目成员id
-        Long memberId;
-        Page<RoleDTO> memberRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
-        if (memberRoleDTOPage.getTotalElements() == 0) {
-            throw new CommonException("error.get.projectMember.roleId");
-        } else {
-            memberId = memberRoleDTOPage.getContent().get(0).getId();
-        }
+        Long memberId = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
         Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,

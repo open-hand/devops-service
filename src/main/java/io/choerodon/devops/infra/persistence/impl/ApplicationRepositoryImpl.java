@@ -201,18 +201,28 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public ApplicationE getAppByGitLabId(Long gitLabProjectId) {
-        ApplicationDO applicationDO = new ApplicationDO();
-        applicationDO.setGitlabProjectId(gitLabProjectId.intValue());
-        try {
-            return ConvertHelper.convert(applicationMapper.selectOne(applicationDO), ApplicationE.class);
-        } catch (Exception e) {
-            return null;
-        }
+    public List<ApplicationE> listByGitLabProjectIds(List<Long> gitLabProjectIds) {
+        return ConvertHelper
+                .convertList(applicationMapper.listByGitLabProjectIds(gitLabProjectIds), ApplicationE.class);
     }
 
     @Override
     public void delete(Long appId) {
         applicationMapper.deleteByPrimaryKey(appId);
+    }
+
+    @Override
+    public List<ApplicationE> listByProjectIdAndSkipCheck(Long projectId) {
+        ApplicationDO applicationDO = new ApplicationDO();
+        applicationDO.setProjectId(projectId);
+        applicationDO.setSkipCheckPermission(true);
+        return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
+    }
+
+    @Override
+    public List<ApplicationE> listByProjectId(Long projectId) {
+        ApplicationDO applicationDO = new ApplicationDO();
+        applicationDO.setProjectId(projectId);
+        return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
     }
 }

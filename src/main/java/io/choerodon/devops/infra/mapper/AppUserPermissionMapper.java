@@ -15,4 +15,6 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface AppUserPermissionMapper extends BaseMapper<AppUserPermissionDO> {
     List<AppUserPermissionDO> listAllUserPermissionByAppId(@Param("appId") Long appId);
+
+    void deleteByUserIdWithAppIds(@Param("appIds") List<Long> appIds, @Param("userId") Long userId);
 }

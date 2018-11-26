@@ -190,14 +190,5 @@ public interface ApplicationService {
      */
     List<AppUserPermissionRepDTO> listAllUserPermission(Long appId);
 
-    /**
-     * 应用下为用户分配权限
-     *
-     * @param appId   应用id
-     * @param userIds 有权限的用户ids
-     * @return Boolean
-     */
-    Boolean updateAppUserPermission(Long appId, List<Long> userIds);
-
     void initMockService(SagaClient sagaClient);
 }

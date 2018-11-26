@@ -41,7 +41,7 @@ public class ApplicationController {
      *
      * @param projectId      项目id
      * @param applicationDTO 应用信息
-     * @return ApplicationTemplateDTO
+     * @return ApplicationRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建应用")
@@ -379,27 +379,5 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.listAllUserPermission(appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.user.permission.get"));
-    }
-
-    /**
-     * 应用下为用户分配权限
-     *
-     * @param projectId 项目id
-     * @param appId     应用id
-     * @param userIds   有权限的用户ids
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "应用下为用户分配权限")
-    @PostMapping(value = "/{appId}/permission")
-    public ResponseEntity<Boolean> updateEnvUserPermission(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用id", required = true)
-            @PathVariable Long appId,
-            @ApiParam(value = "有权限的用户ids")
-            @RequestBody List<Long> userIds) {
-        return Optional.ofNullable(applicationService.updateAppUserPermission(appId, userIds))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.app.user.permission.update"));
     }
 }

@@ -28,7 +28,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
     }
 
     @Override
-    public Boolean updateUserPermission(Long id, List<Long> userIds) {
+    public Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option) {
         // 更新以前所有有权限的用户
         List<Long> currentUserIds = devopsEnvUserPermissionRepository.listAll(id).stream()
                 .map(DevopsEnvUserPermissionE::getIamUserId).collect(Collectors.toList());
@@ -38,9 +38,11 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         List<Long> deleteUserIds = currentUserIds.stream().filter(e -> !userIds.contains(e))
                 .collect(Collectors.toList());
         // 更新gitlab权限
-        Long gitlabProjectId = TypeUtil.objToLong(devopsEnviromentRepository.queryById(id).getGitlabEnvProjectId());
+        Integer gitlabProjectId = TypeUtil
+                .objToInteger(devopsEnviromentRepository.queryById(id).getGitlabEnvProjectId());
 
-        super.updateGitlabUserPermission(gitlabProjectId, addUserIds, deleteUserIds);
+        super.updateGitlabUserPermission(gitlabProjectId, addUserIds.stream().map(TypeUtil::objToInteger).collect(
+                Collectors.toList()), deleteUserIds.stream().map(TypeUtil::objToInteger).collect(Collectors.toList()));
         devopsEnvUserPermissionRepository.updateEnvUserPermission(id, addUserIds, deleteUserIds);
         return true;
     }

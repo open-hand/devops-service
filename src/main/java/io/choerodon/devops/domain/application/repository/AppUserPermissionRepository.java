@@ -14,7 +14,15 @@ import io.choerodon.devops.domain.application.entity.AppUserPermissionE;
 
 public interface AppUserPermissionRepository {
 
+    void create(Long userId, Long appId);
+
+    void deleteByAppId(Long appId);
+
+    void deleteByUserIdWithAppIds(List<Long> appIds, Long userId);
+
     List<AppUserPermissionE> listAll(Long appId);
+
+    List<AppUserPermissionE> listByUserId(Long userId);
 
     void updateAppUserPermission(Long appId, List<Long> addUserIds, List<Long> deleteUserIds);
 }

@@ -91,7 +91,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity deleteProjectByProjectName(String groupName, String projectName, Integer userId) {
         return new ResponseEntity("error.service.delete", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 
+    @Override
+    public ResponseEntity<GitlabProjectDO> getProjectById(Integer projectId) {
+        return new ResponseEntity("error.project.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -337,5 +341,15 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<MemberDO> getProjectMember(Integer projectId, Integer userId) {
         return new ResponseEntity("error.project.member.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity getAllMemberByProjectId(Integer projectId) {
+        return new ResponseEntity("error.project.member.list", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(Integer userId) {
+        return new ResponseEntity("error.project.get.by.userId", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

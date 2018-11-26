@@ -227,4 +227,13 @@
         AND da.gitlab_project_id IS NOT NULL
         <include refid="sqlparam"/>
     </select>
+
+    <select id="listByGitLabProjectIds" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        SELECT da.gitlab_project_id
+        FROM devops_application da
+        WHERE da.gitlab_project_id IN
+        <foreach collection="gitlabProjectIds" item="gitlabProjectId" open="(" close=")" separator=",">
+            #{gitlabProjectId}
+        </foreach>
+    </select>
 </mapper>

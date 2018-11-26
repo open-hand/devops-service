@@ -10,7 +10,7 @@ public class ApplicationUpdateDTO {
     private Long id;
     private String name;
     private List<Long> userIds;
-    private Boolean isSkipCheckPermission;
+    private Boolean permission;
 
     public Long getId() {
         return id;
@@ -36,11 +36,11 @@ public class ApplicationUpdateDTO {
         this.userIds = userIds;
     }
 
-    public Boolean getSkipCheckPermission() {
-        return isSkipCheckPermission;
+    public Boolean getPermission() {
+        return permission;
     }
 
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
-        isSkipCheckPermission = skipCheckPermission;
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 }

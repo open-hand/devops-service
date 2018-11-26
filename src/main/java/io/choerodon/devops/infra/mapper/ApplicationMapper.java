@@ -42,4 +42,6 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     Integer checkAppCanDisable(@Param("applicationId") Long applicationId);
 
     List<ApplicationDO> listByCode(@Param("code") String code);
+
+    List<ApplicationDO> listByGitLabProjectIds(@Param("gitlabProjectIds") List<Long> gitlabProjectIds);
 }

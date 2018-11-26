@@ -28,29 +28,26 @@ public abstract class UpdateUserPermissionService {
         this.userAttrRepository = ApplicationContextHelper.getSpringFactory().getBean(UserAttrRepository.class);
     }
 
-    public abstract Boolean updateUserPermission(Long id, List<Long> userIds);
+    public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
 
-    protected void updateGitlabUserPermission(Long gitlabProjectId, List<Long> addUserIds, List<Long> deleteUserIds) {
-        addUserIds.forEach(e -> {
-            Integer gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(e).getGitlabUserId());
-            addGitlabMember(TypeUtil.objToInteger(gitlabProjectId), gitlabUserId);
-        });
-        deleteUserIds.forEach(e -> {
-            Integer gitlabUserId = TypeUtil.objToInteger(userAttrRepository.queryById(e).getGitlabUserId());
-            deleteGitlabMember(TypeUtil.objToInteger(gitlabProjectId), gitlabUserId);
-        });
+    protected void updateGitlabUserPermission(Integer gitlabProjectId, List<Integer> addGitlabUserIds,
+                                              List<Integer> deleteGitlabUserIds) {
+        addGitlabUserIds.forEach(e -> addGitlabMember(TypeUtil.objToInteger(gitlabProjectId), e));
+        deleteGitlabUserIds.forEach(e -> deleteGitlabMember(TypeUtil.objToInteger(gitlabProjectId), e));
     }
 
     private void addGitlabMember(Integer gitlabProjectId, Integer userId) {
-        MemberDTO memberDTO = new MemberDTO();
-        memberDTO.setUserId(userId);
-        memberDTO.setAccessLevel(40);
-        memberDTO.setExpiresAt("");
-        gitlabRepository.addMemberIntoProject(gitlabProjectId, memberDTO);
+        GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId, userId);
+        if (gitlabMemberE.getId() == null) {
+            MemberDTO memberDTO = new MemberDTO();
+            memberDTO.setUserId(userId);
+            memberDTO.setAccessLevel(40);
+            memberDTO.setExpiresAt("");
+            gitlabRepository.addMemberIntoProject(gitlabProjectId, memberDTO);
+        }
     }
 
     private void deleteGitlabMember(Integer gitlabProjectId, Integer userId) {
-        // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
         GitlabMemberE gitlabMemberE = gitlabProjectRepository
                 .getProjectMember(gitlabProjectId, userId);
         if (gitlabMemberE.getId() != null) {

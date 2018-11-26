@@ -10,4 +10,13 @@
         FROM devops_app_user_permission daup
         WHERE daup.app_id = #{appId}
     </select>
+
+    <delete id="deleteByUserIdWithAppIds">
+        DELETE FROM devops_app_user_rel
+        WHERE app_id IN
+        <foreach collection="appIds" item="appId" open="(" close=")" separator=",">
+            #{appId}
+        </foreach>
+        AND iam_user_id = #{userId}
+    </delete>
 </mapper>

@@ -8,16 +8,14 @@ package io.choerodon.devops.domain.application.entity;
  */
 public class AppUserPermissionE {
     private Long iamUserId;
-    private String loginName;
-    private String realName;
+    private Long appId;
 
     public AppUserPermissionE() {
     }
 
-    public AppUserPermissionE(Long iamUserId, String loginName, String realName) {
+    public AppUserPermissionE(Long iamUserId, Long appId) {
         this.iamUserId = iamUserId;
-        this.loginName = loginName;
-        this.realName = realName;
+        this.appId = appId;
     }
 
     public Long getIamUserId() {
@@ -28,19 +26,11 @@ public class AppUserPermissionE {
         this.iamUserId = iamUserId;
     }
 
-    public String getLoginName() {
-        return loginName;
+    public Long getAppId() {
+        return appId;
     }
 
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
-    }
-
-    public String getRealName() {
-        return realName;
-    }
-
-    public void setRealName(String realName) {
-        this.realName = realName;
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }

@@ -45,11 +45,13 @@ public interface IamRepository {
                                                          RoleAssignmentSearchDTO roleAssignmentSearchDTO, Long roleId,
                                                          Long projectId, Boolean doPage);
 
-    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage, String searchParams);
+    Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest, Boolean doPage);
 
     List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId);
 
-    Page<RoleDTO> queryRoleIdByCode(String roleCode);
+    Long queryRoleIdByCode(String roleCode);
+
+    List<Long> getAllMemberIdsWithoutOwner(Long projectId);
 
     void initMockIamService(IamServiceClient iamServiceClient);
 }

@@ -110,6 +110,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationRepository.checkCode(applicationE);
         applicationE.initActive(true);
         applicationE.initSynchro(false);
+        applicationE.setSkipCheckPermission(applicationDTO.getPermission());
+
+        // 查询创建应用所在的gitlab应用组
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
         if (gitlabGroupE == null) {
             throw new CommonException("error.group.not.sync");
@@ -127,11 +130,20 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppPayload.setOrganizationId(organization.getId());
         devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         devOpsAppPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
+        devOpsAppPayload.setUserIds(applicationDTO.getUserIds());
+        devOpsAppPayload.setSkipCheckPermission(applicationDTO.getPermission());
         applicationE = applicationRepository.create(applicationE);
-        if (applicationE.getId() == null) {
+        devOpsAppPayload.setAppId(applicationE.getId());
+        Long appId = applicationE.getId();
+        if (appId == null) {
             throw new CommonException("error.application.create.insert");
         }
-        devOpsAppPayload.setAppId(applicationE.getId());
+        // 如果不跳过权限检查
+        List<Long> userIds = applicationDTO.getUserIds();
+        if (!applicationDTO.getPermission() && userIds != null && !userIds.isEmpty()) {
+            userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
+        }
+
         String input = gson.toJson(devOpsAppPayload);
         sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", ""));
 
@@ -165,22 +177,37 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO) {
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
+        applicationE.setSkipCheckPermission(applicationUpdateDTO.getPermission());
         applicationE.initProjectE(projectId);
 
-        ApplicationE temp = applicationRepository.query(applicationUpdateDTO.getId());
-        if (!temp.getName().equals(applicationUpdateDTO.getName())) {
+        Long appId = applicationUpdateDTO.getId();
+        ApplicationE oldApplicationE = applicationRepository.query(appId);
+        if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
             applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         }
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException("error.application.update");
         }
-        if (!applicationUpdateDTO.getSkipCheckPermission()) {
-            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
+
+        UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
+        // 原来跳过，现在也跳过，不更新权限表
+        if (oldApplicationE.getSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
+            return true;
+        }
+        // 原来跳过，现在不跳过，需要更新权限表
+        else if (oldApplicationE.getSkipCheckPermission() && !applicationUpdateDTO.getPermission()) {
             return updateUserPermissionService
-                    .updateUserPermission(applicationUpdateDTO.getId(), applicationUpdateDTO.getUserIds());
-        } else {
-            // TODO
-            return null;
+                    .updateUserPermission(projectId, appId, applicationUpdateDTO.getUserIds(), 1);
+        }
+        // 原来不跳过，现在跳过，需要删除权限表中的所有人，然后把项目下所有项目成员加入gitlab权限
+        else if (!oldApplicationE.getSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
+            appUserPermissionRepository.deleteByAppId(appId);
+            return updateUserPermissionService.updateUserPermission(projectId, appId, new ArrayList<>(), 2);
+        }
+        // 原来不跳过，现在也不跳过，需要更新权限表
+        else {
+            return updateUserPermissionService
+                    .updateUserPermission(projectId, appId, applicationUpdateDTO.getUserIds(), 3);
         }
     }
 
@@ -196,7 +223,6 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         return true;
     }
-
 
     @Override
     public Page<ApplicationRepDTO> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
@@ -267,9 +293,12 @@ public class ApplicationServiceImpl implements ApplicationService {
     public List<ApplicationRepDTO> listByActive(Long projectId) {
         List<ApplicationE> applicationEList = applicationRepository.listByActive(projectId);
 
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
+                .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
+
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         applicationEList.forEach(t -> {
                     if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
@@ -280,8 +309,13 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                 }
         );
-
-        return ConvertHelper.convertList(applicationEList, ApplicationRepDTO.class);
+        List<ApplicationRepDTO> resultDTOList = ConvertHelper.convertList(applicationEList, ApplicationRepDTO.class);
+        resultDTOList.stream().filter(e -> !e.getSkipCheckPermission()).forEach(e -> {
+            if (appIds.contains(e.getId())) {
+                e.setSkipCheckPermission(true);
+            }
+        });
+        return resultDTOList;
     }
 
     @Override
@@ -307,8 +341,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         return ConvertHelper.convertList(applicationTemplateRepository.list(projectE.getOrganization().getId()),
                 ApplicationTemplateRepDTO.class).stream()
-                .filter(applicationTemplateRepDTO -> applicationTemplateRepDTO.getSynchro() == true).collect(
-                        Collectors.toList());
+                .filter(ApplicationTemplateRepDTO::getSynchro).collect(Collectors.toList());
     }
 
     @Override
@@ -322,13 +355,31 @@ public class ApplicationServiceImpl implements ApplicationService {
         GitlabProjectDO gitlabProjectDO = gitlabRepository
                 .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(),
                         gitlabProjectPayload.getUserId());
-        if (gitlabProjectDO.getId() == null) {
+        Integer gitlabProjectId = gitlabProjectDO.getId();
+        if (gitlabProjectId == null) {
             gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),
                     gitlabProjectPayload.getPath(),
                     gitlabProjectPayload.getUserId(), false);
         }
         gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
 
+        // 不跳过权限检查，则为gitlab项目分配项目成员权限
+        if (!gitlabProjectPayload.getSkipCheckPermission()) {
+            if (!gitlabProjectPayload.getUserIds().isEmpty()) {
+                List<Long> gitlabUserIds = userAttrRepository.listByUserIds(gitlabProjectPayload.getUserIds()).stream()
+                        .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
+                gitlabUserIds.forEach(e ->
+                        gitlabRepository.addMemberIntoProject(gitlabProjectPayload.getGitlabProjectId(),
+                                new MemberDTO(TypeUtil.objToInteger(e), 40, "")));
+            }
+        }
+        // 跳过权限检查，项目下所有成员自动分配权限
+        else {
+            List<Long> gitlabUserIds = iamRepository.getAllMemberIdsWithoutOwner(projectE.getId());
+            gitlabUserIds.forEach(e ->
+                    gitlabRepository.addMemberIntoProject(gitlabProjectPayload.getGitlabProjectId(),
+                            new MemberDTO(TypeUtil.objToInteger(e), 40, "")));
+        }
         if (applicationE.getApplicationTemplateE() != null) {
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
                     applicationE.getApplicationTemplateE().getId());
@@ -341,8 +392,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
                 type = MASTER;
             }
-            Git git = gitUtil.clone(applicationDir, type,
-                    repoUrl);
+            Git git = gitUtil.clone(applicationDir, type, repoUrl);
             //渲染模板里面的参数
             replaceParams(applicationE, projectE, organization, applicationDir);
 
@@ -386,15 +436,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             List<Variable> variables = gitlabRepository
                     .getVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
             if (variables.isEmpty()) {
-                gitlabRepository.addVariable(gitlabProjectPayload.getGitlabProjectId(), "Token",
-                        token,
-                        false, gitlabProjectPayload.getUserId());
+                gitlabRepository.addVariable(gitlabProjectPayload.getGitlabProjectId(), "Token", token, false,
+                        gitlabProjectPayload.getUserId());
             } else {
                 token = variables.get(0).getValue();
             }
             applicationE.setToken(token);
-            applicationE.initGitlabProjectE(
-                    TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
+            applicationE.initGitlabProjectE(TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
             applicationE.initSynchro(true);
             ProjectHook projectHook = ProjectHook.allHook();
             projectHook.setEnableSslVerification(true);
@@ -549,53 +597,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public List<AppUserPermissionRepDTO> listAllUserPermission(Long appId) {
         return ConvertHelper.convertList(appUserPermissionRepository.listAll(appId), AppUserPermissionRepDTO.class);
-    }
-
-    @Override
-    public Boolean updateAppUserPermission(Long appId, List<Long> userIds) {
-        // 更新以前所有有权限的用户
-        List<Long> currentUserIds = appUserPermissionRepository.listAll(appId).stream()
-                .map(AppUserPermissionE::getIamUserId).collect(Collectors.toList());
-        // 待添加的用户
-        List<Long> addUserIds = userIds.stream().filter(e -> !currentUserIds.contains(e)).collect(Collectors.toList());
-        // 待删除的用户
-        List<Long> deleteUserIds = currentUserIds.stream().filter(e -> !userIds.contains(e))
-                .collect(Collectors.toList());
-        // 更新gitlab权限
-        Long gitlabProjectId = TypeUtil.objToLong(applicationRepository.query(appId).getGitlabProjectE().getId());
-        addUserIds.forEach(e -> {
-            Integer permissionNumber = 40;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        deleteUserIds.forEach(e -> {
-            Integer permissionNumber = 0;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        // 事务如果失败，数据库会回滚
-        appUserPermissionRepository.updateAppUserPermission(appId, addUserIds, deleteUserIds);
-        return true;
-    }
-
-    private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
-        if (permission == 0) {
-            // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
-            GitlabMemberE gitlabMemberE = gitlabProjectRepository
-                    .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            if (gitlabMemberE.getId() != null) {
-                gitlabRepository
-                        .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            }
-        } else {
-            MemberDTO memberDTO = new MemberDTO();
-            memberDTO.setUserId(TypeUtil.objToInteger(userId));
-            memberDTO.setAccessLevel(permission);
-            memberDTO.setExpiresAt("");
-            gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
-        }
     }
 
     @Override

@@ -29,9 +29,33 @@ public class AppUserPermissionRepositoryImpl implements AppUserPermissionReposit
     private IamRepository iamRepository;
 
     @Override
+    public void create(Long userId, Long appId) {
+        appUserPermissionMapper.insert(new AppUserPermissionDO(userId, appId));
+    }
+
+    @Override
+    public void deleteByAppId(Long appId) {
+        AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO();
+        appUserPermissionDO.setAppId(appId);
+        appUserPermissionMapper.delete(appUserPermissionDO);
+    }
+
+    @Override
+    public void deleteByUserIdWithAppIds(List<Long> appIds, Long userId) {
+        appUserPermissionMapper.deleteByUserIdWithAppIds(appIds, userId);
+    }
+
+    @Override
     public List<AppUserPermissionE> listAll(Long appId) {
         return ConvertHelper
                 .convertList(appUserPermissionMapper.listAllUserPermissionByAppId(appId), AppUserPermissionE.class);
+    }
+
+    @Override
+    public List<AppUserPermissionE> listByUserId(Long userId) {
+        AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO();
+        appUserPermissionDO.setIamUserId(userId);
+        return ConvertHelper.convertList(appUserPermissionMapper.select(appUserPermissionDO), AppUserPermissionE.class);
     }
 
     @Override
