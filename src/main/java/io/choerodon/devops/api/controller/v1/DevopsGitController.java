@@ -363,21 +363,18 @@ public class DevopsGitController {
      * @param projectId     项目id
      * @param applicationId 应用id
      * @param branchName    分支名
-     * @return Boolean
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验分支名唯一性")
     @GetMapping(value = "/check_name")
-    public ResponseEntity<Boolean> checkName(
+    public void checkName(
             @ApiParam(value = "项目ID")
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID")
             @PathVariable(value = "application_id") Long applicationId,
             @ApiParam(value = "分支名")
             @RequestParam(value = "branch_name") String branchName) {
-        return Optional.ofNullable(devopsGitService.checkName(projectId, applicationId, branchName))
-                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.mergerequest.get"));
+        devopsGitService.checkName(projectId, applicationId, branchName);
     }
 }

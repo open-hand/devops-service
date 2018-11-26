@@ -37,7 +37,6 @@ public interface ApplicationService {
      *
      * @param projectId     项目id
      * @param applicationId 应用Id
-     * @return ApplicationRepDTO
      */
     void delete(Long projectId, Long applicationId);
 
@@ -181,9 +180,15 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return page of ApplicationRepDTO
      */
-    Page<ApplicationRepDTO> listCodeRepository(Long projectId,
-                                               PageRequest pageRequest,
-                                               String params);
+    Page<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params);
+
+    /**
+     * 获取应用下所有用户权限
+     *
+     * @param appId 应用id
+     * @return List
+     */
+    List<AppUserPermissionRepDTO> listAllUserPermission(Long appId);
 
     void initMockService(SagaClient sagaClient);
 }

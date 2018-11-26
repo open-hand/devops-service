@@ -146,7 +146,6 @@ public class SagaHandler {
         return payload;
     }
 
-
     /**
      * 角色同步事件
      */
@@ -187,7 +186,7 @@ public class SagaHandler {
         List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
         }.getType());
         loggerInfo(gitlabUserDTO);
-        gitlabUserDTO.stream().forEach(t -> {
+        gitlabUserDTO.forEach(t -> {
             GitlabUserRequestDTO gitlabUserReqDTO = new GitlabUserRequestDTO();
             gitlabUserReqDTO.setProvider("oauth2_generic");
             gitlabUserReqDTO.setExternUid(t.getId());
@@ -268,6 +267,4 @@ public class SagaHandler {
         organizationService.registerOrganization(registerOrganizationDTO);
         return payload;
     }
-
-
 }

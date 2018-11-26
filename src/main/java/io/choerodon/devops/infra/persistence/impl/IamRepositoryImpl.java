@@ -1,7 +1,11 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -32,7 +36,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class IamRepositoryImpl implements IamRepository {
 
     private static final Gson gson = new Gson();
-
     private static final Logger LOGGER = LoggerFactory.getLogger(IamRepositoryImpl.class);
 
     private IamServiceClient iamServiceClient;
@@ -214,7 +217,7 @@ public class IamRepositoryImpl implements IamRepository {
 
     @Override
     public Page<UserWithRoleDTO> queryUserPermissionByProjectId(Long projectId, PageRequest pageRequest,
-                                                                Boolean doPage, String searchParams) {
+                                                                Boolean doPage) {
         try {
             RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO();
             ResponseEntity<Page<UserWithRoleDTO>> userEPageResponseEntity = iamServiceClient
@@ -243,15 +246,32 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public Page<RoleDTO> queryRoleIdByCode(String roleCode) {
+    public Long queryRoleIdByCode(String roleCode) {
         try {
             RoleSearchDTO roleSearchDTO = new RoleSearchDTO();
             roleSearchDTO.setCode(roleCode);
-            return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody();
+            return iamServiceClient.queryRoleIdByCode(roleSearchDTO).getBody().getContent().get(0).getId();
         } catch (FeignException e) {
             LOGGER.error("get role id by code {} error", roleCode);
             return null;
         }
+    }
+
+    @Override
+    public List<Long> getAllMemberIdsWithoutOwner(Long projectId) {
+        // 获取项目成员id
+        Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
+        // 获取项目所有者id
+        Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
+        // 项目下所有项目成员
+        List<Long> memberIds =
+                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
+                        projectId, false).getContent().stream().map(UserDTO::getId).collect(Collectors.toList());
+        // 项目下所有项目所有者
+        List<Long> ownerIds =
+                this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
+                        projectId, false).getContent().stream().map(UserDTO::getId).collect(Collectors.toList());
+        return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
     }
 
     @Override

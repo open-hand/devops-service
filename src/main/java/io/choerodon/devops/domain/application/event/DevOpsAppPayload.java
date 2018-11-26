@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.event;
 
+import java.util.List;
+
 /**
  * @author crcokitwood
  */
@@ -12,6 +14,8 @@ public class DevOpsAppPayload {
     private String type;
     private Long organizationId;
     private Long appId;
+    private List<Long> userIds;
+    private Boolean isSkipCheckPermission;
 
     public Integer getUserId() {
         return userId;
@@ -67,5 +71,21 @@ public class DevOpsAppPayload {
 
     public void setAppId(Long appId) {
         this.appId = appId;
+    }
+
+    public List<Long> getUserIds() {
+        return userIds;
+    }
+
+    public void setUserIds(List<Long> userIds) {
+        this.userIds = userIds;
+    }
+
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
+    }
+
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 }

@@ -57,8 +57,11 @@ public interface ApplicationRepository {
 
     String checkSortIsEmpty(PageRequest pageRequest);
 
-    ApplicationE getAppByGitLabId(Long gitLabProjectId);
+    List<ApplicationE> listByGitLabProjectIds(List<Long> gitLabProjectIds);
 
     void delete(Long appId);
 
+    List<ApplicationE> listByProjectIdAndSkipCheck(Long projectId);
+
+    List<ApplicationE> listByProjectId(Long projectId);
 }

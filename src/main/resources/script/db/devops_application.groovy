@@ -60,10 +60,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         sql("ALTER TABLE devops_application MODIFY COLUMN `name` VARCHAR(64) BINARY")
     }
 
-    changeSet(author: 'crockitwood', id: '2018-09-29-add-column') {
+    changeSet(author: 'n1ck', id: '2018-11-23-add-column') {
         addColumn(tableName: 'devops_application') {
-            column(name: 'type', type: 'VARCHAR(50)', remarks: '应用类型', afterColumn: 'code')
+            column(name: 'is_skip_check_permission', type: 'TINYINT UNSIGNED', remarks: '是否跳过权限检查', afterColumn: 'is_failed')
         }
-        sql("UPDATE devops_application  da SET da.type = 'normal'")
     }
 }

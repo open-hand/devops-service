@@ -97,6 +97,9 @@ public interface GitlabServiceClient {
                                               @PathVariable("projectName") String projectName,
                                               @RequestParam("userId") Integer userId);
 
+    @GetMapping(value = "/v1/projects/{project_id}")
+    ResponseEntity<GitlabProjectDO> getProjectById(@PathVariable("project_id") Integer projectId);
+
     @GetMapping(value = "/v1/projects/queryByName")
     ResponseEntity<GitlabProjectDO> getProjectByName(@RequestParam("userId") Integer userId,
                                                      @RequestParam("groupName") String groupName,
@@ -438,4 +441,10 @@ public interface GitlabServiceClient {
     @DeleteMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity removeMemberFromProject(@PathVariable("projectId") Integer projectId,
                                            @PathVariable("userId") Integer userId);
+
+    @GetMapping("/v1/projects/{project_id}/members/list")
+    ResponseEntity<List<MemberDO>> getAllMemberByProjectId(@PathVariable(value = "project_id") Integer projectId);
+
+    @GetMapping("/v1/projects/{user_id}/projects")
+    ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(@PathVariable(value = "user_id") Integer id);
 }

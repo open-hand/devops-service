@@ -209,6 +209,15 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
+    public GitlabProjectDO getProjectById(Integer projectId) {
+        try {
+            return gitlabServiceClient.getProjectById(projectId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
     public GitlabProjectDO getProjectByName(String groupName, String projectName, Integer userId) {
         try {
             return gitlabServiceClient.getProjectByName(userId, groupName, projectName).getBody();
@@ -268,6 +277,15 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             gitlabServiceClient.removeMemberFromProject(groupId, userId);
         } catch (Exception e) {
             throw new CommonException("error.member.remove", e);
+        }
+    }
+
+    @Override
+    public List<GitlabProjectDO> getProjectsByUserId(Integer userId) {
+        try {
+            return gitlabServiceClient.getProjectsByUserId(userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException("error.project.get.by.userId", e);
         }
     }
 

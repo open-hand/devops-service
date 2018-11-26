@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -38,12 +40,16 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
             return null;
         }
         userAttrDO = userAttrMapper.selectOne(userAttrDO);
-        if(userAttrDO==null) {
+        if (userAttrDO == null) {
             return null;
-        }else {
+        }
+        else {
             return userAttrDO.getIamUserId();
-
         }
     }
 
+    @Override
+    public List<UserAttrE> listByUserIds(List<Long> userIds) {
+        return ConvertHelper.convertList(userAttrMapper.listByUserIds(userIds), UserAttrE.class);
+    }
 }

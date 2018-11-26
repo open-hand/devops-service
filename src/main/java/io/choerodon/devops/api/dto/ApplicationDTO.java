@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 /**
  * Created by younger on 2018/3/28.
  */
@@ -11,6 +13,8 @@ public class ApplicationDTO {
     private Long projectId;
     private String type;
     private Long applictionTemplateId;
+    private List<Long> userIds;
+    private Boolean permission;
 
     public Long getId() {
         return id;
@@ -52,11 +56,19 @@ public class ApplicationDTO {
         this.applictionTemplateId = applictionTemplateId;
     }
 
-    public String getType() {
-        return type;
+    public List<Long> getUserIds() {
+        return userIds;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setUserIds(List<Long> userIds) {
+        this.userIds = userIds;
+    }
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 }

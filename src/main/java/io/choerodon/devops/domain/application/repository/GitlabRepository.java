@@ -27,15 +27,14 @@ public interface GitlabRepository {
 
     void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId);
 
-
     void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId);
 
     void deleteFile(Integer projectId, String path, String commitMessage, Integer userId);
 
     void deleteDevOpsApp(String groupName, String projectName, Integer userId);
 
-    void createProtectBranch(Integer projectId, String name, String mergeAccessLevel,
-                             String pushAccessLevel, Integer userId);
+    void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel,
+                             Integer userId);
 
     void deleteProject(Integer projectId, Integer userId);
 
@@ -51,6 +50,8 @@ public interface GitlabRepository {
 
     ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId);
 
+    GitlabProjectDO getProjectById(Integer projectId);
+
     GitlabProjectDO getProjectByName(String groupName, String projectName, Integer userId);
 
     List<ProjectHook> getHooks(Integer projectId, Integer userId);
@@ -62,6 +63,8 @@ public interface GitlabRepository {
     void addMemberIntoProject(Integer projectId, MemberDTO memberDTO);
 
     void removeMemberFromProject(Integer projectId, Integer userId);
+
+    List<GitlabProjectDO> getProjectsByUserId(Integer userId);
 
     void initMockService(GitlabServiceClient gitlabServiceClient);
 }

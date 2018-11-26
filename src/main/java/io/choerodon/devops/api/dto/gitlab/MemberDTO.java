@@ -15,6 +15,15 @@ public class MemberDTO {
     private Integer accessLevel;
     private String expiresAt;
 
+    public MemberDTO() {
+    }
+
+    public MemberDTO(@NotNull Integer userId, @NotNull Integer accessLevel, String expiresAt) {
+        this.userId = userId;
+        this.accessLevel = accessLevel;
+        this.expiresAt = expiresAt;
+    }
+
     public Integer getUserId() {
         return userId;
     }

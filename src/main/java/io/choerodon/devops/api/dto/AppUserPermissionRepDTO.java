@@ -2,20 +2,19 @@ package io.choerodon.devops.api.dto;
 
 /**
  * Created by n!Ck
- * Date: 2018/10/25
- * Time: 11:32
+ * Date: 2018/11/21
+ * Time: 10:06
  * Description:
  */
-public class DevopsEnvUserPermissionDTO {
+public class AppUserPermissionRepDTO {
     private Long iamUserId;
     private String loginName;
     private String realName;
 
-    public DevopsEnvUserPermissionDTO() {
+    public AppUserPermissionRepDTO() {
     }
 
-    public DevopsEnvUserPermissionDTO(String loginName, Long iamUserId, String realName) {
-        this.loginName = loginName;
+    public AppUserPermissionRepDTO(Long iamUserId, String loginName, String realName) {
         this.iamUserId = iamUserId;
         this.loginName = loginName;
         this.realName = realName;

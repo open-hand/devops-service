@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.UserAttrMapper">
+    <select id="listByUserIds" resultType="io.choerodon.devops.infra.dataobject.UserAttrDO">
+        SELECT
+        du.iam_user_id,
+        du.gitlab_user_id
+        FROM devops_user du
+        WHERE
+        du.iam_user_id IN
+        <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+            #{userId}
+        </foreach>
+    </select>
+</mapper>

@@ -32,7 +32,7 @@ public class ApplicationE {
     private String sonarUrl;
     private Long hookId;
     private Boolean isFailed;
-    private String type;
+    private Boolean isSkipCheckPermission;
 
     public ApplicationE() {
     }
@@ -233,11 +233,11 @@ public class ApplicationE {
         isFailed = failed;
     }
 
-    public String getType() {
-        return type;
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 }

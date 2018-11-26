@@ -488,7 +488,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     }
 
     @Override
-    public Boolean checkName(Long projectId, Long applicationId, String branchName) {
+    public void checkName(Long projectId, Long applicationId, String branchName) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         List<BranchE> branchEList = gitlabProjectRepository.listBranches(applicationE.getGitlabProjectE().getId(),
@@ -498,7 +498,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         if (branchEOptional.isPresent()) {
             throw new CommonException("error.branch.exist");
         }
-        return true;
     }
 
     private void handleFiles(List<String> operationFiles, List<String> deletedFiles,

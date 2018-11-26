@@ -19,7 +19,7 @@ public class ApplicationRepDTO {
     private String description;
     private String sonarUrl;
     private Boolean isFail;
-    private String type;
+    private Boolean isSkipCheckPermission;
 
     public Long getId() {
         return id;
@@ -109,7 +109,6 @@ public class ApplicationRepDTO {
         this.description = description;
     }
 
-
     public String getSonarUrl() {
         return sonarUrl;
     }
@@ -126,11 +125,11 @@ public class ApplicationRepDTO {
         isFail = fail;
     }
 
-    public String getType() {
-        return type;
+    public Boolean getSkipCheckPermission() {
+        return isSkipCheckPermission;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 }

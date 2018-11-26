@@ -49,7 +49,6 @@ public class DevopsClusterController {
                 .orElseThrow(() -> new CommonException("error.devops.cluster.insert"));
     }
 
-
     /**
      * 更新集群下的项目
      *
@@ -96,7 +95,7 @@ public class DevopsClusterController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验集群名唯一性")
-    @GetMapping(value = "/checkName")
+    @GetMapping(value = "/check_name")
     public void checkName(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
@@ -113,7 +112,7 @@ public class DevopsClusterController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验集群名唯一性")
-    @GetMapping(value = "/checkCode")
+    @GetMapping(value = "/check_code")
     public void checkCode(
             @ApiParam(value = "组织Id", required = true)
             @PathVariable(value = "organization_id") Long organizationId,

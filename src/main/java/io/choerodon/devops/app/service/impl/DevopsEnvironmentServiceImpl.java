@@ -25,13 +25,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
@@ -39,6 +37,8 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.service.DeployService;
+import io.choerodon.devops.domain.service.UpdateUserPermissionService;
+import io.choerodon.devops.domain.service.impl.UpdateEnvUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
@@ -543,7 +543,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 String realName = e.getRealName();
                 UserAttrE userAttrE = userAttrRepository.queryById(userId);
                 Long gitlabUserId = userAttrE.getGitlabUserId();
-                updateGitlabProjectMember(gitlabProjectId, gitlabUserId, 40);
+                // 添加gitlab用户权限
+                MemberDTO memberDTO = new MemberDTO();
+                memberDTO.setUserId(TypeUtil.objToInteger(gitlabUserId));
+                memberDTO.setAccessLevel(40);
+                memberDTO.setExpiresAt("");
+                gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
+                // 添加devops数据库记录
                 devopsEnvUserPermissionRepository
                         .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
             });
@@ -610,7 +616,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                devopsEnvUserPermissionDTO.setPermitted(false);
                 allProjectMemberList.add(devopsEnvUserPermissionDTO);
             });
             BeanUtils.copyProperties(allProjectMemberPage, devopsEnvUserPermissionDTOPage);
@@ -630,11 +635,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 devopsEnvUserPermissionDTO.setIamUserId(e.getId());
                 devopsEnvUserPermissionDTO.setLoginName(e.getLoginName());
                 devopsEnvUserPermissionDTO.setRealName(e.getRealName());
-                if (allUsersId.contains(e.getId())) {
-                    devopsEnvUserPermissionDTO.setPermitted(true);
-                } else {
-                    devopsEnvUserPermissionDTO.setPermitted(false);
-                }
                 retureUsersDTOList.add(devopsEnvUserPermissionDTO);
             });
             Page<DevopsEnvUserPermissionDTO> devopsEnvUserPermissionDTOPage = new Page<>();
@@ -650,34 +650,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public Boolean updateEnvUserPermission(Long projectId, Long envId, List<Long> userIds) {
-        // 更新以前有权限的所有用户
-        List<Long> currentRecord = devopsEnvUserPermissionRepository.listAll(envId).stream()
-                .map(DevopsEnvUserPermissionE::getIamUserId).collect(
-                        Collectors.toList());
-        // 待添加的用户
-        List<Long> addUsersList = userIds.stream().filter(e -> !currentRecord.contains(e)).collect(Collectors.toList());
-        // 待删除的用户
-        List<Long> deleteUsersList = currentRecord.stream().filter(e -> !userIds.contains(e))
-                .collect(Collectors.toList());
-
-        // 更新gitlab权限
-        Long gitlabProjectId = devopsEnviromentRepository.queryById(envId).getGitlabEnvProjectId();
-        addUsersList.forEach(e -> {
-            Integer permissionNumber = 40;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        deleteUsersList.forEach(e -> {
-            Integer permissionNumber = 0;
-            UserAttrE userAttrE = userAttrRepository.queryById(e);
-            Long gitlabUserId = userAttrE.getGitlabUserId();
-            updateGitlabProjectMember(gitlabProjectId, gitlabUserId, permissionNumber);
-        });
-        // 事务如果失败，数据库会回滚
-        devopsEnvUserPermissionRepository.updateEnvUserPermission(envId, addUsersList, deleteUsersList);
-        return true;
+    public Boolean updateEnvUserPermission(Long envId, List<Long> userIds) {
+        UpdateUserPermissionService updateEnvUserPermissionService = new UpdateEnvUserPermissionServiceImpl();
+        return updateEnvUserPermissionService.updateUserPermission(null, envId, userIds, null);
     }
 
     private Page<UserDTO> getMembersFromProject(PageRequest pageRequest, Long projectId, String searchParams) {
@@ -699,21 +674,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             }
         }
         // 获取项目所有者角色id和数量
-        Long ownerId;
-        Page<RoleDTO> ownerRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
-        if (ownerRoleDTOPage.getTotalElements() == 0) {
-            throw new CommonException("error.get.projectOwner.roleId");
-        } else {
-            ownerId = ownerRoleDTOPage.getContent().get(0).getId();
-        }
+        Long ownerId = iamRepository.queryRoleIdByCode(PROJECT_OWNER);
         // 获取项目成员id
-        Long memberId;
-        Page<RoleDTO> memberRoleDTOPage = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
-        if (memberRoleDTOPage.getTotalElements() == 0) {
-            throw new CommonException("error.get.projectMember.roleId");
-        } else {
-            memberId = memberRoleDTOPage.getContent().get(0).getId();
-        }
+        Long memberId = iamRepository.queryRoleIdByCode(PROJECT_MEMBER);
         // 所有项目成员，可能还带有项目所有者的角色，需要过滤
         Page<UserDTO> allMemberWithOtherUsersPage = iamRepository
                 .pagingQueryUsersByRoleIdOnProjectLevel(pageRequest, roleAssignmentSearchDTO,
@@ -736,24 +699,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             // 设置过滤后的分页显示参数
             allMemberWithOtherUsersPage.setContent(returnUserDTOList);
             return allMemberWithOtherUsersPage;
-        }
-    }
-
-    private void updateGitlabProjectMember(Long gitlabProjectId, Long userId, Integer permission) {
-        if (permission == 0) {
-            // permission为0的先查看在gitlab那边有没有权限，如果有，则删除gitlab权限
-            GitlabMemberE gitlabMemberE = gitlabProjectRepository
-                    .getProjectMember(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            if (gitlabMemberE.getId() != null) {
-                gitlabRepository
-                        .removeMemberFromProject(TypeUtil.objToInteger(gitlabProjectId), TypeUtil.objToInteger(userId));
-            }
-        } else {
-            MemberDTO memberDTO = new MemberDTO();
-            memberDTO.setUserId(TypeUtil.objToInteger(userId));
-            memberDTO.setAccessLevel(permission);
-            memberDTO.setExpiresAt("");
-            gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
         }
     }
 

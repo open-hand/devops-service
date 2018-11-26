@@ -434,7 +434,7 @@ public class ApplicationInstanceController {
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验实例名唯一性")
     @GetMapping(value = "/check_name")
-    public void delete(
+    public void checkName(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
