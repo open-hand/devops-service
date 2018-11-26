@@ -82,4 +82,6 @@ public interface ApplicationVersionService {
 
 
     String queryVersionValue(Long appVersionId);
+
+    ApplicationVersionRepDTO  queryById(Long appVersionId);
 }

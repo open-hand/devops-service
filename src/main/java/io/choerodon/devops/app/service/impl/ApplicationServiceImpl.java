@@ -116,9 +116,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
-            throw new CommonException("error.user.not.owner");
-        }
+//        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+//            throw new CommonException("error.user.not.owner");
+//        }
         // 创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
         devOpsAppPayload.setType(APPLICATION);
