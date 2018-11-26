@@ -220,7 +220,8 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             }
             Git git = gitUtil.clone(applicationDir, type, repoUrl);
 
-            String accessToken = getToken(gitlabProjectPayload, applicationDir);
+            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+            String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrE);
 
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
             repoUrl = applicationTemplateE.getRepoUrl();
@@ -246,12 +247,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateRepository.update(applicationTemplateE);
     }
 
-    private String getToken(GitlabProjectPayload gitlabProjectPayload, String applicationDir) {
-        List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
-                applicationDir, gitlabProjectPayload.getUserId());
-        String accessToken;
-        accessToken = tokens.isEmpty() ? gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
-                applicationDir, gitlabProjectPayload.getUserId()) : tokens.get(tokens.size() - 1);
+    private String getToken(GitlabProjectPayload gitlabProjectPayload, String applicationDir, UserAttrE userAttrE) {
+        String accessToken = userAttrE.getGitlabToken();
+        if (accessToken == null) {
+            accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
+                    applicationDir, gitlabProjectPayload.getUserId());
+            userAttrE.setGitlabToken(accessToken);
+            userAttrRepository.update(userAttrE);
+        }
         return accessToken;
     }
 

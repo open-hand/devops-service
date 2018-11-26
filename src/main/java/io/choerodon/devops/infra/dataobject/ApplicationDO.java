@@ -32,6 +32,7 @@ public class ApplicationDO extends AuditDomain {
     private String token;
     private Long hookId;
     private Boolean isFailed;
+    private String type;
     private Boolean isSkipCheckPermission;
 
     @Transient
@@ -167,5 +168,13 @@ public class ApplicationDO extends AuditDomain {
 
     public void setSkipCheckPermission(Boolean skipCheckPermission) {
         isSkipCheckPermission = skipCheckPermission;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 }
