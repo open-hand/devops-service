@@ -164,7 +164,6 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     podEventDTOS.add(podEventDTO);
                 });
             }
-            //获取实例中job的日志
             List<DevopsEnvResourceE> jobs = devopsEnvResourceRepository.listJobs(devopsEnvCommandE.getId());
             List<DevopsEnvCommandLogE> devopsEnvCommandLogES = devopsEnvCommandLogRepository
                     .queryByDeployId(devopsEnvCommandE.getId());
@@ -174,9 +173,15 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                         devopsEnvResourceDetailRepository.query(
                                 job.getDevopsEnvResourceDetailE().getId());
                 V1Job v1Job = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Job.class);
-                getInstanceStage(v1Job, podEventDTOS.get(i), devopsEnvCommandLogES.get(i));
+                //获取job状态
+                if (i <= podEventDTOS.size() - 1) {
+                    setJobStatus(v1Job, podEventDTOS.get(i));
+                }
+                //job日志
+                if (i <= devopsEnvCommandLogES.size() - 1) {
+                    podEventDTOS.get(i).setLog(devopsEnvCommandLogES.get(0).getLog());
+                }
             }
-
             //获取实例中pod的event
             List<DevopsCommandEventE> devopsCommandPodEventES = devopsCommandEventRepository
                     .listByCommandIdAndType(devopsEnvCommandE.getId(), ResourceType.POD.getType());
@@ -198,8 +203,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     }
 
 
-    private void getInstanceStage(V1Job v1Job, PodEventDTO podEventDTO, DevopsEnvCommandLogE devopsEnvCommandLogE) {
-        podEventDTO.setLog(devopsEnvCommandLogE.getLog());
+    private void setJobStatus(V1Job v1Job, PodEventDTO podEventDTO) {
         if (v1Job.getStatus() != null) {
             if (v1Job.getStatus().getSucceeded() != null && v1Job.getStatus().getSucceeded() == 1) {
                 podEventDTO.setJobPodStatus("success");
