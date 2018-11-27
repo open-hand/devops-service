@@ -159,7 +159,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE.initGitlabProjectEByUrl(gitlabUrl + urlSlash
                 + organization.getCode() + "-" + projectE.getCode() + "/"
                 + applicationE.getCode() + ".git");
-        return ConvertHelper.convert(applicationE, ApplicationRepDTO.class);
+        ApplicationRepDTO applicationRepDTO = ConvertHelper.convert(applicationE, ApplicationRepDTO.class);
+        if (applicationE.getIsSkipCheckPermission()) {
+            applicationRepDTO.setPermission(true);
+        }
+        else {
+            applicationRepDTO.setPermission(false);
+        }
+        return applicationRepDTO;
     }
 
     @Override
@@ -176,7 +183,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO) {
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
-        applicationE.setIsSkipCheckPermission(applicationUpdateDTO.getPermission());
+        applicationE.setIsSkipCheckPermission(applicationUpdateDTO.getIsSkipCheckPermission());
         applicationE.initProjectE(projectId);
 
         Long appId = applicationUpdateDTO.getId();
@@ -190,16 +197,16 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
         // 原来跳过，现在也跳过，不更新权限表
-        if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
+        if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
             return true;
         }
         // 原来跳过，现在不跳过，需要更新权限表
-        else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getPermission()) {
+        else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getIsSkipCheckPermission()) {
             return updateUserPermissionService
                     .updateUserPermission(projectId, appId, applicationUpdateDTO.getUserIds(), 1);
         }
         // 原来不跳过，现在跳过，需要删除权限表中的所有人，然后把项目下所有项目成员加入gitlab权限
-        else if (!oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
+        else if (!oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
             appUserPermissionRepository.deleteByAppId(appId);
             return updateUserPermissionService.updateUserPermission(projectId, appId, new ArrayList<>(), 2);
         }
@@ -243,9 +250,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
         );
         Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
-        List<ApplicationRepDTO> resulstDTOList = setApplicationRepDTOPermission(applicationES.getContent(), userAttrE,
-                projectE);
-        resultDTOPage.setContent(resulstDTOList);
+        resultDTOPage.setContent(setApplicationRepDTOPermission(applicationES.getContent(), userAttrE, projectE));
         return resultDTOPage;
     }
 
@@ -284,9 +289,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
         );
         Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
-        List<ApplicationRepDTO> resultDTOList = setApplicationRepDTOPermission(applicationES.getContent(), userAttrE,
-                projectE);
-        resultDTOPage.setContent(resultDTOList);
+        resultDTOPage.setContent(setApplicationRepDTOPermission(applicationES.getContent(), userAttrE, projectE));
         return resultDTOPage;
     }
 
@@ -305,8 +308,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                 }
         );
-        List<ApplicationRepDTO> resultDTOList = setApplicationRepDTOPermission(applicationEList, userAttrE, projectE);
-        return resultDTOList;
+        return setApplicationRepDTOPermission(applicationEList, userAttrE, projectE);
     }
 
     private List<ApplicationRepDTO> setApplicationRepDTOPermission(List<ApplicationE> applicationEList,

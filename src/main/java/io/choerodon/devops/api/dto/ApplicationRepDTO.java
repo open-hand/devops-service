@@ -10,7 +10,7 @@ public class ApplicationRepDTO {
     private String name;
     private String code;
     private Long projectId;
-    private Long applictionTemplateId;
+    private Long applicationTemplateId;
     private String repoUrl;
     private Boolean isSynchro;
     private Boolean isActive;
@@ -54,12 +54,12 @@ public class ApplicationRepDTO {
         this.projectId = projectId;
     }
 
-    public Long getApplictionTemplateId() {
-        return applictionTemplateId;
+    public Long getApplicationTemplateId() {
+        return applicationTemplateId;
     }
 
-    public void setApplictionTemplateId(Long applictionTemplateId) {
-        this.applictionTemplateId = applictionTemplateId;
+    public void setApplicationTemplateId(Long applicationTemplateId) {
+        this.applicationTemplateId = applicationTemplateId;
     }
 
     public String getRepoUrl() {
