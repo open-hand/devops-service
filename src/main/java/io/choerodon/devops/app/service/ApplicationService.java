@@ -17,10 +17,10 @@ public interface ApplicationService {
      * 项目下创建应用
      *
      * @param projectId      项目Id
-     * @param applicationDTO 应用信息
+     * @param applicationReqDTO 应用信息
      * @return ApplicationTemplateDTO
      */
-    ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO);
+    ApplicationRepDTO create(Long projectId, ApplicationReqDTO applicationReqDTO);
 
 
     /**
@@ -170,7 +170,7 @@ public interface ApplicationService {
      * @param params      查询参数
      * @return list of ApplicationRepDTO
      */
-    Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
+    Page<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params);
 
     /**
      * 项目下分页查询代码仓库

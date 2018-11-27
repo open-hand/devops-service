@@ -6,7 +6,7 @@ import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.ApplicationDTO
+import io.choerodon.devops.api.dto.ApplicationReqDTO
 import io.choerodon.devops.api.dto.ApplicationRepDTO
 import io.choerodon.devops.api.dto.ApplicationUpdateDTO
 import io.choerodon.devops.app.service.ApplicationService
@@ -148,7 +148,7 @@ class ApplicationControllerSpec extends Specification {
     // 项目下创建应用
     def "create"() {
         given: '创建issueDTO'
-        ApplicationDTO applicationDTO = new ApplicationDTO()
+        ApplicationReqDTO applicationDTO = new ApplicationReqDTO()
 
         and: '赋值'
         applicationDTO.setId(init_id)

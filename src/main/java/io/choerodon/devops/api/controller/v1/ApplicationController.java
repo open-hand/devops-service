@@ -8,7 +8,6 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import retrofit2.http.HEAD;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
@@ -40,7 +39,7 @@ public class ApplicationController {
      * 项目下创建应用
      *
      * @param projectId      项目id
-     * @param applicationDTO 应用信息
+     * @param applicationReqDTO 应用信息
      * @return ApplicationRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -50,8 +49,8 @@ public class ApplicationController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
-            @RequestBody ApplicationDTO applicationDTO) {
-        return Optional.ofNullable(applicationService.create(projectId, applicationDTO))
+            @RequestBody ApplicationReqDTO applicationReqDTO) {
+        return Optional.ofNullable(applicationService.create(projectId, applicationReqDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.create"));
     }
@@ -322,7 +321,7 @@ public class ApplicationController {
     @ApiOperation(value = "项目下查询所有已经启用的且未发布的且有版本的应用")
     @CustomPageRequest
     @PostMapping(value = "/list_unpublish")
-    public ResponseEntity<Page<ApplicationDTO>> listByActiveAndPubAndVersion(
+    public ResponseEntity<Page<ApplicationReqDTO>> listByActiveAndPubAndVersion(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "分页参数")

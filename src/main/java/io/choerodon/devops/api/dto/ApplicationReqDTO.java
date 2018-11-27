@@ -5,7 +5,7 @@ import java.util.List;
 /**
  * Created by younger on 2018/3/28.
  */
-public class ApplicationDTO {
+public class ApplicationReqDTO {
 
     private Long id;
     private String name;
@@ -14,7 +14,7 @@ public class ApplicationDTO {
     private String type;
     private Long applictionTemplateId;
     private List<Long> userIds;
-    private Boolean permission;
+    private Boolean isSkipCheckPermission;
 
     public Long getId() {
         return id;
@@ -64,12 +64,12 @@ public class ApplicationDTO {
         this.userIds = userIds;
     }
 
-    public Boolean getPermission() {
-        return permission;
+    public Boolean getIsSkipCheckPermission() {
+        return isSkipCheckPermission;
     }
 
-    public void setPermission(Boolean permission) {
-        this.permission = permission;
+    public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 
     public String getType() {

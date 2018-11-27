@@ -98,18 +98,18 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     @Saga(code = "devops-create-gitlab-project",
             description = "devops create GitLab project", inputSchema = "{}")
-    public ApplicationRepDTO create(Long projectId, ApplicationDTO applicationDTO) {
+    public ApplicationRepDTO create(Long projectId, ApplicationReqDTO applicationReqDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        ApplicationValidator.checkApplication(applicationDTO);
+        ApplicationValidator.checkApplication(applicationReqDTO);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        ApplicationE applicationE = ConvertHelper.convert(applicationDTO, ApplicationE.class);
+        ApplicationE applicationE = ConvertHelper.convert(applicationReqDTO, ApplicationE.class);
         applicationE.initProjectE(projectId);
         applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         applicationRepository.checkCode(applicationE);
         applicationE.initActive(true);
         applicationE.initSynchro(false);
-        applicationE.setIsSkipCheckPermission(applicationDTO.getPermission());
+        applicationE.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
 
         // 查询创建应用所在的gitlab应用组
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
@@ -125,12 +125,12 @@ public class ApplicationServiceImpl implements ApplicationService {
         // 创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
         devOpsAppPayload.setType(APPLICATION);
-        devOpsAppPayload.setPath(applicationDTO.getCode());
+        devOpsAppPayload.setPath(applicationReqDTO.getCode());
         devOpsAppPayload.setOrganizationId(organization.getId());
         devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         devOpsAppPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
-        devOpsAppPayload.setUserIds(applicationDTO.getUserIds());
-        devOpsAppPayload.setSkipCheckPermission(applicationDTO.getPermission());
+        devOpsAppPayload.setUserIds(applicationReqDTO.getUserIds());
+        devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
         applicationE = applicationRepository.create(applicationE);
         devOpsAppPayload.setAppId(applicationE.getId());
         Long appId = applicationE.getId();
@@ -138,8 +138,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             throw new CommonException("error.application.create.insert");
         }
         // 如果不跳过权限检查
-        List<Long> userIds = applicationDTO.getUserIds();
-        if (!applicationDTO.getPermission() && userIds != null && !userIds.isEmpty()) {
+        List<Long> userIds = applicationReqDTO.getUserIds();
+        if (!applicationReqDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
             userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
         }
 
@@ -399,9 +399,14 @@ public class ApplicationServiceImpl implements ApplicationService {
             if (!gitlabProjectPayload.getUserIds().isEmpty()) {
                 List<Long> gitlabUserIds = userAttrRepository.listByUserIds(gitlabProjectPayload.getUserIds()).stream()
                         .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
-                gitlabUserIds.forEach(e ->
+                gitlabUserIds.forEach(e -> {
+                    GitlabMemberE gitlabMemberE = gitlabProjectRepository
+                            .getProjectMember(gitlabProjectPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
+                    if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
                         gitlabRepository.addMemberIntoProject(gitlabProjectPayload.getGitlabProjectId(),
-                                new MemberDTO(TypeUtil.objToInteger(e), 40, "")));
+                                new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
+                    }
+                });
             }
         }
         // 跳过权限检查，项目下所有成员自动分配权限
@@ -618,10 +623,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest, String params) {
+    public Page<ApplicationReqDTO> listByActiveAndPubAndVersion(Long projectId, PageRequest pageRequest,
+                                                                String params) {
         return ConvertPageHelper.convertPage(applicationRepository
                         .listByActiveAndPubAndVersion(projectId, true, pageRequest, params),
-                ApplicationDTO.class);
+                ApplicationReqDTO.class);
     }
 
     @Override
