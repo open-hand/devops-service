@@ -200,7 +200,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     .map(e -> e.getGitlabProjectE().getId()).collect(Collectors.toList());
             gitlabProjectIds.forEach(e -> {
                 Integer gitlabProjectId = gitlabRepository.getProjectById(e).getId();
-                if (gitlabProjectRepository.getProjectMember(e, gitlabUserId).getId() == null) {
+                GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(e, gitlabUserId);
+                if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
                     gitlabRepository.addMemberIntoProject(gitlabProjectId, new MemberDTO(gitlabUserId, 40, ""));
                 }
             });

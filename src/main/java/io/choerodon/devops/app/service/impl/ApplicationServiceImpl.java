@@ -242,15 +242,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                 }
         );
-        List<ApplicationRepDTO> resulstDTOList = ConvertHelper
-                .convertList(applicationES.getContent(), ApplicationRepDTO.class);
         Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
-        if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
-            setAppPermission(userAttrE.getIamUserId(), resulstDTOList);
-        }
-        else {
-            resulstDTOList.forEach(e -> e.setPermission(true));
-        }
+        List<ApplicationRepDTO> resulstDTOList = setApplicationRepDTOPermission(applicationES.getContent(), userAttrE,
+                projectE);
         resultDTOPage.setContent(resulstDTOList);
         return resultDTOPage;
     }
@@ -259,21 +253,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!sonarqubeUrl.equals("")) {
             Integer result;
             try {
-                result = HttpClientUtil.getSonar(
-                        sonarqubeUrl.endsWith("/")
-                                ? sonarqubeUrl
-                                : String.format(
-                                "%s/api/project_links/search?projectKey=%s-%s:%s",
-                                sonarqubeUrl,
-                                organization.getCode(),
-                                projectE.getCode(),
-                                t.getCode()
-                        ));
+                result = HttpClientUtil.getSonar(sonarqubeUrl.endsWith("/")
+                        ? sonarqubeUrl
+                        : String
+                        .format("%s/api/project_links/search?projectKey=%s-%s:%s", sonarqubeUrl, organization.getCode(),
+                                projectE.getCode(), t.getCode()));
                 if (result.equals(HttpStatus.OK.value())) {
                     t.initSonarUrl(sonarqubeUrl.endsWith("/") ? sonarqubeUrl : sonarqubeUrl + "/"
-                            + "dashboard?id="
-                            + organization.getCode() + "-" + projectE.getCode() + ":"
-                            + t.getCode());
+                            + "dashboard?id=" + organization.getCode() + "-" + projectE.getCode() + ":" + t.getCode());
                 }
             } catch (Exception e) {
                 t.initSonarUrl(null);
@@ -291,22 +278,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationES.forEach(t -> {
                     if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
                         t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                                + organization.getCode() + "-" + projectE.getCode() + "/"
-                                + t.getCode() + ".git");
+                                + organization.getCode() + "-" + projectE.getCode() + "/" + t.getCode() + ".git");
                         getSonarUrl(projectE, organization, t);
                     }
                 }
         );
-        List<ApplicationRepDTO> resulstDTOList = ConvertHelper
-                .convertList(applicationES.getContent(), ApplicationRepDTO.class);
         Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
-        if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
-            setAppPermission(userAttrE.getIamUserId(), resulstDTOList);
-        }
-        else {
-            resulstDTOList.forEach(e -> e.setPermission(true));
-        }
-        resultDTOPage.setContent(resulstDTOList);
+        List<ApplicationRepDTO> resultDTOList = setApplicationRepDTOPermission(applicationES.getContent(), userAttrE,
+                projectE);
+        resultDTOPage.setContent(resultDTOList);
         return resultDTOPage;
     }
 
@@ -320,33 +300,34 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationEList.forEach(t -> {
                     if (t.getGitlabProjectE() != null && t.getGitlabProjectE().getId() != null) {
                         t.initGitlabProjectEByUrl(gitlabUrl + urlSlash
-                                + organization.getCode() + "-" + projectE.getCode() + "/"
-                                + t.getCode() + ".git");
+                                + organization.getCode() + "-" + projectE.getCode() + "/" + t.getCode() + ".git");
                         getSonarUrl(projectE, organization, t);
                     }
                 }
         );
+        List<ApplicationRepDTO> resultDTOList = setApplicationRepDTOPermission(applicationEList, userAttrE, projectE);
+        return resultDTOList;
+    }
+
+    private List<ApplicationRepDTO> setApplicationRepDTOPermission(List<ApplicationE> applicationEList,
+                                                                   UserAttrE userAttrE, ProjectE projectE) {
         List<ApplicationRepDTO> resultDTOList = ConvertHelper.convertList(applicationEList, ApplicationRepDTO.class);
         if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
-            setAppPermission(userAttrE.getIamUserId(), resultDTOList);
+            List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
+                    .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
+            resultDTOList.forEach(e -> {
+                if (appIds.contains(e.getId())) {
+                    e.setPermission(true);
+                }
+                else {
+                    e.setPermission(false);
+                }
+            });
         }
         else {
             resultDTOList.forEach(e -> e.setPermission(true));
         }
         return resultDTOList;
-    }
-
-    private void setAppPermission(Long userId, List<ApplicationRepDTO> resultDTOList) {
-        List<Long> appIds = appUserPermissionRepository.listByUserId(userId).stream()
-                .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
-        resultDTOList.forEach(e -> {
-            if (appIds.contains(e.getId())) {
-                e.setPermission(true);
-            }
-            else {
-                e.setPermission(false);
-            }
-        });
     }
 
     @Override
@@ -436,9 +417,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrE);
 
             repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
-            applicationE.initGitlabProjectEByUrl(repoUrl
-                    + organization.getCode() + "-" + projectE.getCode() + "/"
-                    + applicationE.getCode() + ".git");
+            applicationE.initGitlabProjectEByUrl(repoUrl + organization.getCode()
+                    + "-" + projectE.getCode() + "/" + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
 
             BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
