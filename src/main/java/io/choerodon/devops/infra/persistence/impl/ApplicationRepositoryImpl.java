@@ -95,7 +95,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         Map maps = gson.fromJson(params, Map.class);
         Page<ApplicationDO> applicationES = new Page<>();
         //是否需要分页
-        if (doPage != null && doPage == false) {
+        if (doPage != null && !doPage) {
             applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
                     TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                     TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
@@ -215,7 +215,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     public List<ApplicationE> listByProjectIdAndSkipCheck(Long projectId) {
         ApplicationDO applicationDO = new ApplicationDO();
         applicationDO.setProjectId(projectId);
-        applicationDO.setSkipCheckPermission(true);
+        applicationDO.setIsSkipCheckPermission(true);
         return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
     }
 

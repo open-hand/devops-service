@@ -29,9 +29,7 @@ public interface ApplicationVersionRepository {
 
     void updatePublishLevelByIds(List<Long> appVersionIds, Long level);
 
-    Page<ApplicationVersionE> listApplicationVersionInApp(Long projectId,
-                                                          Long appId,
-                                                          PageRequest pageRequest,
+    Page<ApplicationVersionE> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
                                                           String searchParam);
 
     List<ApplicationVersionE> listAllPublishedVersion(Long applicationId);

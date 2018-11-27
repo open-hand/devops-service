@@ -361,15 +361,23 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     if (applicationInstanceE == null) {
                         return;
                     }
-                    DevopsEnvResourceE newdevopsInsResourceE =
+                    newdevopsEnvResourceE =
                             devopsEnvResourceRepository.queryResource(
                                     applicationInstanceE.getId(),
                                     resourceType.getType().equals(ResourceType.JOB.getType()) ? applicationInstanceE.getCommandId() : null,
                                     envId,
                                     KeyParseTool.getResourceType(key),
                                     KeyParseTool.getResourceName(key));
-                    saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE,
-                            devopsEnvResourceDetailE, applicationInstanceE);
+                    if (newdevopsEnvResourceE == null) {
+                        newdevopsEnvResourceE =
+                                devopsEnvResourceRepository.queryResource(
+                                        applicationInstanceE.getId(),
+                                        resourceType.getType().equals(ResourceType.JOB.getType()) ? applicationInstanceE.getCommandId() : null,
+                                        null,
+                                        KeyParseTool.getResourceType(key),
+                                        KeyParseTool.getResourceName(key));
+                    }
+                    saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE, devopsEnvResourceDetailE, applicationInstanceE);
                     break;
             }
         } catch (IOException e) {
@@ -1158,6 +1166,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                       ApplicationInstanceE applicationInstanceE) {
         if (applicationInstanceE != null) {
             devopsEnvResourceE.initApplicationInstanceE(applicationInstanceE.getId());
+            devopsEnvResourceE.initDevopsEnvCommandE(applicationInstanceE.getCommandId());
         }
         if (newdevopsEnvResourceE == null) {
             devopsEnvResourceE.initDevopsInstanceResourceMessageE(
@@ -1171,12 +1180,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (devopsEnvResourceE.getReversion() == null) {
             devopsEnvResourceE.setReversion(0L);
         }
-        if (devopsEnvResourceE.getApplicationInstanceE() != null) {
+        if (applicationInstanceE != null) {
+            newdevopsEnvResourceE.initDevopsEnvironmentE(devopsEnvResourceE.getDevopsEnvironmentE().getId());
             newdevopsEnvResourceE.initApplicationInstanceE(devopsEnvResourceE.getApplicationInstanceE().getId());
-            devopsEnvResourceRepository.update(newdevopsEnvResourceE);
         }
         if (devopsEnvResourceE.getDevopsEnvironmentE() != null) {
-            newdevopsEnvResourceE.initDevopsEnvironmentE(devopsEnvResourceE.getDevopsEnvironmentE().getId());
+            newdevopsEnvResourceE.initDevopsEnvCommandE(applicationInstanceE.getCommandId());
             devopsEnvResourceRepository.update(newdevopsEnvResourceE);
         }
         if (!newdevopsEnvResourceE.getReversion().equals(devopsEnvResourceE.getReversion())) {

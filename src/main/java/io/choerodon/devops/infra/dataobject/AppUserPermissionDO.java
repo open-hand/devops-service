@@ -14,7 +14,7 @@ import io.choerodon.mybatis.annotation.VersionAudit;
 
 @VersionAudit
 @ModifyAudit
-@Table(name = "devops_app_user_permission")
+@Table(name = "devops_app_user_rel")
 public class AppUserPermissionDO {
     private Long iamUserId;
     private Long appId;
