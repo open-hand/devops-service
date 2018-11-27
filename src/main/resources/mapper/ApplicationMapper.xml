@@ -14,7 +14,8 @@
         da.gitlab_project_id,
         da.app_template_id,
         da.uuid,
-        da.is_failed
+        da.is_failed,
+        da.is_skip_check_permission
         FROM devops_application da
         where da.project_id = #{projectId}
         <if test="isActive != null">

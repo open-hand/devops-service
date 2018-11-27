@@ -29,6 +29,4 @@ public interface DevopsEnvUserPermissionRepository {
     List<DevopsEnvUserPermissionE> listByUserId(Long userId);
 
     void checkEnvDeployPermission(Long userId, Long envId);
-
-    boolean isProjectOwner(Long userId, ProjectE projectE);
 }

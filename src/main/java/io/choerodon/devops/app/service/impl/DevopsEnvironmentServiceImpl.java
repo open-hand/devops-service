@@ -241,13 +241,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 .map(DevopsEnvUserPermissionE::getEnvId).collect(Collectors.toList());
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         // 查询当前用户是否为项目所有者
-        Boolean isProjectOwner = devopsEnvUserPermissionRepository
+        Boolean isProjectOwner = iamRepository
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
         List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
         List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
-                .queryByprojectAndActive(projectId, active).stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getFailed() == false).peek(t -> {
+                .queryByprojectAndActive(projectId, active).stream()
+                .filter(devopsEnvironmentE -> !devopsEnvironmentE.getFailed()).peek(t -> {
                     setEnvStatus(connectedClusterList, upgradeClusterList, t);
                     // 项目成员返回拥有对应权限的环境，项目所有者返回所有环境
                     setPermission(t, permissionEnvIds, isProjectOwner);

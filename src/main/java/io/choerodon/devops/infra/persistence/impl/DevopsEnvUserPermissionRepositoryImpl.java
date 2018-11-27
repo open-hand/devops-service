@@ -1,9 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +13,6 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsEnvUserPermissionDTO;
-import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
-import io.choerodon.devops.api.dto.iam.RoleDTO;
 import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
@@ -109,7 +105,7 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         //判断当前用户是否是项目所有者，如果是，直接跳过校验，如果不是，校验环境权限
-        if (!isProjectOwner(userId, projectE)) {
+        if (!iamRepository.isProjectOwner(userId, projectE)) {
             DevopsEnvUserPermissionDO devopsEnvUserPermissionDO = new DevopsEnvUserPermissionDO();
             devopsEnvUserPermissionDO.setIamUserId(userId);
             devopsEnvUserPermissionDO.setEnvId(envId);
@@ -118,17 +114,5 @@ public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermi
                 throw new CommonException("error.env.user.permission.get");
             }
         }
-    }
-
-    @Override
-    public boolean isProjectOwner(Long userId, ProjectE projectE) {
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = iamRepository.listProjectWithRoleDTO(userId);
-        List<RoleDTO> roleDTOS = new ArrayList<>();
-        projectWithRoleDTOList.stream().filter(projectWithRoleDTO ->
-                projectWithRoleDTO.getName().equals(projectE.getName())).forEach(projectWithRoleDTO ->
-                roleDTOS.addAll(projectWithRoleDTO.getRoles()
-                        .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
-                        .collect(Collectors.toList())));
-        return !roleDTOS.isEmpty();
     }
 }

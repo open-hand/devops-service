@@ -23,4 +23,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_user_permission.groovy') {
             column(name: "app_id")
         }
     }
+
+    changeSet(author: 'n1ck', id: '2018-11-27-delete-table') {
+        dropTable(tableName: "devops_app_user_permission")
+    }
 }

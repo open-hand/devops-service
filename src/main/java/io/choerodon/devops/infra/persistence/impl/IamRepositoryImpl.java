@@ -275,6 +275,18 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
+    public Boolean isProjectOwner(Long userId, ProjectE projectE) {
+        List<ProjectWithRoleDTO> projectWithRoleDTOList = listProjectWithRoleDTO(userId);
+        List<RoleDTO> roleDTOS = new ArrayList<>();
+        projectWithRoleDTOList.stream().filter(projectWithRoleDTO ->
+                projectWithRoleDTO.getName().equals(projectE.getName())).forEach(projectWithRoleDTO ->
+                roleDTOS.addAll(projectWithRoleDTO.getRoles()
+                        .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
+                        .collect(Collectors.toList())));
+        return !roleDTOS.isEmpty();
+    }
+
+    @Override
     public void initMockIamService(IamServiceClient iamServiceClient) {
         this.iamServiceClient = iamServiceClient;
     }

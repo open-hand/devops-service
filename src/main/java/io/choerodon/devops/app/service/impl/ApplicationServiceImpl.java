@@ -32,7 +32,6 @@ import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.domain.application.repository.*;
@@ -110,7 +109,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationRepository.checkCode(applicationE);
         applicationE.initActive(true);
         applicationE.initSynchro(false);
-        applicationE.setSkipCheckPermission(applicationDTO.getPermission());
+        applicationE.setIsSkipCheckPermission(applicationDTO.getPermission());
 
         // 查询创建应用所在的gitlab应用组
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
@@ -177,7 +176,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO) {
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
-        applicationE.setSkipCheckPermission(applicationUpdateDTO.getPermission());
+        applicationE.setIsSkipCheckPermission(applicationUpdateDTO.getPermission());
         applicationE.initProjectE(projectId);
 
         Long appId = applicationUpdateDTO.getId();
@@ -191,16 +190,16 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
         // 原来跳过，现在也跳过，不更新权限表
-        if (oldApplicationE.getSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
+        if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
             return true;
         }
         // 原来跳过，现在不跳过，需要更新权限表
-        else if (oldApplicationE.getSkipCheckPermission() && !applicationUpdateDTO.getPermission()) {
+        else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getPermission()) {
             return updateUserPermissionService
                     .updateUserPermission(projectId, appId, applicationUpdateDTO.getUserIds(), 1);
         }
         // 原来不跳过，现在跳过，需要删除权限表中的所有人，然后把项目下所有项目成员加入gitlab权限
-        else if (!oldApplicationE.getSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
+        else if (!oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getPermission()) {
             appUserPermissionRepository.deleteByAppId(appId);
             return updateUserPermissionService.updateUserPermission(projectId, appId, new ArrayList<>(), 2);
         }
@@ -230,6 +229,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                                                  PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES =
                 applicationRepository.listByOptions(projectId, isActive, hasVersion, type, doPage, pageRequest, params);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -242,7 +242,17 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                 }
         );
-        return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
+        List<ApplicationRepDTO> resulstDTOList = ConvertHelper
+                .convertList(applicationES.getContent(), ApplicationRepDTO.class);
+        Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
+        if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
+            setAppPermission(userAttrE.getIamUserId(), resulstDTOList);
+        }
+        else {
+            resulstDTOList.forEach(e -> e.setPermission(true));
+        }
+        resultDTOPage.setContent(resulstDTOList);
+        return resultDTOPage;
     }
 
     private void getSonarUrl(ProjectE projectE, Organization organization, ApplicationE t) {
@@ -274,6 +284,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Page<ApplicationRepDTO> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
         Page<ApplicationE> applicationES = applicationRepository.listCodeRepository(projectId, pageRequest, params);
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -286,17 +297,23 @@ public class ApplicationServiceImpl implements ApplicationService {
                     }
                 }
         );
-        return ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
+        List<ApplicationRepDTO> resulstDTOList = ConvertHelper
+                .convertList(applicationES.getContent(), ApplicationRepDTO.class);
+        Page<ApplicationRepDTO> resultDTOPage = ConvertPageHelper.convertPage(applicationES, ApplicationRepDTO.class);
+        if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
+            setAppPermission(userAttrE.getIamUserId(), resulstDTOList);
+        }
+        else {
+            resulstDTOList.forEach(e -> e.setPermission(true));
+        }
+        resultDTOPage.setContent(resulstDTOList);
+        return resultDTOPage;
     }
 
     @Override
     public List<ApplicationRepDTO> listByActive(Long projectId) {
         List<ApplicationE> applicationEList = applicationRepository.listByActive(projectId);
-
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
-                .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
-
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
@@ -310,12 +327,26 @@ public class ApplicationServiceImpl implements ApplicationService {
                 }
         );
         List<ApplicationRepDTO> resultDTOList = ConvertHelper.convertList(applicationEList, ApplicationRepDTO.class);
-        resultDTOList.stream().filter(e -> !e.getSkipCheckPermission()).forEach(e -> {
+        if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
+            setAppPermission(userAttrE.getIamUserId(), resultDTOList);
+        }
+        else {
+            resultDTOList.forEach(e -> e.setPermission(true));
+        }
+        return resultDTOList;
+    }
+
+    private void setAppPermission(Long userId, List<ApplicationRepDTO> resultDTOList) {
+        List<Long> appIds = appUserPermissionRepository.listByUserId(userId).stream()
+                .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
+        resultDTOList.forEach(e -> {
             if (appIds.contains(e.getId())) {
-                e.setSkipCheckPermission(true);
+                e.setPermission(true);
+            }
+            else {
+                e.setPermission(false);
             }
         });
-        return resultDTOList;
     }
 
     @Override

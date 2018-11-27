@@ -12,6 +12,7 @@ public class ApplicationVersionRepDTO {
     private Long appId;
     private Boolean appStatus;
     private Date creationDate;
+    private Boolean permission;
 
     public Long getId() {
         return id;
@@ -75,5 +76,13 @@ public class ApplicationVersionRepDTO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
+    }
+
+    public Boolean getPermission() {
+        return permission;
+    }
+
+    public void setPermission(Boolean permission) {
+        this.permission = permission;
     }
 }

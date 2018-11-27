@@ -234,11 +234,11 @@ public class ApplicationE {
         isFailed = failed;
     }
 
-    public Boolean getSkipCheckPermission() {
+    public Boolean getIsSkipCheckPermission() {
         return isSkipCheckPermission;
     }
 
-    public void setSkipCheckPermission(Boolean skipCheckPermission) {
+    public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
         isSkipCheckPermission = skipCheckPermission;
     }
 

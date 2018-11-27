@@ -27,6 +27,8 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -51,10 +53,13 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private AppUserPermissionRepository appUserPermissionRepository;
 
     @Value("${services.helm.url}")
     private String helmUrl;
-
 
     @Override
     public void create(String image, String token, String version, String commit, MultipartFile files) {
@@ -128,9 +133,34 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     @Override
     public Page<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest, String searchParam) {
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
         Page<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
                 projectId, appId, pageRequest, searchParam);
-        return ConvertPageHelper.convertPage(applicationVersionEPage, ApplicationVersionRepDTO.class);
+
+        Page<ApplicationVersionRepDTO> applicationVersionRepDTOPage = ConvertPageHelper
+                .convertPage(applicationVersionEPage, ApplicationVersionRepDTO.class);
+        List<ApplicationVersionRepDTO> applicationVersionRepDTOList = ConvertHelper
+                .convertList(applicationVersionEPage.getContent(), ApplicationVersionRepDTO.class);
+        if (!isProjectOwner) {
+            // 过滤掉没有权限的应用的版本
+            List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
+                    .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
+            applicationVersionRepDTOList.forEach(e -> {
+                if (appIds.contains(e.getAppId())) {
+                    e.setPermission(true);
+                }
+                else {
+                    e.setPermission(false);
+                }
+            });
+        }
+        else {
+            applicationVersionRepDTOList.forEach(e->e.setPermission(true));
+        }
+        applicationVersionRepDTOPage.setContent(applicationVersionRepDTOList);
+        return applicationVersionRepDTOPage;
     }
 
     @Override

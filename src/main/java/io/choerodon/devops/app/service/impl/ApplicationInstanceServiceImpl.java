@@ -160,8 +160,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .collect(Collectors.toList());
 
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        if (devopsEnvUserPermissionRepository
-                .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+        if (iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
             permissionEnvIds = devopsEnvironmentRepository.queryByProject(projectId).stream()
                     .map(DevopsEnvironmentE::getId).collect(Collectors.toList());
         }
