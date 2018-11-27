@@ -20,10 +20,10 @@
         <if test="instanceId != null">
             AND dir.app_instance_id = #{instanceId}
         </if>
-        <if test="command_id != null">
+        <if test="commandId != null">
             AND dir.command_id = #{commandId}
         </if>
-        <if test="env_id != null">
+        <if test="envId != null">
             AND dir.env_id = #{envId}
         </if>
         <if test="kind != null">
