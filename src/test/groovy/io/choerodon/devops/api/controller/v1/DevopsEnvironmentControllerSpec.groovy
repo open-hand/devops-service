@@ -163,10 +163,11 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentDO.setSequence(1L)
         devopsEnvironmentDO.setClusterId(1L)
         devopsEnvironmentDO.setProjectId(1L)
-        devopsEnvironmentDO.setConnect(true)
+        devopsEnvironmentDO.setFailed(false)
         devopsEnvironmentDO.setToken("testToken")
         devopsEnvironmentDO.setName("testNameEnv")
         devopsEnvironmentDO.setCode("testCodeEnv")
+        devopsEnvironmentDO.setDevopsEnvGroupId(1L)
         devopsEnvironmentDO.setGitlabEnvProjectId(1L)
 
         devopsEnvironmentDO1.setId(2L)
@@ -174,7 +175,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentDO1.setSequence(2L)
         devopsEnvironmentDO1.setClusterId(1L)
         devopsEnvironmentDO1.setProjectId(1L)
-        devopsEnvironmentDO1.setConnect(false)
+        devopsEnvironmentDO1.setFailed(false)
         devopsEnvironmentDO1.setToken("testToken1")
         devopsEnvironmentDO1.setCode("testCodeEnv1")
         devopsEnvironmentDO1.setName("testNameEnv1")
@@ -242,6 +243,57 @@ class DevopsEnvironmentControllerSpec extends Specification {
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity2)
+
+        Page<RoleDTO> ownerRoleDTOPage = new Page<>()
+        Page<RoleDTO> memberRoleDTOPage = new Page<>()
+        List<RoleDTO> ownerRoleDTOList = new ArrayList<>()
+        List<RoleDTO> memberRoleDTOList = new ArrayList<>()
+        RoleDTO ownerRoleDTO = new RoleDTO()
+        ownerRoleDTO.setId(45L)
+        ownerRoleDTO.setCode("role/project/default/project-owner")
+        ownerRoleDTOList.add(ownerRoleDTO)
+        ownerRoleDTOPage.setContent(ownerRoleDTOList)
+        ownerRoleDTOPage.setTotalElements(1L)
+        RoleDTO memberRoleDTO = new RoleDTO()
+        memberRoleDTO.setId(43L)
+        memberRoleDTO.setCode("role/project/default/project-member")
+        memberRoleDTOList.add(memberRoleDTO)
+        memberRoleDTOPage.setContent(memberRoleDTOList)
+        memberRoleDTOPage.setTotalElements(1L)
+        ResponseEntity<Page<RoleDTO>> responseEntity3 = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
+        RoleSearchDTO ownerRoleSearchDTO = new RoleSearchDTO()
+        ownerRoleSearchDTO.setCode("role/project/default/project-owner")
+        ResponseEntity<Page<RoleDTO>> responseEntity4 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
+        RoleSearchDTO memberRoleSearchDTO = new RoleSearchDTO()
+        memberRoleSearchDTO.setCode("role/project/default/project-member")
+        Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO.class))).thenReturn(responseEntity3).thenReturn(responseEntity4)
+
+        and: 'mock查询项目成员和所有者的角色列表'
+        Page<UserDTO> ownerUserDTOPage = new Page<>()
+        List<UserDTO> ownerUserDTOList = new ArrayList<>()
+        Page<UserDTO> memberUserDTOPage = new Page<>()
+        List<UserDTO> memberUserDTOList = new ArrayList<>()
+        UserDTO ownerUserDTO = new UserDTO()
+        ownerUserDTO.setId(1L)
+        ownerUserDTO.setLoginName("test")
+        ownerUserDTO.setRealName("realTest")
+        ownerUserDTOList.add(ownerUserDTO)
+        ownerUserDTOPage.setContent(ownerUserDTOList)
+        UserDTO memberUserDTO = new UserDTO()
+        memberUserDTO.setId(4L)
+        memberUserDTO.setLoginName("test4")
+        memberUserDTO.setRealName("realTest4")
+        memberUserDTOList.add(memberUserDTO)
+        memberUserDTOPage.setContent(memberUserDTOList)
+        ResponseEntity<Page<UserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
+        ResponseEntity<Page<UserDTO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
+        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
+        roleAssignmentSearchDTO.setLoginName("")
+        roleAssignmentSearchDTO.setRealName("")
+        String[] param = new String[1]
+        param[0] = ""
+        roleAssignmentSearchDTO.setParam(param)
+        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
     }
 
     def "Create"() {
@@ -260,6 +312,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnviromentDTO.setClusterId(1L)
         devopsEnviromentDTO.setCode("testCodeChange")
         devopsEnviromentDTO.setName("testNameChange")
+        devopsEnviromentDTO.setDevopsEnvGroupId(1L)
 
         and: '设置用户'
         UserAttrE userAttrE = new UserAttrE()
@@ -314,8 +367,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
         when: '项目下查询存在网络环境'
         def envs = restTemplate.getForObject("/v1/projects/1/envs/deployed", List.class)
 
-        then: '返回值'
+        then: '校验返回值'
         envs.size() == 2
+
     }
 
     def "ListByProjectIdAndActive"() {
@@ -355,16 +409,16 @@ class DevopsEnvironmentControllerSpec extends Specification {
         def list = restTemplate.getForObject("/v1/projects/1/envs/groups?active=true", List.class)
 
         then: '返回值'
-        !list.isEmpty()
+        list.size() == 3
     }
 
-    def "QueryShell"() {
-        when: '项目下查询单个环境的可执行shell'
-        String shell = restTemplate.getForObject("/v1/projects/1/envs/1/shell", String.class)
-
-        then: '返回值'
-        !shell.isEmpty()
-    }
+//    def "QueryShell"() {
+//        when: '项目下查询单个环境的可执行shell'
+//        String shell = restTemplate.getForObject("/v1/projects/1/envs/1/shell", String.class)
+//
+//        then: '返回值'
+//        !shell.isEmpty()
+//    }
 
     def "EnableOrDisableEnv"() {
         given: 'mock envUtil方法'
@@ -385,10 +439,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "Query"() {
         when: '项目下查询单个环境'
-        DevopsEnvironmentUpdateDTO a = restTemplate.getForObject("/v1/projects/1/envs/1", DevopsEnvironmentUpdateDTO.class)
+        DevopsEnvironmentUpdateDTO dto = restTemplate.getForObject("/v1/projects/1/envs/1", DevopsEnvironmentUpdateDTO.class)
 
         then: '返回值'
-        a != null
+        dto["code"] == "testCodeEnv"
     }
 
     def "Update"() {
@@ -396,6 +450,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO = new DevopsEnvironmentUpdateDTO()
         devopsEnvironmentUpdateDTO.setId(3L)
         devopsEnvironmentUpdateDTO.setClusterId(1L)
+        devopsEnvironmentUpdateDTO.setDevopsEnvGroupId(2L)
         devopsEnvironmentUpdateDTO.setName("testNameChange1222")
 
         when: '项目下更新环境'
@@ -423,7 +478,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "CheckName"() {
         when: '创建环境校验名称是否存在'
-        def exception = restTemplate.getForEntity("/v1/projects/1/envs/checkName?clusterId=1&name=testCheckName", ExceptionResponse.class)
+        def exception = restTemplate.getForEntity("/v1/projects/1/envs/check_name?cluster_id=1&name=testCheckName", ExceptionResponse.class)
 
         then: '返回值'
         exception.statusCode.is2xxSuccessful()
@@ -432,7 +487,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "CheckCode"() {
         when: '创建环境校验编码是否存在'
-        def exception = restTemplate.getForEntity("/v1/projects/1/envs/checkCode?clusterId=1&code=testCheckCode", ExceptionResponse.class)
+        def exception = restTemplate.getForEntity("/v1/projects/1/envs/check_code?cluster_id=1&code=testCheckCode", ExceptionResponse.class)
 
         then: '返回值'
         exception.statusCode.is2xxSuccessful()
@@ -504,61 +559,8 @@ class DevopsEnvironmentControllerSpec extends Specification {
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
         HttpEntity<String> strEntity = new HttpEntity<String>(params, headers)
 
-        and: 'mock查询项目成员和所有者的角色id'
-        Page<RoleDTO> ownerRoleDTOPage = new Page<>()
-        Page<RoleDTO> memberRoleDTOPage = new Page<>()
-        List<RoleDTO> ownerRoleDTOList = new ArrayList<>()
-        List<RoleDTO> memberRoleDTOList = new ArrayList<>()
-        RoleDTO ownerRoleDTO = new RoleDTO()
-        ownerRoleDTO.setId(45L)
-        ownerRoleDTO.setCode("role/project/default/project-owner")
-        ownerRoleDTOList.add(ownerRoleDTO)
-        ownerRoleDTOPage.setContent(ownerRoleDTOList)
-        ownerRoleDTOPage.setTotalElements(1L)
-        RoleDTO memberRoleDTO = new RoleDTO()
-        memberRoleDTO.setId(43L)
-        memberRoleDTO.setCode("role/project/default/project-member")
-        memberRoleDTOList.add(memberRoleDTO)
-        memberRoleDTOPage.setContent(memberRoleDTOList)
-        memberRoleDTOPage.setTotalElements(1L)
-        ResponseEntity<Page<RoleDTO>> responseEntity = new ResponseEntity<>(ownerRoleDTOPage, HttpStatus.OK)
-        RoleSearchDTO ownerRoleSearchDTO = new RoleSearchDTO()
-        ownerRoleSearchDTO.setCode("role/project/default/project-owner")
-        ResponseEntity<Page<RoleDTO>> responseEntity1 = new ResponseEntity<>(memberRoleDTOPage, HttpStatus.OK)
-        RoleSearchDTO memberRoleSearchDTO = new RoleSearchDTO()
-        memberRoleSearchDTO.setCode("role/project/default/project-member")
-        Mockito.when(iamServiceClient.queryRoleIdByCode(any(RoleSearchDTO.class))).thenReturn(responseEntity).thenReturn(responseEntity1)
-
-        and: 'mock查询项目成员和所有者的角色列表'
-        Page<UserDTO> ownerUserDTOPage = new Page<>()
-        List<UserDTO> ownerUserDTOList = new ArrayList<>()
-        Page<UserDTO> memberUserDTOPage = new Page<>()
-        List<UserDTO> memberUserDTOList = new ArrayList<>()
-        UserDTO ownerUserDTO = new UserDTO()
-        ownerUserDTO.setId(1L)
-        ownerUserDTO.setLoginName("test")
-        ownerUserDTO.setRealName("realTest")
-        ownerUserDTOList.add(ownerUserDTO)
-        ownerUserDTOPage.setContent(ownerUserDTOList)
-        UserDTO memberUserDTO = new UserDTO()
-        memberUserDTO.setId(4L)
-        memberUserDTO.setLoginName("test4")
-        memberUserDTO.setRealName("realTest4")
-        memberUserDTOList.add(memberUserDTO)
-        memberUserDTOPage.setContent(memberUserDTOList)
-        ResponseEntity<Page<UserDTO>> ownerPageResponseEntity = new ResponseEntity<>(ownerUserDTOPage, HttpStatus.OK)
-        ResponseEntity<Page<UserDTO>> memberPageResponseEntity = new ResponseEntity<>(memberUserDTOPage, HttpStatus.OK)
-        RoleAssignmentSearchDTO roleAssignmentSearchDTO = new RoleAssignmentSearchDTO()
-        roleAssignmentSearchDTO.setLoginName("")
-        roleAssignmentSearchDTO.setRealName("")
-        String[] param = new String[1]
-        param[0] = ""
-        roleAssignmentSearchDTO.setParam(param)
-        Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity).thenReturn(memberPageResponseEntity)
-
         when: '分页查询项目下用户权限'
-        def page = restTemplate.postForObject("/v1/projects/1/envs/list?page=0&size5&env_id=null", strEntity, Page.class)
-
+        def page = restTemplate.postForObject("/v1/projects/1/envs/list?page=0&size=5", strEntity, Page.class)
 
         then: '返回值'
         page != null
@@ -567,7 +569,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         page.get(0)["loginName"] == "test"
         page.get(0)["iamUserId"] == 1
         page.get(0)["realName"] == "realTest"
-        page.get(0)["permitted"] == false
     }
 
     def "ListAllUserPermission"() {
@@ -644,11 +645,18 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsClusterProPermissionDO.setProjectId(1L)
         devopsClusterProPermissionMapper.insert(devopsClusterProPermissionDO)
 
+        and:'mock envUtil'
+        List<Long> envList = new ArrayList<>()
+        envList.add(1L)
+        envList.add(2L)
+        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
+        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
+
         when: '项目下查询集群信息'
         def list = restTemplate.getForObject("/v1/projects/1/envs/clusters", List.class)
 
         then: '校验返回值'
-        !list.isEmpty()
+        list.get(0)["name"] == "testCluster"
 
         // 删除user，保留默认初始化的1号用户
         List<UserAttrDO> list0 = userAttrMapper.selectAll()

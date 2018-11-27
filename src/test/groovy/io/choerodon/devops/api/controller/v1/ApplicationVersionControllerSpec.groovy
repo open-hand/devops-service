@@ -2,32 +2,37 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO
 import io.choerodon.devops.api.dto.DeployVersionDTO
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository
-import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper
-import io.choerodon.devops.infra.mapper.ApplicationMapper
-import io.choerodon.devops.infra.mapper.ApplicationVersionMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
+import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.infra.dataobject.*
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.mapper.*
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import static org.mockito.Matchers.anyInt
+import static org.mockito.Matchers.anyLong
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
  * Created by n!Ck
  * Date: 2018/9/17
  * Time: 13:43
- * Description: 
+ * Description:
  */
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
@@ -36,59 +41,101 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Stepwise
 class ApplicationVersionControllerSpec extends Specification {
 
+    private static final String mapping = "/v1/projects/{project_id}/app_versions"
+
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
     private ApplicationMapper applicationMapper
     @Autowired
+    private DevopsEnvCommandMapper devopsEnvCommandMapper
+    @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
+    @Autowired
+    private AppUserPermissionMapper appUserPermissionMapper
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper
     @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper
     @Autowired
-    private ApplicationVersionRepository applicationVersionRepository
+    private ApplicationVersionValueMapper applicationVersionValueMapper
+
+    @Autowired
+    private IamRepository iamRepository
 
     @Shared
     Long project_id = 1L
     @Shared
     Long init_id = 1L
-
     @Shared
-    Map<String, Object> searchParam = new HashMap<>();
+    Map<String, Object> searchParam = new HashMap<>()
+    @Shared
+    DevopsEnvCommandDO devopsEnvCommandDO = new DevopsEnvCommandDO()
+    @Shared
+    ApplicationVersionValueDO applicationVersionValueDO = new ApplicationVersionValueDO()
+    @Shared
+    AppUserPermissionDO appUserPermissionDO = new AppUserPermissionDO()
+    @Shared
+    DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    @Shared
+    ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    @Shared
+    ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+    @Shared
+    ApplicationDO applicationDO = new ApplicationDO()
+
+    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+
+    def setup() {
+        iamRepository.initMockIamService(iamServiceClient)
+
+        ProjectDO projectDO = new ProjectDO()
+        projectDO.setName("pro")
+        projectDO.setOrganizationId(1L)
+        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+        OrganizationDO organizationDO = new OrganizationDO()
+        organizationDO.setId(1L)
+        organizationDO.setCode("testOrganization")
+        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+
+        Page<ProjectWithRoleDTO> page = new Page<>()
+        page.setTotalPages(1)
+        List<ProjectWithRoleDTO> list = new ArrayList<>()
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new RoleDTO()
+        roleDTO.setId(44)
+        roleDTO.setCode("role/project/default/project-owner")
+        roleDTOList.add(roleDTO)
+        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        projectWithRoleDTO.setName("test-name")
+        projectWithRoleDTO.setRoles(roleDTOList)
+        list.add(projectWithRoleDTO)
+        page.setContent(list)
+        ResponseEntity<Page<ProjectWithRoleDTO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
+        Mockito.when(iamServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
+    }
 
     def setupSpec() {
         given: '初始化分页条件参数'
-        Map<String, Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>()
         params.put("version", [])
         params.put("appName", [])
         params.put("appCode", ["app"])
         searchParam.put("searchParam", params)
         searchParam.put("param", "")
-    }
 
-    // 分页查询应用版本
-    def "PageByOptions"() {
-        given: '添加应用'
-        ApplicationDO applicationDO = new ApplicationDO()
-        applicationDO.setId(init_id)
-        applicationDO.setName("app_name")
-        applicationDO.setCode("app_code")
-        applicationDO.setProjectId(project_id)
-        applicationDO.setAppTemplateId(init_id)
-        applicationDO.setGitlabProjectId(1)
-        applicationMapper.insert(applicationDO)
+        appUserPermissionDO.setAppId(1L)
+        appUserPermissionDO.setIamUserId(1L)
 
-        and: '添加应用版本'
-        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
-        applicationVersionDO.setId(init_id)
-        applicationVersionDO.setVersion("0.1.0-dev.20180521111826")
-        applicationVersionDO.setAppId(init_id)
-        applicationVersionDO.setIsPublish(1)
-        applicationVersionMapper.insert(applicationVersionDO)
+        devopsEnvironmentDO.setId(init_id)
+        devopsEnvironmentDO.setCode("spock-test")
+        devopsEnvironmentDO.setGitlabEnvProjectId(init_id)
+        devopsEnvironmentDO.setHookId(init_id)
+        devopsEnvironmentDO.setDevopsEnvGroupId(init_id)
+        devopsEnvironmentDO.setProjectId(init_id)
 
-        and: '添加应用运行实例'
-        ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO();
         applicationInstanceDO.setId(init_id)
         applicationInstanceDO.setCode("spock-test")
         applicationInstanceDO.setStatus("running")
@@ -96,20 +143,40 @@ class ApplicationVersionControllerSpec extends Specification {
         applicationInstanceDO.setAppVersionId(init_id)
         applicationInstanceDO.setEnvId(init_id)
         applicationInstanceDO.setCommandId(init_id)
-        applicationInstanceMapper.insert(applicationInstanceDO)
 
-        and: '添加环境'
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
-        devopsEnvironmentDO.setId(init_id)
-        devopsEnvironmentDO.setCode("spock-test")
-        devopsEnvironmentDO.setGitlabEnvProjectId(init_id)
-        devopsEnvironmentDO.setHookId(init_id)
-        devopsEnvironmentDO.setDevopsEnvGroupId(init_id)
-        devopsEnvironmentDO.setProjectId(init_id)
+        applicationDO.setId(init_id)
+        applicationDO.setName("app_name")
+        applicationDO.setCode("app_code")
+        applicationDO.setProjectId(project_id)
+        applicationDO.setAppTemplateId(init_id)
+        applicationDO.setGitlabProjectId(1)
+
+        applicationVersionDO.setId(init_id)
+        applicationVersionDO.setValueId(1L)
+        applicationVersionDO.setIsPublish(1)
+        applicationVersionDO.setAppId(init_id)
+        applicationVersionDO.setVersion("0.1.0-dev.20180521111826")
+
+        devopsEnvCommandDO.setId(1L)
+        devopsEnvCommandDO.setObjectVersionId(1L)
+
+        applicationVersionValueDO.setId(1L)
+        applicationVersionValueDO.setValue("test-value")
+    }
+
+    // 分页查询应用版本
+    def "PageByOptions"() {
+        given: '初始化数据'
+        applicationMapper.insert(applicationDO)
+        applicationVersionMapper.insert(applicationVersionDO)
+        applicationInstanceMapper.insert(applicationInstanceDO)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+        appUserPermissionMapper.insert(appUserPermissionDO)
+        devopsEnvCommandMapper.insert(devopsEnvCommandDO)
+        applicationVersionValueMapper.insert(applicationVersionValueDO)
 
         when: '分页查询应用版本'
-        def page = restTemplate.postForObject("/v1/projects/{project_id}/app_version/list_by_options?appId={app_id}", searchParam, Page.class, project_id, init_id)
+        def page = restTemplate.postForObject(mapping + "/list_by_options?page=0&size=0&appId={app_id}", searchParam, Page.class, project_id, init_id)
 
         then: '返回值'
         page.size() == 1
@@ -121,7 +188,7 @@ class ApplicationVersionControllerSpec extends Specification {
     // 应用下查询应用所有版本
     def "QueryByAppId"() {
         when: '应用下查询应用所有版本'
-        def list = restTemplate.getForObject("/v1/projects/{project_id}/apps/{app_id}/version/list?is_publish=true", List.class, project_id, init_id)
+        def list = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true", List.class, project_id, init_id)
 
         then: '返回值'
         list.size() == 1
@@ -133,7 +200,7 @@ class ApplicationVersionControllerSpec extends Specification {
     // 项目下查询应用所有已部署版本
     def "QueryDeployedByAppId"() {
         when: '项目下查询应用所有已部署版本'
-        def list = restTemplate.getForObject("/v1/projects/{project_id}/apps/{app_id}/version/list_deployed", List.class, project_id, init_id)
+        def list = restTemplate.getForObject(mapping + "/list_deployed_by_app/{app_id}", List.class, project_id, init_id)
 
         then: '返回值'
         list.size() == 1
@@ -142,10 +209,10 @@ class ApplicationVersionControllerSpec extends Specification {
         list.get(0).version == "0.1.0-dev.20180521111826"
     }
 
-    // 查询部署在某个环境的应用版本
+    // 查询部署在某个环境应用的应用版本
     def "QueryByAppIdAndEnvId"() {
-        when: '查询部署在某个环境的应用版本'
-        def list = restTemplate.getForObject("/v1/projects/1/apps/1/version?envId=1", List.class)
+        when: '查询部署在某个环境应用的应用版本'
+        def list = restTemplate.getForObject(mapping + "/app/{app_id}/env/{envId}/query", List.class, 1L, 1L, 1L)
 
         then: '返回值'
         list.size() == 1
@@ -154,19 +221,7 @@ class ApplicationVersionControllerSpec extends Specification {
         list.get(0).version == "0.1.0-dev.20180521111826"
     }
 
-    // 分页查询某应用下的所有版本
-    def "PageByApp"() {
-        when: '分页查询某应用下的所有版本'
-        def page = restTemplate.postForObject("/v1/projects/{project_id}/apps/{app_id}/version/list_by_options", null, Page.class, project_id, init_id)
-
-        then: '返回值'
-        page.size() == 1
-
-        expect: '校验返回结果'
-        page.get(0).version == "0.1.0-dev.20180521111826"
-    }
-
-    // 根据应用版本ID查询，可升级的应用版本
+    // 实例下查询可升级版本
     def "GetUpgradeAppVersion"() {
         given: '初始化应用版本DO类'
         ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
@@ -175,8 +230,8 @@ class ApplicationVersionControllerSpec extends Specification {
         applicationVersionDO.setAppId(init_id)
         applicationVersionMapper.insert(applicationVersionDO)
 
-        when: '根据应用版本ID查询，可升级的应用版本'
-        def list = restTemplate.getForObject("/v1/projects/1/version/1/upgrade_version", List.class)
+        when: '实例下查询可升级版本'
+        def list = restTemplate.getForObject(mapping + "/version/{app_version_id}/upgrade_version", List.class, 1L, 1L)
 
         then: '返回值'
         list.size() == 1
@@ -185,12 +240,31 @@ class ApplicationVersionControllerSpec extends Specification {
         list.get(0).version == "0.2.0-dev.20180521111826"
     }
 
+    // 项目下查询应用最新的版本和各环境下部署的版本
     def "GetDeployVersions"() {
         when: '项目下查询应用最新的版本和各环境下部署的版本'
-        def dto = restTemplate.getForObject("/v1/projects/1/deployVersions?app_id=1", DeployVersionDTO.class)
+        def dto = restTemplate.getForObject(mapping + "/app/{app_id}/deployVersions", DeployVersionDTO.class, 1L, 1L)
 
         then: '校验返回结果'
         dto["latestVersion"] == "0.2.0-dev.20180521111826"
+    }
+
+    // 根据版本id获取版本values
+    def "GetVersionValue"() {
+        when: '根据版本id获取版本values'
+        def str = restTemplate.getForObject(mapping + "/{app_verisonId}/queryValue", String.class, 1L, 1L)
+
+        then: '校验返回值'
+        str == "test-value"
+    }
+
+    // 根据版本id查询版本信息
+    def "GetAppversion"() {
+        when: '根据版本id查询版本信息'
+        def dto = restTemplate.getForObject(mapping + "/{app_versionId}", ApplicationVersionRepDTO.class, 1L, 1L)
+
+        then: '校验返回值'
+        dto["version"] == "0.1.0-dev.20180521111826"
     }
 
     // 清除测试数据
@@ -222,6 +296,27 @@ class ApplicationVersionControllerSpec extends Specification {
         if (list3 != null && !list3.isEmpty()) {
             for (ApplicationVersionDO e : list3) {
                 applicationVersionMapper.delete(e)
+            }
+        }
+        // 删除appUserPermission
+        List<AppUserPermissionDO> list4 = appUserPermissionMapper.selectAll()
+        if (list4 != null && !list4.isEmpty()) {
+            for (AppUserPermissionDO e : list4) {
+                appUserPermissionMapper.delete(e)
+            }
+        }
+        // 删除appVersionValue
+        List<ApplicationVersionValueDO> list5 = applicationVersionValueMapper.selectAll()
+        if (list5 != null && !list5.isEmpty()) {
+            for (ApplicationVersionValueDO e : list5) {
+                applicationVersionValueMapper.delete(e)
+            }
+        }
+        // 删除envCommand
+        List<DevopsEnvCommandDO> list6 = devopsEnvCommandMapper.selectAll()
+        if (list6 != null && !list6.isEmpty()) {
+            for (DevopsEnvCommandDO e : list6) {
+                devopsEnvCommandMapper.delete(e)
             }
         }
     }
