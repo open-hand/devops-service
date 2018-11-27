@@ -31,4 +31,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_user.groovy') {
         sql("insert into devops_user  (iam_user_id,gitlab_user_id)  values (1,1)")
     }
 
+    changeSet(author: 'younger', id: '2018-11-26-add-column') {
+        addColumn(tableName: 'devops_user') {
+            column(name: 'gitlab_token', type: 'VARCHAR(64)', remarks: 'impersonationToken', afterColumn: 'gitlab_user_id')
+        }
+    }
+
+
 }

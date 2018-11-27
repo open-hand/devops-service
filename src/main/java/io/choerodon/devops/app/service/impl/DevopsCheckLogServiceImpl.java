@@ -569,8 +569,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES =
                         devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
                 if (!devopsServiceAppInstanceES.isEmpty()) {
-                    DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryByInstanceIdAndKindAndName(
+                    DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryResource(
                             devopsServiceAppInstanceES.get(0).getAppInstanceId(),
+                            null, null,
                             ResourceType.SERVICE.getType(),
                             devopsServiceE.getName());
                     DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository

@@ -337,27 +337,29 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> ids = new ArrayList<>();
         //更新环境,默认组到环境组,此时将默认组sequence重新排列,环境在所选新环境组中环境sequence递增
         if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
-            if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
-                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
-                        devopsEnvironmentE1.getDevopsEnvGroupId() == null)
-                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
-                                DevopsEnvironmentE::getId)
-                        .collect(Collectors.toList());
+            if (!beforeDevopsEnvironmentE.getDevopsEnvGroupId().equals(devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())) {
+                if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
+                    ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                            devopsEnvironmentE1.getDevopsEnvGroupId() == null)
+                            .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                    DevopsEnvironmentE::getId)
+                            .collect(Collectors.toList());
+                }
+                //更新环境,环境组到环境组,此时将初始环境组sequence重新排列,环境在所选新环境组中环境sequence递增
+                else if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null) {
+                    ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                            beforeDevopsEnvironmentE.getDevopsEnvGroupId()
+                                    .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
+                            .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
+                                    DevopsEnvironmentE::getId)
+                            .collect(Collectors.toList());
+                }
+                ids.remove(devopsEnvironmentUpdateDTO.getId());
+                sort(ids.toArray(new Long[ids.size()]));
+                devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
+                        (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())
+                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
             }
-            //更新环境,环境组到环境组,此时将初始环境组sequence重新排列,环境在所选新环境组中环境sequence递增
-            else if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null && !beforeDevopsEnvironmentE.getDevopsEnvGroupId().equals(devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())) {
-                ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
-                        beforeDevopsEnvironmentE.getDevopsEnvGroupId()
-                                .equals(devopsEnvironmentE1.getDevopsEnvGroupId()))
-                        .sorted(Comparator.comparing(DevopsEnvironmentE::getSequence)).map(
-                                DevopsEnvironmentE::getId)
-                        .collect(Collectors.toList());
-            }
-            ids.remove(devopsEnvironmentUpdateDTO.getId());
-            sort(ids.toArray(new Long[ids.size()]));
-            devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
-                    (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())
-                            .equals(devopsEnvironmentE1.getDevopsEnvGroupId())).collect(Collectors.toList()));
         } else {
             //更新环境,环境组到默认组
             if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() != null) {

@@ -120,9 +120,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-//        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
-//            throw new CommonException("error.user.not.owner");
-//        }
+        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+        }
         // 创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
         devOpsAppPayload.setType(APPLICATION);
@@ -396,7 +396,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             //渲染模板里面的参数
             replaceParams(applicationE, projectE, organization, applicationDir);
 
-            String accessToken = getToken(gitlabProjectPayload, applicationDir);
+            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+            String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrE);
 
             repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             applicationE.initGitlabProjectEByUrl(repoUrl
@@ -513,15 +514,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
     }
 
-    private String getToken(DevOpsAppPayload gitlabProjectPayload, String applicationDir) {
-        List<String> tokens = gitlabRepository.listTokenByUserId(gitlabProjectPayload.getGitlabProjectId(),
-                applicationDir, gitlabProjectPayload.getUserId());
-        String accessToken;
-        if (tokens.isEmpty()) {
+    private String getToken(DevOpsAppPayload gitlabProjectPayload, String applicationDir, UserAttrE userAttrE) {
+        String accessToken = userAttrE.getGitlabToken();
+        if (accessToken == null) {
             accessToken = gitlabRepository.createToken(gitlabProjectPayload.getGitlabProjectId(),
                     applicationDir, gitlabProjectPayload.getUserId());
-        } else {
-            accessToken = tokens.get(tokens.size() - 1);
+            userAttrE.setGitlabToken(accessToken);
+            userAttrRepository.update(userAttrE);
         }
         return accessToken;
     }

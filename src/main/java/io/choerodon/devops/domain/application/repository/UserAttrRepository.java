@@ -16,4 +16,8 @@ public interface UserAttrRepository {
     Long queryUserIdByGitlabUserId(Long gitLabUserId);
 
     List<UserAttrE> listByUserIds(List<Long> userIds);
+
+    UserAttrE queryByGitlabUserId(Long gitlabUserId);
+
+    void update(UserAttrE userAttrE);
 }
