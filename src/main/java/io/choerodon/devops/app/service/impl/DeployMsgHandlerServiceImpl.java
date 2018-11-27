@@ -1181,11 +1181,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvResourceE.setReversion(0L);
         }
         if (applicationInstanceE != null) {
-            newdevopsEnvResourceE.initDevopsEnvironmentE(devopsEnvResourceE.getDevopsEnvironmentE().getId());
+            newdevopsEnvResourceE.initDevopsEnvCommandE(applicationInstanceE.getCommandId());
             newdevopsEnvResourceE.initApplicationInstanceE(devopsEnvResourceE.getApplicationInstanceE().getId());
         }
         if (devopsEnvResourceE.getDevopsEnvironmentE() != null) {
-            newdevopsEnvResourceE.initDevopsEnvCommandE(applicationInstanceE.getCommandId());
+            newdevopsEnvResourceE.initDevopsEnvironmentE(devopsEnvResourceE.getDevopsEnvironmentE().getId());
+
             devopsEnvResourceRepository.update(newdevopsEnvResourceE);
         }
         if (!newdevopsEnvResourceE.getReversion().equals(devopsEnvResourceE.getReversion())) {

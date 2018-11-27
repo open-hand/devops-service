@@ -11,7 +11,7 @@ import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import io.choerodon.devops.api.controller.v1.InstanceEventDTO;
+import io.choerodon.devops.api.dto.InstanceEventDTO;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.domain.application.entity.*;

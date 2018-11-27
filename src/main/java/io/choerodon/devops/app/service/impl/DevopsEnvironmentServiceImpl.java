@@ -547,10 +547,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 UserAttrE userAttrE = userAttrRepository.queryById(userId);
                 Long gitlabUserId = userAttrE.getGitlabUserId();
                 // 添加gitlab用户权限
-                MemberDTO memberDTO = new MemberDTO();
-                memberDTO.setUserId(TypeUtil.objToInteger(gitlabUserId));
-                memberDTO.setAccessLevel(40);
-                memberDTO.setExpiresAt("");
+                MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId),40,"");
                 gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
                 // 添加devops数据库记录
                 devopsEnvUserPermissionRepository

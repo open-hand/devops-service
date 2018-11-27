@@ -1,4 +1,4 @@
-package io.choerodon.devops.api.controller.v1;
+package io.choerodon.devops.api.dto;
 
 public class InstanceEventDTO {
     private String name;
