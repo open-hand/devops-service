@@ -562,9 +562,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
         if (applicationDeployDTO.getIsNotChange()) {
             applicationInstanceRepository.update(applicationInstanceE);
-            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-            devopsEnvCommandE.initDevopsEnvCommandValueE(
-                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+            devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+            devopsEnvCommandE.setId(null);
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE,
                     devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {

@@ -1166,9 +1166,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                       ApplicationInstanceE applicationInstanceE) {
         if (applicationInstanceE != null) {
             devopsEnvResourceE.initApplicationInstanceE(applicationInstanceE.getId());
-            newdevopsEnvResourceE.initApplicationInstanceE(devopsEnvResourceE.getApplicationInstanceE().getId());
             devopsEnvResourceE.initDevopsEnvCommandE(applicationInstanceE.getCommandId());
-            newdevopsEnvResourceE.initDevopsEnvCommandE(applicationInstanceE.getCommandId());
         }
         if (newdevopsEnvResourceE == null) {
             devopsEnvResourceE.initDevopsInstanceResourceMessageE(
@@ -1182,8 +1180,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (devopsEnvResourceE.getReversion() == null) {
             devopsEnvResourceE.setReversion(0L);
         }
-        if (devopsEnvResourceE.getDevopsEnvironmentE() != null) {
+        if (applicationInstanceE != null) {
             newdevopsEnvResourceE.initDevopsEnvironmentE(devopsEnvResourceE.getDevopsEnvironmentE().getId());
+            newdevopsEnvResourceE.initApplicationInstanceE(devopsEnvResourceE.getApplicationInstanceE().getId());
+        }
+        if (devopsEnvResourceE.getDevopsEnvironmentE() != null) {
+            newdevopsEnvResourceE.initDevopsEnvCommandE(applicationInstanceE.getCommandId());
             devopsEnvResourceRepository.update(newdevopsEnvResourceE);
         }
         if (!newdevopsEnvResourceE.getReversion().equals(devopsEnvResourceE.getReversion())) {
