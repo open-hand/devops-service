@@ -3,13 +3,6 @@ spring:
     url: jdbc:mysql://localhost/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
     username: choerodon
     password: choerodon
-  cloud:
-      stream:
-        kafka:
-          binder:
-            brokers: 127.0.0.1:9092
-            zkNodes: 127.0.0.1:2181
-        default-binder: kafka
   redis:
     host: localhost
   http:
@@ -42,16 +35,6 @@ template:
     MicroServiceFront: 0.7.0
     JavaLib: 0.7.0
 choerodon:
-  event:
-    consumer:
-      enabled: true # 是否开启，不设置默认开启
-      queue-type: kafka # 消息队列类型
-      enable-duplicate-remove: true # 是否开启去重
-      failed-strategy: nothin # 失败策略。支持nothing(什么都不做), send_back_event_store(回传到event store)两种
-      retry:
-        enabled: true # 是否开启重试功能
-      kafka:
-        bootstrap-servers: localhost:9092 # kafka地址
   saga:
     consumer:
       thread-num: 5  # 消费线程数

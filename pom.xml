@@ -57,7 +57,7 @@
     </build>
 
     <properties>
-        <choerodon.starters.version>0.7.0.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.8.0.RELEASE</choerodon.starters.version>
     </properties>
 
     <dependencies>
@@ -143,10 +143,6 @@
             <groupId>io.reactivex</groupId>
             <artifactId>rxjava</artifactId>
             <version>1.1.10</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-bus-kafka</artifactId>
         </dependency>
         <!-- test -->
         <dependency>
