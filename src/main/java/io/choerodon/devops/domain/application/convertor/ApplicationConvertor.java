@@ -48,8 +48,8 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
         ApplicationE applicationE = ApplicationFactory.createApplicationE();
         BeanUtils.copyProperties(applicationReqDTO, applicationE);
         applicationE.initProjectE(applicationReqDTO.getProjectId());
-        if (applicationReqDTO.getApplictionTemplateId() != null) {
-            applicationE.initApplicationTemplateE(applicationReqDTO.getApplictionTemplateId());
+        if (applicationReqDTO.getApplicationTemplateId() != null) {
+            applicationE.initApplicationTemplateE(applicationReqDTO.getApplicationTemplateId());
         }
         return applicationE;
     }
@@ -62,7 +62,7 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
             applicationReqDTO.setProjectId(applicationE.getProjectE().getId());
         }
         if (applicationE.getApplicationTemplateE() != null) {
-            applicationReqDTO.setApplictionTemplateId(applicationE.getApplicationTemplateE().getId());
+            applicationReqDTO.setApplicationTemplateId(applicationE.getApplicationTemplateE().getId());
         }
         return applicationReqDTO;
     }

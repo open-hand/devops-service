@@ -155,7 +155,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setName("dtoname")
         applicationDTO.setCode("ddtoapp")
         applicationDTO.setProjectId(project_id)
-        applicationDTO.setApplictionTemplateId(init_id)
+        applicationDTO.setApplicationTemplateId(init_id)
 
 
         and: 'mock查询gitlab用户'

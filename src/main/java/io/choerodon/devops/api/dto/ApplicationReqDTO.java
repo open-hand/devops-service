@@ -12,7 +12,7 @@ public class ApplicationReqDTO {
     private String code;
     private Long projectId;
     private String type;
-    private Long applictionTemplateId;
+    private Long applicationTemplateId;
     private List<Long> userIds;
     private Boolean isSkipCheckPermission;
 
@@ -48,12 +48,12 @@ public class ApplicationReqDTO {
         this.projectId = projectId;
     }
 
-    public Long getApplictionTemplateId() {
-        return applictionTemplateId;
+    public Long getApplicationTemplateId() {
+        return applicationTemplateId;
     }
 
-    public void setApplictionTemplateId(Long applictionTemplateId) {
-        this.applictionTemplateId = applictionTemplateId;
+    public void setApplicationTemplateId(Long applicationTemplateId) {
+        this.applicationTemplateId = applicationTemplateId;
     }
 
     public List<Long> getUserIds() {
