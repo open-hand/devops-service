@@ -211,7 +211,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 try {
                     // 删除用户时同时清除gitlab的权限
                     List<Integer> gitlabProjectIds = applicationRepository
-                            .listByProjectId(resourceId).stream()
+                            .listByProjectId(resourceId).stream().filter(e->e.getGitlabProjectE().getId()!=null)
                             .map(e -> e.getGitlabProjectE().getId()).map(TypeUtil::objToInteger)
                             .collect(Collectors.toList());
                     gitlabProjectIds.forEach(e -> {
