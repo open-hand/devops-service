@@ -20,6 +20,7 @@ public class DevopsEnvCommandE {
     private DevopsEnvCommandValueE devopsEnvCommandValueE;
     private Date lastUpdateDate;
     private Long createdBy;
+    private Date creationDate;
 
     public DevopsEnvCommandE() {
     }
@@ -115,5 +116,13 @@ public class DevopsEnvCommandE {
 
     public void setObjectVersionId(Long objectVersionId) {
         this.objectVersionId = objectVersionId;
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 }

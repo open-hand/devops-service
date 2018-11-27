@@ -42,9 +42,9 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
     }
 
     @Override
-    public List<DevopsEnvResourceE> listJobByInstanceId(Long instanceId) {
+    public List<DevopsEnvResourceE> listJobs(Long commandId) {
         return ConvertHelper.convertList(
-                devopsEnvResourceMapper.listJobByInstanceId(instanceId),
+                devopsEnvResourceMapper.listJobs(commandId),
                 DevopsEnvResourceE.class);
     }
 
