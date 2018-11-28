@@ -11,7 +11,7 @@ import io.choerodon.mybatis.common.BaseMapper;
  * Created by younger on 2018/4/24.
  */
 public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDO> {
-    List<DevopsEnvResourceDO> listJobByInstanceId(@Param("instanceId") Long instanceId);
+    List<DevopsEnvResourceDO> listJobs(@Param("commandId") Long commandId);
 
     DevopsEnvResourceDO queryResource(@Param("instanceId") Long instanceId,
                                       @Param("commandId") Long commandId,

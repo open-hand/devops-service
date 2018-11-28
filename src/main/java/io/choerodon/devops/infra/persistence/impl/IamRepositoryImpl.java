@@ -143,28 +143,6 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public UserE queryById(Long id) {
-        try {
-            ResponseEntity<UserDO> responseEntity = iamServiceClient.queryById(id);
-            return ConvertHelper.convert(responseEntity.getBody(), UserE.class);
-        } catch (FeignException e) {
-            LOGGER.error("get user by user id {}", id);
-            return null;
-        }
-    }
-
-    @Override
-    public UserE queryByProjectAndId(Long projectId, Long id) {
-        try {
-            ResponseEntity<Page<UserDO>> responseEntity = iamServiceClient.queryInProjectById(projectId, id);
-            return ConvertHelper.convert(responseEntity.getBody().getContent().get(0), UserE.class);
-        } catch (FeignException e) {
-            LOGGER.error("get user by project id {} and user id {} error", projectId, id);
-            return null;
-        }
-    }
-
-    @Override
     public List<UserE> listUsersByIds(List<Long> ids) {
         List<UserE> userES = new ArrayList<>();
         if (ids != null && !ids.isEmpty()) {
@@ -188,17 +166,6 @@ public class IamRepositoryImpl implements IamRepository {
             return userES.get(0);
         }
         return null;
-    }
-
-    @Override
-    public List<RoleDTO> listRolesWithUserCountOnProjectLevel(Long projectId,
-                                                              RoleAssignmentSearchDTO roleAssignmentSearchDTO) {
-        try {
-            return iamServiceClient.listRolesWithUserCountOnProjectLevel(projectId, roleAssignmentSearchDTO).getBody();
-        } catch (FeignException e) {
-            LOGGER.error("get roles with user count error by search param {}", roleAssignmentSearchDTO.getParam());
-            return null;
-        }
     }
 
     @Override

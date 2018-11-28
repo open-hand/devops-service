@@ -200,7 +200,8 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     .map(e -> e.getGitlabProjectE().getId()).collect(Collectors.toList());
             gitlabProjectIds.forEach(e -> {
                 Integer gitlabProjectId = gitlabRepository.getProjectById(e).getId();
-                if (gitlabProjectRepository.getProjectMember(e, gitlabUserId).getId() == null) {
+                GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(e, gitlabUserId);
+                if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
                     gitlabRepository.addMemberIntoProject(gitlabProjectId, new MemberDTO(gitlabUserId, 40, ""));
                 }
             });
@@ -210,7 +211,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 try {
                     // 删除用户时同时清除gitlab的权限
                     List<Integer> gitlabProjectIds = applicationRepository
-                            .listByProjectId(resourceId).stream()
+                            .listByProjectId(resourceId).stream().filter(e->e.getGitlabProjectE().getId()!=null)
                             .map(e -> e.getGitlabProjectE().getId()).map(TypeUtil::objToInteger)
                             .collect(Collectors.toList());
                     gitlabProjectIds.forEach(e -> {

@@ -295,7 +295,7 @@ class ApplicationMarketControllerSpec extends Specification {
         headers.setContentType(MediaType.parseMediaType("multipart/form-data"))
 
         MultiValueMap<String, Object> map = new LinkedMultiValueMap<String, Object>()
-        FileSystemResource fileSystemResource = new FileSystemResource("src/test/resources/chart.zip")
+        FileSystemResource fileSystemResource = new FileSystemResource("src/test/resources/charts.zip")
         map.add("file", fileSystemResource)
         map.add("filename", fileSystemResource.getFilename())
 
@@ -310,7 +310,6 @@ class ApplicationMarketControllerSpec extends Specification {
 
     def "ImportApps"() {
         given: '获取文件名'
-        // File file = new File("chart.zip")
         String fileName = "59027735aa121f3befb8cc9f7684b62e"
 
         when: '应用市场导入应用'

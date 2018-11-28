@@ -39,10 +39,7 @@ public abstract class UpdateUserPermissionService {
     private void addGitlabMember(Integer gitlabProjectId, Integer userId) {
         GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId, userId);
         if (gitlabMemberE.getId() == null) {
-            MemberDTO memberDTO = new MemberDTO();
-            memberDTO.setUserId(userId);
-            memberDTO.setAccessLevel(40);
-            memberDTO.setExpiresAt("");
+            MemberDTO memberDTO = new MemberDTO(userId,40,"");
             gitlabRepository.addMemberIntoProject(gitlabProjectId, memberDTO);
         }
     }

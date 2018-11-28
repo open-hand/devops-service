@@ -18,10 +18,13 @@ import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
+import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.service.UpdateUserPermissionService;
+import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
 
 /**
  * Creator: Runge
@@ -148,6 +151,28 @@ public class DevopsSagaHandler {
     }
 
     /**
+     * GitOps 用户权限分配处理
+     */
+    @SagaTask(code = "devopsUpdateGitlabUsers",
+            description = "devops update gitlab users",
+            sagaCode = "devops-update-gitlab-users",
+            maxRetryCount = 0,
+            seq = 1)
+    public String updateGitlabUser(String data) {
+        DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
+        try {
+            UpdateUserPermissionService updateUserPermissionService = new UpdateAppUserPermissionServiceImpl();
+            updateUserPermissionService
+                    .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppId(),
+                            devOpsUserPayload.getIamUserIds(), devOpsUserPayload.getOption());
+        } catch (Exception e) {
+            LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds().toString());
+            throw e;
+        }
+        return data;
+    }
+
+    /**
      * GitOps 应用创建失败处理
      */
     @SagaTask(code = "devopsCreateGitlabProjectErr",
@@ -217,7 +242,6 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsGitlabPipeline",
             description = "gitlab-pipeline",
             sagaCode = "devops-gitlab-pipeline",
-            concurrentLimitNum = 1,
             maxRetryCount = 0,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)

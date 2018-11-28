@@ -312,36 +312,15 @@ public class ApplicationInstanceController {
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取部署实例Event事件")
-    @GetMapping("/{appInstanceId}/events")
+    @GetMapping("/{app_instanceId}/events")
     public ResponseEntity<List<InstanceEventDTO>> listEvents(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "实例ID", required = true)
-            @PathVariable Long appInstanceId) {
+            @PathVariable(value = "app_instanceId") Long appInstanceId) {
         return Optional.ofNullable(devopsEnvResourceService.listInstancePodEvent(appInstanceId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.event.query"));
-    }
-
-    /**
-     * 获取部署实例hook阶段
-     *
-     * @param projectId     项目id
-     * @param appInstanceId 实例id
-     * @return list
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取部署实例hook阶段")
-    @GetMapping("/{appInstanceId}/stages")
-    public ResponseEntity<List<InstanceStageDTO>> listStages(
-            @ApiParam(value = "项目 ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "实例ID", required = true)
-            @PathVariable Long appInstanceId) {
-        return Optional.ofNullable(devopsEnvResourceService.listStages(appInstanceId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.stage.query"));
     }
 
     /**

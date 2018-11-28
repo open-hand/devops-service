@@ -124,7 +124,8 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
 
     @Override
     public Page<ApplicationVersionE> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
-                                                                 String searchParam) {
+                                                                 String searchParam, Boolean isProjectOwner,
+                                                                 Long userId) {
         if (pageRequest.getSort() != null) {
             Map<String, String> map = new HashMap<>();
             map.put("version", "dav.version");
@@ -140,11 +141,12 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             applicationVersionQueryDOPage = PageHelper
                     .doPageAndSort(pageRequest, () -> applicationVersionMapper.listApplicationVersion(projectId, appId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM))));
+                            TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), isProjectOwner, userId));
         }
         else {
             applicationVersionQueryDOPage = PageHelper.doPageAndSort(
-                    pageRequest, () -> applicationVersionMapper.listApplicationVersion(projectId, appId, null, null));
+                    pageRequest, () -> applicationVersionMapper
+                            .listApplicationVersion(projectId, appId, null, null, isProjectOwner, userId));
         }
         return ConvertPageHelper.convertPage(applicationVersionQueryDOPage, ApplicationVersionE.class);
     }

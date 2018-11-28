@@ -118,6 +118,17 @@
                     da.code LIKE CONCAT(CONCAT('%', #{code, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
+            <if test='searchParam.type != null and searchParam.type.size > 0'>
+                AND
+                <foreach collection="searchParam.type" item="type">
+                    <if test='type == 0'>
+                        da.type = 'normal'
+                    </if>
+                    <if test="type == 1">
+                        da.type = 'test'
+                    </if>
+                </foreach>
+            </if>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
                 AND
                 <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
@@ -222,10 +233,17 @@
         da.gitlab_project_id,
         da.app_template_id,
         da.uuid
-        FROM devops_application da
-        where da.project_id = #{projectId}
+        FROM
+        devops_application da
+        LEFT JOIN devops_app_user_rel daur ON da.id =daur.app_id
+        WHERE da.project_id = #{projectId}
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
+        <if test='isProjectOwner != null'>
+            <if test='isProjectOwner == false'>
+                AND daur.iam_user_id = #{userId}
+            </if>
+        </if>
         <include refid="sqlparam"/>
     </select>
 

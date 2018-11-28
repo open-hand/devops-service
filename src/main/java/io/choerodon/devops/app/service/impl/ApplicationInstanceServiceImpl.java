@@ -563,6 +563,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationInstanceRepository.update(applicationInstanceE);
             devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
             devopsEnvCommandE.setId(null);
+            devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
+            devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE,
                     devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {

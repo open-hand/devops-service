@@ -13,7 +13,7 @@ public interface DevopsEnvResourceRepository {
 
     List<DevopsEnvResourceE> listByInstanceId(Long instanceId);
 
-    List<DevopsEnvResourceE> listJobByInstanceId(Long instanceId);
+    List<DevopsEnvResourceE> listJobs(Long commandId);
 
     void update(DevopsEnvResourceE devopsEnvResourceE);
 

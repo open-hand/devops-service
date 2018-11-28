@@ -4,7 +4,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
-import io.choerodon.devops.api.dto.ApplicationDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
@@ -13,7 +13,7 @@ import io.choerodon.devops.infra.dataobject.ApplicationDO;
  * Created by Zenger on 2018/4/2.
  */
 @Component
-public class ApplicationConvertor implements ConvertorI<ApplicationE, ApplicationDO, ApplicationDTO> {
+public class ApplicationConvertor implements ConvertorI<ApplicationE, ApplicationDO, ApplicationReqDTO> {
 
 
     @Override
@@ -44,27 +44,27 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
 
 
     @Override
-    public ApplicationE dtoToEntity(ApplicationDTO applicationDTO) {
+    public ApplicationE dtoToEntity(ApplicationReqDTO applicationReqDTO) {
         ApplicationE applicationE = ApplicationFactory.createApplicationE();
-        BeanUtils.copyProperties(applicationDTO, applicationE);
-        applicationE.initProjectE(applicationDTO.getProjectId());
-        if (applicationDTO.getApplictionTemplateId() != null) {
-            applicationE.initApplicationTemplateE(applicationDTO.getApplictionTemplateId());
+        BeanUtils.copyProperties(applicationReqDTO, applicationE);
+        applicationE.initProjectE(applicationReqDTO.getProjectId());
+        if (applicationReqDTO.getApplicationTemplateId() != null) {
+            applicationE.initApplicationTemplateE(applicationReqDTO.getApplicationTemplateId());
         }
         return applicationE;
     }
 
     @Override
-    public ApplicationDTO entityToDto(ApplicationE applicationE) {
-        ApplicationDTO applicationDTO = new ApplicationDTO();
-        BeanUtils.copyProperties(applicationE, applicationDTO);
+    public ApplicationReqDTO entityToDto(ApplicationE applicationE) {
+        ApplicationReqDTO applicationReqDTO = new ApplicationReqDTO();
+        BeanUtils.copyProperties(applicationE, applicationReqDTO);
         if (applicationE.getProjectE() != null) {
-            applicationDTO.setProjectId(applicationE.getProjectE().getId());
+            applicationReqDTO.setProjectId(applicationE.getProjectE().getId());
         }
         if (applicationE.getApplicationTemplateE() != null) {
-            applicationDTO.setApplictionTemplateId(applicationE.getApplicationTemplateE().getId());
+            applicationReqDTO.setApplicationTemplateId(applicationE.getApplicationTemplateE().getId());
         }
-        return applicationDTO;
+        return applicationReqDTO;
     }
     
 }

@@ -5,16 +5,16 @@ import java.util.List;
 /**
  * Created by younger on 2018/3/28.
  */
-public class ApplicationDTO {
+public class ApplicationReqDTO {
 
     private Long id;
     private String name;
     private String code;
     private Long projectId;
     private String type;
-    private Long applictionTemplateId;
+    private Long applicationTemplateId;
     private List<Long> userIds;
-    private Boolean permission;
+    private Boolean isSkipCheckPermission;
 
     public Long getId() {
         return id;
@@ -48,12 +48,12 @@ public class ApplicationDTO {
         this.projectId = projectId;
     }
 
-    public Long getApplictionTemplateId() {
-        return applictionTemplateId;
+    public Long getApplicationTemplateId() {
+        return applicationTemplateId;
     }
 
-    public void setApplictionTemplateId(Long applictionTemplateId) {
-        this.applictionTemplateId = applictionTemplateId;
+    public void setApplicationTemplateId(Long applicationTemplateId) {
+        this.applicationTemplateId = applicationTemplateId;
     }
 
     public List<Long> getUserIds() {
@@ -64,12 +64,12 @@ public class ApplicationDTO {
         this.userIds = userIds;
     }
 
-    public Boolean getPermission() {
-        return permission;
+    public Boolean getIsSkipCheckPermission() {
+        return isSkipCheckPermission;
     }
 
-    public void setPermission(Boolean permission) {
-        this.permission = permission;
+    public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
+        isSkipCheckPermission = skipCheckPermission;
     }
 
     public String getType() {
