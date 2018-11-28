@@ -32,6 +32,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.domain.application.repository.*;
@@ -614,7 +615,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public List<AppUserPermissionRepDTO> listAllUserPermission(Long appId) {
-        return ConvertHelper.convertList(appUserPermissionRepository.listAll(appId), AppUserPermissionRepDTO.class);
+        List<Long> userIds = appUserPermissionRepository.listAll(appId).stream().map(AppUserPermissionE::getIamUserId)
+                .collect(Collectors.toList());
+        List<UserE> userEList = iamRepository.listUsersByIds(userIds);
+        List<AppUserPermissionRepDTO> resultList = new ArrayList<>();
+        userEList.forEach(
+                e -> resultList.add(new AppUserPermissionRepDTO(e.getId(), e.getLoginName(), e.getRealName())));
+        return resultList;
     }
 
     @Override
