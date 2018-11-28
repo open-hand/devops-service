@@ -145,7 +145,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 .queryInstanceCommand(ObjectType.INSTANCE.getType(), instanceId);
         devopsEnvCommandES.forEach(devopsEnvCommandE -> {
             InstanceEventDTO instanceEventDTO = new InstanceEventDTO();
-            UserE userE = iamRepository.queryById(devopsEnvCommandE.getCreatedBy());
+            UserE userE = iamRepository.queryUserByUserId(devopsEnvCommandE.getCreatedBy());
             instanceEventDTO.setLoginName(userE.getLoginName());
             instanceEventDTO.setRealName(userE.getRealName());
             instanceEventDTO.setStatus(devopsEnvCommandE.getStatus());

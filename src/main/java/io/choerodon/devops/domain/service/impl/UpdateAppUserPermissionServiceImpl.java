@@ -47,10 +47,6 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
         switch (option) {
             // 原来跳过，现在不跳过，需要更新权限表，而且需要去掉原来gitlab中的权限
             case 1:
-                // devops
-                userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
-
-                // gitlab
                 updateGitlabUserIds = userAttrRepository.listByUserIds(userIds)
                         .stream().map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
                 // 获取项目下所有项目成员的gitlabUserIds，过滤掉项目所有者
@@ -78,11 +74,6 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 return true;
             // 原来不跳过，现在也不跳过，需要更新权限表
             case 3:
-                // devops
-                appUserPermissionRepository.deleteByAppId(appId);
-                userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
-
-                // gitlab
                 updateGitlabUserIds = userAttrRepository.listByUserIds(userIds).stream()
                         .map(e -> TypeUtil.objToInteger(e.getGitlabUserId())).collect(Collectors.toList());
                 List<Integer> currentGitlabUserIds = gitlabProjectRepository.getAllMemberByProjectId(gitlabProjectId)

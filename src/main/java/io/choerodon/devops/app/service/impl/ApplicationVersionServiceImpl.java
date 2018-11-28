@@ -137,30 +137,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Boolean isProjectOwner = iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE);
         Page<ApplicationVersionE> applicationVersionEPage = applicationVersionRepository.listApplicationVersionInApp(
-                projectId, appId, pageRequest, searchParam);
-
-        Page<ApplicationVersionRepDTO> applicationVersionRepDTOPage = ConvertPageHelper
-                .convertPage(applicationVersionEPage, ApplicationVersionRepDTO.class);
-        List<ApplicationVersionRepDTO> applicationVersionRepDTOList = ConvertHelper
-                .convertList(applicationVersionEPage.getContent(), ApplicationVersionRepDTO.class);
-        if (!isProjectOwner) {
-            // 过滤掉没有权限的应用的版本
-            List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
-                    .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
-            applicationVersionRepDTOList.forEach(e -> {
-                if (appIds.contains(e.getAppId())) {
-                    e.setPermission(true);
-                }
-                else {
-                    e.setPermission(false);
-                }
-            });
-        }
-        else {
-            applicationVersionRepDTOList.forEach(e->e.setPermission(true));
-        }
-        applicationVersionRepDTOPage.setContent(applicationVersionRepDTOList);
-        return applicationVersionRepDTOPage;
+                projectId, appId, pageRequest, searchParam, isProjectOwner, userAttrE.getIamUserId());
+        return ConvertPageHelper.convertPage(applicationVersionEPage, ApplicationVersionRepDTO.class);
     }
 
     @Override

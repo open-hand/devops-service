@@ -22,7 +22,9 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
 
     List<ApplicationDO> listCodeRepository(@Param("projectId") Long projectId,
                                            @Param("searchParam") Map<String, Object> searchParam,
-                                           @Param("param") String param);
+                                           @Param("param") String param,
+                                           @Param("isProjectOwner") Boolean isProjectOwner,
+                                           @Param("userId") Long userId);
 
     List<ApplicationDO> listByEnvId(@Param("projectId") Long projectId,
                                     @Param("envId") Long envId,

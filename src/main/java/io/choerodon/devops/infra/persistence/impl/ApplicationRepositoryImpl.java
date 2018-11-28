@@ -109,12 +109,13 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
-    public Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params) {
+    public Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params,
+                                                 Boolean isProjectOwner, Long userId) {
         Page<ApplicationDO> applicationES;
         Map maps = gson.fromJson(params, Map.class);
         applicationES = PageHelper.doPageAndSort(pageRequest, () -> applicationMapper.listCodeRepository(projectId,
                 TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                TypeUtil.cast(maps.get(TypeUtil.PARAM))));
+                TypeUtil.cast(maps.get(TypeUtil.PARAM)), isProjectOwner, userId));
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
 

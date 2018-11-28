@@ -24,17 +24,11 @@ public interface ApplicationRepository {
 
     ApplicationE query(Long applicationId);
 
-    Page<ApplicationE> listByOptions(Long projectId,
-                                     Boolean isActive,
-                                     Boolean hasVersion,
-                                     String type,
-                                     Boolean doPage,
-                                     PageRequest pageRequest,
-                                     String params);
+    Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion, String type, Boolean doPage,
+                                     PageRequest pageRequest, String params);
 
-    Page<ApplicationE> listCodeRepository(Long projectId,
-                                          PageRequest pageRequest,
-                                          String params);
+    Page<ApplicationE> listCodeRepository(Long projectId, PageRequest pageRequest, String params, Boolean isProjectId,
+                                          Long userId);
 
     Boolean applicationExist(String uuid);
 
@@ -46,8 +40,8 @@ public interface ApplicationRepository {
 
     List<ApplicationE> listAll(Long projectId);
 
-    Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive,
-                                                    PageRequest pageRequest, String params);
+    Page<ApplicationE> listByActiveAndPubAndVersion(Long projectId, Boolean isActive, PageRequest pageRequest,
+                                                    String params);
 
     ApplicationE queryByToken(String token);
 

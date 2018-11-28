@@ -160,7 +160,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setPath(devopsEnviromentDTO.getCode());
         gitlabProjectPayload.setOrganizationId(null);
         gitlabProjectPayload.setType(ENV);
-        UserE userE = iamRepository.queryById(userAttrE.getIamUserId());
+        UserE userE = iamRepository.queryUserByUserId(userAttrE.getIamUserId());
         gitlabProjectPayload.setLoginName(userE.getLoginName());
         gitlabProjectPayload.setRealName(userE.getRealName());
         gitlabProjectPayload.setClusterId(devopsEnviromentDTO.getClusterId());

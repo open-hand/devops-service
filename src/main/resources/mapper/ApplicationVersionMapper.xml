@@ -12,11 +12,18 @@
         da.is_active appStatus,
         da.id appId,
         dav.creation_date
-        FROM devops_application da
+        FROM
+        devops_application da
         RIGHT JOIN devops_app_version dav ON da.id = dav.app_id
+        LEFT JOIN devops_app_user_rel daur ON da.id = daur.app_id
         WHERE da.project_id = #{projectId}
         <if test='appId != null'>
             AND da.id= #{appId}
+        </if>
+        <if test='isProjectOwner != null'>
+            <if test='isProjectOwner == false'>
+                AND daur.iam_user_id = #{userId}
+            </if>
         </if>
         <if test='searchParam != null'>
             <if test='searchParam.version != null and searchParam.version.size > 0'>
@@ -27,7 +34,7 @@
             </if>
         </if>
         <if test='param != null and param != ""'>
-           AND dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND dav.version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
         </if>
     </select>
 

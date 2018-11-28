@@ -62,9 +62,7 @@ public interface ApplicationVersionService {
      * @param searchParam 模糊搜索参数
      * @return ApplicationVersionRepDTO
      */
-    Page<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId,
-                                                               Long appId,
-                                                               PageRequest pageRequest,
+    Page<ApplicationVersionRepDTO> listApplicationVersionInApp(Long projectId, Long appId, PageRequest pageRequest,
                                                                String searchParam);
 
     /**
