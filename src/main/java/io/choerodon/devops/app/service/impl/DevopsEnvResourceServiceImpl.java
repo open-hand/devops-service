@@ -179,7 +179,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                 }
                 //job日志
                 if (i <= devopsEnvCommandLogES.size() - 1) {
-                    podEventDTOS.get(i).setLog(devopsEnvCommandLogES.get(0).getLog());
+                    podEventDTOS.get(i).setLog(devopsEnvCommandLogES.get(i).getLog());
                 }
             }
             //获取实例中pod的event
