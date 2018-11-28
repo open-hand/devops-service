@@ -19,13 +19,11 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 public abstract class UpdateUserPermissionService {
     private GitlabProjectRepository gitlabProjectRepository;
     private GitlabRepository gitlabRepository;
-    private UserAttrRepository userAttrRepository;
 
     protected UpdateUserPermissionService() {
         this.gitlabProjectRepository = ApplicationContextHelper.getSpringFactory()
                 .getBean(GitlabProjectRepository.class);
         this.gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
-        this.userAttrRepository = ApplicationContextHelper.getSpringFactory().getBean(UserAttrRepository.class);
     }
 
     public abstract Boolean updateUserPermission(Long projectId, Long id, List<Long> userIds, Integer option);
