@@ -207,7 +207,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         if (v1Job.getStatus() != null) {
             if (v1Job.getStatus().getSucceeded() != null && v1Job.getStatus().getSucceeded() == 1) {
                 podEventDTO.setJobPodStatus("success");
-            } else if (v1Job.getStatus().getFailed() != null && v1Job.getStatus().getFailed() == 1) {
+            } else if (v1Job.getStatus().getFailed() != null) {
                 podEventDTO.setJobPodStatus("fail");
             } else {
                 podEventDTO.setJobPodStatus("running");
