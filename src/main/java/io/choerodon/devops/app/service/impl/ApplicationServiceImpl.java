@@ -384,8 +384,8 @@ public class ApplicationServiceImpl implements ApplicationService {
                             gitlabProjectPayload.getUserId());
         } catch (CommonException e) {
             String errorMessage = e.getMessage();
-            int subStartPos = errorMessage.indexOf("{");
-            int subEndPos = errorMessage.indexOf("}") + 1;
+            int subStartPos = errorMessage.indexOf('{');
+            int subEndPos = errorMessage.indexOf('}') + 1;
             String subErrorMessage = errorMessage.substring(subStartPos, subEndPos);
             Map maps = gson.fromJson(subErrorMessage, Map.class);
             if ("404 Project Not Found".equals(maps.get("code"))) {

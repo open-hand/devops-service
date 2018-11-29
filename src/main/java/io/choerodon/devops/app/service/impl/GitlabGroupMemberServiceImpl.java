@@ -26,6 +26,7 @@ import io.choerodon.devops.domain.application.valueobject.MemberHelper;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
 
 /**
@@ -199,10 +200,17 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
             List<Integer> gitlabProjectIds = applicationRepository.listByProjectIdAndSkipCheck(resourceId).stream()
                     .map(e -> e.getGitlabProjectE().getId()).collect(Collectors.toList());
             gitlabProjectIds.forEach(e -> {
-                Integer gitlabProjectId = gitlabRepository.getProjectById(e).getId();
-                GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(e, gitlabUserId);
-                if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-                    gitlabRepository.addMemberIntoProject(gitlabProjectId, new MemberDTO(gitlabUserId, 40, ""));
+                GitlabProjectDO gitlabProjectDO = new GitlabProjectDO();
+                try {
+                    gitlabProjectDO = gitlabRepository.getProjectById(e);
+                } catch (CommonException exception) {
+                        LOGGER.info("project not found");
+                }
+                if (gitlabProjectDO.getId() != null) {
+                    GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(e, gitlabUserId);
+                    if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                        gitlabRepository.addMemberIntoProject(e, new MemberDTO(gitlabUserId, 40, ""));
+                    }
                 }
             });
         }

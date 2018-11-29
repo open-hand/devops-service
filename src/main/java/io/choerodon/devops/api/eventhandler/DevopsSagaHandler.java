@@ -166,7 +166,7 @@ public class DevopsSagaHandler {
                     .updateUserPermission(devOpsUserPayload.getIamProjectId(), devOpsUserPayload.getAppId(),
                             devOpsUserPayload.getIamUserIds(), devOpsUserPayload.getOption());
         } catch (Exception e) {
-            LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds().toString());
+            LOGGER.error("update gitlab users {} error", devOpsUserPayload.getIamUserIds());
             throw e;
         }
         return data;
