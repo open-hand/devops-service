@@ -1,6 +1,8 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
+import io.choerodon.core.exception.CommonException
+import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DeployFrequencyDTO
 import io.choerodon.devops.api.dto.DeployTimeDTO
@@ -56,6 +58,8 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @Subject(ApplicationInstanceController)
 @Stepwise
 class ApplicationInstanceControllerSpec extends Specification {
+
+    private static final String MAPPING = "/v1/projects/{project_id}/app_instances"
 
     @Autowired
     @Qualifier("mockEnvUtil")
@@ -213,7 +217,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         devopsEnvCommandDO.setObject("instance")
         devopsEnvCommandDO.setStatus("operating")
         devopsEnvCommandDO.setObjectVersionId(1L)
-        devopsEnvCommandDO.setCommandType("commandType")
+        devopsEnvCommandDO.setCommandType("create")
 
         // decv
         devopsEnvCommandValueDO.setId(1L)
@@ -399,12 +403,18 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         ResponseEntity<PipelineDO> responseEntity5 = new ResponseEntity<>(pipelineDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getPipeline(anyInt(), anyInt(), anyInt())).thenReturn(responseEntity5)
-//
-//        ResponseEntity<MemberDO> responseEntity6 = new ResponseEntity<>(memberDO, HttpStatus.OK)
-//        Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(responseEntity6)
 
         ResponseEntity responseEntity6 = new ResponseEntity<>(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)
+
+        List<UserDO> userDOList = new ArrayList<>()
+        UserDO userDO1 = new UserDO()
+        userDO1.setLoginName("loginName")
+        userDO1.setRealName("realName")
+        userDOList.add(userDO1)
+        ResponseEntity<List<UserDO>> responseEntity7 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity7)
+        Mockito.doReturn(responseEntity7).when(iamServiceClient).listUsersByIds(1L)
     }
 
     def "PageByOptions"() {
@@ -578,12 +588,12 @@ class ApplicationInstanceControllerSpec extends Specification {
         dto.getReplicaSetDTOS().get(0)["name"] == "springboot-14f93-55f7896455"
     }
 
-    def "ListStages"() {
-        when: '获取部署实例hook阶段'
-        def list = restTemplate.getForObject("/v1/projects/1/app_instances/1/stages", List.class)
+    def "ListEvents"() {
+        when: '获取部署实例Event事件'
+        def list = restTemplate.getForObject(MAPPING + "/1/events", List.class, 1L)
 
         then: '校验返回值'
-        list.get(0)["stageName"] == "cctestws-7bc7a-init-db"
+        list.get(0)["podEventDTO"].get(0)["name"] == "commandEvent"
     }
 
     def "Stop"() {
@@ -627,7 +637,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         restTemplate.put("/v1/projects/1/app_instances/1/restart", null)
 
         then: '校验返回值'
-        devopsEnvCommandMapper.selectAll().get(4)["commandType"] == "commandType"
+        devopsEnvCommandMapper.selectAll().get(4)["commandType"] == "update"
     }
 
     def "Delete"() {
@@ -646,6 +656,15 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         then: '校验是否删除'
         devopsEnvCommandMapper.selectAll().get(5)["commandType"] == "delete"
+    }
+
+    def "CheckName"() {
+        when: '校验实例名唯一性'
+        def exception = restTemplate.getForEntity(MAPPING + "/check_name?instance_name=uniqueName", ExceptionResponse.class, 1L)
+
+        then: '名字不存在不抛出异常'
+        exception.statusCode.is2xxSuccessful()
+        notThrown(CommonException)
     }
 
     def "ListByEnv"() {
@@ -854,6 +873,20 @@ class ApplicationInstanceControllerSpec extends Specification {
         if (list14 != null && !list14.isEmpty()) {
             for (DevopsEnvUserPermissionDO e : list14) {
                 devopsEnvUserPermissionMapper.delete(e)
+            }
+        }
+        // 删除commandEvent
+        List<DevopsCommandEventDO> list15 = devopsCommandEventMapper.selectAll()
+        if (list15 != null && !list15.isEmpty()) {
+            for (DevopsCommandEventDO e : list15) {
+                devopsCommandEventMapper.delete(e)
+            }
+        }
+        // 删除envCommandLog
+        List<DevopsEnvCommandLogDO> list16 = devopsEnvCommandLogMapper.selectAll()
+        if (list16 != null && !list16.isEmpty()) {
+            for (DevopsEnvCommandLogDO e : list16) {
+                devopsEnvCommandLogDO.delete(e)
             }
         }
         FileUtil.deleteDirectory(new File("gitops"))

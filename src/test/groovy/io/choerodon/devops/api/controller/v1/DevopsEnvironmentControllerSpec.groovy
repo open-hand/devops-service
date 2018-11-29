@@ -324,11 +324,14 @@ class DevopsEnvironmentControllerSpec extends Specification {
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(null, null)
 
         and: 'mock查询用户'
+        List<UserDO> userDOList = new ArrayList<>()
         UserDO userDO = new UserDO()
         userDO.setLoginName("loginName")
         userDO.setRealName("realName")
-        ResponseEntity<UserDO> responseEntity2 = new ResponseEntity<>(userDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity2).when(iamServiceClient).queryById(1L)
+        userDOList.add(userDO)
+        ResponseEntity<List<UserDO>> responseEntity2 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity2)
+        Mockito.doReturn(responseEntity2).when(iamServiceClient).listUsersByIds(1L)
         userAttrRepository.queryById(_ as Long) >> userAttrE
 
         and: 'mock envUtil'

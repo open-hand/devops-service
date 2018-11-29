@@ -1,16 +1,15 @@
 package io.choerodon.devops.api.controller.v1
 
-
 import io.choerodon.core.domain.Page
+import io.choerodon.core.exception.CommonException
+import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsBranchDTO
-import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.entity.iam.UserE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Issue
-import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
@@ -69,6 +68,8 @@ class DevopsGitControllerSpec extends Specification {
     private IamRepository iamRepository
     @Autowired
     private UserAttrRepository userAttrRepository
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository
 
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
     AgileServiceClient agileServiceClient = Mockito.mock(AgileServiceClient.class)
@@ -88,6 +89,7 @@ class DevopsGitControllerSpec extends Specification {
     def setup() {
         iamRepository.initMockIamService(iamServiceClient)
         devopsGitRepository.initGitlabServiceClient(gitlabServiceClient)
+        gitlabProjectRepository.initMockService(gitlabServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("pro")
@@ -219,7 +221,7 @@ class DevopsGitControllerSpec extends Specification {
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
         userAttrRepository.queryById(_ as Long) >> userAttrE
 
-        when: '获取标签分页列表'
+        when: '获取标签列表'
         def tags = restTemplate.getForObject("/v1/projects/1/apps/1/git/tag_list", List.class)
 
         then: '校验返回值'
@@ -304,8 +306,7 @@ class DevopsGitControllerSpec extends Specification {
         userE.setRealName("test")
         userE.setImageUrl("test")
         agileRepository.initAgileServiceClient(agileServiceClient)
-        Mockito.doReturn(issueResponseEntity).when(agileServiceClient).queryIssue(1, 1)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        Mockito.when(agileServiceClient.queryIssue(anyLong(), anyLong(), anyLong())).thenReturn(issueResponseEntity)
 
         when: '获取工程下所有分支名'
         def branches = restTemplate.postForObject("/v1/projects/1/apps/1/git/branches?page=0&size=10", null, Page.class)
@@ -341,11 +342,19 @@ class DevopsGitControllerSpec extends Specification {
         UserAttrE userAttrE = new UserAttrE()
         userAttrE.setIamUserId(1L)
         userAttrE.setGitlabUserId(1L)
-        Mockito.doReturn(null).when(gitlabServiceClient).deleteBranch(1, "test", 1)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
+        ResponseEntity responseEntity = new ResponseEntity(new Object(), HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.deleteBranch(anyInt(), anyString(), anyInt())).thenReturn(responseEntity)
+
+        and: 'mock gitlab查询分支'
+        List<BranchDO> branchDOList = new ArrayList<>()
+        BranchDO branchDO = new BranchDO()
+        branchDO.setName("test")
+        branchDOList.add(branchDO)
+        ResponseEntity branchResponse = new ResponseEntity(branchDOList, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.listBranches(anyInt(), anyInt())).thenReturn(branchResponse)
 
         when: '删除分支'
-        restTemplate.delete("/v1/projects/1/apps/1/git/branch?branchName=test")
+        restTemplate.delete("/v1/projects/{project_id}/apps/{application_id}/git/branch?branch_name=test", 1L, 1L)
 
         then: '校验返回值'
         devopsBranchMapper.selectByPrimaryKey(devopsBranchMapper.selectAll().get(0).getId()).getDeleted()
@@ -394,10 +403,27 @@ class DevopsGitControllerSpec extends Specification {
         userAttrRepository.queryById(_ as Long) >> userAttrE
 
         when: '查看所有合并请求'
-        def mergeRequest = restTemplate.getForObject("/v1/projects/1/apps/1/git//merge_request/list?page=0&size=10", Map.class)
+        def mergeRequest = restTemplate.getForObject("/v1/projects/1/apps/1/git/merge_request/list?page=0&size=10", Map.class)
 
         then: '校验返回值'
         !mergeRequest.isEmpty()
+    }
+
+    def "CheckName"() {
+        given: 'mock gitlab查询分支'
+        List<BranchDO> branchDOList = new ArrayList<>()
+        BranchDO branchDO = new BranchDO()
+        branchDO.setName("test")
+        branchDOList.add(branchDO)
+        ResponseEntity branchResponse = new ResponseEntity(branchDOList, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.listBranches(anyInt(), anyInt())).thenReturn(branchResponse)
+
+        when: '校验实例名唯一性'
+        def exception = restTemplate.getForEntity("/v1/projects/{project_id}/apps/{application_id}/git/check_name?branch_name=uniqueName", ExceptionResponse.class, 1L, 1L)
+
+        then: '名字不存在不抛出异常'
+        exception.statusCode.is2xxSuccessful()
+        notThrown(CommonException)
 
         // 删除app
         List<ApplicationDO> list = applicationMapper.selectAll()
