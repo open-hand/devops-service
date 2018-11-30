@@ -50,7 +50,16 @@ public enum HelmType {
     CERT_ISSUED("cert_issued"),
     NAMESPACE_UPDATE("namespace_update"),
     UPGRADE_CLUSTER("upgrade"),
-    CERT_FAILED("cert_failed");
+    CERT_FAILED("cert_failed"),
+    EXECUTE_TEST_SUCCEED("execute_test_succeed"),
+    EXECUTE_TEST_FAILED("execute_test_failed"),
+    TEST_POD_EVENT("test_pod_event"),
+    TEST_POD_UPDATE("test_pod_update"),
+    TEST_JOB_LOG("test_job_log"),
+    GET_TEST_APP_STATUS("get_test_app_status"),
+    TEST_STATUS_RESPONSE("test_status_response"),
+    TEST_STATUS("test_status"),
+    EXECUTE_TEST("execute_test");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
 
@@ -165,6 +174,22 @@ public enum HelmType {
                 return HelmType.UPGRADE_CLUSTER;
             case "namespace_update":
                 return HelmType.NAMESPACE_UPDATE;
+            case "execute_test":
+                return HelmType.EXECUTE_TEST;
+            case "execute_test_succeed":
+                return HelmType.EXECUTE_TEST_SUCCEED;
+            case "execute_test_failed":
+                return HelmType.EXECUTE_TEST_FAILED;
+            case "test_pod_event":
+                return HelmType.TEST_POD_EVENT;
+            case "test_pod_update":
+                return HelmType.TEST_POD_UPDATE;
+            case "test_job_log":
+                return HelmType.TEST_JOB_LOG;
+            case "test_status":
+                return HelmType.TEST_STATUS;
+            case "test_status_response":
+                return HelmType.TEST_STATUS_RESPONSE;
             default:
                 break;
         }

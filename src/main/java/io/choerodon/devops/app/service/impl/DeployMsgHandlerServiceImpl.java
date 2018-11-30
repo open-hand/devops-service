@@ -22,9 +22,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitConfigDTO;
+import io.choerodon.devops.api.dto.JobLogDTO;
+import io.choerodon.devops.api.dto.PodUpdateDTO;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
@@ -128,6 +133,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private DevopsClusterProPermissionRepository devopsClusterProPermissionRepository;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private SagaClient sagaClient;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -609,8 +616,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         .queryById(envId);
                 ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
                 Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-                getApplication(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId(), organization.getId());
-                ApplicationE applicationE = getApplication(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId(), organization.getId());
+                ApplicationE applicationE = getApplication(releasePayload.getChartName(), devopsEnvironmentE.getProjectE().getId(), organization.getId()).get(0);
                 if (applicationE == null) {
                     throw new CommonException("error.application.query");
                 }
@@ -1330,7 +1336,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
 
     @Override
-    public ApplicationE getApplication(String appName, Long projectId, Long orgId) {
+    public List<ApplicationE> getApplication(String appName, Long projectId, Long orgId) {
+        List<ApplicationE> applications = new ArrayList<>();
         ApplicationE applicationE = applicationRepository
                 .queryByCode(appName, projectId);
         if (applicationE == null) {
@@ -1340,30 +1347,34 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
                                     .getOrganization().getId().equals(orgId))
                     .collect(Collectors.toList());
-            applicationE = findAppInAppMarket(applicationES, applicationList);
+            applications = findAppInAppMarket(applicationES, applicationList);
+        } else {
+            applications.add(applicationE);
         }
-        return applicationE;
+        return applications;
     }
 
-    private ApplicationE findAppInAppMarket(List<ApplicationE> applicationES, List<ApplicationE> applicationList) {
-        ApplicationE applicationE;
+    private List<ApplicationE> findAppInAppMarket(List<ApplicationE> applicationES, List<ApplicationE> applicationList) {
+        List<ApplicationE> applications = new ArrayList<>();
         if (!applicationList.isEmpty()) {
-            applicationE = applicationList.get(0);
-            if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) == 0) {
-                applicationE = null;
-            }
-        } else {
-            applicationE = applicationES.isEmpty() ? null : applicationES.get(0);
-            if (applicationE != null) {
-                ApplicationMarketE applicationMarketE =
-                        applicationMarketRepository.queryByAppId(applicationE.getId());
-                if (applicationMarketE == null
-                        || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
-                    applicationE = null;
+            applicationList.forEach(applicationE -> {
+                if (applicationMarketMapper.selectCountByAppId(applicationE.getId()) != 0) {
+                    applications.add(applicationE);
                 }
+            });
+        } else {
+            if (applicationES.isEmpty()) {
+                applicationES.forEach(applicationE -> {
+                    ApplicationMarketE applicationMarketE =
+                            applicationMarketRepository.queryByAppId(applicationE.getId());
+                    if (applicationMarketE != null
+                            || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
+                        applications.add(applicationE);
+                    }
+                });
             }
         }
-        return applicationE;
+        return applications;
     }
 
     @Override
@@ -1582,6 +1593,60 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ));
         socketMsgDispatcher.dispatcher(initClusterEnv);
     }
+
+
+    @Override
+    @Saga(code = "test-pod-update-saga",
+            description = "test pod update saga", inputSchema = "{}")
+    public void testPodUpdate(String key, String msg, Long clusterId) {
+        V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
+        String status = K8sUtil.changePodStatus(v1Pod);
+        if (status.equals("Running")) {
+            PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
+            podUpdateDTO.setConName(v1Pod.getSpec().getContainers().get(0).getName());
+            podUpdateDTO.setPodName(v1Pod.getMetadata().getName());
+            podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
+            podUpdateDTO.setStatus(0L);
+            String input = gson.toJson(podUpdateDTO);
+            logger.info(input);
+            sagaClient.startSaga("test-pod-update-saga", new StartInstanceDTO(input, "", ""));
+        }
+    }
+
+    @Override
+    @Saga(code = "test-job-log-saga",
+            description = "test job log saga", inputSchema = "{}")
+    public void testJobLog(String key, String msg, Long clusterId) {
+        JobLogDTO jobLogDTO = json.deserialize(msg, JobLogDTO.class);
+        PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
+        podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
+        if (jobLogDTO.getSucceed()) {
+            podUpdateDTO.setStatus(1L);
+        } else {
+            podUpdateDTO.setStatus(-1L);
+        }
+        podUpdateDTO.setLogFile(jobLogDTO.getLog());
+        String input = gson.toJson(podUpdateDTO);
+        logger.info(input);
+        sagaClient.startSaga("test-job-log-saga", new StartInstanceDTO(input, "", ""));
+    }
+
+    @Override
+    @Saga(code = "test-status-saga",
+            description = "test status saga", inputSchema = "{}")
+    public void getTestAppStatus(String key, String msg, Long clusterId) {
+        logger.info(msg);
+        PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
+        podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
+        if (msg.equals("running")) {
+            podUpdateDTO.setStatus(1L);
+        } else {
+            podUpdateDTO.setStatus(0L);
+        }
+        String input = gson.toJson(podUpdateDTO);
+        sagaClient.startSaga("test-status-saga", new StartInstanceDTO(input, "", ""));
+    }
+
 
     private void updateResourceStatus(Long envId, DevopsEnvCommandE devopsEnvCommandE, InstanceStatus running, ServiceStatus running2, IngressStatus running3, CertificationStatus active) {
         if (devopsEnvCommandE.getObject().equals(INSTANCE_KIND)) {

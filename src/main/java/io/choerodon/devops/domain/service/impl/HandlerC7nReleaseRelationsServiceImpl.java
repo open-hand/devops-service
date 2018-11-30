@@ -207,12 +207,21 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                                          Long projectId, Long envId, String filePath, String type) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        ApplicationE applicationE = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
-        if (applicationE == null) {
+        List<ApplicationE> applications = deployMsgHandlerService.getApplication(c7nHelmRelease.getSpec().getChartName(), projectId, organization.getId());
+        if (applications.isEmpty()) {
             throw new GitOpsExplainException("app.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartName(), null);
         }
-        ApplicationVersionE applicationVersionE = applicationVersionRepository
-                .queryByAppAndVersion(applicationE.getId(), c7nHelmRelease.getSpec().getChartVersion());
+        ApplicationVersionE applicationVersionE = null;
+        ApplicationE applicationE = null;
+        for (ApplicationE application : applications) {
+            applicationVersionE = applicationVersionRepository
+                    .queryByAppAndVersion(application.getId(), c7nHelmRelease.getSpec().getChartVersion());
+            if (applicationVersionE != null) {
+                applicationE = application;
+                break;
+            }
+        }
+
         if (applicationVersionE == null) {
             throw new GitOpsExplainException("appversion.not.exist.in.database", filePath, c7nHelmRelease.getSpec().getChartVersion(), null);
         }

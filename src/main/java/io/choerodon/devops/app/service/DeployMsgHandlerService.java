@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 
 /**
@@ -61,7 +63,7 @@ public interface DeployMsgHandlerService {
 
     void gitOpsSyncEvent(String key, String msg, Long clusterId);
 
-    ApplicationE getApplication(String appName, Long projectId, Long orgId);
+    List<ApplicationE> getApplication(String appName, Long projectId, Long orgId);
 
     void gitOpsCommandSyncEvent(String key, Long clusterId);
 
@@ -76,5 +78,11 @@ public interface DeployMsgHandlerService {
     void updateNamespaces(String msg, Long clusterId);
 
     void upgradeCluster(String key, String msg);
+
+    void testPodUpdate(String key, String msg, Long clusterId);
+
+    void testJobLog(String key, String msg, Long clusterId);
+
+    void getTestAppStatus(String key, String msg, Long clusterId);
 
 }
