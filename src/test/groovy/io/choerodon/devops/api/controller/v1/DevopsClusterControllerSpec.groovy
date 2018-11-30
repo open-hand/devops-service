@@ -203,7 +203,7 @@ class DevopsClusterControllerSpec extends Specification {
     def "DeleteCluster"() {
         given: 'mock envUtil'
         List<Long> envList = new ArrayList<>()
-        envList.add(1L)
+        envList.add(999L)
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
 
         when: '删除集群'
