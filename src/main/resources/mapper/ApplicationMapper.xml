@@ -81,13 +81,13 @@
 
     <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         SELECT
-        da.*
+            da.*
         FROM
-        devops_application da
+            devops_application da
         WHERE
-        da.is_active
-        AND da.gitlab_project_id is not null
-        AND da.project_id = #{projectId}
+            da.is_active
+          AND da.gitlab_project_id is not null
+          AND da.project_id = #{projectId}
     </select>
 
     <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
@@ -207,7 +207,7 @@
         NOT EXISTS ( SELECT 1 FROM devops_app_market dam WHERE dam.app_id = da.id )
         AND NOT EXISTS ( SELECT 1 FROM devops_app_instance dai JOIN devops_app_version dav ON dav.id =
         dai.app_version_id WHERE dai.`status` != 'deleted' AND dav.app_id = da.id )
-        AND da.id = #{applicationId};
+        AND da.id = #{applicationId}
     </select>
 
     <select id="listByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
@@ -216,8 +216,7 @@
         da.project_id
         FROM
         devops_application da
-        join devops_app_market dam
-        on da.id = dam.app_id
+        JOIN devops_app_market dam ON da.id = dam.app_id
         WHERE
         da.code = #{code}
     </select>
@@ -232,16 +231,19 @@
         da.is_synchro,
         da.gitlab_project_id,
         da.app_template_id,
+        da.is_skip_check_permission,
         da.uuid
         FROM
         devops_application da
-        LEFT JOIN devops_app_user_rel daur ON da.id =daur.app_id
         WHERE da.project_id = #{projectId}
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
         <if test='isProjectOwner != null'>
             <if test='isProjectOwner == false'>
-                AND daur.iam_user_id = #{userId}
+                AND (da.is_skip_check_permission = 1 OR (
+                da.is_skip_check_permission = 0
+                AND ( da.id IN ( SELECT daur.app_id FROM devops_app_user_rel daur WHERE daur.iam_user_id = #{userId}
+                ))))
             </if>
         </if>
         <include refid="sqlparam"/>

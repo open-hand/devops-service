@@ -32,3 +32,6 @@ values_yaml.spec
 
 ### JRebel
 rebel.xml
+
+### liquibase
+choerodon_temp/*
