@@ -555,6 +555,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
+        //校验values是否删除key
+        if(applicationDeployDTO.getType().equals("update")) {
+            String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
+                    applicationDeployDTO.getAppInstanceId());
+            String newDeployValue = devopsEnvCommandValueE.getValue();
+            if(oldDeployValue.equals(newDeployValue)) {
+                throw new CommonException("error.values.key.delete");
+            }
+        }
+
         // 初始化自定义实例名
         String code;
         if (applicationDeployDTO.getType().equals(CREATE)) {
@@ -994,4 +1004,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(num);
     }
+
+
 }
