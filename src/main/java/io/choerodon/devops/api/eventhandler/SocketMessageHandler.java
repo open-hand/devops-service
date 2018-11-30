@@ -190,6 +190,14 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case UPGRADE_CLUSTER:
                 deployMsgHandlerService.upgradeCluster(msg.getKey(), msg.getPayload());
                 break;
+            case TEST_POD_UPDATE:
+                deployMsgHandlerService.testPodUpdate(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case TEST_JOB_LOG:
+                deployMsgHandlerService.testJobLog(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case TEST_STATUS_RESPONSE:
+                deployMsgHandlerService.getTestAppStatus(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
             default:
                 msg.setDispatch(false);
                 break;

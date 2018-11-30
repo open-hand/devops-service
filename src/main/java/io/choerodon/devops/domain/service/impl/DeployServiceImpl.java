@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitConfigDTO;
 import io.choerodon.devops.api.dto.GitEnvConfigDTO;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -70,19 +73,19 @@ public class DeployServiceImpl implements DeployService {
 
 
     @Override
-    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId) {
+    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId) {
         Msg msg = new Msg();
         Payload payload = new Payload(
                 devopsEnvironmentE.getCode(),
                 helmUrl + applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
-                values, applicationInstanceE.getCode());
+                values, releaseName);
         msg.setKey(String.format("cluster:%d.env:%s.envId:%d.release:%s",
                 devopsEnvironmentE.getClusterE().getId(),
                 devopsEnvironmentE.getCode(),
                 devopsEnvironmentE.getId(),
-                applicationInstanceE.getCode()));
+                releaseName));
         msg.setType(HelmType.HELM_RELEASE_PRE_UPGRADE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
@@ -134,6 +137,39 @@ public class DeployServiceImpl implements DeployService {
         msg.setType(INIT_ENV);
         msg.setKey(String.format("cluster:%s", clusterId
         ));
+        commandSender.sendMsg(msg);
+    }
+
+    @Override
+    public void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, Long clusterId, String values) {
+        Msg msg = new Msg();
+        Payload payload = new Payload(
+                null,
+                helmUrl + applicationVersionE.getRepository(),
+                applicationE.getCode(),
+                applicationVersionE.getVersion(),
+                values, releaseName);
+        msg.setKey(String.format("cluster:%d.release:%s",
+                clusterId,
+                releaseName));
+        msg.setType(HelmType.EXECUTE_TEST.toValue());
+        try {
+            msg.setPayload(mapper.writeValueAsString(payload));
+        } catch (IOException e) {
+            throw new CommonException("error.payload.error", e);
+        }
+        commandSender.sendMsg(msg);
+
+    }
+
+    @Override
+    public void getTestAppStatus(String releaseName, Long clusterId) {
+        Msg msg = new Msg();
+        msg.setKey(String.format("cluster:%d.release:%s",
+                clusterId,
+                releaseName));
+        msg.setPayload(releaseName);
+        msg.setType(HelmType.TEST_STATUS.toValue());
         commandSender.sendMsg(msg);
     }
 

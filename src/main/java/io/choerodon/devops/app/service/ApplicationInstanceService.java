@@ -168,11 +168,67 @@ public interface ApplicationInstanceService {
 
     ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
 
+    /**
+     * 获取部署时长报表
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param appIds    应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
     DeployTimeDTO listDeployTime(Long projectId, Long envId, Long[] appIds, Date startTime, Date endTime);
 
+    /**
+     * 获取部署次数报表
+     *
+     * @param projectId 项目id
+     * @param envIds    环境id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
     DeployFrequencyDTO listDeployFrequency(Long projectId, Long[] envIds, Long appId, Date startTime, Date endTime);
 
+    /**
+     * 获取部署次数报表table
+     *
+     * @param projectId 项目id
+     * @param envIds    环境id
+     * @param appId     应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
     Page<DeployDetailDTO> pageDeployFrequencyDetail(Long projectId, PageRequest pageRequest, Long[] envIds, Long appId, Date startTime, Date endTime);
 
+    /**
+     * 获取部署时长报表table
+     *
+     * @param projectId 项目id
+     * @param envId     环境id
+     * @param appIds    应用id
+     * @param startTime 开始时间
+     * @param endTime   结束时间
+     * @return List
+     */
     Page<DeployDetailDTO> pageDeployTimeDetail(Long projectId, PageRequest pageRequest, Long[] appIds, Long envId, Date startTime, Date endTime);
+
+    /**
+     * 部署自动化测试应用
+     *
+     * @param applicationDeployDTO 部署信息
+     * @return ApplicationInstanceDTO
+     */
+    void deployTestApp(ApplicationDeployDTO applicationDeployDTO);
+
+    /**
+     * 查询自动化测试应用实例状态
+     *
+     * @param releaseName
+     * @param clusterId
+     */
+    void getTestAppStatus(String releaseName, Long clusterId);
 }

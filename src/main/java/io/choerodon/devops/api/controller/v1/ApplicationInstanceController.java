@@ -577,4 +577,47 @@ public class ApplicationInstanceController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.time.get"));
     }
+
+    /**
+     * 部署自动化测试应用
+     *
+     * @param projectId            项目id
+     * @param applicationDeployDTO 部署信息
+     * @return ApplicationInstanceDTO
+     */
+    @ApiOperation(value = "部署自动化测试应用")
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PostMapping("/deploy_test_app")
+    public void deployTestApp(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署信息", required = true)
+            @RequestBody ApplicationDeployDTO applicationDeployDTO) {
+        applicationInstanceService.deployTestApp(applicationDeployDTO);
+    }
+
+    /**
+     * 查询自动化测试应用实例状态
+     *
+     * @param projectId   项目id
+     * @param releaseName
+     * @param clusterId
+     */
+    @ApiOperation(value = "查询自动化测试应用实例状态")
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @GetMapping("/get_test_status")
+    public void getTestStatus(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "releaseName", required = true)
+            @RequestParam String releaseName,
+            @ApiParam(value = "clusterId", required = true)
+            @RequestParam Long clusterId) {
+        applicationInstanceService.getTestAppStatus(releaseName, clusterId);
+    }
+
 }

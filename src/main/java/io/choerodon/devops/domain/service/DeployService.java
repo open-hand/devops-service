@@ -1,7 +1,6 @@
 package io.choerodon.devops.domain.service;
 
 import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 
@@ -12,7 +11,7 @@ public interface DeployService {
     void sendCommand(DevopsEnvironmentE devopsEnvironmentE);
 
     void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE,
-                ApplicationInstanceE applicationInstanceE, DevopsEnvironmentE devopsEnvironmentE, String values,
+                String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values,
                 Long commandId);
 
     void initCluster(Long clusterId);
@@ -20,4 +19,8 @@ public interface DeployService {
     void deleteEnv(Long envId, String code, Long clusterId);
 
     void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId);
+
+    void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, Long clusterId, String values);
+
+    void getTestAppStatus(String releaseName, Long clusterId);
 }

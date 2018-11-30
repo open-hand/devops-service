@@ -390,6 +390,22 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return getDeployDetailDTOS(deployDOS);
     }
 
+    @Override
+    public void deployTestApp(ApplicationDeployDTO applicationDeployDTO) {
+        String versionValue = applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId());
+        ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
+        FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
+        String deployValue = getReplaceResult(versionValue,
+                applicationDeployDTO.getValues()).getDeltaYaml().trim();
+        deployService.deployTestApp(applicationE, applicationVersionE, applicationDeployDTO.getInstanceName(), applicationDeployDTO.getEnvironmentId(), deployValue);
+    }
+
+    @Override
+    public void getTestAppStatus(String releaseName, Long clusterId) {
+        deployService.getTestAppStatus(releaseName, clusterId);
+    }
+
     private Page<DeployDetailDTO> getDeployDetailDTOS(Page<DeployDO> deployDOS) {
         Page<DeployDetailDTO> pageDeployDetailDTOS = new Page<>();
         List<DeployDetailDTO> deployDetailDTOS = new ArrayList<>();
@@ -539,6 +555,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
+        //校验values是否删除key
+        if(applicationDeployDTO.getType().equals("update")) {
+            String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
+                    applicationDeployDTO.getAppInstanceId());
+            String newDeployValue = devopsEnvCommandValueE.getValue();
+            if(oldDeployValue.equals(newDeployValue)) {
+                throw new CommonException("error.values.key.delete");
+            }
+        }
+
         // 初始化自定义实例名
         String code;
         if (applicationDeployDTO.getType().equals(CREATE)) {
@@ -565,7 +591,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandE.setId(null);
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
             devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
-            deployService.deploy(applicationE, applicationVersionE, applicationInstanceE, devopsEnvironmentE,
+            deployService.deploy(applicationE, applicationVersionE, applicationInstanceE.getCode(), devopsEnvironmentE,
                     devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -773,7 +799,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
         instanceE.setCommandId(commandId);
         applicationInstanceRepository.update(instanceE);
-        deployService.deploy(applicationE, applicationVersionE, instanceE, devopsEnvironmentE, value, commandId);
+        deployService.deploy(applicationE, applicationVersionE, instanceE.getCode(), devopsEnvironmentE, value, commandId);
     }
 
     @Override
@@ -950,6 +976,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (versionValue.equals(deployValue)) {
             ReplaceResult replaceResult = new ReplaceResult();
             replaceResult.setDeltaYaml("");
+            replaceResult.setYaml("");
             replaceResult.setHighlightMarkers(new ArrayList<>());
             replaceResult.setNewLines(new ArrayList<>());
             return replaceResult;
@@ -977,4 +1004,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DecimalFormat df = new DecimalFormat("0.00");
         return df.format(num);
     }
+
+
 }
