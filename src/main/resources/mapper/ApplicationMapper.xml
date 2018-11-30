@@ -81,33 +81,53 @@
 
     <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         SELECT
-        da.*
+            da.*
         FROM
-        devops_application da
+            devops_application da
         WHERE
-        da.is_active
-        AND da.gitlab_project_id is not null
-        AND da.project_id = #{projectId}
+            da.is_active
+          AND da.gitlab_project_id is not null
+          AND da.project_id = #{projectId}
     </select>
 
     <select id="listAll" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         SELECT DISTINCT
-        dam.publish_level publishLevel,
-        dam.contributor,
-        dam.description,
-        da.*
+            dam.publish_level publishLevel,
+            dam.contributor,
+            dam.description,
+            da.*
         FROM
-        devops_application da
-        JOIN devops_app_instance dai ON dai.app_id = da.id
-        AND dai.`status` != 'deleted'
-        JOIN devops_env de ON dai.env_id = de.id
-        LEFT JOIN devops_app_market dam ON dam.app_id = da.id
+            devops_application da
+                JOIN devops_app_instance dai ON dai.app_id = da.id
+                AND dai.`status`
+            !=
+            'deleted'
+            JOIN
+            devops_env
+            de
+        ON dai
+           .
+           env_id =
+           de
+           .
+           id
+           LEFT
+           JOIN
+           devops_app_market
+           dam
+           ON
+           dam
+           .
+           app_id =
+           da
+           .
+           id
         WHERE
-        da.is_active
-        AND de.project_id = #{projectId}
+            da.is_active
+            AND de.project_id = #{projectId}
         ORDER BY
-        dam.publish_level ASC,
-        da.id DESC
+            dam.publish_level ASC,
+            da.id DESC
     </select>
 
     <sql id="sqlparam">
@@ -181,45 +201,55 @@
 
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         SELECT
-        da.id,
-        da.project_id,
-        da.name,
-        da.code,
-        da.is_active,
-        da.is_synchro,
-        da.gitlab_project_id,
-        da.app_template_id,
-        da.uuid,
-        da.token,
-        da.object_version_number
+            da.id,
+            da.project_id,
+            da.name,
+            da.code,
+            da.is_active,
+            da.is_synchro,
+            da.gitlab_project_id,
+            da.app_template_id,
+            da.uuid,
+            da.token,
+            da.object_version_number
         FROM
-        devops_application da
+            devops_application da
         WHERE
-        da.token = #{token}
+            da.token = #{token}
     </select>
 
     <select id="checkAppCanDisable" resultType="java.lang.Integer">
         SELECT
-        count( 1 )
+            count(1)
         FROM
-        devops_application da
+            devops_application da
         WHERE
-        NOT EXISTS ( SELECT 1 FROM devops_app_market dam WHERE dam.app_id = da.id )
-        AND NOT EXISTS ( SELECT 1 FROM devops_app_instance dai JOIN devops_app_version dav ON dav.id =
-        dai.app_version_id WHERE dai.`status` != 'deleted' AND dav.app_id = da.id )
-        AND da.id = #{applicationId};
+            NOT EXISTS(SELECT 1 FROM devops_app_market dam WHERE dam.app_id = da.id)
+          AND NOT EXISTS(SELECT 1
+                         FROM devops_app_instance dai
+                                  JOIN devops_app_version dav ON dav.id =
+                                                                 dai.app_version_id
+                         WHERE dai.`status` != 'deleted'
+          AND dav.app_id = da.id
+        )
+        AND
+        da
+        .
+        id
+        =
+        #{applicationId};
     </select>
 
     <select id="listByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         SELECT
-        da.`id`,
-        da.project_id
+            da.`id`,
+            da.project_id
         FROM
-        devops_application da
-        join devops_app_market dam
-        on da.id = dam.app_id
+            devops_application da
+                join devops_app_market dam
+                     on da.id = dam.app_id
         WHERE
-        da.code = #{code}
+            da.code = #{code}
     </select>
 
     <select id="listCodeRepository" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">
@@ -235,13 +265,15 @@
         da.uuid
         FROM
         devops_application da
-        LEFT JOIN devops_app_user_rel daur ON da.id =daur.app_id
         WHERE da.project_id = #{projectId}
         AND da.is_active = 1
         AND da.gitlab_project_id IS NOT NULL
         <if test='isProjectOwner != null'>
             <if test='isProjectOwner == false'>
-                AND daur.iam_user_id = #{userId}
+                AND (da.is_skip_check_permission = 1 OR (
+                da.is_skip_check_permission = 0
+                AND ( da.id IN ( SELECT daur.app_id FROM devops_app_user_rel daur WHERE daur.iam_user_id = #{userId}
+                ))))
             </if>
         </if>
         <include refid="sqlparam"/>
