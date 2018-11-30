@@ -341,17 +341,18 @@ public class ApplicationMarketController {
     /**
      * 导出应用市场应用信息
      *
-     * @param projectId  项目id
-     * @param appMarkets 应用市场应用信息
+     * @param projectId      项目id
+     * @param appMarkets     应用市场应用信息
+     * @return ResponseEntity
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "导出应用市场应用信息")
     @PostMapping("/export")
-    public void exportFile(
+    public ResponseEntity exportFile(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable("project_id") Long projectId,
             @ApiParam(value = "发布应用的信息", required = true)
-            @RequestBody(required = true) List<AppMarketDownloadDTO> appMarkets,
+            @RequestBody List<AppMarketDownloadDTO> appMarkets,
             @ApiParam(value = "导出包名字")
             @RequestParam(value = "fileName", required = false) String fileName,
             HttpServletResponse res) {
@@ -362,5 +363,6 @@ public class ApplicationMarketController {
         } catch (IOException e) {
             throw new CommonException(e.getMessage());
         }
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

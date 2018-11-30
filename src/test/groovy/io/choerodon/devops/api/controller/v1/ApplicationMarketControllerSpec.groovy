@@ -1,6 +1,9 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
+import io.choerodon.core.exception.CommonException
+import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO
 import io.choerodon.devops.api.dto.AppMarketTgzDTO
@@ -30,6 +33,8 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
+
+import javax.servlet.http.HttpServletResponse
 
 import static org.mockito.Matchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
@@ -335,16 +340,26 @@ class ApplicationMarketControllerSpec extends Specification {
         given: '准备dto list'
         List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
         AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
-        appMarketDownloadDTO.setAppMarketId(2L)
+        appMarketDownloadDTO.setAppMarketId(3L)
         List<Long> appVersionList = new ArrayList<>()
         appVersionList.add(1L)
         appMarketDownloadDTO.setAppVersionIds(appVersionList)
         dtoList.add(appMarketDownloadDTO)
 
+        and: '设置http响应返回值类型'
+        restTemplate.getRestTemplate().getMessageConverters().add(new ExportOctetStream2HttpMessageConverter())
+        HttpHeaders headers = new HttpHeaders()
+        List headersList = new ArrayList<>()
+        headersList.add(MediaType.APPLICATION_OCTET_STREAM)
+        headers.setAccept(headersList)
+
+        HttpEntity<List<AppMarketDownloadDTO>> reqHttpEntity = new HttpEntity<>(dtoList)
+
         when: '导出应用市场应用信息'
-        restTemplate.postForObject("/v1/projects/1/apps_market/export", dtoList, Object.class)
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange("/v1/projects/1/apps_market/export?fileName=testChart", HttpMethod.POST, reqHttpEntity, byte[].class)
 
         then: '验证返回值'
+        responseEntity.getHeaders().get("Content-Length").get(0).toString().toInteger() != 0
 
         // 删除app
         List<ApplicationDO> list = applicationMapper.selectAll()

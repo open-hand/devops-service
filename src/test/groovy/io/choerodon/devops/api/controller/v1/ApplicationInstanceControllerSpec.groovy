@@ -886,7 +886,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         List<DevopsEnvCommandLogDO> list16 = devopsEnvCommandLogMapper.selectAll()
         if (list16 != null && !list16.isEmpty()) {
             for (DevopsEnvCommandLogDO e : list16) {
-                devopsEnvCommandLogDO.delete(e)
+                devopsEnvCommandLogMapper.delete(e)
             }
         }
         FileUtil.deleteDirectory(new File("gitops"))

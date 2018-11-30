@@ -12,7 +12,7 @@ spring:
   # 使用本地docker里的mysql
       username: root
       password: root
-      url: jdbc:mysql://192.168.99.100:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+      url: jdbc:mysql://172.17.0.2:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
   autoconfigure:
     exclude: org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration,org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
   h2:
@@ -32,6 +32,8 @@ services:
     baseUrl: "https://registry.saas.hand-china.com"
     username: "admin"
     password: "Handhand123"
+  helm:
+    url: "http://helm-charts.staging.saas.hand-china.com"
 choerodon:
   event:
     consumer:
