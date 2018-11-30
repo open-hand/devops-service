@@ -115,6 +115,15 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
+    public Page<ProjectDO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params) {
+        try {
+            return iamServiceClient.queryProjectByOrgId(organizationId, page, size, name, params).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
     public List<ProjectWithRoleDTO> listProjectWithRoleDTO(Long userId) {
         List<ProjectWithRoleDTO> returnList = new ArrayList<>();
         int page = 0;

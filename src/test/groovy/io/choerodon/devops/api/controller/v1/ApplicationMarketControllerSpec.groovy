@@ -150,13 +150,13 @@ class ApplicationMarketControllerSpec extends Specification {
         projectDO.setCode("pro")
         projectDO.setOrganizationId(1L)
         ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(anyLong())
 
         OrganizationDO organizationDO = new OrganizationDO()
         organizationDO.setId(1L)
         organizationDO.setCode("org")
         ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(anyLong())
 
         Page<ProjectDO> projectDOPage = new Page<>()
         List<ProjectDO> projectDOList = new ArrayList<>()

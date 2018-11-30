@@ -10,6 +10,7 @@ import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -27,6 +28,8 @@ public interface IamRepository {
     UserE queryByLoginName(String userName);
 
     List<ProjectE> listIamProjectByOrgId(Long organizationId, String name, String[] params);
+
+    Page<ProjectDO> queryProjectByOrgId(Long organizationId, int page, int size, String name, String[] params);
 
     List<UserE> listUsersByIds(List<Long> ids);
 

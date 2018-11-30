@@ -62,5 +62,4 @@ public class DevopsEnvPodController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.application.pod.query"));
     }
-
 }
