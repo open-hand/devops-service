@@ -40,6 +40,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_merge_request.groovy') {
             column(name: 'title', type: 'VARCHAR(255)', remarks: '标题')
             column(name: "created_at", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
             column(name: "updated_at", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+
         }
         createIndex(indexName: "idx_app_source_target_branch", tableName: "devops_merge_request") {
             column(name: "project_id")
@@ -54,14 +55,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_merge_request.groovy') {
         }
     }
 
-
     changeSet(author: 'younger', id: '2018-09-27-add-column') {
-        addColumn(tableName: 'devops_merge_request') {
-            column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
-            column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
-            column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
-            column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
-            column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
-        }
-    }
+                addColumn(tableName: 'devops_merge_request') {
+                    column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
+                    column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
+                    column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+                    column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
+                    column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+                }
+            }
+
 }

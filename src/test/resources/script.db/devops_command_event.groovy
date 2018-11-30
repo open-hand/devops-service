@@ -19,4 +19,17 @@ databaseChangeLog(logicalFilePath: 'dba/devops_command_event.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+
+    changeSet(author: 'crockitwood', id: '2018-09-26-create-command-event-index') {
+        createIndex(indexName: "idx_command_id_type", tableName: "devops_command_event") {
+            column(name: "command_id")
+            column(name: 'type')
+        }
+    }
+
+    changeSet(author: 'crockitwood', id: '2018-10-19-create-command-event-id-index') {
+        createIndex(indexName: "idx_command_id", tableName: "devops_command_event") {
+            column(name: "command_id")
+        }
+    }
 }

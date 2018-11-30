@@ -24,7 +24,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_user_permission.groovy') {
         }
     }
 
-    changeSet(author: 'n1ck', id: '2018-11-27-delete-table') {
-        dropTable(tableName: "devops_app_user_permission")
+    changeSet(author: 'younger', id: '2018-11-27-rename-table') {
+        dropColumn(columnName: "login_name", tableName: "devops_app_user_permission")
+        dropColumn(columnName: "real_name", tableName: "devops_app_user_permission")
+        renameTable(newTableName: 'devops_app_user_rel', oldTableName: 'devops_app_user_permission')
     }
+
 }

@@ -44,6 +44,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class DevopsClusterControllerSpec extends Specification {
 
     private static final String MAPPING = "/v1/organizations/{organization_id}/clusters"
+    private static Long ID;
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -91,6 +92,7 @@ class DevopsClusterControllerSpec extends Specification {
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(1L)
         devopsClusterReqDTO.setCode("cluster")
+        devopsClusterReqDTO.setName("cluster")
         devopsClusterReqDTO.setProjects(projectIds)
         devopsClusterReqDTO.setSkipCheckProjectPermission(false)
 
@@ -109,10 +111,11 @@ class DevopsClusterControllerSpec extends Specification {
         devopsClusterReqDTO.setCode("cluster")
         devopsClusterReqDTO.setProjects(projectIds)
         devopsClusterReqDTO.setName("updateCluster")
+        ID  = devopsClusterMapper.selectAll().get(0).getId()
         devopsClusterReqDTO.setSkipCheckProjectPermission(false)
 
         when: '更新集群下的项目'
-        restTemplate.put(MAPPING + "?clusterId=1", devopsClusterReqDTO, 2L)
+        restTemplate.put(MAPPING + "?clusterId="+ID, devopsClusterReqDTO, 2L)
 
         then: '校验是否更新'
         devopsClusterMapper.selectAll().get(0)["name"] == "updateCluster"
@@ -120,7 +123,7 @@ class DevopsClusterControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个集群信息'
-        def dto = restTemplate.getForObject(MAPPING + "/1", DevopsClusterRepDTO.class, 1L)
+        def dto = restTemplate.getForObject(MAPPING + "/"+ID, DevopsClusterRepDTO.class, 1L)
 
         then: '校验返回值'
         dto["name"] == "updateCluster"
@@ -150,7 +153,7 @@ class DevopsClusterControllerSpec extends Specification {
         str[0] = "{}"
 
         when: '分页查询项目列表'
-        def e = restTemplate.postForEntity(MAPPING + "/page_projects?page=0&size=10&cluster_id=1", str, Page.class, 1L)
+        def e = restTemplate.postForEntity(MAPPING + "/page_projects?page=0&size=10&cluster_id="+ID, str, Page.class, 1L)
 
         then: '校验返回值'
         e.getBody().get(0)["code"] == "pro"
@@ -158,7 +161,7 @@ class DevopsClusterControllerSpec extends Specification {
 
     def "ListClusterProjects"() {
         when: '查询已有权限的项目列表'
-        def e = restTemplate.getForEntity(MAPPING + "/list_cluster_projects/{clusterId}", List.class, 1L, 1L)
+        def e = restTemplate.getForEntity(MAPPING + "/list_cluster_projects/{clusterId}", List.class, 1L, ID)
 
         then: '校验返回值'
         e.getBody().get(0)["code"] == "pro"
@@ -173,7 +176,7 @@ class DevopsClusterControllerSpec extends Specification {
         envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
 
         when: '查询shell脚本'
-        def e = restTemplate.getForEntity(MAPPING + "/query_shell/{clusterId}", String.class, 1L, 1L)
+        def e = restTemplate.getForEntity(MAPPING + "/query_shell/{clusterId}", String.class, 1L, ID)
 
         then: '校验返回值'
         e.getBody() != null
@@ -200,11 +203,11 @@ class DevopsClusterControllerSpec extends Specification {
     def "DeleteCluster"() {
         given: 'mock envUtil'
         List<Long> envList = new ArrayList<>()
-        envList.add(2L)
+        envList.add(1L)
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
 
         when: '删除集群'
-        restTemplate.delete(MAPPING + "/{clusterId}", 1L, 1L)
+        restTemplate.delete(MAPPING + "/{clusterId}", 1L, ID)
 
         then: '校验返回值'
         devopsClusterMapper.selectAll().size() == 0
