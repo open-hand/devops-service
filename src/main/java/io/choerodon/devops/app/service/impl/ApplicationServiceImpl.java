@@ -328,12 +328,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
             List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
                     .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
-            resultDTOList.forEach(e -> {
+            resultDTOList.stream().filter(e -> !e.getPermission()).forEach(e -> {
                 if (appIds.contains(e.getId())) {
                     e.setPermission(true);
-                }
-                else {
-                    e.setPermission(false);
                 }
             });
         }
