@@ -321,6 +321,7 @@ class ApplicationControllerSpec extends Specification {
         applicationDO.setType("normal")
         applicationDO.setGitlabProjectId(1)
         applicationDO.setAppTemplateId(1L)
+        applicationDO.setIsSkipCheckPermission(true)
         applicationMapper.insert(applicationDO)
     }
 
