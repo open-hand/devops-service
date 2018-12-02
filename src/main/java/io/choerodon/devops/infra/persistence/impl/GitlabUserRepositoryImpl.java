@@ -77,4 +77,9 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
+
+    @Override
+    public void initMockService(GitlabServiceClient gitlabServiceClient) {
+        this.gitlabServiceClient = gitlabServiceClient;
+    }
 }
