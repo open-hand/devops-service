@@ -148,6 +148,7 @@ class DevopsIngressControllerSpec extends Specification {
         devopsServiceDO.setExternalIp("1.1.1.1")
         devopsServiceDO.setPorts("[{\"port\":7777}]")
 
+        devopsIngressDO.setId(1L)
         devopsIngressDO.setEnvId(1L)
         devopsIngressDO.setCertId(1L)
         devopsIngressDO.setUsable(true)
@@ -164,7 +165,7 @@ class DevopsIngressControllerSpec extends Specification {
         devopsEnvCommandDO.setStatus("success")
         devopsEnvCommandDO.setCommandType("create")
 
-        devopsIngressPathDO.setId(2L)
+        devopsIngressPathDO.setId(1L)
         devopsIngressPathDO.setIngressId(1L)
         devopsIngressPathDO.setServiceId(1L)
         devopsIngressPathDO.setPath("testpath")
@@ -283,7 +284,7 @@ class DevopsIngressControllerSpec extends Specification {
         def dto = restTemplate.getForObject("/v1/projects/1/ingress/1", DevopsIngressDTO.class)
 
         then: '校验返回值'
-        dto != null
+        dto["domain"] == "test.test-test.test"
     }
 
     def "Delete"() {

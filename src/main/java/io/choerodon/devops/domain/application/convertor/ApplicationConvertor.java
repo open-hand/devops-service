@@ -66,5 +66,5 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
         }
         return applicationReqDTO;
     }
-    
+
 }

@@ -119,5 +119,4 @@ public class DevopsGitlabPipelineController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }
-
 }

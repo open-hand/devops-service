@@ -24,16 +24,20 @@ databaseChangeLog(logicalFilePath: 'dba/devops_cluster.groovy') {
                 constraintName: 'uk_orgId_code', columnNames: 'organization_id,code')
     }
 
-    changeSet(author: 'younger', id: '2018-11-11-add-column') {
-        addColumn(tableName: 'devops_cluster') {
-            column(name: 'choerodon_id', type: 'VARCHAR(64)', remarks: '平台标识', afterColumn: 'token')
-            column(name: 'namespaces', type: 'TEXT', remarks: '命名空间列表', afterColumn: 'choerodon_id')
-        }
-    }
 
-    changeSet(author: 'younger', id: '2018-11-12-add-column') {
-        addColumn(tableName: 'devops_cluster') {
-            column(name: 'is_init', type: 'TINYINT UNSIGNED', remarks: '集群是否被初始化', afterColumn: 'skip_check_project_permission')
-        }
-    }
+    changeSet(author: 'younger', id: '2018-11-11-add-column')
+            {
+                addColumn(tableName: 'devops_cluster') {
+                    column(name: 'choerodon_id',type: 'VARCHAR(64)',remarks:'平台标识', afterColumn: 'token')
+                    column(name: 'namespaces', type: 'TEXT', remarks: '命名空间列表', afterColumn:'choerodon_id')
+                }
+            }
+
+    changeSet(author: 'younger', id: '2018-11-12-add-column')
+            {
+                addColumn(tableName: 'devops_cluster') {
+                    column(name: 'is_init',type: 'TINYINT UNSIGNED',remarks:'集群是否被初始化', afterColumn: 'skip_check_project_permission')
+                }
+            }
+
 }

@@ -150,6 +150,7 @@ class ApplicationVersionControllerSpec extends Specification {
         applicationDO.setProjectId(project_id)
         applicationDO.setAppTemplateId(init_id)
         applicationDO.setGitlabProjectId(1)
+        applicationDO.setIsSkipCheckPermission(true)
 
         applicationVersionDO.setId(init_id)
         applicationVersionDO.setValueId(1L)

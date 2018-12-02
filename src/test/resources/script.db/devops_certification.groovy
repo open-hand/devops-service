@@ -45,4 +45,5 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
             column(name: "certification_file_id", type: "BIGINT UNSIGNED", afterColumn: 'command_id')
         }
     }
+
 }

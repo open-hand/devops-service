@@ -31,4 +31,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_template.groovy') {
                 constraintName: 'uk_org_id_code', columnNames: 'organization_id,code')
     }
 
+
+    changeSet(author: 'younger', id: '2018-11-21-add-column') {
+        addColumn(tableName: 'devops_app_template') {
+            column(name: 'is_synchro', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: 'is synchro', afterColumn: 'gitlab_project_id')
+            column(name: 'is_failed', type: 'TINYINT UNSIGNED', defaultValue: "0", remarks: 'is failed', afterColumn: 'is_synchro')
+        }
+    }
+
 }

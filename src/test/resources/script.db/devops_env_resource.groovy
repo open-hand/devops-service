@@ -25,5 +25,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_resource.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'resource_detail_id', oldColumnName: 'message_id', remarks: '资源信息', tableName: 'devops_env_resource')
     }
 
+    changeSet(author: 'younger', id: '2018-11-26-add-column') {
+        addColumn(tableName: 'devops_env_resource') {
+            column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: 'env', afterColumn: 'app_instance_id')
+            column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: 'command', afterColumn: 'env_id')
+        }
+    }
 
 }

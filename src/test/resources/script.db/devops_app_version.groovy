@@ -22,23 +22,25 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
         }
         addUniqueConstraint(tableName: 'devops_app_version',
                 constraintName: 'uk_app_id_version', columnNames: 'app_id,version')
-        createIndex(indexName: "idx_app_id", tableName: "devops_app_version") {
+        createIndex(indexName: "app_version_idx_app_id", tableName: "devops_app_version") {
             column(name: "app_id")
         }
     }
 
 
     changeSet(author: 'younger', id: '2018-09-03-modify-index') {
-        dropIndex(indexName: "idx_app_id", tableName: "devops_app_version")
+        dropIndex(indexName: "app_version_idx_app_id",tableName: "devops_app_version")
 
         createIndex(indexName: "app_version_idx_app_id", tableName: "devops_app_version") {
             column(name: "app_id")
         }
     }
 
+
     changeSet(author: 'younger', id: '2018-10-08-add-column') {
         addColumn(tableName: 'devops_app_version') {
             column(name: 'readme_value_id', type: 'BIGINT UNSIGNED', remarks: 'readme value id', afterColumn: 'value_id')
         }
     }
+
 }
