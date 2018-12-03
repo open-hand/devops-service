@@ -34,6 +34,8 @@ services:
     password: "Handhand123"
   helm:
     url: "http://helm-charts.staging.saas.hand-china.com"
+  gitlab:
+    sshUrl: "git.vk.vu"
 choerodon:
   event:
     consumer:

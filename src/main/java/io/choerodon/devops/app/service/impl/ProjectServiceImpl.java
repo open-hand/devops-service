@@ -35,5 +35,4 @@ public class ProjectServiceImpl implements ProjectService {
         DevopsProjectDO devopsProject = new DevopsProjectDO(projectEvent.getProjectId());
         devopsProjectRepository.createProject(devopsProject);
     }
-
 }

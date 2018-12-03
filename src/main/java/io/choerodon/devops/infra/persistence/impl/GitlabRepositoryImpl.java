@@ -137,7 +137,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public Boolean getFile(Integer projectId, String branch, String filePath) {
-        try{
+        try {
             gitlabServiceClient.getFile(projectId, branch, filePath);
         } catch (FeignException e) {
             return false;
@@ -146,7 +146,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel, Integer userId) {
+    public void createProtectBranch(Integer projectId, String name, String mergeAccessLevel, String pushAccessLevel,
+                                    Integer userId) {
         try {
             gitlabServiceClient.createProtectedBranches(
                     projectId, name, mergeAccessLevel, pushAccessLevel, userId);
@@ -176,14 +177,12 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     @Override
     public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
         try {
-            return gitlabServiceClient
-                    .createProjectHook(projectId, userId, projectHook).getBody();
+            return gitlabServiceClient.createProjectHook(projectId, userId, projectHook).getBody();
         } catch (FeignException e) {
             throw new CommonException("error.projecthook.create", e);
 
         }
     }
-
 
     @Override
     public ProjectHook updateWebHook(Integer projectId, Integer hookId, Integer userId) {

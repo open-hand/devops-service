@@ -18,7 +18,7 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.Visibility;
 
 @Service
-public class OrganizatonServiceImpl implements OrganizationService {
+public class OrganizationServiceImpl implements OrganizationService {
 
     private static final String TEMPLATE = "template";
 
@@ -33,7 +33,7 @@ public class OrganizatonServiceImpl implements OrganizationService {
 
     @Override
     public void create(OrganizationEventPayload organizationEventPayload) {
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(organizationEventPayload.getUserId()));
+        UserAttrE userAttrE = userAttrRepository.queryById(organizationEventPayload.getUserId());
         if (userAttrE == null) {
             throw new CommonException("gitlab user not related to iam user");
         }
@@ -43,7 +43,6 @@ public class OrganizatonServiceImpl implements OrganizationService {
         gitlabGroupENew.initVisibility(Visibility.PUBLIC);
         gitlabRepository.createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
     }
-
 
     @Override
     public void registerOrganization(RegisterOrganizationDTO registerOrganizationDTO) {
@@ -66,6 +65,5 @@ public class OrganizatonServiceImpl implements OrganizationService {
         gitlabGroupENew.initPath(registerOrganizationDTO.getOrganizationCode() + "_" + TEMPLATE);
         gitlabGroupENew.initVisibility(Visibility.PUBLIC);
         gitlabRepository.createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-
     }
 }

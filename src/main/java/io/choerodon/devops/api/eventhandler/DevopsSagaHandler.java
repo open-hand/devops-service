@@ -41,22 +41,33 @@ public class DevopsSagaHandler {
     private final Gson gson = new Gson();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    private final DevopsEnvironmentService devopsEnvironmentService;
+    private final DevopsGitService devopsGitService;
+    private final ApplicationTemplateService applicationTemplateService;
+    private final ApplicationService applicationService;
+    private final DevopsGitlabPipelineService devopsGitlabPipelineService;
+    private final ApplicationRepository applicationRepository;
+    private final ApplicationTemplateRepository applicationTemplateRepository;
+    private final DevopsEnvironmentRepository devopsEnvironmentRepository;
+
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private DevopsGitService devopsGitService;
-    @Autowired
-    private ApplicationTemplateService applicationTemplateService;
-    @Autowired
-    private ApplicationService applicationService;
-    @Autowired
-    private DevopsGitlabPipelineService devopsGitlabPipelineService;
-    @Autowired
-    private ApplicationRepository applicationRepository;
-    @Autowired
-    private ApplicationTemplateRepository applicationTemplateRepository;
-    @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    public DevopsSagaHandler(DevopsEnvironmentService devopsEnvironmentService,
+                             DevopsGitService devopsGitService,
+                             ApplicationTemplateService applicationTemplateService,
+                             ApplicationService applicationService,
+                             DevopsGitlabPipelineService devopsGitlabPipelineService,
+                             ApplicationRepository applicationRepository,
+                             ApplicationTemplateRepository applicationTemplateRepository,
+                             DevopsEnvironmentRepository devopsEnvironmentRepository) {
+        this.devopsEnvironmentService = devopsEnvironmentService;
+        this.devopsGitService = devopsGitService;
+        this.applicationTemplateService = applicationTemplateService;
+        this.applicationService = applicationService;
+        this.devopsGitlabPipelineService = devopsGitlabPipelineService;
+        this.applicationRepository = applicationRepository;
+        this.applicationTemplateRepository = applicationTemplateRepository;
+        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
+    }
 
     /**
      * devops创建环境
@@ -79,7 +90,6 @@ public class DevopsSagaHandler {
         if (devopsEnvironmentE.getFailed() != null && devopsEnvironmentE.getFailed()) {
             devopsEnvironmentE.initFailed(false);
             devopsEnvironmentRepository.update(devopsEnvironmentE);
-
         }
         return data;
     }
@@ -231,10 +241,8 @@ public class DevopsSagaHandler {
                 applicationTemplateRepository.update(applicationTemplateE);
             }
         }
-
         return data;
     }
-
 
     /**
      * GitOps 事件处理
