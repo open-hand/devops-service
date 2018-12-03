@@ -24,12 +24,10 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
 
     private DeployMsgHandlerService deployMsgHandlerService;
 
-
     @Autowired
     public SocketMessageHandler(DeployMsgHandlerService deployMsgHandlerService) {
         this.deployMsgHandlerService = deployMsgHandlerService;
     }
-
 
     @Override
     public void process(Msg msg) {
@@ -202,12 +200,10 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 msg.setDispatch(false);
                 break;
         }
-
     }
 
     @Override
     public int getOrder() {
         return 0;
     }
-
 }

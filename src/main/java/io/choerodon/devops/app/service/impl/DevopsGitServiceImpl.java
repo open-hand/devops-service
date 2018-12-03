@@ -424,11 +424,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<C7nCertification> c7nCertifications = new ArrayList<>();
 
             //从文件中读出对象,序列化为K8S对象
-            objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases,
-                    v1Services, v1beta1Ingresses,
-                    devopsEnvironmentE.getId(),
-                    new ArrayList<>(beforeSyncDelete),
-                    c7nCertifications);
+            objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
+                    devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete), c7nCertifications);
             List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
             //将k8s对象初始化为实例，网络，域名，证书对象,处理对象文件关系
             handlerC7nReleaseRelationsService
