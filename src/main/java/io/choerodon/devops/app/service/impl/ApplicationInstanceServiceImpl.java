@@ -1005,7 +1005,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult getReplaceResult(String versionValue, String deployValue) {
-        if (versionValue.equals(deployValue)) {
+        if (versionValue.equals(deployValue)||deployValue.equals("")) {
             ReplaceResult replaceResult = new ReplaceResult();
             replaceResult.setDeltaYaml("");
             replaceResult.setYaml(versionValue);
