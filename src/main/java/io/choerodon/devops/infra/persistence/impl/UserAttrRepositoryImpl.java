@@ -65,4 +65,16 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
         userAttrMapper.updateByPrimaryKey(userAttrDO);
     }
 
+    @Override
+    public List<UserAttrE> list() {
+        return ConvertHelper.convertList(userAttrMapper.selectAll(),UserAttrE.class);
+    }
+
+    @Override
+    public UserAttrE queryByGiltabUserName(String gitlabUserName) {
+        UserAttrDO userAttrDO  = new UserAttrDO();
+        userAttrDO.setGitlabUserName(gitlabUserName);
+        return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO),UserAttrE.class);
+    }
+
 }

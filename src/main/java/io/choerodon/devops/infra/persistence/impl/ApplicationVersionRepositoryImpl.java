@@ -142,8 +142,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
                     .doPageAndSort(pageRequest, () -> applicationVersionMapper.listApplicationVersion(projectId, appId,
                             TypeUtil.cast(searchParamMap.get(TypeUtil.SEARCH_PARAM)),
                             TypeUtil.cast(searchParamMap.get(TypeUtil.PARAM)), isProjectOwner, userId));
-        }
-        else {
+        } else {
             applicationVersionQueryDOPage = PageHelper.doPageAndSort(
                     pageRequest, () -> applicationVersionMapper
                             .listApplicationVersion(projectId, appId, null, null, isProjectOwner, userId));
@@ -235,5 +234,10 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     @Override
     public ApplicationVersionE getLatestVersion(Long appId) {
         return ConvertHelper.convert(applicationVersionMapper.getLatestVersion(appId), ApplicationVersionE.class);
+    }
+
+    @Override
+    public List<ApplicationVersionE> listByAppVersionIds(List<Long> appVersionIds) {
+        return ConvertHelper.convertList(applicationVersionMapper.listByAppVersionIds(appVersionIds), ApplicationVersionE.class);
     }
 }

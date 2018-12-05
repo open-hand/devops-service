@@ -1,14 +1,14 @@
 package io.choerodon.devops.domain.application.convertor;
 
 import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.domain.application.entity.DevopsCommandEventE;
 import io.choerodon.devops.infra.dataobject.DevopsCommandEventDO;
 
 
-@Service
+@Component
 public class DevopsCommandEventConvertor implements ConvertorI<DevopsCommandEventE, DevopsCommandEventDO, Object> {
 
     @Override

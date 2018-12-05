@@ -399,8 +399,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void getTestAppStatus(String releaseName, Long clusterId) {
-        deployService.getTestAppStatus(releaseName, clusterId);
+    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
+        deployService.getTestAppStatus(testReleases);
     }
 
     @Override
@@ -652,7 +652,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                         devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
                 applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
                 applicationInstanceRepository.update(applicationInstanceE);
-            } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
+            }
+            //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
+            if ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())))) {
                 devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
                 devopsEnvCommandE.initDevopsEnvCommandValueE(
                         devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());

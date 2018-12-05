@@ -3,8 +3,10 @@ package io.choerodon.devops.domain.service.impl;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.alibaba.fastjson.JSONArray;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -163,14 +165,15 @@ public class DeployServiceImpl implements DeployService {
     }
 
     @Override
-    public void getTestAppStatus(String releaseName, Long clusterId) {
-        Msg msg = new Msg();
-        msg.setKey(String.format("cluster:%d.release:%s",
-                clusterId,
-                releaseName));
-        msg.setPayload(releaseName);
-        msg.setType(HelmType.TEST_STATUS.toValue());
-        commandSender.sendMsg(msg);
+    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
+        testReleases.forEach((key,value)->{
+            Msg msg = new Msg();
+            msg.setKey(String.format("cluster:%d",
+                    key));
+            msg.setPayload(JSONArray.toJSONString(value));
+            msg.setType(HelmType.TEST_STATUS.toValue());
+            commandSender.sendMsg(msg);
+        });
     }
 
     @Override

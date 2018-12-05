@@ -199,6 +199,11 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     @Override
     public ApplicationVersionRepDTO queryById(Long appVersionId) {
-        return ConvertHelper.convert(applicationVersionRepository.query(appVersionId),ApplicationVersionRepDTO.class);
+        return ConvertHelper.convert(applicationVersionRepository.query(appVersionId), ApplicationVersionRepDTO.class);
+    }
+
+    @Override
+    public List<ApplicationVersionRepDTO> listByAppVersionIds(List<Long> appVersionIds) {
+        return ConvertHelper.convertList(applicationVersionRepository.listByAppVersionIds(appVersionIds), ApplicationVersionRepDTO.class);
     }
 }

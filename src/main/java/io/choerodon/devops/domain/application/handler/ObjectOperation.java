@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
+import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.yaml.snakeyaml.DumperOptions;
@@ -29,6 +30,7 @@ public class ObjectOperation<T> {
     private static final String INGTAG = "!!io.kubernetes.client.models.V1beta1Ingress";
     private static final String SVCTAG = "!!io.kubernetes.client.models.V1Service";
     private static final String CERTTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nCertification";
+    private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
     private T type;
 
     public T getType() {
@@ -99,6 +101,9 @@ public class ObjectOperation<T> {
                     case "C7nCertification":
                         handleC7nCertification(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
+                    case "ConfigMap":
+                        handleConfigMap(t, objectType, operationType, resultBuilder, jsonObject);
+                        break;
                     default:
                         break;
                 }
@@ -164,5 +169,19 @@ public class ObjectOperation<T> {
         }
         Tag tag1 = new Tag(CERTTAG);
         resultBuilder.append("\n").append(getYamlObject(tag1).dump(c7nCertification).replace(CERTTAG, "---"));
+    }
+
+    private void handleConfigMap(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+        Yaml yaml5 = new Yaml();
+        V1ConfigMap v1ConfigMap = yaml5.loadAs(jsonObject.toJSONString(), V1ConfigMap.class);
+        if (objectType.equals("ConfigMap") && v1ConfigMap.getMetadata().getName().equals(((V1ConfigMap) t).getMetadata().getName())) {
+            if (operationType.equals(UPDATE)) {
+                v1ConfigMap = (V1ConfigMap) t;
+            } else {
+                return;
+            }
+        }
+        Tag tag1 = new Tag(CONFIGMAPTAG);
+        resultBuilder.append("\n").append(getYamlObject(tag1).dump(v1ConfigMap).replace(CONFIGMAPTAG, "---"));
     }
 }

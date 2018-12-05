@@ -129,6 +129,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                                             .createOrUpdateByGitOps(applicationDeployDTO, userId);
                                     devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceDTO.getCommandId());
                                 }
+                                //0.9.0-0.10.0,新增commandId,如果gitops库如果一个文件里面有多个对象，只操作其中一个对象，其它对象更新commitsha避免npe
                                 if (devopsEnvCommandE == null) {
                                     devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationDeployDTO.getAppInstanceId());
                                     ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
@@ -179,6 +180,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                             applicationInstanceDTO.setCommandId(applicationInstanceE.getCommandId());
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceDTO.getCommandId());
+                        //0.9.0-0.10.0,新增commandId,如果gitops库如果只是移动对象到另外一个文件，避免npe
                         if (devopsEnvCommandE == null) {
                             devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceDTO.getId());
                             applicationInstanceE.setCommandId(devopsEnvCommandE.getId());

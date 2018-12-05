@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSON;
@@ -43,10 +44,7 @@ import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabJobE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
+import io.choerodon.devops.domain.application.entity.gitlab.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.*;
@@ -87,12 +85,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SERIAL_STRING = " serializable to yaml";
     private static final String YAML_FILE = ".yaml";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
-
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
-
     private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
+    private final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
     private Gson gson = new Gson();
 
     @Value("${services.gateway.url}")
@@ -156,18 +153,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsProjectMapper devopsProjectMapper;
     @Autowired
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
+    @Autowired
+    private GitlabUserRepository gitlabUserRepository;
 
     @Override
     public void checkLog(String version) {
         LOGGER.info("start upgrade task");
         executorService.submit(new UpgradeTask(version));
-    }
-
-
-    @Override
-    public void checkLogByEnv(String version, Long envId) {
-        LOGGER.info("start upgrade task on env {}", envId);
-        executorService.submit(new UpgradeTask(version, envId));
     }
 
 
@@ -422,6 +414,35 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 });
             }
         });
+    }
+
+
+    private void syncGitlabUserName(List<CheckLog> logs) {
+        userAttrRepository.list().stream().filter(userAttrE -> userAttrE.getGitlabUserId() != null).forEach(userAttrE ->
+                {
+                    CheckLog checkLog = new CheckLog();
+                    try {
+                        UserE userE = iamRepository.queryUserByUserId(userAttrE.getIamUserId());
+                        if (Pattern.matches(SERVICE_PATTERN, userE.getLoginName())) {
+                            userAttrE.setGitlabUserName(userE.getLoginName());
+                            if (userE.getLoginName().equals("admin") || userE.getLoginName().equals("admin1")) {
+                                userAttrE.setGitlabUserName("root");
+                            }
+                        } else {
+                            GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+                            userAttrE.setGitlabUserName(gitlabUserE.getUsername());
+                        }
+                        userAttrRepository.update(userAttrE);
+                        checkLog.setResult(SUCCESS);
+                        checkLog.setContent(userAttrE.getGitlabUserId() + " : init Name Succeed");
+                    } catch (Exception e) {
+                        checkLog.setResult(FAILED);
+                        checkLog.setContent(userAttrE.getGitlabUserId() + " : init Name Failed");
+                    }
+                    logs.add(checkLog);
+                }
+        );
+
     }
 
     private class SyncInstanceByEnv {
@@ -742,6 +763,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.11.0".equals(version)) {
                 changeGitOpsUserAccess(logs);
                 updateWebHook(logs);
+            } else if ("0.12.0".equals(version)) {
+                syncGitlabUserName(logs);
             } else {
                 LOGGER.info("version not matched");
             }
@@ -876,8 +899,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             newDevopsBranchE.setCheckoutCommit(branchDO.getCommit().getId());
                             newDevopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
                             newDevopsBranchE.setLastCommitMsg(branchDO.getCommit().getMessage());
-                            UserE userE = iamRepository.queryByLoginName(branchDO.getCommit().getAuthorName());
-                            newDevopsBranchE.setLastCommitUser(userE.getId());
+                            UserAttrE userAttrE = userAttrRepository.queryByGiltabUserName(branchDO.getCommit().getAuthorName());
+                            newDevopsBranchE.setLastCommitUser(userAttrE.getIamUserId());
                             devopsGitRepository.createDevopsBranch(newDevopsBranchE);
                             checkLog.setResult(SUCCESS);
                         }));

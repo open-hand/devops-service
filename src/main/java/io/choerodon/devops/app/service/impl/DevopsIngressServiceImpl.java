@@ -436,7 +436,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             devopsIngressDO.setId(ingressId);
             devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsIngressRepository.updateIngress(devopsIngressDO);
-        } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
+        }
+        //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
+        if ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())))) {
             devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
             devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
