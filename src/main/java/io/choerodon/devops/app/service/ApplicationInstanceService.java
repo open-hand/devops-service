@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.models.V1beta2Deployment;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -231,4 +232,19 @@ public interface ApplicationInstanceService {
      * @param clusterId
      */
     void getTestAppStatus(String releaseName, Long clusterId);
+
+
+    /**
+     * 根据实例id获取更多部署详情(json格式）
+     * @param instanceId 实例id
+     * @return 详情json字符串
+     */
+    InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId);
+
+    /**
+     * 根据实例id获取更多部署详情(yaml格式)
+     * @param instanceId 实例id
+     * @return 详情yaml字符串
+     */
+    InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId);
 }

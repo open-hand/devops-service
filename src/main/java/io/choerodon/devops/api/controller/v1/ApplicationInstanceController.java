@@ -116,6 +116,44 @@ public class ApplicationInstanceController {
     }
 
     /**
+     * 根据实例id获取更多部署详情(Json格式)
+     *
+     * @param projectId     项目id
+     * @param appInstanceId 实例id
+     * @return 部署详情
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据实例id获取更多部署详情(Json格式)")
+    @GetMapping(value = "/{appInstanceId}/deployment_detail_json")
+    public ResponseEntity<InstanceDeploymentDTO> getDeploymentDetailsJsonByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable Long appInstanceId) {
+        return new ResponseEntity<>(applicationInstanceService.getDeploymentJsonDetailsByInstanceId(appInstanceId), HttpStatus.OK);
+    }
+
+    /**
+     * 根据实例id获取更多部署详情(Yaml格式)
+     *
+     * @param projectId     项目id
+     * @param appInstanceId 实例id
+     * @return 部署详情
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据实例id获取更多部署详情(Yaml格式)")
+    @GetMapping(value = "/{appInstanceId}/deployment_detail_yaml")
+    public ResponseEntity<InstanceDeploymentDTO> getDeploymentDetailsYamlByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable Long appInstanceId) {
+        return new ResponseEntity<>(applicationInstanceService.getDeploymentYamlDetailsByInstanceId(appInstanceId), HttpStatus.OK);
+    }
+
+    /**
      * 获取升级 Value
      *
      * @param projectId     项目id
