@@ -1,27 +1,18 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
@@ -42,6 +33,20 @@ import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -77,8 +82,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DeployService deployService;
     @Autowired
-    private GitlabProjectRepository gitlabProjectRepository;
-    @Autowired
     private IamRepository iamRepository;
     @Autowired
     private CommandSender commandSender;
@@ -101,17 +104,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
-    private DevopsEnvFileRepository devopsEnvFileRepository;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
-    private DeployMsgHandlerService deployMsgHandlerService;
-    @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-    @Autowired
-    private ApplicationVersionService applicationVersionService;
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -406,6 +403,37 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         deployService.getTestAppStatus(releaseName, clusterId);
     }
 
+    @Override
+    public InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId) {
+        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId);
+
+
+        if (StringUtils.isEmpty(message)) {
+            throw new CommonException("error.instance.deployment.not.found", instanceId);
+        }
+
+        try {
+            return new InstanceDeploymentDTO(instanceId, new ObjectMapper().readTree(message));
+        } catch (IOException e) {
+            throw new CommonException("error.instance.deployment.json.read.failed", instanceId, message);
+        }
+    }
+
+    @Override
+    public InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId) {
+        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId);
+
+        if (StringUtils.isEmpty(message)) {
+            throw new CommonException("error.instance.deployment.not.found", instanceId);
+        }
+
+        try {
+            return new InstanceDeploymentDTO(instanceId, JsonYamlConversionUtil.json2yaml(message));
+        } catch (IOException e) {
+            throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, message);
+        }
+    }
+
     private Page<DeployDetailDTO> getDeployDetailDTOS(Page<DeployDO> deployDOS) {
         Page<DeployDetailDTO> pageDeployDetailDTOS = new Page<>();
         List<DeployDetailDTO> deployDetailDTOS = new ArrayList<>();
@@ -556,11 +584,11 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
         //校验values是否删除key
-        if(applicationDeployDTO.getType().equals("update")) {
+        if (applicationDeployDTO.getType().equals("update")) {
             String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
                     applicationDeployDTO.getAppInstanceId());
             String newDeployValue = devopsEnvCommandValueE.getValue();
-            if(oldDeployValue.equals(newDeployValue)) {
+            if (oldDeployValue.equals(newDeployValue)) {
                 throw new CommonException("error.values.key.delete");
             }
         }

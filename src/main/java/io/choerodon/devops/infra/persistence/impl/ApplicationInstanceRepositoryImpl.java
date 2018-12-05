@@ -192,4 +192,9 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
             throw new CommonException("error.app.instance.name.already.exist");
         }
     }
+
+    @Override
+    public String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId) {
+        return applicationInstanceMapper.getInstanceDeploymentDetailJsonByInstanceId(instanceId);
+    }
 }

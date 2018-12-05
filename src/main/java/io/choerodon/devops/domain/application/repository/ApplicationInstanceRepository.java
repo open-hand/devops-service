@@ -59,4 +59,6 @@ public interface ApplicationInstanceRepository {
     void deleteAppInstanceByEnvId(Long envId);
 
     void checkName(String instanceName);
+
+    String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId);
 }
