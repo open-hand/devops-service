@@ -123,6 +123,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newDevopsServiceE.getCommandId());
                         }
+                        //0.9.0-0.10.0,新增commandId,如果gitops库如果一个文件里面有多个对象，只操作其中一个对象，其它对象更新commitsha避免npe
                         if (devopsEnvCommandE == null) {
                             devopsEnvCommandE = createDevopsEnvCommandE("update");
                             devopsEnvCommandE.setObjectId(devopsServiceE.getId());
@@ -169,6 +170,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                                     devopsServiceReqDTO.getName(), envId);
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                        //0.9.0-0.10.0,新增commandId,如果gitops库如果只是移动对象到另外一个文件，避免npe
                         if (devopsEnvCommandE == null) {
                             devopsEnvCommandE = createDevopsEnvCommandE("create");
                             devopsEnvCommandE.setObjectId(devopsServiceE.getId());

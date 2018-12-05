@@ -127,6 +127,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                         }
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                        //0.9.0-0.10.0,新增commandId,如果gitops库如果只是移动对象到另外一个文件，避免npe
                         if (devopsEnvCommandE == null) {
                             devopsEnvCommandE = createDevopsEnvCommandE("create");
                             devopsEnvCommandE.setObjectId(devopsIngressE.getId());
@@ -183,7 +184,14 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                                     .selectByEnvAndName(envId, v1beta1Ingress.getMetadata().getName());
                             devopsEnvCommandE = devopsEnvCommandRepository.query(newdevopsIngressE.getCommandId());
                         }
-                        devopsEnvCommandE = getDevopsEnvCommandE(devopsIngressE, devopsEnvCommandE);
+                        //0.9.0-0.10.0,新增commandId,如果gitops库如果一个文件里面有多个对象，只操作其中一个对象，其它对象更新commitsha避免npe
+                        if (devopsEnvCommandE == null) {
+                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
+                            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
+                            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
+                            devopsIngressRepository.updateIngress(devopsIngressDO);
+                        }
                         devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                         devopsEnvCommandRepository.update(devopsEnvCommandE);
                         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -201,17 +209,6 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         throw new GitOpsExplainException(e.getMessage(), filePath, errorCode, e);
                     }
                 });
-    }
-
-    private DevopsEnvCommandE getDevopsEnvCommandE(DevopsIngressE devopsIngressE, DevopsEnvCommandE devopsEnvCommandE) {
-        if (devopsEnvCommandE == null) {
-            devopsEnvCommandE = createDevopsEnvCommandE("create");
-            devopsEnvCommandE.setObjectId(devopsIngressE.getId());
-            DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
-            devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
-            devopsIngressRepository.updateIngress(devopsIngressDO);
-        }
-        return devopsEnvCommandE;
     }
 
     private void checkIngressAppVersion(
