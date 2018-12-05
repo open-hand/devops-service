@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
@@ -228,8 +229,7 @@ public interface ApplicationInstanceService {
     /**
      * 查询自动化测试应用实例状态
      *
-     * @param releaseName
-     * @param clusterId
+     * @param testReleases
      */
 
     /**
@@ -246,5 +246,7 @@ public interface ApplicationInstanceService {
      */
     InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId);
 
-     void getTestAppStatus(List<String> releaseName, Long clusterId);
+
+    void getTestAppStatus(Map<Long,List<String>> testReleases);
+
 }

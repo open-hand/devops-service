@@ -233,9 +233,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 .map(TagDTO::new)
                 .parallel()
                 .peek(t -> {
-                    UserE commitUserE = iamRepository.queryByLoginName(t.getCommit()
+
+                    UserAttrE userAttrE = userAttrRepository.queryByGiltabUserName(t.getCommit()
                             .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
-                    t.setCommitUserImage(commitUserE.getImageUrl());
+                    UserE userE = iamRepository.queryUserByUserId(userAttrE.getIamUserId());
+                    t.setCommitUserImage(userE.getImageUrl());
                     t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
                 })
                 .collect(Collectors.toCollection(ArrayList::new));

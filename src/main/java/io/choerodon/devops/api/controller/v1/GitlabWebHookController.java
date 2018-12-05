@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -43,20 +44,16 @@ public class GitlabWebHookController {
 
     /**
      * 查询自动化测试应用实例状态
-     *
-     * @param releaseName
-     * @param clusterId
+     * @param testReleases
      */
     @ApiOperation(value = "查询自动化测试应用实例状态")
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
-    @GetMapping("/get_test_status")
+    @PostMapping("/get_test_status")
     public void getTestStatus(
             @ApiParam(value = "releaseName", required = true)
-            @RequestParam List<String> releaseName,
-            @ApiParam(value = "clusterId", required = true)
-            @RequestParam Long clusterId) {
-        applicationInstanceService.getTestAppStatus(releaseName, clusterId);
+            @RequestBody Map<Long, List<String>> testReleases) {
+        applicationInstanceService.getTestAppStatus(testReleases);
     }
 }

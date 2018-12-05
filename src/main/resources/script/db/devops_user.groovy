@@ -37,5 +37,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_user.groovy') {
         }
     }
 
+    changeSet(author: 'younger', id: '2018-12-05-add-column') {
+        addColumn(tableName: 'devops_user') {
+            column(name: 'gitlab_user_name', type: 'VARCHAR(64)', remarks: 'gitlab user name', beforeColumn: 'gitlab_token')
+        }
+    }
 
 }

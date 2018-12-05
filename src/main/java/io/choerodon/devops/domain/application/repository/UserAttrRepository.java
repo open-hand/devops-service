@@ -20,4 +20,8 @@ public interface UserAttrRepository {
     UserAttrE queryByGitlabUserId(Long gitlabUserId);
 
     void update(UserAttrE userAttrE);
+
+    List<UserAttrE> list();
+
+    UserAttrE queryByGiltabUserName(String gitlabUserName);
 }

@@ -9,5 +9,4 @@ public interface DevopsCheckLogService {
      */
     void checkLog(String version);
 
-    void checkLogByEnv(String version, Long envI);
 }

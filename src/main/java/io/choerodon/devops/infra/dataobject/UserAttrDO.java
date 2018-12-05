@@ -24,6 +24,8 @@ public class UserAttrDO extends AuditDomain {
 
     private String gitlabToken;
 
+    private String gitlabUserName;
+
     public Long getIamUserId() {
         return iamUserId;
     }
@@ -46,5 +48,13 @@ public class UserAttrDO extends AuditDomain {
 
     public void setGitlabToken(String gitlabToken) {
         this.gitlabToken = gitlabToken;
+    }
+
+    public String getGitlabUserName() {
+        return gitlabUserName;
+    }
+
+    public void setGitlabUserName(String gitlabUserName) {
+        this.gitlabUserName = gitlabUserName;
     }
 }
