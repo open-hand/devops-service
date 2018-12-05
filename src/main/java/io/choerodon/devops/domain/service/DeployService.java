@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.service;
 
+import java.util.List;
+
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
@@ -22,5 +24,5 @@ public interface DeployService {
 
     void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, Long clusterId, String values);
 
-    void getTestAppStatus(String releaseName, Long clusterId);
+    void getTestAppStatus(List<String> releaseName, Long clusterId);
 }

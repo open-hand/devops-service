@@ -30,6 +30,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitConfigDTO;
 import io.choerodon.devops.api.dto.JobLogDTO;
 import io.choerodon.devops.api.dto.PodUpdateDTO;
+import io.choerodon.devops.api.dto.TestReleaseStatus;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
@@ -58,6 +59,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private static final String SERVICE_KIND = "service";
     private static final String INGRESS_KIND = "ingress";
     private static final String INSTANCE_KIND = "instance";
+    private static final String CONFIGMAP_KIND = "configmap";
     private static final String C7NHELMRELEASE_KIND = "c7nhelmrelease";
     private static final String CERTIFICATE_KIND = "certificate";
     private static final String PUBLIC = "public";
@@ -135,6 +137,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private EnvUtil envUtil;
     @Autowired
     private SagaClient sagaClient;
+    @Autowired
+    private DevopsConfigMapRepository devopsConfigMapRepository;
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
@@ -362,6 +366,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 case SERVICE:
                     handleUpdateServiceMsg(key, envId, msg, devopsEnvResourceE);
                     break;
+                case CONFIGMAP:
+                    newdevopsEnvResourceE =
+                            devopsEnvResourceRepository.queryResource(
+                                    null,
+                                    null,
+                                    envId,
+                                    KeyParseTool.getResourceType(key),
+                                    KeyParseTool.getResourceName(key));
+                    saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE,
+                            devopsEnvResourceDetailE, null);
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
                     applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
@@ -1051,6 +1065,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         case CERTIFICATE_KIND:
                             syncCetificate(envId, errorDevopsFiles, resourceCommit, objects);
                             break;
+                        case CONFIGMAP_KIND:
+                            syncConfigMap(envId, errorDevopsFiles, resourceCommit, objects);
                         default:
                             break;
                     }
@@ -1063,7 +1079,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 .queryByEnvAndName(envId, objects[1]);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(
-                        envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
+                        envId, certificationE.getId(), "Certificate");
         if (updateEnvCommandStatus(resourceCommit, certificationE.getCommandId(),
                 devopsEnvFileResourceE, CERTIFICATE_KIND, certificationE.getName(),
                 null, errorDevopsFiles)) {
@@ -1079,7 +1095,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsServiceE devopsServiceE = devopsServiceRepository
                 .selectByNameAndEnvId(objects[1], envId);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE_KIND);
+                .queryByEnvIdAndResource(envId, devopsServiceE.getId(), "Service");
         if (updateEnvCommandStatus(resourceCommit, devopsServiceE.getCommandId(),
                 devopsEnvFileResourceE, SERVICE_KIND, devopsServiceE.getName(), CommandStatus.SUCCESS.getStatus(), errorDevopsFiles)) {
             devopsServiceE.setStatus(ServiceStatus.FAILED.getStatus());
@@ -1094,7 +1110,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         DevopsIngressE devopsIngressE = devopsIngressRepository
                 .selectByEnvAndName(envId, objects[1]);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS_KIND);
+                .queryByEnvIdAndResource(envId, devopsIngressE.getId(), "Ingress");
         if (updateEnvCommandStatus(resourceCommit, devopsIngressE.getCommandId(),
                 devopsEnvFileResourceE, INGRESS_KIND, devopsIngressE.getName(), CommandStatus.SUCCESS.getStatus(), errorDevopsFiles)) {
             devopsIngressRepository.setStatus(envId, devopsIngressE.getName(), IngressStatus.FAILED.getStatus());
@@ -1108,12 +1124,22 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                 .selectByCode(objects[1], envId);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
-                .queryByEnvIdAndResource(envId, applicationInstanceE.getId(), C7NHELMRELEASE_KIND);
+                .queryByEnvIdAndResource(envId, applicationInstanceE.getId(), "C7NHelmRelease");
         if (updateEnvCommandStatus(resourceCommit, applicationInstanceE.getCommandId(),
                 devopsEnvFileResourceE, C7NHELMRELEASE_KIND, applicationInstanceE.getCode(), null, errorDevopsFiles)) {
             applicationInstanceE.setStatus(InstanceStatus.FAILED.getStatus());
             applicationInstanceRepository.update(applicationInstanceE);
         }
+    }
+
+    private void syncConfigMap(Long envId, List<DevopsEnvFileErrorE> errorDevopsFiles, ResourceCommit resourceCommit, String[] objects) {
+        DevopsEnvFileResourceE devopsEnvFileResourceE;
+        DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository
+                .queryByEnvIdAndName(envId, objects[1]);
+        devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(envId, devopsConfigMapE.getId(), "ConfigMap");
+        updateEnvCommandStatus(resourceCommit, devopsConfigMapE.getDevopsEnvCommandE().getId(),
+                devopsEnvFileResourceE, CONFIGMAP_KIND, devopsConfigMapE.getName(), CommandStatus.SUCCESS.getStatus(), errorDevopsFiles);
     }
 
     private List<DevopsEnvFileErrorE> getEnvFileErrors(Long envId, GitOpsSync gitOpsSync, DevopsEnvironmentE devopsEnvironmentE) {
@@ -1636,14 +1662,19 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             description = "test status saga", inputSchema = "{}")
     public void getTestAppStatus(String key, String msg, Long clusterId) {
         logger.info(msg);
-        PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
-        podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
-        if (msg.equals("running")) {
-            podUpdateDTO.setStatus(1L);
-        } else {
-            podUpdateDTO.setStatus(0L);
+        List<TestReleaseStatus> testReleaseStatuses = JSONArray.parseArray(msg, TestReleaseStatus.class);
+        List<PodUpdateDTO> podUpdateDTOS = new ArrayList<>();
+        for (TestReleaseStatus testReleaseStatu : testReleaseStatuses) {
+            PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
+            podUpdateDTO.setReleaseNames(testReleaseStatu.getReleaseName());
+            if (testReleaseStatu.getStatus().equals("running")) {
+                podUpdateDTO.setStatus(1L);
+            } else {
+                podUpdateDTO.setStatus(0L);
+            }
+            podUpdateDTOS.add(podUpdateDTO);
         }
-        String input = gson.toJson(podUpdateDTO);
+        String input = JSONArray.toJSONString(podUpdateDTOS);
         sagaClient.startSaga("test-status-saga", new StartInstanceDTO(input, "", ""));
     }
 

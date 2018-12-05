@@ -207,21 +207,21 @@ public class ApplicationVersionController {
     /**
      * 根据版本id查询版本信息
      *
-     * @param projectId 项目ID
-     * @param appVersionId     应用版本ID
+     * @param projectId     项目ID
+     * @param appVersionIds 应用版本ID
      * @return ApplicationVersionRepDTO
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据版本id查询版本信息")
-    @GetMapping(value = "/{app_versionId}")
-    public ResponseEntity<ApplicationVersionRepDTO> getAppversion(
+    @PostMapping(value = "/list_by_appVersionIds")
+    public ResponseEntity<List<ApplicationVersionRepDTO>> getAppversion(
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用ID", required = true)
-            @PathVariable(value = "app_versionId") Long appVersionId) {
-        return Optional.ofNullable(applicationVersionService.queryById(appVersionId))
+            @RequestBody List<Long> appVersionIds) {
+        return Optional.ofNullable(applicationVersionService.listByAppVersionIds(appVersionIds))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }

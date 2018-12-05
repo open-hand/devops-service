@@ -231,8 +231,6 @@ public interface ApplicationInstanceService {
      * @param releaseName
      * @param clusterId
      */
-    void getTestAppStatus(String releaseName, Long clusterId);
-
 
     /**
      * 根据实例id获取更多部署详情(json格式）
@@ -247,4 +245,6 @@ public interface ApplicationInstanceService {
      * @return 详情yaml字符串
      */
     InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId);
+
+     void getTestAppStatus(List<String> releaseName, Long clusterId);
 }

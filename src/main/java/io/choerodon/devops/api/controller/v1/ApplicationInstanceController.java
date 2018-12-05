@@ -636,26 +636,4 @@ public class ApplicationInstanceController {
         applicationInstanceService.deployTestApp(applicationDeployDTO);
     }
 
-    /**
-     * 查询自动化测试应用实例状态
-     *
-     * @param projectId   项目id
-     * @param releaseName
-     * @param clusterId
-     */
-    @ApiOperation(value = "查询自动化测试应用实例状态")
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER,
-                    InitRoleCode.PROJECT_MEMBER})
-    @GetMapping("/get_test_status")
-    public void getTestStatus(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "releaseName", required = true)
-            @RequestParam String releaseName,
-            @ApiParam(value = "clusterId", required = true)
-            @RequestParam Long clusterId) {
-        applicationInstanceService.getTestAppStatus(releaseName, clusterId);
-    }
-
 }

@@ -53,4 +53,6 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
 
     ApplicationVersionDO getLatestVersion(@Param("appId") Long appId);
 
+    List<ApplicationVersionDO> listByAppVersionIds(@Param("appVersionIds") List<Long> appVersionIds);
+
 }

@@ -49,4 +49,6 @@ public interface ApplicationVersionRepository {
     ApplicationVersionE queryByCommitSha(String sha);
 
     ApplicationVersionE getLatestVersion(Long appId);
+
+    List<ApplicationVersionE> listByAppVersionIds(List<Long> appVersionIds);
 }

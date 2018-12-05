@@ -191,4 +191,19 @@
         select * from devops_app_version where app_id = #{appId} order by id desc limit 1
     </select>
 
+
+    <select id="listByAppVersionIds" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
+        SELECT *
+        FROM
+        devops_app_version dav
+        where 1=1
+        <if test="appVersionIds != null">
+            AND dav.id in
+            <foreach collection="appVersionIds" item="appVersionIds" index="index"
+                     open="(" close=")" separator=",">
+                #{appVersionIds}
+            </foreach>
+        </if>
+    </select>
+
 </mapper>

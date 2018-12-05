@@ -399,8 +399,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void getTestAppStatus(String releaseName, Long clusterId) {
-        deployService.getTestAppStatus(releaseName, clusterId);
+    public void getTestAppStatus(List<String> releaseNames, Long clusterId) {
+        deployService.getTestAppStatus(releaseNames, clusterId);
     }
 
     @Override

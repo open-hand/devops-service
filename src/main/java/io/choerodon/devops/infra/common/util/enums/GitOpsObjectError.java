@@ -51,6 +51,7 @@ public enum GitOpsObjectError {
     CERT_CHANGED("cert.changed"),
     INSTANCE_APP_ID_NOT_SAME("instance.app.id.not.same"),
     INSTANCE_RELATED_SERVICE_NOT_FOUND("instance.related.service.not.found"),
+    CONFIG_MAP_DATA_NOT_FOUND("configMap.data.not.found"),
     OBJECT_EXIST("object.exist");
 
     private String error;
