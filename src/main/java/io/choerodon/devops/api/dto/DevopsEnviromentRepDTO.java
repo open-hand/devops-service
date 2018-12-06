@@ -11,6 +11,8 @@ public class DevopsEnviromentRepDTO {
     private String code;
     private Boolean isActive;
     private Boolean isConnected;
+    private String clusterName;
+    private Long clusterId;
     private Long sequence;
     private Long devopsEnvGroupId;
     private Boolean permission;
@@ -106,4 +108,19 @@ public class DevopsEnviromentRepDTO {
         isFailed = failed;
     }
 
+    public String getClusterName() {
+        return clusterName;
+    }
+
+    public void setClusterName(String clusterName) {
+        this.clusterName = clusterName;
+    }
+
+    public Long getClusterId() {
+        return clusterId;
+    }
+
+    public void setClusterId(Long clusterId) {
+        this.clusterId = clusterId;
+    }
 }
