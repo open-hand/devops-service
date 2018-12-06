@@ -340,7 +340,7 @@ class ApplicationMarketControllerSpec extends Specification {
         given: '准备dto list'
         List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
         AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
-        appMarketDownloadDTO.setAppMarketId(3L)
+        appMarketDownloadDTO.setAppMarketId(2L)
         List<Long> appVersionList = new ArrayList<>()
         appVersionList.add(1L)
         appMarketDownloadDTO.setAppVersionIds(appVersionList)

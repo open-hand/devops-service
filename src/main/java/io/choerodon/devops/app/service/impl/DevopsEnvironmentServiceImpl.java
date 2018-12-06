@@ -338,7 +338,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<Long> ids = new ArrayList<>();
         //更新环境,默认组到环境组,此时将默认组sequence重新排列,环境在所选新环境组中环境sequence递增
         if (devopsEnvironmentUpdateDTO.getDevopsEnvGroupId() != null) {
-            if (!beforeDevopsEnvironmentE.getDevopsEnvGroupId().equals(devopsEnvironmentUpdateDTO.getDevopsEnvGroupId())) {
+            if (!devopsEnvironmentUpdateDTO.getDevopsEnvGroupId().equals(beforeDevopsEnvironmentE.getDevopsEnvGroupId())) {
                 if (beforeDevopsEnvironmentE.getDevopsEnvGroupId() == null) {
                     ids = devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
                             devopsEnvironmentE1.getDevopsEnvGroupId() == null)
@@ -389,9 +389,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public DevopsEnvGroupEnvsDTO sort(Long[] environmentIds) {
         DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
-        List<Long> ids = new ArrayList<>();
-        Collections.addAll(ids, environmentIds);
-        List<DevopsEnvironmentE> devopsEnvironmentES = ids.stream()
+        List<DevopsEnvironmentE> devopsEnvironmentES = Arrays.stream(environmentIds)
                 .map(id -> devopsEnviromentRepository.queryById(id))
                 .collect(Collectors.toList());
         long sequence = 1L;
