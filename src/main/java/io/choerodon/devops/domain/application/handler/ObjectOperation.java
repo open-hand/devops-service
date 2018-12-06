@@ -55,6 +55,10 @@ public class ObjectOperation<T> {
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
+        // 去除secret文件序列化后生成的二进制字符标识
+        if (fileCode.startsWith("sct-")) {
+            content = content.replaceAll("!!binary.*", "");
+        }
         if (operationType.equals("create")) {
             String path = fileCode + ".yaml";
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,

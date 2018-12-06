@@ -41,10 +41,7 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.handler.ResourceBundleHandler;
 import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.Issue;
-import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.domain.service.ConvertK8sObjectService;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
@@ -63,16 +60,17 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
-    public static final String INGRESS = "Ingress";
-    public static final String C7NHELM_RELEASE = "C7NHelmRelease";
+    private static final String INGRESS = "Ingress";
+    private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     public static final String SERVICE = "Service";
-    public static final String CERTIFICATE = "Certificate";
-    public static final String CONFIGMAP = "ConfigMap";
+    private static final String CERTIFICATE = "Certificate";
+    private static final String CONFIGMAP = "ConfigMap";
+    private static final String SECRET = "Secret";
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
     private static final String GIT_SUFFIX = "/.git";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
+    private Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${services.gitlab.url}")
@@ -80,7 +78,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-
 
     @Autowired
     private DevopsGitRepository devopsGitRepository;
@@ -123,7 +120,9 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     @Qualifier("handlerConfigMapRelationsServiceImpl")
     private HandlerObjectFileRelationsService handlerConfigMapRelationsServiceImpl;
-
+    @Autowired
+    @Qualifier("handlerC7nSecretServiceImpl")
+    private HandlerObjectFileRelationsService handlerC7nSecretRelationsService;
 
     public Integer getGitlabUserId() {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -399,12 +398,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();
             List<C7nCertification> c7nCertifications = new ArrayList<>();
             List<V1ConfigMap> v1ConfigMaps = new ArrayList<>();
+            List<C7nSecret> c7nSecrets = new ArrayList<>();
 
             //从文件中读出对象,序列化为K8S对象
-            objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses, v1ConfigMaps,
-                    devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete), c7nCertifications);
+            objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
+                    v1ConfigMaps, c7nSecrets, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
+                    c7nCertifications);
             List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
-            //将k8s对象初始化为实例，网络，域名，证书对象,处理对象文件关系
+            //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
             handlerC7nReleaseRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, c7nHelmReleases, envId, projectId, path,
                             userId);
@@ -416,7 +417,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handlerC7nCertificationRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, envId, projectId, path,
                             userId);
-            handlerConfigMapRelationsServiceImpl.handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, envId, projectId, path, userId);
+            handlerConfigMapRelationsServiceImpl
+                    .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, envId, projectId, path, userId);
+            handlerC7nSecretRelationsService
+                    .handlerRelations(objectPath, beforeSyncFileResource, c7nSecrets, envId, projectId, path, userId);
 
             //处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
@@ -564,6 +568,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                         List<V1Service> v1Services,
                                                         List<V1beta1Ingress> v1beta1Ingresses,
                                                         List<V1ConfigMap> configMaps,
+                                                        List<C7nSecret> c7nSecrets,
                                                         Long envId,
                                                         List<DevopsEnvFileResourceE> beforeSyncDelete,
                                                         List<C7nCertification> c7nCertifications) {
@@ -634,6 +639,17 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验对象是否在其它文件中已经定义
                             convertConfigMap.checkIfExist(configMaps, envId, beforeSyncDelete, objectPath,
                                     v1ConfigMap);
+                            break;
+                        case SECRET:
+                            // 反序列文件为C7nSecret对象
+                            ConvertK8sObjectService<C7nSecret> convertC7nSecret = new ConvertC7nSecretServiceImpl();
+                            convertC7nSecret.setT(new C7nSecret());
+                            C7nSecret c7nSecret = convertC7nSecret
+                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                            // 校验参数校验参数是否合法
+                            convertC7nSecret.checkParameters(c7nSecret, objectPath);
+                            // 校验对象是否在其它文件中已经定义
+                            convertC7nSecret.checkIfExist(c7nSecrets, envId, beforeSyncDelete, objectPath, c7nSecret);
                             break;
                         default:
                             break;

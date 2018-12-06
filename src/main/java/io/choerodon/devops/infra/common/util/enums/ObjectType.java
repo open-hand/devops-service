@@ -6,8 +6,8 @@ public enum ObjectType {
     SERVICE("service"),
     INGRESS("ingress"),
     CERTIFICATE("certificate"),
-    CONFIGMAP("configMap");
-
+    CONFIGMAP("configMap"),
+    SECRET("secret");
 
     private String type;
 
