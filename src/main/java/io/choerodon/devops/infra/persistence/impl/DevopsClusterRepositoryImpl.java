@@ -103,4 +103,9 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
         devopsClusterDO.setToken(token);
         return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDO), DevopsClusterE.class);
     }
+
+    @Override
+    public List<DevopsClusterE> list() {
+        return ConvertHelper.convertList(devopsClusterMapper.selectAll(), DevopsClusterE.class);
+    }
 }

@@ -2,11 +2,13 @@ package io.choerodon.devops.domain.service.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
+import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,10 +17,7 @@ import org.springframework.stereotype.Service;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitConfigDTO;
 import io.choerodon.devops.api.dto.GitEnvConfigDTO;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -26,6 +25,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
@@ -56,8 +56,14 @@ public class DeployServiceImpl implements DeployService {
 
     @Value("${services.helm.url}")
     private String helmUrl;
+    @Value("${agent.repoUrl}")
+    private String agentRepoUrl;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
+    @Value("${agent.version}")
+    private String agentExpectVersion;
+    @Value("${agent.serviceUrl}")
+    private String agentServiceUrl;
 
     @Autowired
     public DeployServiceImpl(CommandSender commandSender) {
@@ -92,6 +98,33 @@ public class DeployServiceImpl implements DeployService {
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
             msg.setCommandId(commandId);
+        } catch (IOException e) {
+            throw new CommonException("error.payload.error", e);
+        }
+        commandSender.sendMsg(msg);
+    }
+
+    @Override
+    public void upgradeCluster(DevopsClusterE devopsClusterE) {
+        Msg msg = new Msg();
+        Map<String, String> configs = new HashMap<>();
+        configs.put("config.connect", agentServiceUrl);
+        configs.put("config.token", devopsClusterE.getToken());
+        configs.put("config.clusterId", devopsClusterE.getId().toString());
+        configs.put("config.choerodonId", devopsClusterE.getChoerodonId());
+        Payload payload = new Payload(
+                "choerodon",
+                agentRepoUrl,
+                "choerodon-cluster-agent",
+                agentExpectVersion,
+                Props2YAML.fromContent(FileUtil.propertiesToString(configs))
+                        .convert(), "choerodon-cluster-agent-" + devopsClusterE.getCode());
+        msg.setKey(String.format("cluster:%d.release:%s",
+                devopsClusterE.getId(),
+                "choerodon-cluster-agent-" + devopsClusterE.getCode()));
+        msg.setType(HelmType.HELM_RELEASE_UPGRADE.toValue());
+        try {
+            msg.setPayload(mapper.writeValueAsString(payload));
         } catch (IOException e) {
             throw new CommonException("error.payload.error", e);
         }
@@ -166,7 +199,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        testReleases.forEach((key,value)->{
+        testReleases.forEach((key, value) -> {
             Msg msg = new Msg();
             msg.setKey(String.format("cluster:%d",
                     key));
@@ -191,5 +224,6 @@ public class DeployServiceImpl implements DeployService {
         msg.setKey(String.format("cluster:%s", clusterId));
         commandSender.sendMsg(msg);
     }
+
 
 }

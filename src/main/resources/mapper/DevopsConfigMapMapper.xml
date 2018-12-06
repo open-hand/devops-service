@@ -4,7 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsConfigMapMapper">
     <select id="listByEnv" resultType="io.choerodon.devops.infra.dataobject.DevopsConfigMapDO">
         SELECT
-        dc.id,
+        dcm.id,
         dcm.name,
         dcm.value,
         dcm.env_id,
