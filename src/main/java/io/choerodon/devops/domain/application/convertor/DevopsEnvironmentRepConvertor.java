@@ -14,6 +14,9 @@ public class DevopsEnvironmentRepConvertor implements ConvertorI<DevopsEnvironme
     public DevopsEnviromentRepDTO entityToDto(DevopsEnvironmentE devopsEnvironmentE) {
         DevopsEnviromentRepDTO devopsEnviromentRepDTO = new DevopsEnviromentRepDTO();
         BeanUtils.copyProperties(devopsEnvironmentE, devopsEnviromentRepDTO);
+        if (devopsEnvironmentE.getClusterE() != null) {
+            devopsEnviromentRepDTO.setClusterId(devopsEnvironmentE.getClusterE().getId());
+        }
         return devopsEnviromentRepDTO;
     }
 

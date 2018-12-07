@@ -271,6 +271,11 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         deploymentDTO.setUpToDate(TypeUtil.objToLong(v1beta2Deployment.getStatus().getUpdatedReplicas()));
         deploymentDTO.setAvailable(TypeUtil.objToLong(v1beta2Deployment.getStatus().getAvailableReplicas()));
         deploymentDTO.setAge(v1beta2Deployment.getMetadata().getCreationTimestamp().toString());
+        v1beta2Deployment.getStatus().getConditions().forEach(v1beta2DeploymentCondition -> {
+            if ("NewReplicaSetAvailable".equals(v1beta2DeploymentCondition.getReason())) {
+                deploymentDTO.setAge(v1beta2DeploymentCondition.getLastUpdateTime().toString());
+            }
+        });
         devopsEnvResourceDTO.getDeploymentDTOS().add(deploymentDTO);
     }
 

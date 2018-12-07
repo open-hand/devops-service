@@ -206,11 +206,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), configMapId, CONFIGMAP);
         if (devopsEnvFileResourceE == null) {
             devopsConfigMapRepository.delete(configMapId);
-            gitlabRepository.deleteFile(
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             return;
 
         }

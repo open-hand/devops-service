@@ -26,4 +26,6 @@ public interface DevopsClusterRepository {
 
     DevopsClusterE queryByToken(String token);
 
+    List<DevopsClusterE> list();
+
 }

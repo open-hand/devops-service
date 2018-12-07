@@ -109,7 +109,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         if (devopsGitlabPipelineE == null) {
             devopsGitlabPipelineE = new DevopsGitlabPipelineE();
             devopsGitlabPipelineE.setAppId(applicationE.getId());
-            devopsGitlabPipelineE.setPipelineCreateUserId(userAttrE.getIamUserId() == null ? null : userAttrE.getIamUserId());
+            devopsGitlabPipelineE.setPipelineCreateUserId(userAttrE == null ? null : userAttrE.getIamUserId());
             devopsGitlabPipelineE.setPipelineId(pipelineWebHookDTO.getObjectAttributes().getId());
             devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
             devopsGitlabPipelineE.setPipelineCreationDate(pipelineWebHookDTO.getObjectAttributes().getCreatedAt());
