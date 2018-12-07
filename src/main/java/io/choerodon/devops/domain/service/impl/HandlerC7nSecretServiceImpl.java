@@ -122,7 +122,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 SecretReqDTO secretReqDTO;
                 // 初始化secret对象参数，存在secret则直接创建文件对象关联关系
                 if (devopsSecretE == null) {
-                    secretReqDTO = getSecretReqDTO(c7nSecret, envId, filePath);
+                    secretReqDTO = getSecretReqDTO(c7nSecret, envId, "create");
                     devopsSecretService.addSecretByGitOps(secretReqDTO, userId);
                     devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretReqDTO.getName());
                 }
@@ -165,7 +165,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                         .selectByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
                 checkSecretName(c7nSecret);
                 // 初始化secret对象参数,更新secret并更新文件对象关联关系
-                SecretReqDTO secretReqDTO = getSecretReqDTO(c7nSecret, envId, filePath);
+                SecretReqDTO secretReqDTO = getSecretReqDTO(c7nSecret, envId, "update");
                 if (secretReqDTO.equals(ConvertHelper.convert(devopsSecretE, SecretReqDTO.class))) {
                     isNotChange = true;
                 }
@@ -212,15 +212,13 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         }
     }
 
-    private SecretReqDTO getSecretReqDTO(C7nSecret c7nSecret, Long envId, String filePath) {
+    private SecretReqDTO getSecretReqDTO(C7nSecret c7nSecret, Long envId, String type) {
         SecretReqDTO secretReqDTO = new SecretReqDTO();
         secretReqDTO.setName(c7nSecret.getMetadata().getName());
-
-        DevopsSecretE devopsSecretE = devopsSecretRepository
-                .selectByEnvIdAndName(envId, c7nSecret.getMetadata().getName());
-        secretReqDTO.setDescription(devopsSecretE.getDescription());
+        secretReqDTO.setDescription("");
+        secretReqDTO.setType(type);
         secretReqDTO.setEnvId(envId);
-        secretReqDTO.setSecretMaps(c7nSecret.getData());
+        secretReqDTO.setValue(c7nSecret.getStringData());
         return secretReqDTO;
     }
 

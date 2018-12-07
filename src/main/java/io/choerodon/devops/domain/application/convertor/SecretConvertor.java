@@ -30,11 +30,11 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO
         DevopsSecretE devopsSecretE = new DevopsSecretE();
         Map<String, String> encodedSecretMaps = new HashMap<>();
         BeanUtils.copyProperties(secretReqDTO, devopsSecretE);
-        if (!secretReqDTO.getSecretMaps().isEmpty()) {
-            for (Map.Entry<String, String> e : secretReqDTO.getSecretMaps().entrySet()) {
+        if (!secretReqDTO.getValue().isEmpty()) {
+            for (Map.Entry<String, String> e : secretReqDTO.getValue().entrySet()) {
                 encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
             }
-            devopsSecretE.setSecretMaps(encodedSecretMaps);
+            devopsSecretE.setValue(encodedSecretMaps);
         }
         return devopsSecretE;
     }
@@ -43,7 +43,7 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO
     public DevopsSecretDO entityToDo(DevopsSecretE entity) {
         DevopsSecretDO devopsSecretDO = new DevopsSecretDO();
         BeanUtils.copyProperties(entity, devopsSecretDO);
-        devopsSecretDO.setSecretMaps(gson.toJson(entity.getSecretMaps()));
+        devopsSecretDO.setValue(gson.toJson(entity.getValue()));
         return devopsSecretDO;
     }
 
@@ -52,9 +52,16 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO
         DevopsSecretE devopsSecretE = new DevopsSecretE();
         BeanUtils.copyProperties(dataObject, devopsSecretE);
         Map<String, String> secretMaps = gson
-                .fromJson(dataObject.getSecretMaps(), new TypeToken<Map<String, String>>() {
+                .fromJson(dataObject.getValue(), new TypeToken<Map<String, String>>() {
                 }.getType());
-        devopsSecretE.setSecretMaps(secretMaps);
+        devopsSecretE.setValue(secretMaps);
         return devopsSecretE;
+    }
+
+    @Override
+    public SecretReqDTO entityToDto(DevopsSecretE entity) {
+        SecretReqDTO secretReqDTO = new SecretReqDTO();
+        BeanUtils.copyProperties(entity, secretReqDTO);
+        return secretReqDTO;
     }
 }

@@ -9,7 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_secret.groovy') {
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境id')
             column(name: 'name', type: 'VARCHAR(32)', remarks: '密钥名')
             column(name: 'description', type: 'VARCHAR(32)', remarks: '密钥描述')
-            column(name: 'secret_maps', type: 'VARCHAR(512)', remarks: '密钥键值对')
+            column(name: 'value', type: 'TEXT', remarks: '密钥键值对')
             column(name: 'command_id', type: 'BIGINT UNSIGNED', remarks: '操作ID')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")

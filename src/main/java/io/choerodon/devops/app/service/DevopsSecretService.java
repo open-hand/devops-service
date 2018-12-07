@@ -62,4 +62,12 @@ public interface DevopsSecretService {
      * @return Page
      */
     Page<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params);
+
+    /**
+     * 校验名字唯一性
+     *
+     * @param envId 环境id
+     * @param name  密钥名
+     */
+    void checkName(Long envId, String name);
 }

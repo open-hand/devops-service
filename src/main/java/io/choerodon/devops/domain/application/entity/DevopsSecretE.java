@@ -15,7 +15,7 @@ public class DevopsSecretE {
     private Long envId;
     private String name;
     private String description;
-    private Map<String, String> secretMaps;
+    private Map<String, String> value;
     private Long commandId;
     private Long ObjectVersionNumber;
     private Date creationDate;
@@ -53,12 +53,12 @@ public class DevopsSecretE {
         this.description = description;
     }
 
-    public Map<String, String> getSecretMaps() {
-        return secretMaps;
+    public Map<String, String> getValue() {
+        return value;
     }
 
-    public void setSecretMaps(Map<String, String> secretMaps) {
-        this.secretMaps = secretMaps;
+    public void setValue(Map<String, String> value) {
+        this.value = value;
     }
 
     public Long getCommandId() {

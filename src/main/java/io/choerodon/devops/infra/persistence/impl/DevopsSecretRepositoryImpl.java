@@ -46,12 +46,14 @@ public class DevopsSecretRepositoryImpl implements DevopsSecretRepository {
     @Override
     public void update(DevopsSecretE devopsSecretE) {
         DevopsSecretDO devopsSecretDO = ConvertHelper.convert(devopsSecretE, DevopsSecretDO.class);
-        DevopsSecretDO secretDO = devopsSecretMapper.selectByPrimaryKey(devopsSecretE.getId());
-        if (secretDO == null) {
+        DevopsSecretDO oldSecretDO = devopsSecretMapper.selectByPrimaryKey(devopsSecretE.getId());
+        if (oldSecretDO == null) {
             throw new CommonException("secret.not.exists");
         }
-        devopsSecretDO.setObjectVersionNumber(secretDO.getObjectVersionNumber());
-        devopsSecretMapper.updateByPrimaryKey(devopsSecretDO);
+        devopsSecretDO.setObjectVersionNumber(oldSecretDO.getObjectVersionNumber());
+        if (devopsSecretMapper.updateByPrimaryKey(devopsSecretDO) != 1) {
+            throw new CommonException("secret.update.error");
+        }
     }
 
     @Override
@@ -72,7 +74,7 @@ public class DevopsSecretRepositoryImpl implements DevopsSecretRepository {
 
     @Override
     public DevopsSecretE queryBySecretId(Long secretId) {
-        return ConvertHelper.convert(devopsSecretMapper.selectByPrimaryKey(secretId), DevopsSecretE.class);
+        return ConvertHelper.convert(devopsSecretMapper.selectById(secretId), DevopsSecretE.class);
     }
 
     @Override

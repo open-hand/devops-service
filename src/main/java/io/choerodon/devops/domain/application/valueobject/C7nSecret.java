@@ -14,14 +14,14 @@ public class C7nSecret {
     private String kind;
     private Metadata metadata;
     private String type;
-    private Map<String, String> data;
+    private Map<String, String> stringData;
 
     public C7nSecret() {
         this.apiVersion = "v1";
         this.kind = "Secret";
         this.metadata = new Metadata();
         this.type = "Opaque";
-        this.data = new HashMap<>();
+        this.stringData = new HashMap<>();
     }
 
     public String getApiVersion() {
@@ -56,11 +56,11 @@ public class C7nSecret {
         this.type = type;
     }
 
-    public Map<String, String> getData() {
-        return data;
+    public Map<String, String> getStringData() {
+        return stringData;
     }
 
-    public void setData(Map<String, String> data) {
-        this.data = data;
+    public void setStringData(Map<String, String> stringData) {
+        this.stringData = stringData;
     }
 }

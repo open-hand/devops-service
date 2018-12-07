@@ -16,6 +16,8 @@ import io.choerodon.mybatis.common.BaseMapper;
  */
 public interface DevopsSecretMapper extends BaseMapper<DevopsSecretDO> {
 
+    DevopsSecretDO selectById(@Param("secretId") Long secretId);
+
     List<DevopsSecretDO> listByOption(@Param("envId") Long envId,
                                       @Param("searchParam") Map<String, Object> searchParam,
                                       @Param("param") String param);

@@ -27,7 +27,7 @@ public class DevopsSecretDO extends AuditDomain {
     private Long envId;
     private String name;
     private String description;
-    private String secretMaps;
+    private String value;
     private Long commandId;
 
     @Transient
@@ -72,12 +72,12 @@ public class DevopsSecretDO extends AuditDomain {
         this.description = description;
     }
 
-    public String getSecretMaps() {
-        return secretMaps;
+    public String getValue() {
+        return value;
     }
 
-    public void setSecretMaps(String secretMaps) {
-        this.secretMaps = secretMaps;
+    public void setValue(String value) {
+        this.value = value;
     }
 
     public Long getCommandId() {

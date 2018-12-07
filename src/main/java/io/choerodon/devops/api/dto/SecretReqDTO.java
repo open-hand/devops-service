@@ -21,10 +21,10 @@ public class SecretReqDTO {
     private String description;
 
     @ApiModelProperty(value = "密钥对/必填")
-    private Map<String, String> secretMaps;
+    private Map<String, String> value;
 
     @ApiModelProperty(value = "创建或者更新")
-    private Boolean isCreate;
+    private String type;
 
     private Long ObjectVersionNumber;
 
@@ -52,12 +52,12 @@ public class SecretReqDTO {
         this.description = description;
     }
 
-    public Map<String, String> getSecretMaps() {
-        return secretMaps;
+    public Map<String, String> getValue() {
+        return value;
     }
 
-    public void setSecretMaps(Map<String, String> secretMaps) {
-        this.secretMaps = secretMaps;
+    public void setValue(Map<String, String> value) {
+        this.value = value;
     }
 
     public Long getObjectVersionNumber() {
@@ -68,11 +68,11 @@ public class SecretReqDTO {
         ObjectVersionNumber = objectVersionNumber;
     }
 
-    public Boolean getIsCreate() {
-        return isCreate;
+    public String getType() {
+        return type;
     }
 
-    public void setIsCreate(Boolean isCreate) {
-        this.isCreate = isCreate;
+    public void setType(String type) {
+        this.type = type;
     }
 }

@@ -30,9 +30,9 @@ public class SecretRepConvertor implements ConvertorI<DevopsSecretE, DevopsSecre
         SecretRepDTO secretRepDTO = new SecretRepDTO();
         BeanUtils.copyProperties(dataObject, secretRepDTO);
         Map<String, String> secretMaps = gson
-                .fromJson(dataObject.getSecretMaps(), new TypeToken<Map<String, String>>() {
+                .fromJson(dataObject.getValue(), new TypeToken<Map<String, String>>() {
                 }.getType());
-        secretRepDTO.setSecretMaps(secretMaps);
+        secretRepDTO.setValue(secretMaps);
         return secretRepDTO;
     }
 
@@ -41,10 +41,10 @@ public class SecretRepConvertor implements ConvertorI<DevopsSecretE, DevopsSecre
         SecretRepDTO secretRepDTO = new SecretRepDTO();
         BeanUtils.copyProperties(entity, secretRepDTO);
         Map<String, String> secretMaps = new HashMap<>();
-        for (Map.Entry<String, String> e : secretRepDTO.getSecretMaps().entrySet()) {
+        for (Map.Entry<String, String> e : secretRepDTO.getValue().entrySet()) {
             secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
         }
-        secretRepDTO.setSecretMaps(secretMaps);
+        secretRepDTO.setValue(secretMaps);
         return secretRepDTO;
     }
 }

@@ -106,4 +106,24 @@ public class SecretController {
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.secret.list"));
     }
+
+    /**
+     * 校验名字唯一性
+     *
+     * @param envId      环境id
+     * @param secretName 密钥名
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "校验名字唯一性")
+    @GetMapping("/{env_id}/check_name")
+    public void checkName(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @PathVariable(value = "env_id") Long envId,
+            @ApiParam(value = "密钥名")
+            @RequestParam(value = "secret_name") String secretName) {
+        devopsSecretService.checkName(envId, secretName);
+    }
 }

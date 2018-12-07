@@ -15,7 +15,7 @@ public class SecretRepDTO {
     private String name;
     private Long envId;
     private String description;
-    private Map<String, String> secretMaps;
+    private Map<String, String> value;
     private Date creationDate;
     private String status;
 
@@ -51,12 +51,12 @@ public class SecretRepDTO {
         this.description = description;
     }
 
-    public Map<String, String> getSecretMaps() {
-        return secretMaps;
+    public Map<String, String> getValue() {
+        return value;
     }
 
-    public void setSecretMaps(Map<String, String> secretMaps) {
-        this.secretMaps = secretMaps;
+    public void setValue(Map<String, String> value) {
+        this.value = value;
     }
 
     public Date getCreationDate() {

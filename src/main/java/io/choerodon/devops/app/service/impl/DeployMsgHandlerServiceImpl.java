@@ -375,11 +375,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     KeyParseTool.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE,
                             devopsEnvResourceDetailE, null);
+
                 case SECRET:
                     newdevopsEnvResourceE = devopsEnvResourceRepository
                             .queryResource(null, null, envId, KeyParseTool.getResourceType(key),
                                     KeyParseTool.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE, devopsEnvResourceDetailE, null);
+                    break;
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
                     applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
@@ -1081,8 +1083,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private void syncSecret(Long envId, List<DevopsEnvFileErrorE> envFileErrorFiles, ResourceCommit resourceCommit,
                             String[] objects) {
         DevopsEnvFileResourceE devopsEnvFileResourceE;
-        DevopsSecretE devopsSecretE = devopsSecretRepository
-                .selectByEnvIdAndName(envId, objects[1]);
+        DevopsSecretE devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, objects[1]);
         devopsEnvFileResourceE = devopsEnvFileResourceRepository
                 .queryByEnvIdAndResource(envId, devopsSecretE.getId(), ObjectType.SECRET.getType());
         if (updateEnvCommandStatus(resourceCommit, devopsSecretE.getCommandId(), devopsEnvFileResourceE,
