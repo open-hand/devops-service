@@ -29,11 +29,11 @@ import io.choerodon.swagger.annotation.Permission;
 
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/secret")
-public class SecretController {
+public class DevopsSecretController {
 
     private DevopsSecretService devopsSecretService;
 
-    public SecretController(DevopsSecretService devopsSecretService) {
+    public DevopsSecretController(DevopsSecretService devopsSecretService) {
         this.devopsSecretService = devopsSecretService;
     }
 

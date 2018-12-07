@@ -1,6 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Secret;
@@ -19,6 +21,7 @@ import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.infra.common.util.Base64Util;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -43,17 +46,17 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String UPDATE = "update";
     private static final String DELETE = "delete";
 
-    private final DevopsSecretRepository devopsSecretRepository;
-    private final DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private final EnvUtil envUtil;
-    private final EnvListener envListener;
-    private final DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private final UserAttrRepository userAttrRepository;
-    private final GitlabGroupMemberService gitlabGroupMemberService;
-    private final DevopsEnvironmentService devopsEnvironmentService;
-    private final DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-    private final DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    private final GitlabRepository gitlabRepository;
+    private DevopsSecretRepository devopsSecretRepository;
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private EnvUtil envUtil;
+    private EnvListener envListener;
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private UserAttrRepository userAttrRepository;
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    private DevopsEnvironmentService devopsEnvironmentService;
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    private GitlabRepository gitlabRepository;
 
     @Autowired
     public DevopsSecretServiceImpl(DevopsSecretRepository devopsSecretRepository,
@@ -103,7 +106,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         if ("update".equals(secretReqDTO.getType())) {
             DevopsSecretE oldSecretE = devopsSecretRepository
                     .selectByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());
-            if (oldSecretE.getValue().equals(secretReqDTO.getValue())) {
+            Map<String, String> oldMap = new HashMap<>();
+            for (Map.Entry<String, String> e : oldSecretE.getValue().entrySet()) {
+                oldMap.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
+            }
+            if (oldMap.equals(secretReqDTO.getValue())) {
                 return ConvertHelper.convert(oldSecretE, SecretRepDTO.class);
             }
         }
@@ -324,5 +331,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     public void checkName(Long envId, String name) {
         DevopsSecretValidator.checkName(name);
         devopsSecretRepository.checkName(name, envId);
+    }
+
+    public void initMockServer(DevopsEnvironmentService devopsEnvironmentService) {
+        this.devopsEnvironmentService = devopsEnvironmentService;
     }
 }
