@@ -47,5 +47,5 @@ public interface ApplicationInstanceMapper extends BaseMapper<ApplicationInstanc
 
     List<DeployDO> listDeployFrequency(@Param("projectId") Long projectId, @Param("envIds") Long[] envIds, @Param("appId") Long appId, @Param("startTime") Date startTime, @Param("endTime") Date endTime);
 
-    String getInstanceDeploymentDetailJsonByInstanceId(@Param("instanceId") Long instanceId);
+    String getInstanceDeploymentDetailJsonByInstanceId(@Param("instanceId") Long instanceId, @Param("deploymentName") String deploymentName);
 }

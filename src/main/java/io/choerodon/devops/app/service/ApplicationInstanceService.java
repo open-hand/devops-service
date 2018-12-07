@@ -236,14 +236,14 @@ public interface ApplicationInstanceService {
      * @param instanceId 实例id
      * @return 详情json字符串
      */
-    InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId);
+    InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId, String deploymentName);
 
     /**
      * 根据实例id获取更多部署详情(yaml格式)
      * @param instanceId 实例id
      * @return 详情yaml字符串
      */
-    InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId);
+    InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId, String deploymentName);
 
 
     void getTestAppStatus(Map<Long,List<String>> testReleases);
