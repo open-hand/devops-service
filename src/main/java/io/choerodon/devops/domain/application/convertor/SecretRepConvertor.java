@@ -1,6 +1,8 @@
 package io.choerodon.devops.domain.application.convertor;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.google.common.reflect.TypeToken;
@@ -32,6 +34,11 @@ public class SecretRepConvertor implements ConvertorI<DevopsSecretE, DevopsSecre
         Map<String, String> secretMaps = gson
                 .fromJson(dataObject.getValue(), new TypeToken<Map<String, String>>() {
                 }.getType());
+        List<String> key = new ArrayList<>();
+        secretMaps.forEach((key1, value) -> key.add(key1));
+        secretRepDTO.setKey(key);
+        secretRepDTO.setCommandStatus(dataObject.getStatus());
+        secretRepDTO.setLastUpdateDate(dataObject.getLastUpdateDate());
         secretRepDTO.setValue(secretMaps);
         return secretRepDTO;
     }
@@ -44,6 +51,11 @@ public class SecretRepConvertor implements ConvertorI<DevopsSecretE, DevopsSecre
         for (Map.Entry<String, String> e : secretRepDTO.getValue().entrySet()) {
             secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
         }
+        List<String> key = new ArrayList<>();
+        secretMaps.forEach((key1, value) -> key.add(key1));
+        secretRepDTO.setKey(key);
+        secretRepDTO.setCommandStatus(entity.getStatus());
+        secretRepDTO.setLastUpdateDate(entity.getLastUpdateDate());
         secretRepDTO.setValue(secretMaps);
         return secretRepDTO;
     }

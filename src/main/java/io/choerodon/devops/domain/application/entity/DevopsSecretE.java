@@ -18,8 +18,9 @@ public class DevopsSecretE {
     private Map<String, String> value;
     private Long commandId;
     private Long ObjectVersionNumber;
-    private Date creationDate;
+    private Date lastUpdateDate;
     private String status;
+    private String commandType;
 
     public Long getId() {
         return id;
@@ -77,12 +78,12 @@ public class DevopsSecretE {
         ObjectVersionNumber = objectVersionNumber;
     }
 
-    public Date getCreationDate() {
-        return creationDate;
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
     }
 
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getStatus() {
@@ -91,5 +92,13 @@ public class DevopsSecretE {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
     }
 }

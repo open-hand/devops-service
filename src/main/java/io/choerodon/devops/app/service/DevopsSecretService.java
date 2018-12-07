@@ -64,6 +64,14 @@ public interface DevopsSecretService {
     Page<SecretRepDTO> listByOption(Long envId, PageRequest pageRequest, String params);
 
     /**
+     * 根据密钥id查询密钥
+     *
+     * @param secretId 密钥id
+     * @return SecretRepDTO
+     */
+    SecretRepDTO querySecret(Long secretId);
+
+    /**
      * 校验名字唯一性
      *
      * @param envId 环境id

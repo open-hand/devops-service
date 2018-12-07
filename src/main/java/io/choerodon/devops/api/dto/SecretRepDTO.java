@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.dto;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,9 +16,11 @@ public class SecretRepDTO {
     private String name;
     private Long envId;
     private String description;
+    private List<String> key;
     private Map<String, String> value;
-    private Date creationDate;
-    private String status;
+    private Date lastUpdateDate;
+    private String commandStatus;
+    private String commandType;
 
     public Long getId() {
         return id;
@@ -51,6 +54,14 @@ public class SecretRepDTO {
         this.description = description;
     }
 
+    public List<String> getKey() {
+        return key;
+    }
+
+    public void setKey(List<String> key) {
+        this.key = key;
+    }
+
     public Map<String, String> getValue() {
         return value;
     }
@@ -59,19 +70,27 @@ public class SecretRepDTO {
         this.value = value;
     }
 
-    public Date getCreationDate() {
-        return creationDate;
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
     }
 
-    public void setCreationDate(Date creationDate) {
-        this.creationDate = creationDate;
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
-    public String getStatus() {
-        return status;
+    public String getCommandStatus() {
+        return commandStatus;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCommandStatus(String commandStatus) {
+        this.commandStatus = commandStatus;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
     }
 }

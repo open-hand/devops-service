@@ -328,6 +328,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
+    public SecretRepDTO querySecret(Long secretId) {
+        return ConvertHelper.convert(devopsSecretRepository.queryBySecretId(secretId), SecretRepDTO.class);
+    }
+
+    @Override
     public void checkName(Long envId, String name) {
         DevopsSecretValidator.checkName(name);
         devopsSecretRepository.checkName(name, envId);

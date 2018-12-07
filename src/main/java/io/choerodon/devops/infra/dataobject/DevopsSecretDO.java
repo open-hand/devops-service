@@ -32,6 +32,8 @@ public class DevopsSecretDO extends AuditDomain {
 
     @Transient
     private String status;
+    @Transient
+    private String commandType;
 
     public DevopsSecretDO() {
     }
@@ -94,5 +96,13 @@ public class DevopsSecretDO extends AuditDomain {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getCommandType() {
+        return commandType;
+    }
+
+    public void setCommandType(String commandType) {
+        this.commandType = commandType;
     }
 }
