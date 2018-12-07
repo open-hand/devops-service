@@ -213,7 +213,7 @@ class DevopsSecretControllerTest extends Specification {
         def dto = restTemplate.getForEntity(MAPPING + "/1", SecretRepDTO.class, 1L)
 
         then: '校验结果'
-        dto.getBody().get(0)["name"] == "secret"
+        dto.getBody()["name"] == "secret"
     }
 
     def "CheckName"() {
