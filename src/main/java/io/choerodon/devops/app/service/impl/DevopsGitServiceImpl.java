@@ -101,39 +101,13 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
-    private ApplicationInstanceRepository applicationInstanceRepository;
-    @Autowired
-    private ApplicationInstanceService applicationInstanceService;
-    @Autowired
-    private ApplicationVersionRepository applicationVersionRepository;
-    @Autowired
     private DeployService deployService;
     @Autowired
     private DevopsEnvFileRepository devopsEnvFileRepository;
     @Autowired
-    private DevopsIngressRepository devopsIngressRepository;
-    @Autowired
-    private DevopsServiceRepository devopsServiceRepository;
-    @Autowired
-    private DevopsIngressService devopsIngressService;
-    @Autowired
-    private DevopsServiceService devopsServiceService;
-    @Autowired
     private DevopsEnvCommitRepository devopsEnvCommitRepository;
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    @Autowired
-    private DeployMsgHandlerService deployMsgHandlerService;
-    @Autowired
-    private ApplicationVersionValueRepository applicationVersionValueRepository;
-    @Autowired
-    private HarborConfigurationProperties harborConfigurationProperties;
-    @Autowired
     private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository;
-    @Autowired
-    private CertificationRepository certificationRepository;
-    @Autowired
-    private CertificationService certificationService;
     @Autowired
     @Qualifier("handlerC7nReleaseRelationsServiceImpl")
     private HandlerObjectFileRelationsService handlerC7nReleaseRelationsService;

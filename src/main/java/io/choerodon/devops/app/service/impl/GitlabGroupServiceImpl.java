@@ -85,10 +85,8 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupPayload.getProjectId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         List<ProjectE> projectES = iamRepository.listIamProjectByOrgId(organization.getId(), gitlabGroupPayload.getProjectName(), null);
-        if (!projectES.isEmpty()) {
-            if (projectES.size() > 1) {
+        if (!projectES.isEmpty() && projectES.size() > 1) {
                 return gitlabGroupPayload.getProjectName() + "-" + (projectES.size() - 1);
-            }
         }
         return gitlabGroupPayload.getProjectName();
     }

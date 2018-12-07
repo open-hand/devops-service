@@ -1,14 +1,13 @@
 package io.choerodon.devops.app.service;
 
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.models.V1beta2Deployment;
+
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Zenger on 2018/4/12.

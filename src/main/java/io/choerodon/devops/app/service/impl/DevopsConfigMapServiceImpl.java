@@ -99,7 +99,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE) ? true : false, filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE);
     }
 
 
@@ -143,7 +143,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                 envId, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        devopsConfigMapES.stream().forEach(devopsConfigMapE -> {
+        devopsConfigMapES.forEach(devopsConfigMapE -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapE.getValue(), Map.class).forEach((key, value) ->
                     keys.add(key.toString()));

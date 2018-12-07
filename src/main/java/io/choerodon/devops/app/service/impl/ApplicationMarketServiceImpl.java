@@ -38,6 +38,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Service
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
+    private static final String CHARTS = "charts";
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
     private static final String IMAGES = "images";
@@ -497,7 +498,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         FILE_SEPARATOR,
                         projectE.getCode(),
                         FILE_SEPARATOR,
-                        "charts",
+                        CHARTS,
                         FILE_SEPARATOR,
                         applicationE.getCode(),
                         "-",
@@ -519,11 +520,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             InputStream inputStream = this.getClass().getResourceAsStream("/shell/push_image.sh");
             FileUtil.saveDataToFile(fileName, PUSH_IAMGES, FileUtil.replaceReturnString(inputStream, null));
             FileUtil.saveDataToFile(fileName, IMAGES, stringBuilder.toString());
-            FileUtil.moveFiles("charts", fileName);
+            FileUtil.moveFiles(CHARTS, fileName);
         }
         try (FileOutputStream outputStream = new FileOutputStream(fileName + ".zip")) {
             FileUtil.toZip(fileName, outputStream, true);
-            FileUtil.deleteDirectory(new File("charts"));
+            FileUtil.deleteDirectory(new File(CHARTS));
             FileUtil.deleteDirectory(new File(fileName));
         } catch (IOException e) {
             throw new CommonException(e.getMessage(), e);

@@ -78,8 +78,6 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     @Autowired
     private GitlabUserRepository gitlabUserRepository;
     @Autowired
-    private DevopsProjectRepository devopsProjectRepository;
-    @Autowired
     private DevopsGitRepository devopsGitRepository;
 
     @Autowired

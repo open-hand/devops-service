@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import spock.lang.Shared
@@ -261,11 +262,16 @@ class ApplicationVersionControllerSpec extends Specification {
 
     // 根据版本id查询版本信息
     def "GetAppversion"() {
+        given: '配置请求参数'
+        HttpEntity<List<Long>> entity = new HttpEntity<>(Arrays.asList(applicationVersionDO.getId()))
+
         when: '根据版本id查询版本信息'
-        def dto = restTemplate.getForObject(mapping + "/{app_versionId}", ApplicationVersionRepDTO.class, 1L, 1L)
+        def dto = restTemplate.postForEntity(mapping + "/list_by_appVersionIds", entity, List, project_id)
 
         then: '校验返回值'
-        dto["version"] == "0.1.0-dev.20180521111826"
+        dto.statusCode.is2xxSuccessful()
+        dto.getBody().size() != 0
+        ((LinkedHashMap)dto.getBody().get(0)).get("version") == applicationVersionDO.getVersion()
     }
 
     // 清除测试数据

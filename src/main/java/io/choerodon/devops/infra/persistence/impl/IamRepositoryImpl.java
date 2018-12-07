@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -35,7 +34,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Component
 public class IamRepositoryImpl implements IamRepository {
 
-    private static final Gson gson = new Gson();
     private static final Logger LOGGER = LoggerFactory.getLogger(IamRepositoryImpl.class);
 
     private IamServiceClient iamServiceClient;

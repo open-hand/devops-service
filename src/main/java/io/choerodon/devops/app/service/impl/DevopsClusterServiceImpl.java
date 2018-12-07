@@ -32,7 +32,6 @@ import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -53,8 +52,6 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsClusterRepository devopsClusterRepository;
     @Autowired
     private DevopsClusterProPermissionRepository devopsClusterProPermissionRepository;
-    @Autowired
-    private IamServiceClient iamServiceClient;
     @Autowired
     private IamRepository iamRepository;
     @Autowired
