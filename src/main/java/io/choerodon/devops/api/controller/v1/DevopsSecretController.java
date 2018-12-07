@@ -108,6 +108,26 @@ public class DevopsSecretController {
     }
 
     /**
+     * 根据密钥id查询密钥
+     *
+     * @param secretId 密钥id
+     * @return SecretRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据密钥id查询密钥")
+    @GetMapping("/{secret_id}")
+    public ResponseEntity<SecretRepDTO> querySecret(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "密钥id", required = true)
+            @PathVariable(value = "secret_id") Long secretId) {
+        return Optional.ofNullable(devopsSecretService.querySecret(secretId))
+                .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.secret.list"));
+    }
+
+    /**
      * 校验名字唯一性
      *
      * @param envId      环境id

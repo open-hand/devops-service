@@ -2,6 +2,7 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.SecretRepDTO
 import io.choerodon.devops.api.dto.SecretReqDTO
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
@@ -207,6 +208,14 @@ class DevopsSecretControllerTest extends Specification {
         page.getBody().get(0)["name"] == "secret"
     }
 
+    def "QuerySecret"() {
+        when: '根据密钥id查询密钥'
+        def dto = restTemplate.getForEntity(MAPPING + "/1", SecretRepDTO.class, 1L)
+
+        then: '校验结果'
+        dto.getBody()["name"] == "secret"
+    }
+
     def "CheckName"() {
         when: '校验名字唯一性'
         restTemplate.getForEntity(MAPPING + "/1/check_name?secret_name=test1207a", Object.class, 1L)
@@ -224,9 +233,16 @@ class DevopsSecretControllerTest extends Specification {
         }
         // 删除envFileResource
         List<DevopsEnvFileResourceDO> list1 = devopsEnvFileResourceMapper.selectAll()
-        if (list1 != null && !list.isEmpty()) {
+        if (list1 != null && !list1.isEmpty()) {
             for (DevopsEnvFileResourceDO e : list1) {
                 devopsEnvFileResourceMapper.delete(e)
+            }
+        }
+        // 删除env
+        List<DevopsEnvironmentDO> list2 = devopsEnvironmentMapper.selectAll()
+        if (list2 != null && !list2.isEmpty()) {
+            for (DevopsEnvironmentDO e : list2) {
+                devopsEnvironmentMapper.delete(e)
             }
         }
         // 删除gitops
