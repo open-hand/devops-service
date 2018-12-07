@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
 import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1Secret;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.yaml.snakeyaml.DumperOptions;
@@ -31,6 +32,8 @@ public class ObjectOperation<T> {
     private static final String SVCTAG = "!!io.kubernetes.client.models.V1Service";
     private static final String CERTTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nCertification";
     private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
+    private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
+
     private T type;
 
     public T getType() {
@@ -55,6 +58,10 @@ public class ObjectOperation<T> {
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
+        // 去除secret文件序列化后生成的二进制字符标识
+        if (fileCode.startsWith("sct-")) {
+            content = content.replaceAll("!!binary.*", "");
+        }
         if (operationType.equals("create")) {
             String path = fileCode + ".yaml";
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,
@@ -103,6 +110,9 @@ public class ObjectOperation<T> {
                         break;
                     case "ConfigMap":
                         handleConfigMap(t, objectType, operationType, resultBuilder, jsonObject);
+                        break;
+                    case "Secret":
+                        handleSecret(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     default:
                         break;
@@ -183,5 +193,21 @@ public class ObjectOperation<T> {
         }
         Tag tag1 = new Tag(CONFIGMAPTAG);
         resultBuilder.append("\n").append(getYamlObject(tag1).dump(v1ConfigMap).replace(CONFIGMAPTAG, "---"));
+    }
+
+    private void handleSecret(T t, String objectType, String operationType, StringBuilder resultBuilder,
+                              JSONObject jsonObject) {
+        Yaml yaml6 = new Yaml();
+        V1Secret v1Secret = yaml6.loadAs(jsonObject.toJSONString(), V1Secret.class);
+        if (objectType.equals("Secret") && v1Secret.getMetadata().getName()
+                .equals(((V1Secret) t).getMetadata().getName())) {
+            if (operationType.equals(UPDATE)) {
+                v1Secret = (V1Secret) t;
+            } else {
+                return;
+            }
+        }
+        Tag tag1 = new Tag(SECRET);
+        resultBuilder.append("\n").append(getYamlObject(tag1).dump(v1Secret).replace(SECRET, "---"));
     }
 }

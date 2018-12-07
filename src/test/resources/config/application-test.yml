@@ -1,10 +1,4 @@
 spring:
-  cloud:
-    bus:
-      enabled: false
-  sleuth:
-    stream:
-      enabled: false
   datasource:
     password: sa
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=Mysql;TRACE_LEVEL_SYSTEM_OUT=2;
@@ -35,7 +29,7 @@ services:
   helm:
     url: "http://helm-charts.staging.saas.hand-china.com"
   gitlab:
-    sshUrl: "git.vk.vu"
+    sshUrl: "git.vk.vu:2289"
 choerodon:
   event:
     consumer:

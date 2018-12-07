@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Component;
@@ -49,6 +50,9 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
 
     @Override
     public List<UserAttrE> listByUserIds(List<Long> userIds) {
+        if (userIds == null || userIds.isEmpty()) {
+            return new ArrayList<>();
+        }
         return ConvertHelper.convertList(userAttrMapper.listByUserIds(userIds), UserAttrE.class);
     }
 

@@ -61,6 +61,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private static final String CONFIGMAP_KIND = "configmap";
     private static final String C7NHELMRELEASE_KIND = "c7nhelmrelease";
     private static final String CERTIFICATE_KIND = "certificate";
+    private static final String SECRET_KIND = "secret";
     private static final String PUBLIC = "public";
     private static final Logger logger = LoggerFactory.getLogger(DeployMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
@@ -127,6 +128,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private DevopsEnvFileErrorRepository devopsEnvFileErrorRepository;
     @Autowired
     private CertificationRepository certificationRepository;
+    @Autowired
+    private DevopsSecretRepository devopsSecretRepository;
     @Autowired
     private DevopsClusterRepository devopsClusterRepository;
     @Autowired
@@ -319,14 +322,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             }
 
             Object obj = objectMapper.readValue(msg, Object.class);
-            DevopsEnvResourceE devopsEnvResourceE =
-                    new DevopsEnvResourceE();
+            DevopsEnvResourceE devopsEnvResourceE = new DevopsEnvResourceE();
             DevopsEnvResourceDetailE devopsEnvResourceDetailE = new DevopsEnvResourceDetailE();
             devopsEnvResourceDetailE.setMessage(msg);
             devopsEnvResourceE.setKind(KeyParseTool.getResourceType(key));
             devopsEnvResourceE.initDevopsEnvironmentE(envId);
-            devopsEnvResourceE.setName(
-                    KeyParseTool.getResourceName(key));
+            devopsEnvResourceE.setName(KeyParseTool.getResourceName(key));
             devopsEnvResourceE.setReversion(
                     TypeUtil.objToLong(
                             ((LinkedHashMap) ((LinkedHashMap) obj).get(METADATA)).get(RESOURCE_VERSION).toString()));
@@ -374,6 +375,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     KeyParseTool.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE,
                             devopsEnvResourceDetailE, null);
+
+                case SECRET:
+                    newdevopsEnvResourceE = devopsEnvResourceRepository
+                            .queryResource(null, null, envId, KeyParseTool.getResourceType(key),
+                                    KeyParseTool.getResourceName(key));
+                    saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE, devopsEnvResourceDetailE, null);
+                    break;
                 default:
                     releaseName = KeyParseTool.getReleaseName(key);
                     applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
@@ -1047,7 +1055,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsEnvFileRepository.update(devopsEnvFileE);
         });
         gitOpsSync.getMetadata().getResourceCommits()
-                .stream()
                 .forEach(resourceCommit -> {
                     String[] objects = resourceCommit.getResourceId().split("/");
                     switch (objects[0]) {
@@ -1065,10 +1072,27 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             break;
                         case CONFIGMAP_KIND:
                             syncConfigMap(envId, errorDevopsFiles, resourceCommit, objects);
+                        case SECRET_KIND:
+                            syncSecret(envId, errorDevopsFiles, resourceCommit, objects);
                         default:
                             break;
                     }
                 });
+    }
+
+    private void syncSecret(Long envId, List<DevopsEnvFileErrorE> envFileErrorFiles, ResourceCommit resourceCommit,
+                            String[] objects) {
+        DevopsEnvFileResourceE devopsEnvFileResourceE;
+        DevopsSecretE devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, objects[1]);
+        devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                .queryByEnvIdAndResource(envId, devopsSecretE.getId(), ObjectType.SECRET.getType());
+        if (updateEnvCommandStatus(resourceCommit, devopsSecretE.getCommandId(), devopsEnvFileResourceE,
+                SECRET_KIND, devopsSecretE.getName(), CommandStatus.SUCCESS.getStatus(), envFileErrorFiles)) {
+            devopsSecretE.setStatus(SecretStatus.FAILED.getStatus());
+        } else {
+            devopsSecretE.setStatus(SecretStatus.SUCCESS.getStatus());
+        }
+        devopsSecretRepository.update(devopsSecretE);
     }
 
     private void syncCetificate(Long envId, List<DevopsEnvFileErrorE> errorDevopsFiles, ResourceCommit resourceCommit, String[] objects) {

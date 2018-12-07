@@ -23,9 +23,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
 
-        createIndex(indexName: "idx_name", tableName: "devops_service") {
-            column(name: "name")
-        }
+//        createIndex(indexName: "idx_name", tableName: "devops_service") {
+//            column(name: "name")
+//        }
         addUniqueConstraint(tableName: 'devops_service', constraintName: 'uk_namespace_name',
                 columnNames: 'namespace,name')
     }
