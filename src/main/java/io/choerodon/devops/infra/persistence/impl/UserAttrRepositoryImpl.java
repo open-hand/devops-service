@@ -66,19 +66,20 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     public void update(UserAttrE userAttrE) {
         UserAttrDO userAttrDO = userAttrMapper.selectByPrimaryKey(userAttrE.getIamUserId());
         userAttrDO.setGitlabToken(userAttrE.getGitlabToken());
+        userAttrDO.setGitlabUserName(userAttrE.getGitlabUserName());
         userAttrMapper.updateByPrimaryKey(userAttrDO);
     }
 
     @Override
     public List<UserAttrE> list() {
-        return ConvertHelper.convertList(userAttrMapper.selectAll(),UserAttrE.class);
+        return ConvertHelper.convertList(userAttrMapper.selectAll(), UserAttrE.class);
     }
 
     @Override
     public UserAttrE queryByGitlabUserName(String gitlabUserName) {
         UserAttrDO userAttrDO  = new UserAttrDO();
         userAttrDO.setGitlabUserName(gitlabUserName);
-        return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO),UserAttrE.class);
+        return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO), UserAttrE.class);
     }
 
 }

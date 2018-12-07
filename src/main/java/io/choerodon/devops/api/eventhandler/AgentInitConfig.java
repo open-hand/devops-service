@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.util.List;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -53,13 +54,33 @@ public class AgentInitConfig implements AgentConfigurer {
         agentSessionManager.addListener(agentInitListener);
     }
 
+    private void isUpdate(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsClusterE t) {
+        if (connectedEnvList.contains(t.getId())) {
+            if (!updatedEnvList.contains(t.getId())) {
+                t.initUpgrade(false);
+                t.initConnect(true);
+            } else {
+                t.initUpgrade(true);
+                t.initConnect(false);
+                t.setUpgradeMessage("Version is too low, please upgrade!");
+            }
+        } else {
+            t.initUpgrade(false);
+            t.initConnect(false);
+        }
+    }
+
     class AgentInitListener implements SessionListener {
         @Override
         public void onConnected(Session session) {
             try {
                 Long clusterId = Long.valueOf(session.getRegisterKey().split(":")[1]);
-                DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
-                deployService.upgradeCluster(devopsClusterE);
+                List<Long> connected = envUtil.getConnectedEnvList(envListener);
+                List<Long> upgraded = envUtil.getUpdatedEnvList(envListener);
+                if (connected.contains(clusterId) && upgraded.contains(clusterId)) {
+                    DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
+                    deployService.upgradeCluster(devopsClusterE);
+                }
                 deployService.initCluster(clusterId);
             } catch (Exception e) {
                 throw new CommonException("read envId from agent session failed", e);
@@ -71,6 +92,5 @@ public class AgentInitConfig implements AgentConfigurer {
             return null;
         }
     }
-
 
 }

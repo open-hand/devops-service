@@ -106,6 +106,7 @@ public class DeployServiceImpl implements DeployService {
         configs.put("config.token", devopsClusterE.getToken());
         configs.put("config.clusterId", devopsClusterE.getId().toString());
         configs.put("config.choerodonId", devopsClusterE.getChoerodonId());
+        configs.put("rbac.create", "true");
         Payload payload = new Payload(
                 "choerodon",
                 agentRepoUrl,
@@ -117,6 +118,27 @@ public class DeployServiceImpl implements DeployService {
                 devopsClusterE.getId(),
                 "choerodon-cluster-agent-" + devopsClusterE.getCode()));
         msg.setType(HelmType.HELM_RELEASE_UPGRADE.toValue());
+        try {
+            msg.setPayload(mapper.writeValueAsString(payload));
+        } catch (IOException e) {
+            throw new CommonException("error.payload.error", e);
+        }
+        commandSender.sendMsg(msg);
+    }
+
+    @Override
+    public void createCertManager(Long clusterId) {
+        Msg msg = new Msg();
+        Payload payload = new Payload(
+                "kube-system",
+                agentRepoUrl,
+                "cert-manager",
+                agentExpectVersion,
+                null, "choerodon-cert-manager");
+        msg.setKey(String.format("cluster:%d.release:%s",
+                clusterId,
+                "choerodon-cert-manager"));
+        msg.setType(HelmType.HELM_INSTALL_RELEASE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
         } catch (IOException e) {

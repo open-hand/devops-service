@@ -433,9 +433,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             userAttrE.setGitlabUserName(gitlabUserE.getUsername());
                         }
                         userAttrRepository.update(userAttrE);
+                        LOGGER.info(SUCCESS);
                         checkLog.setResult(SUCCESS);
                         checkLog.setContent(userAttrE.getGitlabUserId() + " : init Name Succeed");
                     } catch (Exception e) {
+                        LOGGER.info(e.getMessage());
                         checkLog.setResult(FAILED);
                         checkLog.setContent(userAttrE.getGitlabUserId() + " : init Name Failed");
                     }

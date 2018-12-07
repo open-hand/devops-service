@@ -52,6 +52,7 @@ env:
     SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
+    AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/infra/
     CERT_TESTCERT: false
     TEMPLATE_VERSION_MICROSERVICE: 0.9.0
     TEMPLATE_VERSION_MICROSERVICEFRONT: 0.9.0
