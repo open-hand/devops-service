@@ -60,5 +60,5 @@ public interface ApplicationInstanceRepository {
 
     void checkName(String instanceName);
 
-    String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId);
+    String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId, String deploymentName);
 }

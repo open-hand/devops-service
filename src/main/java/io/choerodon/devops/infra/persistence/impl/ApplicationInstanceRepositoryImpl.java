@@ -194,7 +194,7 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId) {
-        return applicationInstanceMapper.getInstanceDeploymentDetailJsonByInstanceId(instanceId);
+    public String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId, String deploymentName) {
+        return applicationInstanceMapper.getInstanceDeploymentDetailJsonByInstanceId(instanceId, deploymentName);
     }
 }

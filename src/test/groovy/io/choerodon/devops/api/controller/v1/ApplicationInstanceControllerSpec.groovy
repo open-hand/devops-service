@@ -509,20 +509,21 @@ class ApplicationInstanceControllerSpec extends Specification {
     def "getDeploymentDetailsJsonByInstanceId"() {
         given: "初始化数据库"
         Map<String, Long> map = new HashMap<>(3)
-        initForInstance(map)
+        String deploymentName = "test-deployment"
+        initForInstance(map, deploymentName)
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json", InstanceDeploymentDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceDeploymentDTO, projectId, map.get("instanceId"))
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
-        ((Map<String, Map>)entity.getBody().getDetail()).get("metadata") != null
+        ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
 
         and: "删除初始化的数据"
         cleanDataInitializedInInstanceInit(map)
 
         when: '查询不存在的数据时'
-        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json", ExceptionResponse, projectId, map.get("instanceId"))
+        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, ExceptionResponse, projectId, map.get("instanceId"))
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -532,11 +533,12 @@ class ApplicationInstanceControllerSpec extends Specification {
     def "getDeploymentDetailsYamlByInstanceId"() {
         given: "初始化数据库"
         Map<String, Long> map = new HashMap<>(3)
-        initForInstance(map)
+        String deploymentName = "test-deployment"
+        initForInstance(map, deploymentName)
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml", InstanceDeploymentDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceDeploymentDTO, projectId, map.get("instanceId"))
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -546,15 +548,15 @@ class ApplicationInstanceControllerSpec extends Specification {
         cleanDataInitializedInInstanceInit(map)
 
         when: '查询不存在的数据时'
-        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml", ExceptionResponse, projectId, map.get("instanceId"))
+        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, ExceptionResponse, projectId, map.get("instanceId"))
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         entity.getBody().getCode() == "error.instance.deployment.not.found"
     }
 
-    def initForInstance(Map<String, Long> map) {
-        ApplicationInstanceDO instanceInit = new ApplicationInstanceDO();
+    def initForInstance(Map<String, Long> map, String deploymentName) {
+        ApplicationInstanceDO instanceInit = new ApplicationInstanceDO()
         instanceInit.setCode("dependency-chart-59dad")
         instanceInit.setAppId(1L)
         instanceInit.setEnvId(1L)
@@ -569,6 +571,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         resourceInit.setAppInstanceId(instanceInit.getId())
         resourceInit.setKind("Deployment")
         resourceInit.setResourceDetailId(detailInit.getId())
+        resourceInit.setName(deploymentName)
         devopsEnvResourceMapper.insert(resourceInit)
 
         map.put("instanceId", instanceInit.getId())

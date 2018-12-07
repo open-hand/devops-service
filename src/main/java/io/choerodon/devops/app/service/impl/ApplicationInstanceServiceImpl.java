@@ -405,8 +405,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId) {
-        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId);
+    public InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId, String deploymentName) {
+        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId, deploymentName);
 
 
         if (StringUtils.isEmpty(message)) {
@@ -421,8 +421,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId) {
-        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId);
+    public InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId, String deploymentName) {
+        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId, deploymentName);
 
         if (StringUtils.isEmpty(message)) {
             throw new CommonException("error.instance.deployment.not.found", instanceId);

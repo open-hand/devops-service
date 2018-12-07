@@ -129,9 +129,11 @@ public class ApplicationInstanceController {
     public ResponseEntity<InstanceDeploymentDTO> getDeploymentDetailsJsonByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署名称", required = true)
+            @RequestParam(value = "deployment_name") String deploymentName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getDeploymentJsonDetailsByInstanceId(appInstanceId), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.getDeploymentJsonDetailsByInstanceId(appInstanceId, deploymentName), HttpStatus.OK);
     }
 
     /**
@@ -148,9 +150,11 @@ public class ApplicationInstanceController {
     public ResponseEntity<InstanceDeploymentDTO> getDeploymentDetailsYamlByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署名称", required = true)
+            @RequestParam(value = "deployment_name") String deploymentName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getDeploymentYamlDetailsByInstanceId(appInstanceId), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.getDeploymentYamlDetailsByInstanceId(appInstanceId, deploymentName), HttpStatus.OK);
     }
 
     /**
