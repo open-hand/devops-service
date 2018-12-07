@@ -55,8 +55,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
-    @Autowired
-    private AppUserPermissionRepository appUserPermissionRepository;
 
     @Value("${services.helm.url}")
     private String helmUrl;

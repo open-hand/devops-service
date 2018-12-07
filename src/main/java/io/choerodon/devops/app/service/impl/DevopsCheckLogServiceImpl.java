@@ -261,7 +261,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                             .getId()));
                             devopsGitlabPipelineE.setPipelineCreateUserId(userId);
                             devopsGitlabPipelineE.setPipelineId(TypeUtil.objToLong(gitlabPipelineE.getId()));
-                            if (gitlabPipelineE.getStatus().toString().equals("success")) {
+                            if (gitlabPipelineE.getStatus().toString().equals(SUCCESS)) {
                                 devopsGitlabPipelineE.setStatus("passed");
                             } else {
                                 devopsGitlabPipelineE.setStatus(gitlabPipelineE.getStatus().toString());

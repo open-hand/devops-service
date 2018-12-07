@@ -66,10 +66,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
     @Autowired
-    private DevopsIngressRepository devopsIngressRepository;
-    @Autowired
-    private DevopsIngressService devopsIngressService;
-    @Autowired
     private EnvListener envListener;
     @Autowired
     private EnvUtil envUtil;
@@ -82,17 +78,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
-    private IamRepository iamRepository;
-    @Autowired
-    private DevopsEnvCommitRepository devopsEnvCommitRepository;
-    @Autowired
-    private ApplicationInstanceService applicationInstanceService;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
-    private CertificationRepository certificationRepository;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
@@ -110,7 +98,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 projectId, envId, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        devopsServiceByPage.stream().forEach(devopsServiceV -> {
+        devopsServiceByPage.forEach(devopsServiceV -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceV.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
@@ -182,7 +170,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         devopsServiceRepository.update(devopsServiceE);
 
-        devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
+        devopsServiceAppInstanceES.forEach(devopsServiceAppInstanceE -> {
             devopsServiceAppInstanceE.setServiceId(serviceEId);
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });
@@ -256,7 +244,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //查询网络对应的实例
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-        Boolean isUpdate = false;
+        boolean isUpdate = false;
         if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
             if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
                 checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
@@ -349,10 +337,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
         //更新service和instance关联关系数据到数据库
-        beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
+        beforeDevopsServiceAppInstanceES.forEach(instanceId ->
                 devopsServiceInstanceRepository.deleteByOptions(id, instanceId)
         );
-        devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
+        devopsServiceAppInstanceES.forEach(devopsServiceAppInstanceE -> {
             devopsServiceAppInstanceE.setServiceId(id);
             devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
         });
@@ -616,27 +604,27 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsServiceRepository.update(devopsServiceE);
             if (beforeDevopsServiceAppInstanceES != null) {
-                beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
+                beforeDevopsServiceAppInstanceES.forEach(instanceId ->
                         devopsServiceInstanceRepository.deleteByOptions(serviceId, instanceId)
                 );
             }
-            devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
+            devopsServiceAppInstanceES.forEach(devopsServiceAppInstanceE -> {
                 devopsServiceAppInstanceE.setServiceId(serviceId);
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
         }
         //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
-        if ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())))) {
+        if ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId())))) {
             devopsEnvCommandE.setObjectId(devopsServiceE.getId());
             devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsServiceRepository.update(devopsServiceE);
             Long serviceId = devopsServiceE.getId();
             if (beforeDevopsServiceAppInstanceES != null) {
-                beforeDevopsServiceAppInstanceES.stream().forEach(instanceId ->
+                beforeDevopsServiceAppInstanceES.forEach(instanceId ->
                         devopsServiceInstanceRepository.deleteByOptions(serviceId, instanceId)
                 );
             }
-            devopsServiceAppInstanceES.stream().forEach(devopsServiceAppInstanceE -> {
+            devopsServiceAppInstanceES.forEach(devopsServiceAppInstanceE -> {
                 devopsServiceAppInstanceE.setServiceId(serviceId);
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });

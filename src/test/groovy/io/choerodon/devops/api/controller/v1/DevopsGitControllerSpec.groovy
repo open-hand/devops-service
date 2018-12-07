@@ -13,6 +13,7 @@ import io.choerodon.devops.domain.application.valueobject.Issue
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
+import io.choerodon.devops.infra.dataobject.UserAttrDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
@@ -196,7 +197,6 @@ class DevopsGitControllerSpec extends Specification {
         tagDOS.add(tagDO)
         ResponseEntity<List<TagDO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
-        userAttrRepository.queryById(_ as Long) >> userAttrE
 
         when: '获取标签分页列表'
         def page = restTemplate.postForObject("/v1/projects/1/apps/1/git/tags_list_options?page=0&size=10", null, Page.class)

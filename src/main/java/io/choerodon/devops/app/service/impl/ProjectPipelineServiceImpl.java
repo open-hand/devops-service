@@ -15,19 +15,12 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
  */
 @Service
 public class ProjectPipelineServiceImpl implements ProjectPipelineService {
-    private static final String SONAR_QUBE = "sonarqube";
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
-    @Autowired
-    private ApplicationRepository applicationRepository;
-    @Autowired
-    private IamRepository iamRepository;
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
-    @Autowired
-    private DevopsGitRepository devopsGitRepository;
 
 
     public Integer getGitlabUserId() {

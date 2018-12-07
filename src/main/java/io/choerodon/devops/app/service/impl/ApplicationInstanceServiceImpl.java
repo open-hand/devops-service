@@ -54,6 +54,7 @@ import java.util.stream.Collectors;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
 
+    private static final String FILE_SEPARATOR = "file.separator";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
@@ -473,16 +474,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             String path = "deployfile";
             FileUtil.saveDataToFile(path, fileName, replaceResult.getYaml());
             //读入文件
-            File file = new File(path + System.getProperty("file.separator") + fileName);
+            File file = new File(path + System.getProperty(FILE_SEPARATOR) + fileName);
             InputStreamResource inputStreamResource = new InputStreamResource(new FileInputStream(file));
             YamlPropertySourceLoader yamlPropertySourceLoader = new YamlPropertySourceLoader();
             try {
                 yamlPropertySourceLoader.load("test", inputStreamResource, null);
             } catch (Exception e) {
-                FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
+                FileUtil.deleteFile(path + System.getProperty(FILE_SEPARATOR) + fileName);
                 return getErrorLine(e.getMessage());
             }
-            FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
+            FileUtil.deleteFile(path + System.getProperty(FILE_SEPARATOR) + fileName);
         } catch (Exception e) {
             return getErrorLine(e.getMessage());
         }
@@ -584,7 +585,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
         //校验values是否删除key
-        if (applicationDeployDTO.getType().equals("update")) {
+        if (applicationDeployDTO.getType().equals(UPDATE)) {
             String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
                     applicationDeployDTO.getAppInstanceId());
             String newDeployValue = devopsEnvCommandValueE.getValue();
@@ -1017,7 +1018,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue.replace("\"", ""));
         ReplaceResult replaceResult;
         try {
-            replaceResult = FileUtil.replaceNew(path + System.getProperty("file.separator") + fileName);
+            replaceResult = FileUtil.replaceNew(path + System.getProperty(FILE_SEPARATOR) + fileName);
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
         }
@@ -1025,7 +1026,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             replaceResult.setHighlightMarkers(new ArrayList<>());
         }
         replaceResult.setTotalLine(FileUtil.getFileTotalLine(replaceResult.getYaml()));
-        FileUtil.deleteFile(path + System.getProperty("file.separator") + fileName);
+        FileUtil.deleteFile(path + System.getProperty(FILE_SEPARATOR) + fileName);
         return replaceResult;
     }
 

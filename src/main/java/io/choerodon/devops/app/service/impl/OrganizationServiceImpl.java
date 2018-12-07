@@ -23,8 +23,6 @@ public class OrganizationServiceImpl implements OrganizationService {
     private static final String TEMPLATE = "template";
 
     @Autowired
-    private IamRepository iamRepository;
-    @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
