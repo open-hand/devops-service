@@ -226,6 +226,15 @@ public class CertificationServiceImpl implements CertificationService {
 
         if (devopsEnvFileResourceE == null) {
             certificationRepository.deleteById(certId);
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    "cert-" + certificationE.getName() + ".yaml")) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        "cert-" + certificationE.getName() + ".yaml",
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
+            return;
         }
         certificationE.setCommandId(createCertCommandE(CommandType.DELETE.getType(), certId, null));
         certificationRepository.updateCommandId(certificationE);

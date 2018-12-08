@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -876,6 +877,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), instanceId, C7NHELM_RELEASE);
         if (devopsEnvFileResourceE == null) {
             applicationInstanceRepository.deleteById(instanceId);
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    "release-" + instanceE.getCode() + ".yaml")) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        "release-" + instanceE.getCode() + ".yaml",
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
             return;
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
@@ -1005,7 +1014,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public ReplaceResult getReplaceResult(String versionValue, String deployValue) {
-        if (versionValue.equals(deployValue)||deployValue.equals("")) {
+        if (versionValue.equals(deployValue) || deployValue.equals("")) {
             ReplaceResult replaceResult = new ReplaceResult();
             replaceResult.setYaml(versionValue);
             replaceResult.setDeltaYaml("");
