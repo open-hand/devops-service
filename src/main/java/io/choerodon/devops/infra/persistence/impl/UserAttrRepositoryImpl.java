@@ -75,7 +75,7 @@ public class UserAttrRepositoryImpl implements UserAttrRepository {
     }
 
     @Override
-    public UserAttrE queryByGiltabUserName(String gitlabUserName) {
+    public UserAttrE queryByGitlabUserName(String gitlabUserName) {
         UserAttrDO userAttrDO  = new UserAttrDO();
         userAttrDO.setGitlabUserName(gitlabUserName);
         return ConvertHelper.convert(userAttrMapper.selectOne(userAttrDO),UserAttrE.class);

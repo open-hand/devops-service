@@ -65,6 +65,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     @Transactional
     public String createCluster(Long organizationId, DevopsClusterReqDTO devopsClusterReqDTO) {
+        // 插入记录
         DevopsClusterE devopsClusterE = new DevopsClusterE();
         BeanUtils.copyProperties(devopsClusterReqDTO, devopsClusterE);
         devopsClusterE.setToken(GenerateUUID.generateUUID());
@@ -78,6 +79,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
             }
         }
+        
+        // 渲染激活环境的命令参数
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
         Map<String, String> params = new HashMap<>();
         params.put("{VERSION}", agentExpectVersion);

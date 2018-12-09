@@ -95,7 +95,7 @@ public class EnvUtil {
      */
     public void checkEnvConnection(Long clusterId, EnvListener envListener) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
-        Boolean envConnected = connectedEnv.entrySet().stream()
+        boolean envConnected = connectedEnv.entrySet().stream()
                 .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
                         && compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1);
         if (!envConnected) {

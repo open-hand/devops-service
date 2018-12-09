@@ -234,7 +234,7 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 .parallel()
                 .peek(t -> {
 
-                    UserAttrE userAttrE = userAttrRepository.queryByGiltabUserName(t.getCommit()
+                    UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName(t.getCommit()
                             .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
                     UserE userE = iamRepository.queryUserByUserId(userAttrE.getIamUserId());
                     t.setCommitUserImage(userE.getImageUrl());

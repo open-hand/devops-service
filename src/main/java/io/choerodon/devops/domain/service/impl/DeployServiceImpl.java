@@ -18,8 +18,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitConfigDTO;
 import io.choerodon.devops.api.dto.GitEnvConfigDTO;
 import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Payload;
@@ -46,11 +44,7 @@ public class DeployServiceImpl implements DeployService {
     private CommandSender commandSender;
 
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @Autowired
     private IamRepository iamRepository;
-    @Autowired
-    private DevopsClusterRepository devopsClusterRepository;
     @Autowired
     private EnvUtil envUtil;
 
