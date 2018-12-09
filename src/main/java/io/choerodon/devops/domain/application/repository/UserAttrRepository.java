@@ -23,5 +23,5 @@ public interface UserAttrRepository {
 
     List<UserAttrE> list();
 
-    UserAttrE queryByGiltabUserName(String gitlabUserName);
+    UserAttrE queryByGitlabUserName(String gitlabUserName);
 }

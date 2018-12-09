@@ -899,7 +899,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             newDevopsBranchE.setCheckoutCommit(branchDO.getCommit().getId());
                             newDevopsBranchE.setCheckoutDate(branchDO.getCommit().getCommittedDate());
                             newDevopsBranchE.setLastCommitMsg(branchDO.getCommit().getMessage());
-                            UserAttrE userAttrE = userAttrRepository.queryByGiltabUserName(branchDO.getCommit().getAuthorName());
+                            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName(branchDO.getCommit().getAuthorName());
                             newDevopsBranchE.setLastCommitUser(userAttrE.getIamUserId());
                             devopsGitRepository.createDevopsBranch(newDevopsBranchE);
                             checkLog.setResult(SUCCESS);
