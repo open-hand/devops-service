@@ -42,7 +42,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         ApplicationE applicationE = applicationRepository.queryByToken(token);
         String ref = pushWebHookDTO.getRef().split("/")[2];
         if (pushWebHookDTO.getCommits().size() != 0) {
-            pushWebHookDTO.getCommits().stream().forEach(commitDTO -> {
+            pushWebHookDTO.getCommits().forEach(commitDTO -> {
                 DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(commitDTO.getId(), ref);
 
                 if (devopsGitlabCommitE == null) {

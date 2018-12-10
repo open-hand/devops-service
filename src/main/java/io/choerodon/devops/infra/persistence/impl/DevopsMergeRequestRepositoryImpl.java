@@ -104,8 +104,7 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
         } else {
             devopsMergeRequestE.setId(mergeRequestId);
             devopsMergeRequestE.setObjectVersionNumber(mergeRequestETemp.getObjectVersionNumber());
-            Integer temp = update(devopsMergeRequestE);
-            if (temp == 0) {
+            if (update(devopsMergeRequestE) == 0) {
                 throw new CommonException("error.update.merge.request");
             }
         }
