@@ -124,7 +124,7 @@ public class DevopsSecretController {
             @PathVariable(value = "secret_id") Long secretId) {
         return Optional.ofNullable(devopsSecretService.querySecret(secretId))
                 .map(result -> new ResponseEntity<>(result, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.secret.list"));
+                .orElseThrow(() -> new CommonException("error.secret.query"));
     }
 
     /**

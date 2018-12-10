@@ -17,7 +17,6 @@ import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsSecretService;
-import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
@@ -52,7 +51,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private EnvListener envListener;
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     private UserAttrRepository userAttrRepository;
-    private GitlabGroupMemberService gitlabGroupMemberService;
     private DevopsEnvironmentService devopsEnvironmentService;
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
@@ -64,7 +62,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                                    EnvUtil envUtil, EnvListener envListener,
                                    DevopsEnvCommandRepository devopsEnvCommandRepository,
                                    UserAttrRepository userAttrRepository,
-                                   GitlabGroupMemberService gitlabGroupMemberService,
                                    DevopsEnvironmentService devopsEnvironmentService,
                                    DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
                                    DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
@@ -75,7 +72,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         this.envListener = envListener;
         this.devopsEnvCommandRepository = devopsEnvCommandRepository;
         this.userAttrRepository = userAttrRepository;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
         this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
@@ -98,9 +94,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
         // 初始化V1Secret对象
         V1Secret v1Secret = initV1Secret(devopsSecretE);
-
-        // 检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         // 更新操作如果key-value没有改变
         if ("update".equals(secretReqDTO.getType())) {
@@ -156,8 +149,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                                       DevopsEnvCommandE devopsEnvCommandE, Boolean isCreate, UserAttrE userAttrE) {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
-        // 检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         DevopsSecretE beforeDevopsSecretE = devopsSecretRepository
                 .selectByEnvIdAndName(devopsSecretE.getEnvId(), devopsSecretE.getName());
@@ -206,9 +197,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         //校验环境是否链接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
         // 更新secret
@@ -246,7 +234,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             objectOperation.operationEnvGitlabFile(null, projectId, DELETE, userAttrE.getGitlabUserId(), secretId,
                     SECRET, devopsEnvironmentE.getId(), path);
-
         }
         return true;
     }

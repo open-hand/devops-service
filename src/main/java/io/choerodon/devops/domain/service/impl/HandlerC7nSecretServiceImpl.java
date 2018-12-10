@@ -12,6 +12,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.api.validator.DevopsSecretValidator;
+import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
@@ -46,16 +47,19 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
     private final DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     private final DevopsEnvCommandRepository devopsEnvCommandRepository;
     private final DevopsSecretService devopsSecretService;
+    private final DevopsEnvFileResourceService devopsEnvFileResourceService;
 
     @Autowired
     public HandlerC7nSecretServiceImpl(DevopsSecretRepository devopsSecretRepository,
                                        DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
                                        DevopsEnvCommandRepository devopsEnvCommandRepository,
-                                       DevopsSecretService devopsSecretService) {
+                                       DevopsSecretService devopsSecretService,
+                                       DevopsEnvFileResourceService devopsEnvFileResourceService) {
         this.devopsSecretRepository = devopsSecretRepository;
         this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
         this.devopsEnvCommandRepository = devopsEnvCommandRepository;
         this.devopsSecretService = devopsSecretService;
+        this.devopsEnvFileResourceService = devopsEnvFileResourceService;
     }
 
     @Override
@@ -166,6 +170,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 checkSecretName(c7nSecret);
                 // 初始化secret对象参数,更新secret并更新文件对象关联关系
                 SecretReqDTO secretReqDTO = getSecretReqDTO(c7nSecret, envId, "update");
+                secretReqDTO.setId(devopsSecretE.getId());
                 if (secretReqDTO.equals(ConvertHelper.convert(devopsSecretE, SecretReqDTO.class))) {
                     isNotChange = true;
                 }
@@ -187,12 +192,10 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 }
                 devopsEnvCommandE.setSha(GitUtil.getFileLatestCommit(path + GIT_SUFFIX, filePath));
                 devopsEnvCommandRepository.update(devopsEnvCommandE);
-                DevopsEnvFileResourceE devopsEnvFileResourceE = new DevopsEnvFileResourceE();
-                devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
-                devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nSecret.hashCode())));
-                devopsEnvFileResourceE.setResourceId(devopsSecretE.getId());
-                devopsEnvFileResourceE.setResourceType(c7nSecret.getKind());
-                devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
+                DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
+                        .queryByEnvIdAndResource(envId, devopsSecretE.getId(), c7nSecret.getKind());
+                devopsEnvFileResourceService.updateOrCreateFileResource(objectPath, envId, devopsEnvFileResourceE,
+                        c7nSecret.hashCode(), devopsSecretE.getId(), c7nSecret.getKind());
             } catch (CommonException e) {
                 String errorCode = "";
                 if (e instanceof GitOpsExplainException) {

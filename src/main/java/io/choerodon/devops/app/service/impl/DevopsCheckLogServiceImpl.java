@@ -74,7 +74,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
-    public static final String APP = "app: ";
+    private static final String APP = "app: ";
     private static final Integer ADMIN = 1;
     private static final String ENV = "ENV";
     private static final String SERVICE_LABLE = "choerodon.io/network";
@@ -375,17 +375,17 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         return stage;
     }
 
-    private void changeGitOpsUserAccess(List<CheckLog> logs) {
+    private void syncGitOpsUserAccess(List<CheckLog> logs) {
         List<Long> projectIds = devopsProjectMapper.selectAll().stream().
                 filter(devopsProjectDO -> devopsProjectDO.getDevopsEnvGroupId() != null && devopsProjectDO
                         .getDevopsAppGroupId() != null).map(DevopsProjectDO::getIamProjectId)
                 .collect(Collectors.toList());
         projectIds.forEach(projectId -> {
-            PageRequest pageRequest = new PageRequest();
-
-            Page<UserWithRoleDTO> allProjectUser = iamRepository.queryUserPermissionByProjectId(projectId, pageRequest, false);
+            Page<UserWithRoleDTO> allProjectUser = iamRepository
+                    .queryUserPermissionByProjectId(projectId, new PageRequest(), false);
             if (!allProjectUser.getContent().isEmpty()) {
                 allProjectUser.forEach(userWithRoleDTO -> {
+                    // 如果是项目成员
                     if (userWithRoleDTO.getRoles().stream().noneMatch(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))) {
                         CheckLog checkLog = new CheckLog();
                         checkLog.setContent(userWithRoleDTO.getLoginName() + ": remove env permission");
@@ -395,12 +395,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                 Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
                                 GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
                                 GitlabMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                        TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
-                                        gitlabUserId);
-                                if (groupMemberE != null) {
+                                        TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
+                                if (groupMemberE != null && groupMemberE.getId() != null) {
                                     gitlabGroupMemberRepository.deleteMember(
-                                            TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()),
-                                            gitlabUserId);
+                                            TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
+                                    gitlabGroupMemberRepository.deleteMember(
+                                            TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
                                 }
                             }
                             checkLog.setResult(SUCCESS);
@@ -415,7 +415,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }
         });
     }
-
 
     private void syncGitlabUserName(List<CheckLog> logs) {
         userAttrRepository.list().stream().filter(userAttrE -> userAttrE.getGitlabUserId() != null).forEach(userAttrE ->
@@ -444,7 +443,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     logs.add(checkLog);
                 }
         );
-
     }
 
     private class SyncInstanceByEnv {
@@ -763,7 +761,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.10.4".equals(version)) {
                 fixPipelines(logs);
             } else if ("0.11.0".equals(version)) {
-                changeGitOpsUserAccess(logs);
+                syncGitOpsUserAccess(logs);
                 updateWebHook(logs);
             } else if ("0.12.0".equals(version)) {
                 syncGitlabUserName(logs);
