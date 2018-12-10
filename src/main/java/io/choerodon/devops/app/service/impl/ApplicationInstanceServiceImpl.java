@@ -1007,7 +1007,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (versionValue.equals(deployValue)) {
             ReplaceResult replaceResult = new ReplaceResult();
             replaceResult.setDeltaYaml("");
-            replaceResult.setYaml("");
+            replaceResult.setYaml(versionValue);
             replaceResult.setHighlightMarkers(new ArrayList<>());
             replaceResult.setNewLines(new ArrayList<>());
             return replaceResult;

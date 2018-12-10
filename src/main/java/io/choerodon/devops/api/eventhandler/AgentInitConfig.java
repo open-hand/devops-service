@@ -77,7 +77,7 @@ public class AgentInitConfig implements AgentConfigurer {
                 Long clusterId = Long.valueOf(session.getRegisterKey().split(":")[1]);
                 List<Long> connected = envUtil.getConnectedEnvList(envListener);
                 List<Long> upgraded = envUtil.getUpdatedEnvList(envListener);
-                if (connected.contains(clusterId) && upgraded.contains(clusterId)) {
+                if (connected.contains(clusterId) && !upgraded.contains(clusterId)) {
                     DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
                     deployService.upgradeCluster(devopsClusterE);
                 }
