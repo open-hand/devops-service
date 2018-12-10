@@ -46,6 +46,7 @@ choerodon:
 agent:
   version: "0.5.0"
   serviceUrl: "agent.example.com"
+  certManagerUrl: "agent.example.com"
   repoUrl: "helm.example.com"
 eureka:
   instance:

@@ -85,4 +85,6 @@ public interface DeployMsgHandlerService {
 
     void getTestAppStatus(String key, String msg, Long clusterId);
 
+    void getCertManagerInfo(String msg, Long clusterId);
+
 }

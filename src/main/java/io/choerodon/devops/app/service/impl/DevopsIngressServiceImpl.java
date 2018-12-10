@@ -162,7 +162,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
         //初始化V1beta1Ingress对象
-        String certName = devopsIngressDTO.getCertName();
+        String certName = getCertName(devopsIngressDTO.getCertId());
         V1beta1Ingress v1beta1Ingress = initV1beta1Ingress(devopsIngressDTO.getDomain(), devopsIngressDTO.getName(), certName);
 
         //处理域名数据

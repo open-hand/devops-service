@@ -75,6 +75,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Value("${services.helm.url}")
     private String helmUrl;
+    @Value("${agent.repoUrl}")
+    private String agentRepoUrl;
+    @Value("${agent.certManagerUrl}")
+    private String certManagerUrl;
+
 
     @Autowired
     private DevopsEnvPodRepository devopsEnvPodRepository;
@@ -1698,6 +1703,29 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         String input = JSONArray.toJSONString(podUpdateDTOS);
         sagaClient.startSaga("test-status-saga", new StartInstanceDTO(input, "", ""));
+    }
+
+    @Override
+    public void getCertManagerInfo(String payloadMsg, Long clusterId) {
+        if (payloadMsg == null) {
+            Msg msg = new Msg();
+            Payload payload = new Payload(
+                    "kube-system",
+                    certManagerUrl,
+                    "cert-manager",
+                    "0.1.0",
+                    null, "choerodon-cert-manager");
+            msg.setKey(String.format("cluster:%d.release:%s",
+                    clusterId,
+                    "choerodon-cert-manager"));
+            msg.setType(HelmType.HELM_INSTALL_RELEASE.toValue());
+            try {
+                msg.setPayload(mapper.writeValueAsString(payload));
+            } catch (IOException e) {
+                throw new CommonException("error.payload.error", e);
+            }
+            socketMsgDispatcher.dispatcher(msg);
+        }
     }
 
 

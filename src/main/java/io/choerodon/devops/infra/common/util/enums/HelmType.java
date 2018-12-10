@@ -59,6 +59,7 @@ public enum HelmType {
     GET_TEST_APP_STATUS("get_test_app_status"),
     TEST_STATUS_RESPONSE("test_status_response"),
     TEST_STATUS("test_status"),
+    CERT_MANAGER_INFO("cert_manager_info"),
     EXECUTE_TEST("execute_test");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
@@ -190,6 +191,8 @@ public enum HelmType {
                 return HelmType.TEST_STATUS;
             case "test_status_response":
                 return HelmType.TEST_STATUS_RESPONSE;
+            case "cert_manager_info":
+                return HelmType.CERT_MANAGER_INFO;
             default:
                 break;
         }

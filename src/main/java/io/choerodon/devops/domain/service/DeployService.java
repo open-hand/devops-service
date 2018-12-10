@@ -29,4 +29,6 @@ public interface DeployService {
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 
     void upgradeCluster(DevopsClusterE devopsClusterE);
+
+    void createCertManager(Long clusterId);
 }
