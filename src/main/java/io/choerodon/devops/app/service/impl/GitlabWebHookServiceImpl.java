@@ -17,8 +17,6 @@ import io.choerodon.devops.app.service.GitlabWebHookService;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
 
-import java.util.Optional;
-
 @Service
 public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
@@ -65,9 +63,9 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 PipelineWebHookDTO pipelineWebHookDTO = JSONArray.parseObject(body, PipelineWebHookDTO.class);
 
                 // 转化UTC时间为本地时间，修复bug
-//                if (pipelineWebHookDTO.getObjectAttributes().getCreatedAt() != null) {
-//                    pipelineWebHookDTO.getObjectAttributes().setCreatedAt(DateUtil.convertUTC2Local(pipelineWebHookDTO.getObjectAttributes().getCreatedAt()));
-//                }
+                if (pipelineWebHookDTO.getObjectAttributes().getCreatedAt() != null) {
+                    pipelineWebHookDTO.getObjectAttributes().setCreatedAt(DateUtil.convertUTC2Local(pipelineWebHookDTO.getObjectAttributes().getCreatedAt()));
+                }
 
                 devopsGitlabPipelineService.create(pipelineWebHookDTO, token);
                 break;
