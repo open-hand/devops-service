@@ -172,6 +172,7 @@ class DevopsSecretControllerTest extends Specification {
         devopsSecretMapper.selectAll().get(0).getValue() == "{\"test\":\"dGVzdA\\u003d\\u003d\"}"
 
         when: '更新密钥但是key-value不改变'
+        secretReqDTO.setId(1L)
         secretReqDTO.setType("update")
         restTemplate.put(MAPPING, secretReqDTO, 1L)
 
