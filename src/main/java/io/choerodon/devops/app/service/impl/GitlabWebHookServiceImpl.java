@@ -17,6 +17,8 @@ import io.choerodon.devops.app.service.GitlabWebHookService;
 import io.choerodon.devops.domain.application.entity.DevopsMergeRequestE;
 import io.choerodon.devops.domain.application.repository.DevopsMergeRequestRepository;
 
+import java.util.Optional;
+
 @Service
 public class GitlabWebHookServiceImpl implements GitlabWebHookService {
 
@@ -48,14 +50,6 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                     LOGGER.info(devopsMergeRequestE.toString());
                 }
 
-                // 转化UTC时间为本地时间，修复bug
-                if (devopsMergeRequestE.getCreatedAt() != null) {
-                    devopsMergeRequestE.setCreatedAt(DateUtil.convertUTC2Local(devopsMergeRequestE.getCreatedAt()));
-                }
-                if (devopsMergeRequestE.getUpdatedAt() != null) {
-                    devopsMergeRequestE.setUpdatedAt(DateUtil.convertUTC2Local(devopsMergeRequestE.getUpdatedAt()));
-                }
-
                 devopsMergeRequestRepository.saveDevopsMergeRequest(devopsMergeRequestE);
                 break;
             case "push":
@@ -64,13 +58,6 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                     LOGGER.info(pushWebHookDTO.toString());
                 }
 
-                // 转化UTC时间为本地时间，修复bug
-                pushWebHookDTO.getCommits().forEach(commit -> {
-                    if (commit.getTimestamp() != null) {
-                        commit.setTimestamp(DateUtil.convertUTC2Local(commit.getTimestamp()));
-                    }
-                });
-
                 devopsGitService.branchSync(pushWebHookDTO, token);
                 devopsGitlabCommitService.create(pushWebHookDTO, token);
                 break;
@@ -78,9 +65,9 @@ public class GitlabWebHookServiceImpl implements GitlabWebHookService {
                 PipelineWebHookDTO pipelineWebHookDTO = JSONArray.parseObject(body, PipelineWebHookDTO.class);
 
                 // 转化UTC时间为本地时间，修复bug
-                if (pipelineWebHookDTO.getObjectAttributes().getCreatedAt() != null) {
-                    pipelineWebHookDTO.getObjectAttributes().setCreatedAt(DateUtil.convertUTC2Local(pipelineWebHookDTO.getObjectAttributes().getCreatedAt()));
-                }
+//                if (pipelineWebHookDTO.getObjectAttributes().getCreatedAt() != null) {
+//                    pipelineWebHookDTO.getObjectAttributes().setCreatedAt(DateUtil.convertUTC2Local(pipelineWebHookDTO.getObjectAttributes().getCreatedAt()));
+//                }
 
                 devopsGitlabPipelineService.create(pipelineWebHookDTO, token);
                 break;
