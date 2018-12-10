@@ -11,6 +11,9 @@ import io.swagger.annotations.ApiModelProperty;
  * Description:
  */
 public class SecretReqDTO {
+    @ApiModelProperty(value = "密钥id/更新时必填")
+    private Long id;
+
     @ApiModelProperty(value = "环境id/必填")
     private Long envId;
 
@@ -27,6 +30,14 @@ public class SecretReqDTO {
     private String type;
 
     private Long ObjectVersionNumber;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public Long getEnvId() {
         return envId;

@@ -166,6 +166,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 checkSecretName(c7nSecret);
                 // 初始化secret对象参数,更新secret并更新文件对象关联关系
                 SecretReqDTO secretReqDTO = getSecretReqDTO(c7nSecret, envId, "update");
+                secretReqDTO.setId(devopsSecretE.getId());
                 if (secretReqDTO.equals(ConvertHelper.convert(devopsSecretE, SecretReqDTO.class))) {
                     isNotChange = true;
                 }
