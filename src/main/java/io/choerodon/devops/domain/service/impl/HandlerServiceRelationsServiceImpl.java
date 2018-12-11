@@ -250,9 +250,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
         if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
-            if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
-                checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
-            }
             if (devopsServiceReqDTO.getAppInstance() != null) {
                 List<String> newInstanceCode = devopsServiceReqDTO.getAppInstance();
                 List<String> oldInstanceCode = devopsServiceInstanceEList.stream().map(DevopsServiceAppInstanceE::getCode).collect(Collectors.toList());
@@ -296,9 +293,4 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
 
-    private void checkOptions(Long envId, Long appId, String  appInstanceCode) {
-        if (applicationInstanceRepository.checkOptions(envId, appId, appInstanceCode) == 0) {
-            throw new CommonException("error.instances.query");
-        }
-    }
 }

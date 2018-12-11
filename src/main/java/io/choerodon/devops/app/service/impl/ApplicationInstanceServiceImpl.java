@@ -1,8 +1,23 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -33,20 +48,6 @@ import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -54,9 +55,9 @@ import java.util.stream.Collectors;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
 
-    private static final String FILE_SEPARATOR = "file.separator";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
+    private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
     private static Gson gson = new Gson();
@@ -655,7 +656,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 applicationInstanceRepository.update(applicationInstanceE);
             }
             //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
-            if ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())))) {
+            if (applicationDeployDTO.getType().equals(UPDATE) && ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId()))))) {
                 devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
                 devopsEnvCommandE.initDevopsEnvCommandValueE(
                         devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
