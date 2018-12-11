@@ -237,14 +237,14 @@ class DevopsServiceControllerSpec extends Specification {
         portMapE.setTargetPort("8888")
         portMapES.add(portMapE)
 
-        List<Long> longList = new ArrayList<>()
-        longList.add(1L)
+        List<String> appInstances = new ArrayList<>()
+        appInstances.add(applicationInstanceDO.getCode())
         DevopsServiceReqDTO newDevopsServiceReqDTO = new DevopsServiceReqDTO()
         newDevopsServiceReqDTO.setAppId(1L)
         newDevopsServiceReqDTO.setEnvId(1L)
         newDevopsServiceReqDTO.setType("ClusterIP")
         newDevopsServiceReqDTO.setName("svcsvc")
-        newDevopsServiceReqDTO.setAppInstance(longList)
+        newDevopsServiceReqDTO.setAppInstance(appInstances)
         newDevopsServiceReqDTO.setPorts(portMapES)
         newDevopsServiceReqDTO.setExternalIp("1.2.1.1")
 
