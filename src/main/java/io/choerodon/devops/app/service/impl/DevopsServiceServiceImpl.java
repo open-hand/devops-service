@@ -443,7 +443,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 if (applicationInstanceE != null) {
                     devopsServiceAppInstanceE.setAppInstanceId(applicationInstanceE.getId());
                 }
-                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
+                devopsServiceAppInstanceE.setCode(appInstance);
                 addDevopsServiceAppInstanceES.add(devopsServiceAppInstanceE);
             });
         }

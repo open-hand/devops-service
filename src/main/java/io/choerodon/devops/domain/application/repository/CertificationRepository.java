@@ -52,5 +52,5 @@ public interface CertificationRepository {
 
     List<CertificationE> listByOrgCertId(Long orgCertId);
 
-    List<CertificationE> listByProject(Long projectId, Long organizationId);
+    List<CertificationDTO> listByProject(Long projectId, Long organizationId);
 }
