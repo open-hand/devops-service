@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class CertificationE {
     private Long id;
+    private Long organizationId;
     private String name;
     private DevopsEnvironmentE environmentE;
     private List<String> domains;
@@ -21,7 +22,9 @@ public class CertificationE {
     private String commandType;
     private String commandStatus;
     private Long certificationFileId;
+    private Boolean skipCheckProjectPermission;
     private String error;
+    private Long orgCertId;
 
     public CertificationE() {
     }
@@ -153,5 +156,29 @@ public class CertificationE {
 
     public void setCertificationFileId(Long certificationFileId) {
         this.certificationFileId = certificationFileId;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
+    }
+
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
+
+    public Long getOrgCertId() {
+        return orgCertId;
+    }
+
+    public void setOrgCertId(Long orgCertId) {
+        this.orgCertId = orgCertId;
     }
 }

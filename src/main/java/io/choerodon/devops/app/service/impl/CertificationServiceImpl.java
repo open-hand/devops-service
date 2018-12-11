@@ -274,7 +274,7 @@ public class CertificationServiceImpl implements CertificationService {
             params = "{}";
         }
 
-        return certificationRepository.page(projectId, envId, pageRequest, params);
+        return certificationRepository.page(projectId, null, envId, pageRequest, params);
     }
 
     @Override

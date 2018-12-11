@@ -7,6 +7,15 @@ public class ProjectDTO {
     private String code;
     private Boolean permission;
 
+
+    public ProjectDTO(Long id, String name, String code, Boolean permission) {
+        this.id = id;
+        this.name = name;
+        this.code = code;
+        this.permission = permission;
+    }
+
+
     public Long getId() {
         return id;
     }

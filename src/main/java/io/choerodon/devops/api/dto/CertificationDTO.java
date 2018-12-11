@@ -11,6 +11,7 @@ import java.util.List;
  */
 public class CertificationDTO {
     private Long id;
+    private Long organizationId;
     private String certName;
     private String commonName;
     private List<String> domains;
@@ -24,6 +25,8 @@ public class CertificationDTO {
     private String commandType;
     private String commandStatus;
     private String error;
+    private Boolean skipCheckProjectPermission;
+
 
     public Long getId() {
         return id;
@@ -135,5 +138,21 @@ public class CertificationDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
+    }
+
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
     }
 }
