@@ -82,7 +82,7 @@ public class DevopsSagaHandler {
         try {
             devopsEnvironmentService.handleCreateEnvSaga(gitlabProjectPayload);
         } catch (Exception e) {
-            devopsEnvironmentService.setEnvErrStatus(data);
+            devopsEnvironmentService.setEnvErrStatus(data, gitlabProjectPayload.getIamProjectId());
             throw e;
         }
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
@@ -146,7 +146,7 @@ public class DevopsSagaHandler {
             try {
                 applicationService.operationApplication(devOpsAppPayload);
             } catch (Exception e) {
-                applicationService.setAppErrStatus(data);
+                applicationService.setAppErrStatus(data, devOpsAppPayload.getIamProjectId());
                 throw e;
             }
             ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
@@ -231,7 +231,7 @@ public class DevopsSagaHandler {
             try {
                 applicationTemplateService.operationApplicationTemplate(gitlabProjectEventDTO);
             } catch (Exception e) {
-                applicationTemplateService.setAppTemplateErrStatus(data);
+                applicationTemplateService.setAppTemplateErrStatus(data, gitlabProjectEventDTO.getOrganizationId());
                 throw e;
             }
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(

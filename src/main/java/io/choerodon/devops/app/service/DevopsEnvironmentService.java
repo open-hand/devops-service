@@ -160,7 +160,12 @@ public interface DevopsEnvironmentService {
      */
     List<DevopsClusterRepDTO> listDevopsCluster(Long projectId);
 
-    void setEnvErrStatus(String data);
+    /**
+     * 设置环境状态为错误
+     * @param data 数据
+     * @param projectId 可为空
+     */
+    void setEnvErrStatus(String data, Long projectId);
 
     void initMockService(SagaClient sagaClient);
 

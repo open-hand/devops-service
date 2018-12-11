@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import com.google.gson.Gson;
+import io.choerodon.core.iam.ResourceLevel;
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -86,7 +87,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
     @Override
     @Saga(code = "devops-create-gitlab-template-project",
-            description = "devops create GitLab template project", inputSchema = "{}")
+            description = "devops创建gitlab模板项目", inputSchema = "{}")
     public ApplicationTemplateRepDTO create(ApplicationTemplateDTO applicationTemplateDTO, Long organizationId) {
         ApplicationTemplateValidator.checkApplicationTemplate(applicationTemplateDTO);
         ApplicationTemplateE applicationTemplateE = ConvertHelper.convert(
@@ -122,7 +123,7 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
             throw new CommonException("error.applicationTemplate.insert");
         }
         String input = gson.toJson(gitlabProjectPayload);
-        sagaClient.startSaga("devops-create-gitlab-template-project", new StartInstanceDTO(input, "", ""));
+        sagaClient.startSaga("devops-create-gitlab-template-project", new StartInstanceDTO(input, "", "", ResourceLevel.ORGANIZATION.value(), organizationId));
 
         return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organization.getId(),
                 applicationTemplateDTO.getCode()), ApplicationTemplateRepDTO.class);
@@ -288,9 +289,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
     @Override
     @Saga(code = "devops-set-appTemplate-err",
-            description = "devops set app template status create err", inputSchema = "{}")
-    public void setAppTemplateErrStatus(String input) {
-        sagaClient.startSaga("devops-set-appTemplate-err", new StartInstanceDTO(input, "", ""));
+            description = "Devops设置创建应用模板状态失败", inputSchema = "{}")
+    public void setAppTemplateErrStatus(String input, Long organizationId) {
+        sagaClient.startSaga("devops-set-appTemplate-err", new StartInstanceDTO(input, "", "", ResourceLevel.ORGANIZATION.value(), organizationId));
     }
 
     @Override
