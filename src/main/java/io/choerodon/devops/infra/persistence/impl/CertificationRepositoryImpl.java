@@ -217,6 +217,12 @@ public class CertificationRepositoryImpl implements CertificationRepository {
         return ConvertHelper.convertList(devopsCertificationMapper.select(certificationDO), CertificationE.class);
     }
 
+    @Override
+    public List<CertificationE> listByProject(Long projectId, Long organizationId) {
+        devopsCertificationMapper.listByProjectId(projectId, organizationId);
+        return ConvertHelper.convertList(devopsCertificationMapper.listByProjectId(projectId, organizationId), CertificationE.class);
+    }
+
     private void deleteCertFile(Long certId) {
         CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(certId);
         if (devopsCertificationFileMapper.selectByPrimaryKey(certificationDO.getCertificationFileId()) != null) {

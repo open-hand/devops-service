@@ -16,8 +16,8 @@ import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.app.service.DevopsOrgCertificationService;
-import io.choerodon.devops.domain.application.entity.DevopsCertificationProRelE;
 import io.choerodon.devops.domain.application.entity.CertificationE;
+import io.choerodon.devops.domain.application.entity.DevopsCertificationProRelE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsCertificationProRelRepository;
@@ -116,6 +116,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
     public void deleteCert(Long certId) {
         List<CertificationE> certificationES = certificationRepository.listByOrgCertId(certId);
         if (certificationES.isEmpty()) {
+            devopsCertificationProRelRepository.deleteByCertId(certId);
             certificationRepository.deleteById(certId);
         } else {
             throw new CommonException("error.cert.related");

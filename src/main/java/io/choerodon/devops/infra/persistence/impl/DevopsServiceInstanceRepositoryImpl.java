@@ -49,10 +49,10 @@ public class DevopsServiceInstanceRepositoryImpl implements DevopsServiceInstanc
     }
 
     @Override
-    public void deleteByOptions(Long serviceId, Long instanceId) {
+    public void deleteByOptions(Long serviceId, String instanceCode) {
         DevopsServiceAppInstanceDO devopsServiceAppInstanceDO = new DevopsServiceAppInstanceDO();
         devopsServiceAppInstanceDO.setServiceId(serviceId);
-        devopsServiceAppInstanceDO.setAppInstanceId(instanceId);
+        devopsServiceAppInstanceDO.setCode(instanceCode);
         devopsServiceAppInstanceMapper.delete(devopsServiceAppInstanceDO);
     }
 

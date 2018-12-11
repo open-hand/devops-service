@@ -8,7 +8,6 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -75,7 +74,7 @@ public class OrgCertificationController {
      * @param certId         集群Id
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
-    @ApiOperation(value = "查询单个集群信息")
+    @ApiOperation(value = "查询单个证书信息")
     @GetMapping("/{certId}")
     public ResponseEntity<OrgCertificationDTO> query(
             @ApiParam(value = "组织Id", required = true)

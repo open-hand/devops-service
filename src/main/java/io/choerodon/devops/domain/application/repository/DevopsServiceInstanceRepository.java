@@ -15,7 +15,7 @@ public interface DevopsServiceInstanceRepository {
 
     List<DevopsServiceAppInstanceE> selectByServiceId(Long serviceId);
 
-    void deleteByOptions(Long serviceId, Long instanceId);
+    void deleteByOptions(Long serviceId, String instanceCode);
 
     void deleteById(Long id);
 }

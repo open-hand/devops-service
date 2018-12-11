@@ -51,4 +51,6 @@ public interface CertificationRepository {
     CertificationE queryByOrgAndName(Long orgId, String name);
 
     List<CertificationE> listByOrgCertId(Long orgCertId);
+
+    List<CertificationE> listByProject(Long projectId, Long organizationId);
 }
