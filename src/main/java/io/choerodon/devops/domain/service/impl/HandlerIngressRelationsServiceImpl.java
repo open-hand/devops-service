@@ -244,30 +244,32 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             } catch (Exception e) {
                 throw new GitOpsExplainException(e.getMessage(), filePath);
             }
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
             V1beta1IngressBackend backend = v1beta1HTTPIngressPath.getBackend();
             String serviceName = backend.getServiceName();
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                     serviceName, envId);
-            if (devopsServiceE == null) {
-                throw new GitOpsExplainException(GitOpsObjectError.SERVICE_RELATED_INGRESS_NOT_FOUND.getError(), filePath, serviceName, null);
-            }
-            Long servicePort;
+//            if (devopsServiceE == null) {
+//                throw new GitOpsExplainException(GitOpsObjectError.SERVICE_RELATED_INGRESS_NOT_FOUND.getError(), filePath, serviceName, null);
+//            }
+            Long servicePort = null;
             IntOrString backendServicePort = backend.getServicePort();
             if (backendServicePort.isInteger() || pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
                 servicePort = TypeUtil.objToLong(backendServicePort);
-                if (devopsServiceE.getPorts().stream()
-                        .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
-                    throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
-                            filePath, serviceName, null);
-                }
+//                if (devopsServiceE != null && devopsServiceE.getPorts().stream()
+//                        .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
+//                    throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
+//                            filePath, serviceName, null);
+//                }
             } else {
-                servicePort = devopsServiceE.getPorts().get(0).getPort();
+                if (devopsServiceE != null) {
+                    servicePort = devopsServiceE.getPorts().get(0).getPort();
+                }
             }
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
             devopsIngressPathDTO.setPath(path);
             devopsIngressPathDTO.setServicePort(servicePort);
-            devopsIngressPathDTO.setServiceId(devopsServiceE.getId());
+            devopsIngressPathDTO.setServiceName(devopsServiceE.getName());
+            devopsIngressPathDTO.setServiceId(devopsServiceE != null ? devopsServiceE.getId() : null);
             devopsIngressPathDTOS.add(devopsIngressPathDTO);
         }
         devopsIngressDTO.setPathList(devopsIngressPathDTOS);

@@ -79,7 +79,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 devopsClusterProPermissionRepository.insert(devopsClusterProPermissionE);
             }
         }
-        
+
         // 渲染激活环境的命令参数
         InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster.sh");
         Map<String, String> params = new HashMap<>();
@@ -159,13 +159,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 projectIds = new ArrayList<>();
             }
             projects.getContent().forEach(projectDO -> {
-                ProjectDTO projectDTO = new ProjectDTO();
-                projectDTO.setId(projectDO.getId());
-                projectDTO.setName(projectDO.getName());
-                projectDTO.setCode(projectDO.getCode());
-                if (projectIds.contains(projectDO.getId())) {
-                    projectDTO.setPermission(true);
-                }
+                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()) ? true : false);
                 projectDTOS.add(projectDTO);
             });
         }
@@ -225,11 +219,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     public List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId) {
         return devopsClusterProPermissionRepository.listByClusterId(clusterId).stream()
                 .map(devopsClusterProPermissionE -> {
-                    ProjectDTO projectDTO = new ProjectDTO();
-                    projectDTO.setId(devopsClusterProPermissionE.getProjectId());
                     ProjectE projectE = iamRepository.queryIamProject(devopsClusterProPermissionE.getProjectId());
-                    projectDTO.setName(projectE.getName());
-                    projectDTO.setCode(projectE.getCode());
+                    ProjectDTO projectDTO = new ProjectDTO(devopsClusterProPermissionE.getProjectId(), projectE.getName(), projectE.getCode(), null);
                     return projectDTO;
                 }).collect(Collectors.toList());
     }

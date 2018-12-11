@@ -132,8 +132,8 @@
         <if test="appId != null">
             AND dai.app_id = #{appId}
         </if>
-        <if test="appInstanceId != null">
-            AND dai.id = #{appInstanceId}
+        <if test="appInstanceCode != null">
+            AND dai.code = #{appInstanceCode}
         </if>
     </select>
 
@@ -388,7 +388,7 @@
         INNER JOIN devops_env_resource re ON ins.id = re.app_instance_id
         INNER JOIN devops_env_resource_detail detail ON re.resource_detail_id = detail.id
         WHERE ins.id = #{instanceId}
-          AND re.kind = 'Deployment'
-          AND re.name = #{deploymentName};
+        AND re.kind = 'Deployment'
+        AND re.name = #{deploymentName};
     </select>
 </mapper>

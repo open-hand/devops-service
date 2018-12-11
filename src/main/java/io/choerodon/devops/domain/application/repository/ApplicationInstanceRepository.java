@@ -27,7 +27,7 @@ public interface ApplicationInstanceRepository {
 
     List<ApplicationInstanceE> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
-    int checkOptions(Long envId, Long appId, Long appInstanceId);
+    int checkOptions(Long envId, Long appId, String appInstanceCode);
 
     String queryValueByEnvIdAndAppId(Long envId, Long appId);
 

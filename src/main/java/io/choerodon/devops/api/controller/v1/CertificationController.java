@@ -18,6 +18,7 @@ import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
+import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -161,4 +162,24 @@ public class CertificationController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.checkUnique"));
     }
+
+
+    /**
+     * 查询项目下有权限的组织层证书
+     *
+     * @param projectId 项目id
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询项目下有权限的组织层证书")
+    @GetMapping("/list_org_cert")
+    public ResponseEntity<List<OrgCertificationDTO>> listOrgCert(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(certificationService.listByProject(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.certification.page"));
+    }
+
 }

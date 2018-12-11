@@ -32,7 +32,9 @@ public class CertificationConvertor implements ConvertorI<CertificationE, Certif
     public CertificationE doToEntity(CertificationDO dataObject) {
         CertificationE certificationE = new CertificationE();
         BeanUtils.copyProperties(dataObject, certificationE);
-        certificationE.setEnvironmentE(new DevopsEnvironmentE(dataObject.getEnvId()));
+        if (dataObject.getEnvId() != null) {
+            certificationE.setEnvironmentE(new DevopsEnvironmentE(dataObject.getEnvId()));
+        }
         certificationE.setDomains(gson.fromJson(dataObject.getDomains(), new TypeToken<List<String>>() {
         }.getType()));
         return certificationE;
@@ -51,7 +53,9 @@ public class CertificationConvertor implements ConvertorI<CertificationE, Certif
         CertificationDO certificationDO = new CertificationDO();
         BeanUtils.copyProperties(certificationE, certificationDO);
         certificationDO.setDomains(gson.toJson(certificationE.getDomains()));
-        certificationDO.setEnvId(certificationE.getEnvironmentE().getId());
+        if (certificationE.getEnvironmentE() != null) {
+            certificationDO.setEnvId(certificationE.getEnvironmentE().getId());
+        }
         return certificationDO;
     }
 
@@ -63,8 +67,10 @@ public class CertificationConvertor implements ConvertorI<CertificationE, Certif
         certificationDTO.setDomains(gson.fromJson(dataObject.getDomains(), new TypeToken<List<String>>() {
         }.getType()));
         certificationDTO.setCommonName(certificationDTO.getDomains().get(0));
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(dataObject.getEnvId());
-        certificationDTO.setEnvName(devopsEnvironmentE.getName());
+        if (dataObject.getEnvId() != null) {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(dataObject.getEnvId());
+            certificationDTO.setEnvName(devopsEnvironmentE.getName());
+        }
         return certificationDTO;
     }
 }

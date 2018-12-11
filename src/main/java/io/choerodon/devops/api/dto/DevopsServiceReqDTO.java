@@ -1,9 +1,9 @@
 package io.choerodon.devops.api.dto;
 
-import java.util.List;
-import java.util.Map;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import java.util.List;
+import java.util.Map;
 
 import io.choerodon.devops.domain.application.entity.PortMapE;
 
@@ -23,7 +23,7 @@ public class DevopsServiceReqDTO {
     private String type;
     @NotNull
     private List<PortMapE> ports;
-    private List<Long> appInstance;
+    private List<String> appInstance;
     private Map<String, String> label;
 
     public Long getEnvId() {
@@ -58,11 +58,11 @@ public class DevopsServiceReqDTO {
         this.externalIp = externalIp;
     }
 
-    public List<Long> getAppInstance() {
+    public List<String> getAppInstance() {
         return appInstance;
     }
 
-    public void setAppInstance(List<Long> appInstance) {
+    public void setAppInstance(List<String> appInstance) {
         this.appInstance = appInstance;
     }
 

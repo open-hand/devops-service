@@ -4,25 +4,31 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCertificationMapper">
     <select id="selectCertification" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
         SELECT
-            dc.id,
-            dc.`name`,
-            dc.env_id envId,
-            dc.domains,
-            dc.valid_from,
-            dc.valid_until,
-            dc.command_id,
-            cmd.`status` commandStatus,
-            cmd.command_type  commandType,
-            cmd.error  error,
-            dc.status
+        dc.id,
+        dc.`name`,
+        dc.env_id envId,
+        dc.domains,
+        dc.valid_from,
+        dc.organization_id,
+        dc.valid_until,
+        dc.command_id,
+        cmd.`status` commandStatus,
+        cmd.command_type commandType,
+        cmd.error error,
+        dc.status
         FROM
-            devops_certification dc
-        JOIN devops_env AS de ON env_id = de.id
+        devops_certification dc
+        LEFT JOIN devops_env AS de ON env_id = de.id
         LEFT JOIN devops_env_command cmd on dc.command_id = cmd.id
-        WHERE
-            de.project_id = #{projectId}
+        WHERE 1=1
+        <if test="projectId != null">
+            AND de.project_id = #{projectId}
+        </if>
         <if test="envId != null">
             AND dc.env_id = #{envId}
+        </if>
+        <if test="organizationId != null">
+            AND dc.organization_id = #{organizationId}
         </if>
         <if test='searchParam != null'>
             <if test='searchParam.certName != null and searchParam.certName.size > 0'>
@@ -53,12 +59,26 @@
 
     <select id="getActiveByDomain" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
         SELECT
-            *
+        *
         FROM
-            devops_certification
+        devops_certification
         WHERE
-            `status` = 'active'
-            AND env_id = #{envId}
-            AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
+        `status` = 'active'
+        AND env_id = #{envId}
+        AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
+    </select>
+
+    <update id="updateSkipCheckPro">
+        UPDATE devops_certification dc set dc.skip_check_project_permission = #{skipCheckPro} where dc.id = #{certId}
+    </update>
+
+
+    <select id="listByProjectId" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
+        select dc.id,dc.`name` from devops_certification dc where dc.skip_check_project_permission is true and
+        dc.organization_id = #{organizationId}
+        UNION
+        select dc.id,dc.`name` from devops_certification dc
+        join devops_certification_pro_rel dcp on dc.id = dcp.cert_id
+        where dcp.project_id = #{projectId}
     </select>
 </mapper>

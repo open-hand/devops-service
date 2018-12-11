@@ -86,8 +86,8 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public int checkOptions(Long envId, Long appId, Long appInstanceId) {
-        return applicationInstanceMapper.checkOptions(envId, appId, appInstanceId);
+    public int checkOptions(Long envId, Long appId, String appInstanceCode) {
+        return applicationInstanceMapper.checkOptions(envId, appId, appInstanceCode);
     }
 
     @Override

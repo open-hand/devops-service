@@ -24,6 +24,7 @@ public class CertificationDO extends AuditDomain {
     @GeneratedValue
     private Long id;
     private Long certificationFileId;
+    private Long organizationId;
     private String name;
     private Long envId;
     private String domains;
@@ -31,6 +32,8 @@ public class CertificationDO extends AuditDomain {
     private String status;
     private Date validFrom;
     private Date validUntil;
+    private Boolean skipCheckProjectPermission;
+    private Long orgCertId;
 
     @Transient
     private String commandType;
@@ -168,4 +171,29 @@ public class CertificationDO extends AuditDomain {
     public void setCertificationFileId(Long certificationFileId) {
         this.certificationFileId = certificationFileId;
     }
+
+    public Long getOrganizationId() {
+        return organizationId;
+    }
+
+    public void setOrganizationId(Long organizationId) {
+        this.organizationId = organizationId;
+    }
+
+    public Boolean getSkipCheckProjectPermission() {
+        return skipCheckProjectPermission;
+    }
+
+    public void setSkipCheckProjectPermission(Boolean skipCheckProjectPermission) {
+        this.skipCheckProjectPermission = skipCheckProjectPermission;
+    }
+
+    public Long getOrgCertId() {
+        return orgCertId;
+    }
+
+    public void setOrgCertId(Long orgCertId) {
+        this.orgCertId = orgCertId;
+    }
+
 }

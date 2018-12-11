@@ -7,6 +7,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
+import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -43,4 +44,6 @@ public interface CertificationService {
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 
     Long createCertCommandE(String type, Long certId, Long userId);
+
+    List<OrgCertificationDTO> listByProject(Long projectId);
 }

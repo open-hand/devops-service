@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,6 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
+import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.api.validator.DevopsCertificationValidator;
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -20,6 +22,7 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
@@ -85,6 +88,13 @@ public class CertificationServiceImpl implements CertificationService {
 
         Long envId = certificationDTO.getEnvId();
 
+        CertificationFileDO certificationFileDO = null;
+        //如果创建的时候选择证书
+        if (certificationDTO.getCertId() != null) {
+            CertificationE certificationE = certificationRepository.queryById(certificationDTO.getCertId());
+            certificationFileDO = certificationRepository.getCertFile(certificationE.getCertificationFileId());
+        }
+
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 
@@ -104,9 +114,12 @@ public class CertificationServiceImpl implements CertificationService {
             String path = fileTmpPath(projectId, envCode);
 
             c7nCertification = getC7nCertification(
-                    certName, type, domains, getFileContent(path, key), getFileContent(path, cert), envCode);
-            removeFiles(path, key);
-            removeFiles(path, cert);
+                    certName, type, domains, certificationFileDO == null ? getFileContent(path, key) : certificationFileDO.getKeyFile(), certificationFileDO == null ? getFileContent(path, cert) : certificationFileDO.getCertFile(), envCode);
+
+            if (certificationFileDO == null) {
+                removeFiles(path, key);
+                removeFiles(path, cert);
+            }
             // sent certification to agent
             ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
             certificationOperation.setType(c7nCertification);
@@ -252,6 +265,20 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
+    public List<OrgCertificationDTO> listByProject(Long projectId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        List<OrgCertificationDTO> orgCertificationDTOS = new ArrayList<>();
+        certificationRepository.listByProject(projectId, organization.getId()).forEach(certificationE -> {
+            OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO();
+            orgCertificationDTO.setName(certificationE.getName());
+            orgCertificationDTO.setId(certificationE.getId());
+            orgCertificationDTOS.add(orgCertificationDTO);
+        });
+        return orgCertificationDTOS;
+    }
+
+    @Override
     public void certDeleteByGitOps(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
 
@@ -274,7 +301,7 @@ public class CertificationServiceImpl implements CertificationService {
             params = "{}";
         }
 
-        return certificationRepository.page(projectId, envId, pageRequest, params);
+        return certificationRepository.page(projectId, null, envId, pageRequest, params);
     }
 
     @Override
