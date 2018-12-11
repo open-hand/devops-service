@@ -268,8 +268,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             DevopsIngressPathDTO devopsIngressPathDTO = new DevopsIngressPathDTO();
             devopsIngressPathDTO.setPath(path);
             devopsIngressPathDTO.setServicePort(servicePort);
-            devopsIngressPathDTO.setServiceName(devopsServiceE.getName());
-            devopsIngressPathDTO.setServiceId(devopsServiceE != null ? devopsServiceE.getId() : null);
+            devopsIngressPathDTO.setServiceName(serviceName);
+            devopsIngressPathDTO.setServiceId(devopsServiceE == null ? null : devopsServiceE.getId());
             devopsIngressPathDTOS.add(devopsIngressPathDTO);
         }
         devopsIngressDTO.setPathList(devopsIngressPathDTOS);

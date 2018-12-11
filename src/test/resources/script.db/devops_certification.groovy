@@ -39,10 +39,18 @@ databaseChangeLog(logicalFilePath: 'db/devops_certification.groovy') {
         }
     }
 
-
     changeSet(author: 'Runge', id: '2018-10-09-add-column') {
         addColumn(tableName: 'devops_certification') {
             column(name: "certification_file_id", type: "BIGINT UNSIGNED", afterColumn: 'command_id')
+        }
+    }
+
+
+    changeSet(author: 'Younger', id: '2018-12-10-add-column') {
+        addColumn(tableName: 'devops_certification') {
+            column(name: "organization_id", type: "BIGINT UNSIGNED", afterColumn: 'env_id')
+            column(name: 'org_cert_id', type: 'TINYINT UNSIGNED', afterColumn: 'organization_id')
+            column(name: 'skip_check_project_permission', type: 'TINYINT UNSIGNED', remarks: '是否跳过项目权限校验',afterColumn: 'org_cert_id')
         }
     }
 

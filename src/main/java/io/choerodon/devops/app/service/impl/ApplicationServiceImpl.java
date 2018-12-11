@@ -330,14 +330,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
             List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
                     .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
-            resultDTOList.stream().filter(e -> !e.getPermission()).forEach(e -> {
+            resultDTOList.stream().filter(e -> e != null && !e.getPermission()).forEach(e -> {
                 if (appIds.contains(e.getId())) {
                     e.setPermission(true);
                 }
             });
         }
         else {
-            resultDTOList.forEach(e -> e.setPermission(true));
+            resultDTOList.stream().filter(Objects::nonNull).forEach(e -> e.setPermission(true));
         }
         return resultDTOList;
     }

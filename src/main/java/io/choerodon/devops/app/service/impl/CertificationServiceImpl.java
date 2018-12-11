@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -273,6 +274,7 @@ public class CertificationServiceImpl implements CertificationService {
             OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO();
             orgCertificationDTO.setName(certificationE.getName());
             orgCertificationDTO.setId(certificationE.getId());
+            orgCertificationDTO.setDomain(certificationE.getDomains().get(0));
             orgCertificationDTOS.add(orgCertificationDTO);
         });
         return orgCertificationDTOS;

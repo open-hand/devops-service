@@ -30,4 +30,14 @@ public class DateUtil {
         }
         return dateTmp;
     }
+
+    /**
+     * convert time from UTC to local date
+     *
+     * @param utcDate the UTC time
+     * @return the local date
+     */
+    public static Date convertUTC2Local(Date utcDate) {
+        return DateUtil.changeTimeZone(utcDate, TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
+    }
 }
