@@ -289,9 +289,9 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
 
     @Override
     @Saga(code = "devops-set-appTemplate-err",
-            description = "devops set app template status create err", inputSchema = "{}")
-    public void setAppTemplateErrStatus(String input) {
-        sagaClient.startSaga("devops-set-appTemplate-err", new StartInstanceDTO(input, "", ""));
+            description = "Devops设置创建应用模板状态失败", inputSchema = "{}")
+    public void setAppTemplateErrStatus(String input, Long organizationId) {
+        sagaClient.startSaga("devops-set-appTemplate-err", new StartInstanceDTO(input, "", "", ResourceLevel.ORGANIZATION.value(), organizationId));
     }
 
     @Override

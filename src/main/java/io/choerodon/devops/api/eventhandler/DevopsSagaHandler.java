@@ -231,7 +231,7 @@ public class DevopsSagaHandler {
             try {
                 applicationTemplateService.operationApplicationTemplate(gitlabProjectEventDTO);
             } catch (Exception e) {
-                applicationTemplateService.setAppTemplateErrStatus(data);
+                applicationTemplateService.setAppTemplateErrStatus(data, gitlabProjectEventDTO.getOrganizationId());
                 throw e;
             }
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.queryByCode(

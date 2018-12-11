@@ -101,8 +101,10 @@ public interface ApplicationTemplateService {
      * 设置应用应用模板创建失败状态
      *
      * @param gitlabProjectEventDTO 应用信息
+     * @param organizationId 可为空
+     *
      */
-    void setAppTemplateErrStatus(String gitlabProjectEventDTO);
+    void setAppTemplateErrStatus(String gitlabProjectEventDTO, Long organizationId);
 
     void initMockService(SagaClient sagaClient);
 }
