@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import io.choerodon.core.iam.ResourceLevel;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,7 +98,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Saga(code = "devops-create-gitlab-project",
-            description = "devops create GitLab project", inputSchema = "{}")
+            description = "Devops创建gitlab项目", inputSchema = "{}")
     public ApplicationRepDTO create(Long projectId, ApplicationReqDTO applicationReqDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
@@ -133,6 +134,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
         applicationE = applicationRepository.create(applicationE);
         devOpsAppPayload.setAppId(applicationE.getId());
+        devOpsAppPayload.setIamProjectId(projectId);
         Long appId = applicationE.getId();
         if (appId == null) {
             throw new CommonException("error.application.create.insert");
@@ -144,7 +146,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         String input = gson.toJson(devOpsAppPayload);
-        sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", ""));
+        sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
 
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
                 applicationE.getProjectE().getId()), ApplicationRepDTO.class);
@@ -181,7 +183,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Saga(code = "devops-update-gitlab-users",
-            description = "devops update gitlab users", inputSchema = "{}")
+            description = "Devops更新gitlab用户", inputSchema = "{}")
     @Override
     public Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO) {
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
@@ -221,7 +223,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             devOpsAppPayload.setOption(3);
         }
         String input = gson.toJson(devOpsAppPayload);
-        sagaClient.startSaga("devops-update-gitlab-users", new StartInstanceDTO(input, "app", appId.toString()));
+        sagaClient.startSaga("devops-update-gitlab-users", new StartInstanceDTO(input, "app", appId.toString(), ResourceLevel.PROJECT.value(), projectId));
 
         return true;
     }
@@ -514,9 +516,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     @Saga(code = "devops-set-app-err",
-            description = "devops set app status create err", inputSchema = "{}")
-    public void setAppErrStatus(String input) {
-        sagaClient.startSaga("devops-set-app-err", new StartInstanceDTO(input, "", ""));
+            description = "Devops设置application状态为创建失败(devops set app status create err)", inputSchema = "{}")
+    public void setAppErrStatus(String input, Long projectId) {
+        sagaClient.startSaga("devops-set-app-err", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
     }
 
     private void initMasterBranch(DevOpsAppPayload gitlabProjectPayload, ApplicationE applicationE) {

@@ -89,8 +89,9 @@ public interface ApplicationService {
      * 设置应用创建失败状态
      *
      * @param gitlabProjectEventDTO 应用信息
+     * @param projectId 可为空
      */
-    void setAppErrStatus(String gitlabProjectEventDTO);
+    void setAppErrStatus(String gitlabProjectEventDTO, Long projectId);
 
     Boolean applicationExist(String uuid);
 

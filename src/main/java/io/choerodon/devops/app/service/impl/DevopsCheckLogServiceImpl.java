@@ -18,6 +18,7 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
@@ -912,12 +913,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
         @Saga(code = "devops-upgrade-0.9",
-                description = "devops smooth upgrade to 0.9", inputSchema = "{}")
+                description = "Devops平滑升级到0.9", inputSchema = "{}")
         private void gitOpsUserAccess() {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(" saga start");
             }
-            sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", ""));
+            sagaClient.startSaga("devops-upgrade-0.9", new StartInstanceDTO("{}", "", "", ResourceLevel.SITE.value(), 0L));
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info(" saga start success");
             }

@@ -10,6 +10,7 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
@@ -158,6 +159,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         gitlabProjectPayload.setLoginName(userE.getLoginName());
         gitlabProjectPayload.setRealName(userE.getRealName());
         gitlabProjectPayload.setClusterId(devopsEnviromentDTO.getClusterId());
+        gitlabProjectPayload.setIamProjectId(projectId);
 
         // 创建环境时将项目下所有用户装入payload以便于saga消费
         gitlabProjectPayload.setUserIds(devopsEnviromentDTO.getUserIds());
@@ -165,7 +167,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         String input;
         try {
             input = objectMapper.writeValueAsString(gitlabProjectPayload);
-            sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", ""));
+            sagaClient.startSaga("devops-create-env", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
             deployService.initEnv(devopsEnvironmentE, devopsEnviromentDTO.getClusterId());
         } catch (JsonProcessingException e) {
             throw new CommonException(e.getMessage(), e);
@@ -746,9 +748,9 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     @Saga(code = "devops-set-env-err",
-            description = "devops set env status create err", inputSchema = "{}")
-    public void setEnvErrStatus(String data) {
-        sagaClient.startSaga("devops-set-env-err", new StartInstanceDTO(data, "", ""));
+            description = "devops创建环境失败(devops set env status create err)", inputSchema = "{}")
+    public void setEnvErrStatus(String data, Long projectId) {
+        sagaClient.startSaga("devops-set-env-err", new StartInstanceDTO(data, "", "", ResourceLevel.PROJECT.value(), projectId));
     }
 
     @Override

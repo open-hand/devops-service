@@ -57,7 +57,7 @@
     </build>
 
     <properties>
-        <choerodon.starters.version>0.8.0.RELEASE</choerodon.starters.version>
+        <choerodon.starters.version>0.8.1.RELEASE</choerodon.starters.version>
 
         <!--use powermock-->
         <powermock.version>1.7.4</powermock.version>

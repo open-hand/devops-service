@@ -1650,7 +1650,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     @Saga(code = "test-pod-update-saga",
-            description = "test pod update saga", inputSchema = "{}")
+            description = "测试Pod升级(test pod update saga)", inputSchema = "{}")
     public void testPodUpdate(String key, String msg, Long clusterId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
         String status = K8sUtil.changePodStatus(v1Pod);
@@ -1668,7 +1668,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     @Saga(code = "test-job-log-saga",
-            description = "test job log saga", inputSchema = "{}")
+            description = "测试Job日志(test job log saga)", inputSchema = "{}")
     public void testJobLog(String key, String msg, Long clusterId) {
         JobLogDTO jobLogDTO = json.deserialize(msg, JobLogDTO.class);
         PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
@@ -1686,7 +1686,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
     @Override
     @Saga(code = "test-status-saga",
-            description = "test status saga", inputSchema = "{}")
+            description = "测试Release状态(test status saga)", inputSchema = "{}")
     public void getTestAppStatus(String key, String msg, Long clusterId) {
         logger.info(msg);
         List<TestReleaseStatus> testReleaseStatuses = JSONArray.parseArray(msg, TestReleaseStatus.class);

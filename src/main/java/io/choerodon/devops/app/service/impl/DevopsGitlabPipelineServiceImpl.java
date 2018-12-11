@@ -58,7 +58,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
     private SagaClient sagaClient;
 
     @Override
-    @Saga(code = "devops-gitlab-pipeline", description = "gitlab-pipeline", inputSchemaClass = PipelineWebHookDTO.class)
+    @Saga(code = "devops-gitlab-pipeline", description = "gitlab pipeline同步", inputSchemaClass = PipelineWebHookDTO.class)
     public void create(PipelineWebHookDTO pipelineWebHookDTO, String token) {
         pipelineWebHookDTO.setToken(token);
         ApplicationE applicationE = applicationRepository.queryByToken(token);
