@@ -296,8 +296,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
 
-    private void checkOptions(Long envId, Long appId, Long appInstanceId) {
-        if (applicationInstanceRepository.checkOptions(envId, appId, appInstanceId) == 0) {
+    private void checkOptions(Long envId, Long appId, String  appInstanceCode) {
+        if (applicationInstanceRepository.checkOptions(envId, appId, appInstanceCode) == 0) {
             throw new CommonException("error.instances.query");
         }
     }
