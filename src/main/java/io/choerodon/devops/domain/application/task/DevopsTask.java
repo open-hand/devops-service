@@ -27,7 +27,7 @@ public class DevopsTask {
             @JobParam(name = "test", defaultValue = "test")
     }, description = "升级到0.12.0同步gitlab用户名")
     @TimedTask(name = "升级到0.12.0同步gitlab用户名", description = "自定义定时任务", oneExecution = true,
-            repeatCount = 0, repeatInterval = 1000, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {
+            repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {
             @TaskParam(name = "test", value = "test")
     })
     public void syncGitlabUserName(Map<String, Object> map) {
