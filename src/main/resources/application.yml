@@ -41,6 +41,11 @@ choerodon:
       thread-num: 5  # 消费线程数
       poll-interval: 3 # 拉取消息的间隔(秒)，默认1秒
       enabled: true # 是否启用消费端
+  schedule:
+    consumer:
+      enabled: true # 启用任务调度消费端
+      thread-num: 1 # 任务调度消费线程数
+      poll-interval-ms: 1000 # 拉取间隔，默认1000毫秒
   websocket:
     max-redis-msg-listener-concurrency: 500
     security: false
