@@ -488,7 +488,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             } else {
                 pathCheckList.add(hostPath);
             }
-            DevopsServiceE devopsServiceE = getDevopsService(serviceId);
+            DevopsServiceE devopsServiceE = devopsServiceRepository.query(serviceId);
 
             devopsIngressPathDOS.add(new DevopsIngressPathDO(
                     devopsIngressDTO.getId(), hostPath,
