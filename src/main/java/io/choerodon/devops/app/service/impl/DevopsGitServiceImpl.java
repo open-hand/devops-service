@@ -32,7 +32,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
@@ -47,7 +47,6 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.service.impl.*;
 import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -60,9 +59,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
+    private static final String SERVICE = "Service";
     private static final String INGRESS = "Ingress";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
-    public static final String SERVICE = "Service";
     private static final String CERTIFICATE = "Certificate";
     private static final String CONFIGMAP = "ConfigMap";
     private static final String SECRET = "Secret";

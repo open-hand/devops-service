@@ -54,6 +54,7 @@ public class GitUtil {
     private String javaLib;
     @Value("${template.version.ChoerodonMoChaTemplate}")
     private String choerodonMoChaTemplate;
+
     /**
      * 构造方法
      */
@@ -94,7 +95,7 @@ public class GitUtil {
     }
 
     public static String getFileLatestCommit(String path, String filePath) {
-        if(filePath!=null) {
+        if (filePath != null) {
             String[] fileName = filePath.split("/");
             return GitUtil.getLog(path, fileName[fileName.length - 1]);
         }

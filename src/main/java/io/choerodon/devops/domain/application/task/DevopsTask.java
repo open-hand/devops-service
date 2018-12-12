@@ -13,7 +13,6 @@ import io.choerodon.asgard.schedule.annotation.JobTask;
 import io.choerodon.asgard.schedule.annotation.TaskParam;
 import io.choerodon.asgard.schedule.annotation.TimedTask;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
-import io.choerodon.devops.app.service.impl.DeployMsgHandlerServiceImpl;
 
 @Component
 public class DevopsTask {
@@ -31,7 +30,7 @@ public class DevopsTask {
             repeatCount = 0, repeatInterval = 1000, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {
             @TaskParam(name = "test", value = "test")
     })
-    public void syncGitlabUserName(Map<String,Object> map) {
+    public void syncGitlabUserName(Map<String, Object> map) {
         logger.info("begin to sync gitlab userName!");
         devopsCheckLogService.checkLog("0.12.0");
     }
