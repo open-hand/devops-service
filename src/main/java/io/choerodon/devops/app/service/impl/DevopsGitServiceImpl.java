@@ -698,7 +698,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             String lastCommit = pushWebHookDTO.getAfter();
             Long userId = pushWebHookDTO.getUserId().longValue();
 
-            // 从gitlab-service获取commit数据，所以需要处理gitlab中获取的时间
             CommitE commitE = devopsGitRepository.getCommit(
                     pushWebHookDTO.getProjectId(),
                     lastCommit,
@@ -710,10 +709,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setUserId(userId);
                 devopsBranchE.initApplicationE(appId);
 
-                // 处理时间
-                Date commitDate = DateUtil.convertUTC2Local(commitE.getCommittedDate());
-
-                devopsBranchE.setCheckoutDate(commitDate);
+                devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
                 devopsBranchE.setCheckoutCommit(lastCommit);
                 devopsBranchE.setBranchName(branchName);
 
@@ -721,8 +717,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setLastCommit(lastCommit);
                 devopsBranchE.setLastCommitMsg(commitE.getMessage());
 
-                devopsBranchE.setLastCommitDate(commitDate);
+                devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
                 devopsGitRepository.createDevopsBranch(devopsBranchE);
+
+
             }
         } catch (Exception e) {
             LOGGER.info("error.create.branch");

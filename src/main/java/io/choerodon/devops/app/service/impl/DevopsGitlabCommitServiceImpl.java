@@ -86,7 +86,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
                         devopsGitlabCommitE.setUserId(userE.getId());
                     }
                 }
-                devopsGitlabCommitE.setCommitDate(DateUtil.convertUTC2Local(commitE.getCommittedDate()));
+                devopsGitlabCommitE.setCommitDate(commitE.getCommittedDate());
                 devopsGitlabCommitRepository.create(devopsGitlabCommitE);
             }
         }
