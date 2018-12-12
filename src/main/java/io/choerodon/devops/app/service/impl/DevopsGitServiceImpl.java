@@ -628,6 +628,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验对象是否在其它文件中已经定义
                             convertC7nCertification.checkIfExist(c7nCertifications, envId, beforeSyncDelete, objectPath,
                                     c7nCertification);
+                            break;
                         case CONFIGMAP:
                             //反序列文件为ConfigMap对象,
                             ConvertK8sObjectService<V1ConfigMap> convertConfigMap = new ConvertV1ConfigMapServiceImpl();

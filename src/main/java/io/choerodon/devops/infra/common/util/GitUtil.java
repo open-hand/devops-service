@@ -52,7 +52,8 @@ public class GitUtil {
     private String microServiceFront;
     @Value("${template.version.JavaLib}")
     private String javaLib;
-
+    @Value("${template.version.ChoerodonMoChaTemplate}")
+    private String choerodonMoChaTemplate;
     /**
      * 构造方法
      */
@@ -238,6 +239,9 @@ public class GitUtil {
                 break;
             case "JavaLib":
                 branch = javaLib;
+                break;
+            case "ChoerodonMoChaTemplate":
+                branch = choerodonMoChaTemplate;
                 break;
             default:
                 branch = MASTER;

@@ -34,6 +34,7 @@ template:
     MicroService: 0.7.0
     MicroServiceFront: 0.7.0
     JavaLib: 0.7.0
+    ChoerodonMoChaTemplate: 0.7.0
 choerodon:
   saga:
     consumer:
