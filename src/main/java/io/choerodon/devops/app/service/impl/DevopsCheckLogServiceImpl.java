@@ -18,7 +18,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
@@ -39,6 +38,7 @@ import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
@@ -376,7 +376,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         return stage;
     }
 
-    private void syncGitOpsUserAccess(List<CheckLog> logs) {
+    private void syncGitOpsUserAccess(List<CheckLog> logs, String version) {
         List<Long> projectIds = devopsProjectMapper.selectAll().stream().
                 filter(devopsProjectDO -> devopsProjectDO.getDevopsEnvGroupId() != null && devopsProjectDO
                         .getDevopsAppGroupId() != null).map(DevopsProjectDO::getIamProjectId)
@@ -395,13 +395,20 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             if (userAttrE != null) {
                                 Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
                                 GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
-                                GitlabMemberE groupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                                GitlabMemberE envgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                         TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
-                                if (groupMemberE != null && groupMemberE.getId() != null) {
-                                    gitlabGroupMemberRepository.deleteMember(
-                                            TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
-                                    gitlabGroupMemberRepository.deleteMember(
-                                            TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
+                                GitlabMemberE appgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                                        TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
+                                if (version.equals("0.12.0")) {
+                                    if (appgroupMemberE != null && appgroupMemberE.getId() != null) {
+                                        gitlabGroupMemberRepository.deleteMember(
+                                                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
+                                    }
+                                } else {
+                                    if (envgroupMemberE != null && envgroupMemberE.getId() != null) {
+                                        gitlabGroupMemberRepository.deleteMember(
+                                                TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
+                                    }
                                 }
                             }
                             checkLog.setResult(SUCCESS);
@@ -762,10 +769,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.10.4".equals(version)) {
                 fixPipelines(logs);
             } else if ("0.11.0".equals(version)) {
-                syncGitOpsUserAccess(logs);
+                syncGitOpsUserAccess(logs, "0.11.0");
                 updateWebHook(logs);
             } else if ("0.12.0".equals(version)) {
                 syncGitlabUserName(logs);
+                syncGitOpsUserAccess(logs, "0.12.0");
             } else {
                 LOGGER.info("version not matched");
             }

@@ -77,10 +77,10 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
-                        Boolean isGitOps) {
+                       Boolean isGitOps) {
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
+//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
 
         String certName = certificationDTO.getCertName();
         String type = certificationDTO.getType();
@@ -92,13 +92,13 @@ public class CertificationServiceImpl implements CertificationService {
         //如果创建的时候选择证书
         if (certificationDTO.getCertId() != null) {
             CertificationE certificationE = certificationRepository.queryById(certificationDTO.getCertId());
-            certificationFileDO = certificationRepository.getCertFile(certificationE.getCertificationFileId());
+            certificationFileDO = certificationRepository.getCertFile(certificationE.getId());
         }
 
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         devopsCertificationValidator.checkCertification(envId, certName);
 
@@ -111,7 +111,6 @@ public class CertificationServiceImpl implements CertificationService {
 
         if (!isGitOps) {
             String envCode = devopsEnvironmentE.getCode();
-            String path = fileTmpPath(projectId, envCode);
 
             c7nCertification = getC7nCertification(
                     certName, type, domains, certificationFileDO == null ? certificationDTO.getKeyValue() : certificationFileDO.getKeyFile(), certificationFileDO == null ? certificationDTO.getCertValue() : certificationFileDO.getCertFile(), envCode);

@@ -139,7 +139,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     @Override
     public Page<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
-        Page<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.listByEnv(
+        Page<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.pageByEnv(
                 envId, pageRequest, searchParam);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);

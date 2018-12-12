@@ -146,6 +146,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private DevopsConfigMapRepository devopsConfigMapRepository;
 
+
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
         V1Pod v1Pod = json.deserialize(msg, V1Pod.class);
 
@@ -380,7 +381,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                     KeyParseTool.getResourceName(key));
                     saveOrUpdateResource(devopsEnvResourceE, newdevopsEnvResourceE,
                             devopsEnvResourceDetailE, null);
-
+                    break;
                 case SECRET:
                     newdevopsEnvResourceE = devopsEnvResourceRepository
                             .queryResource(null, null, envId, KeyParseTool.getResourceType(key),
@@ -1077,8 +1078,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                             break;
                         case CONFIGMAP_KIND:
                             syncConfigMap(envId, errorDevopsFiles, resourceCommit, objects);
+                            break;
                         case SECRET_KIND:
                             syncSecret(envId, errorDevopsFiles, resourceCommit, objects);
+                            break;
                         default:
                             break;
                     }
@@ -1497,6 +1500,26 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 command.setId(certificationE.getCommandId());
                 command.setResourceType(CERTIFICATE_KIND);
                 command.setResourceName(certificationE.getName());
+                commands.add(command);
+            }
+        });
+        devopsConfigMapRepository.listByEnv(envId).stream().forEach(devopsConfigMapE -> {
+            Long commandId = devopsConfigMapE.getDevopsEnvCommandE().getId();
+            if (commandId != null) {
+                Command command = new Command();
+                command.setId(commandId);
+                command.setResourceType(CONFIGMAP_KIND);
+                command.setResourceName(devopsConfigMapE.getName());
+                commands.add(command);
+            }
+        });
+        devopsSecretRepository.listByEnv(envId).stream().forEach(devopsSecretE -> {
+            Long commandId = devopsSecretE.getCommandId();
+            if (commandId != null) {
+                Command command = new Command();
+                command.setId(commandId);
+                command.setResourceType(SECRET_KIND);
+                command.setResourceName(devopsSecretE.getName());
                 commands.add(command);
             }
         });
