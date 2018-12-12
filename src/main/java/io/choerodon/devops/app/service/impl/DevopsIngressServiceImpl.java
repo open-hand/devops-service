@@ -479,7 +479,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             Long servicePort = t.getServicePort();
             String hostPath = t.getPath();
 
-            if (hostPath == null || serviceId == null) {
+            if (hostPath == null) {
                 throw new CommonException(PATH_ERROR);
             }
             DevopsIngressValidator.checkPath(hostPath);
@@ -490,14 +490,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             }
             DevopsServiceE devopsServiceE = getDevopsService(serviceId);
 
-            if (devopsServiceE.getPorts().stream()
-                    .map(PortMapE::getPort).noneMatch(port -> port.equals(servicePort))) {
-                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
-            }
-
             devopsIngressPathDOS.add(new DevopsIngressPathDO(
                     devopsIngressDTO.getId(), hostPath,
-                    devopsServiceE.getId(), devopsServiceE.getName(), servicePort));
+                    devopsServiceE == null ? null : devopsServiceE.getId(), devopsServiceE == null ? t.getServiceName() : devopsServiceE.getName(), servicePort));
             v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
                     createPath(hostPath, serviceId, servicePort));
         });

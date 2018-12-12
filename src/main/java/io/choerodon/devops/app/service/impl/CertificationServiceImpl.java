@@ -77,7 +77,7 @@ public class CertificationServiceImpl implements CertificationService {
 
     @Override
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
-                       MultipartFile key, MultipartFile cert, Boolean isGitOps) {
+                        Boolean isGitOps) {
 
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
@@ -114,12 +114,8 @@ public class CertificationServiceImpl implements CertificationService {
             String path = fileTmpPath(projectId, envCode);
 
             c7nCertification = getC7nCertification(
-                    certName, type, domains, certificationFileDO == null ? getFileContent(path, key) : certificationFileDO.getKeyFile(), certificationFileDO == null ? getFileContent(path, cert) : certificationFileDO.getCertFile(), envCode);
+                    certName, type, domains, certificationFileDO == null ? certificationDTO.getKeyValue() : certificationFileDO.getKeyFile(), certificationFileDO == null ? certificationDTO.getCertValue() : certificationFileDO.getCertFile(), envCode);
 
-            if (certificationFileDO == null) {
-                removeFiles(path, key);
-                removeFiles(path, cert);
-            }
             // sent certification to agent
             ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
             certificationOperation.setType(c7nCertification);
@@ -151,11 +147,6 @@ public class CertificationServiceImpl implements CertificationService {
 
     }
 
-    private void removeFiles(String path, MultipartFile multipartFile) {
-        if (multipartFile != null) {
-            new File(path + FILE_SEPARATOR + multipartFile.getOriginalFilename()).deleteOnExit();
-        }
-    }
 
     private void storeCertFile(C7nCertification c7nCertification, Long certId) {
         if (c7nCertification != null) {
