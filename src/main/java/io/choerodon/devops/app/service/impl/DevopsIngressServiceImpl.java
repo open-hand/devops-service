@@ -327,23 +327,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     }
 
     @Override
-    public V1beta1HTTPIngressPath createPath(String hostPath, Long serviceId, Long port) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.query(serviceId);
+    public V1beta1HTTPIngressPath createPath(String hostPath, String serviceName, Long port) {
         V1beta1HTTPIngressPath path = new V1beta1HTTPIngressPath();
         V1beta1IngressBackend backend = new V1beta1IngressBackend();
-        backend.setServiceName(devopsServiceE.getName().toLowerCase());
-        int servicePort;
-        if (port == null) {
-            servicePort = devopsServiceE.getPorts().get(0).getPort().intValue();
-        } else {
-            if (devopsServiceE.getPorts().stream()
-                    .map(PortMapE::getPort).anyMatch(t -> t.equals(port))) {
-                servicePort = port.intValue();
-            } else {
-                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
-            }
+        backend.setServiceName(serviceName.toLowerCase());
+        if (port != null) {
+            backend.setServicePort(new IntOrString(port.intValue()));
         }
-        backend.setServicePort(new IntOrString(servicePort));
         path.setBackend(backend);
         path.setPath(hostPath);
         return path;
@@ -488,13 +478,13 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
             } else {
                 pathCheckList.add(hostPath);
             }
-            DevopsServiceE devopsServiceE = getDevopsService(serviceId);
+            DevopsServiceE devopsServiceE = devopsServiceRepository.query(serviceId);
 
             devopsIngressPathDOS.add(new DevopsIngressPathDO(
                     devopsIngressDTO.getId(), hostPath,
                     devopsServiceE == null ? null : devopsServiceE.getId(), devopsServiceE == null ? t.getServiceName() : devopsServiceE.getName(), servicePort));
             v1beta1Ingress.getSpec().getRules().get(0).getHttp().addPathsItem(
-                    createPath(hostPath, serviceId, servicePort));
+                    createPath(hostPath, t.getServiceName(), servicePort));
         });
         return devopsIngressPathDOS;
     }

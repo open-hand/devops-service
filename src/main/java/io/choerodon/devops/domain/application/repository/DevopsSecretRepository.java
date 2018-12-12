@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.DevopsSecretE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -25,4 +27,6 @@ public interface DevopsSecretRepository {
     DevopsSecretE selectByEnvIdAndName(Long envId, String name);
 
     Page<DevopsSecretE> listByOption(Long envId, PageRequest pageRequest, String params);
+
+    List<DevopsSecretE> listByEnv(Long envId);
 }

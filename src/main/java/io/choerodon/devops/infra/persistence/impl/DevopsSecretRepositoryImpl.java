@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -93,5 +94,12 @@ public class DevopsSecretRepositoryImpl implements DevopsSecretRepository {
         Page<DevopsSecretDO> devopsSecretDOPage = PageHelper
                 .doPageAndSort(pageRequest, () -> devopsSecretMapper.listByOption(envId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPage(devopsSecretDOPage, DevopsSecretE.class);
+    }
+
+    @Override
+    public List<DevopsSecretE> listByEnv(Long envId) {
+        DevopsSecretDO devopsSecretDO = new DevopsSecretDO();
+        devopsSecretDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsSecretMapper.select(devopsSecretDO), DevopsSecretE.class);
     }
 }

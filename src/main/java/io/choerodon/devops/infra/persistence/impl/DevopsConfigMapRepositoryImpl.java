@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -64,13 +65,20 @@ public class DevopsConfigMapRepositoryImpl implements DevopsConfigMapRepository 
     }
 
     @Override
-    public Page<DevopsConfigMapE> listByEnv(Long envId, PageRequest pageRequest, String params) {
+    public Page<DevopsConfigMapE> pageByEnv(Long envId, PageRequest pageRequest, String params) {
         Map maps = gson.fromJson(params, Map.class);
         Page<DevopsConfigMapDO> devopsConfigMapDOS = PageHelper
                 .doPageAndSort(pageRequest, () -> devopsConfigMapMapper.listByEnv(envId,
                         TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
                         TypeUtil.cast(maps.get(TypeUtil.PARAM))));
         return ConvertPageHelper.convertPage(devopsConfigMapDOS, DevopsConfigMapE.class);
+    }
+
+    @Override
+    public List<DevopsConfigMapE> listByEnv(Long envId) {
+        DevopsConfigMapDO devopsConfigMapDO = new DevopsConfigMapDO();
+        devopsConfigMapDO.setEnvId(envId);
+        return ConvertHelper.convertList(devopsConfigMapMapper.select(devopsConfigMapDO), DevopsConfigMapE.class);
     }
 
 
