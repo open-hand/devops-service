@@ -218,9 +218,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public List<CertificationE> listByProject(Long projectId, Long organizationId) {
-        devopsCertificationMapper.listByProjectId(projectId, organizationId);
-        return ConvertHelper.convertList(devopsCertificationMapper.listByProjectId(projectId, organizationId), CertificationE.class);
+    public List<CertificationDTO> listByProject(Long projectId, Long organizationId) {
+        return ConvertHelper.convertList(devopsCertificationMapper.listByProjectId(projectId, organizationId), CertificationDTO.class);
     }
 
     private void deleteCertFile(Long certId) {

@@ -74,10 +74,11 @@
 
 
     <select id="listByProjectId" resultType="io.choerodon.devops.infra.dataobject.CertificationDO">
-        select dc.id,dc.`name` from devops_certification dc where dc.skip_check_project_permission is true and
+        select dc.id,dc.`name`,dc.domains from devops_certification dc where dc.skip_check_project_permission is true
+        and
         dc.organization_id = #{organizationId}
         UNION
-        select dc.id,dc.`name` from devops_certification dc
+        select dc.id,dc.`name`,dc.domains from devops_certification dc
         join devops_certification_pro_rel dcp on dc.id = dcp.cert_id
         where dcp.project_id = #{projectId}
     </select>

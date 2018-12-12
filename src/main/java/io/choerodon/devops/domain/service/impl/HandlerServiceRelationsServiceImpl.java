@@ -223,7 +223,13 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             String instancesCode = v1Service.getMetadata().getAnnotations()
                     .get("choerodon.io/network-service-instances");
             if (instancesCode != null) {
-                List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().collect(Collectors.toList());
+                List<String> instanceIdList = Arrays.stream(instancesCode.split("\\+")).parallel().map(t -> {
+                    ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(t, envId);
+                    if (applicationInstanceE != null) {
+                        devopsServiceReqDTO.setAppId(applicationInstanceE.getApplicationE().getId());
+                    }
+                    return t;
+                }).collect(Collectors.toList());
                 devopsServiceReqDTO.setAppInstance(instanceIdList);
             }
         }
@@ -250,9 +256,6 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
         if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
-            if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
-                checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
-            }
             if (devopsServiceReqDTO.getAppInstance() != null) {
                 List<String> newInstanceCode = devopsServiceReqDTO.getAppInstance();
                 List<String> oldInstanceCode = devopsServiceInstanceEList.stream().map(DevopsServiceAppInstanceE::getCode).collect(Collectors.toList());
@@ -296,9 +299,4 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
 
-    private void checkOptions(Long envId, Long appId, String  appInstanceCode) {
-        if (applicationInstanceRepository.checkOptions(envId, appId, appInstanceCode) == 0) {
-            throw new CommonException("error.instances.query");
-        }
-    }
 }

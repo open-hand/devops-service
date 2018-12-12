@@ -67,4 +67,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
             column(name: 'is_skip_check_permission', type: 'TINYINT UNSIGNED', remarks: '是否跳过权限检查', afterColumn: 'is_failed')
         }
     }
+
+    changeSet(author: 'n1ck', id: '2018-12-12-set-default-for-is_skip_check_permission') {
+        // remarks: '为之前的is_skip_check_permission字段设置默认值'
+        sql("UPDATE devops_application da SET da.is_skip_check_permission = FALSE WHERE da.is_skip_check_permission IS NULL")
+    }
 }

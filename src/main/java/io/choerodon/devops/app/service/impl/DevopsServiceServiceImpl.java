@@ -125,11 +125,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
+//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<String> beforeDevopsServiceAppInstanceES = new ArrayList<>();
@@ -190,10 +190,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
             throw new CommonException("error.service.name.exist");
         }
-        if (devopsServiceReqDTO.getAppId() != null) {
-            checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                    null);
-        }
 
         //初始化DevopsService对象
         DevopsServiceE devopsServiceE = new DevopsServiceE();
@@ -248,9 +244,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
         boolean isUpdate = false;
         if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
-            if (!devopsServiceE.getAppId().equals(devopsServiceReqDTO.getAppId())) {
-                checkOptions(devopsServiceE.getEnvId(), devopsServiceReqDTO.getAppId(), null);
-            }
             if (devopsServiceReqDTO.getAppInstance() != null) {
                 isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
                         .sorted().collect(Collectors.toList())
@@ -282,12 +275,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                                        DevopsServiceReqDTO devopsServiceReqDTO) {
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
+//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
 
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
 
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 
@@ -439,8 +432,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         List<String> appInstances = devopsServiceReqDTO.getAppInstance();
         if (appInstances != null) {
             appInstances.forEach(appInstance -> {
-                checkOptions(devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getAppId(),
-                        appInstance);
                 ApplicationInstanceE applicationInstanceE =
                         applicationInstanceRepository.selectByCode(appInstance, devopsServiceReqDTO.getEnvId());
                 stringBuffer.append(appInstance).append("+");
@@ -452,7 +443,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 if (applicationInstanceE != null) {
                     devopsServiceAppInstanceE.setAppInstanceId(applicationInstanceE.getId());
                 }
-                devopsServiceAppInstanceE.setCode(applicationInstanceE.getCode());
+                devopsServiceAppInstanceE.setCode(appInstance);
                 addDevopsServiceAppInstanceES.add(devopsServiceAppInstanceE);
             });
         }
@@ -463,18 +454,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return instancesCode;
     }
 
-    /**
-     * 校验参数
-     *
-     * @param envId           环境id
-     * @param appId           应用id
-     * @param appInstanceCode 应用实例Code
-     */
-    private void checkOptions(Long envId, Long appId, String appInstanceCode) {
-        if (applicationInstanceRepository.checkOptions(envId, appId, appInstanceCode) == 0) {
-            throw new CommonException("error.instances.query");
-        }
-    }
 
     /**
      * 获取k8s service的yaml格式
@@ -573,7 +552,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         DevopsServiceE beforeDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());
         DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
@@ -615,7 +594,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             });
         }
         //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
-        if ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId())))) {
+        if (!isCreate && ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId()))))) {
             devopsEnvCommandE.setObjectId(devopsServiceE.getId());
             devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsServiceRepository.update(devopsServiceE);

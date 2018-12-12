@@ -75,7 +75,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsCreateEnv",
             description = "devops创建环境",
             sagaCode = "devops-create-env",
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             seq = 1)
     public String devopsCreateEnv(String data) {
         GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
@@ -100,7 +100,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsCreateEnvError",
             description = "set  DevOps app status error",
             sagaCode = "devops-set-env-err",
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             seq = 1)
     public String setEnvErr(String data) {
         GitlabProjectPayload gitlabProjectPayload = gson.fromJson(data, GitlabProjectPayload.class);
@@ -118,7 +118,7 @@ public class DevopsSagaHandler {
             description = "gitops",
             sagaCode = "devops-sync-gitops",
             concurrentLimitNum = 1,
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitops(String data) {
@@ -138,7 +138,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsOperationGitlabProject",
             description = "devops create GitLab project",
             sagaCode = "devops-create-gitlab-project",
-            maxRetryCount = 1,
+            maxRetryCount = 3,
             seq = 1)
     public String createApp(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
@@ -166,7 +166,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsUpdateGitlabUsers",
             description = "devops update gitlab users",
             sagaCode = "devops-update-gitlab-users",
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             seq = 1)
     public String updateGitlabUser(String data) {
         DevOpsUserPayload devOpsUserPayload = gson.fromJson(data, DevOpsUserPayload.class);
@@ -188,7 +188,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsCreateGitlabProjectErr",
             description = "set  DevOps app status error",
             sagaCode = "devops-set-app-err",
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             seq = 1)
     public String setAppErr(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
@@ -206,7 +206,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsCreateGitlabProjectTemplateErr",
             description = "set  DevOps app template status error",
             sagaCode = "devops-set-appTemplate-err",
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             seq = 1)
     public String setAppTemplateErr(String data) {
         DevOpsAppPayload devOpsAppPayload = gson.fromJson(data, DevOpsAppPayload.class);
@@ -223,7 +223,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsOperationGitlabTemplateProject",
             description = "devops create GitLab template project",
             sagaCode = "devops-create-gitlab-template-project",
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             seq = 1)
     public String createTemplate(String data) {
         GitlabProjectPayload gitlabProjectEventDTO = gson.fromJson(data, GitlabProjectPayload.class);
@@ -250,7 +250,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devopsGitlabPipeline",
             description = "gitlab-pipeline",
             sagaCode = "devops-gitlab-pipeline",
-            maxRetryCount = 0,
+            maxRetryCount = 3,
             concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             seq = 1)
     public String gitlabPipeline(String data) {
