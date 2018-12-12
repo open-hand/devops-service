@@ -534,12 +534,10 @@ public class ApplicationServiceImpl implements ApplicationService {
         devopsBranchE.setApplicationE(applicationE);
         devopsBranchE.setBranchName(MASTER);
         devopsBranchE.setCheckoutCommit(commitE.getId());
-        Date date = DateUtil.changeTimeZone(
-                commitE.getCommittedDate(), TimeZone.getTimeZone("GMT"), TimeZone.getDefault());
-        devopsBranchE.setCheckoutDate(date);
+        devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
         devopsBranchE.setLastCommitUser(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
         devopsBranchE.setLastCommitMsg(commitE.getMessage());
-        devopsBranchE.setLastCommitDate(date);
+        devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
         devopsBranchE.setLastCommit(commitE.getId());
         devopsGitRepository.createDevopsBranch(devopsBranchE);
     }
