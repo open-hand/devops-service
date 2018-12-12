@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import io.choerodon.core.domain.Page;
@@ -44,8 +43,6 @@ public class CertificationController {
      *
      * @param projectId     项目id
      * @param certification 证书名
-     * @param key           key文件
-     * @param cert          cert文件
      * @return 201, "Created"
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
@@ -56,7 +53,7 @@ public class CertificationController {
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "证书", required = true)
-            @ModelAttribute C7nCertificationDTO certification) {
+            @RequestBody C7nCertificationDTO certification) {
         certificationService.create(projectId, certification, false);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }

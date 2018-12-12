@@ -117,4 +117,6 @@ public class C7nCertificationDTO {
     public void setCertValue(String certValue) {
         this.certValue = certValue;
     }
+
+
 }
