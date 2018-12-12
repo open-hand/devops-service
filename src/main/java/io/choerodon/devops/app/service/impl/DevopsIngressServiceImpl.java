@@ -269,6 +269,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         if (devopsEnvFileResourceE == null) {
             devopsIngressRepository.deleteIngress(ingressId);
             devopsIngressRepository.deleteIngressPath(ingressId);
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    "ing-" + ingressDO.getName() + ".yaml")) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        "ing-" + ingressDO.getName() + ".yaml",
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
             return;
 
         }

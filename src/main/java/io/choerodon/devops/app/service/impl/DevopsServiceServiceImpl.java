@@ -374,6 +374,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), id, SERVICE);
         if (devopsEnvFileResourceE == null) {
             devopsServiceRepository.delete(id);
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    "svc-" + devopsServiceE.getName() + ".yaml")) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        "svc-" + devopsServiceE.getName() + ".yaml",
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
             return;
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository.queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
