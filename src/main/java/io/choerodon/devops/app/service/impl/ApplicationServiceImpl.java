@@ -6,7 +6,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.choerodon.core.iam.ResourceLevel;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +22,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
@@ -161,8 +161,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationRepDTO applicationRepDTO = ConvertHelper.convert(applicationE, ApplicationRepDTO.class);
         if (applicationE.getIsSkipCheckPermission()) {
             applicationRepDTO.setPermission(true);
-        }
-        else {
+        } else {
             applicationRepDTO.setPermission(false);
         }
         return applicationRepDTO;
@@ -205,16 +204,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
             return true;
-        }
-        else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getIsSkipCheckPermission()) {
+        } else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getIsSkipCheckPermission()) {
             applicationUpdateDTO.getUserIds().forEach(e -> appUserPermissionRepository.create(e, appId));
             devOpsAppPayload.setOption(1);
-        }
-        else if (!oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
+        } else if (!oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
             appUserPermissionRepository.deleteByAppId(appId);
             devOpsAppPayload.setOption(2);
-        }
-        else {
+        } else {
             appUserPermissionRepository.deleteByAppId(appId);
             applicationUpdateDTO.getUserIds().forEach(e -> appUserPermissionRepository.create(e, appId));
             devOpsAppPayload.setOption(3);
@@ -324,6 +320,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     private List<ApplicationRepDTO> setApplicationRepDTOPermission(List<ApplicationE> applicationEList,
                                                                    UserAttrE userAttrE, ProjectE projectE) {
         List<ApplicationRepDTO> resultDTOList = ConvertHelper.convertList(applicationEList, ApplicationRepDTO.class);
+        if (userAttrE == null) {
+            throw new CommonException("error.gitlab.user.sync.failed");
+        }
         if (!iamRepository.isProjectOwner(userAttrE.getIamUserId(), projectE)) {
             List<Long> appIds = appUserPermissionRepository.listByUserId(userAttrE.getIamUserId()).stream()
                     .map(AppUserPermissionE::getAppId).collect(Collectors.toList());
@@ -332,8 +331,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                     e.setPermission(true);
                 }
             });
-        }
-        else {
+        } else {
             resultDTOList.stream().filter(Objects::nonNull).forEach(e -> e.setPermission(true));
         }
         return resultDTOList;
@@ -386,8 +384,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             Map maps = gson.fromJson(subErrorMessage, Map.class);
             if ("404 Project Not Found".equals(maps.get("code"))) {
                 LOGGER.info("project not found");
-            }
-            else {
+            } else {
                 throw new CommonException("project.exist", e);
             }
         }

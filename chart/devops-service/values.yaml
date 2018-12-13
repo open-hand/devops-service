@@ -58,11 +58,11 @@ env:
     TEMPLATE_VERSION_MICROSERVICEFRONT: 0.9.0
     TEMPLATE_VERSION_JAVALIB: 0.9.0
     TEMPLATE_VERSION_CHOERODONMOCHATEMPLATE: 0.9.0
-    SKYWALKING_OPTS: >-
-          -javaagent:/agent/skywalking-agent.jar
-          -Dskywalking.agent.application_code=devops-service
-          -Dskywalking.agent.sample_n_per_3_secs=-1
-          -Dskywalking.collector.backend_service=oap.skywalking:11800
+#    SKYWALKING_OPTS: >-
+#          -javaagent:/agent/skywalking-agent.jar
+#          -Dskywalking.agent.application_code=devops-service
+#          -Dskywalking.agent.sample_n_per_3_secs=-1
+#          -Dskywalking.collector.backend_service=oap.skywalking:11800
 metrics:
   path: /prometheus
   group: spring-boot
