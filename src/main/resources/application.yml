@@ -83,6 +83,12 @@ feign:
 ribbon:
   ConnectTimeout: 50000
   ReadTimeout: 50000
+
+asgard-servie:
+  ribbon:
+    ConnectTimeout: 50000
+    ReadTimeout: 50000
+
 cert:
   testCert: false # 证书是否为测试证书
 logging:
