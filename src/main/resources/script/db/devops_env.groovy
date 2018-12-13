@@ -110,4 +110,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
         sql("UPDATE devops_env  de SET de.is_synchro= (CASE when de.gitlab_env_project_id  is not null THEN 1  else  0  END)")
         sql("UPDATE devops_env  de SET de.is_failed= (CASE when de.gitlab_env_project_id  is  null THEN 1  else  0  END)")
     }
+
+    changeSet(author: 'zmf', id: '2018-12-13-alter-unique-constraint') {
+        dropUniqueConstraint(constraintName: "uk_project_id_name",tableName: "devops_env")
+        addUniqueConstraint(tableName: 'devops_env',
+                constraintName: 'devops_envs_uk_cluster_id_name', columnNames: 'cluster_id,name')
+    }
 }
