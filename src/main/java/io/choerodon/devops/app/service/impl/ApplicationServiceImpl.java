@@ -371,23 +371,9 @@ public class ApplicationServiceImpl implements ApplicationService {
                 gitlabGroupE.getProjectE().getId());
         ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        GitlabProjectDO gitlabProjectDO = new GitlabProjectDO();
-        try {
-            gitlabProjectDO = gitlabRepository
-                    .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(),
-                            gitlabProjectPayload.getUserId());
-        } catch (CommonException e) {
-            String errorMessage = e.getMessage();
-            int subStartPos = errorMessage.indexOf('{');
-            int subEndPos = errorMessage.indexOf('}') + 1;
-            String subErrorMessage = errorMessage.substring(subStartPos, subEndPos);
-            Map maps = gson.fromJson(subErrorMessage, Map.class);
-            if ("404 Project Not Found".equals(maps.get("code"))) {
-                LOGGER.info("project not found");
-            } else {
-                throw new CommonException("project.exist", e);
-            }
-        }
+        GitlabProjectDO gitlabProjectDO = gitlabRepository
+                .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(),
+                        gitlabProjectPayload.getUserId());
         Integer gitlabProjectId = gitlabProjectDO.getId();
         if (gitlabProjectId == null) {
             gitlabProjectDO = gitlabRepository.createProject(gitlabProjectPayload.getGroupId(),

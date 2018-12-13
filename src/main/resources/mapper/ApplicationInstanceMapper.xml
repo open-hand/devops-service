@@ -98,18 +98,21 @@
         SELECT
         dai.id id,
         dai.`code` CODE,
-        dav.version appVersion
+        dav.version appVersion,
+        dav.id appVersionId
         FROM
         devops_app_instance dai,
         devops_application da,
         devops_env de,
-        devops_app_version dav
+        devops_app_version dav,
+        devops_env_command dc
         WHERE
         dai.app_id = da.id
+        AND dai.command_id = dc.id
         AND dai.env_id = de.id
         AND dai.`status` in ('running','failed')
         AND de.project_id = #{projectId}
-        AND dai.app_version_id = dav.id
+        AND dc.object_version_id= dav.id
         <if test="envId != null">
             AND dai.env_id = #{envId}
         </if>

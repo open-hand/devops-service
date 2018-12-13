@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -565,14 +564,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                applicationDeployDTO.getEnvironmentId());
+//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+//                applicationDeployDTO.getEnvironmentId());
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(applicationDeployDTO.getEnvironmentId());
 
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -586,13 +585,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
-        //校验values是否删除key
-        if (applicationDeployDTO.getType().equals(UPDATE)) {
-            String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
-                    applicationDeployDTO.getAppInstanceId());
-            String newDeployValue = devopsEnvCommandValueE.getValue();
-            if (oldDeployValue.equals(newDeployValue)) {
-                throw new CommonException("error.values.key.delete");
+        //校验更新实例时values是否删除key
+        if (!applicationDeployDTO.getIsNotChange() && applicationDeployDTO.getType().equals(UPDATE)) {
+            ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
+            if (oldapplicationInstanceE.getApplicationVersionE().getId().equals(applicationDeployDTO.getAppVerisonId())) {
+                String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
+                        applicationDeployDTO.getAppInstanceId());
+                String newDeployValue = devopsEnvCommandValueE.getValue();
+                if (oldDeployValue.equals(newDeployValue)) {
+                    throw new CommonException("error.values.key.delete");
+                }
             }
         }
 
