@@ -564,14 +564,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
         //校验用户是否有环境的权限
-//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-//                applicationDeployDTO.getEnvironmentId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                applicationDeployDTO.getEnvironmentId());
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(applicationDeployDTO.getEnvironmentId());
 
         //校验环境是否连接
-//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -620,6 +620,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
         if (applicationDeployDTO.getIsNotChange()) {
             applicationInstanceRepository.update(applicationInstanceE);
+            applicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
             devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
             devopsEnvCommandE.setId(null);
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
