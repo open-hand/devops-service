@@ -18,6 +18,7 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
@@ -112,6 +113,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsClusterRepository devopsClusterRepository;
     @Autowired
     private DeployService deployService;
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -542,9 +545,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 String realName = e.getRealName();
                 UserAttrE userAttrE = userAttrRepository.queryById(userId);
                 Long gitlabUserId = userAttrE.getGitlabUserId();
-                // 添加gitlab用户权限
+
+                // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
                 MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, "");
-                gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
+                GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
+                if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                    gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
+                }
                 // 添加devops数据库记录
                 devopsEnvUserPermissionRepository
                         .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));

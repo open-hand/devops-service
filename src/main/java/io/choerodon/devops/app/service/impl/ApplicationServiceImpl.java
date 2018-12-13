@@ -416,9 +416,15 @@ public class ApplicationServiceImpl implements ApplicationService {
             List<Long> iamUserIds = iamRepository.getAllMemberIdsWithoutOwner(projectE.getId());
             List<Integer> gitlabUserIds = userAttrRepository.listByUserIds(iamUserIds).stream()
                     .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
-            gitlabUserIds.forEach(e ->
-                    gitlabRepository.addMemberIntoProject(gitlabProjectPayload.getGitlabProjectId(),
-                            new MemberDTO(TypeUtil.objToInteger(e), 40, "")));
+
+            gitlabUserIds.forEach(e -> {
+                        GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
+                        if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                            gitlabRepository.addMemberIntoProject(gitlabProjectPayload.getGitlabProjectId(),
+                                    new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
+                        }
+                    }
+            );
         }
         if (applicationE.getApplicationTemplateE() != null) {
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(

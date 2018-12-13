@@ -60,6 +60,9 @@ public interface GitlabRepository {
 
     List<DeployKey> getDeployKeys(Integer projectId, Integer userId);
 
+    /**
+     * 将成员添加到gitlab项目，应该先检查成员是否存在，否则会报成员已存在的异常
+     */
     void addMemberIntoProject(Integer projectId, MemberDTO memberDTO);
 
     void removeMemberFromProject(Integer projectId, Integer userId);
