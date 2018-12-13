@@ -726,11 +726,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
         // 删除环境
         devopsEnviromentRepository.deleteById(envId);
-        // 删除gitlab库
-        Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
-        gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+        // 删除gitlab库, 删除之前查询是否存在
+        if (devopsEnvironmentE.getGitlabEnvProjectId() != null) {
+            Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
+            GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectById(gitlabProjectId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+                gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+            }
+        }
         // 删除环境命名空间
         if (devopsEnvironmentE.getClusterE().getId() != null) {
             deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());
