@@ -28,6 +28,9 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     @Override
     public GitlabGroupE queryDevopsProject(Long projectId) {
         DevopsProjectDO devopsProjectDO = devopsProjectMapper.selectByPrimaryKey(projectId);
+        if (devopsProjectDO == null) {
+            throw new CommonException("error.group.not.sync");
+        }
         if (devopsProjectDO.getDevopsAppGroupId() == null || devopsProjectDO.getDevopsEnvGroupId() == null) {
             throw new CommonException("error.gitlab.groupId.select");
         }

@@ -114,9 +114,6 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 查询创建应用所在的gitlab应用组
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
-        if (gitlabGroupE == null) {
-            throw new CommonException("error.group.not.sync");
-        }
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
