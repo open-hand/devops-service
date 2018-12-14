@@ -7,7 +7,6 @@ import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 
 /**

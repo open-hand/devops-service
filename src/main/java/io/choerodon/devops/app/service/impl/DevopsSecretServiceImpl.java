@@ -96,7 +96,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         V1Secret v1Secret = initV1Secret(devopsSecretE);
 
         // 更新操作如果key-value没有改变
-        if ("update".equals(secretReqDTO.getType())) {
+        if (UPDATE.equals(secretReqDTO.getType())) {
             DevopsSecretE oldSecretE = devopsSecretRepository
                     .selectByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());
             Map<String, String> oldMap = new HashMap<>();
@@ -111,15 +111,13 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 在gitops库处理secret文件
         operateEnvGitLabFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1Secret, devopsSecretE,
-                devopsEnvCommandE, "create".equals(secretReqDTO.getType()), userAttrE);
+                devopsEnvCommandE, CREATE.equals(secretReqDTO.getType()), userAttrE);
 
         return ConvertHelper.convert(devopsSecretRepository.queryBySecretId(devopsSecretE.getId()), SecretRepDTO.class);
     }
 
     private DevopsSecretE handleSecret(SecretReqDTO secretReqDTO) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
-
-        if ("create".equals(secretReqDTO.getType())) {
+        if (CREATE.equals(secretReqDTO.getType())) {
             // 校验secret名字合法性和环境下唯一性
             DevopsSecretValidator.checkName(secretReqDTO.getName());
             devopsSecretRepository.checkName(secretReqDTO.getName(), secretReqDTO.getEnvId());
@@ -136,7 +134,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private V1Secret initV1Secret(DevopsSecretE devopsSecretE) {
         V1Secret secret = new V1Secret();
         secret.setApiVersion("v1");
-        secret.setKind("Secret");
+        secret.setKind(SECRET);
         V1ObjectMeta metadata = new V1ObjectMeta();
         metadata.setName(devopsSecretE.getName());
         secret.setMetadata(metadata);
@@ -163,7 +161,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         ObjectOperation<V1Secret> objectOperation = new ObjectOperation<>();
         objectOperation.setType(v1Secret);
         objectOperation.operationEnvGitlabFile("sct-" + devopsSecretE.getName(), gitlabEnvGroupProjectId,
-                isCreate ? "create" : "update", userAttrE.getGitlabUserId(), devopsSecretE.getId(), SECRET,
+                isCreate ? CREATE : UPDATE, userAttrE.getGitlabUserId(), devopsSecretE.getId(), SECRET,
                 devopsSecretE.getEnvId(), path);
 
         DevopsSecretE afterDevopsSecretE = devopsSecretRepository
@@ -268,13 +266,11 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 处理secret对象
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
-        // 初始化V1Secret对象
-        V1Secret v1Secret = initV1Secret(devopsSecretE);
 
         // 创建secret
         Long secretId = devopsSecretRepository.create(devopsSecretE).getId();
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        devopsEnvCommandE.setCommandType("create");
+        devopsEnvCommandE.setCommandType(CREATE);
         devopsEnvCommandE.setStatus(devopsSecretE.getStatus());
         devopsEnvCommandE.setObjectId(secretId);
         devopsEnvCommandE.setObject("secret");
@@ -300,8 +296,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 处理secret对象
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
-        // 初始化V1Secret对象
-        V1Secret v1Secret = initV1Secret(devopsSecretE);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
         // 更新secret对象

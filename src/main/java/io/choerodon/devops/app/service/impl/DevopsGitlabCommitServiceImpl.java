@@ -41,7 +41,7 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     public void create(PushWebHookDTO pushWebHookDTO, String token) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
         String ref = pushWebHookDTO.getRef().split("/")[2];
-        if (pushWebHookDTO.getCommits().size() != 0) {
+        if (!pushWebHookDTO.getCommits().isEmpty()) {
             pushWebHookDTO.getCommits().forEach(commitDTO -> {
                 DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(commitDTO.getId(), ref);
 
@@ -138,11 +138,6 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
         // 获取最近的commit(返回所有的commit记录，按时间先后排序，分页查询)
         return getCommitFormRecordDTOS(projectId, appIdsMap, pageRequest, userMap, startDate, endDate);
-    }
-
-    @Override
-    public void createByTag(TagHookDTO tagHookDTO, String token) {
-
     }
 
     private Map<Long, UserE> getUserDOMap(List<DevopsGitlabCommitE> devopsGitlabCommitES) {

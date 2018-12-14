@@ -17,6 +17,9 @@ public class DevopsSecretValidator {
     // secret key name
     private static final String KEY_NAME_PATTERN = "/[^0-9A-Za-z\\.\\-\\_]/";
 
+    private DevopsSecretValidator() {
+    }
+
     public static void checkName(String name) {
         if (!Pattern.matches(NAME_PATTERN, name)) {
             throw new CommonException("error.secret.name.notMatch");

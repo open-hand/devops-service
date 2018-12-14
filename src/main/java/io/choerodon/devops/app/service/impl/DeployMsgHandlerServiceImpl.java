@@ -52,6 +52,7 @@ import io.choerodon.websocket.tool.KeyParseTool;
 @Service
 public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
+    private static final String CHOERODON_IO_NETWORK_SERVICE_INSTANCES = "choerodon.io/network-service-instances";
     private static final String SERVICE_LABLE = "choerodon.io/network";
     private static final String PENDING = "Pending";
     private static final String METADATA = "metadata";
@@ -423,7 +424,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
         if (v1Service.getMetadata().getAnnotations() != null) {
             String releaseNames = v1Service.getMetadata().getAnnotations()
-                    .get("choerodon.io/network-service-instances");
+                    .get(CHOERODON_IO_NETWORK_SERVICE_INSTANCES);
             if (releaseNames != null) {
                 String[] releases = releaseNames.split("\\+");
                 List<Long> beforeInstanceIdS = devopsEnvResourceRepository.listByEnvAndType(envId, SERVICE_KIND).stream().filter(devopsEnvResourceE1 -> devopsEnvResourceE1.getName().equals(v1Service.getMetadata().getName())).map(devopsEnvResourceE1 ->
@@ -827,7 +828,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         V1Service v1Service = json.deserialize(msg, V1Service.class);
 
-        String releaseNames = v1Service.getMetadata().getAnnotations().get("choerodon.io/network-service-instances");
+        String releaseNames = v1Service.getMetadata().getAnnotations().get(CHOERODON_IO_NETWORK_SERVICE_INSTANCES);
         String[] releases = releaseNames.split("\\+");
 
         DevopsEnvResourceE devopsEnvResourceE =
@@ -1579,7 +1580,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         try {
             V1Service v1Service = json.deserialize(msg, V1Service.class);
             String releaseNames = v1Service.getMetadata().getAnnotations()
-                    .get("choerodon.io/network-service-instances");
+                    .get(CHOERODON_IO_NETWORK_SERVICE_INSTANCES);
             String[] releases = releaseNames.split("\\+");
             DevopsEnvResourceE devopsEnvResourceE =
                     DevopsInstanceResourceFactory.createDevopsInstanceResourceE();

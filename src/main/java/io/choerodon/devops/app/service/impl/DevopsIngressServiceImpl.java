@@ -25,7 +25,6 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
-import io.choerodon.devops.infra.dataobject.DevopsServiceDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
 
@@ -406,17 +405,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         ingress.setSpec(spec);
         return ingress;
-    }
-
-    /**
-     * 获取服务
-     */
-    private DevopsServiceE getDevopsService(Long id) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
-        if (devopsServiceE == null) {
-            throw new CommonException("error.service.select");
-        }
-        return devopsServiceE;
     }
 
     private void operateEnvGitLabFile(Integer envGitLabProjectId,

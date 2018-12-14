@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,7 +7,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
@@ -25,7 +23,6 @@ import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
@@ -43,7 +40,6 @@ import io.choerodon.websocket.helper.EnvListener;
 public class CertificationServiceImpl implements CertificationService {
 
     private static final String CERT_PREFIX = "cert-";
-    private static final String FILE_SEPARATOR = System.getProperty("file.separator");
 
     @Value("${cert.testCert}")
     private Boolean testCert;
@@ -160,15 +156,6 @@ public class CertificationServiceImpl implements CertificationService {
         }
     }
 
-    private String fileTmpPath(Long projectId, String envCode) {
-        ProjectE projectE = iamRepository.queryIamProject(projectId);
-        return String.format("tmp%s%s%s%s", FILE_SEPARATOR, projectE.getCode(), FILE_SEPARATOR, envCode);
-    }
-
-    private String getFileContent(String path, MultipartFile file) {
-        return file == null ? null : FileUtil.getFileContent(new File(FileUtil.multipartFileToFile(path, file)));
-    }
-
     @Override
     public C7nCertification getC7nCertification(String name, String type, List<String> domains,
                                                 String keyContent, String certContent, String envCode) {
@@ -227,10 +214,10 @@ public class CertificationServiceImpl implements CertificationService {
         if (devopsEnvFileResourceE == null) {
             certificationRepository.deleteById(certId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
-                    "cert-" + certificationE.getName() + ".yaml")) {
+                    CERT_PREFIX + certificationE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        "cert-" + certificationE.getName() + ".yaml",
+                        CERT_PREFIX + certificationE.getName() + ".yaml",
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
@@ -241,7 +228,7 @@ public class CertificationServiceImpl implements CertificationService {
         certificationE.setStatus(CertificationStatus.DELETING.getStatus());
         certificationRepository.updateStatus(certificationE);
 
-        if (devopsEnvFileResourceE != null && devopsEnvFileResourceE.getFilePath() != null
+        if (devopsEnvFileResourceE.getFilePath() != null
                 && devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",

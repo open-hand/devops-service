@@ -34,7 +34,6 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
-    private final ProjectService projectService;
     private final GitlabGroupService gitlabGroupService;
     private final HarborService harborService;
     private final OrganizationService organizationService;
@@ -45,7 +44,6 @@ public class SagaHandler {
     public SagaHandler(ProjectService projectService, GitlabGroupService gitlabGroupService,
                        HarborService harborService, OrganizationService organizationService,
                        GitlabGroupMemberService gitlabGroupMemberService, GitlabUserService gitlabUserService) {
-        this.projectService = projectService;
         this.gitlabGroupService = gitlabGroupService;
         this.harborService = harborService;
         this.organizationService = organizationService;

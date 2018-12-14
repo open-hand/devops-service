@@ -17,7 +17,6 @@ public class DevopsEnvUserPermissionDTO {
     public DevopsEnvUserPermissionDTO(String loginName, Long iamUserId, String realName) {
         this.loginName = loginName;
         this.iamUserId = iamUserId;
-        this.loginName = loginName;
         this.realName = realName;
     }
 

@@ -49,7 +49,7 @@ public class DevopsConfigMapController {
             @ApiParam(value = "域名信息", required = true)
             @RequestBody DevopsConfigMapDTO devopsConfigMapDTO) {
         devopsConfigMapService.createOrUpdate(projectId, devopsConfigMapDTO);
-        return new ResponseEntity<>(HttpStatus.OK.NO_CONTENT);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     /**

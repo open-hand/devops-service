@@ -1,7 +1,5 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -17,8 +15,6 @@ import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
  */
 @Component
 public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DevopsProjectRepositoryImpl.class);
-
     private DevopsProjectMapper devopsProjectMapper;
 
     public DevopsProjectRepositoryImpl(DevopsProjectMapper devopsProjectMapper) {

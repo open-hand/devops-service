@@ -21,7 +21,7 @@ import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
  */
 @Service
 public class GitlabUserServiceImpl implements GitlabUserService {
-    private  final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
+    private static final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
 
     @Autowired
     private GitlabConfigurationProperties gitlabConfigurationProperties;
@@ -79,7 +79,7 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     }
 
 
-    private void checkGitlabUser(GitlabUserRequestDTO  gitlabUserRequestDTO){
+    private void checkGitlabUser(GitlabUserRequestDTO gitlabUserRequestDTO) {
         String userName = gitlabUserRequestDTO.getUsername();
         String newUserName = "";
         for (int i = 0; i < userName.length(); i++) {

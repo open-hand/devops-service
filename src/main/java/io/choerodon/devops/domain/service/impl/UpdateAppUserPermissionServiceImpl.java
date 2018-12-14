@@ -20,15 +20,12 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionService {
 
     private ApplicationRepository applicationRepository;
-    private AppUserPermissionRepository appUserPermissionRepository;
     private IamRepository iamRepository;
     private UserAttrRepository userAttrRepository;
     private GitlabProjectRepository gitlabProjectRepository;
 
     public UpdateAppUserPermissionServiceImpl() {
         this.applicationRepository = ApplicationContextHelper.getSpringFactory().getBean(ApplicationRepository.class);
-        this.appUserPermissionRepository = ApplicationContextHelper.getSpringFactory()
-                .getBean(AppUserPermissionRepository.class);
         this.iamRepository = ApplicationContextHelper.getSpringFactory().getBean(IamRepository.class);
         this.userAttrRepository = ApplicationContextHelper.getSpringFactory().getBean(UserAttrRepository.class);
         this.gitlabProjectRepository = ApplicationContextHelper.getSpringFactory()

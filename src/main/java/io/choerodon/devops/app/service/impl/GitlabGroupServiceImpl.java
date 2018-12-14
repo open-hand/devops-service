@@ -35,6 +35,7 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
 public class GitlabGroupServiceImpl implements GitlabGroupService {
 
     private static final String GITLAB_GROUP_NAME_PATTERN_STRING = "[^\\u4E00-\\u9FA5a-zA-Z0-9_\\-.\\s]";
+    private static final String GROUP_NAME_FORMAT = "%s-%s%s";
 
     @Autowired
     private GitlabServiceClient gitlabServiceClient;
@@ -55,12 +56,12 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         //创建gitlab group
         GroupDO group = new GroupDO();
         // name: orgName-projectName
-        group.setName(String.format("%s-%s%s",
+        group.setName(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationName(),
                 gitlabProjectName,
                 groupCodeSuffix));
         // path: orgCode-projectCode
-        group.setPath(String.format("%s-%s%s",
+        group.setPath(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));
@@ -98,12 +99,12 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
         //创建gitlab group
         GroupDO group = new GroupDO();
         // name: orgName-projectName
-        group.setName(String.format("%s-%s%s",
+        group.setName(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationName(),
                 gitlabProjectName,
                 groupCodeSuffix));
         // path: orgCode-projectCode
-        group.setPath(String.format("%s-%s%s",
+        group.setPath(String.format(GROUP_NAME_FORMAT,
                 gitlabGroupPayload.getOrganizationCode(),
                 gitlabGroupPayload.getProjectCode(),
                 groupCodeSuffix));

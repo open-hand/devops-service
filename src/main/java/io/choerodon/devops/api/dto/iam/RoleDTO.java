@@ -14,9 +14,6 @@ import org.hibernate.validator.constraints.NotEmpty;
  * Description:
  */
 public class RoleDTO {
-    private static final String CODE_REGULAR_EXPRESSION
-            = "^[a-z]([-a-z0-9]*[a-z0-9])$";
-
     @ApiModelProperty(value = "主键ID/非必填")
     private Long id;
 

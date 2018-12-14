@@ -26,6 +26,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/organizations/{organization_id}/clusters")
 public class DevopsClusterController {
+    private static final String ERROR_CLUSTER_QUERY = "error.cluster.query";
 
     @Autowired
     DevopsClusterService devopsClusterService;
@@ -84,7 +85,7 @@ public class DevopsClusterController {
             @PathVariable Long clusterId) {
         return Optional.ofNullable(devopsClusterService.getCluster(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.cluster.query"));
+                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
     }
 
     /**
@@ -186,7 +187,7 @@ public class DevopsClusterController {
             @PathVariable Long clusterId) {
         return Optional.ofNullable(devopsClusterService.queryShell(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.cluster.query"));
+                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
     }
 
     /**
@@ -211,7 +212,7 @@ public class DevopsClusterController {
             @RequestBody String params) {
         return Optional.ofNullable(devopsClusterService.pageClusters(organizationId, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.cluster.query"));
+                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
     }
 
     /**

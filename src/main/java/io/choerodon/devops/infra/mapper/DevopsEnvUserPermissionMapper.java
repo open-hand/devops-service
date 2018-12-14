@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.apache.ibatis.annotations.Param;
 
-import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.infra.dataobject.DevopsEnvUserPermissionDO;
 import io.choerodon.mybatis.common.BaseMapper;
 

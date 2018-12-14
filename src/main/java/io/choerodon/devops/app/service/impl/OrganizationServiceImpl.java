@@ -12,7 +12,6 @@ import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.event.OrganizationEventPayload;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.Visibility;

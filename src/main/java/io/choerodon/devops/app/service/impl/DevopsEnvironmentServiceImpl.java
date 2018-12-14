@@ -219,16 +219,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(value);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
         });
-        if (active) {
-            devopsEnvGroupES.forEach(devopsEnvGroupE -> {
-                if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
-                    DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
-                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
-                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
-                    devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
-                }
-            });
-        }
+        devopsEnvGroupES.forEach(devopsEnvGroupE -> {
+            if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
+                DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+                devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
+                devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+                devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+            }
+        });
         return devopsEnvGroupEnvsDTOS;
     }
 
@@ -625,12 +623,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvUserPermissionDTOPage.setContent(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
         } else {
-            // 查询表中已经有权限的项目成员
-            List<DevopsEnvUserPermissionDTO> allUsersDTOList = devopsEnvUserPermissionRepository
-                    .listALlUserPermission(envId);
             List<DevopsEnvUserPermissionDTO> retureUsersDTOList = new ArrayList<>();
-            List<Long> allUsersId = allUsersDTOList.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
-                    .collect(Collectors.toList());
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
             allProjectMemberPage.getContent().forEach(e -> {
