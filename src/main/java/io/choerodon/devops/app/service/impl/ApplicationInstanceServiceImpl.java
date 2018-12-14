@@ -893,11 +893,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
         if (devopsEnvFileResourceES.size() == 1) {
-            gitlabRepository.deleteFile(
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
         } else {
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();

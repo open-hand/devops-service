@@ -388,11 +388,14 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceES.size() == 1) {
-            gitlabRepository.deleteFile(
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
         } else {
             ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
             V1Service v1Service = new V1Service();

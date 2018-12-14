@@ -105,7 +105,7 @@ public class CertificationServiceImpl implements CertificationService {
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
-                certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus(),certificationDTO.getCertId());
+                certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus(), certificationDTO.getCertId());
 
         C7nCertification c7nCertification = null;
 
@@ -244,11 +244,14 @@ public class CertificationServiceImpl implements CertificationService {
         if (devopsEnvFileResourceE != null && devopsEnvFileResourceE.getFilePath() != null
                 && devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(certEnvId, devopsEnvFileResourceE.getFilePath()).size() == 1) {
-            gitlabRepository.deleteFile(
-                    gitLabEnvProjectId,
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE " + certName,
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                gitlabRepository.deleteFile(
+                        gitLabEnvProjectId,
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE " + certName,
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
         } else {
             ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
             C7nCertification c7nCertification = new C7nCertification();

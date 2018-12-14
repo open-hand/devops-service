@@ -214,6 +214,14 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 .queryByEnvIdAndResource(devopsEnvironmentE.getId(), secretId, SECRET);
         if (devopsEnvFileResourceE == null) {
             devopsSecretRepository.deleteSecret(secretId);
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    "sct-" + devopsSecretE.getName() + ".yaml")) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        "sct-" + devopsSecretE.getName() + ".yaml",
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
             return true;
         }
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
@@ -221,9 +229,12 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceES.size() == 1) {
-            gitlabRepository.deleteFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(), "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                gitlabRepository.deleteFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceE.getFilePath(), "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
         } else {
             ObjectOperation<V1Secret> objectOperation = new ObjectOperation<>();
             V1Secret v1Secret = new V1Secret();
