@@ -80,7 +80,7 @@ public class CertificationServiceImpl implements CertificationService {
                        Boolean isGitOps) {
 
         //校验用户是否有环境的权限
-//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), certificationDTO.getEnvId());
 
         String certName = certificationDTO.getCertName();
         String type = certificationDTO.getType();
@@ -98,14 +98,14 @@ public class CertificationServiceImpl implements CertificationService {
         //校验环境是否链接
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
 
-//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
         devopsCertificationValidator.checkCertification(envId, certName);
 
 
         // status operating
         CertificationE certificationE = new CertificationE(null,
-                certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus());
+                certName, devopsEnvironmentE, domains, CertificationStatus.OPERATING.getStatus(),certificationDTO.getCertId());
 
         C7nCertification c7nCertification = null;
 

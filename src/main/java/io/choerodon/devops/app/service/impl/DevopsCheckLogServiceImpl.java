@@ -772,8 +772,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncGitOpsUserAccess(logs, "0.11.0");
                 updateWebHook(logs);
             } else if ("0.12.0".equals(version)) {
-                syncGitlabUserName(logs);
                 syncGitOpsUserAccess(logs, "0.12.0");
+                syncGitlabUserName(logs);
             } else {
                 LOGGER.info("version not matched");
             }
