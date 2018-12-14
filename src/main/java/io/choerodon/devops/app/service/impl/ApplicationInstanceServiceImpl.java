@@ -614,7 +614,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //校验更新实例时values是否删除key
         if (!applicationDeployDTO.getIsNotChange() && applicationDeployDTO.getType().equals(UPDATE)) {
             ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
-            if (oldapplicationInstanceE.getApplicationVersionE().getId().equals(applicationDeployDTO.getAppVerisonId())) {
+            DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
+            if (applicationDeployDTO.getAppVerisonId().equals(olddevopsEnvCommandE.getObjectVersionId())) {
                 String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
                         applicationDeployDTO.getAppInstanceId());
                 String newDeployValue = devopsEnvCommandValueE.getValue();
