@@ -133,6 +133,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = new ArrayList<>();
         List<String> beforeDevopsServiceAppInstanceES = new ArrayList<>();
+
+        // 校验环境名
+        Boolean existing =  checkName(projectId, devopsServiceReqDTO.getEnvId(), devopsServiceReqDTO.getName());
+        if (existing != null && !existing) {
+            throw new CommonException("error.service.name.exists", devopsServiceReqDTO.getName());
+        }
+
         //处理创建service对象数据
         DevopsServiceE devopsServiceE = handlerCreateService(devopsServiceReqDTO, projectId, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
 
