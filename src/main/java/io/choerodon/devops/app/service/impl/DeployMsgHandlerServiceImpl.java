@@ -1013,9 +1013,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void jobEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
         if (event.getInvolvedObject().getKind().equals(ResourceType.JOB.getType())) {
-            event.getInvolvedObject().setName(
-                    event.getInvolvedObject().getName()
-                            .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
             insertDevopsCommandEvent(event, ResourceType.JOB.getType());
         }
     }
