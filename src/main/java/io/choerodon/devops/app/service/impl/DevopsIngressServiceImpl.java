@@ -80,11 +80,20 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
         //校验用户是否有环境的权限
-//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
         //校验环境是否连接
-//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+
+        //校验port是否属于该网络
+        devopsIngressDTO.getPathList().forEach(devopsIngressPathDTO -> {
+            DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsIngressPathDTO.getServiceId());
+            if (devopsServiceE.getPorts().stream()
+                    .map(PortMapE::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
+                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
+            }
+        });
 
         //初始化V1beta1Ingress对象
         String certName = getCertName(devopsIngressDTO.getCertId());
@@ -97,7 +106,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
@@ -144,11 +153,20 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public void updateIngress(Long id, DevopsIngressDTO devopsIngressDTO, Long projectId) {
 
         //校验用户是否有环境的权限
-//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsIngressDTO.getEnvId());
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
         //校验环境是否连接
-//        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+
+        //校验port是否属于该网络
+        devopsIngressDTO.getPathList().forEach(devopsIngressPathDTO -> {
+            DevopsServiceE devopsServiceE = devopsServiceRepository.query(devopsIngressPathDTO.getServiceId());
+            if (devopsServiceE.getPorts().stream()
+                    .map(PortMapE::getPort).noneMatch(port -> port.equals(devopsIngressPathDTO.getServicePort()))) {
+                throw new CommonException(ERROR_SERVICE_NOT_CONTAIN_PORT);
+            }
+        });
 
         //判断ingress有没有修改，没有修改直接返回
         DevopsIngressDTO ingressDTO = devopsIngressRepository.getIngress(projectId, id);
@@ -170,7 +188,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
@@ -284,11 +302,14 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         if (devopsEnvFileResourceES.size() == 1) {
-            gitlabRepository.deleteFile(
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
         } else {
             ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
             V1beta1Ingress v1beta1Ingress = new V1beta1Ingress();
@@ -384,17 +405,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
         ingress.setSpec(spec);
         return ingress;
-    }
-
-    /**
-     * 获取服务
-     */
-    private DevopsServiceE getDevopsService(Long id) {
-        DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
-        if (devopsServiceE == null) {
-            throw new CommonException("error.service.select");
-        }
-        return devopsServiceE;
     }
 
     private void operateEnvGitLabFile(Integer envGitLabProjectId,

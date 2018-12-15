@@ -18,8 +18,12 @@ import io.choerodon.devops.domain.application.repository.CertificationRepository
 public class DevopsCertificationValidator {
     private static final String NAME_PATTERN = "[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*";
 
-    @Autowired
     private CertificationRepository certificationRepository;
+
+    @Autowired
+    public DevopsCertificationValidator(CertificationRepository certificationRepository) {
+        this.certificationRepository = certificationRepository;
+    }
 
     /**
      * check certification

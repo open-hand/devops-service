@@ -84,7 +84,7 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     public Page<DevopsClusterE> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> maps = json.deserialize(params, Map.class);
         Page<DevopsClusterDO> devopsClusterEPage = new Page<>();
-        if (doPage != null && doPage == false) {
+        if (doPage != null && !doPage) {
             devopsClusterEPage.setContent(devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAM))));
         } else {
             devopsClusterEPage = PageHelper.doPageAndSort(pageRequest, () -> devopsClusterMapper.listClusters(organizationId, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)), TypeUtil.cast(maps.get(TypeUtil.PARAM))));

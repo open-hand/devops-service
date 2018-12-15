@@ -196,8 +196,10 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 break;
             case TEST_STATUS_RESPONSE:
                 deployMsgHandlerService.getTestAppStatus(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
             case CERT_MANAGER_INFO:
                 deployMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
+                break;
             default:
                 msg.setDispatch(false);
                 break;

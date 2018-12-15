@@ -32,7 +32,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
@@ -47,7 +47,6 @@ import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.service.impl.*;
 import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -60,9 +59,9 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 @Component
 public class DevopsGitServiceImpl implements DevopsGitService {
+    private static final String SERVICE = "Service";
     private static final String INGRESS = "Ingress";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
-    public static final String SERVICE = "Service";
     private static final String CERTIFICATE = "Certificate";
     private static final String CONFIGMAP = "ConfigMap";
     private static final String SECRET = "Secret";
@@ -628,6 +627,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             //校验对象是否在其它文件中已经定义
                             convertC7nCertification.checkIfExist(c7nCertifications, envId, beforeSyncDelete, objectPath,
                                     c7nCertification);
+                            break;
                         case CONFIGMAP:
                             //反序列文件为ConfigMap对象,
                             ConvertK8sObjectService<V1ConfigMap> convertConfigMap = new ConvertV1ConfigMapServiceImpl();
@@ -698,7 +698,6 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             String lastCommit = pushWebHookDTO.getAfter();
             Long userId = pushWebHookDTO.getUserId().longValue();
 
-            // 从gitlab-service获取commit数据，所以需要处理gitlab中获取的时间
             CommitE commitE = devopsGitRepository.getCommit(
                     pushWebHookDTO.getProjectId(),
                     lastCommit,
@@ -710,10 +709,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setUserId(userId);
                 devopsBranchE.initApplicationE(appId);
 
-                // 处理时间
-                Date commitDate = DateUtil.convertUTC2Local(commitE.getCommittedDate());
-
-                devopsBranchE.setCheckoutDate(commitDate);
+                devopsBranchE.setCheckoutDate(commitE.getCommittedDate());
                 devopsBranchE.setCheckoutCommit(lastCommit);
                 devopsBranchE.setBranchName(branchName);
 
@@ -721,8 +717,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 devopsBranchE.setLastCommit(lastCommit);
                 devopsBranchE.setLastCommitMsg(commitE.getMessage());
 
-                devopsBranchE.setLastCommitDate(commitDate);
+                devopsBranchE.setLastCommitDate(commitE.getCommittedDate());
                 devopsGitRepository.createDevopsBranch(devopsBranchE);
+
+
             }
         } catch (Exception e) {
             LOGGER.info("error.create.branch");

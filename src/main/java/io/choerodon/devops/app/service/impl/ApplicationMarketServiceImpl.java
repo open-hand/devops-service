@@ -454,6 +454,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     ApplicationE applicationE = new ApplicationE();
                     String appCode = applicationReleasingDTO.getCode();
                     applicationE.setName(applicationReleasingDTO.getName());
+                    applicationE.setIsSkipCheckPermission(true);
+                    applicationE.setType("normal");
                     Long appId = createOrUpdateApp(applicationE, appCode, projectId);
                     Boolean isVersionPublish = isPublic != null;
                     applicationReleasingDTO.getAppVersions().stream()

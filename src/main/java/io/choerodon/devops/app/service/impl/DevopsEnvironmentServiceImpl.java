@@ -18,6 +18,7 @@ import io.choerodon.devops.api.validator.DevopsEnvironmentValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.DevopsEnvironmentFactory;
@@ -112,6 +113,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsClusterRepository devopsClusterRepository;
     @Autowired
     private DeployService deployService;
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository;
 
     @Override
     @Saga(code = "devops-create-env", description = "创建环境", inputSchema = "{}")
@@ -216,16 +219,14 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvGroupEnvsDTO.setDevopsEnviromentRepDTOs(value);
             devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
         });
-        if (active) {
-            devopsEnvGroupES.forEach(devopsEnvGroupE -> {
-                if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
-                    DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
-                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
-                    devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
-                    devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
-                }
-            });
-        }
+        devopsEnvGroupES.forEach(devopsEnvGroupE -> {
+            if (!envGroupIds.contains(devopsEnvGroupE.getId())) {
+                DevopsEnvGroupEnvsDTO devopsEnvGroupEnvsDTO = new DevopsEnvGroupEnvsDTO();
+                devopsEnvGroupEnvsDTO.setDevopsEnvGroupId(devopsEnvGroupE.getId());
+                devopsEnvGroupEnvsDTO.setDevopsEnvGroupName(devopsEnvGroupE.getName());
+                devopsEnvGroupEnvsDTOS.add(devopsEnvGroupEnvsDTO);
+            }
+        });
         return devopsEnvGroupEnvsDTOS;
     }
 
@@ -542,9 +543,13 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 String realName = e.getRealName();
                 UserAttrE userAttrE = userAttrRepository.queryById(userId);
                 Long gitlabUserId = userAttrE.getGitlabUserId();
-                // 添加gitlab用户权限
-                MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, "");
-                gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
+
+                // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
+                GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectPayload.getGitlabProjectId(), TypeUtil.objToInteger(gitlabUserId));
+                if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                    MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, "");
+                    gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
+                }
                 // 添加devops数据库记录
                 devopsEnvUserPermissionRepository
                         .create(new DevopsEnvUserPermissionE(loginName, userId, realName, envId, true));
@@ -618,12 +623,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnvUserPermissionDTOPage.setContent(allProjectMemberList);
             return devopsEnvUserPermissionDTOPage;
         } else {
-            // 查询表中已经有权限的项目成员
-            List<DevopsEnvUserPermissionDTO> allUsersDTOList = devopsEnvUserPermissionRepository
-                    .listALlUserPermission(envId);
             List<DevopsEnvUserPermissionDTO> retureUsersDTOList = new ArrayList<>();
-            List<Long> allUsersId = allUsersDTOList.stream().map(DevopsEnvUserPermissionDTO::getIamUserId)
-                    .collect(Collectors.toList());
             // 普通分页需要带上iam中的所有项目成员，如果iam中的项目所有者也带有项目成员的身份，则需要去掉
             Page<UserDTO> allProjectMemberPage = getMembersFromProject(pageRequest, projectId, searchParams);
             allProjectMemberPage.getContent().forEach(e -> {
@@ -719,11 +719,16 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         devopsServiceRepository.deleteServiceAndInstanceByEnvId(envId);
         // 删除环境
         devopsEnviromentRepository.deleteById(envId);
-        // 删除gitlab库
-        Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
-        gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+        // 删除gitlab库, 删除之前查询是否存在
+        if (devopsEnvironmentE.getGitlabEnvProjectId() != null) {
+            Integer gitlabProjectId = TypeUtil.objToInt(devopsEnvironmentE.getGitlabEnvProjectId());
+            GitlabProjectDO gitlabProjectDO = gitlabRepository.getProjectById(gitlabProjectId);
+            if (gitlabProjectDO != null && gitlabProjectDO.getId() != null) {
+                UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+                Integer gitlabUserId = TypeUtil.objToInt(userAttrE.getGitlabUserId());
+                gitlabRepository.deleteProject(gitlabProjectId, gitlabUserId);
+            }
+        }
         // 删除环境命名空间
         if (devopsEnvironmentE.getClusterE().getId() != null) {
             deployService.deleteEnv(envId, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId());

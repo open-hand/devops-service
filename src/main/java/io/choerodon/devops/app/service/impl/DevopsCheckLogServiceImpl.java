@@ -75,10 +75,12 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
+    private static final String SONARQUBE = "sonarqube";
+    private static final String TWELVE_VERSION = "0.12.0";
     private static final String APP = "app: ";
     private static final Integer ADMIN = 1;
     private static final String ENV = "ENV";
-    private static final String SERVICE_LABLE = "choerodon.io/network";
+    private static final String SERVICE_LABEL = "choerodon.io/network";
     private static final String PROJECT_OWNER = "role/project/default/project-owner";
     private static final String SERVICE = "service";
     private static final String SUCCESS = "success";
@@ -90,7 +92,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-upgrade", false));
     private static io.kubernetes.client.JSON json = new io.kubernetes.client.JSON();
-    private final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
+    private static final String SERVICE_PATTERN = "[a-zA-Z0-9_\\.][a-zA-Z0-9_\\-\\.]*[a-zA-Z0-9_\\-]|[a-zA-Z0-9_]";
     private Gson gson = new Gson();
 
     @Value("${services.gateway.url}")
@@ -295,8 +297,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                                             Stage stage = getPipelineStage(commitStatuseDO);
                                             stages.add(stage);
-                                        } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
-                                                .contains("sonarqube") && !stages.isEmpty()) {
+                                        } else if (commitStatuseDO.getName().equals(SONARQUBE) && !stageNames
+                                                .contains(SONARQUBE) && !stages.isEmpty()) {
                                             Stage stage = getPipelineStage(commitStatuseDO);
                                             stages.add(stage);
                                             stageNames.add(commitStatuseDO.getName());
@@ -340,8 +342,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                     if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                                         Stage stage = getPipelineStage(commitStatuseDO);
                                         stages.add(stage);
-                                    } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames
-                                            .contains("sonarqube") && !stages.isEmpty()) {
+                                    } else if (commitStatuseDO.getName().equals(SONARQUBE) && !stageNames
+                                            .contains(SONARQUBE) && !stages.isEmpty()) {
                                         Stage stage = getPipelineStage(commitStatuseDO);
                                         stages.add(stage);
                                         stageNames.add(commitStatuseDO.getName());
@@ -399,7 +401,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                                         TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
                                 GitlabMemberE appgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                                         TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
-                                if (version.equals("0.12.0")) {
+                                if (version.equals(TWELVE_VERSION)) {
                                     if (appgroupMemberE != null && appgroupMemberE.getId() != null) {
                                         gitlabGroupMemberRepository.deleteMember(
                                                 TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
@@ -554,7 +556,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             metadata.setName(devopsServiceE.getName());
             // metadata / labels
             Map<String, String> label = new HashMap<>();
-            label.put(SERVICE_LABLE, SERVICE);
+            label.put(SERVICE_LABEL, SERVICE);
             metadata.setLabels(label);
             // metadata / annotations
             if (devopsServiceE.getAnnotations() != null) {
@@ -771,9 +773,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.11.0".equals(version)) {
                 syncGitOpsUserAccess(logs, "0.11.0");
                 updateWebHook(logs);
-            } else if ("0.12.0".equals(version)) {
+            } else if (TWELVE_VERSION.equals(version)) {
+                syncGitOpsUserAccess(logs, TWELVE_VERSION);
                 syncGitlabUserName(logs);
-                syncGitOpsUserAccess(logs, "0.12.0");
             } else {
                 LOGGER.info("version not matched");
             }

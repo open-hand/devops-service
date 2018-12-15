@@ -1,15 +1,5 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import io.choerodon.devops.infra.common.util.DateUtil;
-import io.choerodon.devops.infra.common.util.enums.MergeRequestStatus;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -21,6 +11,13 @@ import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
@@ -97,7 +94,6 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
         Long gitlabMergeRequestId = devopsMergeRequestE.getGitlabMergeRequestId();
         DevopsMergeRequestE mergeRequestETemp = queryByAppIdAndGitlabId(projectId, gitlabMergeRequestId);
         Long mergeRequestId = mergeRequestETemp != null ? mergeRequestETemp.getId() : null;
-        // 当创建merge request和关闭merge request的时候，webhook发送的时间是本地时间而不是UTC时间，不需要特殊处理
         if (mergeRequestId == null) {
             try {
                 create(devopsMergeRequestE);
@@ -105,12 +101,6 @@ public class DevopsMergeRequestRepositoryImpl implements DevopsMergeRequestRepos
                 LOGGER.info("error.save.merge.request");
             }
         } else {
-            // 当合并merge request，即状态变为merge的时候，时区时间是UTC时间。需要特殊处理
-            if (MergeRequestStatus.MERGED.value().equals(devopsMergeRequestE.getState())) {
-                devopsMergeRequestE.setUpdatedAt(DateUtil.convertUTC2Local(devopsMergeRequestE.getUpdatedAt()));
-                devopsMergeRequestE.setCreatedAt(DateUtil.convertUTC2Local(devopsMergeRequestE.getCreatedAt()));
-            }
-
             devopsMergeRequestE.setId(mergeRequestId);
             devopsMergeRequestE.setObjectVersionNumber(mergeRequestETemp.getObjectVersionNumber());
             if (update(devopsMergeRequestE) == 0) {

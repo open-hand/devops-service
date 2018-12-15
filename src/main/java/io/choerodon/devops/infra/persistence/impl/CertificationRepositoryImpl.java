@@ -169,7 +169,10 @@ public class CertificationRepositoryImpl implements CertificationRepository {
 
     @Override
     public void deleteById(Long id) {
-        deleteCertFile(id);
+        CertificationDO certificationDO = devopsCertificationMapper.selectByPrimaryKey(id);
+        if (certificationDO.getOrgCertId() == null) {
+            deleteCertFile(id);
+        }
         devopsCertificationMapper.deleteByPrimaryKey(id);
     }
 

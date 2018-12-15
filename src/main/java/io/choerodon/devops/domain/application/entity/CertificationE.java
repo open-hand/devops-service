@@ -29,12 +29,13 @@ public class CertificationE {
     public CertificationE() {
     }
 
-    public CertificationE(Long id, String name, DevopsEnvironmentE environmentE, List<String> domains, String status) {
+    public CertificationE(Long id, String name, DevopsEnvironmentE environmentE, List<String> domains, String status, Long orgCertId) {
         this.id = id;
         this.name = name;
         this.environmentE = environmentE;
         this.domains = domains;
         this.status = status;
+        this.orgCertId = orgCertId;
     }
 
     /**

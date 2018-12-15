@@ -1,6 +1,42 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+## [0.12.0] - 2018-12-14
+### Add
+- Added application development rights allocation to support specific development operators for each application
+- Added configuration mapping to support adding configuration mappings in each environment
+- Added ciphertext function to support adding ciphertext in each environment, which can be used to store k8s resources of small pieces of sensitive data, such as passwords, tokens, or keys.
+- Added the management function of the organization-level certificate, the certificate created at the organization level, can be used when creating a certificate for each project under the organization
+- Added instance events, support for viewing event records for each instance job and pod
+- Add a new instance to the Deployment for more details, including: port, data volume, health check, host settings, environment variables, tags
+- New test application creation, this type of application is only available for automated testing
+- Added automatic refresh page, click on the corner next to all refresh buttons to set
+- The CrtManager plugin is automatically added to the cluster to enable the environment under the cluster to use the certificate.
+- Added view permissions in Dashboard and reports related to app permissions and environment permissions
+- Added instance name custom function when creating new instance
+- Added the name of the cluster to which the environment is connected on the environment card
+
+### Change
+- Optimized naming rules for tag names
+- Optimized the display mode of the instance module, and displays the status and total number of pods in the instance column in the instance column.
+- Optimized the style of the YMAL editor
+- Optimized page logic after successful application deployment in the Environment Overview page.
+- Optimized display of development pipeline and empty interface of report section
+
+
+### Fix
+- Fix the problem that the environment button disappears in the environment pipeline
+- Fixed page logic problem after modifying environment name in environment pipeline
+- Fixed an instance upgrade failure, and the related network status is not normal.
+- Fixed a problem with Dashboard page dragging cards with blank pages
+- Fixed persistent integration list, non-linkable jumps in the sonarqube phase
+- Fixed a blank issue caused by missing English in the code submission report
+- Fix issues caused by environment selection during application deployment
+- Fixed an issue where the edit button and the disable button were not hidden after the creation of the app failed
+
+### Remove
+- Removed the deployment details module of the instance details interface
+
 ## [0.11.0] - 2018-11-16
 ### Added
 - Added cluster management module to support the creation, editing and distribution of Kubernetes clusters

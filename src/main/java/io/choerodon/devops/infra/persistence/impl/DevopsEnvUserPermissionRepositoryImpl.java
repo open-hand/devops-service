@@ -37,7 +37,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsEnvUserPermissionRepositoryImpl implements DevopsEnvUserPermissionRepository {
 
     private static final Gson gson = new Gson();
-    private static final String PROJECT_OWNER = "role/project/default/project-owner";
 
     @Autowired
     private DevopsEnvUserPermissionMapper devopsEnvUserPermissionMapper;

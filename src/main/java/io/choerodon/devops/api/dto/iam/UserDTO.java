@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.dto.iam;
 
-import java.util.HashMap;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -159,7 +159,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
                 projectIds = new ArrayList<>();
             }
             projects.getContent().forEach(projectDO -> {
-                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()) ? true : false);
+                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
         }
@@ -220,8 +220,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return devopsClusterProPermissionRepository.listByClusterId(clusterId).stream()
                 .map(devopsClusterProPermissionE -> {
                     ProjectE projectE = iamRepository.queryIamProject(devopsClusterProPermissionE.getProjectId());
-                    ProjectDTO projectDTO = new ProjectDTO(devopsClusterProPermissionE.getProjectId(), projectE.getName(), projectE.getCode(), null);
-                    return projectDTO;
+                    return new ProjectDTO(devopsClusterProPermissionE.getProjectId(), projectE.getName(), projectE.getCode(), null);
                 }).collect(Collectors.toList());
     }
 

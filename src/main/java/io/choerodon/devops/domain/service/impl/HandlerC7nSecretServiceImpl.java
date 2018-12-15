@@ -39,6 +39,7 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 
 @Service
 public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsService<C7nSecret> {
+    private static final String CREATE = "create";
 
     private static final String SECRET = "Secret";
     private static final String GIT_SUFFIX = "/.git";
@@ -108,12 +109,12 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         });
 
         //新增secret
-        addSecret(objectPath, envId, projectId, addC7nSecret, path, userId);
+        addSecret(objectPath, envId, addC7nSecret, path, userId);
         //更新secret
         updateSecret(objectPath, envId, projectId, updateC7nSecret, path, userId);
     }
 
-    private void addSecret(Map<String, String> objectPath, Long envId, Long projectId,
+    private void addSecret(Map<String, String> objectPath, Long envId,
                            List<C7nSecret> addC7nSecret, String path, Long userId) {
         addC7nSecret.forEach(c7nSecret -> {
             String filePath = "";
@@ -126,14 +127,14 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 SecretReqDTO secretReqDTO;
                 // 初始化secret对象参数，存在secret则直接创建文件对象关联关系
                 if (devopsSecretE == null) {
-                    secretReqDTO = getSecretReqDTO(c7nSecret, envId, "create");
+                    secretReqDTO = getSecretReqDTO(c7nSecret, envId, CREATE);
                     devopsSecretService.addSecretByGitOps(secretReqDTO, userId);
                     devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretReqDTO.getName());
                 }
                 DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                         .query(devopsSecretE.getCommandId());
                 if (devopsEnvCommandE == null) {
-                    devopsEnvCommandE = createDevopsEnvCommandE("create");
+                    devopsEnvCommandE = createDevopsEnvCommandE(CREATE);
                     devopsEnvCommandE.setObjectId(devopsSecretE.getId());
                     DevopsSecretE devopsSecretE1 = devopsSecretRepository.queryBySecretId(devopsSecretE.getId());
                     devopsSecretE1.setCommandId(devopsEnvCommandE.getId());
@@ -145,7 +146,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                 devopsEnvFileResourceE.setEnvironment(new DevopsEnvironmentE(envId));
                 devopsEnvFileResourceE.setFilePath(objectPath.get(TypeUtil.objToString(c7nSecret.hashCode())));
                 devopsEnvFileResourceE.setResourceId(devopsSecretE.getId());
-                devopsEnvFileResourceE.setResourceType("Secret");
+                devopsEnvFileResourceE.setResourceType(SECRET);
                 devopsEnvFileResourceRepository.createFileResource(devopsEnvFileResourceE);
             } catch (CommonException e) {
                 String errorCode = "";
@@ -227,7 +228,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
 
     private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        if (type.equals("create")) {
+        if (type.equals(CREATE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else {
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());

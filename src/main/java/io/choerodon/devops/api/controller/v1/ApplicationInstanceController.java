@@ -30,6 +30,7 @@ import io.choerodon.swagger.annotation.Permission;
 @RestController
 @RequestMapping(value = "/v1/projects/{project_id}/app_instances")
 public class ApplicationInstanceController {
+    private static final String ERROR_APPINSTANCE_QUERY = "error.appInstance.query";
 
     @Autowired
     private ApplicationInstanceService applicationInstanceService;
@@ -294,7 +295,7 @@ public class ApplicationInstanceController {
             @RequestParam(required = false) Long appVersionId) {
         return Optional.ofNullable(applicationInstanceService.listByOptions(projectId, appId, appVersionId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appInstance.query"));
+                .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
     }
 
     /**
@@ -318,7 +319,7 @@ public class ApplicationInstanceController {
             @RequestParam Long appId) {
         return Optional.ofNullable(applicationInstanceService.listByAppIdAndEnvId(projectId, appId, envId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appInstance.query"));
+                .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
     }
 
 
@@ -485,7 +486,7 @@ public class ApplicationInstanceController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(applicationInstanceService.listByEnv(projectId, envId, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.appInstance.query"));
+                .orElseThrow(() -> new CommonException(ERROR_APPINSTANCE_QUERY));
     }
 
     /**

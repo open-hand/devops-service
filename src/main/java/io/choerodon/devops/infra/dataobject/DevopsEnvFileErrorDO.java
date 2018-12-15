@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.dataobject;
 
-import java.util.Date;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;

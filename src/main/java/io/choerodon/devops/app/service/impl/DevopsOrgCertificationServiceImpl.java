@@ -108,8 +108,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
                 .map(devopsCertificationProRelE -> {
                     ProjectE projectE = iamRepository.queryIamProject(devopsCertificationProRelE.getProjectId());
 
-                    ProjectDTO projectDTO = new ProjectDTO(devopsCertificationProRelE.getProjectId(), projectE.getName(), projectE.getCode(), null);
-                    return projectDTO;
+                    return new ProjectDTO(devopsCertificationProRelE.getProjectId(), projectE.getName(), projectE.getCode(), null);
                 }).collect(Collectors.toList());
     }
 
@@ -139,7 +138,7 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
                 projectIds = new ArrayList<>();
             }
             projects.getContent().forEach(projectDO -> {
-                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()) ? true : false);
+                ProjectDTO projectDTO = new ProjectDTO(projectDO.getId(), projectDO.getName(), projectDO.getCode(), projectIds.contains(projectDO.getId()));
                 projectDTOS.add(projectDTO);
             });
         }
@@ -167,7 +166,6 @@ public class DevopsOrgCertificationServiceImpl implements DevopsOrgCertification
 
     public OrgCertificationDTO getCert(Long certId) {
         CertificationE certificationE = certificationRepository.queryById(certId);
-        OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO(certificationE.getId(), certificationE.getName(), certificationE.getDomains().get(0), certificationE.getSkipCheckProjectPermission());
-        return orgCertificationDTO;
+        return new OrgCertificationDTO(certificationE.getId(), certificationE.getName(), certificationE.getDomains().get(0), certificationE.getSkipCheckProjectPermission());
     }
 }

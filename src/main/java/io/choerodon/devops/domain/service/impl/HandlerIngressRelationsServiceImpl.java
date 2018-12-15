@@ -34,6 +34,7 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 @Service
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
 
+    private static final String CREATE = "create";
     public static final String INGRESS = "Ingress";
     private static final String GIT_SUFFIX = "/.git";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
@@ -129,7 +130,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
                         //0.9.0-0.10.0,新增commandId,如果gitops库如果只是移动对象到另外一个文件，避免npe
                         if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                            devopsEnvCommandE = createDevopsEnvCommandE(CREATE);
                             devopsEnvCommandE.setObjectId(devopsIngressE.getId());
                             DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
                             devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
@@ -186,7 +187,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                         }
                         //0.9.0-0.10.0,新增commandId,如果gitops库如果一个文件里面有多个对象，只操作其中一个对象，其它对象更新commitsha避免npe
                         if (devopsEnvCommandE == null) {
-                            devopsEnvCommandE = createDevopsEnvCommandE("create");
+                            devopsEnvCommandE = createDevopsEnvCommandE(CREATE);
                             devopsEnvCommandE.setObjectId(devopsIngressE.getId());
                             DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
                             devopsIngressDO.setCommandId(devopsEnvCommandE.getId());
@@ -248,18 +249,10 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
             String serviceName = backend.getServiceName();
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                     serviceName, envId);
-//            if (devopsServiceE == null) {
-//                throw new GitOpsExplainException(GitOpsObjectError.SERVICE_RELATED_INGRESS_NOT_FOUND.getError(), filePath, serviceName, null);
-//            }
             Long servicePort = null;
             IntOrString backendServicePort = backend.getServicePort();
             if (backendServicePort.isInteger() || pattern.matcher(TypeUtil.objToString(backendServicePort)).matches()) {
                 servicePort = TypeUtil.objToLong(backendServicePort);
-//                if (devopsServiceE != null && devopsServiceE.getPorts().stream()
-//                        .map(PortMapE::getPort).noneMatch(t -> t.equals(servicePort))) {
-//                    throw new GitOpsExplainException(GitOpsObjectError.INGRESS_PATH_PORT_NOT_BELONG_TO_SERVICE.getError(),
-//                            filePath, serviceName, null);
-//                }
             } else {
                 if (devopsServiceE != null) {
                     servicePort = devopsServiceE.getPorts().get(0).getPort();
@@ -278,7 +271,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
 
     private DevopsEnvCommandE createDevopsEnvCommandE(String type) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        if (type.equals("create")) {
+        if (type.equals(CREATE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
         } else {
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());

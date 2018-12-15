@@ -13,7 +13,6 @@ import io.choerodon.devops.domain.application.valueobject.Issue
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
-import io.choerodon.devops.infra.dataobject.UserAttrDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
@@ -114,6 +113,13 @@ class DevopsGitControllerSpec extends Specification {
         userDOList.add(userDO)
         ResponseEntity<List<UserDO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity3)
+
+        Page<UserDO> page = new Page<>()
+        page.setTotalPages(1)
+        page.setTotalElements(5)
+        page.setContent(userDOList)
+        ResponseEntity<Page<UserDO>> responseEntityPage = new ResponseEntity<>(page, HttpStatus.OK)
+        Mockito.when(iamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(responseEntityPage)
 
         TagDO tagDO = new TagDO()
         tagDO.setName("testTag")

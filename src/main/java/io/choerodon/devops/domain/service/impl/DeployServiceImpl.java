@@ -35,6 +35,8 @@ import io.choerodon.websocket.helper.EnvListener;
  */
 @Service
 public class DeployServiceImpl implements DeployService {
+    private static final String ERROR_PAYLOAD_ERROR = "error.payload.error";
+    private static final String KEY_FORMAT = "cluster:%d.release:%s";
 
     private static final String INIT_AGENT = "init_agent";
     private static final String DELETE_ENV = "delete_env";
@@ -96,7 +98,7 @@ public class DeployServiceImpl implements DeployService {
             msg.setPayload(mapper.writeValueAsString(payload));
             msg.setCommandId(commandId);
         } catch (IOException e) {
-            throw new CommonException("error.payload.error", e);
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
         commandSender.sendMsg(msg);
     }
@@ -117,14 +119,14 @@ public class DeployServiceImpl implements DeployService {
                 agentExpectVersion,
                 Props2YAML.fromContent(FileUtil.propertiesToString(configs))
                         .convert(), "choerodon-cluster-agent-" + devopsClusterE.getCode());
-        msg.setKey(String.format("cluster:%d.release:%s",
+        msg.setKey(String.format(KEY_FORMAT,
                 devopsClusterE.getId(),
                 "choerodon-cluster-agent-" + devopsClusterE.getCode()));
         msg.setType(HelmType.HELM_RELEASE_UPGRADE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
         } catch (IOException e) {
-            throw new CommonException("error.payload.error", e);
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
         commandSender.sendMsg(msg);
     }
@@ -138,14 +140,12 @@ public class DeployServiceImpl implements DeployService {
                 "cert-manager",
                 agentExpectVersion,
                 null, "choerodon-cert-manager");
-        msg.setKey(String.format("cluster:%d.release:%s",
-                clusterId,
-                "choerodon-cert-manager"));
+        msg.setKey(String.format(KEY_FORMAT, clusterId, "choerodon-cert-manager"));
         msg.setType(HelmType.HELM_INSTALL_RELEASE.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
         } catch (IOException e) {
-            throw new CommonException("error.payload.error", e);
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
         commandSender.sendMsg(msg);
     }
@@ -203,14 +203,12 @@ public class DeployServiceImpl implements DeployService {
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, releaseName);
-        msg.setKey(String.format("cluster:%d.release:%s",
-                clusterId,
-                releaseName));
+        msg.setKey(String.format(KEY_FORMAT, clusterId, releaseName));
         msg.setType(HelmType.EXECUTE_TEST.toValue());
         try {
             msg.setPayload(mapper.writeValueAsString(payload));
         } catch (IOException e) {
-            throw new CommonException("error.payload.error", e);
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
         commandSender.sendMsg(msg);
 

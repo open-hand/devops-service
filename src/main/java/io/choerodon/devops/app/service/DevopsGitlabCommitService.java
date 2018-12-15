@@ -6,7 +6,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.api.dto.DevopsGitlabCommitDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.api.dto.TagHookDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsGitlabCommitService {
@@ -17,6 +16,4 @@ public interface DevopsGitlabCommitService {
 
     Page<CommitFormRecordDTO> getRecordCommits(Long projectId, String appIds, PageRequest pageRequest,
                                                Date startDate, Date endDate);
-
-    void createByTag(TagHookDTO tagHookDTO, String token);
 }

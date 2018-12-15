@@ -52,6 +52,8 @@ public class GitUtil {
     private String microServiceFront;
     @Value("${template.version.JavaLib}")
     private String javaLib;
+    @Value("${template.version.ChoerodonMoChaTemplate}")
+    private String choerodonMoChaTemplate;
 
     /**
      * 构造方法
@@ -93,7 +95,7 @@ public class GitUtil {
     }
 
     public static String getFileLatestCommit(String path, String filePath) {
-        if(filePath!=null) {
+        if (filePath != null) {
             String[] fileName = filePath.split("/");
             return GitUtil.getLog(path, fileName[fileName.length - 1]);
         }
@@ -238,6 +240,9 @@ public class GitUtil {
                 break;
             case "JavaLib":
                 branch = javaLib;
+                break;
+            case "ChoerodonMoChaTemplate":
+                branch = choerodonMoChaTemplate;
                 break;
             default:
                 branch = MASTER;

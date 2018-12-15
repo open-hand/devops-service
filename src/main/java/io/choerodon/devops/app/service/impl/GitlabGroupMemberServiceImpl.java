@@ -308,9 +308,6 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
     public void checkEnvProject(DevopsEnvironmentE devopsEnvironmentE, UserAttrE userAttrE) {
         GitlabGroupE gitlabGroupE = devopsProjectRepository
                 .queryDevopsProject(devopsEnvironmentE.getProjectE().getId());
-        if (gitlabGroupE == null) {
-            throw new CommonException("error.group.not.sync");
-        }
         if (devopsEnvironmentE.getGitlabEnvProjectId() == null) {
             throw new CommonException("error.env.project.not.exist");
         }

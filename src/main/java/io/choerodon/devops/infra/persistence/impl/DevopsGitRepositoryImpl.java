@@ -53,11 +53,8 @@ import io.choerodon.mybatis.util.StringUtil;
 @Component
 public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
-    private JSON json = new JSON();
-
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitRepositoryImpl.class);
-
-
+    private JSON json = new JSON();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
@@ -233,11 +230,10 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
                 .map(TagDTO::new)
                 .parallel()
                 .peek(t -> {
-
-                    UserAttrE userAttrE = userAttrRepository.queryByGitlabUserName(t.getCommit()
-                            .getAuthorName().equals("root") ? "admin" : t.getCommit().getAuthorName());
-                    UserE userE = iamRepository.queryUserByUserId(userAttrE.getIamUserId());
-                    t.setCommitUserImage(userE.getImageUrl());
+                    UserE userE = iamRepository.queryByEmail(TypeUtil.objToLong(projectId), t.getCommit().getAuthorEmail());
+                    if (userE != null) {
+                        t.setCommitUserImage(userE.getImageUrl());
+                    }
                     t.getCommit().setUrl(String.format("%s/commit/%s?view=parallel", path, t.getCommit().getId()));
                 })
                 .collect(Collectors.toCollection(ArrayList::new));
@@ -451,11 +447,11 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         Integer gitlabUserId = devopsGitRepository.getGitlabUserId();
         List<CommitDO> commitDOS = new ArrayList<>();
         try {
-             commitDOS = gitlabServiceClient.listCommits(
+            commitDOS = gitlabServiceClient.listCommits(
                     devopsMergeRequestE.getProjectId().intValue(),
                     gitlabMergeRequestId.intValue(), gitlabUserId).getBody();
             mergeRequestDTO.setCommits(ConvertHelper.convertList(commitDOS, CommitDTO.class));
-        }catch (FeignException e) {
+        } catch (FeignException e) {
             LOGGER.info(e.getMessage());
         }
         UserE authorUser = iamRepository.queryUserByUserId(authorUserId);

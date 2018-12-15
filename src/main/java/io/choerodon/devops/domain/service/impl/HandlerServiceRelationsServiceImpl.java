@@ -112,8 +112,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         //初始化网络参数,更新网络和网络关联关系
                         DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
                                 v1Service,
-                                envId,
-                                filePath);
+                                envId);
                         Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqDTO);
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
                         if (!isNotChange) {
@@ -162,8 +161,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         if (devopsServiceE == null) {
                             devopsServiceReqDTO = getDevopsServiceDTO(
                                     v1Service,
-                                    envId,
-                                    filePath);
+                                    envId);
                             devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO, userId);
                             devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
                                     devopsServiceReqDTO.getName(), envId);
@@ -196,7 +194,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
 
 
     private DevopsServiceReqDTO getDevopsServiceDTO(V1Service v1Service,
-                                                    Long envId, String filePath) {
+                                                    Long envId) {
         DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO();
         if (v1Service.getSpec().getExternalIPs() != null) {
             devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));

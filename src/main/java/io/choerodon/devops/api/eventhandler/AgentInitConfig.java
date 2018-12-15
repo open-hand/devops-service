@@ -1,19 +1,10 @@
 package io.choerodon.devops.api.eventhandler;
 
-import java.util.List;
-import java.util.regex.Pattern;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.websocket.helper.CommandSender;
@@ -22,13 +13,15 @@ import io.choerodon.websocket.session.AgentConfigurer;
 import io.choerodon.websocket.session.AgentSessionManager;
 import io.choerodon.websocket.session.Session;
 import io.choerodon.websocket.session.SessionListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class AgentInitConfig implements AgentConfigurer {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final String INIT_AGENT = "init_agent";
-    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Autowired
     CommandSender commandSender;
     @Autowired
@@ -37,8 +30,6 @@ public class AgentInitConfig implements AgentConfigurer {
     DevopsClusterRepository devopsClusterRepository;
     @Autowired
     DevopsClusterProPermissionRepository devopsClusterProPermissionRepository;
-    @Autowired
-    private IamRepository iamRepository;
     @Autowired
     private DeployService deployService;
     @Autowired
@@ -52,22 +43,6 @@ public class AgentInitConfig implements AgentConfigurer {
     public void registerSessionListener(AgentSessionManager agentSessionManager) {
         AgentInitListener agentInitListener = new AgentInitListener();
         agentSessionManager.addListener(agentInitListener);
-    }
-
-    private void isUpdate(List<Long> connectedEnvList, List<Long> updatedEnvList, DevopsClusterE t) {
-        if (connectedEnvList.contains(t.getId())) {
-            if (!updatedEnvList.contains(t.getId())) {
-                t.initUpgrade(false);
-                t.initConnect(true);
-            } else {
-                t.initUpgrade(true);
-                t.initConnect(false);
-                t.setUpgradeMessage("Version is too low, please upgrade!");
-            }
-        } else {
-            t.initUpgrade(false);
-            t.initConnect(false);
-        }
     }
 
     class AgentInitListener implements SessionListener {

@@ -173,13 +173,22 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                         devopsEnvResourceDetailRepository.query(
                                 job.getDevopsEnvResourceDetailE().getId());
                 V1Job v1Job = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Job.class);
-                //获取job状态
-                if (i <= podEventDTOS.size() - 1) {
-                    setJobStatus(v1Job, podEventDTOS.get(i));
-                }
                 //job日志
                 if (i <= devopsEnvCommandLogES.size() - 1) {
+                    if (podEventDTOS.size() == i) {
+                        PodEventDTO podEventDTO = new PodEventDTO();
+                        podEventDTO.setName(v1Job.getMetadata().getName());
+                        podEventDTOS.add(podEventDTO);
+                    }
                     podEventDTOS.get(i).setLog(devopsEnvCommandLogES.get(i).getLog());
+                }
+                //获取job状态
+                if (i <= podEventDTOS.size() - 1) {
+                    if (podEventDTOS.size() == i) {
+                        PodEventDTO podEventDTO = new PodEventDTO();
+                        podEventDTOS.add(podEventDTO);
+                    }
+                    setJobStatus(v1Job, podEventDTOS.get(i));
                 }
             }
             //获取实例中pod的event

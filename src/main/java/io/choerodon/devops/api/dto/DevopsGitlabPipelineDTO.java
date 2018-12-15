@@ -4,7 +4,6 @@ import java.util.Date;
 import java.util.List;
 
 import io.choerodon.devops.domain.application.valueobject.Stage;
-import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 
 public class DevopsGitlabPipelineDTO {
 

@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -56,6 +55,8 @@ import io.choerodon.websocket.helper.EnvSession;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
 
+    private static final String YAML_SUFFIX = ".yaml";
+    private static final String RELEASE_PREFIX = "release-";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
     private static final String FILE_SEPARATOR = "file.separator";
@@ -63,8 +64,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String RELEASE_NAME = "ReleaseName";
     private static Gson gson = new Gson();
 
-    @Autowired
-    DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Value("${agent.version}")
     private String agentExpectVersion;
     @Value("${services.helm.url}")
@@ -74,44 +73,70 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
 
-    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     private ApplicationInstanceRepository applicationInstanceRepository;
-    @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
-    @Autowired
     private ApplicationRepository applicationRepository;
-    @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @Autowired
     private DeployService deployService;
-    @Autowired
     private IamRepository iamRepository;
-    @Autowired
     private CommandSender commandSender;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    @Autowired
     private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
-    @Autowired
     private EnvListener envListener;
-    @Autowired
     private EnvUtil envUtil;
-    @Autowired
     private UserAttrRepository userAttrRepository;
-    @Autowired
     private ApplicationInstanceMapper applicationInstanceMapper;
-    @Autowired
     private DevopsEnvPodRepository devopsEnvPodRepository;
-    @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
-    @Autowired
     private GitlabRepository gitlabRepository;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
-    @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+
+    @Autowired
+    public ApplicationInstanceServiceImpl(
+            DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
+            ApplicationInstanceRepository applicationInstanceRepository,
+            EnvUtil envUtil,
+            ApplicationVersionRepository applicationVersionRepository,
+            ApplicationRepository applicationRepository,
+            DevopsEnvironmentRepository devopsEnvironmentRepository,
+            GitlabRepository gitlabRepository,
+            DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
+            UserAttrRepository userAttrRepository,
+            DevopsEnvironmentService devopsEnvironmentService,
+            DeployService deployService,
+            GitlabGroupMemberService gitlabGroupMemberService,
+            IamRepository iamRepository,
+            CommandSender commandSender,
+            DevopsEnvCommandRepository devopsEnvCommandRepository,
+            DevopsEnvCommandValueRepository devopsEnvCommandValueRepository,
+            DevopsEnvResourceService devopsEnvResourceService,
+            DevopsEnvPodRepository devopsEnvPodRepository,
+            ApplicationInstanceMapper applicationInstanceMapper,
+            EnvListener envListener) {
+        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
+        this.applicationInstanceRepository = applicationInstanceRepository;
+        this.envUtil = envUtil;
+        this.applicationVersionRepository = applicationVersionRepository;
+        this.applicationRepository = applicationRepository;
+        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
+        this.gitlabRepository = gitlabRepository;
+        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
+        this.userAttrRepository = userAttrRepository;
+        this.devopsEnvironmentService = devopsEnvironmentService;
+        this.deployService = deployService;
+        this.gitlabGroupMemberService = gitlabGroupMemberService;
+        this.iamRepository = iamRepository;
+        this.commandSender = commandSender;
+        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
+        this.devopsEnvCommandValueRepository = devopsEnvCommandValueRepository;
+        this.devopsEnvResourceService = devopsEnvResourceService;
+        this.devopsEnvPodRepository = devopsEnvPodRepository;
+        this.applicationInstanceMapper = applicationInstanceMapper;
+        this.envListener = envListener;
+    }
 
     @Override
     public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -472,7 +497,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         try {
             FileUtil.checkYamlFormat(replaceResult.getYaml());
 
-            String fileName = GenerateUUID.generateUUID() + ".yaml";
+            String fileName = GenerateUUID.generateUUID() + YAML_SUFFIX;
             String path = "deployfile";
             FileUtil.saveDataToFile(path, fileName, replaceResult.getYaml());
             //读入文件
@@ -586,13 +611,17 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
-        //校验values是否删除key
-        if (applicationDeployDTO.getType().equals(UPDATE)) {
-            String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
-                    applicationDeployDTO.getAppInstanceId());
-            String newDeployValue = devopsEnvCommandValueE.getValue();
-            if (oldDeployValue.equals(newDeployValue)) {
-                throw new CommonException("error.values.key.delete");
+        //校验更新实例时values是否删除key
+        if (!applicationDeployDTO.getIsNotChange() && applicationDeployDTO.getType().equals(UPDATE)) {
+            ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
+            DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
+            if (applicationDeployDTO.getAppVerisonId().equals(olddevopsEnvCommandE.getObjectVersionId())) {
+                String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
+                        applicationDeployDTO.getAppInstanceId());
+                String newDeployValue = devopsEnvCommandValueE.getValue();
+                if (oldDeployValue.equals(newDeployValue)) {
+                    throw new CommonException("error.values.key.delete");
+                }
             }
         }
 
@@ -618,6 +647,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
         if (applicationDeployDTO.getIsNotChange()) {
             applicationInstanceRepository.update(applicationInstanceE);
+            applicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
             devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
             devopsEnvCommandE.setId(null);
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
@@ -634,7 +664,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     code, applicationVersionE, applicationDeployDTO, applicationE));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             objectOperation.operationEnvGitlabFile(
-                    "release-" + code,
+                    RELEASE_PREFIX + code,
                     projectId,
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
@@ -878,10 +908,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (devopsEnvFileResourceE == null) {
             applicationInstanceRepository.deleteById(instanceId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
-                    "release-" + instanceE.getCode() + ".yaml")) {
+                    RELEASE_PREFIX + instanceE.getCode() + YAML_SUFFIX)) {
                 gitlabRepository.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        "release-" + instanceE.getCode() + ".yaml",
+                        RELEASE_PREFIX + instanceE.getCode() + YAML_SUFFIX,
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
@@ -890,11 +920,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         List<DevopsEnvFileResourceE> devopsEnvFileResourceES = devopsEnvFileResourceRepository
                 .queryByEnvIdAndPath(devopsEnvironmentE.getId(), devopsEnvFileResourceE.getFilePath());
         if (devopsEnvFileResourceES.size() == 1) {
-            gitlabRepository.deleteFile(
-                    TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                    devopsEnvFileResourceE.getFilePath(),
-                    "DELETE FILE",
-                    TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
+                    devopsEnvFileResourceE.getFilePath())) {
+                gitlabRepository.deleteFile(
+                        TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
+                        devopsEnvFileResourceE.getFilePath(),
+                        "DELETE FILE",
+                        TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            }
         } else {
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
@@ -904,7 +937,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             objectOperation.setType(c7nHelmRelease);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             objectOperation.operationEnvGitlabFile(
-                    "release-" + instanceE.getCode(),
+                    RELEASE_PREFIX + instanceE.getCode(),
                     projectId,
                     "delete",
                     userAttrE.getGitlabUserId(),
@@ -1024,7 +1057,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             return replaceResult;
         }
 
-        String fileName = GenerateUUID.generateUUID() + ".yaml";
+        String fileName = GenerateUUID.generateUUID() + YAML_SUFFIX;
         String path = "deployfile";
         FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue.replace("\"", ""));
         ReplaceResult replaceResult;
