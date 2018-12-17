@@ -55,10 +55,10 @@ import io.choerodon.websocket.helper.EnvSession;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
 
-    private static final String YAML_SUFFIX = ".yaml";
-    private static final String RELEASE_PREFIX = "release-";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
+    private static final String YAML_SUFFIX = ".yaml";
+    private static final String RELEASE_PREFIX = "release-";
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
@@ -487,8 +487,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
         String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
                 instanceId));
-        String versionValue = applicationVersionRepository
-                .queryValue(devopsEnvCommandE.getObjectVersionId());
+        String versionValue;
+        //实例表新增commndId之前的实例查values用实例的版本
+        if (devopsEnvCommandE == null) {
+            versionValue = applicationVersionRepository.queryValue(applicationInstanceE.getApplicationVersionE().getId());
+        } else {
+            versionValue = applicationVersionRepository
+                    .queryValue(devopsEnvCommandE.getObjectVersionId());
+        }
         return getReplaceResult(versionValue, yaml);
     }
 
