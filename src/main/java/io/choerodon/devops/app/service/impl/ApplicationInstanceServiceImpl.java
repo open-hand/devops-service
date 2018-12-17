@@ -704,7 +704,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         // 初始化自定义实例名
         String code;
         if (applicationDeployDTO.getType().equals(CREATE)) {
-            if (applicationDeployDTO.getInstanceName() == null && applicationDeployDTO.getInstanceName().trim().equals("")) {
+            if (applicationDeployDTO.getInstanceName() == null || applicationDeployDTO.getInstanceName().trim().equals("")) {
                 code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
             } else {
                 code = applicationDeployDTO.getInstanceName();
