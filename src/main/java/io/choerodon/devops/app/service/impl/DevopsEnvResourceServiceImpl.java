@@ -146,10 +146,10 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         devopsEnvCommandES.forEach(devopsEnvCommandE -> {
             InstanceEventDTO instanceEventDTO = new InstanceEventDTO();
             UserE userE = iamRepository.queryUserByUserId(devopsEnvCommandE.getCreatedBy());
-            instanceEventDTO.setLoginName(userE.getLoginName());
-            instanceEventDTO.setRealName(userE.getRealName());
+            instanceEventDTO.setLoginName(userE == null ? null : userE.getLoginName());
+            instanceEventDTO.setRealName(userE == null ? null : userE.getRealName());
             instanceEventDTO.setStatus(devopsEnvCommandE.getStatus());
-            instanceEventDTO.setUserImage(userE.getImageUrl());
+            instanceEventDTO.setUserImage(userE == null ? null : userE.getImageUrl());
             instanceEventDTO.setCreateTime(devopsEnvCommandE.getCreationDate());
             List<PodEventDTO> podEventDTOS = new ArrayList<>();
             //获取实例中job的event
