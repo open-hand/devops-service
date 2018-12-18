@@ -1012,7 +1012,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Override
     public void jobEvent(String msg) {
         Event event = JSONArray.parseObject(msg, Event.class);
-        if (event.getInvolvedObject().getKind().equals(ResourceType.JOB.getType())) {
+        if (event.getInvolvedObject().getKind().equals(ResourceType.POD.getType())) {
+            event.getInvolvedObject().setKind(ResourceType.JOB.getType());
+            event.getInvolvedObject().setName(
+                    event.getInvolvedObject().getName()
+                            .substring(0, event.getInvolvedObject().getName().lastIndexOf('-')));
             insertDevopsCommandEvent(event, ResourceType.JOB.getType());
         }
     }
