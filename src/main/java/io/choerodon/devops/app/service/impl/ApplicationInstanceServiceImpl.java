@@ -415,9 +415,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public void deployTestApp(ApplicationDeployDTO applicationDeployDTO) {
-        String versionValue = applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId());
+        String versionValue = applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId());
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
         String deployValue = getReplaceResult(versionValue,
                 applicationDeployDTO.getValues()).getDeltaYaml().trim();
@@ -680,7 +680,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         ApplicationVersionE applicationVersionE =
-                applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
+                applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
@@ -691,7 +691,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (!applicationDeployDTO.getIsNotChange() && applicationDeployDTO.getType().equals(UPDATE)) {
             ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
             DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
-            if (applicationDeployDTO.getAppVerisonId().equals(olddevopsEnvCommandE.getObjectVersionId())) {
+            if (applicationDeployDTO.getAppVersionId().equals(olddevopsEnvCommandE.getObjectVersionId())) {
                 String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
                         applicationDeployDTO.getAppInstanceId());
                 String newDeployValue = devopsEnvCommandValueE.getValue();
@@ -837,7 +837,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
                 break;
         }
-        devopsEnvCommandE.setObjectVersionId(applicationDeployDTO.getAppVerisonId());
+        devopsEnvCommandE.setObjectVersionId(applicationDeployDTO.getAppVersionId());
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
@@ -846,7 +846,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvCommandValueE initDevopsEnvCommandValueE(ApplicationDeployDTO applicationDeployDTO) {
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
         devopsEnvCommandValueE.setValue(
-                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
                         applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return devopsEnvCommandValueE;
     }
@@ -1121,7 +1121,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
         c7nHelmRelease.getSpec().setValues(
-                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
                         applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return c7nHelmRelease;
     }

@@ -233,7 +233,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         applicationDeployDTO.setType(type);
         applicationDeployDTO.setValues(c7nHelmRelease.getSpec().getValues());
         applicationDeployDTO.setAppId(applicationE.getId());
-        applicationDeployDTO.setAppVerisonId(applicationVersionE.getId());
+        applicationDeployDTO.setAppVersionId(applicationVersionE.getId());
         applicationDeployDTO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals("update")) {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
