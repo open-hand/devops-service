@@ -1,10 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
@@ -30,24 +27,37 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private static final String LINE_SEPARATOR = "line.separator";
     private static final String NONE_LABEL = "<none>";
     private static JSON json = new JSON();
-    @Autowired
+
     private DevopsEnvResourceRepository devopsEnvResourceRepository;
-    @Autowired
     private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
-    @Autowired
     private DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
-    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    @Autowired
     private DevopsIngressRepository devopsIngressRepository;
-    @Autowired
     private DevopsCommandEventRepository devopsCommandEventRepository;
-    @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
-    @Autowired
     private IamRepository iamRepository;
+
+    @Autowired
+    public DevopsEnvResourceServiceImpl(DevopsEnvResourceRepository devopsEnvResourceRepository,
+                                        DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository,
+                                        DevopsEnvCommandLogRepository devopsEnvCommandLogRepository,
+                                        DevopsServiceRepository devopsServiceRepository,
+                                        DevopsEnvCommandRepository devopsEnvCommandRepository,
+                                        DevopsIngressRepository devopsIngressRepository,
+                                        DevopsCommandEventRepository devopsCommandEventRepository,
+                                        ApplicationInstanceRepository applicationInstanceRepository,
+                                        IamRepository iamRepository) {
+        this.devopsEnvResourceRepository = devopsEnvResourceRepository;
+        this.devopsEnvResourceDetailRepository = devopsEnvResourceDetailRepository;
+        this.devopsEnvCommandLogRepository = devopsEnvCommandLogRepository;
+        this.devopsServiceRepository = devopsServiceRepository;
+        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
+        this.devopsIngressRepository = devopsIngressRepository;
+        this.devopsCommandEventRepository = devopsCommandEventRepository;
+        this.applicationInstanceRepository = applicationInstanceRepository;
+        this.iamRepository = iamRepository;
+    }
 
     @Override
     public DevopsEnvResourceDTO listResources(Long instanceId) {
@@ -64,7 +74,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                             devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
             ResourceType resourceType = ResourceType.forString(devopsInstanceResourceE.getKind());
             if (resourceType == null) {
-                resourceType = ResourceType.forString("MissType");
+                resourceType = ResourceType.MISSTYPE;
             }
             switch (resourceType) {
                 case POD:
@@ -129,6 +139,18 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                             devopsEnvResourceDetailE.getMessage(),
                             V1beta2ReplicaSet.class);
                     addReplicaSetToResource(devopsEnvResourceDTO, v1beta2ReplicaSet);
+                    break;
+                case DAEMONSET:
+                    V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1beta2DaemonSet.class);
+                    addDaemonSetToResource(devopsEnvResourceDTO, v1beta2DaemonSet);
+                    break;
+                case STATEFULSET:
+                    V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1beta2StatefulSet.class);
+                    addStatefulSetSetToResource(devopsEnvResourceDTO, v1beta2StatefulSet);
+                    break;
+                case PERSISTENT_VOLUME_CLAIM:
+                    V1PersistentVolumeClaim persistentVolumeClaim = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1PersistentVolumeClaim.class);
+                    addPersistentVolumeClaimToResource(devopsEnvResourceDTO, persistentVolumeClaim);
                     break;
                 default:
                     break;
@@ -351,6 +373,57 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         replicaSetDTO.setReady(TypeUtil.objToLong(v1beta2ReplicaSet.getStatus().getReadyReplicas()));
         replicaSetDTO.setAge(v1beta2ReplicaSet.getMetadata().getCreationTimestamp().toString());
         devopsEnvResourceDTO.getReplicaSetDTOS().add(replicaSetDTO);
+    }
+
+    /**
+     * 添加daemonSet类型资源
+     *
+     * @param devopsEnvResourceDTO 实例资源参数
+     * @param v1beta2DaemonSet     daemonSet对象
+     */
+    private void addDaemonSetToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1beta2DaemonSet v1beta2DaemonSet) {
+        DaemonSetDTO daemonSetDTO = new DaemonSetDTO();
+        daemonSetDTO.setName(v1beta2DaemonSet.getMetadata().getName());
+        daemonSetDTO.setAge(v1beta2DaemonSet.getMetadata().getCreationTimestamp().toString());
+        daemonSetDTO.setCurrentScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getCurrentNumberScheduled()));
+        daemonSetDTO.setDesiredScheduled(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getDesiredNumberScheduled()));
+        daemonSetDTO.setNumberAvailable(TypeUtil.objToLong(v1beta2DaemonSet.getStatus().getNumberAvailable()));
+
+        devopsEnvResourceDTO.getDaemonSetDTOS().add(daemonSetDTO);
+    }
+
+    /**
+     * 添加statefulSet类型资源
+     *
+     * @param devopsEnvResourceDTO 实例资源参数
+     * @param v1beta2StatefulSet   statefulSet对象
+     */
+    private void addStatefulSetSetToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1beta2StatefulSet v1beta2StatefulSet) {
+        StatefulSetDTO statefulSetDTO = new StatefulSetDTO();
+        statefulSetDTO.setName(v1beta2StatefulSet.getMetadata().getName());
+        statefulSetDTO.setDesiredReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getSpec().getReplicas()));
+        statefulSetDTO.setAge(v1beta2StatefulSet.getMetadata().getCreationTimestamp().toString());
+        statefulSetDTO.setReadyReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getStatus().getReadyReplicas()));
+        statefulSetDTO.setCurrentReplicas(TypeUtil.objToLong(v1beta2StatefulSet.getStatus().getCurrentReplicas()));
+
+        devopsEnvResourceDTO.getStatefulSetDTOS().add(statefulSetDTO);
+    }
+
+    /**
+     * 添加persistentVolumeClaim类型资源
+     *
+     * @param devopsEnvResourceDTO    实例资源参数
+     * @param v1PersistentVolumeClaim persistentVolumeClaim对象
+     */
+    private void addPersistentVolumeClaimToResource(DevopsEnvResourceDTO devopsEnvResourceDTO, V1PersistentVolumeClaim v1PersistentVolumeClaim) {
+        PersistentVolumeClaimDTO dto = new PersistentVolumeClaimDTO();
+        dto.setName(v1PersistentVolumeClaim.getMetadata().getName());
+        dto.setStatus(v1PersistentVolumeClaim.getStatus().getPhase());
+        dto.setCapacity(v1PersistentVolumeClaim.getStatus().getCapacity().get("storage").toSuffixedString());
+        dto.setAccessModes(v1PersistentVolumeClaim.getSpec().getAccessModes().toString());
+        dto.setAge(v1PersistentVolumeClaim.getMetadata().getCreationTimestamp().toString());
+
+        devopsEnvResourceDTO.getPersistentVolumeClaimDTOS().add(dto);
     }
 
     /**

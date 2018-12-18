@@ -145,34 +145,32 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
                 projectId, pageRequest, envId, versionId, appId, params);
+
         List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getContent();
         setInstanceConnect(applicationInstanceES, envs);
+
         Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
-        applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
-            List<DeploymentDTO> deploymentDTOS = new ArrayList<>();
-            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
-                    .listResources(applicationInstanceDTO.getId());
-            List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
-                    .convertList(devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()),
-                            DevopsEnvPodDTO.class);
-            for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
 
-                List<DevopsEnvPodDTO> newDevopsEnvPodDTO = new ArrayList<>();
-                devopsEnvPodDTOS.forEach(devopsEnvPodDTO -> {
-                            String podName = devopsEnvPodDTO.getName();
-                            String tmp = podName.substring(0, podName.lastIndexOf('-'));
-                            tmp = tmp.substring(0, tmp.lastIndexOf('-'));
-                            if (deploymentDTO.getName().equals(tmp)) {
-                                newDevopsEnvPodDTO.add(devopsEnvPodDTO);
-                            }
-                        }
-                );
-                deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
-                deploymentDTOS.add(deploymentDTO);
-            }
-            applicationInstanceDTO.setDeploymentDTOS(deploymentDTOS);
+        applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
+            // 通过实例id获取相关资源数据
+            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(applicationInstanceDTO.getId());
+
+            // 根据实例id获取相关的pod
+            List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper.convertList(
+                    devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()),
+                    DevopsEnvPodDTO.class
+            );
+
+            // 关联其pod并设置deployment
+            applicationInstanceDTO.setDeploymentDTOS(
+                    devopsEnvResourceDTO.getDeploymentDTOS()
+                            .stream()
+                            .peek(deploymentDTO -> deploymentDTO.setDevopsEnvPodDTOS(filterPodsAssociated(devopsEnvPodDTOS, deploymentDTO.getName())))
+                            .collect(Collectors.toList())
+            );
         });
+
         return applicationInstanceDTOS;
     }
 
@@ -557,27 +555,51 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
                 DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
                 BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
+
+                // 获取相关的pod
                 List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
                         .convertList(devopsEnvPodRepository.selectByInstanceId(devopsEnvPreviewInstanceDTO.getId()),
                                 DevopsEnvPodDTO.class);
+
                 DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
                         .listResources(devopsEnvPreviewInstanceDTO.getId());
-                for (DeploymentDTO deploymentDTO : devopsEnvResourceDTO.getDeploymentDTOS()) {
-                    List<DevopsEnvPodDTO> newDevopsEnvPodDTO = new ArrayList<>();
-                    devopsEnvPodDTOS.forEach(devopsEnvPodDTO -> {
-                                String podName = devopsEnvPodDTO.getName();
-                                String tmp = podName.substring(0, podName.lastIndexOf('-'));
-                                tmp = tmp.substring(0, tmp.lastIndexOf('-'));
-                                if (deploymentDTO.getName().equals(tmp)) {
-                                    newDevopsEnvPodDTO.add(devopsEnvPodDTO);
-                                }
-                            }
-                    );
-                    deploymentDTO.setDevopsEnvPodDTOS(newDevopsEnvPodDTO);
-                }
-                devopsEnvPreviewInstanceDTO.setDeploymentDTOS(devopsEnvResourceDTO.getDeploymentDTOS());
+
+                // 关联其pod并设置deployment
+                devopsEnvPreviewInstanceDTO.setDeploymentDTOS(devopsEnvResourceDTO.getDeploymentDTOS()
+                        .stream()
+                        .peek(deploymentDTO -> deploymentDTO.setDevopsEnvPodDTOS(filterPodsAssociated(devopsEnvPodDTOS, deploymentDTO.getName())))
+                        .collect(Collectors.toList())
+                );
+
+                // 关联其pod并设置daemonSet
+                devopsEnvPreviewInstanceDTO.setDaemonSetDTOS(
+                        devopsEnvResourceDTO.getDaemonSetDTOS()
+                                .stream()
+                                .peek(daemonSetDTO -> daemonSetDTO.setDevopsEnvPodDTOS(
+                                        filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, daemonSetDTO.getName())
+                                ))
+                                .collect(Collectors.toList())
+                );
+
+                // 关联其pod并设置statefulSet
+                devopsEnvPreviewInstanceDTO.setStatefulSetDTOS(
+                        devopsEnvResourceDTO.getStatefulSetDTOS()
+                                .stream()
+                                .peek(statefulSetDTO -> statefulSetDTO.setDevopsEnvPodDTOS(
+                                        filterPodsAssociatedWithStatefulSet(devopsEnvPodDTOS, statefulSetDTO.getName()))
+                                )
+                                .collect(Collectors.toList())
+                );
+
+                // 设置pvc
+                devopsEnvPreviewInstanceDTO.setPersistentVolumeClaimDTOS(devopsEnvResourceDTO.getPersistentVolumeClaimDTOS());
+
+                // 设置ingress
                 devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
+
+                // 设置service
                 devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
+
                 devopsEnvPreviewInstanceDTOS.add(devopsEnvPreviewInstanceDTO);
             });
             devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(devopsEnvPreviewInstanceDTOS);
@@ -585,6 +607,52 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         });
         devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
         return devopsEnvPreviewDTO;
+    }
+
+
+    /**
+     * filter the pods that are associated with the deployment.
+     *
+     * @param devopsEnvPodDTOS the pods to be filtered
+     * @param deploymentName   the name of deployment
+     * @return the pods
+     */
+    private List<DevopsEnvPodDTO> filterPodsAssociated(List<DevopsEnvPodDTO> devopsEnvPodDTOS, String deploymentName) {
+        return devopsEnvPodDTOS.stream().filter(devopsEnvPodDTO -> {
+                    String podName = devopsEnvPodDTO.getName();
+                    String controllerNameFromPod = podName.substring(0,
+                            podName.lastIndexOf('-', podName.lastIndexOf('-') - 1));
+                    return deploymentName.equals(controllerNameFromPod);
+                }
+        ).collect(Collectors.toList());
+    }
+
+    /**
+     * filter the pods that are associated with the daemonSet.
+     *
+     * @param devopsEnvPodDTOS the pods to be filtered
+     * @param daemonSetName    the name of daemonSet
+     * @return the pods
+     */
+    private List<DevopsEnvPodDTO> filterPodsAssociatedWithDaemonSet(List<DevopsEnvPodDTO> devopsEnvPodDTOS, String daemonSetName) {
+        return devopsEnvPodDTOS
+                .stream()
+                .filter(
+                        devopsEnvPodDTO -> daemonSetName.equals(devopsEnvPodDTO.getName().substring(0, devopsEnvPodDTO.getName().lastIndexOf('-')))
+                )
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * filter the pods that are associated with the statefulSet.
+     *
+     * @param devopsEnvPodDTOS the pods to be filtered
+     * @param statefulSetName    the name of statefulSet
+     * @return the pods
+     */
+    private List<DevopsEnvPodDTO> filterPodsAssociatedWithStatefulSet(List<DevopsEnvPodDTO> devopsEnvPodDTOS, String statefulSetName) {
+        // statefulSet名称逻辑和daemonSet一致
+        return filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, statefulSetName);
     }
 
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
