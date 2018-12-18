@@ -111,7 +111,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
         sql("UPDATE devops_env  de SET de.is_failed= (CASE when de.gitlab_env_project_id  is  null THEN 1  else  0  END)")
     }
 
-    changeSet(author: 'zmf', id: '2018-12-13-alter-unique-constraint', remarks: '删除不需要的约束') {
+    changeSet(author: 'zmf', id: '2018-12-13-alter-unique-constraint') {
         dropUniqueConstraint(constraintName: "uk_project_id_name",tableName: "devops_env")
     }
 }
