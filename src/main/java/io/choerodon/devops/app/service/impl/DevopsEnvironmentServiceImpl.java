@@ -1,9 +1,20 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -33,16 +44,6 @@ import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.io.File;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/4/9.
@@ -198,7 +199,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvGroupE> devopsEnvGroupES = devopsEnvGroupRepository.listByProjectId(projectId);
         devopsEnviromentRepDTOS.forEach(devopsEnviromentRepDTO -> {
             DevopsClusterE devopsClusterE = devopsClusterRepository.query(devopsEnviromentRepDTO.getClusterId());
-            devopsEnviromentRepDTO.setClusterName(devopsClusterE.getName());
+            devopsEnviromentRepDTO.setClusterName(devopsClusterE == null ? null : devopsClusterE.getName());
             if (devopsEnviromentRepDTO.getDevopsEnvGroupId() == null) {
                 devopsEnviromentRepDTO.setDevopsEnvGroupId(0L);
             }
