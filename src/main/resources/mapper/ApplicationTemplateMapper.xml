@@ -50,6 +50,5 @@
             OR dat.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dat.type = #{param,jdbcType=TINYINT})
         </if>
-        ORDER BY dat.organization_id DESC
     </select>
 </mapper>
