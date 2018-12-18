@@ -12,7 +12,8 @@ public enum ResourceType {
     DAEMONSET("DaemonSet"),
     STATEFULSET("StatefulSet"),
     SECRET("SECRET"),
-    MISSTYPE("MissType");
+    MISSTYPE("MissType"),
+    PERSISTENT_VOLUME_CLAIM("PersistentVolumeClaim");
 
 
     private String type;
@@ -50,6 +51,8 @@ public enum ResourceType {
                 return ResourceType.MISSTYPE;
             case "Secret":
                 return ResourceType.SECRET;
+            case "PersistentVolumeClaim":
+                return ResourceType.PERSISTENT_VOLUME_CLAIM;
             default:
                 break;
         }

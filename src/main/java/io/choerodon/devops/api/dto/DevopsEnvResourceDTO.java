@@ -12,6 +12,9 @@ public class DevopsEnvResourceDTO {
     private List<IngressDTO> ingressDTOS;
     private List<DeploymentDTO> deploymentDTOS;
     private List<ReplicaSetDTO> replicaSetDTOS;
+    private List<DaemonSetDTO> daemonSetDTOS;
+    private List<StatefulSetDTO> statefulSetDTOS;
+    private List<PersistentVolumeClaimDTO> persistentVolumeClaimDTOS;
 
     /**
      * 构造函数
@@ -22,6 +25,9 @@ public class DevopsEnvResourceDTO {
         this.serviceDTOS = new ArrayList<>();
         this.ingressDTOS = new ArrayList<>();
         this.replicaSetDTOS = new ArrayList<>();
+        this.daemonSetDTOS = new ArrayList<>();
+        this.statefulSetDTOS = new ArrayList<>();
+        this.persistentVolumeClaimDTOS = new ArrayList<>();
     }
 
     public List<PodDTO> getPodDTOS() {
@@ -64,4 +70,27 @@ public class DevopsEnvResourceDTO {
         this.replicaSetDTOS = replicaSetDTOS;
     }
 
+    public List<DaemonSetDTO> getDaemonSetDTOS() {
+        return daemonSetDTOS;
+    }
+
+    public void setDaemonSetDTOS(List<DaemonSetDTO> daemonSetDTOS) {
+        this.daemonSetDTOS = daemonSetDTOS;
+    }
+
+    public List<StatefulSetDTO> getStatefulSetDTOS() {
+        return statefulSetDTOS;
+    }
+
+    public void setStatefulSetDTOS(List<StatefulSetDTO> statefulSetDTOS) {
+        this.statefulSetDTOS = statefulSetDTOS;
+    }
+
+    public List<PersistentVolumeClaimDTO> getPersistentVolumeClaimDTOS() {
+        return persistentVolumeClaimDTOS;
+    }
+
+    public void setPersistentVolumeClaimDTOS(List<PersistentVolumeClaimDTO> persistentVolumeClaimDTOS) {
+        this.persistentVolumeClaimDTOS = persistentVolumeClaimDTOS;
+    }
 }
