@@ -564,7 +564,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                                 DevopsEnvPodDTO.class);
 
                 DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
-                        .listResources(devopsEnvPreviewInstanceDTO.getId());
+                        .listResourcesInHelmRelease(devopsEnvPreviewInstanceDTO.getId());
 
                 // 关联其pod并设置deployment
                 devopsEnvPreviewInstanceDTO.setDeploymentDTOS(devopsEnvResourceDTO.getDeploymentDTOS()

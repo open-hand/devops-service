@@ -1,8 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.choerodon.core.exception.CommonException;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,95 +72,147 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         if (devopsEnvResourceES == null) {
             return devopsEnvResourceDTO;
         }
+
+        // 关联资源
+        devopsEnvResourceES.forEach(devopsInstanceResourceE -> dealWithResource(
+                devopsEnvResourceDetailRepository.query(devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId()),
+                devopsInstanceResourceE,
+                devopsEnvResourceDTO,
+                applicationInstanceE.getDevopsEnvironmentE().getId()
+                )
+        );
+        return devopsEnvResourceDTO;
+    }
+
+    @Override
+    public DevopsEnvResourceDTO listResourcesInHelmRelease(Long instanceId) {
+        ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(instanceId);
+        List<DevopsEnvResourceE> devopsEnvResourceES =
+                devopsEnvResourceRepository.listByInstanceId(instanceId);
+        DevopsEnvResourceDTO devopsEnvResourceDTO = new DevopsEnvResourceDTO();
+        if (devopsEnvResourceES == null) {
+            return devopsEnvResourceDTO;
+        }
+
+        // 关联资源
         devopsEnvResourceES.forEach(devopsInstanceResourceE -> {
-            DevopsEnvResourceDetailE devopsEnvResourceDetailE =
-                    devopsEnvResourceDetailRepository.query(
-                            devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
-            ResourceType resourceType = ResourceType.forString(devopsInstanceResourceE.getKind());
-            if (resourceType == null) {
-                resourceType = ResourceType.MISSTYPE;
-            }
-            switch (resourceType) {
-                case POD:
-                    V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Pod.class);
-                    addPodToResource(devopsEnvResourceDTO, v1Pod);
-                    break;
-                case DEPLOYMENT:
-                    V1beta2Deployment v1beta2Deployment = json.deserialize(
-                            devopsEnvResourceDetailE.getMessage(),
-                            V1beta2Deployment.class);
-                    addDeploymentToResource(devopsEnvResourceDTO, v1beta2Deployment);
-                    break;
-                case SERVICE:
-                    V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
-                            V1Service.class);
-                    DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
-                            devopsInstanceResourceE.getName(), applicationInstanceE.getDevopsEnvironmentE().getId());
-                    if (devopsServiceE != null) {
-                        List<String> domainNames =
-                                devopsIngressRepository.queryIngressNameByServiceId(
-                                        devopsServiceE.getId());
-                        domainNames.stream().forEach(domainName -> {
-                            DevopsEnvResourceE devopsEnvResourceE1 =
-                                    devopsEnvResourceRepository.queryResource(
-                                            null,
-                                            null,
-                                            applicationInstanceE.getDevopsEnvironmentE().getId(),
-                                            "Ingress",
-                                            domainName);
-                            //升级0.11.0-0.12.0,资源表新增envId,修复以前的域名数据
-                            if (devopsEnvResourceE1 == null) {
-                                devopsEnvResourceE1 = devopsEnvResourceRepository.queryResource(
+                    DevopsEnvResourceDetailE detailE = devopsEnvResourceDetailRepository.query(devopsInstanceResourceE.getDevopsEnvResourceDetailE().getId());
+                    if (isReleaseGenerated(detailE.getMessage())) {
+                        dealWithResource(detailE, devopsInstanceResourceE, devopsEnvResourceDTO, applicationInstanceE.getDevopsEnvironmentE().getId());
+                    }
+                }
+        );
+        return devopsEnvResourceDTO;
+    }
+
+    /**
+     * 判断该资源是否是应用chart包中定义而生成资源
+     *
+     * @param message    资源的信息
+     * @return true 如果是chart包定义生成的
+     */
+    private boolean isReleaseGenerated(String message) {
+        try {
+            JsonNode info = new ObjectMapper().readTree(message);
+            return info.get("metadata").get("labels").get("choerodon.io/release") != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
+    /**
+     * 处理获取的资源详情，将资源详情根据类型进行数据处理填入 devopsEnvResourceDTO 中
+     *
+     * @param devopsEnvResourceDetailE 资源详情
+     * @param devopsInstanceResourceE  资源
+     * @param devopsEnvResourceDTO     存放处理结果的dto
+     * @param envId                    环境id
+     */
+    private void dealWithResource(DevopsEnvResourceDetailE devopsEnvResourceDetailE, DevopsEnvResourceE devopsInstanceResourceE, DevopsEnvResourceDTO devopsEnvResourceDTO, Long envId) {
+        ResourceType resourceType = ResourceType.forString(devopsInstanceResourceE.getKind());
+        if (resourceType == null) {
+            resourceType = ResourceType.MISSTYPE;
+        }
+        switch (resourceType) {
+            case POD:
+                V1Pod v1Pod = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1Pod.class);
+                addPodToResource(devopsEnvResourceDTO, v1Pod);
+                break;
+            case DEPLOYMENT:
+                V1beta2Deployment v1beta2Deployment = json.deserialize(
+                        devopsEnvResourceDetailE.getMessage(),
+                        V1beta2Deployment.class);
+                addDeploymentToResource(devopsEnvResourceDTO, v1beta2Deployment);
+                break;
+            case SERVICE:
+                V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
+                        V1Service.class);
+                DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
+                        devopsInstanceResourceE.getName(), envId);
+                if (devopsServiceE != null) {
+                    List<String> domainNames =
+                            devopsIngressRepository.queryIngressNameByServiceId(
+                                    devopsServiceE.getId());
+                    domainNames.stream().forEach(domainName -> {
+                        DevopsEnvResourceE devopsEnvResourceE1 =
+                                devopsEnvResourceRepository.queryResource(
                                         null,
                                         null,
-                                        null,
+                                        envId,
                                         "Ingress",
                                         domainName);
-                            }
-                            if (devopsEnvResourceE1 != null) {
-                                DevopsEnvResourceDetailE devopsEnvResourceDetailE1 =
-                                        devopsEnvResourceDetailRepository.query(
-                                                devopsEnvResourceE1.getDevopsEnvResourceDetailE().getId());
-                                V1beta1Ingress v1beta1Ingress = json.deserialize(
-                                        devopsEnvResourceDetailE1.getMessage(),
-                                        V1beta1Ingress.class);
-                                addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
-                            }
-                        });
-                    }
-                    addServiceToResource(devopsEnvResourceDTO, v1Service);
-                    break;
-                case INGRESS:
-                    if (devopsInstanceResourceE.getApplicationInstanceE() != null) {
-                        V1beta1Ingress v1beta1Ingress = json.deserialize(
-                                devopsEnvResourceDetailE.getMessage(),
-                                V1beta1Ingress.class);
-                        addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
-                    }
-                    break;
-                case REPLICASET:
-                    V1beta2ReplicaSet v1beta2ReplicaSet = json.deserialize(
+                        //升级0.11.0-0.12.0,资源表新增envId,修复以前的域名数据
+                        if (devopsEnvResourceE1 == null) {
+                            devopsEnvResourceE1 = devopsEnvResourceRepository.queryResource(
+                                    null,
+                                    null,
+                                    null,
+                                    "Ingress",
+                                    domainName);
+                        }
+                        if (devopsEnvResourceE1 != null) {
+                            DevopsEnvResourceDetailE devopsEnvResourceDetailE1 =
+                                    devopsEnvResourceDetailRepository.query(
+                                            devopsEnvResourceE1.getDevopsEnvResourceDetailE().getId());
+                            V1beta1Ingress v1beta1Ingress = json.deserialize(
+                                    devopsEnvResourceDetailE1.getMessage(),
+                                    V1beta1Ingress.class);
+                            addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
+                        }
+                    });
+                }
+                addServiceToResource(devopsEnvResourceDTO, v1Service);
+                break;
+            case INGRESS:
+                if (devopsInstanceResourceE.getApplicationInstanceE() != null) {
+                    V1beta1Ingress v1beta1Ingress = json.deserialize(
                             devopsEnvResourceDetailE.getMessage(),
-                            V1beta2ReplicaSet.class);
-                    addReplicaSetToResource(devopsEnvResourceDTO, v1beta2ReplicaSet);
-                    break;
-                case DAEMONSET:
-                    V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1beta2DaemonSet.class);
-                    addDaemonSetToResource(devopsEnvResourceDTO, v1beta2DaemonSet);
-                    break;
-                case STATEFULSET:
-                    V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1beta2StatefulSet.class);
-                    addStatefulSetSetToResource(devopsEnvResourceDTO, v1beta2StatefulSet);
-                    break;
-                case PERSISTENT_VOLUME_CLAIM:
-                    V1PersistentVolumeClaim persistentVolumeClaim = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1PersistentVolumeClaim.class);
-                    addPersistentVolumeClaimToResource(devopsEnvResourceDTO, persistentVolumeClaim);
-                    break;
-                default:
-                    break;
-            }
-        });
-        return devopsEnvResourceDTO;
+                            V1beta1Ingress.class);
+                    addIngressToResource(devopsEnvResourceDTO, v1beta1Ingress);
+                }
+                break;
+            case REPLICASET:
+                V1beta2ReplicaSet v1beta2ReplicaSet = json.deserialize(
+                        devopsEnvResourceDetailE.getMessage(),
+                        V1beta2ReplicaSet.class);
+                addReplicaSetToResource(devopsEnvResourceDTO, v1beta2ReplicaSet);
+                break;
+            case DAEMONSET:
+                V1beta2DaemonSet v1beta2DaemonSet = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1beta2DaemonSet.class);
+                addDaemonSetToResource(devopsEnvResourceDTO, v1beta2DaemonSet);
+                break;
+            case STATEFULSET:
+                V1beta2StatefulSet v1beta2StatefulSet = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1beta2StatefulSet.class);
+                addStatefulSetSetToResource(devopsEnvResourceDTO, v1beta2StatefulSet);
+                break;
+            case PERSISTENT_VOLUME_CLAIM:
+                V1PersistentVolumeClaim persistentVolumeClaim = json.deserialize(devopsEnvResourceDetailE.getMessage(), V1PersistentVolumeClaim.class);
+                addPersistentVolumeClaimToResource(devopsEnvResourceDTO, persistentVolumeClaim);
+                break;
+            default:
+                break;
+        }
     }
 
 
