@@ -385,13 +385,13 @@
         order by cmd.creation_date DESC
     </select>
 
-    <select id="getInstanceDeploymentDetailJsonByInstanceId" resultType="java.lang.String">
+    <select id="getInstanceResourceDetailJson" resultType="java.lang.String">
         SELECT detail.message
         FROM devops_app_instance ins
         INNER JOIN devops_env_resource re ON ins.id = re.app_instance_id
         INNER JOIN devops_env_resource_detail detail ON re.resource_detail_id = detail.id
         WHERE ins.id = #{instanceId}
-        AND re.kind = 'Deployment'
-        AND re.name = #{deploymentName};
+        AND re.kind = #{resourceType}
+        AND re.name = #{resourceName};
     </select>
 </mapper>

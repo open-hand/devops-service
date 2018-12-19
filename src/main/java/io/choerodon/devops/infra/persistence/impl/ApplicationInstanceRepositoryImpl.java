@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -194,7 +195,7 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
-    public String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId, String deploymentName) {
-        return applicationInstanceMapper.getInstanceDeploymentDetailJsonByInstanceId(instanceId, deploymentName);
+    public String getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
+        return applicationInstanceMapper.getInstanceResourceDetailJson(instanceId, resourceName, resourceType.getType());
     }
 }

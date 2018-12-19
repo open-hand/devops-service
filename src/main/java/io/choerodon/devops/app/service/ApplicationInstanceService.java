@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.Date;
@@ -226,26 +227,30 @@ public interface ApplicationInstanceService {
     void deployTestApp(ApplicationDeployDTO applicationDeployDTO);
 
     /**
+     * 根据实例id获取更多资源详情(json格式）
+     *
+     * @param instanceId   实例id
+     * @param resourceName 资源(Deployment, DaemonSet, StatefulSet等)的name
+     * @param resourceType 资源类型
+     * @return 包含json格式的资源详情的DTO
+     */
+    InstanceControllerDetailDTO getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
+
+    /**
+     * 根据实例id获取更多资源详情(yaml格式）
+     *
+     * @param instanceId   实例id
+     * @param resourceName 资源(Deployment, DaemonSet, StatefulSet等)的name
+     * @param resourceType 资源类型
+     * @return 包含yaml格式的资源详情的DTO
+     */
+    InstanceControllerDetailDTO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType);
+
+    /**
      * 查询自动化测试应用实例状态
      *
      * @param testReleases
      */
-
-    /**
-     * 根据实例id获取更多部署详情(json格式）
-     * @param instanceId 实例id
-     * @return 详情json字符串
-     */
-    InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId, String deploymentName);
-
-    /**
-     * 根据实例id获取更多部署详情(yaml格式)
-     * @param instanceId 实例id
-     * @return 详情yaml字符串
-     */
-    InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId, String deploymentName);
-
-
-    void getTestAppStatus(Map<Long,List<String>> testReleases);
+    void getTestAppStatus(Map<Long, List<String>> testReleases);
 
 }

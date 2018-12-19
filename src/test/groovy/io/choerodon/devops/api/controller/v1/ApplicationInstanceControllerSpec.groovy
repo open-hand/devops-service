@@ -9,7 +9,7 @@ import io.choerodon.devops.api.dto.DeployFrequencyDTO
 import io.choerodon.devops.api.dto.DeployTimeDTO
 import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO
 import io.choerodon.devops.api.dto.DevopsEnvResourceDTO
-import io.choerodon.devops.api.dto.InstanceDeploymentDTO
+import io.choerodon.devops.api.dto.InstanceControllerDetailDTO
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
@@ -306,11 +306,13 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         devopsEnvResourceDO7.setId(7)
         devopsEnvResourceDO7.setKind("DaemonSet")
+        devopsEnvResourceDO7.setName("DaemonSet")
         devopsEnvResourceDO7.setAppInstanceId(1L)
         devopsEnvResourceDO7.setResourceDetailId(7L)
 
         devopsEnvResourceDO8.setId(8)
         devopsEnvResourceDO8.setKind("StatefulSet")
+        devopsEnvResourceDO8.setName("StatefulSet")
         devopsEnvResourceDO8.setAppInstanceId(1L)
         devopsEnvResourceDO8.setResourceDetailId(8L)
 
@@ -543,7 +545,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceDeploymentDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -556,7 +558,7 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
-        entity.getBody().getCode() == "error.instance.deployment.not.found"
+        entity.getBody().getCode() == "error.instance.resource.not.found"
     }
 
     def "getDeploymentDetailsYamlByInstanceId"() {
@@ -567,7 +569,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceDeploymentDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
@@ -581,7 +583,89 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
-        entity.getBody().getCode() == "error.instance.deployment.not.found"
+        entity.getBody().getCode() == "error.instance.resource.not.found"
+    }
+
+    def "getDaemonSetDetailsJsonByInstanceId"() {
+        given: "准备数据"
+        String daemonSetName = getDevopsEnvResourceDO7().getName()
+        Long projectId = 1L
+        Long instanceId = 1L
+
+        when: '查询真实存在的数据'
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_json?daemon_set_name=" + daemonSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
+
+        when: '查询不存在的数据时'
+        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_json?daemon_set_name=" + daemonSetName, ExceptionResponse, 1000L, 1000L)
+
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getCode() == "error.instance.resource.not.found"
+    }
+
+    def "getDaemonSetDetailsYamlByInstanceId"() {
+        given: "初始化数据库"
+        String daemonSetName = getDevopsEnvResourceDO7().getName()
+        Long projectId = 1L
+        Long instanceId = 1L
+
+        when: '查询真实存在的数据'
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_yaml?daemon_set_name=" + daemonSetName, InstanceControllerDetailDTO, projectId, instanceId)
+
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        new ObjectMapper().readTree(JsonYamlConversionUtil.yaml2json(entity.getBody().getDetail().toString())).get("metadata") != null
+
+        when: '查询不存在的数据时'
+        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/daemon_set_detail_yaml?daemon_set_name=" + daemonSetName, ExceptionResponse, 1000L, 1000L)
+
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getCode() == "error.instance.resource.not.found"
+    }
+
+    def "getStatefulSetDetailsJsonByInstanceId"() {
+        given: "准备数据"
+        String statefulSetName = getDevopsEnvResourceDO8().getName()
+        Long projectId = 1L
+        Long instanceId = 1L
+
+        when: '查询真实存在的数据'
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_json?stateful_set_name=" + statefulSetName, InstanceControllerDetailDTO, projectId, instanceId)
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
+
+        when: '查询不存在的数据时'
+        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_json?stateful_set_name=" + statefulSetName, ExceptionResponse, 1000L, 1000L)
+
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getCode() == "error.instance.resource.not.found"
+    }
+
+    def "getStatefulSetDetailsYamlByInstanceId"() {
+        given: "初始化数据库"
+        String statefulSetName = getDevopsEnvResourceDO8().getName()
+        Long projectId = 1L
+        Long instanceId = 1L
+
+        when: '查询真实存在的数据'
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_yaml?stateful_set_name=" + statefulSetName, InstanceControllerDetailDTO, projectId, instanceId)
+
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        new ObjectMapper().readTree(JsonYamlConversionUtil.yaml2json(entity.getBody().getDetail().toString())).get("metadata") != null
+
+        when: '查询不存在的数据时'
+        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/stateful_set_detail_yaml?stateful_set_name=" + statefulSetName, ExceptionResponse, 1000L, 1000L)
+
+        then: '校验返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getCode() == "error.instance.resource.not.found"
     }
 
     def initForInstance(Map<String, Long> map, String deploymentName) {

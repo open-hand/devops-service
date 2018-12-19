@@ -425,40 +425,42 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        deployService.getTestAppStatus(testReleases);
-    }
-
-    @Override
-    public InstanceDeploymentDTO getDeploymentJsonDetailsByInstanceId(Long instanceId, String deploymentName) {
-        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId, deploymentName);
-
-
-        if (StringUtils.isEmpty(message)) {
-            throw new CommonException("error.instance.deployment.not.found", instanceId);
-        }
+    public InstanceControllerDetailDTO getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType) {
+        String message = getAndCheckResourceDetail(instanceId, resourceName, resourceType);
 
         try {
-            return new InstanceDeploymentDTO(instanceId, new ObjectMapper().readTree(message));
+            return new InstanceControllerDetailDTO(instanceId, new ObjectMapper().readTree(message));
         } catch (IOException e) {
-            throw new CommonException("error.instance.deployment.json.read.failed", instanceId, message);
+            throw new CommonException("error.instance.resource.json.read.failed", instanceId, message);
         }
     }
 
     @Override
-    public InstanceDeploymentDTO getDeploymentYamlDetailsByInstanceId(Long instanceId, String deploymentName) {
-        String message = applicationInstanceRepository.getInstanceDeploymentDetailJsonByInstanceId(instanceId, deploymentName);
-
-        if (StringUtils.isEmpty(message)) {
-            throw new CommonException("error.instance.deployment.not.found", instanceId);
-        }
+    public InstanceControllerDetailDTO getInstanceResourceDetailYaml(Long instanceId, String resourceName, ResourceType resourceType) {
+        String message = getAndCheckResourceDetail(instanceId, resourceName, resourceType);
 
         try {
-            return new InstanceDeploymentDTO(instanceId, JsonYamlConversionUtil.json2yaml(message));
+            return new InstanceControllerDetailDTO(instanceId, JsonYamlConversionUtil.json2yaml(message));
         } catch (IOException e) {
             throw new CommonException(JsonYamlConversionUtil.ERROR_JSON_TO_YAML_FAILED, message);
         }
     }
+
+    private String getAndCheckResourceDetail(Long instanceId, String resourceName, ResourceType resourceType) {
+        String message = applicationInstanceRepository.getInstanceResourceDetailJson(instanceId, resourceName, resourceType);
+
+        if (StringUtils.isEmpty(message)) {
+            throw new CommonException("error.instance.resource.not.found", instanceId, resourceType.getType());
+        }
+
+        return message;
+    }
+
+    @Override
+    public void getTestAppStatus(Map<Long, List<String>> testReleases) {
+        deployService.getTestAppStatus(testReleases);
+    }
+
 
     private Page<DeployDetailDTO> getDeployDetailDTOS(Page<DeployDO> deployDOS) {
         Page<DeployDetailDTO> pageDeployDetailDTOS = new Page<>();
