@@ -3,7 +3,7 @@ package io.choerodon.devops.api.dto;
 /**
  * @author zmf
  */
-public class InstanceDeploymentDTO {
+public class InstanceControllerDetailDTO {
     /**
      * instance id from the web request
      */
@@ -14,9 +14,9 @@ public class InstanceDeploymentDTO {
      */
     private Object detail;
 
-    public InstanceDeploymentDTO() {}
+    public InstanceControllerDetailDTO() {}
 
-    public InstanceDeploymentDTO(Long instanceId, Object detail) {
+    public InstanceControllerDetailDTO(Long instanceId, Object detail) {
         this.instanceId = instanceId;
         this.detail = detail;
     }

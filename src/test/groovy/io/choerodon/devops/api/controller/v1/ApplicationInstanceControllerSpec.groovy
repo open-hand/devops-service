@@ -9,7 +9,7 @@ import io.choerodon.devops.api.dto.DeployFrequencyDTO
 import io.choerodon.devops.api.dto.DeployTimeDTO
 import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO
 import io.choerodon.devops.api.dto.DevopsEnvResourceDTO
-import io.choerodon.devops.api.dto.InstanceDeploymentDTO
+import io.choerodon.devops.api.dto.InstanceControllerDetailDTO
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
@@ -543,7 +543,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceDeploymentDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_json?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()
         ((Map<String, Map>) entity.getBody().getDetail()).get("metadata") != null
@@ -567,7 +567,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         Long projectId = 1L
 
         when: '查询真实存在的数据'
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceDeploymentDTO, projectId, map.get("instanceId"))
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/deployment_detail_yaml?deployment_name=" + deploymentName, InstanceControllerDetailDTO, projectId, map.get("instanceId"))
 
         then: '校验返回值'
         entity.getStatusCode().is2xxSuccessful()

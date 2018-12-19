@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,45 +118,135 @@ public class ApplicationInstanceController {
     }
 
     /**
-     * 根据实例id获取更多部署详情(Json格式)
+     * 根据实例id和deployment name获取更多部署详情(Json格式)
      *
-     * @param projectId     项目id
-     * @param appInstanceId 实例id
+     * @param projectId      项目id
+     * @param appInstanceId  实例id
+     * @param deploymentName deployment name
      * @return 部署详情
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多部署详情(Json格式)")
     @GetMapping(value = "/{appInstanceId}/deployment_detail_json")
-    public ResponseEntity<InstanceDeploymentDTO> getDeploymentDetailsJsonByInstanceId(
+    public ResponseEntity<InstanceControllerDetailDTO> getDeploymentDetailsJsonByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
             @RequestParam(value = "deployment_name") String deploymentName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getDeploymentJsonDetailsByInstanceId(appInstanceId, deploymentName), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, deploymentName, ResourceType.DEPLOYMENT), HttpStatus.OK);
     }
 
     /**
-     * 根据实例id获取更多部署详情(Yaml格式)
+     * 根据实例id获取更多daemonSet详情(Json格式)
      *
      * @param projectId     项目id
      * @param appInstanceId 实例id
+     * @param daemonSetName daemonSet name
+     * @return daemonSet详情
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据实例id获取更多daemonSet详情(Json格式)")
+    @GetMapping(value = "/{appInstanceId}/daemon_set_detail_json")
+    public ResponseEntity<InstanceControllerDetailDTO> getDaemonSetDetailsJsonByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署名称", required = true)
+            @RequestParam(value = "daemon_set_name") String daemonSetName,
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable Long appInstanceId) {
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, daemonSetName, ResourceType.DAEMONSET), HttpStatus.OK);
+    }
+
+    /**
+     * 根据实例id获取更多statefulSet详情(Json格式)
+     *
+     * @param projectId       项目id
+     * @param appInstanceId   实例id
+     * @param statefulSetName statefulSet name
+     * @return statefulSet详情
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据实例id获取更多statefulSet详情(Json格式)")
+    @GetMapping(value = "/{appInstanceId}/stateful_set_detail_json")
+    public ResponseEntity<InstanceControllerDetailDTO> getStatefulSetDetailsJsonByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署名称", required = true)
+            @RequestParam(value = "stateful_set_name") String statefulSetName,
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable Long appInstanceId) {
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, statefulSetName, ResourceType.STATEFULSET), HttpStatus.OK);
+    }
+
+    /**
+     * 根据实例id和deployment name获取更多部署详情(Yaml格式)
+     *
+     * @param projectId      项目id
+     * @param appInstanceId  实例id
+     * @param deploymentName deployment name
      * @return 部署详情
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据实例id获取更多部署详情(Yaml格式)")
     @GetMapping(value = "/{appInstanceId}/deployment_detail_yaml")
-    public ResponseEntity<InstanceDeploymentDTO> getDeploymentDetailsYamlByInstanceId(
+    public ResponseEntity<InstanceControllerDetailDTO> getDeploymentDetailsYamlByInstanceId(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "部署名称", required = true)
             @RequestParam(value = "deployment_name") String deploymentName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getDeploymentYamlDetailsByInstanceId(appInstanceId, deploymentName), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailYaml(appInstanceId, deploymentName, ResourceType.DEPLOYMENT), HttpStatus.OK);
+    }
+
+    /**
+     * 根据实例id获取更多daemonSet详情(Yaml格式)
+     *
+     * @param projectId     项目id
+     * @param appInstanceId 实例id
+     * @param daemonSetName daemonSet name
+     * @return daemonSet详情
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据实例id获取更多daemonSet详情(Yaml格式)")
+    @GetMapping(value = "/{appInstanceId}/daemon_set_detail_yaml")
+    public ResponseEntity<InstanceControllerDetailDTO> getDaemonSetDetailsYamlByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署名称", required = true)
+            @RequestParam(value = "daemon_set_name") String daemonSetName,
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable Long appInstanceId) {
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, daemonSetName, ResourceType.DAEMONSET), HttpStatus.OK);
+    }
+
+    /**
+     * 根据实例id获取更多statefulSet详情(Yaml格式)
+     *
+     * @param projectId       项目id
+     * @param appInstanceId   实例id
+     * @param statefulSetName statefulSet name
+     * @return statefulSet详情
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据实例id获取更多statefulSet详情(Yaml格式)")
+    @GetMapping(value = "/{appInstanceId}/stateful_set_detail_yaml")
+    public ResponseEntity<InstanceControllerDetailDTO> getStatefulSetDetailsYamlByInstanceId(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "部署名称", required = true)
+            @RequestParam(value = "stateful_set_name") String statefulSetName,
+            @ApiParam(value = "部署ID", required = true)
+            @PathVariable Long appInstanceId) {
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, statefulSetName, ResourceType.STATEFULSET), HttpStatus.OK);
     }
 
     /**

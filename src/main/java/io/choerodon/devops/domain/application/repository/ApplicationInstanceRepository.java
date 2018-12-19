@@ -5,6 +5,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.DeployDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -60,5 +61,14 @@ public interface ApplicationInstanceRepository {
 
     void checkName(String instanceName);
 
-    String getInstanceDeploymentDetailJsonByInstanceId(Long instanceId, String deploymentName);
+
+    /**
+     * 根据实例id获取更多资源详情(json格式）
+     *
+     * @param instanceId   实例id
+     * @param resourceName 资源(Deployment, DaemonSet, StatefulSet等)的name
+     * @param resourceType 资源类型
+     * @return 详情json字符串
+     */
+    String getInstanceResourceDetailJson(Long instanceId, String resourceName, ResourceType resourceType);
 }
