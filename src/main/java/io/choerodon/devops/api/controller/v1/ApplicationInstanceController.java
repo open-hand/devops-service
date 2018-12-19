@@ -224,7 +224,7 @@ public class ApplicationInstanceController {
             @RequestParam(value = "daemon_set_name") String daemonSetName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, daemonSetName, ResourceType.DAEMONSET), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailYaml(appInstanceId, daemonSetName, ResourceType.DAEMONSET), HttpStatus.OK);
     }
 
     /**
@@ -246,7 +246,7 @@ public class ApplicationInstanceController {
             @RequestParam(value = "stateful_set_name") String statefulSetName,
             @ApiParam(value = "部署ID", required = true)
             @PathVariable Long appInstanceId) {
-        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailJson(appInstanceId, statefulSetName, ResourceType.STATEFULSET), HttpStatus.OK);
+        return new ResponseEntity<>(applicationInstanceService.getInstanceResourceDetailYaml(appInstanceId, statefulSetName, ResourceType.STATEFULSET), HttpStatus.OK);
     }
 
     /**
