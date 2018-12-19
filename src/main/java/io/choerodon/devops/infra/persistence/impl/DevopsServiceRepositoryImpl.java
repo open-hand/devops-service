@@ -142,6 +142,11 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
+    public void setEndPointToNull(Long id) {
+        devopsServiceMapper.setEndPointToNull(id);
+    }
+
+    @Override
     public List<Long> selectDeployedEnv() {
         return devopsServiceMapper.selectDeployedEnv();
     }

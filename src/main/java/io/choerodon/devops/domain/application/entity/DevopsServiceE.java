@@ -13,6 +13,7 @@ public class DevopsServiceE {
     private String name;
     private String status;
     private List<PortMapE> ports;
+    private String endPoints;
     private String externalIp;
     private String type;
     private String labels;
@@ -115,5 +116,13 @@ public class DevopsServiceE {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public String getEndPoints() {
+        return endPoints;
+    }
+
+    public void setEndPoints(String endPoints) {
+        this.endPoints = endPoints;
     }
 }

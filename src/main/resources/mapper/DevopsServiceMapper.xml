@@ -229,6 +229,12 @@
         WHERE ds.id = #{serviceId}
     </update>
 
+    <update id="setEndPointToNull">
+        UPDATE devops_service ds
+        SET ds.end_points = null
+        WHERE ds.id = #{serviceId}
+    </update>
+
     <delete id="deleteServiceInstance">
         DELETE FROM devops_service_instance
         WHERE service_id IN

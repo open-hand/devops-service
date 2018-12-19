@@ -5,8 +5,9 @@ import javax.validation.constraints.Size;
 import java.util.List;
 import java.util.Map;
 
-import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.swagger.annotations.ApiModelProperty;
+
+import io.choerodon.devops.domain.application.entity.PortMapE;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -24,6 +25,8 @@ public class DevopsServiceReqDTO {
     private String type;
     @NotNull
     private List<PortMapE> ports;
+
+    private Map<String, List<EndPointPortDTO>> endPoints;
 
     @ApiModelProperty("实例code")
     private List<String> appInstance;
@@ -92,5 +95,13 @@ public class DevopsServiceReqDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Map<String, List<EndPointPortDTO>> getEndPoints() {
+        return endPoints;
+    }
+
+    public void setEndPoints(Map<String, List<EndPointPortDTO>> endPoints) {
+        this.endPoints = endPoints;
     }
 }

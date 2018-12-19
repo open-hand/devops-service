@@ -189,7 +189,7 @@ public class CertificationServiceImpl implements CertificationService {
         objectOperation.setType(c7nCertification);
         objectOperation.operationEnvGitlabFile(CERT_PREFIX + certName,
                 TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "create",
-                userAttrE.getGitlabUserId(), null, null, null, null);
+                userAttrE.getGitlabUserId(), null, null, null, null, null);
     }
 
     @Override
@@ -248,7 +248,7 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.setType(c7nCertification);
             certificationOperation.operationEnvGitlabFile(
                     null, gitLabEnvProjectId,
-                    "delete", userAttrE.getGitlabUserId(), certId, certificateType, certEnvId,
+                    "delete", userAttrE.getGitlabUserId(), certId, certificateType, null, certEnvId,
                     devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
         }
     }

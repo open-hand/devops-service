@@ -38,5 +38,7 @@ public interface DevopsServiceMapper extends BaseMapper<DevopsServiceDO> {
 
     void setLablesToNull(@Param("serviceId") Long serviceId);
 
+    void setEndPointToNull(@Param("serviceId") Long serviceId);
+
     void deleteServiceInstance(@Param("serviceIds") List<Long> serviceIds);
 }

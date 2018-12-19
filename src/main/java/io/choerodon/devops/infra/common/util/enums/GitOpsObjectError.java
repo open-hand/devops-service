@@ -55,6 +55,15 @@ public enum GitOpsObjectError {
     INSTANCE_APP_ID_NOT_SAME("instance.app.id.not.same"),
     INSTANCE_RELATED_SERVICE_NOT_FOUND("instance.related.service.not.found"),
     CONFIG_MAP_DATA_NOT_FOUND("configMap.data.not.found"),
+    CONFIG_MAP_NAME_NOT_FOUND("configMap.name.not.found"),
+    CONFIG_MAP_METADATA_NOT_FOUND("configMap.metadata.not.found"),
+    END_POINT_NAME_NOT_FOUND("endPoints.name.not.found"),
+    END_POINT_METADATA_NOT_FOUND("endPoints.metadata.not.found"),
+    END_POINT_SUBSETS_NOT_FOUND("endPoints.subsets.not.found"),
+    END_POINT_ADDRESS_NOT_FOUND("endPoints.address.not.found"),
+    END_POINT_PORTS_NOT_FOUND("endPoints.ports.not.found"),
+    END_POINT_ADDRESS_IP_NOT_FOUND("endPoints.address.ip.not.found"),
+    END_POINT_PORTS_PORT_NOT_FOUND("endPoints.ports.port.not.found"),
     OBJECT_EXIST("object.exist");
 
     private String error;

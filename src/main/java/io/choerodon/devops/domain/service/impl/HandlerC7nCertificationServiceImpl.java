@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +52,7 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
 
-                                 List<C7nCertification> c7nCertifications, Long envId, Long projectId, String path, Long userId) {
+                                 List<C7nCertification> c7nCertifications, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         //todo command操作
         List<C7nCertification> updateC7nCertification = new ArrayList<>();
         List<String> beforeC7nCertification = beforeSync.stream()

@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Service;
 import io.kubernetes.client.models.V1beta1Ingress;
 import org.slf4j.Logger;
@@ -46,7 +47,10 @@ import io.choerodon.devops.domain.service.ConvertK8sObjectService;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
 import io.choerodon.devops.domain.service.impl.*;
-import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -64,6 +68,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String CERTIFICATE = "Certificate";
     private static final String CONFIGMAP = "ConfigMap";
+    private static final String ENDPOINTS = "Endpoints";
     private static final String SECRET = "Secret";
     private static final String NO_COMMIT_SHA = "0000000000000000000000000000000000000000";
     private static final String REF_HEADS = "refs/heads/";
@@ -398,28 +403,29 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<C7nCertification> c7nCertifications = new ArrayList<>();
             List<V1ConfigMap> v1ConfigMaps = new ArrayList<>();
             List<C7nSecret> c7nSecrets = new ArrayList<>();
+            List<V1Endpoints> v1Endpoints = new ArrayList<>();
 
             //从文件中读出对象,序列化为K8S对象
             objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
-                    v1ConfigMaps, c7nSecrets, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
+                    v1ConfigMaps, c7nSecrets, v1Endpoints, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
                     c7nCertifications);
             List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
             //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
             handlerC7nReleaseRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, c7nHelmReleases, envId, projectId, path,
+                    .handlerRelations(objectPath, beforeSyncFileResource, c7nHelmReleases, null, envId, projectId, path,
                             userId);
             handlerServiceRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, v1Services, envId, projectId, path, userId);
+                    .handlerRelations(objectPath, beforeSyncFileResource, v1Services, v1Endpoints, envId, projectId, path, userId);
             handlerIngressRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, v1beta1Ingresses, envId, projectId, path,
+                    .handlerRelations(objectPath, beforeSyncFileResource, v1beta1Ingresses, null, envId, projectId, path,
                             userId);
             handlerC7nCertificationRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, envId, projectId, path,
+                    .handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, null, envId, projectId, path,
                             userId);
             handlerConfigMapRelationsServiceImpl
-                    .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, envId, projectId, path, userId);
+                    .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, null, envId, projectId, path, userId);
             handlerC7nSecretRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, c7nSecrets, envId, projectId, path, userId);
+                    .handlerRelations(objectPath, beforeSyncFileResource, c7nSecrets, null, envId, projectId, path, userId);
 
             //处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
@@ -568,6 +574,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                         List<V1beta1Ingress> v1beta1Ingresses,
                                                         List<V1ConfigMap> configMaps,
                                                         List<C7nSecret> c7nSecrets,
+                                                        List<V1Endpoints> v1Endpoints,
                                                         Long envId,
                                                         List<DevopsEnvFileResourceE> beforeSyncDelete,
                                                         List<C7nCertification> c7nCertifications) {
@@ -650,6 +657,15 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             convertC7nSecret.checkParameters(c7nSecret, objectPath);
                             // 校验对象是否在其它文件中已经定义
                             convertC7nSecret.checkIfExist(c7nSecrets, envId, beforeSyncDelete, objectPath, c7nSecret);
+                            break;
+                        case ENDPOINTS:
+                            // 反序列文件为V1EndPoints对象
+                            ConvertK8sObjectService<V1Endpoints> convertEndPoints = new ConvertV1EndPointsServiceImpl();
+                            convertEndPoints.setT(new V1Endpoints());
+                            V1Endpoints v1Endpoints1 = convertEndPoints
+                                    .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
+                            // 校验参数校验参数是否合法
+                            convertEndPoints.checkParameters(v1Endpoints1, objectPath);
                             break;
                         default:
                             break;

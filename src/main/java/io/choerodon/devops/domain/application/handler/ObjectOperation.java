@@ -6,10 +6,7 @@ import java.io.FileNotFoundException;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSONObject;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1Secret;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.*;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Tag;
@@ -33,6 +30,7 @@ public class ObjectOperation<T> {
     private static final String CERTTAG = "!!io.choerodon.devops.domain.application.valueobject.C7nCertification";
     private static final String CONFIGMAPTAG = "!!io.kubernetes.client.models.V1ConfigMap";
     private static final String SECRET = "!!io.kubernetes.client.models.V1Secret";
+    private static final String ENDPOINTS = "!!io.kubernetes.client.models.V1Endpoints";
 
     private T type;
 
@@ -54,11 +52,19 @@ public class ObjectOperation<T> {
      */
     public void
     operationEnvGitlabFile(String fileCode, Integer gitlabEnvProjectId, String operationType,
-                                       Long userId, Long objectId, String objectType, Long envId, String filePath) {
+                           Long userId, Long objectId, String objectType, V1Endpoints v1Endpoints, Long envId, String filePath) {
         GitlabRepository gitlabRepository = ApplicationContextHelper.getSpringFactory().getBean(GitlabRepository.class);
         Tag tag = new Tag(type.getClass().toString());
         Yaml yaml = getYamlObject(tag);
+        String endpointContent = null;
+        if (v1Endpoints != null) {
+            Yaml newYaml = getYamlObject(new Tag(v1Endpoints.getClass().toString()));
+            endpointContent = newYaml.dump(v1Endpoints).replace(ENDPOINTS, "---");
+        }
         String content = yaml.dump(type).replace("!<" + tag.getValue() + ">", "---");
+        if (endpointContent != null) {
+            content = content + "\n" + endpointContent;
+        }
         if (operationType.equals("create")) {
             String path = fileCode + ".yaml";
             gitlabRepository.createFile(gitlabEnvProjectId, path, content,
@@ -71,7 +77,7 @@ public class ObjectOperation<T> {
                 throw new CommonException("error.fileResource.not.exist");
             }
             gitlabRepository.updateFile(gitlabEnvProjectId, devopsEnvFileResourceE.getFilePath(), getUpdateContent(type,
-                    devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
+                    endpointContent, devopsEnvFileResourceE.getFilePath(), objectType, filePath, operationType),
                     "UPDATE FILE", TypeUtil.objToInteger(userId));
         }
     }
@@ -85,7 +91,7 @@ public class ObjectOperation<T> {
         return new Yaml(skipNullRepresenter, options);
     }
 
-    private String getUpdateContent(T t, String filePath, String objectType, String path, String operationType) {
+    private String getUpdateContent(T t, String content, String filePath, String objectType, String path, String operationType) {
         Yaml yaml = new Yaml();
         StringBuilder resultBuilder = new StringBuilder();
         File file = new File(String.format("%s/%s", path, filePath));
@@ -100,7 +106,7 @@ public class ObjectOperation<T> {
                         handleIngress(t, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     case "Service":
-                        handleService(t, objectType, operationType, resultBuilder, jsonObject);
+                        handleService(t, content, objectType, operationType, resultBuilder, jsonObject);
                         break;
                     case "C7nCertification":
                         handleC7nCertification(t, objectType, operationType, resultBuilder, jsonObject);
@@ -121,7 +127,7 @@ public class ObjectOperation<T> {
         }
     }
 
-    private void handleService(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
+    private void handleService(T t, String content, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {
         Yaml yaml3 = new Yaml();
         V1Service v1Service = yaml3.loadAs(jsonObject.toJSONString(), V1Service.class);
         if (objectType.equals("Service") && v1Service.getMetadata().getName().equals(((V1Service) t).getMetadata().getName())) {
@@ -133,6 +139,9 @@ public class ObjectOperation<T> {
         }
         Tag tag3 = new Tag(SVCTAG);
         resultBuilder.append("\n").append(getYamlObject(tag3).dump(v1Service).replace(SVCTAG, "---"));
+        if (content != null) {
+            resultBuilder.append("\n").append(content);
+        }
     }
 
     private void handleIngress(T t, String objectType, String operationType, StringBuilder resultBuilder, JSONObject jsonObject) {

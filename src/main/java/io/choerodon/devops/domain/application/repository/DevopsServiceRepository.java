@@ -42,4 +42,6 @@ public interface DevopsServiceRepository {
     void setLablesToNull(Long id);
 
     void deleteServiceAndInstanceByEnvId(Long envId);
+
+    void setEndPointToNull(Long id);
 }

@@ -241,7 +241,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                     projectId,
                     DELETE,
                     userAttrE.getGitlabUserId(),
-                    devopsConfigMapE.getId(), CONFIGMAP, devopsEnvironmentE.getId(), path);
+                    devopsConfigMapE.getId(), CONFIGMAP, null, devopsEnvironmentE.getId(), path);
         }
     }
 
@@ -283,7 +283,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
         objectOperation.setType(v1ConfigMap);
         objectOperation.operationEnvGitlabFile("configMap-" + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
+                userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, null, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
 
 
         DevopsConfigMapE afterDevopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(devopsConfigMapE.getDevopsEnvironmentE().getId(), devopsConfigMapE.getName());

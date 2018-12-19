@@ -1,12 +1,10 @@
 package io.choerodon.devops.domain.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Service;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
+import io.choerodon.devops.api.dto.EndPointPortDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.app.service.DevopsServiceService;
@@ -51,7 +50,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsServiceInstanceRepository devopsServiceInstanceRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1Service> v1Services, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1Service> v1Services, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeService = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SERVICE))
                 .map(devopsEnvFileResourceE -> {
@@ -76,9 +75,9 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
             }
         });
         //新增service
-        addService(objectPath, envId, projectId, addV1Service, path, userId);
+        addService(objectPath, envId, projectId, addV1Service, v1Endpoints, path, userId);
         //更新service
-        updateService(objectPath, envId, projectId, updateV1Service, path, userId);
+        updateService(objectPath, envId, projectId, updateV1Service, v1Endpoints, path, userId);
         //删除service,和文件对象关联关系
         beforeService.forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
@@ -99,7 +98,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
     }
 
 
-    private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service, String path, Long userId) {
+    private void updateService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> updateV1Service, List<V1Endpoints> v1Endpoints, String path, Long userId) {
         updateV1Service.stream()
                 .forEach(v1Service -> {
                     String filePath = "";
@@ -112,6 +111,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         //初始化网络参数,更新网络和网络关联关系
                         DevopsServiceReqDTO devopsServiceReqDTO = getDevopsServiceDTO(
                                 v1Service,
+                                v1Endpoints,
                                 envId);
                         Boolean isNotChange = checkIsNotChange(devopsServiceE, devopsServiceReqDTO);
                         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
@@ -146,7 +146,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                 });
     }
 
-    private void addService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> addV1Service, String path, Long userId) {
+    private void addService(Map<String, String> objectPath, Long envId, Long projectId, List<V1Service> addV1Service, List<V1Endpoints> v1Endpoints, String path, Long userId) {
         addV1Service.stream()
                 .forEach(v1Service -> {
                     String filePath = "";
@@ -161,6 +161,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                         if (devopsServiceE == null) {
                             devopsServiceReqDTO = getDevopsServiceDTO(
                                     v1Service,
+                                    v1Endpoints,
                                     envId);
                             devopsServiceService.insertDevopsServiceByGitOps(projectId, devopsServiceReqDTO, userId);
                             devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(
@@ -194,14 +195,35 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
 
 
     private DevopsServiceReqDTO getDevopsServiceDTO(V1Service v1Service,
+                                                    List<V1Endpoints> v1Endpoints,
                                                     Long envId) {
         DevopsServiceReqDTO devopsServiceReqDTO = new DevopsServiceReqDTO();
         if (v1Service.getSpec().getExternalIPs() != null) {
             devopsServiceReqDTO.setExternalIp(String.join(",", v1Service.getSpec().getExternalIPs()));
         }
+        Map<String, List<EndPointPortDTO>> endPoints = new HashMap<>();
+        v1Endpoints.stream().filter(v1Endpoints1 -> v1Endpoints1.getMetadata().getName().equals(v1Service.getMetadata().getName())).forEach(v1Endpoints1 -> {
+            String key = null;
+            for (int i = 0; i < v1Endpoints1.getSubsets().get(0).getAddresses().size(); i++) {
+                if (i == 0 || i == v1Endpoints1.getSubsets().get(0).getAddresses().size() - 1) {
+                    key = key + v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp();
+                } else {
+                    key = key + v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp() + ",";
+                }
+            }
+            endPoints.put(key, v1Endpoints1.getSubsets().get(0).getPorts().stream().map(v1EndpointPort -> {
+                EndPointPortDTO endPointPortDTO = new EndPointPortDTO();
+                endPointPortDTO.setName(v1EndpointPort.getName());
+                endPointPortDTO.setPort(v1EndpointPort.getPort());
+                return endPointPortDTO;
+            }).collect(Collectors.toList()));
+            devopsServiceReqDTO.setEndPoints(endPoints);
+        });
+
         devopsServiceReqDTO.setName(v1Service.getMetadata().getName());
         devopsServiceReqDTO.setType(v1Service.getSpec().getType());
         devopsServiceReqDTO.setEnvId(envId);
+
 
         List<PortMapE> portMapList = v1Service.getSpec().getPorts().stream()
                 .map(t -> {
@@ -266,7 +288,17 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         }
 
         if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
-            isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
+            if (devopsServiceReqDTO.getLabel() != null && devopsServiceE.getLabels() != null) {
+                if (!gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels())) {
+                    isUpdate = true;
+                }
+            } else if (devopsServiceReqDTO.getEndPoints() != null && devopsServiceE.getEndPoints() != null) {
+                if (!gson.toJson(devopsServiceReqDTO.getEndPoints()).equals(devopsServiceE.getEndPoints())) {
+                    isUpdate = true;
+                }
+            } else {
+                isUpdate = true;
+            }
         }
         if ((devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() != null) || (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() == null)) {
             isUpdate = true;

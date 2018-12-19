@@ -49,10 +49,10 @@ public class ConvertV1ConfigMapServiceImpl extends ConvertK8sObjectService<V1Con
     public void checkParameters(V1ConfigMap v1ConfigMap, Map<String, String> objectPath) {
         String filePath = objectPath.get(TypeUtil.objToString(v1ConfigMap.hashCode()));
         if (v1ConfigMap.getMetadata() == null) {
-            throw new GitOpsExplainException(GitOpsObjectError.SERVICE_METADATA_NOT_FOUND.getError(), filePath);
+            throw new GitOpsExplainException(GitOpsObjectError.CONFIG_MAP_METADATA_NOT_FOUND.getError(), filePath);
         } else {
             if (v1ConfigMap.getMetadata().getName() == null) {
-                throw new GitOpsExplainException(GitOpsObjectError.SERVICE_NAME_NOT_FOUND.getError(), filePath);
+                throw new GitOpsExplainException(GitOpsObjectError.CONFIG_MAP_NAME_NOT_FOUND.getError(), filePath);
             }
         }
         if (v1ConfigMap.getData() == null) {
