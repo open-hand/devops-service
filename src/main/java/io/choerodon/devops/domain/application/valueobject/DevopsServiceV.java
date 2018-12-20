@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.valueobject;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.api.dto.EndPointPortDTO;
 import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 
@@ -24,6 +25,7 @@ public class DevopsServiceV {
     private Long appId;
     private Long appProjectId;
     private String appName;
+    private Map<String, List<EndPointPortDTO>> endPoinits;
     private Map<String, String> labels;
     private List<ServiceInstanceDO> appInstance;
     private String commandType;
@@ -172,5 +174,13 @@ public class DevopsServiceV {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public Map<String, List<EndPointPortDTO>> getEndPoinits() {
+        return endPoinits;
+    }
+
+    public void setEndPoinits(Map<String, List<EndPointPortDTO>> endPoinits) {
+        this.endPoinits = endPoinits;
     }
 }

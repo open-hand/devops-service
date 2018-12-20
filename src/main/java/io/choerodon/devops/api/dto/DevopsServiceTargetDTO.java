@@ -14,6 +14,7 @@ import io.choerodon.devops.infra.dataobject.ServiceInstanceDO;
 public class DevopsServiceTargetDTO {
     private List<ServiceInstanceDO> appInstance;
     private Map<String, String> labels;
+    private Map<String, List<EndPointPortDTO>> endPoints;
 
     public List<ServiceInstanceDO> getAppInstance() {
         return appInstance;
@@ -29,5 +30,13 @@ public class DevopsServiceTargetDTO {
 
     public void setLabels(Map<String, String> labels) {
         this.labels = labels;
+    }
+
+    public Map<String, List<EndPointPortDTO>> getEndPoints() {
+        return endPoints;
+    }
+
+    public void setEndPoints(Map<String, List<EndPointPortDTO>> endPoints) {
+        this.endPoints = endPoints;
     }
 }

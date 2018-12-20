@@ -83,10 +83,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
     }
 
 
-    changeSet(author: 'younger', id: '2018-12-18-add-column')
+    changeSet(author: 'younger', id: '2018-12-19-add-column')
             {
                 addColumn(tableName: 'devops_service') {
-                    column(name: 'endPoints', type: 'VARCHAR(1000)', remarks: 'endpoint的ip和端口', afterColumn: 'ports')
+                    column(name: 'end_points', type: 'VARCHAR(1000)', remarks: 'endpoint的ip和端口', afterColumn: 'ports')
                 }
             }
 }

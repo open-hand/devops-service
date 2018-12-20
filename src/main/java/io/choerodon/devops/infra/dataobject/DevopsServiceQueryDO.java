@@ -17,6 +17,7 @@ public class DevopsServiceQueryDO {
     private String type;
     private String envName;
     private String namespace;
+    private String endPoints;
     private Long appId;
     private String appName;
     private String labels;
@@ -166,5 +167,13 @@ public class DevopsServiceQueryDO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getEndPoints() {
+        return endPoints;
+    }
+
+    public void setEndPoints(String endPoints) {
+        this.endPoints = endPoints;
     }
 }

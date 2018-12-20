@@ -69,6 +69,7 @@
         ds.`status`,
         ds.`type`,
         ds.labels,
+        ds.end_points,
         da.id AS app_id,
         da.`name` AS app_name,
         de.id AS env_id,
@@ -118,6 +119,7 @@
         ds.labels,
         da.project_id appProjectId,
         ds. ports,
+        ds.end_points,
         ds.`status`,
         ds.`type`,
         da.id AS app_id,
@@ -164,6 +166,7 @@
         <result property="envName" column="env_name"/>
         <result property="namespace" column="namespace"/>
         <result property="labels" column="labels"/>
+        <result property="endPoints" column="end_points"/>
         <collection property="appInstance" ofType="io.choerodon.devops.infra.dataobject.ServiceInstanceDO">
             <result column="app_instance_id" property="id" jdbcType="VARCHAR"/>
             <result column="code" property="code" jdbcType="VARCHAR"/>
