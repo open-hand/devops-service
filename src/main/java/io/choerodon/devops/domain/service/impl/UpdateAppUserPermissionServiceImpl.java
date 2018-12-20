@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ApplicationContextHelper;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.repository.*;
@@ -41,6 +42,12 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
         List<Integer> updateGitlabUserIds;
 
         Integer gitlabProjectId = applicationRepository.query(appId).getGitlabProjectE().getId();
+
+        // 如果之前对应的gitlab project同步失败时，不进行后续操作
+        if (gitlabProjectId == null) {
+            throw new CommonException("error.gitlab.project.sync.failed");
+        }
+
         switch (option) {
             // 原来跳过，现在不跳过，需要更新权限表，而且需要去掉原来gitlab中的权限
             case 1:

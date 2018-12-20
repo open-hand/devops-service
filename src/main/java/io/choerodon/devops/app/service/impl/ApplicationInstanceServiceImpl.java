@@ -55,10 +55,10 @@ import io.choerodon.websocket.helper.EnvSession;
 @Service
 public class ApplicationInstanceServiceImpl implements ApplicationInstanceService {
 
-    private static final String YAML_SUFFIX = ".yaml";
-    private static final String RELEASE_PREFIX = "release-";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
+    private static final String YAML_SUFFIX = ".yaml";
+    private static final String RELEASE_PREFIX = "release-";
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
@@ -415,9 +415,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public void deployTestApp(ApplicationDeployDTO applicationDeployDTO) {
-        String versionValue = applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId());
+        String versionValue = applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId());
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
         String deployValue = getReplaceResult(versionValue,
                 applicationDeployDTO.getValues()).getDeltaYaml().trim();
@@ -487,8 +487,14 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
         String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(
                 instanceId));
-        String versionValue = applicationVersionRepository
-                .queryValue(devopsEnvCommandE.getObjectVersionId());
+        String versionValue;
+        //实例表新增commndId之前的实例查values用实例的版本
+        if (devopsEnvCommandE == null) {
+            versionValue = applicationVersionRepository.queryValue(applicationInstanceE.getApplicationVersionE().getId());
+        } else {
+            versionValue = applicationVersionRepository
+                    .queryValue(devopsEnvCommandE.getObjectVersionId());
+        }
         return getReplaceResult(versionValue, yaml);
     }
 
@@ -674,7 +680,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
         ApplicationVersionE applicationVersionE =
-                applicationVersionRepository.query(applicationDeployDTO.getAppVerisonId());
+                applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
 
         //初始化ApplicationInstanceE,DevopsEnvCommandE,DevopsEnvCommandValueE
         ApplicationInstanceE applicationInstanceE = initApplicationInstanceE(applicationDeployDTO);
@@ -685,7 +691,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         if (!applicationDeployDTO.getIsNotChange() && applicationDeployDTO.getType().equals(UPDATE)) {
             ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
             DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
-            if (applicationDeployDTO.getAppVerisonId().equals(olddevopsEnvCommandE.getObjectVersionId())) {
+            if (applicationDeployDTO.getAppVersionId().equals(olddevopsEnvCommandE.getObjectVersionId())) {
                 String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
                         applicationDeployDTO.getAppInstanceId());
                 String newDeployValue = devopsEnvCommandValueE.getValue();
@@ -698,7 +704,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         // 初始化自定义实例名
         String code;
         if (applicationDeployDTO.getType().equals(CREATE)) {
-            code = applicationDeployDTO.getInstanceName();
+            if (applicationDeployDTO.getInstanceName() == null || applicationDeployDTO.getInstanceName().trim().equals("")) {
+                code = String.format("%s-%s", applicationE.getCode(), GenerateUUID.generateUUID().substring(0, 5));
+            } else {
+                code = applicationDeployDTO.getInstanceName();
+
+            }
         } else {
             code = applicationInstanceE.getCode();
         }
@@ -826,7 +837,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());
                 break;
         }
-        devopsEnvCommandE.setObjectVersionId(applicationDeployDTO.getAppVerisonId());
+        devopsEnvCommandE.setObjectVersionId(applicationDeployDTO.getAppVersionId());
         devopsEnvCommandE.setObject(ObjectType.INSTANCE.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
@@ -835,7 +846,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvCommandValueE initDevopsEnvCommandValueE(ApplicationDeployDTO applicationDeployDTO) {
         DevopsEnvCommandValueE devopsEnvCommandValueE = new DevopsEnvCommandValueE();
         devopsEnvCommandValueE.setValue(
-                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
                         applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return devopsEnvCommandValueE;
     }
@@ -1110,7 +1121,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
         c7nHelmRelease.getSpec().setValues(
-                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVerisonId()),
+                getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
                         applicationDeployDTO.getValues()).getDeltaYaml().trim());
         return c7nHelmRelease;
     }

@@ -1,7 +1,7 @@
 package io.choerodon.devops.api.dto;
 
 public class ApplicationDeployDTO {
-    private Long appVerisonId;
+    private Long appVersionId;
     private Long environmentId;
     private String values;
     private Long appId;
@@ -11,12 +11,12 @@ public class ApplicationDeployDTO {
     private String instanceName;
     private boolean isNotChange;
 
-    public Long getAppVerisonId() {
-        return appVerisonId;
+    public Long getAppVersionId() {
+        return appVersionId;
     }
 
-    public void setAppVerisonId(Long appVerisonId) {
-        this.appVerisonId = appVerisonId;
+    public void setAppVersionId(Long appVersionId) {
+        this.appVersionId = appVersionId;
     }
 
     public Long getEnvironmentId() {
