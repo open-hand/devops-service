@@ -80,4 +80,5 @@ public interface DevopsGitRepository {
     List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId);
 
     void initGitlabServiceClient(GitlabServiceClient gitlabServiceClient);
+
 }

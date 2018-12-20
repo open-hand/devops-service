@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.models.V1beta1IngressBackend;
@@ -34,8 +35,8 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 @Service
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
 
-    private static final String CREATE = "create";
     public static final String INGRESS = "Ingress";
+    private static final String CREATE = "create";
     private static final String GIT_SUFFIX = "/.git";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     @Autowired
@@ -54,7 +55,7 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Override
-    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, Long envId, Long projectId, String path, Long userId) {
+    public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync, List<V1beta1Ingress> v1beta1Ingresses, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforeIngress = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(INGRESS))
                 .map(devopsEnvFileResourceE -> {

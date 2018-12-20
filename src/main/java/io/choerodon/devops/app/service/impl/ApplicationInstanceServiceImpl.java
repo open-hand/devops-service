@@ -749,7 +749,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     projectId,
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
-                    applicationInstanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), filePath);
+                    applicationInstanceE.getId(), C7NHELM_RELEASE, null, devopsEnvironmentE.getId(), filePath);
             ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository
                     .selectByCode(code, applicationDeployDTO.getEnvironmentId());
             DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
@@ -1022,7 +1022,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     projectId,
                     "delete",
                     userAttrE.getGitlabUserId(),
-                    instanceE.getId(), C7NHELM_RELEASE, devopsEnvironmentE.getId(), path);
+                    instanceE.getId(), C7NHELM_RELEASE, null, devopsEnvironmentE.getId(), path);
         }
     }
 

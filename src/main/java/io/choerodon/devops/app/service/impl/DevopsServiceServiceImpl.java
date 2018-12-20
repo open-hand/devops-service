@@ -5,10 +5,7 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1ServicePort;
-import io.kubernetes.client.models.V1ServiceSpec;
+import io.kubernetes.client.models.*;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +44,8 @@ import io.choerodon.websocket.helper.EnvListener;
 @Transactional(rollbackFor = RuntimeException.class)
 public class DevopsServiceServiceImpl implements DevopsServiceService {
 
+    public static final String ENDPOINTS = "Endpoints";
+    public static final String LOADBALANCER = "LoadBalancer";
     public static final String SERVICE = "Service";
     public static final String CREATE = "create";
     public static final String UPDATE = "update";
@@ -142,9 +141,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1Service v1Service = initV1Service(
                 devopsServiceReqDTO,
                 gson.fromJson(devopsServiceE.getAnnotations(), Map.class));
-
+        V1Endpoints v1Endpoints = null;
+        if (devopsServiceReqDTO.getEndPoints() != null) {
+            v1Endpoints = initV1EndPoints(devopsServiceReqDTO);
+        }
         //在gitops库处理service文件
-        operateEnvGitLabFile(v1Service, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
+        operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
         return true;
     }
 
@@ -185,6 +187,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsServiceValidator.checkService(devopsServiceReqDTO);
 
         initDevopsServicePorts(devopsServiceReqDTO);
+
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
         if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
@@ -206,6 +209,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         } else {
             devopsServiceRepository.setLablesToNull(devopsServiceE.getId());
             devopsServiceE.setLabels(null);
+        }
+        if (devopsServiceReqDTO.getEndPoints() != null) {
+            devopsServiceE.setEndPoints(gson.toJson(devopsServiceReqDTO.getEndPoints()));
+        } else {
+            devopsServiceRepository.setEndPointToNull(devopsServiceE.getId());
+            devopsServiceE.setEndPoints(null);
         }
         devopsServiceE.setPorts(devopsServiceReqDTO.getPorts());
         devopsServiceE.setType(devopsServiceReqDTO.getType() == null ? "ClusterIP" : devopsServiceReqDTO.getType());
@@ -236,12 +245,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         if (!serviceName.equals(devopsServiceE.getName())) {
             throw new CommonException("error.name.notEqual");
         }
-
-        //验证网络是否需要更新
-        List<PortMapE> oldPort = devopsServiceE.getPorts();
         //查询网络对应的实例
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
+        //验证网络是否需要更新
+        List<PortMapE> oldPort = devopsServiceE.getPorts();
         boolean isUpdate = false;
         if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
             if (devopsServiceReqDTO.getAppInstance() != null) {
@@ -256,7 +264,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             isUpdate = true;
         }
         if (devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() == null) {
-            isUpdate = !gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels());
+            if (devopsServiceReqDTO.getLabel() != null && devopsServiceE.getLabels() != null) {
+                if (!gson.toJson(devopsServiceReqDTO.getLabel()).equals(devopsServiceE.getLabels())) {
+                    isUpdate = true;
+                }
+            } else if (devopsServiceReqDTO.getEndPoints() != null && devopsServiceE.getEndPoints() != null) {
+                if (!gson.toJson(devopsServiceReqDTO.getEndPoints()).equals(devopsServiceE.getEndPoints())) {
+                    isUpdate = true;
+                }
+            } else {
+                isUpdate = true;
+            }
         }
         if (!isUpdate && oldPort.stream().sorted().collect(Collectors.toList())
                 .equals(devopsServiceReqDTO.getPorts().stream().sorted().collect(Collectors.toList()))
@@ -290,6 +308,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 .selectByServiceId(id).stream().map(DevopsServiceAppInstanceE::getCode).collect(Collectors.toList());
         DevopsServiceE devopsServiceE = devopsServiceRepository.query(id);
         devopsServiceE = handlerUpdateService(devopsServiceReqDTO, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES);
+        V1Endpoints v1Endpoints = null;
         if (devopsServiceE == null) {
             return false;
         } else {
@@ -297,8 +316,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
             V1Service v1Service = initV1Service(
                     devopsServiceReqDTO,
                     gson.fromJson(devopsServiceE.getAnnotations(), Map.class));
+            if (devopsServiceReqDTO.getEndPoints() != null) {
+                v1Endpoints = initV1EndPoints(devopsServiceReqDTO);
+            }
             //在gitops库处理service文件
-            operateEnvGitLabFile(v1Service, false, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
+            operateEnvGitLabFile(v1Service, v1Endpoints, false, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
         }
         return true;
     }
@@ -409,7 +431,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                     projectId,
                     DELETE,
                     userAttrE.getGitlabUserId(),
-                    devopsServiceE.getId(), SERVICE, devopsEnvironmentE.getId(), path);
+                    devopsServiceE.getId(), SERVICE, null, devopsEnvironmentE.getId(), path);
         }
 
     }
@@ -515,6 +537,35 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         return service;
     }
 
+    private V1Endpoints initV1EndPoints(DevopsServiceReqDTO devopsServiceReqDTO) {
+        V1Endpoints v1Endpoints = new V1Endpoints();
+        v1Endpoints.setApiVersion("v1");
+        v1Endpoints.setKind(ENDPOINTS);
+        V1ObjectMeta v1ObjectMeta = new V1ObjectMeta();
+        v1ObjectMeta.setName(devopsServiceReqDTO.getName());
+        v1Endpoints.setMetadata(v1ObjectMeta);
+        List<V1EndpointSubset> v1EndpointSubsets = new ArrayList<>();
+        V1EndpointSubset v1EndpointSubset = new V1EndpointSubset();
+        devopsServiceReqDTO.getEndPoints().forEach((key, value) -> {
+            List<String> ips = Arrays.asList(key.split(","));
+            v1EndpointSubset.setAddresses(ips.stream().map(ip -> {
+                V1EndpointAddress v1EndpointAddress = new V1EndpointAddress();
+                v1EndpointAddress.setIp(ip);
+                return v1EndpointAddress;
+
+            }).collect(Collectors.toList()));
+            v1EndpointSubset.setPorts(value.stream().map(port -> {
+                V1EndpointPort v1EndpointPort = new V1EndpointPort();
+                v1EndpointPort.setPort(port.getPort());
+                v1EndpointPort.setName(port.getName());
+                return v1EndpointPort;
+            }).collect(Collectors.toList()));
+            v1EndpointSubsets.add(v1EndpointSubset);
+        });
+        v1Endpoints.setSubsets(v1EndpointSubsets);
+        return v1Endpoints;
+    }
+
 
     /**
      * 判断外部ip是否更新
@@ -553,7 +604,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
 
-    private void operateEnvGitLabFile(V1Service service, Boolean isCreate,
+    private void operateEnvGitLabFile(V1Service service, V1Endpoints v1Endpoints, Boolean isCreate,
                                       DevopsServiceE devopsServiceE,
                                       List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES,
                                       List<String> beforeDevopsServiceAppInstanceES,
@@ -563,7 +614,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsEnviromentRepository.queryById(devopsServiceE.getEnvId());
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-//        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         DevopsServiceE beforeDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());
         DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
@@ -578,7 +629,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
         objectOperation.setType(service);
         objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, devopsServiceE.getEnvId(), path);
+                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, v1Endpoints, devopsServiceE.getEnvId(), path);
 
 
         DevopsServiceE afterDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());

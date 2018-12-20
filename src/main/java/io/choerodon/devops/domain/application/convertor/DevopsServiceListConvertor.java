@@ -2,6 +2,7 @@ package io.choerodon.devops.domain.application.convertor;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
@@ -13,9 +14,11 @@ import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.DevopsServiceConfigDTO;
 import io.choerodon.devops.api.dto.DevopsServiceDTO;
 import io.choerodon.devops.api.dto.DevopsServiceTargetDTO;
+import io.choerodon.devops.api.dto.EndPointPortDTO;
 import io.choerodon.devops.domain.application.entity.PortMapE;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
 import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
+
 
 /**
  * Created by Zenger on 2018/4/20.
@@ -40,6 +43,7 @@ public class DevopsServiceListConvertor implements ConvertorI<DevopsServiceV, De
         DevopsServiceTargetDTO devopsServiceTargetDTO = new DevopsServiceTargetDTO();
         devopsServiceTargetDTO.setAppInstance(entity.getAppInstance());
         devopsServiceTargetDTO.setLabels(entity.getLabels());
+        devopsServiceTargetDTO.setEndPoints(entity.getEndPoinits());
         devopsServiceDTO.setTarget(devopsServiceTargetDTO);
 
         return devopsServiceDTO;
@@ -51,6 +55,10 @@ public class DevopsServiceListConvertor implements ConvertorI<DevopsServiceV, De
         BeanUtils.copyProperties(dataObject, devopsServiceV);
         devopsServiceV.setPorts(gson.fromJson(dataObject.getPorts(), new TypeToken<ArrayList<PortMapE>>() {
         }.getType()));
+        if (dataObject.getEndPoints() != null) {
+            devopsServiceV.setEndPoinits(gson.fromJson(dataObject.getEndPoints(), new TypeToken<Map<String, List<EndPointPortDTO>>>() {
+            }.getType()));
+        }
         if (dataObject.getLabels() != null) {
             devopsServiceV.setLabels(gson.fromJson(dataObject.getLabels(), new TypeToken<Map<String, String>>() {
             }.getType()));

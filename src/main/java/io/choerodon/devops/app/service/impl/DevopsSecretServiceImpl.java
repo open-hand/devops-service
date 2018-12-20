@@ -161,7 +161,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         ObjectOperation<V1Secret> objectOperation = new ObjectOperation<>();
         objectOperation.setType(v1Secret);
         objectOperation.operationEnvGitlabFile("sct-" + devopsSecretE.getName(), gitlabEnvGroupProjectId,
-                isCreate ? CREATE : UPDATE, userAttrE.getGitlabUserId(), devopsSecretE.getId(), SECRET,
+                isCreate ? CREATE : UPDATE, userAttrE.getGitlabUserId(), devopsSecretE.getId(), SECRET, null,
                 devopsSecretE.getEnvId(), path);
 
         DevopsSecretE afterDevopsSecretE = devopsSecretRepository
@@ -242,7 +242,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             objectOperation.setType(v1Secret);
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             objectOperation.operationEnvGitlabFile(null, projectId, DELETE, userAttrE.getGitlabUserId(), secretId,
-                    SECRET, devopsEnvironmentE.getId(), path);
+                    SECRET, null, devopsEnvironmentE.getId(), path);
         }
         return true;
     }

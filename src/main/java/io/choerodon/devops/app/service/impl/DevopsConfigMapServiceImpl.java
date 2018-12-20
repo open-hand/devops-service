@@ -141,18 +141,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public Page<DevopsConfigMapRepDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam) {
         Page<DevopsConfigMapE> devopsConfigMapES = devopsConfigMapRepository.pageByEnv(
                 envId, pageRequest, searchParam);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsConfigMapES.forEach(devopsConfigMapE -> {
             List<String> keys = new ArrayList<>();
             gson.fromJson(devopsConfigMapE.getValue(), Map.class).forEach((key, value) ->
                     keys.add(key.toString()));
             devopsConfigMapE.setKey(keys);
-            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapE.getDevopsEnvironmentE().getId());
-            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
-                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
-                devopsConfigMapE.setEnvStatus(true);
-            }
         });
         return ConvertPageHelper.convertPage(devopsConfigMapES, DevopsConfigMapRepDTO.class);
     }
@@ -241,7 +234,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                     projectId,
                     DELETE,
                     userAttrE.getGitlabUserId(),
-                    devopsConfigMapE.getId(), CONFIGMAP, devopsEnvironmentE.getId(), path);
+                    devopsConfigMapE.getId(), CONFIGMAP, null, devopsEnvironmentE.getId(), path);
         }
     }
 
@@ -283,7 +276,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
         objectOperation.setType(v1ConfigMap);
         objectOperation.operationEnvGitlabFile("configMap-" + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
+                userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, null, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
 
 
         DevopsConfigMapE afterDevopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(devopsConfigMapE.getDevopsEnvironmentE().getId(), devopsConfigMapE.getName());
@@ -320,5 +313,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         devopsEnvCommandE.setObject(ObjectType.CONFIGMAP.getType());
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
+    }
+
+    public void initMockServer(DevopsEnvironmentService devopsEnvironmentService) {
+        this.devopsEnvironmentService = devopsEnvironmentService;
     }
 }

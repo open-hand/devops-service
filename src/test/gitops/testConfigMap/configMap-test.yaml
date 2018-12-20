@@ -1,0 +1,7 @@
+---
+apiVersion: v1
+data:
+  xxxx: xxxxx
+kind: ConfigMap
+metadata:
+  name: asdasdqqqq

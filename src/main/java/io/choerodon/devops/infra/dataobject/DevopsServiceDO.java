@@ -25,6 +25,7 @@ public class DevopsServiceDO extends AuditDomain {
     private String name;
     private String status;
     private String ports;
+    private String endPoints;
     private String type;
     private String externalIp;
     private String labels;
@@ -117,5 +118,13 @@ public class DevopsServiceDO extends AuditDomain {
 
     public void setCommandId(Long commandId) {
         this.commandId = commandId;
+    }
+
+    public String getEndPoints() {
+        return endPoints;
+    }
+
+    public void setEndPoints(String endPoints) {
+        this.endPoints = endPoints;
     }
 }
