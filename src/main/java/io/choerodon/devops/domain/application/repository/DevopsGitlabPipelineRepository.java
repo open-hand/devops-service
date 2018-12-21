@@ -24,4 +24,6 @@ public interface DevopsGitlabPipelineRepository {
 
     void deleteWithoutCommit();
 
+    List<DevopsGitlabPipelineDO> listByBranch(Long appId, String branch);
+
 }

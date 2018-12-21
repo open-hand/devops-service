@@ -51,4 +51,8 @@ public interface ApplicationVersionRepository {
     ApplicationVersionE getLatestVersion(Long appId);
 
     List<ApplicationVersionE> listByAppVersionIds(List<Long> appVersionIds);
+
+    List<ApplicationVersionE> listByAppIdAndBranch(Long appId, String branch);
+
+    String queryByPipelineId(Long pipelineId);
 }

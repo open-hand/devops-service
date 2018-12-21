@@ -32,4 +32,28 @@
         DELETE FROM devops_gitlab_pipeline WHERE commit_id is null
     </delete>
 
+
+    <select id="listByBranch" resultType="io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO">
+        SELECT
+        dgp.pipeline_id,
+        dgp.app_id,
+        dgp.pipeline_create_user_id,
+        dgp.commit_id,
+        dgp.status,
+        dgp.stage,
+        dgp.pipeline_creation_date,
+        dgc.user_id commitUserId,
+        dgc.commit_sha sha,
+        dgc.commit_content content,
+        dgc.ref
+        FROM
+        devops_gitlab_pipeline dgp
+        LEFT JOIN devops_gitlab_commit dgc ON dgp.commit_id = dgc.id
+        WHERE
+        dgc.ref = #{branch}
+        AND dgp.app_id = #{appId}
+        ORDER BY
+        dgp.id DESC
+        LIMIT 10
+    </select>
 </mapper>

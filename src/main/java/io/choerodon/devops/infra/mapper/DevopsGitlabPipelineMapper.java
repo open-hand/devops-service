@@ -14,4 +14,6 @@ public interface DevopsGitlabPipelineMapper extends BaseMapper<DevopsGitlabPipel
 
     void deleteWithoutCommit();
 
+    List<DevopsGitlabPipelineDO> listByBranch(@Param("appId") Long appId, @Param("branch") String branch);
+
 }

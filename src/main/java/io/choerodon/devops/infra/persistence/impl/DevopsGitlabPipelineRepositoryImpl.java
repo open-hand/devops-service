@@ -72,4 +72,9 @@ public class DevopsGitlabPipelineRepositoryImpl implements DevopsGitlabPipelineR
     public void deleteWithoutCommit() {
         devopsGitlabPipelineMapper.deleteWithoutCommit();
     }
+
+    @Override
+    public List<DevopsGitlabPipelineDO> listByBranch(Long appId, String branch) {
+        return devopsGitlabPipelineMapper.listByBranch(appId, branch);
+    }
 }

@@ -55,4 +55,7 @@ public interface ApplicationVersionMapper extends BaseMapper<ApplicationVersionD
 
     List<ApplicationVersionDO> listByAppVersionIds(@Param("appVersionIds") List<Long> appVersionIds);
 
+    List<ApplicationVersionDO> listByAppIdAndBranch(@Param("appId") Long appId, @Param("branch") String branch);
+
+    String queryByPipelineId(@Param("pipelineId") Long pipelineId);
 }
