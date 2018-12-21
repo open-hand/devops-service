@@ -4,12 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DeployFrequencyDTO
-import io.choerodon.devops.api.dto.DeployTimeDTO
-import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO
-import io.choerodon.devops.api.dto.DevopsEnvResourceDTO
-import io.choerodon.devops.api.dto.InstanceControllerDetailDTO
+import io.choerodon.devops.api.dto.*
 import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
 import io.choerodon.devops.api.dto.iam.RoleDTO
 import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
@@ -36,6 +33,10 @@ import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.helper.EnvSession
 import org.mockito.Mockito
+import org.powermock.api.mockito.PowerMockito
+import org.powermock.core.classloader.annotations.PrepareForTest
+import org.powermock.modules.junit4.PowerMockRunnerDelegate
+import org.spockframework.runtime.Sputnik
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
@@ -367,7 +368,7 @@ class ApplicationInstanceControllerSpec extends Specification {
     }
 
     def setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         gitlabRepository.initMockService(gitlabServiceClient)
         gitlabProjectRepository.initMockService(gitlabServiceClient)
         gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
@@ -696,6 +697,68 @@ class ApplicationInstanceControllerSpec extends Specification {
         devopsEnvResourceDetailMapper.deleteByPrimaryKey(map.get("detailId"))
         devopsEnvResourceMapper.deleteByPrimaryKey(map.get("resourceId"))
         applicationInstanceMapper.deleteByPrimaryKey(map.get("instanceId"))
+    }
+
+    // 获取升级 Value
+    def "queryUpgradeValue"() {
+        given: "准备数据"
+        Long projectId = 1L
+        Long instanceId = applicationInstanceDO.getId()
+        Long versionId = applicationInstanceMapper.selectByPrimaryKey(instanceId).getAppVersionId()
+
+        when: "调用方法,文件读取错误"
+        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/appVersion/{appVersionId}/value", ExceptionResponse, projectId, instanceId, versionId)
+
+        then: "校验结果"
+        entity.getBody().getCode() != null
+//
+//
+//        and: "准备值为空的instance"
+//        // decv
+//        DevopsEnvCommandValueDO valueDO = new DevopsEnvCommandValueDO()
+//        valueDO.setValue("")
+//        devopsEnvCommandValueMapper.insert(valueDO)
+//
+//        // cmd
+//        DevopsEnvCommandDO devopsEnvCommandDO1 = new DevopsEnvCommandDO()
+//        devopsEnvCommandDO1.setValueId(valueDO.getId())
+//        devopsEnvCommandDO1.setObjectId(1L)
+//        devopsEnvCommandDO1.setError("error")
+//        devopsEnvCommandDO1.setObject("instance")
+//        devopsEnvCommandDO1.setStatus("operating")
+//        devopsEnvCommandDO1.setObjectVersionId(1L)
+//        devopsEnvCommandDO1.setCommandType("create")
+//        devopsEnvCommandMapper.insert(devopsEnvCommandDO1)
+//
+//        ApplicationInstanceDO applicationInstanceDO1 = new ApplicationInstanceDO()
+//        applicationInstanceDO1.setEnvId(1L)
+//        applicationInstanceDO1.setAppId(1L)
+//        applicationInstanceDO1.setAppVersionId(1L)
+//        applicationInstanceDO1.setStatus("running")
+//        applicationInstanceDO1.setCode("appIns2")
+//        applicationInstanceDO1.setCommandId(devopsEnvCommandDO1.getId())
+//        applicationInstanceDO1.setObjectVersionNumber(1L)
+//        applicationInstanceMapper.insert(applicationInstanceDO1)
+//
+//        when: "调用方法,没有更改值"
+//        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/appVersion/{appVersionId}/value", ReplaceResult, projectId, applicationInstanceDO1.getId(), 1L)
+//
+//        then: "校验结果"
+//        entity.getBody().getYaml() == null
+//        entity.getBody().getDeltaYaml() == null
+//
+//        and: "mock静态方法"
+//        PowerMockito.mockStatic(FileUtil)
+//        PowerMockito.when(FileUtil.replaceNew(anyString())).thenReturn(result)
+//        PowerMockito.when(FileUtil.getFileTotalLine(anyString())).thenReturn(lineNumber)
+//
+//        when: "调用方法"
+//        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/appVersion/{appVersionId}/value", ReplaceResult, projectId, instanceId, versionId)
+//
+//        then: "校验结果"
+//        entity.getStatusCode().is2xxSuccessful()
+//        entity.getBody() != null
+//        entity.getBody().getYaml() != null
     }
 
 

@@ -5,6 +5,7 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.*
 import io.choerodon.devops.api.dto.gitlab.MemberDTO
@@ -207,7 +208,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
     }
 
     def setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         gitlabRepository.initMockService(gitlabServiceClient)
         gitlabProjectRepository.initMockService(gitlabServiceClient)
         gitlabGroupMemberRepository.initMockService(gitlabServiceClient)

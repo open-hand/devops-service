@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO
@@ -84,7 +85,7 @@ class DevopsConfigMapControllerSpec extends Specification {
 
 
     void setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         gitlabRepository.initMockService(gitlabServiceClient)
         gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
         devopsConfigMapServiceImpl.initMockServer(devopsEnvironmentService)
@@ -185,7 +186,7 @@ class DevopsConfigMapControllerSpec extends Specification {
 
     def "CheckName"() {
         when: '校验名字唯一性'
-        restTemplate.getForEntity(MAPPING + "/1/check_name?envId=1&configMapName=asdasd", Object.class, 1L)
+        restTemplate.getForEntity(MAPPING + "/check_name?envId=1&configMapName=asdasd", Object.class, 1L)
 
         then: '校验结果'
         noExceptionThrown()

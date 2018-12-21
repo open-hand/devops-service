@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
@@ -100,7 +101,7 @@ class CiControllerSpec extends Specification {
     }
 
     def setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setId(1L)

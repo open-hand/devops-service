@@ -310,8 +310,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public ReplaceResult queryUpgradeValue(Long instanceId, Long versionId) {
         String yaml = FileUtil.checkValueFormat(applicationInstanceRepository.queryValueByInstanceId(instanceId));
-        String versionValue = applicationVersionRepository
-                .queryValue(versionId);
+        String versionValue = applicationVersionRepository.queryValue(versionId);
         return getReplaceResult(versionValue, yaml);
     }
 
@@ -1130,7 +1129,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ReplaceResult getReplaceResult(String versionValue, String deployValue) {
         if (versionValue.equals(deployValue) || deployValue.equals("")) {
             ReplaceResult replaceResult = new ReplaceResult();
-            replaceResult.setYaml(versionValue);
             replaceResult.setDeltaYaml("");
             replaceResult.setYaml(versionValue);
             replaceResult.setHighlightMarkers(new ArrayList<>());

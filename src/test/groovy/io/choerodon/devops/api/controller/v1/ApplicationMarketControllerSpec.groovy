@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO
@@ -143,7 +144,7 @@ class ApplicationMarketControllerSpec extends Specification {
     }
 
     def setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setId(1L)
@@ -340,7 +341,7 @@ class ApplicationMarketControllerSpec extends Specification {
         given: '准备dto list'
         List<AppMarketDownloadDTO> dtoList = new ArrayList<>()
         AppMarketDownloadDTO appMarketDownloadDTO = new AppMarketDownloadDTO()
-        appMarketDownloadDTO.setAppMarketId(2L)
+        appMarketDownloadDTO.setAppMarketId(applicationMarketMapper.selectAll().get(0).getId())
         List<Long> appVersionList = new ArrayList<>()
         appVersionList.add(1L)
         appMarketDownloadDTO.setAppVersionIds(appVersionList)

@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsServiceDTO
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO
@@ -141,7 +142,7 @@ class DevopsServiceControllerSpec extends Specification {
     }
 
     def setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         gitlabRepository.initMockService(gitlabServiceClient)
         gitlabProjectRepository.initMockService(gitlabServiceClient)
         gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
