@@ -256,9 +256,8 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public List<OrgCertificationDTO> listByProject(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         List<OrgCertificationDTO> orgCertificationDTOS = new ArrayList<>();
-        certificationRepository.listByProject(projectId, organization.getId()).forEach(certificationDTO -> {
+        certificationRepository.listByProject(projectId, projectE.getOrganization().getId()).forEach(certificationDTO -> {
             OrgCertificationDTO orgCertificationDTO = new OrgCertificationDTO();
             orgCertificationDTO.setName(certificationDTO.getCertName());
             orgCertificationDTO.setId(certificationDTO.getId());

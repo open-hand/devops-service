@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
@@ -63,8 +64,7 @@ class DevopsEnvFileErrorControllerSpec extends Specification {
     Organization organization = new Organization()
 
     def setup() {
-        iamRepository.initMockIamService(iamServiceClient)
-
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         ProjectDO projectDO = new ProjectDO()
         projectDO.setId(1L)
         projectDO.setCode("pro")

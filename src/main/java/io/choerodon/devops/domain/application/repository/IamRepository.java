@@ -50,6 +50,4 @@ public interface IamRepository {
     List<Long> getAllMemberIdsWithoutOwner(Long projectId);
 
     Boolean isProjectOwner(Long userId, ProjectE projectE);
-
-    void initMockIamService(IamServiceClient iamServiceClient);
 }

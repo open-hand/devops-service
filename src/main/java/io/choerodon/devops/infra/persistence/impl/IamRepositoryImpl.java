@@ -259,9 +259,4 @@ public class IamRepositoryImpl implements IamRepository {
                         .collect(Collectors.toList())));
         return !roleDTOS.isEmpty();
     }
-
-    @Override
-    public void initMockIamService(IamServiceClient iamServiceClient) {
-        this.iamServiceClient = iamServiceClient;
-    }
 }

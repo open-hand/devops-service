@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.controller.v1.DevopsClusterController
 import io.choerodon.devops.api.dto.OrgCertificationDTO
@@ -30,12 +31,12 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
-@Subject(DevopsClusterController)
+@Subject(OrgCertificationController)
 @Stepwise
 class OrgCertificationControllerSpec extends Specification {
 
     private static final String MAPPING = "/v1/organizations/{organization_id}/certs"
-    private static Long ID;
+    private static Long ID
 
 
     @Autowired
@@ -55,7 +56,7 @@ class OrgCertificationControllerSpec extends Specification {
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
 
     void setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setId(1L)

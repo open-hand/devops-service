@@ -5,6 +5,7 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ApplicationRepDTO
 import io.choerodon.devops.api.dto.ApplicationReqDTO
@@ -142,7 +143,8 @@ class ApplicationControllerSpec extends Specification {
     }
 
     def setup() {
-        iamRepository.initMockIamService(iamServiceClient)
+//        iamRepository.initMockIamService(iamServiceClient)
+        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         gitlabRepository.initMockService(gitlabServiceClient)
         gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
 
@@ -483,6 +485,15 @@ class ApplicationControllerSpec extends Specification {
         then:
         entity.get(0)["code"] == "appCode"
 
+    }
+
+    // 获取应用下所有用户权限
+    def "listAllUserPermission"() {
+        when:
+        def permissionList = restTemplate.getForObject(MAPPING + "/{appId}/list_all", List.class, 100L, 100L)
+
+        then:
+        permissionList.isEmpty()
     }
     // 清除测试数据
     def "cleanupData"() {
