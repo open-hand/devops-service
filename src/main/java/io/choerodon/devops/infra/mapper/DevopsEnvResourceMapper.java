@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.mapper;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import org.apache.ibatis.annotations.Param;
 
 import io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO;
@@ -24,4 +25,6 @@ public interface DevopsEnvResourceMapper extends BaseMapper<DevopsEnvResourceDO>
 
     DevopsEnvResourceDO queryLatestJob(@Param("kind") String kind,
                                        @Param("name") String name);
+
+    String getResourceDetailByNameAndTypeAndInstanceId(@Param("instanceId") Long instanceId, @Param("name") String name,  @Param("kind") String resourceType);
 }

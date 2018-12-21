@@ -1,6 +1,9 @@
 package io.choerodon.devops.domain.application.entity;
 
+import io.choerodon.devops.api.dto.ContainerDTO;
+
 import java.util.Date;
+import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -27,6 +30,7 @@ public class DevopsEnvPodE {
     private Long objectVersionNumber;
     private Boolean isConnect;
     private Long clusterId;
+    private List<ContainerDTO> containers;
 
     public DevopsEnvPodE() {
     }
@@ -201,5 +205,13 @@ public class DevopsEnvPodE {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public List<ContainerDTO> getContainers() {
+        return containers;
+    }
+
+    public void setContainers(List<ContainerDTO> containers) {
+        this.containers = containers;
     }
 }

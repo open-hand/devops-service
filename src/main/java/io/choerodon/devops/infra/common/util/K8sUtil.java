@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 
 /**
@@ -15,6 +16,7 @@ public class K8sUtil {
     private static final String SIGNAL = "Signal:";
     private static final String EXIT_CODE = "ExitCode:";
     private static final String NONE_LABEL = "<none>";
+    private static final JSON json = new JSON();
 
     private K8sUtil() {
     }
@@ -223,4 +225,14 @@ public class K8sUtil {
         return "80";
     }
 
+    /**
+     * 反序列化K8s的json字符串
+     * @param jsonString k8s对象的json字符串
+     * @param destK8sResource 对象的类
+     * @param <T> 对象的类型
+     * @return 反序列化结果
+     */
+    public static <T> T deserialize(String jsonString, Class<T> destK8sResource) {
+        return json.deserialize(jsonString, destK8sResource);
+    }
 }

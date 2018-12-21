@@ -1,7 +1,15 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import io.choerodon.devops.api.dto.ContainerDTO;
+import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
+import io.choerodon.devops.infra.common.util.K8sUtil;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
+import io.kubernetes.client.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,22 +24,29 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvironmentReposi
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import org.springframework.util.StringUtils;
 
 /**
  * Created by Zenger on 2018/4/17.
  */
 @Service
 public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
+    private final Logger logger = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
 
+    private final EnvListener envListener;
+    private final EnvUtil envUtil;
+    private final DevopsEnvPodRepository devopsEnvPodRepository;
+    private final DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private final DevopsEnvResourceRepository devopsEnvResourceRepository;
 
     @Autowired
-    private EnvListener envListener;
-    @Autowired
-    private EnvUtil envUtil;
-    @Autowired
-    private DevopsEnvPodRepository devopsEnvPodRepository;
-    @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    public DevopsEnvPodServiceImpl(EnvListener envListener, EnvUtil envUtil, DevopsEnvPodRepository devopsEnvPodRepository, DevopsEnvironmentRepository devopsEnvironmentRepository, DevopsEnvResourceRepository devopsEnvResourceRepository) {
+        this.envListener = envListener;
+        this.envUtil = envUtil;
+        this.devopsEnvPodRepository = devopsEnvPodRepository;
+        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
+        this.devopsEnvResourceRepository = devopsEnvResourceRepository;
+    }
 
 
     @Override
@@ -39,16 +54,42 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         Page<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
-        devopsEnvPodEPage.stream().forEach(devopsEnvPodE -> {
+        devopsEnvPodEPage.forEach(devopsEnvPodE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsEnvPodE.getEnvId());
             devopsEnvPodE.setClusterId(devopsEnvironmentE.getClusterE().getId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
                     && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
                 devopsEnvPodE.setConnect(true);
             }
+
+            setContainers(devopsEnvPodE);
         });
 
-        return ConvertPageHelper.convertPage(
-                devopsEnvPodEPage, DevopsEnvPodDTO.class);
+        return ConvertPageHelper.convertPage(devopsEnvPodEPage, DevopsEnvPodDTO.class);
+    }
+
+    /**
+     * set the containers of the pod
+     *
+     * @param devopsEnvPodE the pod entity
+     */
+    private void setContainers(DevopsEnvPodE devopsEnvPodE) {
+        String message = devopsEnvResourceRepository.getResourceDetailByNameAndTypeAndInstanceId(devopsEnvPodE.getApplicationInstanceE().getId(), devopsEnvPodE.getName(), ResourceType.POD);
+
+        if (StringUtils.isEmpty(message)) {
+            return;
+        }
+
+        try {
+            V1Pod pod = K8sUtil.deserialize(message, V1Pod.class);
+            devopsEnvPodE.setContainers(pod.getStatus().getContainerStatuses().stream().map(container -> {
+                ContainerDTO containerDTO = new ContainerDTO();
+                containerDTO.setName(container.getName());
+                containerDTO.setReady(container.isReady());
+                return containerDTO;
+            }).collect(Collectors.toList()));
+        } catch (Exception e) {
+            logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodE.getName());
+        }
     }
 }

@@ -52,6 +52,7 @@
         da.project_id projectId,
         dam.publish_level,
         dp.`name`,
+        dp.app_instance_id,
         dp.namespace namespace,
         dp.is_ready,
         dp.`status`,
