@@ -139,8 +139,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
-                                                                Long envId, Long versionId, Long appId, String params) {
+    public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
+                                                                     Long envId, Long versionId, Long appId, String params) {
         Map<String, EnvSession> envs = envListener.connectedEnv();
 
         Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
@@ -152,26 +152,25 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
 
-        applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
-            // 通过实例id获取相关资源数据
-            DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService.listResources(applicationInstanceDTO.getId());
+        return convertPageFromApplicationInstance(applicationInstanceDTOS);
+    }
 
-            // 根据实例id获取相关的pod
-            List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper.convertList(
-                    devopsEnvPodRepository.selectByInstanceId(applicationInstanceDTO.getId()),
-                    DevopsEnvPodDTO.class
-            );
+    /**
+     * convert page from ApplicationInstance
+     *
+     * @param applicationInstanceDTOS the page that contains the instances
+     * @return the page converted
+     */
+    private Page<DevopsEnvPreviewInstanceDTO> convertPageFromApplicationInstance(Page<ApplicationInstanceDTO> applicationInstanceDTOS) {
+        Page<DevopsEnvPreviewInstanceDTO> previewInstanceDTOPage = new Page<>();
+        previewInstanceDTOPage.setContent(applicationInstanceDTOS.getContent().stream().map(this::fromInstanceToEnvPreview).collect(Collectors.toList()));
+        previewInstanceDTOPage.setNumber(applicationInstanceDTOS.getNumber());
+        previewInstanceDTOPage.setNumberOfElements(applicationInstanceDTOS.getNumberOfElements());
+        previewInstanceDTOPage.setSize(applicationInstanceDTOS.getSize());
+        previewInstanceDTOPage.setTotalElements(applicationInstanceDTOS.getTotalElements());
+        previewInstanceDTOPage.setTotalPages(applicationInstanceDTOS.getTotalPages());
 
-            // 关联其pod并设置deployment
-            applicationInstanceDTO.setDeploymentDTOS(
-                    devopsEnvResourceDTO.getDeploymentDTOS()
-                            .stream()
-                            .peek(deploymentDTO -> deploymentDTO.setDevopsEnvPodDTOS(filterPodsAssociated(devopsEnvPodDTOS, deploymentDTO.getName())))
-                            .collect(Collectors.toList())
-            );
-        });
-
-        return applicationInstanceDTOS;
+        return previewInstanceDTOPage;
     }
 
     @Override
@@ -563,64 +562,77 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvPreviewAppDTO.setProjectId(applicationE.getProjectE().getId());
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
-            List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();
-            applicationInstanceDTOS.forEach(applicationInstanceDTO -> {
-                DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
-                BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
 
-                // 获取相关的pod
-                List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
-                        .convertList(devopsEnvPodRepository.selectByInstanceId(devopsEnvPreviewInstanceDTO.getId()),
-                                DevopsEnvPodDTO.class);
+            // set instances
+            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(
+                    applicationInstanceDTOS.stream()
+                            .map(this::fromInstanceToEnvPreview)
+                            .collect(Collectors.toList())
+            );
 
-                DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
-                        .listResourcesInHelmRelease(devopsEnvPreviewInstanceDTO.getId());
-
-                // 关联其pod并设置deployment
-                devopsEnvPreviewInstanceDTO.setDeploymentDTOS(devopsEnvResourceDTO.getDeploymentDTOS()
-                        .stream()
-                        .peek(deploymentDTO -> deploymentDTO.setDevopsEnvPodDTOS(filterPodsAssociated(devopsEnvPodDTOS, deploymentDTO.getName())))
-                        .collect(Collectors.toList())
-                );
-
-                // 关联其pod并设置daemonSet
-                devopsEnvPreviewInstanceDTO.setDaemonSetDTOS(
-                        devopsEnvResourceDTO.getDaemonSetDTOS()
-                                .stream()
-                                .peek(daemonSetDTO -> daemonSetDTO.setDevopsEnvPodDTOS(
-                                        filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, daemonSetDTO.getName())
-                                ))
-                                .collect(Collectors.toList())
-                );
-
-                // 关联其pod并设置statefulSet
-                devopsEnvPreviewInstanceDTO.setStatefulSetDTOS(
-                        devopsEnvResourceDTO.getStatefulSetDTOS()
-                                .stream()
-                                .peek(statefulSetDTO -> statefulSetDTO.setDevopsEnvPodDTOS(
-                                        filterPodsAssociatedWithStatefulSet(devopsEnvPodDTOS, statefulSetDTO.getName()))
-                                )
-                                .collect(Collectors.toList())
-                );
-
-                // 设置pvc
-                devopsEnvPreviewInstanceDTO.setPersistentVolumeClaimDTOS(devopsEnvResourceDTO.getPersistentVolumeClaimDTOS());
-
-                // 设置ingress
-                devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
-
-                // 设置service
-                devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
-
-                devopsEnvPreviewInstanceDTOS.add(devopsEnvPreviewInstanceDTO);
-            });
-            devopsEnvPreviewAppDTO.setApplicationInstanceDTOS(devopsEnvPreviewInstanceDTOS);
             devopsEnvPreviewAppDTOS.add(devopsEnvPreviewAppDTO);
         });
         devopsEnvPreviewDTO.setDevopsEnvPreviewAppDTOS(devopsEnvPreviewAppDTOS);
         return devopsEnvPreviewDTO;
     }
 
+
+    /**
+     * create the detail as env preview from application instance
+     *
+     * @param applicationInstanceDTO the basic information for {@link DevopsEnvPreviewInstanceDTO}
+     * @return devopsEnvPreviewInstanceDTO
+     */
+    private DevopsEnvPreviewInstanceDTO fromInstanceToEnvPreview(ApplicationInstanceDTO applicationInstanceDTO) {
+        DevopsEnvPreviewInstanceDTO devopsEnvPreviewInstanceDTO = new DevopsEnvPreviewInstanceDTO();
+        BeanUtils.copyProperties(applicationInstanceDTO, devopsEnvPreviewInstanceDTO);
+
+        // 获取相关的pod
+        List<DevopsEnvPodDTO> devopsEnvPodDTOS = ConvertHelper
+                .convertList(devopsEnvPodRepository.selectByInstanceId(devopsEnvPreviewInstanceDTO.getId()),
+                        DevopsEnvPodDTO.class);
+
+        DevopsEnvResourceDTO devopsEnvResourceDTO = devopsEnvResourceService
+                .listResourcesInHelmRelease(devopsEnvPreviewInstanceDTO.getId());
+
+        // 关联其pod并设置deployment
+        devopsEnvPreviewInstanceDTO.setDeploymentDTOS(devopsEnvResourceDTO.getDeploymentDTOS()
+                .stream()
+                .peek(deploymentDTO -> deploymentDTO.setDevopsEnvPodDTOS(filterPodsAssociated(devopsEnvPodDTOS, deploymentDTO.getName())))
+                .collect(Collectors.toList())
+        );
+
+        // 关联其pod并设置daemonSet
+        devopsEnvPreviewInstanceDTO.setDaemonSetDTOS(
+                devopsEnvResourceDTO.getDaemonSetDTOS()
+                        .stream()
+                        .peek(daemonSetDTO -> daemonSetDTO.setDevopsEnvPodDTOS(
+                                filterPodsAssociatedWithDaemonSet(devopsEnvPodDTOS, daemonSetDTO.getName())
+                        ))
+                        .collect(Collectors.toList())
+        );
+
+        // 关联其pod并设置statefulSet
+        devopsEnvPreviewInstanceDTO.setStatefulSetDTOS(
+                devopsEnvResourceDTO.getStatefulSetDTOS()
+                        .stream()
+                        .peek(statefulSetDTO -> statefulSetDTO.setDevopsEnvPodDTOS(
+                                filterPodsAssociatedWithStatefulSet(devopsEnvPodDTOS, statefulSetDTO.getName()))
+                        )
+                        .collect(Collectors.toList())
+        );
+
+        // 设置pvc
+        devopsEnvPreviewInstanceDTO.setPersistentVolumeClaimDTOS(devopsEnvResourceDTO.getPersistentVolumeClaimDTOS());
+
+        // 设置ingress
+        devopsEnvPreviewInstanceDTO.setIngressDTOS(devopsEnvResourceDTO.getIngressDTOS());
+
+        // 设置service
+        devopsEnvPreviewInstanceDTO.setServiceDTOS(devopsEnvResourceDTO.getServiceDTOS());
+
+        return devopsEnvPreviewInstanceDTO;
+    }
 
     /**
      * filter the pods that are associated with the deployment.

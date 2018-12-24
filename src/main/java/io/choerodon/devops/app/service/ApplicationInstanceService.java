@@ -24,9 +24,9 @@ public interface ApplicationInstanceService {
      * @param versionId   版本Id
      * @param appId       应用Id
      * @param params      模糊查询参数
-     * @return page of applicationInstanceDTO
+     * @return page of devopsEnvPreviewInstanceDTO
      */
-    Page<ApplicationInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
+    Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                          Long envId, Long versionId, Long appId, String params);
 
     /**
