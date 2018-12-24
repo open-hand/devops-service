@@ -31,4 +31,6 @@ public interface DeployService {
     void upgradeCluster(DevopsClusterE devopsClusterE);
 
     void createCertManager(Long clusterId);
+
+    void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
 }

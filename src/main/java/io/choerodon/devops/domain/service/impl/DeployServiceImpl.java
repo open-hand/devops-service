@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
+import io.choerodon.devops.api.dto.OperationPodPayload;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ public class DeployServiceImpl implements DeployService {
     private static final String INIT_AGENT = "init_agent";
     private static final String DELETE_ENV = "delete_env";
     private static final String INIT_ENV = "create_env";
+    private static final String OPERATE_POD_COUNT = "operate_pod_count";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
     @Autowired
@@ -151,6 +153,24 @@ public class DeployServiceImpl implements DeployService {
     }
 
     @Override
+    public void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count) {
+        Msg msg = new Msg();
+        OperationPodPayload operationPodPayload = new OperationPodPayload();
+        operationPodPayload.setCount(count);
+        operationPodPayload.setDeploymentName(deploymentName);
+        operationPodPayload.setNamespace(namespace);
+        try {
+            msg.setPayload(mapper.writeValueAsString(operationPodPayload));
+        } catch (IOException e) {
+            throw new CommonException(ERROR_PAYLOAD_ERROR, e);
+        }
+        msg.setType(OPERATE_POD_COUNT);
+        msg.setKey(String.format("cluster:%s", clusterId
+        ));
+        commandSender.sendMsg(msg);
+    }
+
+    @Override
     public void initCluster(Long clusterId) {
         GitConfigDTO gitConfigDTO = envUtil.getGitConfig(clusterId);
         Msg msg = new Msg();
@@ -218,13 +238,13 @@ public class DeployServiceImpl implements DeployService {
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
         List<Long> connected = envUtil.getConnectedEnvList(envListener);
         testReleases.forEach((key, value) -> {
-            if(connected.contains(key)) {
+            if (connected.contains(key)) {
                 Msg msg = new Msg();
                 msg.setKey(String.format("cluster:%d",
                         key));
                 msg.setPayload(JSONArray.toJSONString(value));
                 msg.setType(HelmType.TEST_STATUS.toValue());
-            commandSender.sendMsg(msg);
+                commandSender.sendMsg(msg);
             }
         });
     }

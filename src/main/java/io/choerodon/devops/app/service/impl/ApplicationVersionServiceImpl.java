@@ -220,8 +220,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             applicationVersionAndCommitDTO.setAppName(applicationE.getName());
             applicationVersionAndCommitDTO.setCommit(applicationVersionE.getCommit());
             applicationVersionAndCommitDTO.setCommitContent(devopsGitlabCommitE.getCommitContent());
-            applicationVersionAndCommitDTO.setCommitUserImage(userE.getImageUrl());
-            applicationVersionAndCommitDTO.setCommitUserName(userE.getRealName());
+            applicationVersionAndCommitDTO.setCommitUserImage(userE == null ? null : userE.getImageUrl());
+            applicationVersionAndCommitDTO.setCommitUserName(userE == null ? null : userE.getRealName());
             applicationVersionAndCommitDTO.setVersion(applicationVersionE.getVersion());
             applicationVersionAndCommitDTO.setCreateDate(applicationVersionE.getCreationDate());
             applicationVersionAndCommitDTO.setCommitUrl(gitlabUrl + "/"
@@ -234,8 +234,11 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public String queryByPipelineId(Long pipelineId) {
-        return applicationVersionRepository.queryByPipelineId(pipelineId);
+    public Boolean queryByPipelineId(Long pipelineId, String branch) {
+        if (applicationVersionRepository.queryByPipelineId(pipelineId, branch) == null) {
+            return false;
+        }
+        return true;
     }
 
 

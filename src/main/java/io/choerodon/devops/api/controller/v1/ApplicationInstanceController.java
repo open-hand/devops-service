@@ -732,4 +732,29 @@ public class ApplicationInstanceController {
         applicationInstanceService.deployTestApp(applicationDeployDTO);
     }
 
+    /**
+     * 操作pod的数量
+     *
+     * @param projectId      项目id
+     * @param envId          环境id
+     * @param deploymentName deploymentName
+     * @param count          pod数量
+     * @return ApplicationInstanceDTO
+     */
+    @ApiOperation(value = "操作pod的数量")
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @PutMapping("/operate_pod_count")
+    public void operatePodCount(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境id", required = true)
+            @RequestParam Long envId,
+            @ApiParam(value = "deploymentName", required = true)
+            @RequestParam String deploymentName,
+            @ApiParam(value = "pod数量", required = true)
+            @RequestParam Long count) {
+        applicationInstanceService.operationPodCount(deploymentName, envId, count);
+    }
 }

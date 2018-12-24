@@ -253,4 +253,6 @@ public interface ApplicationInstanceService {
      */
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 
+
+    void operationPodCount(String deploymentName, Long envId, Long count);
 }
