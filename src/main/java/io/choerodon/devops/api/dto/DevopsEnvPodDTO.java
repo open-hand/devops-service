@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.dto;
 
 import java.util.Date;
+import java.util.List;
 
 public class DevopsEnvPodDTO {
 
@@ -22,6 +23,7 @@ public class DevopsEnvPodDTO {
     private Long objectVersionNumber;
     private Boolean isConnect;
     private Long clusterId;
+    private List<ContainerDTO> containers;
 
     public Long getId() {
         return id;
@@ -165,5 +167,13 @@ public class DevopsEnvPodDTO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public List<ContainerDTO> getContainers() {
+        return containers;
+    }
+
+    public void setContainers(List<ContainerDTO> containers) {
+        this.containers = containers;
     }
 }

@@ -53,4 +53,13 @@
         LIMIT 1
     </select>
 
+    <select id="getResourceDetailByNameAndTypeAndInstanceId" resultType="java.lang.String">
+        SELECT detail.message
+        FROM devops_env_resource re
+        INNER JOIN devops_env_resource_detail detail
+        ON re.resource_detail_id = detail.id
+        WHERE re.name = #{name}
+        AND re.kind = #{kind}
+        AND re.app_instance_id = #{instanceId}
+    </select>
 </mapper>

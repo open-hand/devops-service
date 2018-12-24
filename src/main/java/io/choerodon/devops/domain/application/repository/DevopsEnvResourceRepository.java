@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.application.repository;
 import java.util.List;
 
 import io.choerodon.devops.domain.application.entity.DevopsEnvResourceE;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 
 /**
  * Created by younger on 2018/4/24.
@@ -26,5 +27,15 @@ public interface DevopsEnvResourceRepository {
     void deleteByKindAndNameAndInstanceId(String kind, String name, Long instanceId);
 
     DevopsEnvResourceE queryResource(Long instanceId, Long commandId, Long envId, String kind, String name);
+
+    /**
+     * get resource detail message
+     *
+     * @param instanceId   instance id
+     * @param name         the resource name
+     * @param resourceType the resource type
+     * @return the detail message
+     */
+    String getResourceDetailByNameAndTypeAndInstanceId(Long instanceId, String name, ResourceType resourceType);
 
 }

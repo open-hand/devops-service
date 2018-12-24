@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -96,4 +97,9 @@ public class DevopsEnvResourceRepositoryImpl implements DevopsEnvResourceReposit
         return ConvertHelper.convert(devopsEnvResourceMapper.queryResource(instanceId, commandId, envId, kind, name), DevopsEnvResourceE.class);
     }
 
+
+    @Override
+    public String getResourceDetailByNameAndTypeAndInstanceId(Long instanceId, String name, ResourceType resourceType) {
+        return devopsEnvResourceMapper.getResourceDetailByNameAndTypeAndInstanceId(instanceId, name, resourceType.getType());
+    }
 }

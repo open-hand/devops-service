@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
@@ -11,10 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.V1OwnerReference;
-import io.kubernetes.client.models.V1Pod;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.*;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -191,11 +189,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvPodE.setStatus(status);
         devopsEnvPodE.setResourceVersion(resourceVersion);
         devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
-        if (!PENDING.equals(status)) {
-            devopsEnvPodE.setReady(v1Pod.getStatus().getContainerStatuses().get(0).isReady());
-        } else {
-            devopsEnvPodE.setReady(false);
-        }
+        devopsEnvPodE.setReady(getReadyValue(status, v1Pod));
 
         Boolean flag = false;
         if (applicationInstanceE.getId() != null) {
@@ -204,6 +198,31 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             handleEnvPod(v1Pod, applicationInstanceE, resourceVersion, devopsEnvPodE, flag, devopsEnvPodEList);
         }
     }
+
+
+    /**
+     * 当状态不等于Pending时，只有所有container都ready才是ready，即值为true
+     * 方法中除了<code>v1Pod.getStatus().getContainerStatuses().isReady</code>的值，不对其他字段进行非空校验
+     *
+     * @param podStatus pod status
+     * @param v1Pod     pod 对象，不能为空
+     * @return true 当状态不等于Pending时，所有container都ready
+     */
+    private Boolean getReadyValue(String podStatus, V1Pod v1Pod) {
+        return !PENDING.equals(podStatus) && v1Pod.getStatus().getContainerStatuses().stream().map(V1ContainerStatus::isReady).reduce((one, another) -> mapNullToFalse(one) && mapNullToFalse(another)).orElse(Boolean.FALSE);
+    }
+
+
+    /**
+     * map null of type {@link Boolean} to primitive false
+     *
+     * @param value Boolean value
+     * @return false if the value is null or false
+     */
+    private boolean mapNullToFalse(Boolean value) {
+        return value != null && value;
+    }
+
 
     private void handleEnvPod(V1Pod v1Pod, ApplicationInstanceE applicationInstanceE, String resourceVersion, DevopsEnvPodE devopsEnvPodE, Boolean flag, List<DevopsEnvPodE> devopsEnvPodEList) {
         if (devopsEnvPodEList == null || devopsEnvPodEList.isEmpty()) {
@@ -1359,11 +1378,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvPodE.setStatus(status);
         devopsEnvPodE.setResourceVersion(resourceVersion);
         devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
-        if (!PENDING.equals(status)) {
-            devopsEnvPodE.setReady(v1Pod.getStatus().getContainerStatuses().get(0).isReady());
-        } else {
-            devopsEnvPodE.setReady(false);
-        }
+        devopsEnvPodE.setReady(getReadyValue(status, v1Pod));
         devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
         devopsEnvPodRepository.insert(devopsEnvPodE);
         Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
