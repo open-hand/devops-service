@@ -560,6 +560,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvPreviewAppDTO.setAppName(key);
             ApplicationE applicationE = applicationRepository.query(value.get(0).getApplicationE().getId());
             devopsEnvPreviewAppDTO.setAppCode(applicationE.getCode());
+            devopsEnvPreviewAppDTO.setProjectId(applicationE.getProjectE().getId());
             List<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertHelper
                     .convertList(value, ApplicationInstanceDTO.class);
             List<DevopsEnvPreviewInstanceDTO> devopsEnvPreviewInstanceDTOS = new ArrayList<>();

@@ -217,5 +217,17 @@ class DevopsEnvPodControllerSpec extends Specification {
                 applicationMarketMapper.delete(e)
             }
         }
+
+        // 删除环境
+        devopsEnvironmentMapper.delete(devopsEnvironmentDO)
+
+        // 删除resource
+        devopsEnvResourceMapper.delete(devopsEnvResourceDO)
+
+        // 删除resource detail
+        devopsEnvResourceDetailMapper.delete(devopsEnvResourceDetailDO)
+
+        // 删除application instance
+        applicationInstanceMapper.delete(applicationInstanceDO)
     }
 }
