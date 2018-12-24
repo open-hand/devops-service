@@ -55,7 +55,7 @@ public class ApplicationInstanceController {
     @ApiOperation(value = "分页查询应用部署")
     @CustomPageRequest
     @PostMapping(value = "/list_by_options")
-    public ResponseEntity<Page<ApplicationInstanceDTO>> pageByOptions(
+    public ResponseEntity<Page<DevopsEnvPreviewInstanceDTO>> pageByOptions(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiIgnore
