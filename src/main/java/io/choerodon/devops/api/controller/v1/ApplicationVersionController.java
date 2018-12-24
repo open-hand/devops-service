@@ -259,19 +259,22 @@ public class ApplicationVersionController {
      *
      * @param projectId  项目ID
      * @param pipelineId 持续集成Id
-     * @return String
+     * @param branch     分支
+     * @return Boolean
      */
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据pipelineID 查询版本")
     @GetMapping(value = "/query_by_pipeline")
-    public ResponseEntity<String> queryByPipeline(
+    public ResponseEntity<Boolean> queryByPipeline(
             @ApiParam(value = "实例ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "持续集成Id", required = true)
-            @RequestParam Long pipelineId) {
-        return Optional.ofNullable(applicationVersionService.queryByPipelineId(pipelineId))
+            @RequestParam Long pipelineId,
+            @ApiParam(value = "分支", required = true)
+            @RequestParam String branch) {
+        return Optional.ofNullable(applicationVersionService.queryByPipelineId(pipelineId, branch))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }

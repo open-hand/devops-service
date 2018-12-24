@@ -447,17 +447,21 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     private String getAndCheckResourceDetail(Long instanceId, String resourceName, ResourceType resourceType) {
         String message = applicationInstanceRepository.getInstanceResourceDetailJson(instanceId, resourceName, resourceType);
-
         if (StringUtils.isEmpty(message)) {
             throw new CommonException("error.instance.resource.not.found", instanceId, resourceType.getType());
         }
-
         return message;
     }
 
     @Override
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
         deployService.getTestAppStatus(testReleases);
+    }
+
+    @Override
+    public void operationPodCount(String deploymentName, Long envId, Long count) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        deployService.operatePodCount(deploymentName, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId(), count);
     }
 
 
@@ -654,7 +658,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
      * filter the pods that are associated with the statefulSet.
      *
      * @param devopsEnvPodDTOS the pods to be filtered
-     * @param statefulSetName    the name of statefulSet
+     * @param statefulSetName  the name of statefulSet
      * @return the pods
      */
     private List<DevopsEnvPodDTO> filterPodsAssociatedWithStatefulSet(List<DevopsEnvPodDTO> devopsEnvPodDTOS, String statefulSetName) {

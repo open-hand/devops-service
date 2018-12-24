@@ -88,6 +88,6 @@ public interface ApplicationVersionService {
 
     List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch);
 
-    String queryByPipelineId(Long pipelineId);
+    Boolean queryByPipelineId(Long pipelineId, String branch);
 
 }
