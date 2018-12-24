@@ -250,13 +250,18 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
 
 
     @Override
-    public Page<DevopsGitlabPipelineDTO> pagePipelines(Long appId, PageRequest pageRequest, Date startTime, Date endTime) {
+    public Page<DevopsGitlabPipelineDTO> pagePipelines(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime) {
         if (appId == null) {
             return new Page<>();
         }
         Page<DevopsGitlabPipelineDTO> pageDevopsGitlabPipelineDTOS = new Page<>();
         List<DevopsGitlabPipelineDTO> devopsGiltabPipelineDTOS = new ArrayList<>();
-        Page<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.pagePipeline(appId, pageRequest, startTime, endTime);
+        Page<DevopsGitlabPipelineDO> devopsGitlabPipelineDOS = new Page<>();
+        if (branch == null) {
+            devopsGitlabPipelineDOS = devopsGitlabPipelineRepository.pagePipeline(appId, pageRequest, startTime, endTime);
+        } else {
+            devopsGitlabPipelineDOS.setContent(devopsGitlabPipelineRepository.listByBranch(appId, branch));
+        }
         BeanUtils.copyProperties(devopsGitlabPipelineDOS, pageDevopsGitlabPipelineDTOS);
 
         //按照ref分组
@@ -276,6 +281,12 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
         //获取pipeline记录
+        Set<Long> userIds = new HashSet<>();
+        devopsGitlabPipelineDOS.getContent().stream().forEach(devopsGitlabPipelineDO -> {
+            userIds.add(devopsGitlabPipelineDO.getCommitUserId());
+            userIds.add(devopsGitlabPipelineDO.getPipelineCreateUserId());
+        });
+        List<UserE> userES = iamRepository.listUsersByIds(new ArrayList<>(userIds));
         devopsGitlabPipelineDOS.getContent().forEach(devopsGitlabPipelineDO -> {
             DevopsGitlabPipelineDTO devopsGitlabPipelineDTO = new DevopsGitlabPipelineDTO();
             if (devopsGitlabPipelineDO.getPipelineId().equals(refWithPipelineIds.get(devopsGitlabPipelineDO.getRef()))) {
@@ -283,16 +294,15 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             }
             devopsGitlabPipelineDTO.setCommit(devopsGitlabPipelineDO.getSha());
             devopsGitlabPipelineDTO.setCommitContent(devopsGitlabPipelineDO.getContent());
-            UserE userE = iamRepository.queryUserByUserId(devopsGitlabPipelineDO.getCommitUserId());
-            if (userE != null) {
+            userES.stream().filter(userE -> userE.getId().equals(devopsGitlabPipelineDO.getCommitUserId())).forEach(userE -> {
                 devopsGitlabPipelineDTO.setCommitUserUrl(userE.getImageUrl());
                 devopsGitlabPipelineDTO.setCommitUserName(userE.getRealName());
-            }
-            UserE newUserE = iamRepository.queryUserByUserId(devopsGitlabPipelineDO.getPipelineCreateUserId());
-            if (newUserE != null) {
-                devopsGitlabPipelineDTO.setPipelineUserUrl(newUserE.getImageUrl());
-                devopsGitlabPipelineDTO.setPipelineUserName(newUserE.getRealName());
-            }
+            });
+
+            userES.stream().filter(userE -> userE.getId().equals(devopsGitlabPipelineDO.getPipelineCreateUserId())).forEach(userE -> {
+                devopsGitlabPipelineDTO.setPipelineUserUrl(userE.getImageUrl());
+                devopsGitlabPipelineDTO.setPipelineUserName(userE.getRealName());
+            });
             devopsGitlabPipelineDTO.setCreationDate(devopsGitlabPipelineDO.getPipelineCreationDate());
             devopsGitlabPipelineDTO.setGitlabProjectId(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()));
             devopsGitlabPipelineDTO.setPipelineId(devopsGitlabPipelineDO.getPipelineId());

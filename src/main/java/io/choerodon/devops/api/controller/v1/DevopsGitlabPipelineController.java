@@ -111,11 +111,13 @@ public class DevopsGitlabPipelineController {
                     PageRequest pageRequest,
             @ApiParam(value = "appId")
             @RequestParam(required = false) Long appId,
+            @ApiParam(value = "branch")
+            @RequestParam(required = false) String branch,
             @ApiParam(value = "startTime")
             @RequestParam(required = false) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = false) Date endTime) {
-        return Optional.ofNullable(devopsGitlabPipelineService.pagePipelines(appId, pageRequest, startTime, endTime))
+        return Optional.ofNullable(devopsGitlabPipelineService.pagePipelines(appId, branch, pageRequest, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.frequency.get"));
     }

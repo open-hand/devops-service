@@ -18,12 +18,10 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
-import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
-import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
-import io.choerodon.devops.api.dto.DeployVersionDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.FileUtil;
@@ -38,7 +36,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
 
     private static final String DESTPATH = "devops";
-
+    @Value("${services.gitlab.url}")
+    private String gitlabUrl;
     @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
     @Autowired
@@ -55,6 +54,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
+    @Autowired
+    private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -204,4 +205,38 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public List<ApplicationVersionRepDTO> listByAppVersionIds(List<Long> appVersionIds) {
         return ConvertHelper.convertList(applicationVersionRepository.listByAppVersionIds(appVersionIds), ApplicationVersionRepDTO.class);
     }
+
+    @Override
+    public List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch) {
+        List<ApplicationVersionE> applicationVersionES = applicationVersionRepository.listByAppIdAndBranch(appId, branch);
+        ApplicationE applicationE = applicationRepository.query(appId);
+        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        List<ApplicationVersionAndCommitDTO> applicationVersionAndCommitDTOS = new ArrayList<>();
+        applicationVersionES.forEach(applicationVersionE -> {
+            ApplicationVersionAndCommitDTO applicationVersionAndCommitDTO = new ApplicationVersionAndCommitDTO();
+            DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(applicationVersionE.getCommit(), branch);
+            UserE userE = iamRepository.queryUserByUserId(devopsGitlabCommitE.getUserId());
+            applicationVersionAndCommitDTO.setAppName(applicationE.getName());
+            applicationVersionAndCommitDTO.setCommit(applicationVersionE.getCommit());
+            applicationVersionAndCommitDTO.setCommitContent(devopsGitlabCommitE.getCommitContent());
+            applicationVersionAndCommitDTO.setCommitUserImage(userE.getImageUrl());
+            applicationVersionAndCommitDTO.setCommitUserName(userE.getRealName());
+            applicationVersionAndCommitDTO.setVersion(applicationVersionE.getVersion());
+            applicationVersionAndCommitDTO.setCreateDate(applicationVersionE.getCreationDate());
+            applicationVersionAndCommitDTO.setCommitUrl(gitlabUrl + "/"
+                    + organization.getCode() + "-" + projectE.getCode() + "/"
+                    + applicationE.getCode() + ".git");
+            applicationVersionAndCommitDTOS.add(applicationVersionAndCommitDTO);
+
+        });
+        return applicationVersionAndCommitDTOS;
+    }
+
+    @Override
+    public String queryByPipelineId(Long pipelineId) {
+        return applicationVersionRepository.queryByPipelineId(pipelineId);
+    }
+
+
 }

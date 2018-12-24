@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -84,4 +85,9 @@ public interface ApplicationVersionService {
     ApplicationVersionRepDTO queryById(Long appVersionId);
 
     List<ApplicationVersionRepDTO> listByAppVersionIds(List<Long> appVersionIds);
+
+    List<ApplicationVersionAndCommitDTO> listByAppIdAndBranch(Long appId, String branch);
+
+    String queryByPipelineId(Long pipelineId);
+
 }

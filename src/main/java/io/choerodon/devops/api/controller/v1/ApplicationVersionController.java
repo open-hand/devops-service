@@ -14,6 +14,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
 import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
 import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
@@ -226,4 +227,52 @@ public class ApplicationVersionController {
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
 
+
+    /**
+     * 根据分支名查询版本
+     *
+     * @param projectId 项目ID
+     * @param branch    分支
+     * @param appId     应用Id
+     * @return ApplicationVersionRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据分支名查询版本")
+    @GetMapping(value = "/list_by_branch")
+    public ResponseEntity<List<ApplicationVersionAndCommitDTO>> getAppversionByBranch(
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用ID", required = true)
+            @RequestParam Long appId,
+            @ApiParam(value = "分支", required = true)
+            @RequestParam String branch) {
+        return Optional.ofNullable(applicationVersionService.listByAppIdAndBranch(appId, branch))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+
+    /**
+     * 根据pipelineID 查询版本
+     *
+     * @param projectId  项目ID
+     * @param pipelineId 持续集成Id
+     * @return String
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据pipelineID 查询版本")
+    @GetMapping(value = "/query_by_pipeline")
+    public ResponseEntity<String> queryByPipeline(
+            @ApiParam(value = "实例ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "持续集成Id", required = true)
+            @RequestParam Long pipelineId) {
+        return Optional.ofNullable(applicationVersionService.queryByPipelineId(pipelineId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
 }

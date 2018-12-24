@@ -18,5 +18,5 @@ public interface DevopsGitlabPipelineService {
 
     void handleCreate(PipelineWebHookDTO pipelineWebHookDTO);
 
-    Page<DevopsGitlabPipelineDTO> pagePipelines(Long appId, PageRequest pageRequest, Date startTime, Date endTime);
+    Page<DevopsGitlabPipelineDTO> pagePipelines(Long appId, String branch, PageRequest pageRequest, Date startTime, Date endTime);
 }

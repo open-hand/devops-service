@@ -30,7 +30,7 @@ import io.choerodon.swagger.annotation.Permission;
  */
 
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/apps")
+@RequestMapping(value = "/v1/projects/{project_id}/commits")
 public class DevopsGitlabCommitController {
 
     @Autowired
@@ -46,7 +46,7 @@ public class DevopsGitlabCommitController {
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取应用下的代码提交")
-    @PostMapping("/commits")
+    @PostMapping
     public ResponseEntity<DevopsGitlabCommitDTO> getCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -73,7 +73,7 @@ public class DevopsGitlabCommitController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @CustomPageRequest
     @ApiOperation(value = "获取应用下的代码提交历史记录")
-    @PostMapping("/commits/record")
+    @PostMapping("/record")
     public ResponseEntity<Page<CommitFormRecordDTO>> getRecordCommits(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,

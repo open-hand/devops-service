@@ -240,4 +240,14 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     public List<ApplicationVersionE> listByAppVersionIds(List<Long> appVersionIds) {
         return ConvertHelper.convertList(applicationVersionMapper.listByAppVersionIds(appVersionIds), ApplicationVersionE.class);
     }
+
+    @Override
+    public List<ApplicationVersionE> listByAppIdAndBranch(Long appId, String branch) {
+        return ConvertHelper.convertList(applicationVersionMapper.listByAppIdAndBranch(appId, branch), ApplicationVersionE.class);
+    }
+
+    @Override
+    public String queryByPipelineId(Long pipelineId) {
+        return applicationVersionMapper.queryByPipelineId(pipelineId);
+    }
 }
