@@ -20,7 +20,6 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
-import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.certification.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
@@ -44,32 +43,48 @@ public class CertificationServiceImpl implements CertificationService {
     @Value("${cert.testCert}")
     private Boolean testCert;
 
-    @Autowired
     private CertificationRepository certificationRepository;
-    @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @Autowired
     private IamRepository iamRepository;
-    @Autowired
     private DevopsCertificationValidator devopsCertificationValidator;
-    @Autowired
     private UserAttrRepository userAttrRepository;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
-    @Autowired
     private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private EnvListener envListener;
-    @Autowired
     private EnvUtil envUtil;
-    @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    @Autowired
     private GitlabRepository gitlabRepository;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+
+    @Autowired
+    public CertificationServiceImpl(DevopsEnvironmentService devopsEnvironmentService,
+                                    CertificationRepository certificationRepository,
+                                    DevopsEnvironmentRepository devopsEnvironmentRepository,
+                                    IamRepository iamRepository,
+                                    DevopsCertificationValidator devopsCertificationValidator,
+                                    UserAttrRepository userAttrRepository,
+                                    DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
+                                    GitlabGroupMemberService gitlabGroupMemberService,
+                                    EnvListener envListener,
+                                    EnvUtil envUtil,
+                                    DevopsEnvCommandRepository devopsEnvCommandRepository,
+                                    DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
+                                    GitlabRepository gitlabRepository) {
+        this.devopsEnvironmentService = devopsEnvironmentService;
+        this.certificationRepository = certificationRepository;
+        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
+        this.iamRepository = iamRepository;
+        this.devopsCertificationValidator = devopsCertificationValidator;
+        this.userAttrRepository = userAttrRepository;
+        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
+        this.gitlabGroupMemberService = gitlabGroupMemberService;
+        this.envListener = envListener;
+        this.envUtil = envUtil;
+        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
+        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
+        this.gitlabRepository = gitlabRepository;
+    }
 
     @Override
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
@@ -120,26 +135,28 @@ public class CertificationServiceImpl implements CertificationService {
             //创建证书,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而证书成功的状态会被错误更新为处理中，所以用after去区分是否部署成功。成功不再执行证书数据库操作
             CertificationE afterCertificationE = certificationRepository.queryByEnvAndName(devopsEnvironmentE.getId(), certificationE.getName());
             if (afterCertificationE == null) {
-                // create
-                certificationE = certificationRepository.create(certificationE);
-                Long certId = certificationE.getId();
-                // cert command
-                certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
-                certificationRepository.updateCommandId(certificationE);
-                // store crt & key if type is upload
-                storeCertFile(c7nCertification, certId);
+                createAndStore(certificationE, c7nCertification);
             }
         } else {
-            // create
-            certificationE = certificationRepository.create(certificationE);
-            Long certId = certificationE.getId();
-            // cert command
-            certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
-            certificationRepository.updateCommandId(certificationE);
-            // store crt & key if type is upload
-            storeCertFile(c7nCertification, certId);
+            createAndStore(certificationE, c7nCertification);
         }
 
+    }
+
+    /**
+     * create certification, command and store cert file
+     * @param certificationE the information of certification
+     * @param c7nCertification the certification (null_able)
+     */
+    private void createAndStore(CertificationE certificationE, C7nCertification c7nCertification) {
+        // create
+        certificationE = certificationRepository.create(certificationE);
+        Long certId = certificationE.getId();
+        // cert command
+        certificationE.setCommandId(createCertCommandE(CommandType.CREATE.getType(), certId, null));
+        certificationRepository.updateCommandId(certificationE);
+        // store crt & key if type is upload
+        storeCertFile(c7nCertification, certId);
     }
 
 

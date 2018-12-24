@@ -99,15 +99,16 @@ class DevopsGitlabCommitControllerSpec extends Specification {
         devopsGitlabCommitMapper.insert(devopsGitlabCommitDO)
 
         when: '获取应用下的代码提交'
-        def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/apps/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitDTO.class)
+        def devopsGitlabCommit = restTemplate.postForObject("/v1/projects/1/commits?start_date=2015/10/12&end_date=3018/10/18", [1], DevopsGitlabCommitDTO.class)
 
         then: '校验返回值'
         devopsGitlabCommit != null
+        !devopsGitlabCommit.getCommitFormUserDTOList().isEmpty()
     }
 
     def "GetRecordCommits"() {
         when: '获取应用下的代码提交历史记录'
-        def pages = restTemplate.postForObject("/v1/projects/1/apps/commits/record?page=0&size=5&start_date=2015/10/12&end_date=3018/10/18", [1], Page.class)
+        def pages = restTemplate.postForObject("/v1/projects/1/commits/record?page=0&size=5&start_date=2015/10/12&end_date=3018/10/18", [1], Page.class)
 
         then: '校验返回值'
         pages.size() == 1
