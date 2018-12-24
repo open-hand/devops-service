@@ -2,16 +2,8 @@ package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO
 import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvResourceDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvResourceDetailDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
+import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.mapper.*
 import io.choerodon.mybatis.pagehelper.domain.PageRequest
 import io.choerodon.websocket.helper.EnvListener
@@ -153,6 +145,7 @@ class DevopsEnvPodControllerSpec extends Specification {
 
     def "PageByOptions"() {
         given: '初始化变量'
+        devopsEnvPodMapper.selectAll().forEach { devopsEnvPodMapper.delete(it) }
         devopsEnvPodMapper.insert(devopsEnvPodDO)
         applicationVersionMapper.insert(applicationVersionDO)
         applicationVersionMapper.insert(applicationVersionDO1)
@@ -188,7 +181,7 @@ class DevopsEnvPodControllerSpec extends Specification {
         !entity.getBody().isEmpty()
         (entity.getBody().get(0) as LinkedHashMap).get("containers") != null
 
-        and:'清理数据'
+        and: '清理数据'
         // 删除envPod
         List<DevopsEnvPodDO> list = devopsEnvPodMapper.selectAll()
         if (list != null && !list.isEmpty()) {

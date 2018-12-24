@@ -33,10 +33,6 @@ import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.helper.EnvSession
 import org.mockito.Mockito
-import org.powermock.api.mockito.PowerMockito
-import org.powermock.core.classloader.annotations.PrepareForTest
-import org.powermock.modules.junit4.PowerMockRunnerDelegate
-import org.spockframework.runtime.Sputnik
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
@@ -453,6 +449,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         applicationMapper.insert(applicationDO)
         devopsEnvPodMapper.insert(devopsEnvPodDO)
         applicationMarketMapper.insert(devopsAppMarketDO)
+        devopsEnvCommandMapper.selectAll().forEach{ devopsEnvCommandMapper.delete(it) }
         devopsEnvCommandMapper.insert(devopsEnvCommandDO)
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
         devopsEnvCommandValueMapper.insert(devopsEnvCommandValueDO)
