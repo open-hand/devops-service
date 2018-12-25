@@ -123,6 +123,11 @@ class CertificationControllerSpec extends Specification {
 
     def cleanup() {
         if (isToClean) {
+            DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
+            DependencyInjectUtil.restoreDefaultDependency(certificationService, "devopsEnvUserPermissionRepository")
+            DependencyInjectUtil.restoreDefaultDependency(certificationService, "gitlabGroupMemberService")
+            DependencyInjectUtil.restoreDefaultDependency(certificationService, "devopsEnvironmentService")
+
             devopsEnvironmentMapper.delete(devopsEnvironmentDO)
             devopsCertificationMapper.delete(certificationDO)
             devopsEnvCommandMapper.delete(devopsEnvCommandDO)
