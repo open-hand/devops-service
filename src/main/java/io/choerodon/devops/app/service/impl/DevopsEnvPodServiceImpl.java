@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.choerodon.devops.api.dto.ContainerDTO;
@@ -82,12 +83,21 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
         try {
             V1Pod pod = K8sUtil.deserialize(message, V1Pod.class);
-            devopsEnvPodE.setContainers(pod.getStatus().getContainerStatuses().stream().map(container -> {
-                ContainerDTO containerDTO = new ContainerDTO();
-                containerDTO.setName(container.getName());
-                containerDTO.setReady(container.isReady());
-                return containerDTO;
-            }).collect(Collectors.toList()));
+            List<ContainerDTO> containers = pod.getStatus().getContainerStatuses()
+                    .stream()
+                    .map(container -> {
+                        ContainerDTO containerDTO = new ContainerDTO();
+                        containerDTO.setName(container.getName());
+                        containerDTO.setReady(container.isReady());
+                        return containerDTO;
+                    })
+                    .collect(Collectors.toList());
+
+            // 将不可用的容器置于靠前位置
+            Map<Boolean, List<ContainerDTO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
+            containsByStatus.get(Boolean.FALSE).addAll(containsByStatus.get(Boolean.TRUE));
+            devopsEnvPodE.setContainers(containsByStatus.get(Boolean.FALSE));
+
         } catch (Exception e) {
             logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodE.getName());
         }
