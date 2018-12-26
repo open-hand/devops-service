@@ -237,9 +237,14 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         applicationDeployDTO.setAppVersionId(applicationVersionE.getId());
         applicationDeployDTO.setInstanceName(c7nHelmRelease.getMetadata().getName());
         if (type.equals("update")) {
+            DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                     .selectByCode(c7nHelmRelease.getMetadata().getName(), envId);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+            if (applicationInstanceE.getCommandId() == null) {
+                devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+            } else {
+                devopsEnvCommandE = devopsEnvCommandRepository.query(applicationInstanceE.getCommandId());
+            }
             String deployValue = applicationInstanceRepository.queryValueByInstanceId(applicationInstanceE.getId());
             ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(deployValue, applicationDeployDTO.getValues());
             if (deployValue != null && replaceResult.getNewLines().isEmpty() && applicationVersionE.getId().equals(devopsEnvCommandE.getObjectVersionId())) {

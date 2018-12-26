@@ -379,6 +379,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         return stage;
     }
 
+
+    private void syncCommandId() {
+        devopsCheckLogRepository.syncCommandId();
+    }
+
+    private void syncCommandVersionId() {
+        devopsCheckLogRepository.syncCommandVersionId();
+    }
+
     private void syncGitOpsUserAccess(List<CheckLog> logs, String version) {
         List<Long> projectIds = devopsProjectMapper.selectAll().stream().
                 filter(devopsProjectDO -> devopsProjectDO.getDevopsEnvGroupId() != null && devopsProjectDO
@@ -777,7 +786,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if (TWELVE_VERSION.equals(version)) {
                 syncGitOpsUserAccess(logs, TWELVE_VERSION);
                 syncGitlabUserName(logs);
-            } else {
+            } else if ("0.11.2".equals(version)) {
+                syncCommandId();
+                syncCommandVersionId();
+            }else {
                 LOGGER.info("version not matched");
             }
             devopsCheckLogE.setLog(JSON.toJSONString(logs));

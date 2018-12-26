@@ -8,4 +8,8 @@ import io.choerodon.mybatis.common.BaseMapper;
 
 public interface DevopsCheckLogMapper extends BaseMapper<DevopsCheckLogDO> {
     List<DevopsProjectDO> queryNonEnvGroupProject();
+
+    void syncCommandId();
+
+    void syncCommandVersionId();
 }

@@ -10,4 +10,8 @@ public interface DevopsCheckLogRepository {
     void create(DevopsCheckLogE devopsCheckLogE);
 
     List<DevopsProjectDO> queryNonEnvGroupProject();
+
+    void syncCommandId();
+
+    void syncCommandVersionId();
 }
