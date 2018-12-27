@@ -83,24 +83,26 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         //删除instance,和文件对象关联关系
         beforeC7nRelease.forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-            DevopsEnvCommandE devopsEnvCommandE;
-            if (applicationInstanceE.getCommandId() == null) {
-                devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
-            } else {
-                devopsEnvCommandE = devopsEnvCommandRepository
-                        .query(applicationInstanceE.getCommandId());
+            if(applicationInstanceE!=null) {
+                DevopsEnvCommandE devopsEnvCommandE;
+                if (applicationInstanceE.getCommandId() == null) {
+                    devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
+                } else {
+                    devopsEnvCommandE = devopsEnvCommandRepository
+                            .query(applicationInstanceE.getCommandId());
+                }
+                if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
+                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                    devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
+                    devopsEnvCommandE1.setCreatedBy(userId);
+                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
+                    devopsEnvCommandE1.setObjectId(applicationInstanceE.getId());
+                    applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
+                    applicationInstanceRepository.update(applicationInstanceE);
+                }
+                applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());
             }
-            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
-                DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
-                devopsEnvCommandE1.setCreatedBy(userId);
-                devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                devopsEnvCommandE1.setObjectId(applicationInstanceE.getId());
-                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
-            applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());
             devopsEnvFileResourceRepository
                     .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), C7NHELM_RELEASE);
         });

@@ -81,18 +81,20 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         //删除service,和文件对象关联关系
         beforeService.forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
-            if (devopsEnvCommandE == null || (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType()))) {
-                DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE1.setCreatedBy(userId);
-                devopsEnvCommandE1.setObject(ObjectType.SERVICE.getType());
-                devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                devopsEnvCommandE1.setObjectId(devopsServiceE.getId());
-                devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                devopsServiceRepository.update(devopsServiceE);
+            if(devopsServiceE!=null) {
+                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
+                if (devopsEnvCommandE == null || (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType()))) {
+                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
+                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                    devopsEnvCommandE1.setCreatedBy(userId);
+                    devopsEnvCommandE1.setObject(ObjectType.SERVICE.getType());
+                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
+                    devopsEnvCommandE1.setObjectId(devopsServiceE.getId());
+                    devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
+                    devopsServiceRepository.update(devopsServiceE);
+                }
+                devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
             }
-            devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE);
         });
     }

@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.entity.CertificationE;
@@ -27,6 +24,8 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 
 @Service
@@ -84,12 +83,14 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
         beforeC7nCertification
                 .forEach(certName -> {
                     CertificationE certificationE = certificationRepository.queryByEnvAndName(envId, certName);
-                    if (!CommandType.DELETE.getType().equals(certificationE.getCommandType())) {
-                        certificationE.setCommandId(certificationService
-                                .createCertCommandE(CommandType.DELETE.getType(), certificationE.getId(), userId));
-                        certificationRepository.updateCommandId(certificationE);
+                    if (certificationE != null) {
+                        if (!CommandType.DELETE.getType().equals(certificationE.getCommandType())) {
+                            certificationE.setCommandId(certificationService
+                                    .createCertCommandE(CommandType.DELETE.getType(), certificationE.getId(), userId));
+                            certificationRepository.updateCommandId(certificationE);
+                        }
+                        certificationService.certDeleteByGitOps(certificationE.getId());
                     }
-                    certificationService.certDeleteByGitOps(certificationE.getId());
                     devopsEnvFileResourceRepository
                             .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
                 });

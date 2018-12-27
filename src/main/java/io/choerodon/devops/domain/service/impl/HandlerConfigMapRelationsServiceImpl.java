@@ -6,10 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.kubernetes.client.models.V1ConfigMap;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
@@ -29,6 +25,9 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.kubernetes.client.models.V1ConfigMap;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRelationsService<V1ConfigMap> {
@@ -83,20 +82,21 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
         //删除configMap,和文件对象关联关系
         beforeConfigMaps.forEach(configMapName -> {
             DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(envId, configMapName);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
-                    .query(devopsConfigMapE.getDevopsEnvCommandE().getId());
-
-            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
-                DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE1.setObject(ObjectType.CONFIGMAP.getType());
-                devopsEnvCommandE1.setCreatedBy(userId);
-                devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                devopsEnvCommandE1.setObjectId(devopsConfigMapE.getId());
-                devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                devopsConfigMapRepository.update(devopsConfigMapE);
+            if (devopsConfigMapE != null) {
+                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
+                        .query(devopsConfigMapE.getDevopsEnvCommandE().getId());
+                if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
+                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                    devopsEnvCommandE1.setObject(ObjectType.CONFIGMAP.getType());
+                    devopsEnvCommandE1.setCreatedBy(userId);
+                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
+                    devopsEnvCommandE1.setObjectId(devopsConfigMapE.getId());
+                    devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
+                    devopsConfigMapRepository.update(devopsConfigMapE);
+                }
+                devopsConfigMapService.deleteByGitOps(devopsConfigMapE.getId());
             }
-            devopsConfigMapService.deleteByGitOps(devopsConfigMapE.getId());
             devopsEnvFileResourceRepository
                     .deleteByEnvIdAndResource(envId, devopsConfigMapE.getId(), CONFIG_MAP);
         });
