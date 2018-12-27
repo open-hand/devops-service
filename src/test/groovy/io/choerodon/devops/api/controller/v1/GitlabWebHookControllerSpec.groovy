@@ -1,14 +1,23 @@
 package io.choerodon.devops.api.controller.v1
 
+import io.choerodon.asgard.saga.dto.SagaInstanceDTO
+import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
+import io.choerodon.asgard.saga.feign.SagaClientCallback
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
+
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService
 import io.choerodon.devops.domain.application.repository.DevopsGitRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.domain.service.DeployService
+import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
+import io.choerodon.devops.infra.dataobject.DevopsEnvCommitDO
+import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
@@ -16,6 +25,8 @@ import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
+import io.choerodon.websocket.helper.CommandSender
+import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -30,6 +41,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import static org.mockito.Matchers.anyString
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -58,6 +70,10 @@ class GitlabWebHookControllerSpec extends Specification {
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper
     @Autowired
     private DevopsMergeRequestMapper devopsMergeRequestMapper
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper
+    @Autowired
+    private DevopsEnvCommitMapper devopsEnvCommitMapper
 
     @Autowired
     private DevopsGitlabPipelineService devopsGitlabPipelineService
@@ -65,14 +81,22 @@ class GitlabWebHookControllerSpec extends Specification {
     private IamRepository iamRepository
     @Autowired
     private DevopsGitRepository devopsGitRepository
+    @Autowired
+    private DeployService deployService
+    @Autowired
+    private DevopsGitService devopsGitService
 
 
-    private SagaClient mockSagaClient = Mockito.mock(SagaClient)
+    private SagaClient mockSagaClient = Mockito.mock(SagaClientCallback)
     private IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient)
     private GitlabServiceClient mockGitlabServiceClient = Mockito.mock(GitlabServiceClient)
+    private EnvUtil mockEnvUtil = Mockito.mock(EnvUtil)
+    private CommandSender mockCommandSender = Mockito.mock(CommandSender)
 
     @Shared
     private ApplicationDO applicationDO = new ApplicationDO()
+    @Shared
+    private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
     private boolean isToInit = true
     @Shared
@@ -84,12 +108,19 @@ class GitlabWebHookControllerSpec extends Specification {
             DependencyInjectUtil.setAttribute(devopsGitlabPipelineService, "sagaClient", mockSagaClient)
             DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", mockGitlabServiceClient)
+            DependencyInjectUtil.setAttribute(deployService, "commandSender", mockCommandSender)
+            DependencyInjectUtil.setAttribute(deployService, "envUtil", mockEnvUtil)
+            DependencyInjectUtil.setAttribute(devopsGitService, "sagaClient", mockSagaClient)
 
             // do preparation
             applicationDO.setToken(token)
             applicationDO.setProjectId(1L)
-
             applicationMapper.insert(applicationDO)
+
+            devopsEnvironmentDO.setToken(token)
+            devopsEnvironmentDO.setName("env-test")
+            devopsEnvironmentDO.setCode("env-test-webhook")
+            devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
             // mock list user
             UserDO userDO = new UserDO()
@@ -109,6 +140,12 @@ class GitlabWebHookControllerSpec extends Specification {
             commit.setCommittedDate(new Date())
             ResponseEntity<CommitDO> res = new ResponseEntity<>(commit, HttpStatus.OK)
             Mockito.when(mockGitlabServiceClient.getCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
+
+            // mock env util
+            Mockito.when(mockEnvUtil.getConnectedEnvList(Mockito.any(EnvListener))).thenReturn(Arrays.asList(1L))
+
+            // mock sagaClient
+            Mockito.doReturn(new SagaInstanceDTO()).when(mockSagaClient).startSaga(anyString(), Mockito.any(StartInstanceDTO))
         }
     }
 
@@ -118,12 +155,17 @@ class GitlabWebHookControllerSpec extends Specification {
             DependencyInjectUtil.restoreDefaultDependency(devopsGitlabPipelineService, "sagaClient")
             DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
             DependencyInjectUtil.restoreDefaultDependency(devopsGitRepository, "gitlabServiceClient")
+            DependencyInjectUtil.restoreDefaultDependency(deployService, "commandSender")
+            DependencyInjectUtil.restoreDefaultDependency(deployService, "envUtil")
+            DependencyInjectUtil.restoreDefaultDependency(devopsGitService, "sagaClient")
 
             applicationMapper.delete(applicationDO)
+            devopsEnvironmentMapper.delete(devopsEnvironmentDO)
             devopsGitlabPipelineMapper.selectAll().forEach { devopsGitlabPipelineMapper.delete(it) }
             devopsGitlabCommitMapper.selectAll().forEach { devopsGitlabCommitMapper.delete(it) }
             devopsBranchMapper.selectAll().forEach { devopsBranchMapper.delete(it) }
             devopsMergeRequestMapper.selectAll().forEach { devopsMergeRequestMapper.delete(it) }
+            devopsEnvCommitMapper.selectAll().forEach { devopsEnvCommitMapper.delete(it) }
         }
     }
 
@@ -186,6 +228,14 @@ class GitlabWebHookControllerSpec extends Specification {
         entity.getStatusCode().is2xxSuccessful()
         devopsBranchMapper.selectOne(branchValidation).getDeleted() != null
         devopsBranchMapper.selectOne(branchValidation).getDeleted()
+
+        when: "准备unknown的webhook"
+        body = "{\"object_kind\":\"unknown\",\"event_name\":\"push\"}"
+        requestEntity = createEntity(body)
+        entity = restTemplate.postForEntity(BASE_URL, requestEntity, Object)
+
+        then: "校验结果"
+        entity.getStatusCode().is2xxSuccessful()
     }
 
     // webhook转发
@@ -245,7 +295,6 @@ class GitlabWebHookControllerSpec extends Specification {
 
     def "Forward push tag"() {
         given: "准备数据"
-        isToClean = true
         String body = "{\"object_kind\":\"tag_push\",\"event_name\":\"tag_push\",\"before\":\"0000000000000000000000000000000000000000\",\"after\":\"c10c5ec88b6e1a8a48cf213dd88058b3e9741e8c\",\"ref\":\"refs/heads/feature-C7NCD-1756\",\"checkout_sha\":\"c10c5ec88b6e1a8a48cf213dd88058b3e9741e8b\",\"message\":null,\"user_id\":10256,\"user_name\":\"zmf\",\"user_username\":\"20610\",\"user_email\":\"mofang.zheng@hand-china.com\",\"user_avatar\":\"https://code.choerodon.com.cn/uploads/-/system/user/avatar/10256/avatar.png\",\"project_id\":237,\"project\":{\"id\":237,\"name\":\"devops-service\",\"description\":\"\",\"web_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service\",\"avatar_url\":null,\"git_ssh_url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"git_http_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service.git\",\"namespace\":\"Choerodon-Choerodon持续交付\",\"visibility_level\":0,\"path_with_namespace\":\"choerodon-c7ncd/devops-service\",\"default_branch\":\"master\",\"ci_config_path\":null,\"homepage\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service\",\"url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"ssh_url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"http_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service.git\"},\"commits\":[],\"total_commits_count\":0,\"repository\":{\"name\":\"devops-service\",\"url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"description\":\"\",\"homepage\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service\",\"git_http_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service.git\",\"git_ssh_url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"visibility_level\":0}}"
 
         def requestEntity = createEntity(body)
@@ -261,10 +310,49 @@ class GitlabWebHookControllerSpec extends Specification {
         devopsGitlabCommitMapper.selectOne(validation) != null
     }
 
+    def "forward gitops webhook"() {
+        given: "准备数据"
+        String body = "{\"object_kind\":\"push\",\"event_name\":\"push\",\"before\":\"0000000000000000000000000000000000000000\",\"after\":\"c10c5ec88b6e1a8a48cf213dd88058b3e9741e8b\",\"ref\":\"refs/heads/feature-C7NCD-1756\",\"checkout_sha\":\"c10c5ec88b6e1a8a48cf213dd88058b3e9741e8b\",\"message\":null,\"user_id\":10256,\"user_name\":\"郑膜坊\",\"user_username\":\"20610\",\"user_email\":\"mofang.zheng@hand-china.com\",\"user_avatar\":\"https://code.choerodon.com.cn/uploads/-/system/user/avatar/10256/avatar.png\",\"project_id\":237,\"project\":{\"id\":237,\"name\":\"devops-service\",\"description\":\"\",\"web_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service\",\"avatar_url\":null,\"git_ssh_url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"git_http_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service.git\",\"namespace\":\"Choerodon-Choerodon持续交付\",\"visibility_level\":0,\"path_with_namespace\":\"choerodon-c7ncd/devops-service\",\"default_branch\":\"master\",\"ci_config_path\":null,\"homepage\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service\",\"url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"ssh_url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"http_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service.git\"},\"commits\":[{\"id\":\"c10c5ec88b6e1a8a48cf213dd88058b3e9741e8b\",\"message\":\"[IMP] 多容器返回在同一个Pod中的时候将不可用的容器排列在靠前\\n\",\"timestamp\":\"2018-12-25T10:33:28+08:00\",\"url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service/commit/c10c5ec88b6e1a8a48cf213dd88058b3e9741e8b\",\"author\":{\"name\":\"zmf\",\"email\":\"1984654893@qq.com\"},\"added\":[],\"modified\":[\"src/main/java/io/choerodon/devops/app/service/impl/DevopsEnvPodServiceImpl.java\",\"src/test/groovy/io/choerodon/devops/api/controller/v1/DevopsEnvPodControllerSpec.groovy\"],\"removed\":[]}],\"total_commits_count\":1,\"repository\":{\"name\":\"devops-service\",\"url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"description\":\"\",\"homepage\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service\",\"git_http_url\":\"https://code.choerodon.com.cn/choerodon-c7ncd/devops-service.git\",\"git_ssh_url\":\"git@code.choerodon.com.cn:choerodon-c7ncd/devops-service.git\",\"visibility_level\":0}  }"
+        def url = BASE_URL + "/git_ops"
+
+        def request = createEntity(body)
+        def validation = new DevopsEnvCommitDO()
+        validation.setCommitSha("c10c5ec88b6e1a8a48cf213dd88058b3e9741e8b")
+        devopsGitService.initMockService(mockSagaClient)
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(url, request, Object)
+
+        then: "校验结果"
+        entity.getStatusCode().is2xxSuccessful()
+        devopsEnvCommitMapper.selectOne(validation) != null
+    }
+
+
+
+    // 查询自动化测试应用实例状态
+    def "get test status"() {
+        given: "准备数据"
+        def url = BASE_URL + "/get_test_status"
+        Map<Long, List<String>> request = new HashMap<>()
+        request.put(1L, Arrays.asList("name", "test"))
+
+        when: "调用方法"
+        def entity = restTemplate.postForEntity(url, request, Object)
+
+        then: "校验结果"
+        entity.getStatusCode().is2xxSuccessful()
+    }
+
+    // 清理现场
+    def "clean stage"() {
+        given: "设置标志位"
+        isToClean = true
+    }
+
     private HttpEntity<Object> createEntity(Object body) {
         HttpHeaders headers = new HttpHeaders()
         headers.add(HttpHeaders.CONTENT_TYPE, "application/json")
-        headers.add("X-Gitlab-Event", "Pipeline Hook")
         headers.add("X-Gitlab-Token", token)
 
         return new HttpEntity<Object>(body, headers)

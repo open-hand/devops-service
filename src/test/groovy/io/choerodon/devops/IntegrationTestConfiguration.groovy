@@ -146,6 +146,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         http.csrf().ignoringAntMatchers("/h2-console/**")
                 .and()
                 .headers().frameOptions().disable()
+        http.csrf().disable()
     }
 }
 

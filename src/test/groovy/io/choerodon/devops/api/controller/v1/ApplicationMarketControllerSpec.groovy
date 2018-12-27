@@ -1,8 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.core.domain.Page
-import io.choerodon.core.exception.CommonException
-import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
 import io.choerodon.devops.IntegrationTestConfiguration
@@ -34,8 +32,6 @@ import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
-
-import javax.servlet.http.HttpServletResponse
 
 import static org.mockito.Matchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
