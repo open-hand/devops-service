@@ -5,9 +5,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
@@ -26,6 +23,8 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileRelationsService<C7nHelmRelease> {
@@ -83,7 +82,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
         //删除instance,和文件对象关联关系
         beforeC7nRelease.forEach(releaseName -> {
             ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
-            if(applicationInstanceE!=null) {
+            if (applicationInstanceE != null) {
                 DevopsEnvCommandE devopsEnvCommandE;
                 if (applicationInstanceE.getCommandId() == null) {
                     devopsEnvCommandE = devopsEnvCommandRepository.queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
@@ -91,7 +90,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     devopsEnvCommandE = devopsEnvCommandRepository
                             .query(applicationInstanceE.getCommandId());
                 }
-                if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                if (devopsEnvCommandE == null || !devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
                     DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                     devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
                     devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
