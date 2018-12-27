@@ -91,7 +91,7 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     devopsEnvCommandE = devopsEnvCommandRepository
                             .query(applicationInstanceE.getCommandId());
                 }
-                if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                if (devopsEnvCommandE == null || !devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
                     DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                     devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
                     devopsEnvCommandE1.setObject(ObjectType.INSTANCE.getType());
