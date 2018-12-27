@@ -30,6 +30,8 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by n!Ck
@@ -93,19 +95,21 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         //删除secret,删除文件对象关联关系
         beforSecret.forEach(secretName -> {
             DevopsSecretE devopsSecretE = devopsSecretRepository.selectByEnvIdAndName(envId, secretName);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
-            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
-                DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE1.setObject(ObjectType.SECRET.getType());
-                devopsEnvCommandE1.setCreatedBy(userId);
-                devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                devopsEnvCommandE1.setObjectId(devopsSecretE.getId());
-                DevopsSecretE devopsSecretE1 = devopsSecretRepository.queryBySecretId(devopsSecretE.getId());
-                devopsSecretE1.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                devopsSecretRepository.update(devopsSecretE);
+            if (devopsSecretE != null) {
+                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
+                if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
+                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                    devopsEnvCommandE1.setObject(ObjectType.SECRET.getType());
+                    devopsEnvCommandE1.setCreatedBy(userId);
+                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
+                    devopsEnvCommandE1.setObjectId(devopsSecretE.getId());
+                    DevopsSecretE devopsSecretE1 = devopsSecretRepository.queryBySecretId(devopsSecretE.getId());
+                    devopsSecretE1.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
+                    devopsSecretRepository.update(devopsSecretE);
+                }
+                devopsSecretService.deleteSecretByGitOps(devopsSecretE.getId());
             }
-            devopsSecretService.deleteSecretByGitOps(devopsSecretE.getId());
             devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsSecretE.getId(), SECRET);
         });
 
