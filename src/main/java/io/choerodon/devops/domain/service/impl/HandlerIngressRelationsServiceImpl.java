@@ -6,16 +6,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1beta1HTTPIngressPath;
-import io.kubernetes.client.models.V1beta1Ingress;
-import io.kubernetes.client.models.V1beta1IngressBackend;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsIngressPathDTO;
@@ -34,6 +24,7 @@ import io.choerodon.devops.infra.common.util.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
 import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.models.V1beta1IngressBackend;
