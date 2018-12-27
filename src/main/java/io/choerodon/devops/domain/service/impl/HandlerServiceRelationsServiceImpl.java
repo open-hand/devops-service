@@ -7,11 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.kubernetes.client.models.V1Service;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsServiceReqDTO;
 import io.choerodon.devops.api.validator.DevopsServiceValidator;
@@ -26,6 +21,10 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.kubernetes.client.models.V1Service;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRelationsService<V1Service> {
@@ -83,7 +82,7 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         beforeService.forEach(serviceName -> {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(serviceName, envId);
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsServiceE.getCommandId());
-            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
+            if (devopsEnvCommandE == null || (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType()))) {
                 DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
                 devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
                 devopsEnvCommandE1.setCreatedBy(userId);
