@@ -41,7 +41,10 @@ public class DependencyInjectUtil {
      * @param attributeName the name of the field
      */
     public static void restoreDefaultDependency(Object instance, String attributeName) {
-        Class instanceClass = instance.getClass();
+        Class<?> instanceClass = instance.getClass();
+        if (instanceClass.getTypeName().contains(SPRING_PROXY_CLASS)) {
+            instanceClass = instanceClass.getSuperclass();
+        }
         try {
             Field field = instanceClass.getDeclaredField(attributeName);
             Object defaultDependency = ApplicationContextHelper.getSpringFactory().getBean(field.getType());

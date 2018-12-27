@@ -36,5 +36,6 @@ rebel.xml
 ### liquibase
 choerodon_temp/*
 
-### native files
+### native temp files
 deployfile
+gitops
