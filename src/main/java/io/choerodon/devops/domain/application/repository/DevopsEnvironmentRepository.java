@@ -17,8 +17,6 @@ public interface DevopsEnvironmentRepository {
 
     DevopsEnvironmentE update(DevopsEnvironmentE devopsEnvironmentE);
 
-    void checkName(DevopsEnvironmentE devopsEnvironmentE);
-
     void checkCode(DevopsEnvironmentE devopsEnvironmentE);
 
     List<DevopsEnvironmentE> queryByProject(Long projectId);

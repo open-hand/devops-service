@@ -65,16 +65,6 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     }
 
     @Override
-    public void checkName(DevopsEnvironmentE devopsEnvironmentE) {
-        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
-        devopsEnvironmentDO.setClusterId(devopsEnvironmentE.getClusterE().getId());
-        devopsEnvironmentDO.setName(devopsEnvironmentE.getName());
-        if (devopsEnvironmentMapper.selectOne(devopsEnvironmentDO) != null) {
-            throw new CommonException("error.name.exist");
-        }
-    }
-
-    @Override
     public void checkCode(DevopsEnvironmentE devopsEnvironmentE) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
         devopsEnvironmentDO.setClusterId(devopsEnvironmentE.getClusterE().getId());

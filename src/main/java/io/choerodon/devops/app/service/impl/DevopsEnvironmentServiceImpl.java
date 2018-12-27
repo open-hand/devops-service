@@ -123,7 +123,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         DevopsEnvironmentE devopsEnvironmentE = ConvertHelper.convert(devopsEnviromentDTO, DevopsEnvironmentE.class);
         devopsEnvironmentE.initProjectE(projectId);
         checkCode(projectId, devopsEnviromentDTO.getClusterId(), devopsEnviromentDTO.getCode());
-        checkName(projectId, devopsEnviromentDTO.getClusterId(), devopsEnviromentDTO.getName());
         devopsEnvironmentE.initActive(true);
         devopsEnvironmentE.initConnect(false);
         devopsEnvironmentE.initSynchro(false);
@@ -328,9 +327,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Long clusterId = devopsEnviromentRepository.queryById(devopsEnvironmentUpdateDTO.getId()).getClusterE().getId();
         devopsEnvironmentE.initDevopsClusterEById(clusterId);
         devopsEnvironmentE.initProjectE(projectId);
-        if (checkNameChange(devopsEnvironmentUpdateDTO)) {
-            devopsEnviromentRepository.checkName(devopsEnvironmentE);
-        }
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
         DevopsEnvironmentE beforeDevopsEnvironmentE = devopsEnviromentRepository
@@ -426,15 +422,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     }
 
     @Override
-    public void checkName(Long projectId, Long clusterId, String name) {
-        DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
-        devopsEnvironmentE.initProjectE(projectId);
-        devopsEnvironmentE.initDevopsClusterEById(clusterId);
-        devopsEnvironmentE.setName(name);
-        devopsEnviromentRepository.checkName(devopsEnvironmentE);
-    }
-
-    @Override
     public void checkCode(Long projectId, Long clusterId, String code) {
         DevopsEnvironmentE devopsEnvironmentE = DevopsEnvironmentFactory.createDevopsEnvironmentE();
         DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
@@ -449,12 +436,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             });
         }
         devopsEnviromentRepository.checkCode(devopsEnvironmentE);
-    }
-
-    private Boolean checkNameChange(DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository
-                .queryById(devopsEnvironmentUpdateDTO.getId());
-        return !devopsEnvironmentE.getName().equals(devopsEnvironmentUpdateDTO.getName());
     }
 
     @Override

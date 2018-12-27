@@ -481,15 +481,6 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvironmentMapper.selectByPrimaryKey(1L).getSequence() == 2L
     }
 
-    def "CheckName"() {
-        when: '创建环境校验名称是否存在'
-        def exception = restTemplate.getForEntity("/v1/projects/1/envs/check_name?cluster_id=1&name=testCheckName", ExceptionResponse.class)
-
-        then: '返回值'
-        exception.statusCode.is2xxSuccessful()
-        notThrown(CommonException)
-    }
-
     def "CheckCode"() {
         when: '创建环境校验编码是否存在'
         def exception = restTemplate.getForEntity("/v1/projects/1/envs/check_code?cluster_id=1&code=testCheckCode", ExceptionResponse.class)
