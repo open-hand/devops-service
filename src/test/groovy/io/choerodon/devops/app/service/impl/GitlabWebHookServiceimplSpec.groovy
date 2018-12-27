@@ -955,7 +955,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
 //    }
 
 
-    def cleanupSpec() {
+    def "cleanupData"() {
         given:
         // 删除appInstance
         List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
