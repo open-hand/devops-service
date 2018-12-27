@@ -978,32 +978,32 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                                             envId, ResourceType.REPLICASET.getType(), devopsEnvResourceE.getName()));
                 }
                 break;
-            case SERVICE:
-                List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
-                if (!devopsServiceVS.isEmpty()) {
-                    List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
-                    devopsServiceVS.stream()
-                            .filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName()))
-                            .forEach(devopsServiceV -> {
-                                devopsServiceRepository.delete(devopsServiceV.getId());
-                                devopsEnvResourceRepository.deleteByEnvIdAndKindAndName(
-                                        envId, ResourceType.SERVICE.getType(), devopsServiceV.getName());
-                            });
-                }
-                break;
-            case INGRESS:
-                List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
-                if (!devopsIngressES.isEmpty()) {
-                    List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
-                    devopsIngressES.stream()
-                            .filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName()))
-                            .forEach(devopsIngressE -> {
-                                devopsIngressRepository.deleteIngress(devopsIngressE.getId());
-                                devopsEnvResourceRepository.deleteByEnvIdAndKindAndName(
-                                        envId, ResourceType.INGRESS.getType(), devopsIngressE.getName());
-                            });
-                }
-                break;
+//            case SERVICE:
+//                List<DevopsServiceV> devopsServiceVS = devopsServiceRepository.listDevopsService(envId);
+//                if (!devopsServiceVS.isEmpty()) {
+//                    List<String> seriviceNames = Arrays.asList(resourceSyncPayload.getResources());
+//                    devopsServiceVS.stream()
+//                            .filter(devopsServiceV -> !seriviceNames.contains(devopsServiceV.getName()))
+//                            .forEach(devopsServiceV -> {
+//                                devopsServiceRepository.delete(devopsServiceV.getId());
+//                                devopsEnvResourceRepository.deleteByEnvIdAndKindAndName(
+//                                        envId, ResourceType.SERVICE.getType(), devopsServiceV.getName());
+//                            });
+//                }
+//                break;
+//            case INGRESS:
+//                List<DevopsIngressE> devopsIngressES = devopsIngressRepository.listByEnvId(envId);
+//                if (!devopsIngressES.isEmpty()) {
+//                    List<String> ingressNames = Arrays.asList(resourceSyncPayload.getResources());
+//                    devopsIngressES.stream()
+//                            .filter(devopsIngressE -> !ingressNames.contains(devopsIngressE.getName()))
+//                            .forEach(devopsIngressE -> {
+//                                devopsIngressRepository.deleteIngress(devopsIngressE.getId());
+//                                devopsEnvResourceRepository.deleteByEnvIdAndKindAndName(
+//                                        envId, ResourceType.INGRESS.getType(), devopsIngressE.getName());
+//                            });
+//                }
+//                break;
             default:
                 break;
         }
