@@ -1,5 +1,6 @@
 package io.choerodon.devops.app.service.impl
 
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.RegisterOrganizationDTO
 import io.choerodon.devops.domain.application.event.GitlabUserEvent
@@ -50,7 +51,7 @@ class OrganizationServiceImplSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setup() {
-        gitlabRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabRepository,"gitlabServiceClient",gitlabServiceClient)
         gitlabUserRepository.initMockService(gitlabServiceClient)
 
         GroupDO groupDO = new GroupDO()

@@ -150,9 +150,9 @@ class IssueControllerSpec extends Specification {
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-        gitlabRepository.initMockService(gitlabServiceClient)
-        gitlabProjectRepository.initMockService(gitlabServiceClient)
-        gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
         devopsGitRepository.initGitlabServiceClient(gitlabServiceClient)
 
         ProjectDO projectDO = new ProjectDO()

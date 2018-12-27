@@ -10,14 +10,6 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.env.YamlPropertySourceLoader;
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -48,6 +40,13 @@ import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.env.YamlPropertySourceLoader;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -459,8 +458,19 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
     @Override
     public void operationPodCount(String deploymentName, Long envId, Long count) {
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        //校验用户是否有环境的权限
+        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(envId);
+
         deployService.operatePodCount(deploymentName, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId(), count);
+    }
+
+    private DevopsEnvironmentE checkEnvPermission(Long envId) {
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                envId);
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                .queryById(envId);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        return devopsEnvironmentE;
     }
 
 
@@ -682,14 +692,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public ApplicationInstanceDTO createOrUpdate(ApplicationDeployDTO applicationDeployDTO) {
 
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                applicationDeployDTO.getEnvironmentId());
-
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(applicationDeployDTO.getEnvironmentId());
-
-        //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(applicationDeployDTO.getEnvironmentId());
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -883,13 +886,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                instanceE.getDevopsEnvironmentE().getId());
-
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(instanceE.getDevopsEnvironmentE().getId());
-
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
         if (!instanceE.getStatus().equals(InstanceStatus.RUNNING.getStatus())) {
             throw new CommonException("error.instance.notRunning");
         }
@@ -913,13 +910,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                instanceE.getDevopsEnvironmentE().getId());
-
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(instanceE.getDevopsEnvironmentE().getId());
-
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
         if (!instanceE.getStatus().equals(InstanceStatus.STOPPED.getStatus())) {
             throw new CommonException("error.instance.notStop");
         }
@@ -966,14 +957,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceDelete(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                instanceE.getDevopsEnvironmentE().getId());
-
-        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                .queryById(instanceE.getDevopsEnvironmentE().getId());
-
-        //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(instanceE.getDevopsEnvironmentE().getId());
 
         DevopsEnvCommandE devopsEnvCommandE;
         if (instanceE.getCommandId() == null) {

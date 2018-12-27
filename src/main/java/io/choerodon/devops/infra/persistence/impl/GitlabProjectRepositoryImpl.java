@@ -6,15 +6,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import feign.FeignException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.*;
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/9.
@@ -167,8 +166,4 @@ public class GitlabProjectRepositoryImpl implements GitlabProjectRepository {
         }
     }
 
-    @Override
-    public void initMockService(GitlabServiceClient gitlabServiceClient) {
-        this.gitlabServiceClient = gitlabServiceClient;
-    }
 }

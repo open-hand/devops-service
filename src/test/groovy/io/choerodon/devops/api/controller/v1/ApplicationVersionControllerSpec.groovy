@@ -11,6 +11,7 @@ import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.*
 import org.mockito.Mockito
@@ -61,6 +62,10 @@ class ApplicationVersionControllerSpec extends Specification {
     private ApplicationInstanceMapper applicationInstanceMapper
     @Autowired
     private ApplicationVersionValueMapper applicationVersionValueMapper
+    @Autowired
+    private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper
+    @Autowired
+    private DevopsGitlabCommitMapper devopsGitlabCommitMapper
 
     @Autowired
     private IamRepository iamRepository
@@ -83,6 +88,10 @@ class ApplicationVersionControllerSpec extends Specification {
     ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
     @Shared
     ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
+    @Shared
+    DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO()
+    @Shared
+    DevopsGitlabCommitDO devopsGitlabCommitDO = new DevopsGitlabCommitDO()
     @Shared
     ApplicationDO applicationDO = new ApplicationDO()
 
@@ -117,6 +126,13 @@ class ApplicationVersionControllerSpec extends Specification {
         page.setContent(list)
         ResponseEntity<Page<ProjectWithRoleDTO>> responseEntity2 = new ResponseEntity<>(page, HttpStatus.OK)
         Mockito.when(iamServiceClient.listProjectWithRole(anyLong(), anyInt(), anyInt())).thenReturn(responseEntity2)
+        List<UserDO> userDOList = new ArrayList<>()
+        UserDO userDO1 = new UserDO()
+        userDO1.setLoginName("loginName")
+        userDO1.setRealName("realName")
+        userDOList.add(userDO1)
+        ResponseEntity<List<UserDO>> responseEntity3 = new ResponseEntity<>(userDOList, HttpStatus.OK)
+        Mockito.doReturn(responseEntity3).when(iamServiceClient).listUsersByIds(1L)
     }
 
     def setupSpec() {
@@ -157,6 +173,7 @@ class ApplicationVersionControllerSpec extends Specification {
         applicationVersionDO.setId(init_id)
         applicationVersionDO.setValueId(1L)
         applicationVersionDO.setIsPublish(1)
+        applicationVersionDO.setCommit("test")
         applicationVersionDO.setAppId(init_id)
         applicationVersionDO.setVersion("0.1.0-dev.20180521111826")
 
@@ -165,6 +182,17 @@ class ApplicationVersionControllerSpec extends Specification {
 
         applicationVersionValueDO.setId(1L)
         applicationVersionValueDO.setValue("test-value")
+
+        devopsGitlabPipelineDO.setId(init_id)
+        devopsGitlabPipelineDO.setAppId(init_id)
+        devopsGitlabPipelineDO.setCommitId(init_id)
+        devopsGitlabPipelineDO.setPipelineId(init_id)
+
+        devopsGitlabCommitDO.setAppId(init_id)
+        devopsGitlabCommitDO.setId(init_id)
+        devopsGitlabCommitDO.setUserId(init_id)
+        devopsGitlabCommitDO.setRef("0.1.0-dev.20180521111826")
+        devopsGitlabCommitDO.setCommitSha("test")
     }
 
     // 分页查询应用版本
@@ -177,6 +205,8 @@ class ApplicationVersionControllerSpec extends Specification {
         appUserPermissionMapper.insert(appUserPermissionDO)
         devopsEnvCommandMapper.insert(devopsEnvCommandDO)
         applicationVersionValueMapper.insert(applicationVersionValueDO)
+        devopsGitlabPipelineMapper.insert(devopsGitlabPipelineDO)
+        devopsGitlabCommitMapper.insert(devopsGitlabCommitDO)
 
         when: '分页查询应用版本'
         def page = restTemplate.postForObject(mapping + "/list_by_options?page=0&size=0&appId={app_id}", searchParam, Page.class, project_id, init_id)
@@ -275,6 +305,27 @@ class ApplicationVersionControllerSpec extends Specification {
         ((LinkedHashMap)dto.getBody().get(0)).get("version") == applicationVersionDO.getVersion()
     }
 
+    def "getAppversionByBranch"() {
+
+         when:'根据分支名查询版本'
+         def list = restTemplate.getForObject(mapping + "/list_by_branch?appId=1&branch=0.1.0-dev.20180521111826", List.class, 1L)
+
+         then: '校验返回值'
+         list.size() == 1
+    }
+
+    def "queryByPipeline"() {
+
+        when: '根据pipeline和分支名查询版本'
+        def result = restTemplate.getForObject(mapping + "/query_by_pipeline?pipelineId=1&branch=0.1.0-dev.20180521111826", Boolean.class, 1L)
+
+
+        then: '校验返回值'
+        result == true
+
+
+    }
+
     // 清除测试数据
     def "cleanupData"() {
         given:
@@ -327,5 +378,22 @@ class ApplicationVersionControllerSpec extends Specification {
                 devopsEnvCommandMapper.delete(e)
             }
         }
+
+        //删除gitlabPipeline
+        List<DevopsGitlabPipelineDO> list7 = devopsGitlabPipelineMapper.selectAll()
+        if(list7!=null&&!list7.isEmpty()) {
+            for(DevopsGitlabPipelineDO e:list7) {
+                devopsGitlabPipelineMapper.delete(e)
+            }
+        }
+
+        //删除gitlabCommit
+        List<DevopsGitlabCommitDO> list8 = devopsGitlabCommitMapper.selectAll()
+        if(list8 !=null&&!list8.isEmpty()) {
+            for(DevopsGitlabCommitDO e:list8) {
+                devopsGitlabCommitMapper.delete(e)
+            }
+        }
+
     }
 }

@@ -14,11 +14,13 @@ import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.JsonYamlConversionUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
+import io.choerodon.devops.infra.common.util.enums.InstanceStatus
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
 import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO
@@ -194,6 +196,7 @@ class ApplicationInstanceControllerSpec extends Specification {
         devopsEnvironmentDO.setClusterId(1L)
         devopsEnvironmentDO.setProjectId(1L)
         devopsEnvironmentDO.setName("envName")
+        devopsEnvironmentDO.setEnvIdRsa("test")
         devopsEnvironmentDO.setCode("envCode")
         devopsEnvironmentDO.setGitlabEnvProjectId(1L)
 
@@ -229,21 +232,60 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         // decv
         devopsEnvCommandValueDO.setId(1L)
-        devopsEnvCommandValueDO.setValue("env:\n" +
+        devopsEnvCommandValueDO.setValue("---\n" +
+                "image:\n" +
+                "  tag: \"0.1.0-dev.20180519090059\"\n" +
+                "  repository: \"registry.saas.hand-china.com/hand-rdc-choerodon/event-store-service\"\n" +
+                "  pullPolicy: \"Always\"\n" +
+                "replicaCount: 1\n" +
+                "service:\n" +
+                "  port: 9010\n" +
+                "  enable: false\n" +
+                "  type: \"ClusterIP\"\n" +
+                "resources:\n" +
+                "  requests:\n" +
+                "    memory: \"2Gi\"\n" +
+                "  limits:\n" +
+                "    memory: \"3Gi\"\n" +
+                "metrics:\n" +
+                "  path: \"/prometheus\"\n" +
+                "  label: \"java-spring\"\n" +
+                "env:\n" +
                 "  open:\n" +
-                "    PRO_API_HOST: api.example.com.cn1\n" +
+                "    SPRING_CLOUD_CONFIG_URI: \"http://config-server.choerodon-devops-prod:8010/\"\n" +
+                "    SPRING_CLOUD_STREAM_DEFAULT_BINDER: \"kafka\"\n" +
+                "    SPRING_CLOUD_CONFIG_ENABLED: true\n" +
+                "    SPRING_DATASOURCE_PASSWORD: \"handhand\"\n" +
+                "    SPRING_DATASOURCE_URL: \"jdbc:mysql://hapcloud-mysql.db:3306/event_store_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\"\n" +
+                "    SPRING_DATASOURCE_USERNAME: \"root\"\n" +
+                "    SPRING_KAFKA_BOOTSTRAP_SERVERS: \"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\"\n" +
+                "    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: \"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\"\n" +
+                "    SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: \"zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181\"\n" +
+                "    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: \"http://register-server.choerodon-devops-prod:8000/eureka/\"\n" +
+                "logs:\n" +
+                "  parser: \"java-spring\"\n" +
                 "preJob:\n" +
                 "  preConfig:\n" +
                 "    mysql:\n" +
-                "      username: root\n" +
-                "      host: 192.168.12.156\n" +
-                "      password: handhand\n" +
-                "      dbname: demo_service")
-
+                "      database: \"manager_service\"\n" +
+                "      password: \"handhand\"\n" +
+                "      port: 3306\n" +
+                "      host: \"hapcloud-mysql.db\"\n" +
+                "      username: \"root\"\n" +
+                "  preInitDB:\n" +
+                "    mysql:\n" +
+                "      database: \"event_store_service\"\n" +
+                "      password: \"handhand\"\n" +
+                "      port: 3306\n" +
+                "      host: \"hapcloud-mysql.db\"\n" +
+                "      username: \"root\"\n" +
+                "deployment:\n" +
+                "  managementPort: 9011")
         // da
         applicationDO.setId(1L)
         applicationDO.setProjectId(1L)
         applicationDO.setName("appName")
+        applicationDO.setCode("appCode")
         applicationDO.setGitlabProjectId(1)
 
         // dai
@@ -258,7 +300,55 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         // davv
         applicationVersionValueDO.setId(1L)
-        applicationVersionValueDO.setValue("{\"image\":{\"tag\":\"0.1.0-dev.20180519090059\",\"repository\":\"registry.saas.hand-china.com/hand-rdc-choerodon/event-store-service\",\"pullPolicy\":\"Always\"},\"replicaCount\":1,\"service\":{\"port\":9010,\"enable\":false,\"type\":\"ClusterIP\"},\"resources\":{\"requests\":{\"memory\":\"2Gi\"},\"limits\":{\"memory\":\"3Gi\"}},\"metrics\":{\"path\":\"/prometheus\",\"label\":\"java-spring\"},\"env\":{\"open\":{\"SPRING_CLOUD_CONFIG_URI\":\"http://config-server.choerodon-devops-prod:8010/\",\"SPRING_CLOUD_STREAM_DEFAULT_BINDER\":\"kafka\",\"SPRING_CLOUD_CONFIG_ENABLED\":true,\"SPRING_DATASOURCE_PASSWORD\":\"handhand\",\"SPRING_DATASOURCE_URL\":\"jdbc:mysql://hapcloud-mysql.db:3306/event_store_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\",\"SPRING_DATASOURCE_USERNAME\":\"root\",\"SPRING_KAFKA_BOOTSTRAP_SERVERS\":\"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\",\"SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS\":\"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\",\"SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES\":\"zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181\",\"EUREKA_CLIENT_SERVICEURL_DEFAULTZONE\":\"http://register-server.choerodon-devops-prod:8000/eureka/\"}},\"logs\":{\"parser\":\"java-spring\"},\"preJob\":{\"preConfig\":{\"mysql\":{\"database\":\"manager_service\",\"password\":\"handhand\",\"port\":3306,\"host\":\"hapcloud-mysql.db\",\"username\":\"root\"}},\"preInitDB\":{\"mysql\":{\"database\":\"event_store_service\",\"password\":\"handhand\",\"port\":3306,\"host\":\"hapcloud-mysql.db\",\"username\":\"root\"}}},\"deployment\":{\"managementPort\":9011}}")
+        applicationVersionValueDO.setValue("---\n" +
+                "image:\n" +
+                "  tag: \"0.1.0-dev.20180519090059\"\n" +
+                "  repository: \"registry.saas.hand-china.com/hand-rdc-choerodon/event-store-service\"\n" +
+                "  pullPolicy: \"Always\"\n" +
+                "replicaCount: 1\n" +
+                "service:\n" +
+                "  port: 9010\n" +
+                "  enable: false\n" +
+                "  type: \"ClusterIP\"\n" +
+                "resources:\n" +
+                "  requests:\n" +
+                "    memory: \"2Gi\"\n" +
+                "  limits:\n" +
+                "    memory: \"3Gi\"\n" +
+                "metrics:\n" +
+                "  path: \"/prometheus\"\n" +
+                "  label: \"java-spring\"\n" +
+                "env:\n" +
+                "  open:\n" +
+                "    SPRING_CLOUD_CONFIG_URI: \"http://config-server.choerodon-devops-prod:8010/\"\n" +
+                "    SPRING_CLOUD_STREAM_DEFAULT_BINDER: \"kafka\"\n" +
+                "    SPRING_CLOUD_CONFIG_ENABLED: true\n" +
+                "    SPRING_DATASOURCE_PASSWORD: \"handhand\"\n" +
+                "    SPRING_DATASOURCE_URL: \"jdbc:mysql://hapcloud-mysql.db:3306/event_store_service?useUnicode=true&characterEncoding=utf-8&useSSL=false\"\n" +
+                "    SPRING_DATASOURCE_USERNAME: \"root\"\n" +
+                "    SPRING_KAFKA_BOOTSTRAP_SERVERS: \"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\"\n" +
+                "    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: \"kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092\"\n" +
+                "    SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: \"zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181\"\n" +
+                "    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: \"http://register-server.choerodon-devops-prod:8000/eureka/\"\n" +
+                "logs:\n" +
+                "  parser: \"java-spring\"\n" +
+                "preJob:\n" +
+                "  preConfig:\n" +
+                "    mysql:\n" +
+                "      database: \"manager_service\"\n" +
+                "      password: \"handhand\"\n" +
+                "      port: 3306\n" +
+                "      host: \"hapcloud-mysql.db\"\n" +
+                "      username: \"root\"\n" +
+                "  preInitDB:\n" +
+                "    mysql:\n" +
+                "      database: \"event_store_service\"\n" +
+                "      password: \"handhand\"\n" +
+                "      port: 3306\n" +
+                "      host: \"hapcloud-mysql.db\"\n" +
+                "      username: \"root\"\n" +
+                "deployment:\n" +
+                "  managementPort: 9011")
 
         // deup
         devopsEnvUserPermissionDO.setIamUserId(1L)
@@ -365,9 +455,9 @@ class ApplicationInstanceControllerSpec extends Specification {
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-        gitlabRepository.initMockService(gitlabServiceClient)
-        gitlabProjectRepository.initMockService(gitlabServiceClient)
-        gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabRepository,"gitlabServiceClient",gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabProjectRepository,"gitlabServiceClient",gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository,"gitlabServiceClient",gitlabServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("testProject")
@@ -433,6 +523,13 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         ResponseEntity responseEntity6 = new ResponseEntity<>(HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteFile(anyInt(), anyString(), anyString(), anyInt())).thenReturn(responseEntity6)
+
+        RepositoryFile repositoryFile = new RepositoryFile();
+        repositoryFile.setFilePath("test")
+        ResponseEntity<RepositoryFile> responseEntity8 = new ResponseEntity<>(repositoryFile,HttpStatus.OK)
+
+        Mockito.when(gitlabServiceClient.createFile(anyInt(), anyString(), anyString(),anyString(), anyInt())).thenReturn(responseEntity8)
+
 
         List<UserDO> userDOList = new ArrayList<>()
         UserDO userDO1 = new UserDO()
@@ -511,30 +608,43 @@ class ApplicationInstanceControllerSpec extends Specification {
         list.get(0)["applicationName"] == "appName"
     }
 
-//    技术问题暂时不测试该方法
-//    def "QueryValue"() {
-//        when: '获取部署 Value'
-//        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/value", ReplaceResult.class)
-//
-//        then:
-//        result != null
-//    }
-//    技术问题暂时不测试该方法
-//    def "QueryUpgradeValue"() {
-//    }
-//
-//    技术问题暂时不测试该方法
-//    def "QueryValues"() {
-//        when: '查询value列表'
-//        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", ReplaceResult.class)
-//
-//        then: '校验返回值'
-//        result != null
-//    }
-//
-//    技术问题暂时不测试该方法
-//    def "PreviewValues"() {
-//    }
+    def "QueryValue"() {
+        when: '获取部署 Value'
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/value", ReplaceResult.class)
+
+        then:
+        result.getDeltaYaml().equals("")
+    }
+
+
+    def "QueryUpgradeValue"() {
+        when: '获取升级 Value'
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/1/appVersion/1/value", ReplaceResult.class)
+
+        then:
+        result.getDeltaYaml().equals("")
+    }
+
+    def "QueryValues"() {
+        when: '查询value列表'
+        def result = restTemplate.getForObject("/v1/projects/1/app_instances/value?appId=1&envId=1&appVersionId=1", ReplaceResult.class)
+
+        then: '校验返回值'
+        result.getDeltaYaml().equals("")
+    }
+
+    def "PreviewValues"() {
+        given:
+        ReplaceResult replaceResult = new ReplaceResult()
+        replaceResult.setYaml(applicationVersionValueDO.getValue())
+
+        when: '查询value列表'
+        def result = restTemplate.postForObject("/v1/projects/1/app_instances/previewValue?appVersionId=1", replaceResult, ReplaceResult.class)
+
+        then: '校验返回值'
+        result.getDeltaYaml().equals("")
+    }
+
     def "getDeploymentDetailsJsonByInstanceId"() {
         given: "初始化数据库"
         Map<String, Long> map = new HashMap<>(3)
@@ -696,69 +806,6 @@ class ApplicationInstanceControllerSpec extends Specification {
         applicationInstanceMapper.deleteByPrimaryKey(map.get("instanceId"))
     }
 
-    // 获取升级 Value
-    def "queryUpgradeValue"() {
-        given: "准备数据"
-        Long projectId = 1L
-        Long instanceId = applicationInstanceDO.getId()
-        Long versionId = applicationInstanceMapper.selectByPrimaryKey(instanceId).getAppVersionId()
-
-        when: "调用方法,文件读取错误"
-        def entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/appVersion/{appVersionId}/value", ExceptionResponse, projectId, instanceId, versionId)
-
-        then: "校验结果"
-        entity.getBody().getCode() != null
-//
-//
-//        and: "准备值为空的instance"
-//        // decv
-//        DevopsEnvCommandValueDO valueDO = new DevopsEnvCommandValueDO()
-//        valueDO.setValue("")
-//        devopsEnvCommandValueMapper.insert(valueDO)
-//
-//        // cmd
-//        DevopsEnvCommandDO devopsEnvCommandDO1 = new DevopsEnvCommandDO()
-//        devopsEnvCommandDO1.setValueId(valueDO.getId())
-//        devopsEnvCommandDO1.setObjectId(1L)
-//        devopsEnvCommandDO1.setError("error")
-//        devopsEnvCommandDO1.setObject("instance")
-//        devopsEnvCommandDO1.setStatus("operating")
-//        devopsEnvCommandDO1.setObjectVersionId(1L)
-//        devopsEnvCommandDO1.setCommandType("create")
-//        devopsEnvCommandMapper.insert(devopsEnvCommandDO1)
-//
-//        ApplicationInstanceDO applicationInstanceDO1 = new ApplicationInstanceDO()
-//        applicationInstanceDO1.setEnvId(1L)
-//        applicationInstanceDO1.setAppId(1L)
-//        applicationInstanceDO1.setAppVersionId(1L)
-//        applicationInstanceDO1.setStatus("running")
-//        applicationInstanceDO1.setCode("appIns2")
-//        applicationInstanceDO1.setCommandId(devopsEnvCommandDO1.getId())
-//        applicationInstanceDO1.setObjectVersionNumber(1L)
-//        applicationInstanceMapper.insert(applicationInstanceDO1)
-//
-//        when: "调用方法,没有更改值"
-//        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/appVersion/{appVersionId}/value", ReplaceResult, projectId, applicationInstanceDO1.getId(), 1L)
-//
-//        then: "校验结果"
-//        entity.getBody().getYaml() == null
-//        entity.getBody().getDeltaYaml() == null
-//
-//        and: "mock静态方法"
-//        PowerMockito.mockStatic(FileUtil)
-//        PowerMockito.when(FileUtil.replaceNew(anyString())).thenReturn(result)
-//        PowerMockito.when(FileUtil.getFileTotalLine(anyString())).thenReturn(lineNumber)
-//
-//        when: "调用方法"
-//        entity = restTemplate.getForEntity(MAPPING + "/{appInstanceId}/appVersion/{appVersionId}/value", ReplaceResult, projectId, instanceId, versionId)
-//
-//        then: "校验结果"
-//        entity.getStatusCode().is2xxSuccessful()
-//        entity.getBody() != null
-//        entity.getBody().getYaml() != null
-    }
-
-
     def "FormatValue"() {
         given: '初始化replaceResult'
         ReplaceResult result = new ReplaceResult()
@@ -780,39 +827,30 @@ class ApplicationInstanceControllerSpec extends Specification {
         list.isEmpty()
     }
 
-//    技术问题暂时不测试该方法
-//    def "Deploy"() {
-//        given: '初始化applicationDeployDTO'
-//        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO()
-//        applicationDeployDTO.setEnvironmentId(1L)
-//        applicationDeployDTO.setValues("env:\n" +
-//                "  open:\n" +
-//                "    PRO_API_HOST: api.example.com.cn1\n" +
-//                "preJob:\n" +
-//                "  preConfig:\n" +
-//                "    mysql:\n" +
-//                "      username: root\n" +
-//                "      host: 192.168.12.156\n" +
-//                "      password: handhand\n" +
-//                "      dbname: demo_service")
-//        applicationDeployDTO.setAppId(1L)
-//        applicationDeployDTO.setAppVerisonId(1L)
-//        applicationDeployDTO.setType("update")
-//        applicationDeployDTO.setAppInstanceId(1L)
-//        applicationDeployDTO.setIsNotChange(false)
-//
-//        and: 'mock envUtil'
-//        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
-//
-//        and: 'mock gitUtil'
-//        gitUtil.cloneBySsh(_ as String, _ as String) >> null
-//
-//        when: '部署应用'
-//        def dto = restTemplate.postForObject("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO.class)
-//
-//        then: '校验返回值'
-//        dto != null
-//    }
+    //部署实例
+    def "Deploy"() {
+        given: '初始化applicationDeployDTO'
+        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO()
+        applicationDeployDTO.setEnvironmentId(1L)
+        applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
+        applicationDeployDTO.setAppId(1L)
+        applicationDeployDTO.setAppVersionId(1L)
+        applicationDeployDTO.setType("create")
+        applicationDeployDTO.setAppInstanceId(1L)
+        applicationDeployDTO.setIsNotChange(false)
+
+        and: 'mock envUtil'
+        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+
+        and: 'mock gitUtil'
+        gitUtil.cloneBySsh(_ as String, _ as String) >> null
+
+        when: '部署应用'
+        def dto = restTemplate.postForObject("/v1/projects/1/app_instances", applicationDeployDTO, ApplicationDeployDTO.class)
+
+        then: '校验返回值'
+        dto != null
+    }
 
     def "ListByAppVersionId"() {
         when: '查询运行中的实例'
@@ -859,26 +897,16 @@ class ApplicationInstanceControllerSpec extends Specification {
         restTemplate.put("/v1/projects/1/app_instances/1/stop", null)
 
         then:
-        devopsEnvCommandMapper.selectAll().get(1)["commandType"] == "stop"
+        devopsEnvCommandMapper.selectAll().get(2)["commandType"] == "stop"
     }
 
     def "Start"() {
-        given: '初始化已停止的实例'
-        ApplicationInstanceDO applicationInstanceDOStopped = new ApplicationInstanceDO()
-        applicationInstanceDOStopped.setId(2L)
-        applicationInstanceDOStopped.setEnvId(1L)
-        applicationInstanceDOStopped.setStatus("stopped")
-        applicationInstanceMapper.insert(applicationInstanceDOStopped)
-
-        and: '初始化对应的envCommand'
-        DevopsEnvCommandDO devopsEnvCommandDOStart = new DevopsEnvCommandDO()
-        devopsEnvCommandDOStart.setId(3L)
-        devopsEnvCommandDOStart.setObject("instance")
-        devopsEnvCommandDOStart.setObjectId(2L)
-        devopsEnvCommandMapper.insert(devopsEnvCommandDOStart)
+        ApplicationInstanceDO applicationInstanceDO1 = applicationInstanceMapper.selectByPrimaryKey(1L)
+        applicationInstanceDO1.setStatus(InstanceStatus.STOPPED.getStatus())
+        applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDO1)
 
         when: '实例重启'
-        restTemplate.put("/v1/projects/1/app_instances/2/start", null)
+        restTemplate.put("/v1/projects/1/app_instances/1/start", null)
 
         then: '校验返回值'
         devopsEnvCommandMapper.selectAll().get(3)["commandType"] == "restart"
@@ -894,6 +922,18 @@ class ApplicationInstanceControllerSpec extends Specification {
         then: '校验返回值'
         devopsEnvCommandMapper.selectAll().get(4)["commandType"] == "update"
     }
+
+    def "operatePodCount"() {
+        given:
+        envUtil.checkEnvConnection(_ as Long, _ as EnvListener) >> null
+
+        when: '测试pod增加或减少'
+        restTemplate.put("/v1/projects/1/app_instances/operate_pod_count?envId=1&deploymentName=test&count=2", null)
+
+        then: '测试有没异常抛出'
+        notThrown(CommonException)
+    }
+
 
     def "Delete"() {
         given: 'mock envUtil'

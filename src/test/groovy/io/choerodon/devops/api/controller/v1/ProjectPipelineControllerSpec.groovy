@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -31,7 +32,7 @@ class ProjectPipelineControllerSpec extends Specification {
     GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient.class)
 
     def setup() {
-        gitlabProjectRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
 
         ResponseEntity<Boolean> responseEntity = new ResponseEntity<>(true, HttpStatus.OK)
         Mockito.doReturn(responseEntity).when(gitlabServiceClient).retry(1, 1, 1)

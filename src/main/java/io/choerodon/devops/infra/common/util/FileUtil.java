@@ -1,5 +1,6 @@
 package io.choerodon.devops.infra.common.util;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -11,7 +12,6 @@ import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -21,6 +21,11 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLMapper;
 import com.google.gson.Gson;
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.KeyPair;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.valueobject.HighlightMarker;
+import io.choerodon.devops.domain.application.valueobject.InsertNode;
+import io.choerodon.devops.domain.application.valueobject.ReplaceMarker;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.codearte.props2yaml.Props2YAML;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
@@ -38,19 +43,13 @@ import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
 import org.yaml.snakeyaml.resolver.Resolver;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.valueobject.HighlightMarker;
-import io.choerodon.devops.domain.application.valueobject.InsertNode;
-import io.choerodon.devops.domain.application.valueobject.ReplaceMarker;
-import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
-
 /**
  * Created by younger on 2018/4/13.
  */
 public class FileUtil {
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-    private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
+    private static final String EXEC_PATH = "C:\\project\\devops-service\\src\\main\\docker\\dist\\values_yaml\\values_yaml.exe";
 
 
     private FileUtil() {

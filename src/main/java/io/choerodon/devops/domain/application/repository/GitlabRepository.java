@@ -8,7 +8,6 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
 /**
  * Created by younger on 2018/3/29.
@@ -68,6 +67,4 @@ public interface GitlabRepository {
     void removeMemberFromProject(Integer projectId, Integer userId);
 
     List<GitlabProjectDO> getProjectsByUserId(Integer userId);
-
-    void initMockService(GitlabServiceClient gitlabServiceClient);
 }

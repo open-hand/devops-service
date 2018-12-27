@@ -9,12 +9,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -44,6 +38,11 @@ import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by younger on 2018/4/9.
@@ -96,6 +95,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvironmentValidator devopsEnvironmentValidator;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private GitUtil gitUtil;
     @Autowired
     private SagaClient sagaClient;
     @Autowired
@@ -578,7 +579,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 projectE.getCode(), devopsEnvironmentE.getCode());
 
         File file = new File(path);
-        GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
+        gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);
         }

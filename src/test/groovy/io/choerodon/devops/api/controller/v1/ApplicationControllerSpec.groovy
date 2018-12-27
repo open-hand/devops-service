@@ -149,10 +149,11 @@ class ApplicationControllerSpec extends Specification {
     }
 
     def setup() {
+
         if (isToInit) {
             DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-            gitlabRepository.initMockService(gitlabServiceClient)
-            gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+            DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
+            DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
 
             // 删除app
             applicationMapper.selectAll().forEach{ applicationMapper.delete(it) }

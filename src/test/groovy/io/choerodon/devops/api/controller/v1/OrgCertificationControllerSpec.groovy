@@ -90,7 +90,7 @@ class OrgCertificationControllerSpec extends Specification {
         projectIds.add(1L)
         orgCertificationDTO.setProjects(projectIds)
 
-        when: '组织下创建集群'
+        when: '组织下创建证书'
         restTemplate.postForObject(MAPPING, orgCertificationDTO, Object.class, 1L)
 
         then: '校验返回值'
@@ -107,7 +107,7 @@ class OrgCertificationControllerSpec extends Specification {
         ID = devopsCertificationMapper.selectAll().get(0).getId()
         orgCertificationDTO.setSkipCheckProjectPermission(false)
 
-        when: '更新集群下的项目'
+        when: '更新证书下的项目'
         restTemplate.put(MAPPING + "/" + ID, orgCertificationDTO, 1L)
 
         then: '校验是否更新'
@@ -115,7 +115,7 @@ class OrgCertificationControllerSpec extends Specification {
     }
 
     def "Query"() {
-        when: '查询单个集群信息'
+        when: '查询单个证书信息'
         def dto = restTemplate.getForObject(MAPPING + "/" + ID, OrgCertificationDTO.class, 1L)
 
         then: '校验返回值'
@@ -123,7 +123,7 @@ class OrgCertificationControllerSpec extends Specification {
     }
 
     def "CheckName"() {
-        when: '校验集群名唯一性'
+        when: '校验证书名唯一性'
         def exception = restTemplate.getForEntity(MAPPING + "/check_name?name=uniqueName", ExceptionResponse.class, 1L)
 
         then: '名字不存在不抛出异常'
@@ -156,7 +156,7 @@ class OrgCertificationControllerSpec extends Specification {
         String str = new String("{}")
 
 
-        when: '集群列表查询'
+        when: '证书列表查询'
         def e = restTemplate.postForEntity(MAPPING + "/page_cert?page=0&size=10", str, Page.class, 1L)
 
         then: '校验返回值'
@@ -165,7 +165,7 @@ class OrgCertificationControllerSpec extends Specification {
 
     def "DeleteOrgCert"() {
 
-        when: '删除集群'
+        when: '删除证书'
         restTemplate.delete(MAPPING + "/{certId}", 1L, ID)
 
         then: '校验返回值'

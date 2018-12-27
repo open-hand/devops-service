@@ -5,9 +5,6 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CommitFormRecordDTO;
 import io.choerodon.devops.api.dto.CommitFormUserDTO;
@@ -24,6 +21,8 @@ import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepos
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService {
@@ -98,16 +97,11 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
     @Override
     public DevopsGitlabCommitDTO getCommits(Long projectId, String appIds, Date startDate, Date endDate) {
 
-        Long startTime = System.currentTimeMillis();
-
         List<Long> appIdsMap = gson.fromJson(appIds, new TypeToken<List<Long>>() {
         }.getType());
         if (appIdsMap.isEmpty()) {
             return new DevopsGitlabCommitDTO();
         }
-
-        long endTime1 = System.currentTimeMillis();
-        System.out.println("程序运行时间： " + (endTime1 - startTime) + "ms");
 
         // 查询应用列表下所有commit记录
         List<DevopsGitlabCommitE> devopsGitlabCommitES = devopsGitlabCommitRepository
@@ -116,27 +110,16 @@ public class DevopsGitlabCommitServiceImpl implements DevopsGitlabCommitService 
             return new DevopsGitlabCommitDTO();
         }
 
-        long endTime2 = System.currentTimeMillis();
-        System.out.println("程序运行时间： " + (endTime2 - startTime) + "ms");
-
         // 获得去重后的所有用户信息
         Map<Long, UserE> userMap = getUserDOMap(devopsGitlabCommitES);
 
-        long endTime3 = System.currentTimeMillis();
-        System.out.println("程序运行时间： " + (endTime3 - startTime) + "ms");
-
         // 获取用户分别的commit
         List<CommitFormUserDTO> commitFormUserDTOS = getCommitFormUserDTOList(devopsGitlabCommitES, userMap);
-
-        long endTime4 = System.currentTimeMillis();
-        System.out.println("程序运行时间： " + (endTime4 - startTime) + "ms");
 
         // 获取总的commit(将所有用户的commit_date放入一个数组)，按照时间先后排序
         List<Date> totalCommitsDate = getTotalDates(commitFormUserDTOS);
         Collections.sort(totalCommitsDate);
 
-        long endTime5 = System.currentTimeMillis();
-        System.out.println("程序运行时间： " + (endTime5 - startTime) + "ms");
         return new DevopsGitlabCommitDTO(commitFormUserDTOS, totalCommitsDate);
     }
 
