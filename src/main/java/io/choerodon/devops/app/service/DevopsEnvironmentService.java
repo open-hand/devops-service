@@ -84,14 +84,6 @@ public interface DevopsEnvironmentService {
     DevopsEnvGroupEnvsDTO sort(Long[] environmentIds);
 
     /**
-     * 创建环境校验名称是否存在
-     *
-     * @param projectId 项目id
-     * @param name      应用name
-     */
-    void checkName(Long projectId, Long clusterId, String name);
-
-    /**
      * 创建环境校验编码是否存在
      *
      * @param projectId 项目ID

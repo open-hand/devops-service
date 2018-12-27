@@ -196,24 +196,6 @@ public class DevopsEnvironmentController {
                 .orElseThrow(() -> new CommonException("error.environment.sort"));
     }
 
-    /**
-     * 创建环境校验名称是否存在
-     *
-     * @param projectId 项目id
-     * @param name      环境名
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "创建环境校验名称是否存在")
-    @GetMapping(value = "/check_name")
-    public void checkName(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "集群Id", required = true)
-            @RequestParam(value = "cluster_id") Long clusterId,
-            @ApiParam(value = "环境名", required = true)
-            @RequestParam(value = "name") String name) {
-        devopsEnvironmentService.checkName(projectId, clusterId, name);
-    }
 
     /**
      * 创建环境校验编码是否存在
