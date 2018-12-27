@@ -94,9 +94,9 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                             certificationRepository.updateCommandId(certificationE);
                         }
                         certificationService.certDeleteByGitOps(certificationE.getId());
+                        devopsEnvFileResourceRepository
+                                .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
                     }
-                    devopsEnvFileResourceRepository
-                            .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
                 });
         addC7nCertification.stream().forEach(c7nCertification -> {
             String filePath = "";

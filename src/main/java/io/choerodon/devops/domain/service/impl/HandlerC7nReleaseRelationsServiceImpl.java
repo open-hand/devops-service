@@ -102,9 +102,9 @@ public class HandlerC7nReleaseRelationsServiceImpl implements HandlerObjectFileR
                     applicationInstanceRepository.update(applicationInstanceE);
                 }
                 applicationInstanceService.instanceDeleteByGitOps(applicationInstanceE.getId());
+                devopsEnvFileResourceRepository
+                        .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), C7NHELM_RELEASE);
             }
-            devopsEnvFileResourceRepository
-                    .deleteByEnvIdAndResource(envId, applicationInstanceE.getId(), C7NHELM_RELEASE);
         });
     }
 

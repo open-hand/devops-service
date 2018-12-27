@@ -109,8 +109,8 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                     devopsSecretRepository.update(devopsSecretE);
                 }
                 devopsSecretService.deleteSecretByGitOps(devopsSecretE.getId());
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsSecretE.getId(), SECRET);
             }
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsSecretE.getId(), SECRET);
         });
 
         //新增secret
