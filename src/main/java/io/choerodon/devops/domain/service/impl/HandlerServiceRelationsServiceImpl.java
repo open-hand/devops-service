@@ -94,8 +94,8 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
                     devopsServiceRepository.update(devopsServiceE);
                 }
                 devopsServiceService.deleteDevopsServiceByGitOps(devopsServiceE.getId());
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE);
             }
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsServiceE.getId(), SERVICE);
         });
     }
 

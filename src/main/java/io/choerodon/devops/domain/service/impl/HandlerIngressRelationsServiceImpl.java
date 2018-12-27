@@ -94,8 +94,8 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
                     devopsIngressRepository.updateIngress(devopsIngressDO);
                 }
                 devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
             }
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
         });
         //新增ingress
         addIngress(objectPath, envId, projectId, addV1beta1Ingress, path, userId);

@@ -96,9 +96,9 @@ public class HandlerConfigMapRelationsServiceImpl implements HandlerObjectFileRe
                     devopsConfigMapRepository.update(devopsConfigMapE);
                 }
                 devopsConfigMapService.deleteByGitOps(devopsConfigMapE.getId());
+                devopsEnvFileResourceRepository
+                        .deleteByEnvIdAndResource(envId, devopsConfigMapE.getId(), CONFIG_MAP);
             }
-            devopsEnvFileResourceRepository
-                    .deleteByEnvIdAndResource(envId, devopsConfigMapE.getId(), CONFIG_MAP);
         });
     }
 
