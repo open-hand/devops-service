@@ -113,6 +113,12 @@ class ApplicationControllerSpec extends Specification {
     DevopsAppMarketDO devopsAppMarketDO = new DevopsAppMarketDO()
     @Shared
     DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
+    @Shared
+    ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
+    @Shared
+    private boolean isToInit = true
+    @Shared
+    private boolean isToClean = false
 
     def setupSpec() {
         given:
@@ -143,47 +149,77 @@ class ApplicationControllerSpec extends Specification {
     }
 
     def setup() {
-//        iamRepository.initMockIamService(iamServiceClient)
-        DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-        gitlabRepository.initMockService(gitlabServiceClient)
-        gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+        if (isToInit) {
+            DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+            gitlabRepository.initMockService(gitlabServiceClient)
+            gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
 
-        ProjectDO projectDO = new ProjectDO()
-        projectDO.setName("pro")
-        projectDO.setOrganizationId(1L)
-        ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
-        OrganizationDO organizationDO = new OrganizationDO()
-        organizationDO.setId(1L)
-        organizationDO.setCode("testOrganization")
-        ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
-        Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
+            // 删除app
+            applicationMapper.selectAll().forEach{ applicationMapper.delete(it) }
 
-        List<RoleDTO> roleDTOList = new ArrayList<>()
-        RoleDTO roleDTO = new RoleDTO()
-        roleDTO.setCode("role/project/default/project-owner")
-        roleDTOList.add(roleDTO)
-        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
-        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
-        projectWithRoleDTO.setName("pro")
-        projectWithRoleDTO.setRoles(roleDTOList)
-        projectWithRoleDTOList.add(projectWithRoleDTO)
-        Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
-        projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
-        projectWithRoleDTOPage.setTotalPages(2)
-        ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
-        Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+            ProjectDO projectDO = new ProjectDO()
+            projectDO.setName("pro")
+            projectDO.setOrganizationId(1L)
+            ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+            Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+            OrganizationDO organizationDO = new OrganizationDO()
+            organizationDO.setId(1L)
+            organizationDO.setCode("testOrganization")
+            ResponseEntity<OrganizationDO> responseEntity1 = new ResponseEntity<>(organizationDO, HttpStatus.OK)
+            Mockito.doReturn(responseEntity1).when(iamServiceClient).queryOrganizationById(1L)
 
+            List<RoleDTO> roleDTOList = new ArrayList<>()
+            RoleDTO roleDTO = new RoleDTO()
+            roleDTO.setCode("role/project/default/project-owner")
+            roleDTOList.add(roleDTO)
+            List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
+            ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+            projectWithRoleDTO.setName("pro")
+            projectWithRoleDTO.setRoles(roleDTOList)
+            projectWithRoleDTOList.add(projectWithRoleDTO)
+            Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
+            projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
+            projectWithRoleDTOPage.setTotalPages(2)
+            ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+        }
     }
+
+    def cleanup() {
+        if (isToClean) {
+            DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
+            gitlabRepository.initMockService(gitlabServiceClient)
+            gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+
+            // 删除appInstance
+            applicationInstanceMapper.selectAll().forEach{ applicationInstanceMapper.delete(it) }
+            // 删除env
+            devopsEnvironmentMapper.selectAll().forEach{ devopsEnvironmentMapper.delete(it) }
+            // 删除app
+            applicationMapper.selectAll().forEach{ applicationMapper.delete(it) }
+            // 删除appVersion
+            applicationVersionMapper.selectAll().forEach{ applicationVersionMapper.delete(it) }
+            // 删除appMarket
+            applicationMarketMapper.selectAll().forEach{ applicationMarketMapper.delete(it) }
+            // 删除appTemplet
+            applicationTemplateMapper.delete(applicationTemplateDO)
+            // 删除appUserPermission
+            appUserPermissionMapper.selectAll().forEach{ appUserPermissionMapper.delete(it) }
+            // 删除envPod
+            devopsEnvPodMapper.selectAll().forEach{ devopsEnvPodMapper.delete(it) }
+        }
+    }
+
     // 项目下创建应用
     def "create"() {
         given: '创建issueDTO'
+        isToInit = false
         ApplicationReqDTO applicationDTO = new ApplicationReqDTO()
 
         and: '赋值'
         applicationDTO.setId(init_id)
-        applicationDTO.setName("dtoname")
-        applicationDTO.setCode("ddtoapp")
+        applicationDTO.setName("appName")
+        applicationDTO.setCode("appCode")
         applicationDTO.setType("normal")
         applicationDTO.setProjectId(project_id)
         applicationDTO.setApplicationTemplateId(init_id)
@@ -208,10 +244,11 @@ class ApplicationControllerSpec extends Specification {
 
         then: '校验结果'
         entity.statusCode.is2xxSuccessful()
+        entity.getBody().getId() == 1L
         ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
 
         expect: '校验查询结果'
-        applicationDO["code"] == "ddtoapp"
+        applicationDO["code"] == "appCode"
     }
 
     // 项目下查询单个应用信息
@@ -220,7 +257,7 @@ class ApplicationControllerSpec extends Specification {
         def entity = restTemplate.getForEntity(MAPPING + "/{app_id}/detail", ApplicationRepDTO.class, project_id, 1L)
 
         then: '校验结果'
-        entity.getBody()["code"] == "ddtoapp"
+        entity.getBody()["code"] == "appCode"
     }
 
     // 项目下更新应用信息
@@ -241,7 +278,7 @@ class ApplicationControllerSpec extends Specification {
         List<AppUserPermissionDO> permissionResult = appUserPermissionMapper.selectAll()
         ApplicationDO appResult = applicationMapper.selectByPrimaryKey(1L)
         permissionResult.size() == 0
-        appResult.getIsSkipCheckPermission() == true
+        appResult.getIsSkipCheckPermission()
 
         when: '以前跳过权限检查，现在不跳过，该应用加入权限表记录'
         applicationUpdateDTO.setIsSkipCheckPermission(false)
@@ -254,7 +291,7 @@ class ApplicationControllerSpec extends Specification {
         ApplicationDO appResult1 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult1.size() == 1
         permissionResult1.get(0).getAppId() == 1L
-        appResult1.getIsSkipCheckPermission() == false
+        !appResult1.getIsSkipCheckPermission()
 
         when: '以前不跳过权限检查，现在也不跳过，该应用下有权限记录表'
         applicationUpdateDTO.setIsSkipCheckPermission(false)
@@ -264,7 +301,7 @@ class ApplicationControllerSpec extends Specification {
         ApplicationDO appResult2 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult2.size() == 1
         permissionResult2.get(0).getAppId() == 1L
-        appResult2.getIsSkipCheckPermission() == false
+        !appResult2.getIsSkipCheckPermission()
 
         when: '以前不跳过权限检查，现在跳过，该应用下无权限记录表'
         applicationUpdateDTO.setIsSkipCheckPermission(true)
@@ -273,19 +310,17 @@ class ApplicationControllerSpec extends Specification {
         List<AppUserPermissionDO> permissionResult3 = appUserPermissionMapper.selectAll()
         ApplicationDO appResult3 = applicationMapper.selectByPrimaryKey(1L)
         permissionResult3.size() == 0
-        appResult3.getIsSkipCheckPermission() == true
+        appResult3.getIsSkipCheckPermission()
     }
 
     // 停用应用
     def "disableApp"() {
         when:
-        restTemplate.put(MAPPING + "/1?active=false", Boolean.class, 1L)
+        restTemplate.put(MAPPING + "/{init_id}?active=false", Boolean, 1L, init_id)
+        applicationMapper.selectAll().forEach{ println(it.getId() + it.getName() + it.getCode() + it.getActive()) }
 
-        then: '返回值'
-        ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(init_id)
-
-        expect: '校验是否激活'
-        applicationDO["isActive"] == false
+        then: '校验是否激活'
+        !applicationMapper.selectByPrimaryKey(init_id).getActive()
     }
 
     // 启用应用
@@ -437,7 +472,6 @@ class ApplicationControllerSpec extends Specification {
     // 查询所有应用模板
     def "listTemplate"() {
         given: '初始化appTemplateDO类'
-        ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO()
         applicationTemplateDO.setId(4L)
         applicationTemplateDO.setName("tempname")
         applicationTemplateDO.setCode("tempcode")
@@ -495,66 +529,10 @@ class ApplicationControllerSpec extends Specification {
         then:
         permissionList.isEmpty()
     }
+
     // 清除测试数据
     def "cleanupData"() {
         given:
-        // 删除appInstance
-        List<ApplicationInstanceDO> list = applicationInstanceMapper.selectAll()
-        if (list != null && !list.isEmpty()) {
-            for (ApplicationInstanceDO e : list) {
-                applicationInstanceMapper.delete(e)
-            }
-        }
-        // 删除env
-        List<DevopsEnvironmentDO> list1 = devopsEnvironmentMapper.selectAll()
-        if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvironmentDO e : list1) {
-                devopsEnvironmentMapper.delete(e)
-            }
-        }
-        // 删除app
-        List<ApplicationDO> list2 = applicationMapper.selectAll()
-        if (list2 != null && !list2.isEmpty()) {
-            for (ApplicationDO e : list2) {
-                applicationMapper.delete(e)
-            }
-        }
-        // 删除appVersion
-        List<ApplicationVersionDO> list3 = applicationVersionMapper.selectAll()
-        if (list3 != null && !list3.isEmpty()) {
-            for (ApplicationVersionDO e : list3) {
-                applicationVersionMapper.delete(e)
-            }
-        }
-        // 删除appMarket
-        List<DevopsAppMarketDO> list4 = applicationMarketMapper.selectAll()
-        if (list4 != null && !list4.isEmpty()) {
-            for (DevopsAppMarketDO e : list4) {
-                applicationMarketMapper.delete(e)
-            }
-        }
-        // 删除appTemplet
-        List<ApplicationTemplateDO> list5 = applicationTemplateMapper.selectAll()
-        if (list5 != null && !list5.isEmpty()) {
-            for (ApplicationTemplateDO e : list5) {
-                if (e.getId() >= 4) {
-                    applicationTemplateMapper.delete(e)
-                }
-            }
-        }
-        // 删除appUserPermission
-        List<AppUserPermissionDO> list6 = appUserPermissionMapper.selectAll()
-        if (list6 != null && !list6.isEmpty()) {
-            for (AppUserPermissionDO e : list6) {
-                appUserPermissionMapper.delete(e)
-            }
-        }
-        // 删除envPod
-        List<DevopsEnvPodDO> list7 = devopsEnvPodMapper.selectAll()
-        if (list7 != null && !list7.isEmpty()) {
-            for (DevopsEnvPodDO e : list7) {
-                devopsEnvPodMapper.delete(e)
-            }
-        }
+        isToClean = true
     }
 }

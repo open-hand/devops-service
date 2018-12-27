@@ -776,9 +776,4 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             gitUtil.checkout(repoPath, commit);
         }
     }
-
-    @Override
-    public void initMockService(SagaClient sagaClient) {
-        this.sagaClient = sagaClient;
-    }
 }

@@ -6,7 +6,6 @@ import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.asgard.saga.feign.SagaClientCallback
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
-
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService
@@ -14,12 +13,7 @@ import io.choerodon.devops.domain.application.repository.DevopsGitRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.service.DeployService
 import io.choerodon.devops.infra.common.util.EnvUtil
-import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvCommitDO
-import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO
-import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
+import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
 import io.choerodon.devops.infra.dataobject.iam.UserDO
 import io.choerodon.devops.infra.feign.GitlabServiceClient
@@ -318,7 +312,6 @@ class GitlabWebHookControllerSpec extends Specification {
         def request = createEntity(body)
         def validation = new DevopsEnvCommitDO()
         validation.setCommitSha("c10c5ec88b6e1a8a48cf213dd88058b3e9741e8b")
-        devopsGitService.initMockService(mockSagaClient)
 
         when: "调用方法"
         def entity = restTemplate.postForEntity(url, request, Object)
