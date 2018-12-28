@@ -189,8 +189,8 @@ class ApplicationControllerSpec extends Specification {
     def cleanup() {
         if (isToClean) {
             DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
-            gitlabRepository.initMockService(gitlabServiceClient)
-            gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+            DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
+            DependencyInjectUtil.restoreDefaultDependency(gitlabGroupMemberRepository, "gitlabServiceClient")
 
             // 删除appInstance
             applicationInstanceMapper.selectAll().forEach{ applicationInstanceMapper.delete(it) }
