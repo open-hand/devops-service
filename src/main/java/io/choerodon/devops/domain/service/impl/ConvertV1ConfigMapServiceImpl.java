@@ -35,11 +35,11 @@ public class ConvertV1ConfigMapServiceImpl extends ConvertK8sObjectService<V1Con
                         .noneMatch(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceId().equals(devopsConfigMapE.getId()))) {
             DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository.queryByEnvIdAndResource(envId, devopsConfigMapE.getId(), v1ConfigMap.getKind());
             if (devopsEnvFileResourceE != null && !devopsEnvFileResourceE.getFilePath().equals(objectPath.get(TypeUtil.objToString(v1ConfigMap.hashCode())))) {
-                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1ConfigMap.getMetadata().getName(), null);
+                throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1ConfigMap.getMetadata().getName());
             }
         }
         if (v1ConfigMaps.stream().anyMatch(v1Service1 -> v1Service1.getMetadata().getName().equals(v1ConfigMap.getMetadata().getName()))) {
-            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1ConfigMap.getMetadata().getName(), null);
+            throw new GitOpsExplainException(GitOpsObjectError.OBJECT_EXIST.getError(), filePath, v1ConfigMap.getMetadata().getName());
         } else {
             v1ConfigMaps.add(v1ConfigMap);
         }
