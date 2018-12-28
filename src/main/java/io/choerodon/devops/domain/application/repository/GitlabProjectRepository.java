@@ -5,7 +5,6 @@ import java.util.List;
 import io.choerodon.devops.domain.application.entity.gitlab.*;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
 
 /**
  * Created by Zenger on 2018/4/9.
@@ -37,6 +36,4 @@ public interface GitlabProjectRepository {
     void deleteBranch(Integer projectId, String branchName, Integer userId);
 
     List<GitlabMemberE> getAllMemberByProjectId(Integer projectId);
-
-    void initMockService(GitlabServiceClient gitlabServiceClient);
 }

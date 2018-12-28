@@ -86,8 +86,8 @@ class DevopsConfigMapControllerSpec extends Specification {
 
     void setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-        gitlabRepository.initMockService(gitlabServiceClient)
-        gitlabGroupMemberRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
         devopsConfigMapServiceImpl.initMockServer(devopsEnvironmentService)
 
         ProjectDO projectDO = new ProjectDO()

@@ -89,8 +89,9 @@ class DevopsGitControllerSpec extends Specification {
 
     def setup() {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
-        devopsGitRepository.initGitlabServiceClient(gitlabServiceClient)
-        gitlabProjectRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
+
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("pro")

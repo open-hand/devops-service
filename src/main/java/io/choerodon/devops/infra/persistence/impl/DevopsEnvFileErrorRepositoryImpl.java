@@ -2,11 +2,6 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -17,8 +12,12 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvFileErrorDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvFileErrorMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
-@Component
+@Service
 public class DevopsEnvFileErrorRepositoryImpl implements DevopsEnvFileErrorRepository {
 
     @Autowired

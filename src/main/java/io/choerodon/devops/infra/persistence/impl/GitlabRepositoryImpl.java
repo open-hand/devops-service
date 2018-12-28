@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import feign.FeignException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
@@ -21,6 +18,8 @@ import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by younger on 2018/3/29.
@@ -288,8 +287,4 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         }
     }
 
-    @Override
-    public void initMockService(GitlabServiceClient gitlabServiceClient) {
-        this.gitlabServiceClient = gitlabServiceClient;
-    }
 }

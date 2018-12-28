@@ -2,9 +2,9 @@
 apiVersion: choerodon.io/v1alpha1
 kind: C7NHelmRelease
 metadata:
-  name: instest1
+  name: insgitopsc
 spec:
-  chartName: testapp
+  chartName: testApp
   chartVersion: 2018.8.21-091848-release-0-9-0
   repoUrl: http://chart.choerodon.com.cn/choerodon/c7ncd/
   values: |-
@@ -51,13 +51,13 @@ metadata:
     choerodon.io/network-service-instances: instest1
   labels:
     choerodon.io/network: service
-  name: svctest1
+  name: svcgitopsc
 spec:
   ports:
-  - name: http
-    port: 80
-    protocol: TCP
-    targetPort: 80
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 80
   sessionAffinity: None
   type: ClusterIP
 
@@ -69,13 +69,47 @@ metadata:
   annotations: {}
   labels:
     choerodon.io/network: ingress
-  name: ingtest1
+  name: inggitopsc
 spec:
   rules:
-  - host: devops-service1-front.staging.saas.hand-china.com
-    http:
-      paths:
-      - backend:
-          serviceName: svctest1
-          servicePort: 8060
-        path: /
+    - host: devops-serviceasas-front.staging.saas.hand-china.com
+      http:
+        paths:
+          - backend:
+              serviceName: svctest1
+              servicePort: 8060
+            path: /
+
+---
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: Certificate
+metadata:
+  name: certgitopsc
+  namespace: testEnv
+spec:
+  acme:
+    config:
+      - domains:
+          - t2st.choerodon.com.cn
+        http01:
+          ingressClass: nginx
+  commonName: t2st.choerodon.com.cn
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: secgitopsc
+stringData:
+  test: test
+type: Opaque
+
+
+---
+apiVersion: v1
+data:
+  test: test
+kind: ConfigMap
+metadata:
+  name: configMapgitopsc
+

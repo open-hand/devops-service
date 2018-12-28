@@ -18,22 +18,6 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -71,6 +55,21 @@ import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -158,6 +157,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     @Autowired
     private GitlabUserRepository gitlabUserRepository;
+    @Autowired
+    private GitUtil gitUtil;
 
     @Override
     public void checkLog(String version) {
@@ -795,7 +796,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }
             LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
             devopsEnvironmentES.forEach(devopsEnvironmentE -> {
-                GitUtil gitUtil = new GitUtil(devopsEnvironmentE.getEnvIdRsa());
+                gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
                 if (devopsEnvironmentE.getGitlabEnvProjectId() != null) {
                     LOGGER.info("{}:{}  begin to upgrade!", devopsEnvironmentE.getCode(), devopsEnvironmentE.getId());
                     String filePath;

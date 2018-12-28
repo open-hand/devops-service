@@ -10,22 +10,6 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1beta1Ingress;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.interceptor.TransactionAspectSupport;
-import org.yaml.snakeyaml.Yaml;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -54,6 +38,21 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.models.V1Service;
+import io.kubernetes.client.models.V1beta1Ingress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+import org.yaml.snakeyaml.Yaml;
 
 /**
  * Creator: Runge
@@ -61,7 +60,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Time: 14:44
  * Description:
  */
-@Component
+@Service
 public class DevopsGitServiceImpl implements DevopsGitService {
     private static final String SERVICE = "Service";
     private static final String INGRESS = "Ingress";
@@ -98,6 +97,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Autowired
     private SagaClient sagaClient;
     @Autowired
+    private GitUtil gitUtil;
+    @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
@@ -123,7 +124,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     private HandlerObjectFileRelationsService handlerC7nCertificationRelationsService;
     @Autowired
     @Qualifier("handlerConfigMapRelationsServiceImpl")
-    private HandlerObjectFileRelationsService handlerConfigMapRelationsServiceImpl;
+    private HandlerObjectFileRelationsService handlerConfigMapRelationsService;
     @Autowired
     @Qualifier("handlerC7nSecretServiceImpl")
     private HandlerObjectFileRelationsService handlerC7nSecretRelationsService;
@@ -341,7 +342,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         }
     }
 
-    @Override
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
@@ -422,7 +423,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handlerC7nCertificationRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, c7nCertifications, null, envId, projectId, path,
                             userId);
-            handlerConfigMapRelationsServiceImpl
+            handlerConfigMapRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, null, envId, projectId, path, userId);
             handlerC7nSecretRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, c7nSecrets, null, envId, projectId, path, userId);
@@ -765,7 +766,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     private void handDevopsEnvGitRepository(String path, String url, String envIdRsa, String commit) {
         File file = new File(path);
-        GitUtil gitUtil = new GitUtil(envIdRsa);
+        gitUtil.setSshKey(envIdRsa);
         final String repoPath = path + GIT_SUFFIX;
         if (!file.exists()) {
             gitUtil.cloneBySsh(path, url);

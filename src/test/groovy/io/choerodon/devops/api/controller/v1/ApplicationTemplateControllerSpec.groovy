@@ -132,7 +132,7 @@ class ApplicationTemplateControllerSpec extends Specification {
 
         and: 'mock 查询gitlab组'
         applicationTemplateRepository.initMockService(iamServiceClient)
-        gitlabRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         GroupDO groupDO = null
         ResponseEntity<GroupDO> responseEntity = new ResponseEntity<>(groupDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.queryGroupByName(anyString(), anyInt())).thenReturn(responseEntity)
@@ -235,7 +235,8 @@ class ApplicationTemplateControllerSpec extends Specification {
     // 组织下删除应用模板
     def "deleteTemplate"() {
         given: 'mock 删除gitlab项目'
-        gitlabRepository.initMockService(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
+
         ProjectHook projectHook = new ProjectHook()
         ResponseEntity<ProjectHook> responseEntity = new ResponseEntity<>(projectHook, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.deleteProject(anyInt(), anyInt())).thenReturn(responseEntity)

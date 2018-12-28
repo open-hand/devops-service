@@ -12,6 +12,7 @@ spring:
   h2:
     console:
       enabled: true
+
 hystrix:
   stream:
     queue:

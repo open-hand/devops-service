@@ -1,14 +1,14 @@
 package io.choerodon.devops.app.service;
 
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by Zenger on 2018/4/12.
@@ -168,6 +168,13 @@ public interface ApplicationInstanceService {
 
     ReplaceResult getReplaceResult(String versionValue, String deployValue);
 
+    /**
+     * 获取升级 Value
+     *
+     * @param instanceId 实例id
+     * @param versionId  版本Id
+     * @return ReplaceResult
+     */
     ReplaceResult queryUpgradeValue(Long instanceId, Long versionId);
 
     /**

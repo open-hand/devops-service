@@ -72,11 +72,6 @@ public class GitUtil {
         }
     }
 
-    public GitUtil(String sshKey) {
-        new GitUtil();
-        this.sshKey = sshKey;
-    }
-
     private static String getLog(String repoPath, String fileName) {
         String latestCommit = "";
         File file = new File(repoPath);
@@ -377,5 +372,13 @@ public class GitUtil {
 
     private void commitChanges(Git git, String commitMsg) throws GitAPIException {
         git.commit().setMessage(commitMsg).call();
+    }
+
+    public String getSshKey() {
+        return sshKey;
+    }
+
+    public void setSshKey(String sshKey) {
+        this.sshKey = sshKey;
     }
 }
