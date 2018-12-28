@@ -314,8 +314,4 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
         return devopsEnvCommandE;
     }
-
-    public void initMockServer(DevopsEnvironmentService devopsEnvironmentService) {
-        this.devopsEnvironmentService = devopsEnvironmentService;
-    }
 }
