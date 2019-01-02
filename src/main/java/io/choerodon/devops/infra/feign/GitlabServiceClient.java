@@ -1,12 +1,8 @@
 package io.choerodon.devops.infra.feign;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
-
-import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
@@ -17,6 +13,9 @@ import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
+import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * gitlab服务 feign客户端
@@ -27,6 +26,10 @@ public interface GitlabServiceClient {
     @GetMapping(value = "/v1/users/{userId}")
     ResponseEntity<UserDO> queryUserByUserId(
             @PathVariable("userId") Integer userId);
+
+    @GetMapping(value = "/v1/users//{username}/details")
+    ResponseEntity<UserDO> queryUserByUserName(
+            @PathVariable("username") String username);
 
     @GetMapping(value = "/v1/groups/{groupId}/members/{userId}")
     ResponseEntity<MemberDO> getUserMemberByUserId(
