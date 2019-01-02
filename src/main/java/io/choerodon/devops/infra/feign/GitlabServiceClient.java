@@ -29,7 +29,7 @@ public interface GitlabServiceClient {
     ResponseEntity<UserDO> queryUserByUserId(
             @PathVariable("userId") Integer userId);
 
-    @GetMapping(value = "/v1/users//{username}/details")
+    @GetMapping(value = "/v1/users/{username}/details")
     ResponseEntity<UserDO> queryUserByUserName(
             @PathVariable("username") String username);
 
