@@ -2,9 +2,6 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.regex.Pattern;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
 import io.choerodon.devops.app.service.GitlabUserService;
@@ -15,6 +12,8 @@ import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.config.GitlabConfigurationProperties;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/3/28.
@@ -35,17 +34,21 @@ public class GitlabUserServiceImpl implements GitlabUserService {
     public void createGitlabUser(GitlabUserRequestDTO gitlabUserReqDTO) {
 
         checkGitlabUser(gitlabUserReqDTO);
-        GitlabUserE createOrUpdateGitlabUserE = gitlabUserRepository.createGitLabUser(
-                gitlabConfigurationProperties.getPassword(),
-                gitlabConfigurationProperties.getProjectLimit(),
-                ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
-
-        if (createOrUpdateGitlabUserE != null) {
-            UserAttrE userAttrE = new UserAttrE();
-            userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
-            userAttrE.setGitlabUserId(createOrUpdateGitlabUserE.getId().longValue());
-            userAttrE.setGitlabUserName(createOrUpdateGitlabUserE.getUsername());
-            userAttrRepository.insert(userAttrE);
+        GitlabUserE gitlabUserE = gitlabUserRepository.getUserByUserName(gitlabUserReqDTO.getUsername());
+        if (gitlabUserE == null) {
+            gitlabUserE = gitlabUserRepository.createGitLabUser(
+                    gitlabConfigurationProperties.getPassword(),
+                    gitlabConfigurationProperties.getProjectLimit(),
+                    ConvertHelper.convert(gitlabUserReqDTO, GitlabUserEvent.class));
+        }
+        if (gitlabUserE != null) {
+            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(gitlabUserE.getId().longValue());
+            if (userAttrE == null) {
+                userAttrE.setIamUserId(Long.parseLong(gitlabUserReqDTO.getExternUid()));
+                userAttrE.setGitlabUserId(gitlabUserE.getId().longValue());
+                userAttrE.setGitlabUserName(gitlabUserE.getUsername());
+                userAttrRepository.insert(userAttrE);
+            }
         }
     }
 

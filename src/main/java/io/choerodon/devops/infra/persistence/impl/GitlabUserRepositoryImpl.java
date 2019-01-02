@@ -1,9 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import feign.FeignException;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
@@ -11,6 +8,8 @@ import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/3/28.
@@ -32,6 +31,17 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
                     password, projectsLimit, gitlabUserEvent);
         } catch (FeignException e) {
             throw new CommonException(e);
+        }
+        return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
+    }
+
+    @Override
+    public GitlabUserE getUserByUserName(String userName) {
+        ResponseEntity<UserDO> responseEntity;
+        try {
+            responseEntity = gitlabServiceClient.queryUserByUserName(userName);
+        } catch (FeignException e) {
+            return null;
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
     }
