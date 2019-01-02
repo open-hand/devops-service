@@ -852,6 +852,25 @@ class ApplicationInstanceControllerSpec extends Specification {
         dto != null
     }
 
+    // 部署自动化测试应用
+    def "deployTestApp"() {
+        given: "准备数据"
+        def url = MAPPING + "/deploy_test_app"
+        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO()
+        applicationDeployDTO.setEnvironmentId(1L)
+        applicationDeployDTO.setValues(applicationVersionValueDO.getValue())
+        applicationDeployDTO.setAppId(1L)
+        applicationDeployDTO.setAppVersionId(1L)
+        applicationDeployDTO.setType("create")
+        applicationDeployDTO.setAppInstanceId(1L)
+
+        when: '部署应用'
+        restTemplate.postForObject(url, applicationDeployDTO, Object.class, 1L)
+
+        then: '校验'
+        noExceptionThrown()
+    }
+
     def "ListByAppVersionId"() {
         when: '查询运行中的实例'
         def list = restTemplate.getForObject("/v1/projects/1/app_instances/options?envId=1&appId=1&appVersionId=1", List.class)

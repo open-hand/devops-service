@@ -82,13 +82,21 @@ class DevopsConfigMapControllerSpec extends Specification {
     private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
     @Shared
     private DevopsEnvFileResourceDO devopsEnvFileResourceDO = new DevopsEnvFileResourceDO()
+    @Shared
+    private boolean isToInit = true
+    @Shared
+    private boolean isToClean = false
 
 
     void setup() {
+        if (!isToInit) {
+            return
+        }
+
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-        devopsConfigMapServiceImpl.initMockServer(devopsEnvironmentService)
+        DependencyInjectUtil.setAttribute(devopsConfigMapServiceImpl, "devopsEnvironmentService", devopsEnvironmentService)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("pro")
@@ -127,6 +135,26 @@ class DevopsConfigMapControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.updateFile(anyInt(), anyString(), anyString(), anyString(), anyInt())).thenReturn(responseEntity2)
     }
 
+    def cleanup() {
+        if (!isToClean) {
+            return
+        }
+
+        DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
+        DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
+        DependencyInjectUtil.restoreDefaultDependency(gitlabGroupMemberRepository, "gitlabServiceClient")
+        DependencyInjectUtil.restoreDefaultDependency(devopsConfigMapServiceImpl, "devopsEnvironmentService")
+
+        // 删除secret
+        devopsConfigMapMapper.selectAll().forEach{devopsConfigMapMapper.delete(it)}
+        // 删除envFileResource
+        devopsEnvFileResourceMapper.selectAll().forEach{devopsEnvFileResourceMapper.delete(it)}
+        // 删除env
+        devopsEnvironmentMapper.selectAll().forEach{devopsEnvironmentMapper.delete(it)}
+        // 删除gitops
+        FileUtil.deleteDirectory(new File("gitops"))
+    }
+
     def setupSpec() {
         devopsEnvironmentDO.setId(1L)
         devopsEnvironmentDO.setProjectId(1L)
@@ -137,18 +165,20 @@ class DevopsConfigMapControllerSpec extends Specification {
         devopsEnvFileResourceDO.setResourceId(1L)
         devopsEnvFileResourceDO.setFilePath("configMap-test.yaml")
         devopsEnvFileResourceDO.setResourceType("ConfigMap")
-
     }
 
     def "Create"() {
 
         given: '初始化数据'
+        isToInit = false
+
         FileUtil.copyFile("src/test/gitops/testConfigMap/configMap-test.yaml", "gitops/testConfigMap")
         devopsEnvironmentMapper.insert(devopsEnvironmentDO)
         devopsEnvFileResourceMapper.insert(devopsEnvFileResourceDO)
 
         and: '初始化DTO'
-        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+        DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO()
+        devopsConfigMapDTO.setId(1L)
         devopsConfigMapDTO.setName("asdasdqqqq")
         devopsConfigMapDTO.setEnvId(1L)
         devopsConfigMapDTO.setDescription("ggggg")
@@ -167,7 +197,7 @@ class DevopsConfigMapControllerSpec extends Specification {
         devopsConfigMapMapper.selectAll().get(0).getDescription() == "ggggg"
 
         when: '更新但是key-value不改变'
-        devopsConfigMapDTO.setId(1L)
+        devopsConfigMapDTO.setId(devopsConfigMapMapper.selectAll().get(0).getId())
         devopsConfigMapDTO.setType("update")
         devopsConfigMapDTO.setDescription("gggggnew")
         restTemplate.postForObject(MAPPING, devopsConfigMapDTO, Object.class, 1L)
@@ -220,32 +250,10 @@ class DevopsConfigMapControllerSpec extends Specification {
 
         then: '校验结果'
         noExceptionThrown()
-
-        and: '清理数据'
-        // 删除secret
-        List<DevopsConfigMapDO> list = devopsConfigMapMapper.selectAll()
-        if (list != null && !list.isEmpty()) {
-            for (DevopsConfigMapDO e : list) {
-                devopsConfigMapMapper.delete(e)
-            }
-        }
-        // 删除envFileResource
-        List<DevopsEnvFileResourceDO> list1 = devopsEnvFileResourceMapper.selectAll()
-        if (list1 != null && !list1.isEmpty()) {
-            for (DevopsEnvFileResourceDO e : list1) {
-                devopsEnvFileResourceMapper.delete(e)
-            }
-        }
-        // 删除env
-        List<DevopsEnvironmentDO> list2 = devopsEnvironmentMapper.selectAll()
-        if (list2 != null && !list2.isEmpty()) {
-            for (DevopsEnvironmentDO e : list2) {
-                devopsEnvironmentMapper.delete(e)
-            }
-        }
-        // 删除gitops
-        FileUtil.deleteDirectory(new File("gitops"))
-
     }
 
+    def "clean data"() {
+        given: "清理数据"
+        isToClean = true
+    }
 }
