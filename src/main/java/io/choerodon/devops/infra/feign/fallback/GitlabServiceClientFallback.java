@@ -352,4 +352,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(Integer userId) {
         return new ResponseEntity("error.project.get.by.userId", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity<Boolean> validateUrlAndAccessToken(String url, String accessToken) {
+        return new ResponseEntity("error.git.url.validation.failed", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

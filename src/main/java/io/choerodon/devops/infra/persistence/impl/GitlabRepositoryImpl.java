@@ -287,4 +287,12 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         }
     }
 
+    @Override
+    public Boolean validateUrlAndAccessToken(String repositoryUrl, String accessToken) {
+        try {
+            return gitlabServiceClient.validateUrlAndAccessToken(repositoryUrl, accessToken).getBody();
+        } catch (FeignException e) {
+            throw new CommonException("eerror.git.url.validation.failed", e);
+        }
+    }
 }

@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -38,7 +39,7 @@ public class ApplicationController {
     /**
      * 项目下创建应用
      *
-     * @param projectId      项目id
+     * @param projectId         项目id
      * @param applicationReqDTO 应用信息
      * @return ApplicationRepDTO
      */
@@ -378,5 +379,28 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.listAllUserPermission(appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.user.permission.get"));
+    }
+
+    /**
+     * 验证用于克隆仓库的url及授权的access token是否有效
+     *
+     * @param platformType Git平台类型
+     * @param url          用于克隆仓库的url(http/https)
+     * @param accessToken  gitlab授权的access token
+     * @return true 如果有效
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation("验证用于克隆仓库的url及授权的access token是否有效")
+    @GetMapping("/url_validation")
+    public ResponseEntity<Boolean> validateUrlAndAccessToken(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "Git平台类型", required = true)
+            @RequestParam(value = "platform_type", required = false) String platformType,
+            @ApiParam(value = "clone仓库的地址", required = true)
+            @RequestParam(value = "url") String url,
+            @ApiParam(value = "gitlab access token")
+            @RequestParam(value = "access_token", required = false) String accessToken) {
+        return new ResponseEntity<>(applicationService.checkRepositoryUrlAndToken(GitPlatformType.from(platformType), url, accessToken), HttpStatus.OK);
     }
 }

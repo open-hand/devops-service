@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.Valid;
 
+import io.swagger.annotations.ApiParam;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -447,4 +448,7 @@ public interface GitlabServiceClient {
 
     @GetMapping("/v1/projects/{user_id}/projects")
     ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(@PathVariable(value = "user_id") Integer id);
+
+    @GetMapping("/v1/url_validation")
+    ResponseEntity<Boolean> validateUrlAndAccessToken(@RequestParam("url") String url, @RequestParam("access_token") String accessToken);
 }
