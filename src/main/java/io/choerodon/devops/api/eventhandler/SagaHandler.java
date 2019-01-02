@@ -184,7 +184,7 @@ public class SagaHandler {
      * 用户创建事件
      */
     @SagaTask(code = "devopsCreateUser", description = "用户创建事件",
-            sagaCode = "iam-create-user", maxRetryCount = 3,
+            sagaCode = "iam-create-user", maxRetryCount = 1,
             seq = 1)
     public List<GitlabUserDTO> handleCreateUserEvent(String payload) {
         List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
