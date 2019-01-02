@@ -406,7 +406,7 @@ class DevopsGitControllerSpec extends Specification {
         CommitDO commitDO = new CommitDO()
         commitDOList.add(commitDO)
         ResponseEntity<List<CommitDO>> responseEntity = new ResponseEntity<>(commitDOList, HttpStatus.OK)
-        devopsGitRepository.initGitlabServiceClient(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
         Mockito.when(gitlabServiceClient.listCommits(anyInt(),anyInt(),anyInt())).thenReturn(responseEntity).thenReturn(responseEntity).thenReturn(responseEntity)
         userAttrRepository.queryById(_ as Long) >> userAttrE
 

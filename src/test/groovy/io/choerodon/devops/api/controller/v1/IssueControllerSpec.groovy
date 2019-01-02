@@ -153,7 +153,7 @@ class IssueControllerSpec extends Specification {
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabProjectRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-        devopsGitRepository.initGitlabServiceClient(gitlabServiceClient)
+        DependencyInjectUtil.setAttribute(devopsGitRepository, "gitlabServiceClient", gitlabServiceClient)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setId(1L)

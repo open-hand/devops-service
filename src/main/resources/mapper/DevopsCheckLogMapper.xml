@@ -3,12 +3,9 @@
 
 <mapper namespace="io.choerodon.devops.infra.mapper.DevopsCheckLogMapper">
     <select id="queryNonEnvGroupProject" resultType="io.choerodon.devops.infra.dataobject.DevopsProjectDO">
-        SELECT
-            *
-        FROM
-            devops_project
-        WHERE
-            gitlab_group_id IS NOT NULL
-            AND env_group_id IS NULL;
+        SELECT *
+        FROM devops_project
+        WHERE devops_app_group_id IS NOT NULL
+          AND devops_env_group_id IS NULL;
     </select>
 </mapper>

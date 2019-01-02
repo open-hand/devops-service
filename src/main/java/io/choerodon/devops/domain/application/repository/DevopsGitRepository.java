@@ -78,7 +78,4 @@ public interface DevopsGitRepository {
     List<CommitDO> getCommits(Integer gitLabProjectId, String branchName, String date);
 
     List<BranchDO> listBranches(Integer gitlabProjectId, Integer userId);
-
-    void initGitlabServiceClient(GitlabServiceClient gitlabServiceClient);
-
 }

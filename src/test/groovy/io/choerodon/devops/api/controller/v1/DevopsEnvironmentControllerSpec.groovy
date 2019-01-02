@@ -453,8 +453,10 @@ class DevopsEnvironmentControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化环境更新DTO对象'
+        def envs = devopsEnvironmentMapper.selectAll()
+        def envId = envs.get(envs.size() - 1).getId()
         DevopsEnvironmentUpdateDTO devopsEnvironmentUpdateDTO = new DevopsEnvironmentUpdateDTO()
-        devopsEnvironmentUpdateDTO.setId(3L)
+        devopsEnvironmentUpdateDTO.setId(envId)
         devopsEnvironmentUpdateDTO.setClusterId(1L)
         devopsEnvironmentUpdateDTO.setDevopsEnvGroupId(2L)
         devopsEnvironmentUpdateDTO.setName("testNameChange1222")
@@ -463,7 +465,7 @@ class DevopsEnvironmentControllerSpec extends Specification {
         restTemplate.put("/v1/projects/1/envs", devopsEnvironmentUpdateDTO, DevopsEnvironmentUpdateDTO.class)
 
         then: '返回值'
-        devopsEnvironmentMapper.selectByPrimaryKey(3L).getName() == "testNameChange1222"
+        devopsEnvironmentMapper.selectByPrimaryKey(envId).getName() == "testNameChange1222"
     }
 
     def "Sort"() {
