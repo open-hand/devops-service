@@ -3,9 +3,11 @@ package io.choerodon.devops.app.service.impl;
 import java.io.File;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +48,14 @@ import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.util.StringUtils;
 
 /**
  * Created by younger on 2018/3/28.
  */
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
+    private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String MASTER = "master";
@@ -637,5 +641,25 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void initMockService(SagaClient sagaClient) {
         this.sagaClient = sagaClient;
+    }
+
+    @Override
+    public boolean checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String access_token) {
+        if (!REPOSITORY_URL_PATTERN.matcher(repositoryUrl).matches()) {
+            return false;
+        }
+
+        // 当不存在access_token时，默认仓库是公开的
+        if (StringUtils.isEmpty(access_token)) {
+            return GitUtil.validRepositoryUrlWithoutToken(repositoryUrl);
+        }
+
+        // 需要访问外部api，可能会导致此接口过慢
+        switch (gitPlatformType) {
+            case GITLAB:
+                return gitlabRepository.validateUrlAndAccessToken(repositoryUrl, access_token);
+            default:
+                return false;
+        }
     }
 }

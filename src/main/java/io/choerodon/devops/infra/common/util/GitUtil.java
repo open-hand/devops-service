@@ -10,10 +10,7 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.CloneCommand;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.PushCommand;
-import org.eclipse.jgit.api.TransportConfigCallback;
+import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.lib.Ref;
@@ -69,6 +66,22 @@ public class GitUtil {
             }
         } catch (IOException io) {
             throw new CommonException(io.getMessage(), io);
+        }
+    }
+
+    /**
+     * 验证无需token就可以进行访问的代码仓库的克隆地址是否有效
+     *
+     * @param repositoryUrl 代码仓库克隆地址
+     * @return true if the url is valid and the ls-remote result is not empty.
+     */
+    public static boolean validRepositoryUrlWithoutToken(String repositoryUrl) {
+        LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
+        lsRemoteCommand.setRemote(repositoryUrl);
+        try {
+            return !lsRemoteCommand.call().isEmpty();
+        } catch (GitAPIException e) {
+            return false;
         }
     }
 

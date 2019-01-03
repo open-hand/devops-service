@@ -6,6 +6,7 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
+import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -16,7 +17,7 @@ public interface ApplicationService {
     /**
      * 项目下创建应用
      *
-     * @param projectId      项目Id
+     * @param projectId         项目Id
      * @param applicationReqDTO 应用信息
      * @return ApplicationTemplateDTO
      */
@@ -89,7 +90,7 @@ public interface ApplicationService {
      * 设置应用创建失败状态
      *
      * @param gitlabProjectEventDTO 应用信息
-     * @param projectId 可为空
+     * @param projectId             可为空
      */
     void setAppErrStatus(String gitlabProjectEventDTO, Long projectId);
 
@@ -192,4 +193,14 @@ public interface ApplicationService {
     List<AppUserPermissionRepDTO> listAllUserPermission(Long appId);
 
     void initMockService(SagaClient sagaClient);
+
+    /**
+     * valid the repository url and access token
+     *
+     * @param gitPlatformType git platform type
+     * @param repositoryUrl repository url
+     * @param access_token  access token (Nullable)
+     * @return true if valid
+     */
+    boolean checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String access_token);
 }
