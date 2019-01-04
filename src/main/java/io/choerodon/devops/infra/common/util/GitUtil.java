@@ -73,15 +73,24 @@ public class GitUtil {
      * 验证无需token就可以进行访问的代码仓库的克隆地址是否有效
      *
      * @param repositoryUrl 代码仓库克隆地址
+     * @param token         访问仓库所需的token（可为空）
      * @return true if the url is valid and the ls-remote result is not empty.
      */
-    public static boolean validRepositoryUrlWithoutToken(String repositoryUrl) {
+    public static Boolean validRepositoryUrl(String repositoryUrl, String token) {
         LsRemoteCommand lsRemoteCommand = new LsRemoteCommand(null);
         lsRemoteCommand.setRemote(repositoryUrl);
+        if (!StringUtils.isEmpty(token)) {
+            lsRemoteCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider("", token));
+        }
         try {
-            return !lsRemoteCommand.call().isEmpty();
+            int size = lsRemoteCommand.call().size();
+            if (size == 0) {
+                return null;
+            } else {
+                return Boolean.TRUE;
+            }
         } catch (GitAPIException e) {
-            return false;
+            return Boolean.FALSE;
         }
     }
 

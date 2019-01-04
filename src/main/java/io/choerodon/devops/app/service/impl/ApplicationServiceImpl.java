@@ -49,7 +49,6 @@ import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.util.StringUtils;
 
 /**
  * Created by younger on 2018/3/28.
@@ -57,7 +56,7 @@ import org.springframework.util.StringUtils;
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
-    private static final String GITLAB_CI_FILE_NAME = ".gitlab-ci.yml";
+    private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
     private static final String DOCKER_FILE = "src/main/docker/Dockerfile";
     private static final String CHART_DIR = "charts";
 
@@ -682,8 +681,8 @@ public class ApplicationServiceImpl implements ApplicationService {
      */
     private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir) {
         // ci 文件
-        File appGitlabCiFile = new File(applicationWorkDir, GITLAB_CI_FILE_NAME);
-        File templateGitlabCiFile = new File(templateWorkDir, GITLAB_CI_FILE_NAME);
+        File appGitlabCiFile = new File(applicationWorkDir, GITLAB_CI_FILE);
+        File templateGitlabCiFile = new File(templateWorkDir, GITLAB_CI_FILE);
         if (!appGitlabCiFile.exists() && templateGitlabCiFile.exists()) {
             FileUtil.copyFile(templateGitlabCiFile, appGitlabCiFile);
         }
@@ -844,16 +843,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         // 当不存在access_token时，默认将仓库识别为公开的
-        if (StringUtils.isEmpty(accessToken)) {
-            return GitUtil.validRepositoryUrlWithoutToken(repositoryUrl);
-        }
-
-        switch (gitPlatformType) {
-            case GITLAB:
-                return gitlabRepository.validateUrlAndAccessToken(repositoryUrl, accessToken);
-            default:
-                return Boolean.FALSE;
-        }
+        return GitUtil.validRepositoryUrl(repositoryUrl, accessToken);
     }
 
     /**
@@ -864,8 +854,11 @@ public class ApplicationServiceImpl implements ApplicationService {
      * @param access_token    access token (Nullable)
      */
     private void checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String access_token) {
-        if (!validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, access_token)) {
+        Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, access_token);
+        if (Boolean.FALSE.equals(validationResult)) {
             throw new CommonException("error.repository.token.invalid");
+        } else if (validationResult == null) {
+            throw new CommonException("error.repository.empty");
         }
     }
 

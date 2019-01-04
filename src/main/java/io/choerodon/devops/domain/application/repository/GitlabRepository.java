@@ -1,15 +1,13 @@
 package io.choerodon.devops.domain.application.repository;
 
-import java.util.List;
-
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.List;
 
 /**
  * Created by younger on 2018/3/29.
@@ -69,6 +67,4 @@ public interface GitlabRepository {
     void removeMemberFromProject(Integer projectId, Integer userId);
 
     List<GitlabProjectDO> getProjectsByUserId(Integer userId);
-
-    Boolean validateUrlAndAccessToken(String repositoryUrl, String accessToken);
 }

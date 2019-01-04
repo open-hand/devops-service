@@ -59,7 +59,7 @@ public class ApplicationController {
     /**
      * 项目下从外部代码库导入应用
      *
-     * @param projectId         项目id
+     * @param projectId            项目id
      * @param applicationImportDTO 应用信息
      * @return ApplicationRepDTO
      */
@@ -412,7 +412,7 @@ public class ApplicationController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation("验证用于克隆仓库的url及授权的access token是否有效")
     @GetMapping("/url_validation")
-    public ResponseEntity<Boolean> validateUrlAndAccessToken(
+    public ResponseEntity<Object> validateUrlAndAccessToken(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "Git平台类型", required = true)
@@ -421,6 +421,7 @@ public class ApplicationController {
             @RequestParam(value = "url") String url,
             @ApiParam(value = "gitlab access token")
             @RequestParam(value = "access_token", required = false) String accessToken) {
-        return new ResponseEntity<>(applicationService.validateRepositoryUrlAndToken(GitPlatformType.from(platformType), url, accessToken), HttpStatus.OK);
+        Boolean result = applicationService.validateRepositoryUrlAndToken(GitPlatformType.from(platformType), url, accessToken);
+        return new ResponseEntity<>(result == null ? "null" : result, HttpStatus.OK);
     }
 }
