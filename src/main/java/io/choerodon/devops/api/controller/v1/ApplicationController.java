@@ -57,6 +57,26 @@ public class ApplicationController {
     }
 
     /**
+     * 项目下从外部代码库导入应用
+     *
+     * @param projectId         项目id
+     * @param applicationImportDTO 应用信息
+     * @return ApplicationRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下从外部代码库导入应用")
+    @PostMapping("/import")
+    public ResponseEntity<ApplicationRepDTO> create(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用信息", required = true)
+            @RequestBody ApplicationImportDTO applicationImportDTO) {
+        return Optional.ofNullable(applicationService.importApplicationFromGitPlatform(projectId, applicationImportDTO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.create"));
+    }
+
+    /**
      * 项目下查询单个应用信息
      *
      * @param projectId     项目id
@@ -401,6 +421,6 @@ public class ApplicationController {
             @RequestParam(value = "url") String url,
             @ApiParam(value = "gitlab access token")
             @RequestParam(value = "access_token", required = false) String accessToken) {
-        return new ResponseEntity<>(applicationService.checkRepositoryUrlAndToken(GitPlatformType.from(platformType), url, accessToken), HttpStatus.OK);
+        return new ResponseEntity<>(applicationService.validateRepositoryUrlAndToken(GitPlatformType.from(platformType), url, accessToken), HttpStatus.OK);
     }
 }

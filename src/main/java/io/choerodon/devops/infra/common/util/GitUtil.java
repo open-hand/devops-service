@@ -1,14 +1,10 @@
 package io.choerodon.devops.infra.common.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -24,9 +20,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created by younger on 2018/3/29.
@@ -268,6 +268,62 @@ public class GitUtil {
             throw new CommonException("error.git.clone", e);
         }
         return git;
+    }
+
+    /**
+     * clone 外部代码平台的仓库
+     *
+     * @param dirName     directory name
+     * @param remoteUrl   remote url to clone
+     * @param accessToken the access token for access
+     * @return the git instance of local repository
+     */
+    public Git cloneRepository(String dirName, String remoteUrl, String accessToken) {
+        Git git;
+        String workingDirectory = getWorkingDirectory(dirName);
+        File localPathFile = new File(workingDirectory);
+        deleteDirectory(localPathFile);
+        try {
+            Git.cloneRepository()
+                    .setURI(remoteUrl)
+                    .setCloneAllBranches(true)
+                    .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
+                    .setDirectory(localPathFile)
+                    .call();
+            FileUtil.deleteDirectory(new File(localPathFile + "/.git"));
+            git = Git.init().setDirectory(localPathFile).call();
+        } catch (GitAPIException e) {
+            throw new CommonException("error.git.clone", e);
+        }
+        return git;
+    }
+
+    /**
+     * 提交并push到远程代码仓库
+     *
+     * @param git         本地git对象
+     * @param repoUrl     仓库地址
+     * @param accessToken token
+     * @throws CommonException 异常发生时，应捕获此异常，关闭资源
+     */
+    public void commitAndPush(Git git, String repoUrl, String accessToken) throws CommonException {
+        try {
+            String[] url = repoUrl.split("://");
+            git.add().addFilepattern(".").call();
+            git.add().setUpdate(true).addFilepattern(".").call();
+            git.commit().setMessage("Render Variables[skip ci]").call();
+            List<Ref> refs = git.branchList().call();
+            PushCommand pushCommand = git.push();
+            for (Ref ref : refs) {
+                pushCommand.add(ref);
+            }
+            pushCommand.setRemote(repoUrl);
+            pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(
+                    "", accessToken));
+            pushCommand.call();
+        } catch (GitAPIException e) {
+            throw new CommonException("error.git.push", e);
+        }
     }
 
     /**

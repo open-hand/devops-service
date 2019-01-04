@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
@@ -56,6 +57,9 @@ import org.springframework.util.StringUtils;
 @Service
 public class ApplicationServiceImpl implements ApplicationService {
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
+    private static final String GITLAB_CI_FILE_NAME = ".gitlab-ci.yml";
+    private static final String DOCKER_FILE = "src/main/docker/Dockerfile";
+    private static final String CHART_DIR = "charts";
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String MASTER = "master";
@@ -386,56 +390,24 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         gitlabProjectPayload.setGitlabProjectId(gitlabProjectDO.getId());
 
-        // 不跳过权限检查，则为gitlab项目分配项目成员权限
-        if (!gitlabProjectPayload.getSkipCheckPermission()) {
-            if (!gitlabProjectPayload.getUserIds().isEmpty()) {
-                List<Long> gitlabUserIds = userAttrRepository.listByUserIds(gitlabProjectPayload.getUserIds()).stream()
-                        .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
-                gitlabUserIds.forEach(e -> {
-                    GitlabMemberE gitlabMemberE = gitlabProjectRepository
-                            .getProjectMember(gitlabProjectPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
-                    if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-                        gitlabRepository.addMemberIntoProject(gitlabProjectPayload.getGitlabProjectId(),
-                                new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
-                    }
-                });
-            }
-        }
-        // 跳过权限检查，项目下所有成员自动分配权限
-        else {
-            List<Long> iamUserIds = iamRepository.getAllMemberIdsWithoutOwner(projectE.getId());
-            List<Integer> gitlabUserIds = userAttrRepository.listByUserIds(iamUserIds).stream()
-                    .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
+        // 为项目下的成员分配对于此gitlab项目的权限
+        operateGitlabMemberPermission(gitlabProjectPayload);
 
-            gitlabUserIds.forEach(e -> {
-                        GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
-                        if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-                            gitlabRepository.addMemberIntoProject(gitlabProjectPayload.getGitlabProjectId(),
-                                    new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
-                        }
-                    }
-            );
-        }
         if (applicationE.getApplicationTemplateE() != null) {
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
                     applicationE.getApplicationTemplateE().getId());
-            String applicationDir = APPLICATION + System.currentTimeMillis();
             //拉取模板
-            String repoUrl = applicationTemplateE.getRepoUrl();
-            String type = applicationTemplateE.getCode();
-            if (applicationTemplateE.getOrganization().getId() != null) {
-                repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
-                repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
-                type = MASTER;
-            }
-            Git git = gitUtil.clone(applicationDir, type, repoUrl);
+            String applicationDir = APPLICATION + System.currentTimeMillis();
+            Git git = cloneTemplate(applicationTemplateE, applicationDir);
             //渲染模板里面的参数
             replaceParams(applicationE, projectE, organization, applicationDir);
 
             UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(gitlabProjectPayload.getUserId()));
+
+            // 获取push代码所需的access token
             String accessToken = getToken(gitlabProjectPayload, applicationDir, userAttrE);
 
-            repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
             applicationE.initGitlabProjectEByUrl(repoUrl + organization.getCode()
                     + "-" + projectE.getCode() + "/" + applicationE.getCode() + ".git");
             GitlabUserE gitlabUserE = gitlabUserRepository.getGitlabUserByUserId(gitlabProjectPayload.getUserId());
@@ -468,39 +440,266 @@ public class ApplicationServiceImpl implements ApplicationService {
             initMasterBranch(gitlabProjectPayload, applicationE);
         }
         try {
-            String token = GenerateUUID.generateUUID();
-            List<Variable> variables = gitlabRepository
-                    .getVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
-            if (variables.isEmpty()) {
-                gitlabRepository.addVariable(gitlabProjectPayload.getGitlabProjectId(), "Token", token, false,
-                        gitlabProjectPayload.getUserId());
-            } else {
-                token = variables.get(0).getValue();
-            }
-            applicationE.setToken(token);
+            String applicationToken = getApplicationToken(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
+            applicationE.setToken(applicationToken);
             applicationE.initGitlabProjectE(TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
             applicationE.initSynchro(true);
-            ProjectHook projectHook = ProjectHook.allHook();
-            projectHook.setEnableSslVerification(true);
-            projectHook.setProjectId(gitlabProjectPayload.getGitlabProjectId());
-            projectHook.setToken(token);
-            String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
-            uri += "devops/webhook";
-            projectHook.setUrl(uri);
-            List<ProjectHook> projectHooks = gitlabRepository
-                    .getHooks(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
-            if (projectHooks == null) {
-                applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
-                        gitlabProjectPayload.getGitlabProjectId(), gitlabProjectPayload.getUserId(), projectHook)
-                        .getId()));
-            } else {
-                applicationE.initHookId(TypeUtil.objToLong(projectHooks.get(0).getId()));
-            }
+
+            // set project hook id for application
+            setProjectHook(applicationE, gitlabProjectDO.getId(), applicationToken, gitlabProjectPayload.getUserId());
+
+            // 更新并校验
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException("error.application.update");
             }
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * get application token (set a token if there is not one in gitlab)
+     *
+     * @param projectId gitlab project id
+     * @param userId    gitlab user id
+     * @return the application token that is stored in gitlab variables
+     */
+    private String getApplicationToken(Integer projectId, Integer userId) {
+        List<Variable> variables = gitlabRepository.getVariable(projectId, userId);
+        if (variables.isEmpty()) {
+            String token = GenerateUUID.generateUUID();
+            gitlabRepository.addVariable(projectId, "Token", token, false, userId);
+            return token;
+        } else {
+            return variables.get(0).getValue();
+        }
+    }
+
+    /**
+     * 处理当前项目成员对于此gitlab应用的权限
+     *
+     * @param devOpsAppPayload 此次操作相关信息
+     */
+    private void operateGitlabMemberPermission(DevOpsAppPayload devOpsAppPayload) {
+        // 不跳过权限检查，则为gitlab项目分配项目成员权限
+        if (!devOpsAppPayload.getSkipCheckPermission()) {
+            if (!devOpsAppPayload.getUserIds().isEmpty()) {
+                List<Long> gitlabUserIds = userAttrRepository.listByUserIds(devOpsAppPayload.getUserIds()).stream()
+                        .map(UserAttrE::getGitlabUserId).collect(Collectors.toList());
+                gitlabUserIds.forEach(e -> {
+                    GitlabMemberE gitlabMemberE = gitlabProjectRepository
+                            .getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
+                    if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                        gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                                new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
+                    }
+                });
+            }
+        }
+        // 跳过权限检查，项目下所有成员自动分配权限
+        else {
+            List<Long> iamUserIds = iamRepository.getAllMemberIdsWithoutOwner(devOpsAppPayload.getIamProjectId());
+            List<Integer> gitlabUserIds = userAttrRepository.listByUserIds(iamUserIds).stream()
+                    .map(UserAttrE::getGitlabUserId).map(TypeUtil::objToInteger).collect(Collectors.toList());
+
+            gitlabUserIds.forEach(e -> {
+                        GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
+                        if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                            gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
+                                    new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
+                        }
+                    }
+            );
+        }
+    }
+
+    /**
+     * 拉取模板库到本地
+     *
+     * @param applicationTemplateE 模板库的信息
+     * @param applicationDir       本地库地址
+     * @return 本地库的git实例
+     */
+    private Git cloneTemplate(ApplicationTemplateE applicationTemplateE, String applicationDir) {
+        String repoUrl = applicationTemplateE.getRepoUrl();
+        String type = applicationTemplateE.getCode();
+        if (applicationTemplateE.getOrganization().getId() != null) {
+            repoUrl = repoUrl.startsWith("/") ? repoUrl.substring(1) : repoUrl;
+            repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" + repoUrl : gitlabUrl + repoUrl;
+            type = MASTER;
+        }
+        return gitUtil.clone(applicationDir, type, repoUrl);
+    }
+
+    /**
+     * set project hook id for application
+     *
+     * @param applicationE the application entity
+     * @param projectId    the gitlab project id
+     * @param token        the token for project hook
+     * @param userId       the gitlab user id
+     */
+    private void setProjectHook(ApplicationE applicationE, Integer projectId, String token, Integer userId) {
+        ProjectHook projectHook = ProjectHook.allHook();
+        projectHook.setEnableSslVerification(true);
+        projectHook.setProjectId(projectId);
+        projectHook.setToken(token);
+        String uri = !gatewayUrl.endsWith("/") ? gatewayUrl + "/" : gatewayUrl;
+        uri += "devops/webhook";
+        projectHook.setUrl(uri);
+        List<ProjectHook> projectHooks = gitlabRepository
+                .getHooks(projectId, userId);
+        if (projectHooks == null) {
+            applicationE.initHookId(TypeUtil.objToLong(gitlabRepository.createWebHook(
+                    projectId, userId, projectHook)
+                    .getId()));
+        } else {
+            applicationE.initHookId(TypeUtil.objToLong(projectHooks.get(0).getId()));
+        }
+    }
+
+    @Override
+    public void operationApplicationImport(DevOpsAppImportPayload devOpsAppImportPayload) {
+        // 准备相关的数据
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
+                TypeUtil.objToInteger(devOpsAppImportPayload.getGroupId()));
+        ApplicationE applicationE = applicationRepository.queryByCode(devOpsAppImportPayload.getPath(),
+                gitlabGroupE.getProjectE().getId());
+        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        GitlabProjectDO gitlabProjectDO = gitlabRepository
+                .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(),
+                        devOpsAppImportPayload.getUserId());
+        if (gitlabProjectDO.getId() == null) {
+            gitlabProjectDO = gitlabRepository.createProject(devOpsAppImportPayload.getGroupId(),
+                    devOpsAppImportPayload.getPath(),
+                    devOpsAppImportPayload.getUserId(), false);
+        }
+        devOpsAppImportPayload.setGitlabProjectId(gitlabProjectDO.getId());
+
+        // 为项目下的成员分配对于此gitlab项目的权限
+        operateGitlabMemberPermission(devOpsAppImportPayload);
+
+        if (applicationE.getApplicationTemplateE() != null) {
+            UserAttrE userAttrE = userAttrRepository.queryByGitlabUserId(TypeUtil.objToLong(devOpsAppImportPayload.getUserId()));
+            ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
+                    applicationE.getApplicationTemplateE().getId());
+            // 拉取模板
+            String templateDir = APPLICATION + System.currentTimeMillis();
+            Git templateGit = cloneTemplate(applicationTemplateE, templateDir);
+            // 渲染模板里面的参数
+            replaceParams(applicationE, projectE, organization, templateDir);
+
+            // clone外部代码仓库
+            String applicationDir = APPLICATION + System.currentTimeMillis();
+            Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppImportPayload.getRepositoryUrl(), devOpsAppImportPayload.getAccessToken());
+
+            // 将模板库中文件复制到代码库中
+            File templateWorkDir = new File(gitUtil.getWorkingDirectory(templateDir));
+            File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
+            mergeTemplateToApplication(templateWorkDir, applicationWorkDir);
+
+            // 获取push代码所需的access token
+            String accessToken = getToken(devOpsAppImportPayload, applicationDir, userAttrE);
+
+            // 设置Application对应的gitlab项目的仓库地址
+            String repoUrl = !gitlabUrl.endsWith("/") ? gitlabUrl + "/" : gitlabUrl;
+            applicationE.initGitlabProjectEByUrl(repoUrl + organization.getCode()
+                    + "-" + projectE.getCode() + "/" + applicationE.getCode() + ".git");
+
+            BranchDO branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+            if (branchDO.getName() == null) {
+                try {
+                    // 提交并推代码
+                    gitUtil.commitAndPush(repositoryGit, applicationE.getGitlabProjectE().getRepoURL(), accessToken);
+                } catch (CommonException e) {
+                    releaseResources(templateWorkDir, applicationWorkDir, templateGit, repositoryGit);
+                    throw e;
+                } finally {
+                    releaseResources(templateWorkDir, applicationWorkDir, templateGit, repositoryGit);
+                }
+
+                branchDO = devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER);
+                //解决push代码之后gitlab给master分支设置保护分支速度和程序运行速度不一致
+                if (!branchDO.getProtected()) {
+                    try {
+                        gitlabRepository.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER, AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(), devOpsAppImportPayload.getUserId());
+                    } catch (CommonException e) {
+                        if (!devopsGitRepository.getBranch(gitlabProjectDO.getId(), MASTER).getProtected()) {
+                            throw new CommonException(e);
+                        }
+                    }
+                }
+            } else {
+                if (!branchDO.getProtected()) {
+                    gitlabRepository.createProtectBranch(devOpsAppImportPayload.getGitlabProjectId(), MASTER,
+                            AccessLevel.MASTER.toString(), AccessLevel.MASTER.toString(),
+                            devOpsAppImportPayload.getUserId());
+                }
+            }
+            initMasterBranch(devOpsAppImportPayload, applicationE);
+        }
+        try {
+            // 设置appliation的属性
+            String applicationToken = getApplicationToken(gitlabProjectDO.getId(), devOpsAppImportPayload.getUserId());
+            applicationE.initGitlabProjectE(TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabProjectId()));
+            applicationE.setToken(applicationToken);
+            applicationE.setSynchro(true);
+
+            // set project hook id for application
+            setProjectHook(applicationE, gitlabProjectDO.getId(), applicationToken, devOpsAppImportPayload.getUserId());
+
+            // 更新并校验
+            if (applicationRepository.update(applicationE) != 1) {
+                throw new CommonException("error.application.update");
+            }
+        } catch (Exception e) {
+            throw new CommonException(e.getMessage(), e);
+        }
+    }
+
+
+    /**
+     * 释放资源
+     */
+    private void releaseResources(File templateWorkDir, File applicationWorkDir, Git templateGit, Git repositoryGit) {
+        FileUtil.deleteDirectory(templateWorkDir);
+        FileUtil.deleteDirectory(applicationWorkDir);
+        if (templateGit != null) {
+            templateGit.close();
+        }
+        if (repositoryGit != null) {
+            repositoryGit.close();
+        }
+    }
+
+    /**
+     * 将模板库中的chart包，dockerfile，gitlab-ci文件复制到导入的代码仓库中
+     * 复制文件前会判断文件是否存在，如果存在则不复制
+     *
+     * @param templateWorkDir    模板库工作目录
+     * @param applicationWorkDir 应用库工作目录
+     */
+    private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir) {
+        // ci 文件
+        File appGitlabCiFile = new File(applicationWorkDir, GITLAB_CI_FILE_NAME);
+        File templateGitlabCiFile = new File(templateWorkDir, GITLAB_CI_FILE_NAME);
+        if (!appGitlabCiFile.exists() && templateGitlabCiFile.exists()) {
+            FileUtil.copyFile(templateGitlabCiFile, appGitlabCiFile);
+        }
+
+        // Dockerfile 文件
+        File appDockerFile = new File(applicationWorkDir, DOCKER_FILE);
+        File templateDockerFile = new File(templateWorkDir, DOCKER_FILE);
+        if (!appDockerFile.exists() && templateDockerFile.exists()) {
+            FileUtil.copyFile(templateDockerFile, appDockerFile);
+        }
+
+        // chart文件夹
+        File appChartDir = new File(applicationWorkDir, CHART_DIR);
+        File templateChartDir = new File(templateWorkDir, CHART_DIR);
+        if (!appChartDir.exists() && templateChartDir.exists()) {
+            FileUtil.copyDir(templateChartDir, appChartDir);
         }
     }
 
@@ -639,27 +838,111 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public void initMockService(SagaClient sagaClient) {
-        this.sagaClient = sagaClient;
-    }
-
-    @Override
-    public boolean checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String access_token) {
+    public Boolean validateRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String accessToken) {
         if (!REPOSITORY_URL_PATTERN.matcher(repositoryUrl).matches()) {
-            return false;
+            return Boolean.FALSE;
         }
 
-        // 当不存在access_token时，默认仓库是公开的
-        if (StringUtils.isEmpty(access_token)) {
+        // 当不存在access_token时，默认将仓库识别为公开的
+        if (StringUtils.isEmpty(accessToken)) {
             return GitUtil.validRepositoryUrlWithoutToken(repositoryUrl);
         }
 
-        // 需要访问外部api，可能会导致此接口过慢
         switch (gitPlatformType) {
             case GITLAB:
-                return gitlabRepository.validateUrlAndAccessToken(repositoryUrl, access_token);
+                return gitlabRepository.validateUrlAndAccessToken(repositoryUrl, accessToken);
             default:
-                return false;
+                return Boolean.FALSE;
         }
+    }
+
+    /**
+     * ensure the repository url and access token are valid.
+     *
+     * @param gitPlatformType git platform type
+     * @param repositoryUrl   repository url
+     * @param access_token    access token (Nullable)
+     */
+    private void checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String access_token) {
+        if (!validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, access_token)) {
+            throw new CommonException("error.repository.token.invalid");
+        }
+    }
+
+    @Override
+    @Saga(code = "devops-import-gitlab-project", description = "Devops从外部代码平台导入到gitlab项目", inputSchema = "{}")
+    public ApplicationRepDTO importApplicationFromGitPlatform(Long projectId, ApplicationImportDTO applicationImportDTO) {
+        // 获取当前操作的用户的信息
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+
+        // 校验application信息的格式
+        ApplicationValidator.checkApplication(applicationImportDTO);
+
+        // 校验名称唯一性
+        applicationRepository.checkName(projectId, applicationImportDTO.getName());
+
+        // 校验code唯一性
+        applicationRepository.checkCode(projectId, applicationImportDTO.getCode());
+
+        // 校验repository（和token） 地址是否有效
+        GitPlatformType gitPlatformType = GitPlatformType.from(applicationImportDTO.getPlatformType());
+        checkRepositoryUrlAndToken(gitPlatformType, applicationImportDTO.getRepositoryUrl(), applicationImportDTO.getAccessToken());
+
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+
+        ApplicationE applicationE = ConvertHelper.convert(applicationImportDTO, ApplicationE.class);
+        applicationE.initProjectE(projectId);
+
+
+        applicationE.initActive(true);
+        applicationE.initSynchro(false);
+        applicationE.setIsSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
+
+        // 查询创建应用所在的gitlab应用组
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+
+        // 校验用户的gitlab权限
+        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+        }
+
+        // 创建应用
+        applicationE = applicationRepository.create(applicationE);
+
+        // 校验创建成功与否
+        Long appId = applicationE.getId();
+        if (appId == null) {
+            throw new CommonException("error.application.create.insert");
+        }
+
+        // 创建saga payload
+        DevOpsAppImportPayload devOpsAppImportPayload = new DevOpsAppImportPayload();
+        devOpsAppImportPayload.setType(APPLICATION);
+        devOpsAppImportPayload.setPath(applicationImportDTO.getCode());
+        devOpsAppImportPayload.setOrganizationId(organization.getId());
+        devOpsAppImportPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        devOpsAppImportPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
+        devOpsAppImportPayload.setUserIds(applicationImportDTO.getUserIds());
+        devOpsAppImportPayload.setSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
+        devOpsAppImportPayload.setAppId(appId);
+        devOpsAppImportPayload.setIamProjectId(projectId);
+        devOpsAppImportPayload.setPlatformType(gitPlatformType);
+        devOpsAppImportPayload.setRepositoryUrl(applicationImportDTO.getRepositoryUrl());
+        devOpsAppImportPayload.setAccessToken(applicationImportDTO.getAccessToken());
+
+        // 如果不跳过权限检查
+        List<Long> userIds = applicationImportDTO.getUserIds();
+        if (!applicationImportDTO.getIsSkipCheckPermission() && userIds != null && !userIds.isEmpty()) {
+            userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
+        }
+
+        String input = gson.toJson(devOpsAppImportPayload);
+        sagaClient.startSaga("devops-import-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
+
+        return ConvertHelper.convert(applicationRepository.query(appId), ApplicationRepDTO.class);
     }
 }

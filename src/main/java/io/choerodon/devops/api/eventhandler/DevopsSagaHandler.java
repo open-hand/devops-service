@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,6 +151,34 @@ public class DevopsSagaHandler {
                 throw e;
             }
             ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
+            if (applicationE.getFailed() != null && applicationE.getFailed()) {
+                applicationE.setFailed(false);
+                if (1 != applicationRepository.update(applicationE)) {
+                    LOGGER.error("update application set create success status error");
+                }
+            }
+        }
+        return data;
+    }
+
+    /**
+     * GitOps 事件处理
+     */
+    @SagaTask(code = "devopsCreateGitlabProject",
+            description = "Devops从外部代码平台导入到gitlab项目",
+            sagaCode = "devops-import-gitlab-project",
+            maxRetryCount = 3,
+            seq = 1)
+    public String importApp(String data) {
+        DevOpsAppImportPayload devOpsAppImportPayload = gson.fromJson(data, DevOpsAppImportPayload.class);
+        if (devOpsAppImportPayload.getType().equals(APPLICATION)) {
+            try {
+                applicationService.operationApplicationImport(devOpsAppImportPayload);
+            } catch (Exception e) {
+                applicationService.setAppErrStatus(data, devOpsAppImportPayload.getIamProjectId());
+                throw e;
+            }
+            ApplicationE applicationE = applicationRepository.query(devOpsAppImportPayload.getAppId());
             if (applicationE.getFailed() != null && applicationE.getFailed()) {
                 applicationE.setFailed(false);
                 if (1 != applicationRepository.update(applicationE)) {
