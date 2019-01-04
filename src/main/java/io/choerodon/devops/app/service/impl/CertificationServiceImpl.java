@@ -4,10 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
@@ -28,6 +24,9 @@ import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by n!Ck
@@ -311,8 +310,8 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<CertificationDTO> getActiveByDomain(Long envId, String domain) {
-        return certificationRepository.getActiveByDomain(envId, domain);
+    public List<CertificationDTO> getActiveByDomain(Long projectId, String domain) {
+        return certificationRepository.getActiveByDomain(projectId, domain);
     }
 
     @Override

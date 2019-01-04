@@ -61,10 +61,11 @@
         SELECT
         *
         FROM
-        devops_certification
+          devops_certification dc
+				left join devops_env de on dc.env_id = de.id
         WHERE
         `status` = 'active'
-        AND env_id = #{envId}
+        AND de.project_id = #{projectId}
         AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
     </select>
 

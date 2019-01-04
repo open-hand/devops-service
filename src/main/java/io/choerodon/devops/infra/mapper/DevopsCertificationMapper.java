@@ -3,10 +3,9 @@ package io.choerodon.devops.infra.mapper;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
-
 import io.choerodon.devops.infra.dataobject.CertificationDO;
 import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * Created by n!Ck
@@ -22,7 +21,7 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDO> {
                                               @Param("searchParam") Map<String, Object> searchParam,
                                               @Param("param") String param);
 
-    List<CertificationDO> getActiveByDomain(@Param("envId") Long envId, @Param("domain") String domain);
+    List<CertificationDO> getActiveByDomain(@Param("projectId") Long projectId, @Param("domain") String domain);
 
     void updateSkipCheckPro(@Param("certId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 
