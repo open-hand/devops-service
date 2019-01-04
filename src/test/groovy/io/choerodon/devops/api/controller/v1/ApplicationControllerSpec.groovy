@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.ApplicationImportDTO
 import io.choerodon.devops.api.dto.ApplicationRepDTO
 import io.choerodon.devops.api.dto.ApplicationReqDTO
 import io.choerodon.devops.api.dto.ApplicationUpdateDTO
@@ -566,6 +567,68 @@ class ApplicationControllerSpec extends Specification {
 
         then:
         result.getBody() == "null"
+    }
+
+    // 项目下导入应用
+    def "import Application"() {
+        given: '创建issueDTO'
+        def url = MAPPING + "/import"
+        ApplicationImportDTO applicationDTO = new ApplicationImportDTO()
+        applicationDTO.setName("test-import-github")
+        applicationDTO.setCode("test-import-gitlab")
+        applicationDTO.setType("normal")
+        applicationDTO.setProjectId(project_id)
+        applicationDTO.setApplicationTemplateId(init_id)
+        applicationDTO.setIsSkipCheckPermission(true)
+        applicationDTO.setRepositoryUrl("https://github.com/choerodon/choerodon-microservice-template.git")
+        applicationDTO.setPlatformType("github")
+
+        def searchCondition = new ApplicationDO()
+        searchCondition.setCode(applicationDTO.getCode())
+
+        when: '导入一个github应用'
+        def entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+
+        then: '校验结果'
+        entity.statusCode.is2xxSuccessful()
+        applicationMapper.selectOne(searchCondition) != null
+        applicationMapper.delete(searchCondition)
+
+        when: '导入一个不可用地址的仓库'
+        applicationDTO.setName("test-import-invalid")
+        applicationDTO.setCode("test-import-invalid")
+        applicationDTO.setRepositoryUrl("https://github.com/choerodon/choerodon-microservice-template.gi")
+        entity = restTemplate.postForEntity(url, applicationDTO, ExceptionResponse.class, project_id)
+
+        then: '校验结果'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getCode() == "error.repository.token.invalid"
+
+        when: '导入一个空的仓库'
+        applicationDTO.setName("test-import-empty")
+        applicationDTO.setCode("test-import-empty")
+        applicationDTO.setRepositoryUrl("http://git.staging.saas.hand-china.com/code-x-code-x/test-empty.git")
+        applicationDTO.setPlatformType("gitlab")
+        applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
+        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+
+        then: '校验结果'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().getCode() == "error.repository.empty"
+
+        when: '导入一个gitlab的私有仓库'
+        applicationDTO.setName("test-import-gitlab")
+        applicationDTO.setCode("test-import-gitlab")
+        applicationDTO.setRepositoryUrl("http://git.staging.saas.hand-china.com/code-x-code-x/code-i.git")
+        applicationDTO.setPlatformType("gitlab")
+        applicationDTO.setAccessToken("munijNHhNBEh7BRNhwrV")
+        searchCondition.setCode(applicationDTO.getCode())
+        entity = restTemplate.postForEntity(url, applicationDTO, ApplicationRepDTO.class, project_id)
+
+        then: '校验结果'
+        entity.getStatusCode().is2xxSuccessful()
+        applicationMapper.selectOne(searchCondition) != null
+        applicationMapper.delete(searchCondition)
     }
 
     // 清除测试数据
