@@ -68,6 +68,16 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     }
 
     @Override
+    public void checkCode(Long projectId, String code) {
+        ApplicationDO applicationDO = new ApplicationDO();
+        applicationDO.setProjectId(projectId);
+        applicationDO.setCode(code);
+        if (applicationMapper.selectOne(applicationDO) != null){
+            throw new CommonException("error.code.exist");
+        }
+    }
+
+    @Override
     public ApplicationE create(ApplicationE applicationE) {
         ApplicationDO applicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
         applicationMapper.insert(applicationDO);

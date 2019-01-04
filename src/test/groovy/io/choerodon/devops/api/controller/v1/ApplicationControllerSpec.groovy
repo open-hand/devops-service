@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.controller.v1
 
 import io.choerodon.asgard.saga.dto.SagaInstanceDTO
+import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
@@ -154,9 +155,10 @@ class ApplicationControllerSpec extends Specification {
             DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
             DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
             DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
+            DependencyInjectUtil.setAttribute(applicationService, "sagaClient", sagaClient)
 
             // 删除app
-            applicationMapper.selectAll().forEach{ applicationMapper.delete(it) }
+            applicationMapper.selectAll().forEach { applicationMapper.delete(it) }
 
             ProjectDO projectDO = new ProjectDO()
             projectDO.setName("pro")
@@ -191,23 +193,24 @@ class ApplicationControllerSpec extends Specification {
             DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
             DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
             DependencyInjectUtil.restoreDefaultDependency(gitlabGroupMemberRepository, "gitlabServiceClient")
+            DependencyInjectUtil.restoreDefaultDependency(applicationService, "sagaClient")
 
             // 删除appInstance
-            applicationInstanceMapper.selectAll().forEach{ applicationInstanceMapper.delete(it) }
+            applicationInstanceMapper.selectAll().forEach { applicationInstanceMapper.delete(it) }
             // 删除env
-            devopsEnvironmentMapper.selectAll().forEach{ devopsEnvironmentMapper.delete(it) }
+            devopsEnvironmentMapper.selectAll().forEach { devopsEnvironmentMapper.delete(it) }
             // 删除app
-            applicationMapper.selectAll().forEach{ applicationMapper.delete(it) }
+            applicationMapper.selectAll().forEach { applicationMapper.delete(it) }
             // 删除appVersion
-            applicationVersionMapper.selectAll().forEach{ applicationVersionMapper.delete(it) }
+            applicationVersionMapper.selectAll().forEach { applicationVersionMapper.delete(it) }
             // 删除appMarket
-            applicationMarketMapper.selectAll().forEach{ applicationMarketMapper.delete(it) }
-            // 删除appTemplet
+            applicationMarketMapper.selectAll().forEach { applicationMarketMapper.delete(it) }
+            // 删除appTemplate
             applicationTemplateMapper.delete(applicationTemplateDO)
             // 删除appUserPermission
-            appUserPermissionMapper.selectAll().forEach{ appUserPermissionMapper.delete(it) }
+            appUserPermissionMapper.selectAll().forEach { appUserPermissionMapper.delete(it) }
             // 删除envPod
-            devopsEnvPodMapper.selectAll().forEach{ devopsEnvPodMapper.delete(it) }
+            devopsEnvPodMapper.selectAll().forEach { devopsEnvPodMapper.delete(it) }
         }
     }
 
@@ -237,8 +240,7 @@ class ApplicationControllerSpec extends Specification {
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
 
         and: 'mock启动sagaClient'
-        applicationService.initMockService(sagaClient)
-        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), anyObject())
+        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
 
         when: '创建一个应用'
         def entity = restTemplate.postForEntity(MAPPING, applicationDTO, ApplicationRepDTO.class, project_id)
@@ -270,8 +272,7 @@ class ApplicationControllerSpec extends Specification {
         applicationUpdateDTO.setIsSkipCheckPermission(true)
 
         and: 'mock启动sagaClient'
-        applicationService.initMockService(sagaClient)
-        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), anyObject())
+        Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
 
         when: '以前和现在都跳过权限检查，直接返回true，且该应用下无权限表记录'
         restTemplate.put(MAPPING, applicationUpdateDTO, project_id)
@@ -318,7 +319,7 @@ class ApplicationControllerSpec extends Specification {
     def "disableApp"() {
         when:
         restTemplate.put(MAPPING + "/{init_id}?active=false", Boolean, 1L, init_id)
-        applicationMapper.selectAll().forEach{ println(it.getId() + it.getName() + it.getCode() + it.getActive()) }
+        applicationMapper.selectAll().forEach { println(it.getId() + it.getName() + it.getCode() + it.getActive()) }
 
         then: '校验是否激活'
         !applicationMapper.selectByPrimaryKey(init_id).getActive()

@@ -5,6 +5,7 @@ import java.util.List;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -84,6 +85,13 @@ public interface ApplicationService {
      * @param gitlabProjectEventDTO 应用信息
      */
     void operationApplication(DevOpsAppPayload gitlabProjectEventDTO);
+
+    /**
+     * 处理应用导入逻辑
+     *
+     * @param devOpsAppImportPayload 应用导入相关信息
+     */
+    void operationApplicationImport(DevOpsAppImportPayload devOpsAppImportPayload);
 
 
     /**
@@ -192,15 +200,22 @@ public interface ApplicationService {
      */
     List<AppUserPermissionRepDTO> listAllUserPermission(Long appId);
 
-    void initMockService(SagaClient sagaClient);
-
     /**
      * valid the repository url and access token
      *
      * @param gitPlatformType git platform type
-     * @param repositoryUrl repository url
-     * @param access_token  access token (Nullable)
+     * @param repositoryUrl   repository url
+     * @param accessToken    access token (Nullable)
      * @return true if valid
      */
-    boolean checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String access_token);
+    Boolean validateRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String accessToken);
+
+    /**
+     * 从外部代码托管平台导入项目创建应用
+     *
+     * @param projectId            project id
+     * @param applicationImportDTO 导入操作的相关信息
+     * @return response
+     */
+    ApplicationRepDTO importApplicationFromGitPlatform(Long projectId, ApplicationImportDTO applicationImportDTO);
 }

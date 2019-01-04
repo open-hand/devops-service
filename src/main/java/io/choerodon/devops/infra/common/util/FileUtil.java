@@ -1272,6 +1272,40 @@ public class FileUtil {
 
     }
 
+    /**
+     * copy file to the destination
+     *
+     * @param sourceFile the source file
+     * @param destFile   the destination file that can not exist.
+     */
+    public static void copyFile(File sourceFile, File destFile) {
+        try {
+            if (sourceFile.exists() && sourceFile.isFile()) {  //文件存在时
+                FileUtils.copyFile(sourceFile, destFile);
+            }
+        } catch (Exception e) {
+            logger.info("Failure occurs when copy file. from {} to {}. Exception is {}", sourceFile.toString(), destFile.toString(), e);
+        }
+
+    }
+
+    /**
+     * copy directory to the destination
+     *
+     * @param sourceDir the source directory
+     * @param destDir   the destination directory
+     */
+    public static void copyDir(File sourceDir, File destDir) {
+        if (sourceDir.exists() && sourceDir.isDirectory()) {
+            try {
+                FileUtils.copyDirectory(sourceDir, destDir);
+            } catch (IOException e) {
+                logger.info("Failure occurs when copy directory. from {} to {}. Exception is {}", sourceDir.toString(), destDir.toString(), e);
+            }
+        }
+    }
+
+
     public static String getChangeYaml(String oldYam1, String newYaml) {
         Yaml yaml = new Yaml();
         Map<String, Object> map1;

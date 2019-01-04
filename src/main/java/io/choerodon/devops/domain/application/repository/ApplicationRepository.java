@@ -16,6 +16,8 @@ public interface ApplicationRepository {
 
     void checkCode(ApplicationE applicationE);
 
+    void checkCode(Long projectId, String code);
+
     ApplicationE queryByCode(String code, Long projectId);
 
     int update(ApplicationE applicationE);
