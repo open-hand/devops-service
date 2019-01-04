@@ -532,6 +532,42 @@ class ApplicationControllerSpec extends Specification {
         permissionList.isEmpty()
     }
 
+    // validate repository url and token
+    def "validateUrlAndAccessToken"() {
+        given: "准备数据"
+        def url = MAPPING + "/url_validation?platform_type={platform_type}&access_token={access_token}&url={url}"
+
+        when: "校验github公开仓库ssh协议"
+        def result = restTemplate.getForEntity(url, String, 1L, "github", "", "git@github.com:git/git.git")
+
+        then:
+        result.getBody() == "false"
+
+        when: "校验github公开仓库"
+        result = restTemplate.getForEntity(url, String, 1L, "github", "", "https://github.com/git/git.git")
+
+        then:
+        result.getBody() == "true"
+
+        when: "校验gitlab, 无token访问私有库"
+        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "", "http://git.staging.saas.hand-china.com/code-x-code-x/code-i.git")
+
+        then:
+        result.getBody() == "false"
+
+        when: "校验gitlab, 带token访问私有库"
+        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "munijNHhNBEh7BRNhwrV", "http://git.staging.saas.hand-china.com/code-x-code-x/code-i.git")
+
+        then:
+        result.getBody() == "true"
+
+        when: "校验gitlab, 带token访问私有空库"
+        result = restTemplate.getForEntity(url, String, 1L, "gitlab", "munijNHhNBEh7BRNhwrV", "http://git.staging.saas.hand-china.com/code-x-code-x/test-empty.git")
+
+        then:
+        result.getBody() == "null"
+    }
+
     // 清除测试数据
     def "cleanupData"() {
         given:
