@@ -884,7 +884,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
 
-        ApplicationE applicationE = ConvertHelper.convert(applicationImportDTO, ApplicationE.class);
+        ApplicationE applicationE = fromImportDtoToEntity(applicationImportDTO);
+
         applicationE.initProjectE(projectId);
 
 
@@ -937,5 +938,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         sagaClient.startSaga("devops-import-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
 
         return ConvertHelper.convert(applicationRepository.query(appId), ApplicationRepDTO.class);
+    }
+
+    private ApplicationE fromImportDtoToEntity(ApplicationImportDTO applicationImportDTO) {
+        ApplicationE applicationE = ApplicationFactory.createApplicationE();
+        applicationE.initProjectE(applicationImportDTO.getProjectId());
+        BeanUtils.copyProperties(applicationImportDTO, applicationE);
+        if (applicationImportDTO.getApplicationTemplateId() != null) {
+            applicationE.initApplicationTemplateE(applicationImportDTO.getApplicationTemplateId());
+        }
+        return applicationE;
     }
 }
