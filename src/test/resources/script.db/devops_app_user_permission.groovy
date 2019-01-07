@@ -19,7 +19,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_user_permission.groovy') {
         addUniqueConstraint(tableName: 'devops_app_user_permission',
                 constraintName: 'uk_iam_user_id_app_id', columnNames: 'iam_user_id,app_id')
 
-        createIndex(indexName: "idx_app_id", tableName: "devops_app_user_permission") {
+        createIndex(indexName: "devops_app_user_idx_app_id", tableName: "devops_app_user_permission") {
             column(name: "app_id")
         }
     }
