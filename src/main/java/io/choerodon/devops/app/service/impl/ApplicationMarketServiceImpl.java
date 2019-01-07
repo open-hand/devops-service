@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.tool.UUIDTool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -302,34 +303,28 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public AppMarketTgzDTO getMarketAppListInFile(Long projectId, MultipartFile file) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        String dirName = UUIDTool.genUuid();
         String classPath = String.format(
                 "tmp%s%s%s%s",
                 FILE_SEPARATOR,
                 organization.getCode(),
                 FILE_SEPARATOR,
                 projectE.getCode());
-        String path = FileUtil.multipartFileToFile(classPath, file);
-        String destPath = String.format("%s%s%s", classPath, FILE_SEPARATOR, "new");
+
+        String destPath = String.format("%s%s%s", classPath, FILE_SEPARATOR, dirName);
+        String path = FileUtil.multipartFileToFileWithSuffix(destPath, file, ".zip");
         FileUtil.unZipFiles(new File(path), destPath);
         FileUtil.deleteFile(path);
         File zipDirectory = new File(destPath);
         AppMarketTgzDTO appMarketTgzDTO = new AppMarketTgzDTO();
-        String fileCode;
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
             File[] chartsDirectory = zipDirectory.listFiles();
-            if (chartsDirectory != null
-                    && chartsDirectory.length == 1
-                    && chartsDirectory[0].getName().equals(file.getOriginalFilename().split("\\.")[0])) {
+            if (chartsDirectory != null && chartsDirectory.length == 1) {
                 File[] appFiles = chartsDirectory[0].listFiles();
                 if (appFiles == null || appFiles.length == 0) {
                     FileUtil.deleteDirectory(zipDirectory);
                     throw new CommonException("error.file.empty");
                 }
-                List<File> images = Arrays.stream(appFiles)
-                        .filter(t -> IMAGES.equals(t.getName()))
-                        .collect(Collectors.toCollection(ArrayList::new));
-                // do sth with images[0]
-                fileCode = hashImages(images);
 
                 List<File> appFileList = Arrays.stream(appFiles)
                         .filter(File::isDirectory).collect(Collectors.toCollection(ArrayList::new));
@@ -343,9 +338,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             FileUtil.deleteDirectory(zipDirectory);
             throw new CommonException("error.zip.empty");
         }
-        appMarketTgzDTO.setFileCode(
-                zipDirectory.renameTo(new File(String.format("%s%s%s", classPath, FILE_SEPARATOR, fileCode)))
-                        ? fileCode : "new");
+        appMarketTgzDTO.setFileCode(dirName);
         return appMarketTgzDTO;
     }
 

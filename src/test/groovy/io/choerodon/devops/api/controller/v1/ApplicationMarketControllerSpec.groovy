@@ -94,6 +94,8 @@ class ApplicationMarketControllerSpec extends Specification {
     Long project_id = 1L
     @Shared
     Long init_id = 1L
+    @Shared
+    String fileCode
 
     def setupSpec() {
         organization.setId(init_id)
@@ -305,17 +307,15 @@ class ApplicationMarketControllerSpec extends Specification {
 
         when: '应用市场解析导入应用'
         def dto = restTemplate.postForObject("/v1/projects/1/apps_market/upload", requestEntity, AppMarketTgzDTO.class)
+        fileCode = dto.fileCode
 
         then: '验证返回值'
         dto.getAppMarketList().get(0)["id"] == 27
     }
 
     def "ImportApps"() {
-        given: '获取文件名'
-        String fileName = "59027735aa121f3befb8cc9f7684b62e"
-
         when: '应用市场导入应用'
-        def bool = restTemplate.postForObject("/v1/projects/1/apps_market/import?file_name=" + fileName + "&public=true",
+        def bool = restTemplate.postForObject("/v1/projects/1/apps_market/import?file_name=" + fileCode + "&public=true",
                 null, Boolean.class)
 
         then: '验证返回值'

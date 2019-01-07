@@ -136,21 +136,33 @@ public class FileUtil {
      * @param files 来源文件
      */
     public static String multipartFileToFile(String path, MultipartFile files) {
+        return multipartFileToFileWithSuffix(path, files, "");
+    }
+
+    /**
+     * 将文件上传到项目指定目录
+     *
+     * @param path   项目目录
+     * @param files  来源文件
+     * @param suffix 文件后缀（如：.zip)
+     */
+    public static String multipartFileToFileWithSuffix(String path, MultipartFile files, String suffix) {
         File repo = new File(path);
+        String filename = files.getOriginalFilename() + suffix;
         try {
             if (!repo.exists()) {
                 repo.mkdirs();
             }
             try (BufferedOutputStream out = new BufferedOutputStream(
                     new FileOutputStream(new File(
-                            path, files.getOriginalFilename())))) {
+                            path, filename)))) {
                 out.write(files.getBytes());
                 out.flush();
             }
         } catch (IOException e) {
             throw new CommonException("error.file.transfer", e);
         }
-        return path + System.getProperty("file.separator") + files.getOriginalFilename();
+        return path + System.getProperty("file.separator") + filename;
     }
 
     /**
