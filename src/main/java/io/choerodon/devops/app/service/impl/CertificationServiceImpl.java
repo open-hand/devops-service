@@ -144,7 +144,8 @@ public class CertificationServiceImpl implements CertificationService {
 
     /**
      * create certification, command and store cert file
-     * @param certificationE the information of certification
+     *
+     * @param certificationE   the information of certification
      * @param c7nCertification the certification (null_able)
      */
     private void createAndStore(CertificationE certificationE, C7nCertification c7nCertification) {
@@ -310,8 +311,9 @@ public class CertificationServiceImpl implements CertificationService {
     }
 
     @Override
-    public List<CertificationDTO> getActiveByDomain(Long projectId, String domain) {
-        return certificationRepository.getActiveByDomain(projectId, domain);
+    public List<CertificationDTO> getActiveByDomain(Long projectId, Long envId, String domain) {
+        DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
+        return certificationRepository.getActiveByDomain(projectId, devopsEnvironmentE.getClusterE().getId(), domain);
     }
 
     @Override

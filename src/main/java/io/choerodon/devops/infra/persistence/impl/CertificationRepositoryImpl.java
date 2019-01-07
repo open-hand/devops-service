@@ -118,8 +118,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public List<CertificationDTO> getActiveByDomain(Long projectId, String domain) {
-        return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(projectId, domain),
+    public List<CertificationDTO> getActiveByDomain(Long projectId, Long clusterId, String domain) {
+        return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(projectId, clusterId, domain),
                 CertificationDTO.class);
     }
 

@@ -19,6 +19,7 @@ public class DevopsServiceE {
     private String labels;
     private String annotations;
     private Long commandId;
+    private String loadBalanceIp;
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -124,5 +125,13 @@ public class DevopsServiceE {
 
     public void setEndPoints(String endPoints) {
         this.endPoints = endPoints;
+    }
+
+    public String getLoadBalanceIp() {
+        return loadBalanceIp;
+    }
+
+    public void setLoadBalanceIp(String loadBalanceIp) {
+        this.loadBalanceIp = loadBalanceIp;
     }
 }

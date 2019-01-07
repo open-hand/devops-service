@@ -66,6 +66,7 @@
         WHERE
         `status` = 'active'
         AND de.project_id = #{projectId}
+        AND de.cluster_id = #{clusterId}
         AND domains LIKE CONCAT(CONCAT('%"', #{domain, jdbcType=VARCHAR}),'"%')
     </select>
 

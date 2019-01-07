@@ -30,6 +30,7 @@ public class DevopsServiceDO extends AuditDomain {
     private String externalIp;
     private String labels;
     private String annotations;
+    private String loadBalanceIp;
 
     public Long getId() {
         return id;
@@ -126,5 +127,13 @@ public class DevopsServiceDO extends AuditDomain {
 
     public void setEndPoints(String endPoints) {
         this.endPoints = endPoints;
+    }
+
+    public String getLoadBalanceIp() {
+        return loadBalanceIp;
+    }
+
+    public void setLoadBalanceIp(String loadBalanceIp) {
+        this.loadBalanceIp = loadBalanceIp;
     }
 }

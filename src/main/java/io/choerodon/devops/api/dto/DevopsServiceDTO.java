@@ -20,6 +20,7 @@ public class DevopsServiceDTO {
     private String commandType;
     private String commandStatus;
     private String error;
+    private String loadBalanceIp;
 
     public Long getId() {
         return id;
@@ -139,5 +140,13 @@ public class DevopsServiceDTO {
 
     public void setError(String error) {
         this.error = error;
+    }
+
+    public String getLoadBalanceIp() {
+        return loadBalanceIp;
+    }
+
+    public void setLoadBalanceIp(String loadBalanceIp) {
+        this.loadBalanceIp = loadBalanceIp;
     }
 }

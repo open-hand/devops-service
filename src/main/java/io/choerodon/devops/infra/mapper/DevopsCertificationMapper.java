@@ -21,7 +21,7 @@ public interface DevopsCertificationMapper extends BaseMapper<CertificationDO> {
                                               @Param("searchParam") Map<String, Object> searchParam,
                                               @Param("param") String param);
 
-    List<CertificationDO> getActiveByDomain(@Param("projectId") Long projectId, @Param("domain") String domain);
+    List<CertificationDO> getActiveByDomain(@Param("projectId") Long projectId, @Param("clusterId") Long clusterId,@Param("domain") String domain);
 
     void updateSkipCheckPro(@Param("certId") Long clusterId, @Param("skipCheckPro") Boolean skipCheckPro);
 

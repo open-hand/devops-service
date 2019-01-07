@@ -26,4 +26,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_secret.groovy') {
             column(name: "name")
         }
     }
+
+    changeSet(author: 'runge', id: '2019-01-07-change-column') {
+        modifyDataType(tableName: 'devops_secret', columnName: 'name', newDataType: 'VARCHAR(128)')
+    }
+
 }

@@ -126,7 +126,7 @@ public class CertificationController {
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "域名")
             @RequestParam(value = "domain") String domain) {
-        return Optional.ofNullable(certificationService.getActiveByDomain(projectId, domain))
+        return Optional.ofNullable(certificationService.getActiveByDomain(projectId, envId, domain))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
     }
