@@ -4,22 +4,12 @@ import java.io.IOException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.*;
-import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -43,6 +33,14 @@ import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.process.SocketMsgDispatcher;
 import io.choerodon.websocket.tool.KeyParseTool;
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.*;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -442,6 +440,15 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         ApplicationInstanceE applicationInstanceE;
         V1Service v1Service = json.deserialize(msg, V1Service.class);
         if (v1Service.getMetadata().getAnnotations() != null) {
+            DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
+
+            if (devopsServiceE.getType().equals("LoadBalancer")) {
+                if (v1Service.getSpec().getLoadBalancerIP() != null) {
+                    devopsServiceE.setLoadBalanceIp(v1Service.getSpec().getLoadBalancerIP());
+                    devopsServiceRepository.update(devopsServiceE);
+                }
+            }
+
             String releaseNames = v1Service.getMetadata().getAnnotations()
                     .get(CHOERODON_IO_NETWORK_SERVICE_INSTANCES);
             if (releaseNames != null) {
@@ -1712,7 +1719,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         JobLogDTO jobLogDTO = json.deserialize(msg, JobLogDTO.class);
         PodUpdateDTO podUpdateDTO = new PodUpdateDTO();
         podUpdateDTO.setReleaseNames(KeyParseTool.getReleaseName(key));
-        if (jobLogDTO.getSucceed()) {
+        if (jobLogDTO.getSucceed() != null && jobLogDTO.getSucceed()) {
             podUpdateDTO.setStatus(1L);
         } else {
             podUpdateDTO.setStatus(-1L);

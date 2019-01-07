@@ -89,4 +89,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_service.groovy') {
                     column(name: 'end_points', type: 'VARCHAR(1000)', remarks: 'endpoint的ip和端口', afterColumn: 'ports')
                 }
             }
+
+    changeSet(author: 'younger', id: '2019-01-04-add-column')
+            {
+                addColumn(tableName: 'devops_service') {
+                    column(name: 'load_balance_ip', type: 'VARCHAR(32)', remarks: 'load balance类型的ip', afterColumn: 'end_points')
+                }
+            }
 }

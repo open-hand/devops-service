@@ -24,7 +24,7 @@ public interface CertificationRepository {
 
     Page<CertificationDTO> page(Long projectId, Long organizationId, Long envId, PageRequest pageRequest, String params);
 
-    List<CertificationDTO> getActiveByDomain(Long envId, String domain);
+    List<CertificationDTO> getActiveByDomain(Long projectId,Long clusterId, String domain);
 
     void updateStatus(CertificationE certificationE);
 

@@ -1,13 +1,13 @@
 package io.choerodon.devops.app.service;
 
+import java.util.List;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.api.dto.OrgCertificationDTO;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-
-import java.util.List;
 
 /**
  * Created by n!Ck
@@ -35,7 +35,7 @@ public interface CertificationService {
 
     Page<CertificationDTO> page(Long projectId, Long envId, PageRequest pageRequest, String params);
 
-    List<CertificationDTO> getActiveByDomain(Long envId, String domain);
+    List<CertificationDTO> getActiveByDomain(Long projectId, Long envId, String domain);
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 

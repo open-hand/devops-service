@@ -65,6 +65,7 @@
         ds.id,
         ds.`name`,
         ds.external_ip,
+        ds.load_balance_ip,
         ds.ports,
         ds.`status`,
         ds.`type`,

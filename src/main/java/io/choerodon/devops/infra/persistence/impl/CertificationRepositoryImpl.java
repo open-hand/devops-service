@@ -6,9 +6,6 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -27,6 +24,8 @@ import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by n!Ck
@@ -119,8 +118,8 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     }
 
     @Override
-    public List<CertificationDTO> getActiveByDomain(Long envId, String domain) {
-        return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(envId, domain),
+    public List<CertificationDTO> getActiveByDomain(Long projectId, Long clusterId, String domain) {
+        return ConvertHelper.convertList(devopsCertificationMapper.getActiveByDomain(projectId, clusterId, domain),
                 CertificationDTO.class);
     }
 
