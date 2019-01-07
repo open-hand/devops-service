@@ -66,7 +66,7 @@ public class ApplicationController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下从外部代码库导入应用")
     @PostMapping("/import")
-    public ResponseEntity<ApplicationRepDTO> create(
+    public ResponseEntity<ApplicationRepDTO> importApp(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用信息", required = true)
