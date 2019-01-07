@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.fasterxml.jackson.databind.JsonNode
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
@@ -7,6 +8,7 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO
 import io.choerodon.devops.api.dto.AppMarketTgzDTO
 import io.choerodon.devops.api.dto.AppMarketVersionDTO
+import io.choerodon.devops.api.dto.AppMarketVersionListRepDTO
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
@@ -238,6 +240,18 @@ class ApplicationMarketControllerSpec extends Specification {
 
         then: '验证返回值'
         list.get(0)["version"] == "0.0"
+    }
+
+    def "queryMultiAppVersionsInProject"() {
+        given: "准备数据"
+        def ids = Arrays.asList(applicationMarketMapper.selectAll().get(0).getId())
+
+        when: '查询项目下单个应用市场的应用的版本'
+        def entity = restTemplate.postForEntity("/v1/projects/1/apps_market/list_versions", ids, JsonNode)
+
+        then: '验证返回值'
+        entity.getStatusCode().is2xxSuccessful()
+        entity.getBody().get(0).get("versions").get(0).get("version").asText() == "0.0"
     }
 
     def "QueryAppVersionsInProjectByPage"() {
