@@ -62,6 +62,8 @@ class OrganizationServiceImplSpec extends Specification {
         userDO.setId(2)
         ResponseEntity<UserDO> responseEntity1 = new ResponseEntity<>(userDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.createGitLabUser(anyString(), anyInt(), any(GitlabUserEvent.class))).thenReturn(responseEntity1)
+        Mockito.when(gitlabServiceClient.queryUserByUserName(anyString())).thenReturn(responseEntity1)
+
     }
 
     def "Create"() {
