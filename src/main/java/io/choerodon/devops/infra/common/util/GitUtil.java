@@ -1,5 +1,11 @@
 package io.choerodon.devops.infra.common.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
+import java.util.regex.Pattern;
+
 import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
@@ -22,12 +28,6 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Pattern;
-
 /**
  * Created by younger on 2018/3/29.
  */
@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 public class GitUtil {
 
     public static final String DEV_OPS_SYNC_TAG = "devops-sync";
+    public static final String TEMPLATE = "template";
     private static final String MASTER = "master";
     private static final String PATH = "/";
     private static final String REPO_NAME = "devops-service-repo";
@@ -43,14 +44,10 @@ public class GitUtil {
     private String classPath;
     private String sshKey;
 
-    @Value("${template.version.MicroService}")
-    private String microService;
-    @Value("${template.version.MicroServiceFront}")
-    private String microServiceFront;
-    @Value("${template.version.JavaLib}")
-    private String javaLib;
-    @Value("${template.version.ChoerodonMoChaTemplate}")
-    private String choerodonMoChaTemplate;
+    @Value("${template.url}")
+    private String repoUrl;
+    @Value("${template.version}")
+    private String version;
 
     /**
      * 构造方法
@@ -243,41 +240,65 @@ public class GitUtil {
      * Git克隆
      */
     public Git clone(String name, String type, String remoteUrl) {
-        Git git;
+        Git git = null;
         String branch;
         String workingDirectory = getWorkingDirectory(name);
         File localPathFile = new File(workingDirectory);
         deleteDirectory(localPathFile);
         switch (type) {
             case "MicroServiceFront":
-                branch = microServiceFront;
-                break;
+                return cloneGitHubTemplate("choerodon-front-template", workingDirectory, version);
             case "MicroService":
-                branch = microService;
-                break;
+                return cloneGitHubTemplate("choerodon-microservice-template", workingDirectory, version);
             case "JavaLib":
-                branch = javaLib;
-                break;
+                return cloneGitHubTemplate("choerodon-javalib-template", workingDirectory, version);
             case "ChoerodonMoChaTemplate":
-                branch = choerodonMoChaTemplate;
-                break;
+                return cloneGitHubTemplate("choerodon-mocha-template", workingDirectory, version);
+            case "GoTemplate":
+                return cloneGitHubTemplate("choerodon-golang-template", workingDirectory, version);
+            case "SpringBootTemplate":
+                return cloneGitHubTemplate("choerodon-springboot-template", workingDirectory, version);
             default:
                 branch = MASTER;
+                try {
+                    Git.cloneRepository()
+                            .setURI(remoteUrl)
+                            .setBranch(branch)
+                            .setDirectory(localPathFile)
+                            .call();
+                    FileUtil.deleteDirectory(new File(localPathFile + "/.git"));
+                    git = Git.init().setDirectory(localPathFile).call();
+
+                } catch (GitAPIException e) {
+                    throw new CommonException("error.git.clone", e);
+                }
                 break;
-        }
-        try {
-            Git.cloneRepository()
-                    .setURI(remoteUrl)
-                    .setBranch(branch)
-                    .setDirectory(localPathFile)
-                    .call();
-            FileUtil.deleteDirectory(new File(localPathFile + "/.git"));
-            git = Git.init().setDirectory(localPathFile).call();
-        } catch (GitAPIException e) {
-            throw new CommonException("error.git.clone", e);
         }
         return git;
     }
+
+    private Git cloneGitHubTemplate(String type, String localPathFile, String version) {
+        Git git = null;
+        try {
+            if (!new File(TEMPLATE).exists()) {
+                Git.cloneRepository()
+                        .setURI(repoUrl)
+                        .setCloneSubmodules(true)
+                        .setBranch(version)
+                        .setDirectory(new File(TEMPLATE))
+                        .call();
+            }
+            if (new File(TEMPLATE + "/" + type + "/.git").exists()) {
+                FileUtil.deleteFile(new File(TEMPLATE + "/" + type + "/.git"));
+            }
+            FileUtil.copyDir(new File(TEMPLATE + "/" + type), new File(localPathFile));
+            git = Git.init().setDirectory(new File(localPathFile)).call();
+        } catch (GitAPIException e) {
+            e.printStackTrace();
+        }
+        return git;
+    }
+
 
     /**
      * clone 外部代码平台的仓库

@@ -239,6 +239,12 @@
         WHERE ds.id = #{serviceId}
     </update>
 
+    <update id="setExternalIpNull">
+        UPDATE devops_service ds
+        SET ds.external_ip = null
+        WHERE ds.id = #{serviceId}
+    </update>
+
     <delete id="deleteServiceInstance">
         DELETE FROM devops_service_instance
         WHERE service_id IN

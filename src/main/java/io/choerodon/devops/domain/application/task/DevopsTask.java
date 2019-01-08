@@ -23,6 +23,8 @@ public class DevopsTask {
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;
 
+    //0.13.0不需要执行定时任务
+    /*
     @JobTask(maxRetryCount = 1, code = "syncGitlabUserName", params = {
             @JobParam(name = "test", defaultValue = "test")
     }, description = "升级到0.12.0同步gitlab用户名")
@@ -34,6 +36,6 @@ public class DevopsTask {
         logger.info("begin to sync gitlab userName!");
         devopsCheckLogService.checkLog("0.12.0");
     }
-
+   */
 
 }

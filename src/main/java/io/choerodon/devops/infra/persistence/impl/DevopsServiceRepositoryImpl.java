@@ -130,6 +130,9 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (devopsServiceE.getLabels() == null) {
             devopsServiceMapper.setLablesToNull(devopsServiceE.getId());
         }
+        if(devopsServiceE.getExternalIp() == null) {
+            devopsServiceMapper.setExternalIpNull(devopsServiceE.getId());
+        }
         devopsServiceDOUpdate.setObjectVersionNumber(devopsServiceDO.getObjectVersionNumber());
         if (devopsServiceMapper.updateByPrimaryKeySelective(devopsServiceDOUpdate) != 1) {
             throw new CommonException("error.k8s.service.update");
