@@ -27,4 +27,14 @@ public class DevopsCheckLogRepositoryImpl implements DevopsCheckLogRepository {
     public List<DevopsProjectDO> queryNonEnvGroupProject() {
         return devopsCheckLogMapper.queryNonEnvGroupProject();
     }
+
+    @Override
+    public void syncCommandId() {
+        devopsCheckLogMapper.syncCommandId();
+    }
+
+    @Override
+    public void syncCommandVersionId(){
+        devopsCheckLogMapper.syncCommandVersionId();
+    }
 }
