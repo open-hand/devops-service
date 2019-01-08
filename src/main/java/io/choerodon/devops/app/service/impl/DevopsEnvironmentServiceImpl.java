@@ -528,7 +528,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 Long gitlabUserId = userAttrE.getGitlabUserId();
 
                 // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
-                GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectPayload.getGitlabProjectId(), TypeUtil.objToInteger(gitlabUserId));
+                GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId.intValue(), TypeUtil.objToInteger(gitlabUserId));
                 if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
                     MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, "");
                     gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);

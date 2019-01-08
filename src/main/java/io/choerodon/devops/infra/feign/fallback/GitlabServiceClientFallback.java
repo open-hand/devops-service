@@ -1,5 +1,9 @@
 package io.choerodon.devops.infra.feign.fallback;
 
+import java.util.List;
+import java.util.Map;
+
+
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
@@ -13,8 +17,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by younger on 2018/3/29.
@@ -24,6 +26,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<UserDO> queryUserByUserId(Integer userId) {
+        return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<UserDO> queryUserByUserName(String username) {
         return new ResponseEntity("error.user.get", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

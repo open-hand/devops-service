@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import io.kubernetes.client.models.V1Endpoints;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import io.choerodon.devops.app.service.CertificationService;
 import io.choerodon.devops.app.service.DevopsEnvFileResourceService;
 import io.choerodon.devops.domain.application.entity.CertificationE;
@@ -97,7 +96,10 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
                         devopsEnvFileResourceRepository
                                 .deleteByEnvIdAndResource(envId, certificationE.getId(), ObjectType.CERTIFICATE.getType());
                     }
+
                 });
+
+
         addC7nCertification.stream().forEach(c7nCertification -> {
             String filePath = "";
             try {
