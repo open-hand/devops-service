@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1beta1HTTPIngressPath;
@@ -13,6 +14,7 @@ import io.kubernetes.client.models.V1beta1Ingress;
 import io.kubernetes.client.models.V1beta1IngressBackend;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
@@ -31,6 +33,12 @@ import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.GitOpsObjectError;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.V1beta1HTTPIngressPath;
+import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.V1beta1IngressBackend;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRelationsService<V1beta1Ingress> {
@@ -82,20 +90,22 @@ public class HandlerIngressRelationsServiceImpl implements HandlerObjectFileRela
         //删除ingress,删除文件对象关联关系
         beforeIngress.stream().forEach(ingressName -> {
             DevopsIngressE devopsIngressE = devopsIngressRepository.selectByEnvAndName(envId, ingressName);
-            DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
-            if (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType())) {
-                DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
-                devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
-                devopsEnvCommandE1.setObject(ObjectType.INGRESS.getType());
-                devopsEnvCommandE1.setCreatedBy(userId);
-                devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
-                devopsEnvCommandE1.setObjectId(devopsIngressE.getId());
-                DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
-                devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
-                devopsIngressRepository.updateIngress(devopsIngressDO);
+            if (devopsIngressE != null) {
+                DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsIngressE.getCommandId());
+                if (devopsEnvCommandE == null || (!devopsEnvCommandE.getCommandType().equals(CommandType.DELETE.getType()))) {
+                    DevopsEnvCommandE devopsEnvCommandE1 = new DevopsEnvCommandE();
+                    devopsEnvCommandE1.setCommandType(CommandType.DELETE.getType());
+                    devopsEnvCommandE1.setObject(ObjectType.INGRESS.getType());
+                    devopsEnvCommandE1.setCreatedBy(userId);
+                    devopsEnvCommandE1.setStatus(CommandStatus.OPERATING.getStatus());
+                    devopsEnvCommandE1.setObjectId(devopsIngressE.getId());
+                    DevopsIngressDO devopsIngressDO = devopsIngressRepository.getIngress(devopsIngressE.getId());
+                    devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE1).getId());
+                    devopsIngressRepository.updateIngress(devopsIngressDO);
+                }
+                devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
+                devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
             }
-            devopsIngressService.deleteIngressByGitOps(devopsIngressE.getId());
-            devopsEnvFileResourceRepository.deleteByEnvIdAndResource(envId, devopsIngressE.getId(), INGRESS);
         });
         //新增ingress
         addIngress(objectPath, envId, projectId, addV1beta1Ingress, path, userId);

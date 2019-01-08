@@ -350,6 +350,7 @@ public class GitUtil {
                 pushCommand.add(ref);
             }
             pushCommand.setRemote(url[0] + "://gitlab-ci-token:" + accessToken + "@" + url[1]);
+            LOGGER.info("push remote is:" + pushCommand.getRemote());
             pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(
                     userName, accessToken));
             pushCommand.call();
