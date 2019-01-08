@@ -9,10 +9,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
-import io.choerodon.devops.api.dto.AppMarketTgzDTO;
-import io.choerodon.devops.api.dto.AppMarketVersionDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
@@ -289,6 +286,16 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     public List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish) {
         return ConvertHelper.convertList(applicationMarketRepository.getVersions(projectId, appMarketId, isPublish),
                 AppMarketVersionDTO.class);
+    }
+
+    @Override
+    public List<AppMarketVersionListRepDTO> getAppVersionsByMarketIds(Long projectId, List<Long> appMarketIds, Boolean isPublish) {
+        return appMarketIds.stream().map(id -> {
+            AppMarketVersionListRepDTO repDTO = new AppMarketVersionListRepDTO();
+            repDTO.setApplicationId(id);
+            repDTO.setVersions(ConvertHelper.convertList(applicationMarketRepository.getVersions(projectId, id, isPublish), AppMarketVersionDTO.class));
+            return repDTO;
+        }).collect(Collectors.toList());
     }
 
     @Override

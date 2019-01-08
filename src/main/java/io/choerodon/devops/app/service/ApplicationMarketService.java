@@ -2,13 +2,10 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.api.dto.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
-import io.choerodon.devops.api.dto.AppMarketTgzDTO;
-import io.choerodon.devops.api.dto.AppMarketVersionDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -71,6 +68,8 @@ public interface ApplicationMarketService {
     void update(Long projectId, Long appMarketId, List<AppMarketVersionDTO> versionDTOList);
 
     List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish);
+
+    List<AppMarketVersionListRepDTO> getAppVersionsByMarketIds(Long projectId, List<Long> appMarketIds, Boolean isPublish);
 
     Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                              PageRequest pageRequest, String searchParam);

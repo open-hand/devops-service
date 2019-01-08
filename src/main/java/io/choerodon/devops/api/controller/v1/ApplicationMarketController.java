@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 import javax.servlet.http.HttpServletResponse;
 
+import io.choerodon.devops.api.dto.*;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -19,10 +20,6 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
-import io.choerodon.devops.api.dto.AppMarketTgzDTO;
-import io.choerodon.devops.api.dto.AppMarketVersionDTO;
-import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
 import io.choerodon.devops.app.service.ApplicationMarketService;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -174,6 +171,29 @@ public class ApplicationMarketController {
             @ApiParam(value = "是否发布", required = false)
             @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
         return Optional.ofNullable(applicationMarketService.getAppVersions(projectId, appMarketId, isPublish))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
+    }
+
+    /**
+     * 查询项目下多个应用市场的应用的版本
+     *
+     * @param projectId   项目id
+     * @param appMarketIds 发布ID
+     * @return List of AppMarketVersionDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "查询项目下多个应用市场的应用的版本")
+    @PostMapping("/list_versions")
+    public ResponseEntity<List<AppMarketVersionListRepDTO>> queryMultiAppVersionsInProject(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "多个发布的Id")
+            @RequestBody List<Long> appMarketIds,
+            @ApiParam(value = "是否发布", required = false)
+            @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
+        return Optional.ofNullable(applicationMarketService.getAppVersionsByMarketIds(projectId, appMarketIds, isPublish))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }
