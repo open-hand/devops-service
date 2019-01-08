@@ -294,7 +294,7 @@ public class GitUtil {
             FileUtil.copyDir(new File(TEMPLATE + "/" + type), new File(localPathFile));
             git = Git.init().setDirectory(new File(localPathFile)).call();
         } catch (GitAPIException e) {
-            e.printStackTrace();
+            throw new CommonException("error.git.clone", e);
         }
         return git;
     }
