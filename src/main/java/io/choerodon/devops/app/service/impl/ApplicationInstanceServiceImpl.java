@@ -737,11 +737,22 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
-        ApplicationInstanceE beforeApplicationInstanceE = applicationInstanceRepository
-                .selectByCode(code, applicationDeployDTO.getEnvironmentId());
-        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (beforeApplicationInstanceE != null) {
-            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeApplicationInstanceE.getCommandId());
+        //存储数据
+        if (applicationDeployDTO.getType().equals(CREATE)) {
+            applicationInstanceE.setCode(code);
+            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+            devopsEnvCommandE.initDevopsEnvCommandValueE(
+                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+            applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            applicationInstanceRepository.update(applicationInstanceE);
+        }
+        if (applicationDeployDTO.getType().equals(UPDATE)) {
+            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+            devopsEnvCommandE.initDevopsEnvCommandValueE(
+                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+            applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            applicationInstanceRepository.update(applicationInstanceE);
         }
 
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
@@ -769,31 +780,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
                     applicationInstanceE.getId(), C7NHELM_RELEASE, null, devopsEnvironmentE.getId(), filePath);
-            ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository
-                    .selectByCode(code, applicationDeployDTO.getEnvironmentId());
-            DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
-            if (afterApplicationInstanceE != null) {
-                afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterApplicationInstanceE.getCommandId());
-            }
 
-            //实例相关对象数据库操作,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而实例成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行实例数据库操作
-            if (applicationDeployDTO.getType().equals(CREATE) && afterApplicationInstanceE == null) {
-                applicationInstanceE.setCode(code);
-                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                devopsEnvCommandE.initDevopsEnvCommandValueE(
-                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
-            //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
-            if (applicationDeployDTO.getType().equals(UPDATE) && ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId()))))) {
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                devopsEnvCommandE.initDevopsEnvCommandValueE(
-                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
