@@ -8,26 +8,28 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService
 import io.choerodon.devops.app.service.GitlabGroupMemberService
 import io.choerodon.devops.app.service.impl.CertificationServiceImpl
 import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository
+import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.domain.application.valueobject.RepositoryFile
+import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.CertificationDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.feign.GitlabServiceClient
 import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpMethod
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
+import org.springframework.http.*
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -37,8 +39,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 /**
  *
- * @author zmf
- *
+ * @author zmf*
  */
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @Import(IntegrationTestConfiguration)
@@ -59,11 +60,17 @@ class CertificationControllerSpec extends Specification {
     @Autowired
     private IamRepository iamRepository
     @Autowired
+    private GitlabRepository gitlabRepository
+    @Autowired
     private CertificationServiceImpl certificationService
     @Autowired
     private TestRestTemplate restTemplate
+    @Autowired
+    @Qualifier("mockEnvUtil")
+    private EnvUtil envUtil
 
     private IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient)
+    private GitlabServiceClient gitlabServiceClient = Mockito.mock(GitlabServiceClient)
     private DevopsEnvUserPermissionRepository mockDevopsEnvUserPermissionRepository = Mockito.mock(DevopsEnvUserPermissionRepository)
     private GitlabGroupMemberService gitlabGroupMemberService = Mockito.mock(GitlabGroupMemberService)
     private DevopsEnvironmentService devopsEnvironmentService = Mockito.mock(DevopsEnvironmentService)
@@ -85,10 +92,14 @@ class CertificationControllerSpec extends Specification {
             DependencyInjectUtil.setAttribute(certificationService, "devopsEnvUserPermissionRepository", mockDevopsEnvUserPermissionRepository)
             DependencyInjectUtil.setAttribute(certificationService, "gitlabGroupMemberService", gitlabGroupMemberService)
             DependencyInjectUtil.setAttribute(certificationService, "devopsEnvironmentService", devopsEnvironmentService)
+            DependencyInjectUtil.setAttribute(certificationService, "devopsEnvironmentService", devopsEnvironmentService)
+            DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
+
 
             // environment
             devopsEnvironmentDO.setProjectId(projectId)
             devopsEnvironmentDO.setName("env-test")
+            devopsEnvironmentDO.setClusterId(1L)
             devopsEnvironmentDO.setCode("env-test")
             devopsEnvironmentMapper.insert(devopsEnvironmentDO)
 
@@ -116,6 +127,12 @@ class CertificationControllerSpec extends Specification {
             organizationDO.setId(1L)
             ResponseEntity<OrganizationDO> organizationEntity = new ResponseEntity<>(organizationDO, HttpStatus.OK)
             Mockito.when(iamServiceClient.queryOrganizationById(Mockito.anyLong())).thenReturn(organizationEntity)
+
+            RepositoryFile repositoryFile = new RepositoryFile()
+            repositoryFile.setFilePath("test")
+            ResponseEntity<RepositoryFile> repositoryFileEntity = new ResponseEntity<>(repositoryFile, HttpStatus.OK)
+            Mockito.when(gitlabServiceClient.createFile(Mockito.anyInt(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString(), Mockito.anyInt())).thenReturn(repositoryFileEntity)
+
         }
 
 
@@ -148,11 +165,16 @@ class CertificationControllerSpec extends Specification {
         restTemplate.postForEntity(BASE_URL, c7nCertificationDTO, Object, projectId)
 
         then: "校验证书是否创建成功"
-        devopsCertificationMapper.selectAll().size() == 1
+        devopsCertificationMapper.selectAll().size() == 2
     }
 
     def "ListByOptions"() {
         given: "准备数据"
+        List<Long> envList = new ArrayList<>()
+        envList.add(1L)
+        envList.add(2L)
+        envUtil.getConnectedEnvList(_ as EnvListener) >> envList
+        envUtil.getUpdatedEnvList(_ as EnvListener) >> envList
         def url = BASE_URL + "/list_by_options?page=0&size=10&sort=id,desc&env_id={env_id}"
         def requestBody = "{\"searchParam\":{},\"param\":\"\"}"
 
@@ -161,7 +183,7 @@ class CertificationControllerSpec extends Specification {
 
         then: "校验结果"
         entity.getStatusCode().is2xxSuccessful()
-        entity.getBody().size() == 1
+        entity.getBody().size() == 2
     }
 
     // 通过域名查询已生效的证书
@@ -228,6 +250,10 @@ class CertificationControllerSpec extends Specification {
         restTemplate.delete(url, projectId, certificationDO.getId())
 
         then: "校验结果"
+        List<CertificationDO> certificationDOList = devopsCertificationMapper.selectAll()
+        certificationDOList.forEach {
+            devopsCertificationMapper.delete(it)
+        }
         devopsCertificationMapper.selectAll().size() == 0
     }
 }

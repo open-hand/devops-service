@@ -132,7 +132,6 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.setType(c7nCertification);
             operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
 
-
         } else {
             createAndStore(certificationE, c7nCertification);
         }
