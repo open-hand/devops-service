@@ -448,6 +448,21 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     devopsServiceRepository.update(devopsServiceE);
                 }
             }
+            if (devopsServiceE.getType().equals("NodePort")) {
+                if (v1Service.getSpec().getPorts() != null) {
+                    List<PortMapE> portMapES = v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
+                        PortMapE portMapE = new PortMapE();
+                        portMapE.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
+                        portMapE.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
+                        portMapE.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
+                        portMapE.setProtocol(v1ServicePort.getProtocol());
+                        portMapE.setName(v1ServicePort.getName());
+                        return portMapE;
+                    }).collect(Collectors.toList());
+                    devopsServiceE.setPorts(portMapES);
+                    devopsServiceRepository.update(devopsServiceE);
+                }
+            }
 
             String releaseNames = v1Service.getMetadata().getAnnotations()
                     .get(CHOERODON_IO_NETWORK_SERVICE_INSTANCES);
