@@ -102,11 +102,7 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
         applicationInstanceDO.setObjectVersionNumber(
                 applicationInstanceMapper.selectByPrimaryKey(applicationInstanceDO.getId()).getObjectVersionNumber());
         if (applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDO) != 1) {
-            applicationInstanceDO.setObjectVersionNumber(
-                    applicationInstanceMapper.selectByPrimaryKey(applicationInstanceDO.getId()).getObjectVersionNumber());
-            if (applicationInstanceMapper.updateByPrimaryKeySelective(applicationInstanceDO) != 1) {
-                throw new CommonException("error.instance.update");
-            }
+            throw new CommonException("error.instance.update");
         }
     }
 
