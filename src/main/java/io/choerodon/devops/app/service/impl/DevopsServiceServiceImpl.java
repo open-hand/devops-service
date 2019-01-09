@@ -4,15 +4,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -36,6 +27,14 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -616,30 +615,8 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
-        DevopsServiceE beforeDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());
-        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (beforeDevopsServiceE != null) {
-            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeDevopsServiceE.getCommandId());
-        }
-
-        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
-
-        //处理文件
-        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(service);
-        objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, v1Endpoints, devopsServiceE.getEnvId(), path);
-
-
-        DevopsServiceE afterDevopsServiceE = devopsServiceRepository.selectByNameAndEnvId(devopsServiceE.getName(), devopsServiceE.getEnvId());
-        DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (afterDevopsServiceE != null) {
-            afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterDevopsServiceE.getCommandId());
-        }
-
-        //进行Service的数据库操作,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而网络成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行网络数据库操作
-        if (isCreate && afterDevopsServiceE == null) {
+        //操作网络数据库操作
+        if (isCreate) {
             Long serviceId = devopsServiceRepository.insert(devopsServiceE).getId();
             devopsEnvCommandE.setObjectId(serviceId);
             devopsServiceE.setId(serviceId);
@@ -654,9 +631,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsServiceAppInstanceE.setServiceId(serviceId);
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
-        }
-        //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
-        if (!isCreate && ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId()))))) {
+        } else {
             devopsEnvCommandE.setObjectId(devopsServiceE.getId());
             devopsServiceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsServiceRepository.update(devopsServiceE);
@@ -671,6 +646,17 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 devopsServiceInstanceRepository.insert(devopsServiceAppInstanceE);
             });
         }
+
+        //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
+        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+
+        //处理文件
+        ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();
+        objectOperation.setType(service);
+        objectOperation.operationEnvGitlabFile("svc-" + devopsServiceE.getName(), TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), isCreate ? CREATE : UPDATE,
+                userAttrE.getGitlabUserId(), devopsServiceE.getId(), SERVICE, v1Endpoints, devopsServiceE.getEnvId(), path);
+
+
     }
 
 

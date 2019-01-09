@@ -1,12 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -27,6 +24,11 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: Runge
@@ -414,39 +416,23 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
                                       DevopsIngressDO devopsIngressDO,
                                       UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE) {
 
-        DevopsIngressE beforeDevopsIngressE = devopsIngressRepository.selectByEnvAndName(devopsIngressDO.getEnvId(), devopsIngressDO.getName());
-        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (beforeDevopsIngressE != null) {
-            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeDevopsIngressE.getCommandId());
-        }
-
-
-        ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(ingress);
-        objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, null, devopsIngressDO.getEnvId(), path);
-
-
-        DevopsIngressE afterDevopsIngressE = devopsIngressRepository.selectByEnvAndName(devopsIngressDO.getEnvId(), devopsIngressDO.getName());
-        DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (afterDevopsIngressE != null) {
-            afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterDevopsIngressE.getCommandId());
-        }
-
-        //创建或更新数据,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而域名成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行域名数据库操作
-        if (isCreate && afterDevopsIngressE == null) {
+        //操作域名数据库
+        if (isCreate) {
             Long ingressId = devopsIngressRepository.createIngress(devopsIngressDO).getId();
             devopsEnvCommandE.setObjectId(ingressId);
             devopsIngressDO.setId(ingressId);
             devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsIngressRepository.updateIngress(devopsIngressDO);
-        }
-        //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
-        if (!isCreate && ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId()))))) {
+        } else {
             devopsEnvCommandE.setObjectId(devopsIngressDO.getId());
             devopsIngressDO.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsIngressRepository.updateIngressAndIngressPath(devopsIngressDO);
         }
+
+        ObjectOperation<V1beta1Ingress> objectOperation = new ObjectOperation<>();
+        objectOperation.setType(ingress);
+        objectOperation.operationEnvGitlabFile("ing-" + devopsIngressDO.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
+                userAttrE.getGitlabUserId(), devopsIngressDO.getId(), INGRESS, null, devopsIngressDO.getEnvId(), path);
 
     }
 

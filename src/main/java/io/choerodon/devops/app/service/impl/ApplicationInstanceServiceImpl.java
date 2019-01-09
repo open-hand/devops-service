@@ -746,8 +746,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
             applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             applicationInstanceRepository.update(applicationInstanceE);
-        }
-        if (applicationDeployDTO.getType().equals(UPDATE)) {
+        } else{
             devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
             devopsEnvCommandE.initDevopsEnvCommandValueE(
                     devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());

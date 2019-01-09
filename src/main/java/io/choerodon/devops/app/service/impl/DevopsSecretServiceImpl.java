@@ -4,11 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -29,6 +24,10 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.SecretStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by n!Ck
@@ -148,11 +147,17 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
 
-        DevopsSecretE beforeDevopsSecretE = devopsSecretRepository
-                .selectByEnvIdAndName(devopsSecretE.getEnvId(), devopsSecretE.getName());
-        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (beforeDevopsSecretE != null) {
-            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeDevopsSecretE.getCommandId());
+        //操作secret数据库
+        if (isCreate) {
+            Long secretId = devopsSecretRepository.create(devopsSecretE).getId();
+            devopsEnvCommandE.setObjectId(secretId);
+            devopsSecretE.setId(secretId);
+            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsSecretRepository.update(devopsSecretE);
+        } else {
+            devopsEnvCommandE.setObjectId(devopsSecretE.getId());
+            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsSecretRepository.update(devopsSecretE);
         }
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -163,25 +168,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         objectOperation.operationEnvGitlabFile("sct-" + devopsSecretE.getName(), gitlabEnvGroupProjectId,
                 isCreate ? CREATE : UPDATE, userAttrE.getGitlabUserId(), devopsSecretE.getId(), SECRET, null,
                 devopsSecretE.getEnvId(), path);
-
-        DevopsSecretE afterDevopsSecretE = devopsSecretRepository
-                .selectByEnvIdAndName(devopsSecretE.getEnvId(), devopsSecretE.getName());
-        DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (afterDevopsSecretE != null) {
-            afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterDevopsSecretE.getCommandId());
-        }
-
-        if (isCreate && afterDevopsSecretE == null) {
-            Long secretId = devopsSecretRepository.create(devopsSecretE).getId();
-            devopsEnvCommandE.setObjectId(secretId);
-            devopsSecretE.setId(secretId);
-            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsSecretRepository.update(devopsSecretE);
-        } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
-            devopsEnvCommandE.setObjectId(devopsSecretE.getId());
-            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsSecretRepository.update(devopsSecretE);
-        }
     }
 
     @Override
