@@ -92,8 +92,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         List<Integer> gitlabJobIds = gitlabProjectRepository
                 .listJobs(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(pipelineWebHookDTO.getObjectAttributes().getId()), gitlabUserId).stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
-        gitlabProjectRepository.getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN).
-                stream().forEach(commitStatuseDO -> {
+        gitlabProjectRepository.getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN).forEach(commitStatuseDO -> {
             if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
                 stages.add(stage);
@@ -120,7 +119,20 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             devopsGitlabPipelineRepository.create(devopsGitlabPipelineE);
         } else {
             devopsGitlabPipelineE.setStatus(pipelineWebHookDTO.getObjectAttributes().getStatus());
-            devopsGitlabPipelineE.setStage(JSONArray.toJSONString(stages));
+
+            List<Stage> originalStages = JSONArray.parseArray(devopsGitlabPipelineE.getStage(), Stage.class);
+            List<Stage> result = new ArrayList<>();
+            originalStages.forEach(original -> {
+                for (Stage stage : stages) {
+                    if (stage.getName().equals(original.getName())) {
+                        result.add(stage);
+                        return;
+                    }
+                }
+                result.add(original);
+            });
+            devopsGitlabPipelineE.setStage(JSONArray.toJSONString(result));
+
             if (devopsGitlabCommitE != null) {
                 devopsGitlabPipelineE.initDevopsGitlabCommitEById(devopsGitlabCommitE.getId());
             }
