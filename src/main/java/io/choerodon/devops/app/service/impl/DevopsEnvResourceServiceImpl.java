@@ -140,7 +140,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     List<String> domainNames =
                             devopsIngressRepository.queryIngressNameByServiceId(
                                     devopsServiceE.getId());
-                    domainNames.stream().forEach(domainName -> {
+                    domainNames.forEach(domainName -> {
                         DevopsEnvResourceE devopsEnvResourceE1 =
                                 devopsEnvResourceRepository.queryResource(
                                         null,
