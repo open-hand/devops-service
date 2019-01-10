@@ -6,10 +6,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.Lists;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -24,6 +20,9 @@ import io.choerodon.devops.infra.dataobject.DevopsServiceQueryDO;
 import io.choerodon.devops.infra.mapper.DevopsServiceMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -40,8 +39,13 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
 
     @Override
     public Boolean checkName(Long projectId, Long envId, String name) {
-        int selectCount = devopsServiceMapper.selectCountByOptions(projectId, envId, name);
-        return selectCount <= 0;
+        DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
+        devopsServiceDO.setEnvId(envId);
+        devopsServiceDO.setName(name);
+        if (devopsServiceMapper.selectOne(devopsServiceDO) != null) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -130,7 +134,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
         if (devopsServiceE.getLabels() == null) {
             devopsServiceMapper.setLablesToNull(devopsServiceE.getId());
         }
-        if(devopsServiceE.getExternalIp() == null) {
+        if (devopsServiceE.getExternalIp() == null) {
             devopsServiceMapper.setExternalIpNull(devopsServiceE.getId());
         }
         devopsServiceDOUpdate.setObjectVersionNumber(devopsServiceDO.getObjectVersionNumber());
