@@ -22,6 +22,7 @@ public class DevopsServiceQueryDO {
     private String appName;
     private String labels;
     private List<ServiceInstanceDO> appInstance;
+    private String loadBalanceIp;
 
     @Transient
     private Long appProjectId;
@@ -175,5 +176,13 @@ public class DevopsServiceQueryDO {
 
     public void setEndPoints(String endPoints) {
         this.endPoints = endPoints;
+    }
+
+    public String getLoadBalanceIp() {
+        return loadBalanceIp;
+    }
+
+    public void setLoadBalanceIp(String loadBalanceIp) {
+        this.loadBalanceIp = loadBalanceIp;
     }
 }

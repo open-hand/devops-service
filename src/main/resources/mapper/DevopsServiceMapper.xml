@@ -158,6 +158,7 @@
         <result property="status" column="status"/>
         <result property="appId" column="app_id"/>
         <result property="appName" column="app_name"/>
+        <result property="loadBalanceIp" column="load_balance_ip"/>
         <result property="type" column="type"/>
         <result property="envId" column="env_id"/>
         <result property="appProjectId" column="appProjectId"/>
