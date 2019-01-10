@@ -40,7 +40,12 @@
             <if test='searchParam.type != null and searchParam.type.size > 0'>
                 AND
                 <foreach collection="searchParam.type" item="type" open="(" separator=" OR " close=")">
-                    dat.type = #{type,jdbcType=TINYINT}
+                    <if test='type == 0'>
+                        dat.type is null
+                    </if>
+                    <if test='type != 0 '>
+                        dat.type = #{type,jdbcType=TINYINT}
+                    </if>
                 </foreach>
             </if>
         </if>
