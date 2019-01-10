@@ -569,7 +569,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
-
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                 .selectByCode(KeyParseTool.getReleaseName(key), envId);
         if (applicationInstanceE != null) {

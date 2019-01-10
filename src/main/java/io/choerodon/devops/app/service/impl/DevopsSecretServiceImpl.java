@@ -13,6 +13,7 @@ import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.Base64Util;
@@ -64,6 +65,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
 
     @Override
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
@@ -84,6 +87,10 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 更新操作如果key-value没有改变
         if (UPDATE.equals(secretReqDTO.getType())) {
+
+            //更新secret的时候校验gitops库文件是否存在,处理部署secret时，由于没有创gitops文件导致的部署失败
+            checkOptionsHandler.check(devopsEnvironmentE, secretReqDTO.getId(), secretReqDTO.getName(), SECRET);
+
             DevopsSecretE oldSecretE = devopsSecretRepository
                     .selectByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());
             Map<String, String> oldMap = new HashMap<>();

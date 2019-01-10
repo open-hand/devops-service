@@ -22,6 +22,7 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
@@ -112,6 +113,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvironmentService devopsEnvironmentService;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
+
 
 
     @Override
@@ -437,7 +441,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void operationPodCount(String deploymentName, Long envId, Long count) {
         //校验用户是否有环境的权限
         DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(envId);
-
+        //不能减少到0
+        if (count == 0) {
+            return;
+        }
         deployService.operatePodCount(deploymentName, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId(), count);
     }
 
@@ -708,28 +715,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
         } else {
             code = applicationInstanceE.getCode();
+            //更新实例的时候校验gitops库文件是否存在,处理部署实例时，由于没有创gitops文件导致的部署失败
+            checkOptionsHandler.check(devopsEnvironmentE, applicationDeployDTO.getAppInstanceId(), code, C7NHELM_RELEASE);
         }
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-
-        //存储数据
-        if (applicationDeployDTO.getType().equals(CREATE)) {
-            applicationInstanceE.setCode(code);
-            applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-            devopsEnvCommandE.initDevopsEnvCommandValueE(
-                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-            applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            applicationInstanceRepository.update(applicationInstanceE);
-        } else{
-            devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-            devopsEnvCommandE.initDevopsEnvCommandValueE(
-                    devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-            applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            applicationInstanceRepository.update(applicationInstanceE);
-        }
 
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
         if (applicationDeployDTO.getIsNotChange()) {
@@ -742,6 +734,23 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE.getCode(), devopsEnvironmentE,
                     devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
+            //存储数据
+            if (applicationDeployDTO.getType().equals(CREATE)) {
+                applicationInstanceE.setCode(code);
+                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
+            } else {
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
+            }
+
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
 

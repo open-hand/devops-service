@@ -38,7 +38,7 @@ public class DevopsServiceRepositoryImpl implements DevopsServiceRepository {
     }
 
     @Override
-    public Boolean checkName(Long projectId, Long envId, String name) {
+    public Boolean checkName(Long envId, String name) {
         DevopsServiceDO devopsServiceDO = new DevopsServiceDO();
         devopsServiceDO.setEnvId(envId);
         devopsServiceDO.setName(name);

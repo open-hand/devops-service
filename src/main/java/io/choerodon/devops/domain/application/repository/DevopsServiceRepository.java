@@ -20,7 +20,7 @@ public interface DevopsServiceRepository {
 
     void update(DevopsServiceE devopsServiceE);
 
-    Boolean checkName(Long projectId, Long envId, String name);
+    Boolean checkName(Long envId, String name);
 
     Page<DevopsServiceV> listDevopsServiceByPage(Long projectId, Long envId,
                                                  PageRequest pageRequest, String searchParam);

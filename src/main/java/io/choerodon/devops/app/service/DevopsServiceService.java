@@ -70,12 +70,11 @@ public interface DevopsServiceService {
     /**
      * 检查网络唯一性
      *
-     * @param projectId 项目Id
      * @param envId     环境Id
      * @param name      网络名
      * @return Boolean
      */
-    Boolean checkName(Long projectId, Long envId, String name);
+    Boolean checkName(Long envId, String name);
 
 
     /**

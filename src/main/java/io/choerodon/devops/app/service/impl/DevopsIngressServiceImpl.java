@@ -14,6 +14,7 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
@@ -77,6 +78,8 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
 
     @Override
     public void addIngress(DevopsIngressDTO devopsIngressDTO, Long projectId) {
@@ -160,6 +163,11 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsIngressDTO.getEnvId());
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+
+
+        //更新域名的时候校验gitops库文件是否存在,处理部署域名时，由于没有创gitops文件导致的部署失败
+        checkOptionsHandler.check(devopsEnvironmentE, id, devopsIngressDTO.getName(), INGRESS);
+
 
         //校验port是否属于该网络
         devopsIngressDTO.getPathList().forEach(devopsIngressPathDTO -> {

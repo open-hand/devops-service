@@ -15,6 +15,7 @@ import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
@@ -63,7 +64,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
-
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
 
     @Override
     public void createOrUpdate(Long projectId, DevopsConfigMapDTO devopsConfigMapDTO) {
@@ -82,6 +84,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
         //更新判断configMap key-value是否改变
         if (devopsConfigMapDTO.getType().equals(UPDATE)) {
+
+            //更新configMap的时候校验gitops库文件是否存在,处理部署configMap时，由于没有创gitops文件导致的部署失败
+            checkOptionsHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
+
             if (devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapRepository.queryById(devopsConfigMapE.getId()).getValue(), Map.class))) {
                 devopsConfigMapRepository.update(devopsConfigMapE);
                 return;

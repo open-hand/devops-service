@@ -15,6 +15,7 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsServiceService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.DevopsServiceV;
@@ -85,10 +86,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
+
 
     @Override
-    public Boolean checkName(Long projectId, Long envId, String name) {
-        return devopsServiceRepository.checkName(projectId, envId, name);
+    public Boolean checkName(Long envId, String name) {
+        return devopsServiceRepository.checkName(envId, name);
     }
 
 
@@ -189,7 +193,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
         DevopsEnvironmentE devopsEnvironmentE =
                 devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
-        if (!devopsServiceRepository.checkName(projectId, devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
+        if (!devopsServiceRepository.checkName(devopsEnvironmentE.getId(), devopsServiceReqDTO.getName())) {
             throw new CommonException("error.service.name.exist");
         }
 
@@ -289,6 +293,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO) {
 
+
         //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsServiceReqDTO.getEnvId());
 
@@ -296,6 +301,10 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(devopsServiceReqDTO.getEnvId());
 
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+
+
+        //更新网络的时候校验gitops库文件是否存在,处理部署网络时，由于没有创gitops文件导致的部署失败
+        checkOptionsHandler.check(devopsEnvironmentE, id, devopsServiceReqDTO.getName(), SERVICE);
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(UPDATE);
 

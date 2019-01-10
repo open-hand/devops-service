@@ -4,13 +4,6 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -23,6 +16,12 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import springfox.documentation.annotations.ApiIgnore;
 
 /**
  * Created by Zenger on 2018/4/13.
@@ -57,7 +56,7 @@ public class DevopsServiceController {
             @RequestParam Long envId,
             @ApiParam(value = "网络名", required = true)
             @RequestParam String name) {
-        return Optional.ofNullable(devopsServiceService.checkName(projectId, envId, name))
+        return Optional.ofNullable(devopsServiceService.checkName(envId, name))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.service.name.check"));
     }
