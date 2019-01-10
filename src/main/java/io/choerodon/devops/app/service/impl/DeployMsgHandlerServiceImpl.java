@@ -63,7 +63,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private static final Logger logger = LoggerFactory.getLogger(DeployMsgHandlerServiceImpl.class);
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String INIT_AGENT = "init_agent";
-    private static final String ENV_NOT_EXIST = "env not exists";
+    private static final String ENV_NOT_EXIST = "env not exists: {}";
 
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -264,7 +264,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void handlerReleaseInstall(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
@@ -294,7 +294,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -341,7 +341,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         try {
             Long envId = getEnvId(key, clusterId);
             if (envId == null) {
-                logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key) + "clusterId: " + clusterId);
+                logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key) + "clusterId: " + clusterId);
                 return;
             }
 
@@ -504,7 +504,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void resourceDelete(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
         if (KeyParseTool.getResourceType(key).equals(ResourceType.JOB.getType())) {
@@ -566,7 +566,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void helmReleaseHookLogs(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -588,7 +588,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void updateInstanceStatus(String key, String releaseName, Long clusterId, String instanceStatus, String commandStatus, String msg) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectByCode(releaseName, envId);
@@ -608,7 +608,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -629,7 +629,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void handlerDomainCreateMessage(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -798,7 +798,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void netWorkServiceFail(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -817,7 +817,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void netWorkIngressFail(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -831,7 +831,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void netWorkServiceDeleteFail(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -850,7 +850,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void netWorkIngressDeleteFail(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -863,7 +863,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void netWorkUpdate(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -927,7 +927,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
         ReleasePayload releasePayload = JSONArray.parseObject(msg, ReleasePayload.class);
@@ -966,7 +966,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void resourceSync(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -1072,7 +1072,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void gitOpsSyncEvent(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -1475,7 +1475,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void gitOpsCommandSyncEvent(String key, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -1541,7 +1541,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 commands.add(command);
             }
         });
-        devopsConfigMapRepository.listByEnv(envId).stream().forEach(devopsConfigMapE -> {
+        for (DevopsConfigMapE devopsConfigMapE : devopsConfigMapRepository.listByEnv(envId)) {
             Long commandId = devopsConfigMapE.getDevopsEnvCommandE().getId();
             if (commandId != null) {
                 Command command = new Command();
@@ -1550,8 +1550,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 command.setResourceName(devopsConfigMapE.getName());
                 commands.add(command);
             }
-        });
-        devopsSecretRepository.listByEnv(envId).stream().forEach(devopsSecretE -> {
+        }
+        devopsSecretRepository.listByEnv(envId).forEach(devopsSecretE -> {
             Long commandId = devopsSecretE.getCommandId();
             if (commandId != null) {
                 Command command = new Command();
@@ -1579,7 +1579,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void gitOpsCommandSyncEventResult(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -1609,7 +1609,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void handlerServiceCreateMessage(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -1816,7 +1816,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void certIssued(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 
@@ -1863,7 +1863,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     public void certFailed(String key, String msg, Long clusterId) {
         Long envId = getEnvId(key, clusterId);
         if (envId == null) {
-            logger.info(ENV_NOT_EXIST + KeyParseTool.getNamespace(key));
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
             return;
         }
 

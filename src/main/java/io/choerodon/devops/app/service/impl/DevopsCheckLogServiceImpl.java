@@ -168,9 +168,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
 
     private void createGitFile(String repoPath, Git git, String relativePath, String content) {
-        GitUtil gitUtil = new GitUtil();
+        GitUtil newGitUtil = new GitUtil();
         try {
-            gitUtil.createFileInRepo(repoPath, git, relativePath, content, null);
+            newGitUtil.createFileInRepo(repoPath, git, relativePath, content, null);
         } catch (IOException e) {
             LOGGER.info("error.file.open: " + relativePath, e);
         } catch (GitAPIException e) {

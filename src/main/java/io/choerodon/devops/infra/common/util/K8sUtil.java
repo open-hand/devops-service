@@ -197,10 +197,8 @@ public class K8sUtil {
             if (results.size() == max) {
                 more = true;
             }
-            if (v1beta1IngressRule.getHost() != null) {
-                if (!more && v1beta1IngressRule.getHost().length() != 0) {
-                    results.add(v1beta1IngressRule.getHost());
-                }
+            if (v1beta1IngressRule.getHost() != null && !more && v1beta1IngressRule.getHost().length() != 0) {
+                results.add(v1beta1IngressRule.getHost());
             }
         }
         if (results.isEmpty()) {
@@ -228,9 +226,10 @@ public class K8sUtil {
 
     /**
      * 反序列化K8s的json字符串
-     * @param jsonString k8s对象的json字符串
+     *
+     * @param jsonString      k8s对象的json字符串
      * @param destK8sResource 对象的类
-     * @param <T> 对象的类型
+     * @param <T>             对象的类型
      * @return 反序列化结果
      */
     public static <T> T deserialize(String jsonString, Class<T> destK8sResource) {

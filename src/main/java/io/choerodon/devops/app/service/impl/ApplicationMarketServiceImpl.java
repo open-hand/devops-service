@@ -397,23 +397,9 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         FileUtil.deleteDirectory(zipDirectory);
     }
 
-    private String hashImages(List<File> images) {
-        if (images != null && !images.isEmpty() && images.size() == 1) {
-            File image = images.get(0);
-            String imagePath = image.getAbsolutePath();
-            try {
-                return FileUtil.md5HashCode(imagePath);
-            } catch (FileNotFoundException e) {
-                throw new CommonException("error.image.read", e);
-            }
-        } else {
-            throw new CommonException("error.images.illegal");
-        }
-    }
-
     private void analyzeAppFile(List<ApplicationReleasingDTO> appMarketVersionDTOS,
                                 List<File> appFileList) {
-        appFileList.stream().forEach(t -> {
+        appFileList.forEach(t -> {
             String appName = t.getName();
             File[] appFiles = t.listFiles();
             if (appFiles != null && !appFileList.isEmpty()) {
@@ -421,7 +407,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 List<File> appMarkets = Arrays.stream(appFiles).parallel()
                         .filter(k -> k.getName().equals(appFileName))
                         .collect(Collectors.toCollection(ArrayList::new));
-                if (appMarkets != null && !appMarkets.isEmpty() && appMarkets.size() == 1) {
+                if (!appMarkets.isEmpty() && appMarkets.size() == 1) {
                     File appMarket = appMarkets.get(0);
                     String appMarketJson = FileUtil.getFileContent(appMarket);
                     ApplicationReleasingDTO appMarketVersionDTO =

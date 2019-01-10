@@ -27,8 +27,6 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.*;
 import io.choerodon.devops.infra.dataobject.CertificationFileDO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 
 @Service
@@ -54,7 +52,6 @@ public class HandlerC7nCertificationServiceImpl implements HandlerObjectFileRela
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
 
                                  List<C7nCertification> c7nCertifications, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
-        //todo command操作
         List<C7nCertification> updateC7nCertification = new ArrayList<>();
         List<String> beforeC7nCertification = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(CERTIFICATE))

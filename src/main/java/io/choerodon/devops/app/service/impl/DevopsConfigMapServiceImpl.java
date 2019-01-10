@@ -37,6 +37,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";
     public static final String CONFIGMAP = "ConfigMap";
+    public static final String CONFIG_MAP_PREFIX = "configMap-";
     private Gson gson = new Gson();
 
 
@@ -199,10 +200,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         if (devopsEnvFileResourceE == null) {
             devopsConfigMapRepository.delete(configMapId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
-                    "configMap-" + devopsConfigMapE.getName() + ".yaml")) {
+                    CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        "configMap-" + devopsConfigMapE.getName() + ".yaml",
+                        CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml",
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
@@ -281,7 +282,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
         objectOperation.setType(v1ConfigMap);
-        objectOperation.operationEnvGitlabFile("configMap-" + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
+        objectOperation.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
                 userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, null, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
 
 

@@ -42,48 +42,32 @@ public class CertificationServiceImpl implements CertificationService {
     @Value("${cert.testCert}")
     private Boolean testCert;
 
-    private CertificationRepository certificationRepository;
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private IamRepository iamRepository;
-    private DevopsCertificationValidator devopsCertificationValidator;
-    private UserAttrRepository userAttrRepository;
-    private GitlabGroupMemberService gitlabGroupMemberService;
-    private DevopsEnvironmentService devopsEnvironmentService;
-    private EnvListener envListener;
-    private EnvUtil envUtil;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    private GitlabRepository gitlabRepository;
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-
     @Autowired
-    public CertificationServiceImpl(DevopsEnvironmentService devopsEnvironmentService,
-                                    CertificationRepository certificationRepository,
-                                    DevopsEnvironmentRepository devopsEnvironmentRepository,
-                                    IamRepository iamRepository,
-                                    DevopsCertificationValidator devopsCertificationValidator,
-                                    UserAttrRepository userAttrRepository,
-                                    DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
-                                    GitlabGroupMemberService gitlabGroupMemberService,
-                                    EnvListener envListener,
-                                    EnvUtil envUtil,
-                                    DevopsEnvCommandRepository devopsEnvCommandRepository,
-                                    DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
-                                    GitlabRepository gitlabRepository) {
-        this.devopsEnvironmentService = devopsEnvironmentService;
-        this.certificationRepository = certificationRepository;
-        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.iamRepository = iamRepository;
-        this.devopsCertificationValidator = devopsCertificationValidator;
-        this.userAttrRepository = userAttrRepository;
-        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
-        this.envListener = envListener;
-        this.envUtil = envUtil;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
-        this.gitlabRepository = gitlabRepository;
-    }
+    private CertificationRepository certificationRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private DevopsCertificationValidator devopsCertificationValidator;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public void create(Long projectId, C7nCertificationDTO certificationDTO,

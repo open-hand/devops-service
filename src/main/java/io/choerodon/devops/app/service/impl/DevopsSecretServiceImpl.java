@@ -44,38 +44,26 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String UPDATE = "update";
     private static final String DELETE = "delete";
 
-    private DevopsSecretRepository devopsSecretRepository;
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private EnvUtil envUtil;
-    private EnvListener envListener;
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private UserAttrRepository userAttrRepository;
-    private DevopsEnvironmentService devopsEnvironmentService;
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    private GitlabRepository gitlabRepository;
-
     @Autowired
-    public DevopsSecretServiceImpl(DevopsSecretRepository devopsSecretRepository,
-                                   DevopsEnvironmentRepository devopsEnvironmentRepository,
-                                   EnvUtil envUtil, EnvListener envListener,
-                                   DevopsEnvCommandRepository devopsEnvCommandRepository,
-                                   UserAttrRepository userAttrRepository,
-                                   DevopsEnvironmentService devopsEnvironmentService,
-                                   DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
-                                   DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
-                                   GitlabRepository gitlabRepository) {
-        this.devopsSecretRepository = devopsSecretRepository;
-        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.envUtil = envUtil;
-        this.envListener = envListener;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.userAttrRepository = userAttrRepository;
-        this.devopsEnvironmentService = devopsEnvironmentService;
-        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
-        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
-        this.gitlabRepository = gitlabRepository;
-    }
+    private DevopsSecretRepository devopsSecretRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
 
     @Override
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {

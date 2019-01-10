@@ -22,6 +22,7 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Service;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.text.StrBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -204,15 +205,15 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         }
         Map<String, List<EndPointPortDTO>> endPoints = new HashMap<>();
         v1Endpoints.stream().filter(v1Endpoints1 -> v1Endpoints1.getMetadata().getName().equals(v1Service.getMetadata().getName())).forEach(v1Endpoints1 -> {
-            String key = null;
+            StringBuilder keyBuilder = new StringBuilder();
             for (int i = 0; i < v1Endpoints1.getSubsets().get(0).getAddresses().size(); i++) {
                 if (i == 0 || i == v1Endpoints1.getSubsets().get(0).getAddresses().size() - 1) {
-                    key = key + v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp();
+                    keyBuilder.append(v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp());
                 } else {
-                    key = key + v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp() + ",";
+                    keyBuilder.append(v1Endpoints1.getSubsets().get(0).getAddresses().get(i).getIp() + ",");
                 }
             }
-            endPoints.put(key, v1Endpoints1.getSubsets().get(0).getPorts().stream().map(v1EndpointPort -> {
+            endPoints.put(keyBuilder.toString(), v1Endpoints1.getSubsets().get(0).getPorts().stream().map(v1EndpointPort -> {
                 EndPointPortDTO endPointPortDTO = new EndPointPortDTO();
                 endPointPortDTO.setName(v1EndpointPort.getName());
                 endPointPortDTO.setPort(v1EndpointPort.getPort());
@@ -276,14 +277,12 @@ public class HandlerServiceRelationsServiceImpl implements HandlerObjectFileRela
         List<DevopsServiceAppInstanceE> devopsServiceInstanceEList =
                 devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
         Boolean isUpdate = false;
-        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
-            if (devopsServiceReqDTO.getAppInstance() != null) {
-                List<String> newInstanceCode = devopsServiceReqDTO.getAppInstance();
-                List<String> oldInstanceCode = devopsServiceInstanceEList.stream().map(DevopsServiceAppInstanceE::getCode).collect(Collectors.toList());
-                for (String instanceCode : newInstanceCode) {
-                    if (!oldInstanceCode.contains(instanceCode)) {
-                        isUpdate = true;
-                    }
+        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null && devopsServiceReqDTO.getAppInstance() != null) {
+            List<String> newInstanceCode = devopsServiceReqDTO.getAppInstance();
+            List<String> oldInstanceCode = devopsServiceInstanceEList.stream().map(DevopsServiceAppInstanceE::getCode).collect(Collectors.toList());
+            for (String instanceCode : newInstanceCode) {
+                if (!oldInstanceCode.contains(instanceCode)) {
+                    isUpdate = true;
                 }
             }
         }

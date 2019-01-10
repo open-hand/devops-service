@@ -63,6 +63,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
+    private static final String ERROR_UPDATE_APP = "error.application.update";
     private Gson gson = new Gson();
 
     @Value("${services.gitlab.url}")
@@ -121,12 +122,12 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         // 查询创建应用所在的gitlab应用组
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
-//        GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-//                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
-//                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-//        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
-//            throw new CommonException("error.user.not.owner");
-//        }
+        GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
+                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
+                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
+            throw new CommonException("error.user.not.owner");
+        }
         // 创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
         devOpsAppPayload.setType(APPLICATION);
@@ -199,7 +200,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         }
         if (applicationRepository.update(applicationE) != 1) {
-            throw new CommonException("error.application.update");
+            throw new CommonException(ERROR_UPDATE_APP);
         }
 
         // 创建gitlabUserPayload
@@ -449,7 +450,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             // 更新并校验
             if (applicationRepository.update(applicationE) != 1) {
-                throw new CommonException("error.application.update");
+                throw new CommonException(ERROR_UPDATE_APP);
             }
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
@@ -650,7 +651,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             // 更新并校验
             if (applicationRepository.update(applicationE) != 1) {
-                throw new CommonException("error.application.update");
+                throw new CommonException(ERROR_UPDATE_APP);
             }
         } catch (Exception e) {
             throw new CommonException(e.getMessage(), e);
@@ -851,10 +852,10 @@ public class ApplicationServiceImpl implements ApplicationService {
      *
      * @param gitPlatformType git platform type
      * @param repositoryUrl   repository url
-     * @param access_token    access token (Nullable)
+     * @param accessToken    access token (Nullable)
      */
-    private void checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String access_token) {
-        Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, access_token);
+    private void checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String accessToken) {
+        Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
         if (Boolean.FALSE.equals(validationResult)) {
             throw new CommonException("error.repository.token.invalid");
         } else if (validationResult == null) {

@@ -372,7 +372,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         final String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(),
                 devopsEnvironmentE.getCode());
 
-        LOGGER.info("The gitOps Repository ssh url:" + url);
+        LOGGER.info("The gitOps Repository ssh url: {}", url);
 
         final Long envId = devopsEnvironmentE.getId();
 

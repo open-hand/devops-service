@@ -250,14 +250,12 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         //验证网络是否需要更新
         List<PortMapE> oldPort = devopsServiceE.getPorts();
         boolean isUpdate = false;
-        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null) {
-            if (devopsServiceReqDTO.getAppInstance() != null) {
-                isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
-                        .sorted().collect(Collectors.toList())
-                        .equals(devopsServiceInstanceEList.stream()
-                                .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
-                                .collect(Collectors.toList()));
-            }
+        if (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() != null && devopsServiceReqDTO.getAppInstance() != null) {
+            isUpdate = !devopsServiceReqDTO.getAppInstance().stream()
+                    .sorted().collect(Collectors.toList())
+                    .equals(devopsServiceInstanceEList.stream()
+                            .map(DevopsServiceAppInstanceE::getAppInstanceId).sorted()
+                            .collect(Collectors.toList()));
         }
         if ((devopsServiceReqDTO.getAppId() == null && devopsServiceE.getAppId() != null) || (devopsServiceReqDTO.getAppId() != null && devopsServiceE.getAppId() == null)) {
             isUpdate = true;
