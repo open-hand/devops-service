@@ -5,28 +5,12 @@
 
     <!--删除实例event记录-->
     <delete id="deletePreInstanceCommandLog">
-DELETE
-    FROM
-	devops_env_command_log
-WHERE
-	EXISTS ( SELECT 1 FROM devops_env_command d WHERE devops_env_command_log.command_id = d.id AND d.object = 'instance' AND d.object_id = #{instanceId} )
-	AND devops_env_command_log.command_id NOT IN (
-	SELECT
-		x.id
-	FROM
-		(
-		SELECT
-			de.id
-		FROM
-			devops_env_command de
-		WHERE
-			de.object = 'instance'
-			AND de.object_id = #{instanceId}
-		ORDER BY
-			de.id DESC
-			LIMIT 10
-		) x
-	)
+  		DELETE e
+        FROM devops_command_event_log e, devops_env_command d
+        WHERE e.command_id = d.id AND d.object = 'instance' AND d.object_id = #{instanceId}
+        and e.command_id not in( select x.id from (select de.id FROM devops_env_command de
+        WHERE de.object = 'instance' AND de.object_id = #{instanceId}
+        ORDER BY de.id DESC limit 10) x)
     </delete>
 
 </mapper>
