@@ -120,6 +120,21 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public DevopsServiceDTO query(Long id) {
+        List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES = devopsServiceInstanceRepository.selectByServiceId(id);
+        //网络多实例中存在删除实例时，给应用信息赋值
+        if (!devopsServiceAppInstanceES.isEmpty()) {
+            for (DevopsServiceAppInstanceE devopsServiceAppInstanceE : devopsServiceAppInstanceES) {
+                ApplicationInstanceE applicationInstanceE = applicationInstanceRepository.selectById(devopsServiceAppInstanceE.getAppInstanceId());
+                if (applicationInstanceE != null) {
+                    ApplicationE applicationE = applicationRepository.query(applicationInstanceE.getApplicationE().getId());
+                    DevopsServiceV devopsServiceV = devopsServiceRepository.selectById(id);
+                    devopsServiceV.setAppId(applicationE.getId());
+                    devopsServiceV.setAppName(applicationE.getName());
+                    devopsServiceV.setAppProjectId(applicationE.getProjectE().getId());
+                    return ConvertHelper.convert(devopsServiceV, DevopsServiceDTO.class);
+                }
+            }
+        }
         return ConvertHelper.convert(devopsServiceRepository.selectById(id), DevopsServiceDTO.class);
     }
 
