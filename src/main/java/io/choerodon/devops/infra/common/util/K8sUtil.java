@@ -6,6 +6,7 @@ import java.util.List;
 
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
+import org.springframework.util.StringUtils;
 
 /**
  * Created by younger on 2018/4/25.
@@ -124,15 +125,15 @@ public class K8sUtil {
      * loadBalancerStatus获取
      */
     public static String loadBalancerStatusStringer(V1LoadBalancerStatus v1LoadBalancerStatus) {
-        String result = "";
+        String result;
         List<V1LoadBalancerIngress> v1LoadBalancerIngresses = v1LoadBalancerStatus.getIngress();
         List<String> list = new ArrayList<>();
         if (v1LoadBalancerIngresses != null) {
             for (V1LoadBalancerIngress v1LoadBalancerIngress : v1LoadBalancerIngresses) {
-                if (v1LoadBalancerIngress.getIp() != "") {
+                if (!StringUtils.isEmpty(v1LoadBalancerIngress.getIp())) {
                     list.add(v1LoadBalancerIngress.getIp());
                 }
-                if (v1LoadBalancerIngress.getHostname() != "") {
+                if (!StringUtils.isEmpty(v1LoadBalancerIngress.getHostname())) {
                     list.add(v1LoadBalancerIngress.getHostname());
                 }
             }
@@ -196,10 +197,8 @@ public class K8sUtil {
             if (results.size() == max) {
                 more = true;
             }
-            if (v1beta1IngressRule.getHost() != null) {
-                if (!more && v1beta1IngressRule.getHost().length() != 0) {
-                    results.add(v1beta1IngressRule.getHost());
-                }
+            if (v1beta1IngressRule.getHost() != null && !more && v1beta1IngressRule.getHost().length() != 0) {
+                results.add(v1beta1IngressRule.getHost());
             }
         }
         if (results.isEmpty()) {
@@ -227,9 +226,10 @@ public class K8sUtil {
 
     /**
      * 反序列化K8s的json字符串
-     * @param jsonString k8s对象的json字符串
+     *
+     * @param jsonString      k8s对象的json字符串
      * @param destK8sResource 对象的类
-     * @param <T> 对象的类型
+     * @param <T>             对象的类型
      * @return 反序列化结果
      */
     public static <T> T deserialize(String jsonString, Class<T> destK8sResource) {

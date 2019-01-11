@@ -42,48 +42,32 @@ public class CertificationServiceImpl implements CertificationService {
     @Value("${cert.testCert}")
     private Boolean testCert;
 
-    private CertificationRepository certificationRepository;
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private IamRepository iamRepository;
-    private DevopsCertificationValidator devopsCertificationValidator;
-    private UserAttrRepository userAttrRepository;
-    private GitlabGroupMemberService gitlabGroupMemberService;
-    private DevopsEnvironmentService devopsEnvironmentService;
-    private EnvListener envListener;
-    private EnvUtil envUtil;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    private GitlabRepository gitlabRepository;
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-
     @Autowired
-    public CertificationServiceImpl(DevopsEnvironmentService devopsEnvironmentService,
-                                    CertificationRepository certificationRepository,
-                                    DevopsEnvironmentRepository devopsEnvironmentRepository,
-                                    IamRepository iamRepository,
-                                    DevopsCertificationValidator devopsCertificationValidator,
-                                    UserAttrRepository userAttrRepository,
-                                    DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
-                                    GitlabGroupMemberService gitlabGroupMemberService,
-                                    EnvListener envListener,
-                                    EnvUtil envUtil,
-                                    DevopsEnvCommandRepository devopsEnvCommandRepository,
-                                    DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
-                                    GitlabRepository gitlabRepository) {
-        this.devopsEnvironmentService = devopsEnvironmentService;
-        this.certificationRepository = certificationRepository;
-        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.iamRepository = iamRepository;
-        this.devopsCertificationValidator = devopsCertificationValidator;
-        this.userAttrRepository = userAttrRepository;
-        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
-        this.envListener = envListener;
-        this.envUtil = envUtil;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
-        this.gitlabRepository = gitlabRepository;
-    }
+    private CertificationRepository certificationRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private DevopsCertificationValidator devopsCertificationValidator;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
 
     @Override
     public void create(Long projectId, C7nCertificationDTO certificationDTO,
@@ -125,17 +109,13 @@ public class CertificationServiceImpl implements CertificationService {
             c7nCertification = getC7nCertification(
                     certName, type, domains, certificationFileDO == null ? certificationDTO.getKeyValue() : certificationFileDO.getKeyFile(), certificationFileDO == null ? certificationDTO.getCertValue() : certificationFileDO.getCertFile(), envCode);
 
+            createAndStore(certificationE, c7nCertification);
+
             // sent certification to agent
             ObjectOperation<C7nCertification> certificationOperation = new ObjectOperation<>();
             certificationOperation.setType(c7nCertification);
             operateEnvGitLabFile(certName, devopsEnvironmentE, c7nCertification);
 
-
-            //创建证书,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而证书成功的状态会被错误更新为处理中，所以用after去区分是否部署成功。成功不再执行证书数据库操作
-            CertificationE afterCertificationE = certificationRepository.queryByEnvAndName(devopsEnvironmentE.getId(), certificationE.getName());
-            if (afterCertificationE == null) {
-                createAndStore(certificationE, c7nCertification);
-            }
         } else {
             createAndStore(certificationE, c7nCertification);
         }

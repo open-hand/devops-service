@@ -1,12 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.choerodon.core.exception.CommonException;
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,36 +30,24 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
     private static final String NONE_LABEL = "<none>";
     private static JSON json = new JSON();
 
-    private DevopsEnvResourceRepository devopsEnvResourceRepository;
-    private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
-    private DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
-    private DevopsServiceRepository devopsServiceRepository;
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private DevopsIngressRepository devopsIngressRepository;
-    private DevopsCommandEventRepository devopsCommandEventRepository;
-    private ApplicationInstanceRepository applicationInstanceRepository;
-    private IamRepository iamRepository;
-
     @Autowired
-    public DevopsEnvResourceServiceImpl(DevopsEnvResourceRepository devopsEnvResourceRepository,
-                                        DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository,
-                                        DevopsEnvCommandLogRepository devopsEnvCommandLogRepository,
-                                        DevopsServiceRepository devopsServiceRepository,
-                                        DevopsEnvCommandRepository devopsEnvCommandRepository,
-                                        DevopsIngressRepository devopsIngressRepository,
-                                        DevopsCommandEventRepository devopsCommandEventRepository,
-                                        ApplicationInstanceRepository applicationInstanceRepository,
-                                        IamRepository iamRepository) {
-        this.devopsEnvResourceRepository = devopsEnvResourceRepository;
-        this.devopsEnvResourceDetailRepository = devopsEnvResourceDetailRepository;
-        this.devopsEnvCommandLogRepository = devopsEnvCommandLogRepository;
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.devopsIngressRepository = devopsIngressRepository;
-        this.devopsCommandEventRepository = devopsCommandEventRepository;
-        this.applicationInstanceRepository = applicationInstanceRepository;
-        this.iamRepository = iamRepository;
-    }
+    private DevopsEnvResourceRepository devopsEnvResourceRepository;
+    @Autowired
+    private DevopsEnvResourceDetailRepository devopsEnvResourceDetailRepository;
+    @Autowired
+    private DevopsEnvCommandLogRepository devopsEnvCommandLogRepository;
+    @Autowired
+    private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DevopsIngressRepository devopsIngressRepository;
+    @Autowired
+    private DevopsCommandEventRepository devopsCommandEventRepository;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private IamRepository iamRepository;
 
     @Override
     public DevopsEnvResourceDTO listResources(Long instanceId) {
@@ -154,7 +140,7 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
                     List<String> domainNames =
                             devopsIngressRepository.queryIngressNameByServiceId(
                                     devopsServiceE.getId());
-                    domainNames.stream().forEach(domainName -> {
+                    domainNames.forEach(domainName -> {
                         DevopsEnvResourceE devopsEnvResourceE1 =
                                 devopsEnvResourceRepository.queryResource(
                                         null,

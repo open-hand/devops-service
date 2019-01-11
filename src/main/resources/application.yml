@@ -30,11 +30,8 @@ services:
   gateway:
     url: "http://api.example.com"
 template:
-  version:
-    MicroService: 0.7.0
-    MicroServiceFront: 0.7.0
-    JavaLib: 0.7.0
-    ChoerodonMoChaTemplate: 0.7.0
+  url: https://github.com/choerodon/choerodon-devops-templates.git
+  version: 0.13.0
 choerodon:
   saga:
     consumer:
@@ -66,7 +63,7 @@ eureka:
 security:
   basic:
       enabled: false
-  ignored: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**
+  ignored: /ci,/webhook/**,/v2/api-docs,/agent/**,/ws/**
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:

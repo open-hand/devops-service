@@ -372,7 +372,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         final String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(),
                 devopsEnvironmentE.getCode());
 
-        LOGGER.info("The gitOps Repository ssh url:" + url);
+        LOGGER.info("The gitOps Repository ssh url: {}", url);
 
         final Long envId = devopsEnvironmentE.getId();
 
@@ -667,6 +667,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                     .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
                             // 校验参数校验参数是否合法
                             convertEndPoints.checkParameters(v1Endpoints1, objectPath);
+                            v1Endpoints.add(v1Endpoints1);
                             break;
                         default:
                             break;

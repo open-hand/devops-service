@@ -38,6 +38,7 @@ import io.choerodon.websocket.helper.EnvListener;
 public class DeployServiceImpl implements DeployService {
     private static final String ERROR_PAYLOAD_ERROR = "error.payload.error";
     private static final String KEY_FORMAT = "cluster:%d.release:%s";
+    private static final String CLUSTER_FORMAT = "cluster:%s";
 
     private static final String INIT_AGENT = "init_agent";
     private static final String DELETE_ENV = "delete_env";
@@ -165,7 +166,7 @@ public class DeployServiceImpl implements DeployService {
             throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
         msg.setType(OPERATE_POD_COUNT);
-        msg.setKey(String.format("cluster:%s", clusterId
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
         commandSender.sendMsg(msg);
     }
@@ -180,7 +181,7 @@ public class DeployServiceImpl implements DeployService {
             throw new CommonException("read envId from agent session failed", e);
         }
         msg.setType(INIT_AGENT);
-        msg.setKey(String.format("cluster:%s", clusterId
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
         commandSender.sendMsg(msg);
 
@@ -209,7 +210,7 @@ public class DeployServiceImpl implements DeployService {
             throw new CommonException("read envId from agent session failed", e);
         }
         msg.setType(INIT_ENV);
-        msg.setKey(String.format("cluster:%s", clusterId
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
         commandSender.sendMsg(msg);
     }
@@ -261,7 +262,7 @@ public class DeployServiceImpl implements DeployService {
             throw new CommonException("error get envId and code", e);
         }
         msg.setType(DELETE_ENV);
-        msg.setKey(String.format("cluster:%s", clusterId));
+        msg.setKey(String.format(CLUSTER_FORMAT, clusterId));
         commandSender.sendMsg(msg);
     }
 

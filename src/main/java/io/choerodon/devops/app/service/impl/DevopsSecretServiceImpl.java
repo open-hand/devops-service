@@ -4,11 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.kubernetes.client.models.V1ObjectMeta;
-import io.kubernetes.client.models.V1Secret;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -18,6 +13,7 @@ import io.choerodon.devops.api.validator.DevopsSecretValidator;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsSecretService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.Base64Util;
@@ -29,6 +25,10 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.SecretStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import io.kubernetes.client.models.V1ObjectMeta;
+import io.kubernetes.client.models.V1Secret;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by n!Ck
@@ -45,38 +45,28 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private static final String UPDATE = "update";
     private static final String DELETE = "delete";
 
-    private DevopsSecretRepository devopsSecretRepository;
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private EnvUtil envUtil;
-    private EnvListener envListener;
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private UserAttrRepository userAttrRepository;
-    private DevopsEnvironmentService devopsEnvironmentService;
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    private GitlabRepository gitlabRepository;
-
     @Autowired
-    public DevopsSecretServiceImpl(DevopsSecretRepository devopsSecretRepository,
-                                   DevopsEnvironmentRepository devopsEnvironmentRepository,
-                                   EnvUtil envUtil, EnvListener envListener,
-                                   DevopsEnvCommandRepository devopsEnvCommandRepository,
-                                   UserAttrRepository userAttrRepository,
-                                   DevopsEnvironmentService devopsEnvironmentService,
-                                   DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
-                                   DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
-                                   GitlabRepository gitlabRepository) {
-        this.devopsSecretRepository = devopsSecretRepository;
-        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.envUtil = envUtil;
-        this.envListener = envListener;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.userAttrRepository = userAttrRepository;
-        this.devopsEnvironmentService = devopsEnvironmentService;
-        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
-        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
-        this.gitlabRepository = gitlabRepository;
-    }
+    private DevopsSecretRepository devopsSecretRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private GitlabRepository gitlabRepository;
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
 
     @Override
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
@@ -97,6 +87,10 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         // 更新操作如果key-value没有改变
         if (UPDATE.equals(secretReqDTO.getType())) {
+
+            //更新secret的时候校验gitops库文件是否存在,处理部署secret时，由于没有创gitops文件导致的部署失败
+            checkOptionsHandler.check(devopsEnvironmentE, secretReqDTO.getId(), secretReqDTO.getName(), SECRET);
+
             DevopsSecretE oldSecretE = devopsSecretRepository
                     .selectByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());
             Map<String, String> oldMap = new HashMap<>();
@@ -148,11 +142,17 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
 
-        DevopsSecretE beforeDevopsSecretE = devopsSecretRepository
-                .selectByEnvIdAndName(devopsSecretE.getEnvId(), devopsSecretE.getName());
-        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (beforeDevopsSecretE != null) {
-            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeDevopsSecretE.getCommandId());
+        //操作secret数据库
+        if (isCreate) {
+            Long secretId = devopsSecretRepository.create(devopsSecretE).getId();
+            devopsEnvCommandE.setObjectId(secretId);
+            devopsSecretE.setId(secretId);
+            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsSecretRepository.update(devopsSecretE);
+        } else {
+            devopsEnvCommandE.setObjectId(devopsSecretE.getId());
+            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+            devopsSecretRepository.update(devopsSecretE);
         }
 
         // 判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
@@ -163,25 +163,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         objectOperation.operationEnvGitlabFile("sct-" + devopsSecretE.getName(), gitlabEnvGroupProjectId,
                 isCreate ? CREATE : UPDATE, userAttrE.getGitlabUserId(), devopsSecretE.getId(), SECRET, null,
                 devopsSecretE.getEnvId(), path);
-
-        DevopsSecretE afterDevopsSecretE = devopsSecretRepository
-                .selectByEnvIdAndName(devopsSecretE.getEnvId(), devopsSecretE.getName());
-        DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (afterDevopsSecretE != null) {
-            afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterDevopsSecretE.getCommandId());
-        }
-
-        if (isCreate && afterDevopsSecretE == null) {
-            Long secretId = devopsSecretRepository.create(devopsSecretE).getId();
-            devopsEnvCommandE.setObjectId(secretId);
-            devopsSecretE.setId(secretId);
-            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsSecretRepository.update(devopsSecretE);
-        } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
-            devopsEnvCommandE.setObjectId(devopsSecretE.getId());
-            devopsSecretE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-            devopsSecretRepository.update(devopsSecretE);
-        }
     }
 
     @Override

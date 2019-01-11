@@ -22,6 +22,7 @@ import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
@@ -72,70 +73,50 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
 
-    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
-    private ApplicationInstanceRepository applicationInstanceRepository;
-    private ApplicationVersionRepository applicationVersionRepository;
-    private ApplicationRepository applicationRepository;
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    private DeployService deployService;
-    private IamRepository iamRepository;
-    private CommandSender commandSender;
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
-    private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
-    private EnvListener envListener;
-    private EnvUtil envUtil;
-    private UserAttrRepository userAttrRepository;
-    private ApplicationInstanceMapper applicationInstanceMapper;
-    private DevopsEnvPodRepository devopsEnvPodRepository;
-    private DevopsEnvResourceService devopsEnvResourceService;
-    private GitlabRepository gitlabRepository;
-    private GitlabGroupMemberService gitlabGroupMemberService;
-    private DevopsEnvironmentService devopsEnvironmentService;
-    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-
     @Autowired
-    public ApplicationInstanceServiceImpl(
-            DevopsEnvFileResourceRepository devopsEnvFileResourceRepository,
-            ApplicationInstanceRepository applicationInstanceRepository,
-            EnvUtil envUtil,
-            ApplicationVersionRepository applicationVersionRepository,
-            ApplicationRepository applicationRepository,
-            DevopsEnvironmentRepository devopsEnvironmentRepository,
-            GitlabRepository gitlabRepository,
-            DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository,
-            UserAttrRepository userAttrRepository,
-            DevopsEnvironmentService devopsEnvironmentService,
-            DeployService deployService,
-            GitlabGroupMemberService gitlabGroupMemberService,
-            IamRepository iamRepository,
-            CommandSender commandSender,
-            DevopsEnvCommandRepository devopsEnvCommandRepository,
-            DevopsEnvCommandValueRepository devopsEnvCommandValueRepository,
-            DevopsEnvResourceService devopsEnvResourceService,
-            DevopsEnvPodRepository devopsEnvPodRepository,
-            ApplicationInstanceMapper applicationInstanceMapper,
-            EnvListener envListener) {
-        this.devopsEnvFileResourceRepository = devopsEnvFileResourceRepository;
-        this.applicationInstanceRepository = applicationInstanceRepository;
-        this.envUtil = envUtil;
-        this.applicationVersionRepository = applicationVersionRepository;
-        this.applicationRepository = applicationRepository;
-        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
-        this.gitlabRepository = gitlabRepository;
-        this.devopsEnvUserPermissionRepository = devopsEnvUserPermissionRepository;
-        this.userAttrRepository = userAttrRepository;
-        this.devopsEnvironmentService = devopsEnvironmentService;
-        this.deployService = deployService;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
-        this.iamRepository = iamRepository;
-        this.commandSender = commandSender;
-        this.devopsEnvCommandRepository = devopsEnvCommandRepository;
-        this.devopsEnvCommandValueRepository = devopsEnvCommandValueRepository;
-        this.devopsEnvResourceService = devopsEnvResourceService;
-        this.devopsEnvPodRepository = devopsEnvPodRepository;
-        this.applicationInstanceMapper = applicationInstanceMapper;
-        this.envListener = envListener;
-    }
+    private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private ApplicationVersionRepository applicationVersionRepository;
+    @Autowired
+    private ApplicationRepository applicationRepository;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private DeployService deployService;
+    @Autowired
+    private IamRepository iamRepository;
+    @Autowired
+    private CommandSender commandSender;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    @Autowired
+    private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private UserAttrRepository userAttrRepository;
+    @Autowired
+    private ApplicationInstanceMapper applicationInstanceMapper;
+    @Autowired
+    private DevopsEnvPodRepository devopsEnvPodRepository;
+    @Autowired
+    private DevopsEnvResourceService devopsEnvResourceService;
+    @Autowired
+    private GitlabRepository gitlabRepository;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private DevopsEnvironmentService devopsEnvironmentService;
+    @Autowired
+    private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
+
+
 
     @Override
     public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -460,7 +441,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void operationPodCount(String deploymentName, Long envId, Long count) {
         //校验用户是否有环境的权限
         DevopsEnvironmentE devopsEnvironmentE = checkEnvPermission(envId);
-
+        //不能减少到0
+        if (count == 0) {
+            return;
+        }
         deployService.operatePodCount(deploymentName, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId(), count);
     }
 
@@ -731,18 +715,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
         } else {
             code = applicationInstanceE.getCode();
+            //更新实例的时候校验gitops库文件是否存在,处理部署实例时，由于没有创gitops文件导致的部署失败
+            checkOptionsHandler.check(devopsEnvironmentE, applicationDeployDTO.getAppInstanceId(), code, C7NHELM_RELEASE);
         }
 
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-
-        ApplicationInstanceE beforeApplicationInstanceE = applicationInstanceRepository
-                .selectByCode(code, applicationDeployDTO.getEnvironmentId());
-        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (beforeApplicationInstanceE != null) {
-            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeApplicationInstanceE.getCommandId());
-        }
 
         //更新时候，如果isNotChange的值为true，则直接向agent发送更新指令，不走gitops,否则走操作gitops库文件逻辑
         if (applicationDeployDTO.getIsNotChange()) {
@@ -755,6 +734,23 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE.getCode(), devopsEnvironmentE,
                     devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
         } else {
+            //存储数据
+            if (applicationDeployDTO.getType().equals(CREATE)) {
+                applicationInstanceE.setCode(code);
+                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
+            } else {
+                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
+                devopsEnvCommandE.initDevopsEnvCommandValueE(
+                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
+                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                applicationInstanceRepository.update(applicationInstanceE);
+            }
+
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
             String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
 
@@ -769,31 +765,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     applicationDeployDTO.getType(),
                     userAttrE.getGitlabUserId(),
                     applicationInstanceE.getId(), C7NHELM_RELEASE, null, devopsEnvironmentE.getId(), filePath);
-            ApplicationInstanceE afterApplicationInstanceE = applicationInstanceRepository
-                    .selectByCode(code, applicationDeployDTO.getEnvironmentId());
-            DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
-            if (afterApplicationInstanceE != null) {
-                afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterApplicationInstanceE.getCommandId());
-            }
 
-            //实例相关对象数据库操作,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而实例成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行实例数据库操作
-            if (applicationDeployDTO.getType().equals(CREATE) && afterApplicationInstanceE == null) {
-                applicationInstanceE.setCode(code);
-                applicationInstanceE.setId(applicationInstanceRepository.create(applicationInstanceE).getId());
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                devopsEnvCommandE.initDevopsEnvCommandValueE(
-                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
-            //判断null 是 0.9.0-0.10.0新增commandId 避免出现npe异常
-            if (applicationDeployDTO.getType().equals(UPDATE) && ((beforeDevopsEnvCommandE == null && afterDevopsEnvCommandE == null) || ((beforeDevopsEnvCommandE != null && afterDevopsEnvCommandE != null) && (Objects.equals(beforeDevopsEnvCommandE.getId(), afterDevopsEnvCommandE.getId()))))) {
-                devopsEnvCommandE.setObjectId(applicationInstanceE.getId());
-                devopsEnvCommandE.initDevopsEnvCommandValueE(
-                        devopsEnvCommandValueRepository.create(devopsEnvCommandValueE).getId());
-                applicationInstanceE.setCommandId(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
-                applicationInstanceRepository.update(applicationInstanceE);
-            }
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }

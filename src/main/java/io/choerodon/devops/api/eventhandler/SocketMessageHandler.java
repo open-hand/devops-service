@@ -1,10 +1,5 @@
 package io.choerodon.devops.api.eventhandler;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandStatus;
@@ -13,6 +8,10 @@ import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.process.AbstractAgentMsgHandler;
 import io.choerodon.websocket.tool.KeyParseTool;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/17.
@@ -38,6 +37,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
         if (logger.isDebugEnabled()) {
             logger.debug(msg.toString());
         }
+        msg.setDispatch(false);
         switch (helmType) {
             case HELM_RELEASE_PRE_INSTALL:
                 deployMsgHandlerService.handlerPreInstall(
@@ -201,7 +201,6 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             default:
-                msg.setDispatch(false);
                 break;
         }
     }

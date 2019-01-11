@@ -85,14 +85,14 @@ public class GitlabUserServiceImpl implements GitlabUserService {
 
     private void checkGitlabUser(GitlabUserRequestDTO gitlabUserRequestDTO) {
         String userName = gitlabUserRequestDTO.getUsername();
-        String newUserName = "";
+        StringBuilder newUserName = new StringBuilder();
         for (int i = 0; i < userName.length(); i++) {
             if (!Pattern.matches(SERVICE_PATTERN, String.valueOf(userName.charAt(i)))) {
-                newUserName += "_";
+                newUserName.append("_");
             } else {
-                newUserName += String.valueOf(userName.charAt(i));
+                newUserName.append(String.valueOf(userName.charAt(i)));
             }
         }
-        gitlabUserRequestDTO.setUsername(newUserName);
+        gitlabUserRequestDTO.setUsername(newUserName.toString());
     }
 }

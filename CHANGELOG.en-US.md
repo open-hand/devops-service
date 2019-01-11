@@ -1,6 +1,43 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+##[0.13.0] - 2019-01-07
+###add
+- New pipeline module for development console interface, including: branch management, continuous integration and application version; support for branch-centric development in the pipeline
+- Added network settings for Endpoints type in the target object section of the network module
+- Added support for LoadBalancer in the network configuration section of the network module
+- Details of the instance details module added StatefulSet, DaemonSet, PVC, Service, and Ingress
+- Added the addition and subtraction of Pod in the instance details to support the increase or decrease of the number of Pods directly on the current interface.
+- The application management module adds the function of importing applications, supports importing existing applications from Github and GitLab libraries, and adds corresponding files to imported applications according to the selected application template.
+- Add SpringBoot, Go application templates to predefined templates
+- The container interface newly displays the name and status of each Container in each Pod
+
+###change
+- When creating a network, when the network configuration section selects NodePort, the node port is changed to non-required
+- The container interface distinguishes the concept of Pod and container in detail, making the interface more intuitive
+- Optimized the instance details interface to swap the order of instance events and run details modules
+- Optimized the way in which the instance event interface Job and Pod states are displayed
+- Optimized the process of uploading certificates, replacing the order in which Cert files and Key files are filled
+
+
+###repair
+- When the instance interface deployment instance is fixed, after selecting the application module, you cannot see the problem of the instance being deployed.
+- Fixed issue with name validation when creating environment
+- Fixed display issue with instances in target object when editing network
+- Fixed an issue where the corresponding port was unchanged when re-selecting the network when creating a domain name
+- Fixed an issue where some corresponding apps were not displayed after clicking the view container details through the instance interface.
+- Fixed an issue where the log was lost after deployment failed in the automated test module
+- Fixed an issue where the instance name was empty when the instance was created
+- Fixed an issue where the instance event was an npe exception due to an empty operator
+- Fixed an issue where the environment pipeline modified the environment packet error
+- Fixed issue with webhook time zone
+- Fixed a format issue caused by exporting points in app custom names
+- Fixed an issue where the form content could still be edited after the create or modify operation was submitted
+
+###Remove
+- Removed the Networking display in the environment overview interface instance details
+
+
 ## [0.12.0] - 2018-12-14
 ### Add
 - Added application development rights allocation to support specific development operators for each application

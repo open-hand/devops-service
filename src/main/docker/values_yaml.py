@@ -37,6 +37,10 @@ def traversal(version_value_map, deploy_value_map, follow_keys, delta_map, updat
 
                     else:
                         traversal(version_value_map[key], deploy_value_map[key], follow_keys_copy, delta_map, update_list, add_list)
+                elif version_value_map[key] == None or type(version_value_map[key]).__name__ == 'str' or type(version_value_map[key]).__name__ == 'int' or type(version_value_map[key]).__name__ == 'bool':
+                    version_value_map[key] = deploy_value_map[key]
+                    add_list.append(follow_keys_copy)
+                    set_map_item(follow_keys_copy, delta_map, dict(deploy_value_map[key]))
             else:
                 # todo
                 add_list.append(follow_keys_copy)
@@ -109,5 +113,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

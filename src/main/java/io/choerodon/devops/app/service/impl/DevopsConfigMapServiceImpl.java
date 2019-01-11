@@ -5,11 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.gson.Gson;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1ObjectMeta;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -20,6 +15,7 @@ import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
@@ -30,6 +26,10 @@ import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import io.kubernetes.client.models.V1ConfigMap;
+import io.kubernetes.client.models.V1ObjectMeta;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -38,6 +38,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     public static final String UPDATE = "update";
     public static final String DELETE = "delete";
     public static final String CONFIGMAP = "ConfigMap";
+    public static final String CONFIG_MAP_PREFIX = "configMap-";
     private Gson gson = new Gson();
 
 
@@ -63,7 +64,8 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
     @Autowired
     private GitlabRepository gitlabRepository;
-
+    @Autowired
+    private CheckOptionsHandler checkOptionsHandler;
 
     @Override
     public void createOrUpdate(Long projectId, DevopsConfigMapDTO devopsConfigMapDTO) {
@@ -82,6 +84,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
         //更新判断configMap key-value是否改变
         if (devopsConfigMapDTO.getType().equals(UPDATE)) {
+
+            //更新configMap的时候校验gitops库文件是否存在,处理部署configMap时，由于没有创gitops文件导致的部署失败
+            checkOptionsHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
+
             if (devopsConfigMapDTO.getValue().equals(gson.fromJson(devopsConfigMapRepository.queryById(devopsConfigMapE.getId()).getValue(), Map.class))) {
                 devopsConfigMapRepository.update(devopsConfigMapE);
                 return;
@@ -200,10 +206,10 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         if (devopsEnvFileResourceE == null) {
             devopsConfigMapRepository.delete(configMapId);
             if (gitlabRepository.getFile(TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), "master",
-                    "configMap-" + devopsConfigMapE.getName() + ".yaml")) {
+                    CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml")) {
                 gitlabRepository.deleteFile(
                         TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()),
-                        "configMap-" + devopsConfigMapE.getName() + ".yaml",
+                        CONFIG_MAP_PREFIX + devopsConfigMapE.getName() + ".yaml",
                         "DELETE FILE",
                         TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
             }
@@ -266,37 +272,25 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
                                       DevopsConfigMapE devopsConfigMapE,
                                       UserAttrE userAttrE, DevopsEnvCommandE devopsEnvCommandE) {
 
-        DevopsConfigMapE beforeDevopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(devopsConfigMapE.getDevopsEnvironmentE().getId(), devopsConfigMapE.getName());
-        DevopsEnvCommandE beforeDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (beforeDevopsConfigMapE != null) {
-            beforeDevopsEnvCommandE = devopsEnvCommandRepository.query(beforeDevopsConfigMapE.getDevopsEnvCommandE().getId());
-        }
 
-
-        ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
-        objectOperation.setType(v1ConfigMap);
-        objectOperation.operationEnvGitlabFile("configMap-" + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
-                userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, null, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
-
-
-        DevopsConfigMapE afterDevopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(devopsConfigMapE.getDevopsEnvironmentE().getId(), devopsConfigMapE.getName());
-        DevopsEnvCommandE afterDevopsEnvCommandE = new DevopsEnvCommandE();
-        if (afterDevopsConfigMapE != null) {
-            afterDevopsEnvCommandE = devopsEnvCommandRepository.query(afterDevopsConfigMapE.getDevopsEnvCommandE().getId());
-        }
-
-        //创建或更新数据,当集群速度较快时，会导致部署速度快于gitlab创文件的返回速度，从而域名成功的状态会被错误更新为处理中，所以用before和after去区分是否部署成功。成功不再执行域名数据库操作
-        if (isCreate && afterDevopsConfigMapE == null) {
+        //操作configMap数据库
+        if (isCreate) {
             Long configMapId = devopsConfigMapRepository.create(devopsConfigMapE).getId();
             devopsEnvCommandE.setObjectId(configMapId);
             devopsConfigMapE.setId(configMapId);
             devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsConfigMapRepository.update(devopsConfigMapE);
-        } else if (beforeDevopsEnvCommandE.getId().equals(afterDevopsEnvCommandE.getId())) {
+        } else {
             devopsEnvCommandE.setObjectId(devopsConfigMapE.getId());
             devopsConfigMapE.initDevopsEnvCommandE(devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
             devopsConfigMapRepository.update(devopsConfigMapE);
         }
+
+        ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
+        objectOperation.setType(v1ConfigMap);
+        objectOperation.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
+                userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, null, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
+
 
     }
 

@@ -10,7 +10,7 @@ image:
 
 preJob:
   timeout: 1200
-  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.5.6
+  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.1
   preConfig:
     enable: true
     configFile: application.yml
@@ -54,10 +54,8 @@ env:
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/infra/
     CERT_TESTCERT: false
-    TEMPLATE_VERSION_MICROSERVICE: 0.9.0
-    TEMPLATE_VERSION_MICROSERVICEFRONT: 0.9.0
-    TEMPLATE_VERSION_JAVALIB: 0.9.0
-    TEMPLATE_VERSION_CHOERODONMOCHATEMPLATE: 0.9.0
+    TEMPLATE_VERSION: 0.13.0
+    TEMPLATE_URL: https://github.com/choerodon/choerodon-devops-templates.git
 #    SKYWALKING_OPTS: >-
 #          -javaagent:/agent/skywalking-agent.jar
 #          -Dskywalking.agent.application_code=devops-service

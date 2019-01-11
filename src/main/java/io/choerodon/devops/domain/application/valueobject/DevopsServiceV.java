@@ -15,6 +15,7 @@ public class DevopsServiceV {
     private Long id;
     private String name;
     private String externalIp;
+    private String loadBalanceIp;
     private List<PortMapE> ports;
     private String status;
     private Long envId;
@@ -182,5 +183,13 @@ public class DevopsServiceV {
 
     public void setEndPoinits(Map<String, List<EndPointPortDTO>> endPoinits) {
         this.endPoinits = endPoinits;
+    }
+
+    public String getLoadBalanceIp() {
+        return loadBalanceIp;
+    }
+
+    public void setLoadBalanceIp(String loadBalanceIp) {
+        this.loadBalanceIp = loadBalanceIp;
     }
 }

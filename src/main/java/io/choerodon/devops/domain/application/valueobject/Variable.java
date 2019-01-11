@@ -5,9 +5,6 @@ public class Variable {
     private String key;
     private String value;
 
-    public Variable() {
-    }
-
     public String getKey() {
         return this.key;
     }

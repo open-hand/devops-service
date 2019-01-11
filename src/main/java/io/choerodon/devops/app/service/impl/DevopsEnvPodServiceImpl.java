@@ -1,11 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.choerodon.devops.api.dto.ContainerDTO;
 import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
+import io.choerodon.devops.infra.common.util.ArrayUtil;
 import io.choerodon.devops.infra.common.util.K8sUtil;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.kubernetes.client.models.V1Pod;
@@ -95,9 +97,14 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
             // 将不可用的容器置于靠前位置
             Map<Boolean, List<ContainerDTO>> containsByStatus = containers.stream().collect(Collectors.groupingBy(container -> container.getReady() == null ? Boolean.FALSE : container.getReady()));
-            containsByStatus.get(Boolean.FALSE).addAll(containsByStatus.get(Boolean.TRUE));
-            devopsEnvPodE.setContainers(containsByStatus.get(Boolean.FALSE));
-
+            List<ContainerDTO> result = new ArrayList<>();
+            if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.FALSE))) {
+                result.addAll(containsByStatus.get(Boolean.FALSE));
+            }
+            if (!ArrayUtil.isEmpty(containsByStatus.get(Boolean.TRUE))) {
+                result.addAll(containsByStatus.get(Boolean.TRUE));
+            }
+            devopsEnvPodE.setContainers(result);
         } catch (Exception e) {
             logger.info("名为 '{}' 的Pod的资源解析失败", devopsEnvPodE.getName());
         }
