@@ -461,7 +461,12 @@ public class DevopsEnvResourceServiceImpl implements DevopsEnvResourceService {
         PersistentVolumeClaimDTO dto = new PersistentVolumeClaimDTO();
         dto.setName(v1PersistentVolumeClaim.getMetadata().getName());
         dto.setStatus(v1PersistentVolumeClaim.getStatus().getPhase());
-        dto.setCapacity(v1PersistentVolumeClaim.getStatus().getCapacity().get("storage").toSuffixedString());
+        // 当PVC是Pending状态时，status字段下只有phase字段
+        if ("Pending".equals(dto.getStatus())) {
+            dto.setCapacity("0Gi");
+        } else {
+            dto.setCapacity(v1PersistentVolumeClaim.getStatus().getCapacity().get("storage").toSuffixedString());
+        }
         dto.setAccessModes(v1PersistentVolumeClaim.getSpec().getAccessModes().toString());
         dto.setAge(v1PersistentVolumeClaim.getMetadata().getCreationTimestamp().toString());
 
