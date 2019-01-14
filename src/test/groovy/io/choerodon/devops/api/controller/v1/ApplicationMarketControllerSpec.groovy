@@ -242,18 +242,6 @@ class ApplicationMarketControllerSpec extends Specification {
         list.get(0)["version"] == "0.0"
     }
 
-    def "queryMultiAppVersionsInProject"() {
-        given: "准备数据"
-        def ids = Arrays.asList(applicationMarketMapper.selectAll().get(0).getId())
-
-        when: '查询项目下单个应用市场的应用的版本'
-        def entity = restTemplate.postForEntity("/v1/projects/1/apps_market/list_versions", ids, JsonNode)
-
-        then: '验证返回值'
-        entity.getStatusCode().is2xxSuccessful()
-        entity.getBody().get(0).get("versions").get(0).get("version").asText() == "0.0"
-    }
-
     def "QueryAppVersionsInProjectByPage"() {
         when: '分页查询项目下单个应用市场的应用的版本'
         def page = restTemplate.postForObject("/v1/projects/1/apps_market/{app_market_id}/versions", searchParam, Page.class,

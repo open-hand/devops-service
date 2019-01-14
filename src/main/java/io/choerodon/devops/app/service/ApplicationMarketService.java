@@ -69,8 +69,6 @@ public interface ApplicationMarketService {
 
     List<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish);
 
-    List<AppMarketVersionListRepDTO> getAppVersionsByMarketIds(Long projectId, List<Long> appMarketIds, Boolean isPublish);
-
     Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                              PageRequest pageRequest, String searchParam);
 
