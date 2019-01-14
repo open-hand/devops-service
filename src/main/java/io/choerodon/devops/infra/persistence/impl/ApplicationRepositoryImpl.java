@@ -102,24 +102,25 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
                                             String type, Boolean doPage, PageRequest pageRequest, String params) {
-        Map maps = gson.fromJson(params, Map.class);
         Page<ApplicationDO> applicationES = new Page<>();
+        Map<String, Object> searchParam = null;
+        String param = null;
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            searchParam = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+            param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+        }
         //是否需要分页
         if (doPage != null && !doPage) {
-            if (!StringUtils.isEmpty(params)) {
                 applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
-                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                        TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
-            } else {
-                applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
-                        null,
-                        null, checkSortIsEmpty(pageRequest)));
-            }
+                        searchParam,
+                        param, checkSortIsEmpty(pageRequest)));
         } else {
+            List<ApplicationDO>  applicationDOS = applicationMapper.list(projectId, isActive, hasVersion, type,
+                    searchParam,
+                    param, checkSortIsEmpty(pageRequest));
             applicationES = PageHelper
-                    .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
-                            TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                            TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
+                    .doPageAndSort(pageRequest, () -> applicationDOS);
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
