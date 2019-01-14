@@ -289,16 +289,6 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     }
 
     @Override
-    public List<AppMarketVersionListRepDTO> getAppVersionsByMarketIds(Long projectId, List<Long> appMarketIds, Boolean isPublish) {
-        return appMarketIds.stream().map(id -> {
-            AppMarketVersionListRepDTO repDTO = new AppMarketVersionListRepDTO();
-            repDTO.setApplicationId(id);
-            repDTO.setVersions(ConvertHelper.convertList(applicationMarketRepository.getVersions(projectId, id, isPublish), AppMarketVersionDTO.class));
-            return repDTO;
-        }).collect(Collectors.toList());
-    }
-
-    @Override
     public Page<AppMarketVersionDTO> getAppVersions(Long projectId, Long appMarketId, Boolean isPublish,
                                                     PageRequest pageRequest, String searchParam) {
         return ConvertPageHelper.convertPage(

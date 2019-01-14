@@ -175,29 +175,6 @@ public class ApplicationMarketController {
                 .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
     }
 
-    /**
-     * 查询项目下多个应用市场的应用的版本
-     *
-     * @param projectId   项目id
-     * @param appMarketIds 发布ID
-     * @return List of AppMarketVersionDTO
-     */
-    @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "查询项目下多个应用市场的应用的版本")
-    @PostMapping("/list_versions")
-    public ResponseEntity<List<AppMarketVersionListRepDTO>> queryMultiAppVersionsInProject(
-            @ApiParam(value = "项目ID", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "多个发布的Id")
-            @RequestBody List<Long> appMarketIds,
-            @ApiParam(value = "是否发布", required = false)
-            @RequestParam(value = "is_publish", required = false) Boolean isPublish) {
-        return Optional.ofNullable(applicationMarketService.getAppVersionsByMarketIds(projectId, appMarketIds, isPublish))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.market.application.versions.get"));
-    }
-
 
     /**
      * 查询单个应用市场的应用的版本
