@@ -106,9 +106,15 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         Page<ApplicationDO> applicationES = new Page<>();
         //是否需要分页
         if (doPage != null && !doPage) {
-            applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
-                    TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
-                    TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
+            if (!StringUtils.isEmpty(params)) {
+                applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
+                        TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)),
+                        TypeUtil.cast(maps.get(TypeUtil.PARAM)), checkSortIsEmpty(pageRequest)));
+            } else {
+                applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
+                        null,
+                        null, checkSortIsEmpty(pageRequest)));
+            }
         } else {
             applicationES = PageHelper
                     .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
