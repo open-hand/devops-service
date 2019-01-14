@@ -92,16 +92,19 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
         List<Integer> gitlabJobIds = gitlabProjectRepository
                 .listJobs(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(pipelineWebHookDTO.getObjectAttributes().getId()), gitlabUserId).stream().map(GitlabJobE::getId).collect(Collectors.toList());
 
-        gitlabProjectRepository.getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN).forEach(commitStatuseDO -> {
+        Stage sonar = null;
+        List<CommitStatuseDO> commitStatuseDOS =  gitlabProjectRepository.getCommitStatuse(applicationE.getGitlabProjectE().getId(), pipelineWebHookDTO.getObjectAttributes().getSha(), ADMIN);
+        for (CommitStatuseDO commitStatuseDO : commitStatuseDOS) {
             if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
                 stages.add(stage);
             } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube") && !stages.isEmpty()) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
+                sonar = stage;
                 stages.add(stage);
                 stageNames.add(commitStatuseDO.getName());
             }
-        });
+        }
         DevopsGitlabCommitE devopsGitlabCommitE = devopsGitlabCommitRepository.queryByShaAndRef(pipelineWebHookDTO.getObjectAttributes().getSha(), pipelineWebHookDTO.getObjectAttributes().getRef());
 
         //pipeline不存在则创建,存在则更新状态和阶段信息
@@ -131,6 +134,9 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 }
                 result.add(original);
             });
+            if (sonar != null && result.stream().noneMatch(x -> x.getName().equals("sonarqube"))) {
+                result.add(sonar);
+            }
             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(result));
 
             if (devopsGitlabCommitE != null) {
