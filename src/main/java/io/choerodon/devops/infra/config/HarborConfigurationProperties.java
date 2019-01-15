@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.config;
 
+import java.util.*;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "services.harbor")
@@ -12,6 +14,8 @@ public class HarborConfigurationProperties {
     private String username;
 
     private String password;
+
+    private Map<String,String> params;
 
     public Boolean isEnabled() {
         return enabled;
@@ -43,5 +47,13 @@ public class HarborConfigurationProperties {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public Map<String, String> getParams() {
+        return params;
+    }
+
+    public void setParams(Map<String, String> params) {
+        this.params = params;
     }
 }
