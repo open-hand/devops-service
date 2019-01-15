@@ -23,7 +23,7 @@ public interface DevopsEnvironmentRepository {
 
     List<DevopsEnvironmentE> queryByprojectAndActive(Long projectId, Boolean active);
 
-    DevopsEnvironmentE queryByClusterIdAndCode(Long projectId, String code);
+    DevopsEnvironmentE queryByClusterIdAndCode(Long clusterId, String code);
 
     DevopsEnvironmentE queryByToken(String token);
 
