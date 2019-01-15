@@ -302,16 +302,36 @@ public class ApplicationController {
      * @param projectId 项目ID
      * @param code      应用code
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建应用校验编码是否存在")
     @GetMapping(value = "/check_code")
     public void checkCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境名", required = true)
+            @ApiParam(value = "应用编码", required = true)
             @RequestParam String code) {
         applicationService.checkCode(projectId, code);
     }
+
+    /**
+     * 根据应用编码查询应用
+     *
+     * @param projectId 项目ID
+     * @param code      应用code
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "根据应用编码查询应用")
+    @GetMapping(value = "/query_by_code")
+    public ResponseEntity<ApplicationRepDTO> queryByCode(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用编码", required = true)
+            @RequestParam String code) {
+        return Optional.ofNullable(applicationService.queryByCode(projectId,code))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.application.get"));
+    }
+
 
     /**
      * 查询应用模板

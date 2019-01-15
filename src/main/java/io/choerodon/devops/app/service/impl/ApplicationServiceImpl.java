@@ -941,6 +941,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         return ConvertHelper.convert(applicationRepository.query(appId), ApplicationRepDTO.class);
     }
 
+    @Override
+    public ApplicationRepDTO queryByCode(Long projectId, String code) {
+        return ConvertHelper.convert(applicationRepository.queryByCode(code,projectId),ApplicationRepDTO.class);
+    }
+
     private ApplicationE fromImportDtoToEntity(ApplicationImportDTO applicationImportDTO) {
         ApplicationE applicationE = ApplicationFactory.createApplicationE();
         applicationE.initProjectE(applicationImportDTO.getProjectId());

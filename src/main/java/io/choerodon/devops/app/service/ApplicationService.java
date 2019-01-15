@@ -217,4 +217,7 @@ public interface ApplicationService {
      * @return response
      */
     ApplicationRepDTO importApplicationFromGitPlatform(Long projectId, ApplicationImportDTO applicationImportDTO);
+
+
+    ApplicationRepDTO queryByCode(Long projectId, String code);
 }
