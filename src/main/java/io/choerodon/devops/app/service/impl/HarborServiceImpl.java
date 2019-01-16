@@ -2,15 +2,16 @@ package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-import retrofit2.Response;
-
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.domain.application.event.HarborPayload;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.harbor.Project;
 import io.choerodon.devops.infra.feign.HarborClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+import retrofit2.Response;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,6 +26,8 @@ public class HarborServiceImpl implements HarborService {
 
     private HarborClient harborClient;
 
+    @Autowired
+    private HarborConfigurationProperties harborConfigurationProperties;
 
     public HarborServiceImpl(HarborClient harborClient) {
         this.harborClient = harborClient;
@@ -34,8 +37,12 @@ public class HarborServiceImpl implements HarborService {
     public void createHarbor(HarborPayload harborPayload) {
         //创建harbor仓库
         try {
-            Response<Object> result =
-                    harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
+            Response<Object> result = null;
+            if (harborConfigurationProperties.getParams() == null) {
+                result = harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
+            } else {
+                result = harborClient.insertProject(harborConfigurationProperties.getParams(), new Project(harborPayload.getProjectCode(), 1)).execute();
+            }
             if (result.raw().code() != 201 || result.raw().code() != 409) {
                 LOGGER.error("create harbor project error {}", result.errorBody());
             }
