@@ -3,6 +3,7 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -235,5 +236,34 @@ public class DevopsClusterController {
         return Optional.ofNullable(devopsClusterService.deleteCluster(clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.cluster.delete"));
+    }
+
+    /**
+     * 分页查询节点下的Pod
+     * @param organizationId 组织id
+     * @param clusterId 集群id
+     * @param nodeName 节点名称
+     * @param pageRequest 分页参数
+     * @param searchParam 查询参数
+     * @return pods
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "分页查询节点下的Pod")
+    @CustomPageRequest
+    @PostMapping(value = "/page_query_pods")
+    public ResponseEntity<Page<DevopsEnvPodDTO>> pageQueryPodsByNodeName(
+            @ApiParam(value = "组织ID", required = true)
+            @PathVariable(value = "organization_id") Long organizationId,
+            @ApiParam(value = "集群id")
+            @RequestParam(required = true) Long clusterId,
+            @ApiParam(value = "节点名称")
+            @RequestParam(required = true) String nodeName,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String searchParam) {
+        return Optional.ofNullable(devopsClusterService.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.node.pod.query", nodeName));
     }
 }

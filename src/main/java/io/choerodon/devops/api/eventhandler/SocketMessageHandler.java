@@ -30,7 +30,7 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
 
     @Override
     public void process(Msg msg) {
-        HelmType helmType = HelmType.forString(String.valueOf(msg.getType()));
+        HelmType helmType = HelmType.forValue(String.valueOf(msg.getType()));
         if (helmType == null) {
             return;
         }

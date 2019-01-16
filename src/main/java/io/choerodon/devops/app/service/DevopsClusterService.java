@@ -5,8 +5,13 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsClusterRepDTO;
 import io.choerodon.devops.api.dto.DevopsClusterReqDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.swagger.annotations.ApiParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+import springfox.documentation.annotations.ApiIgnore;
 
 public interface DevopsClusterService {
 
@@ -29,4 +34,14 @@ public interface DevopsClusterService {
     String deleteCluster(Long clusterId);
 
     DevopsClusterRepDTO getCluster(Long clusterId);
+
+    /**
+     * 分页查询节点下的Pod
+     * @param clusterId 集群id
+     * @param nodeName 节点名称
+     * @param pageRequest 分页参数
+     * @param searchParam 查询参数
+     * @return pods
+     */
+    Page<DevopsEnvPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 }

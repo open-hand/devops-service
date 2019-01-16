@@ -34,26 +34,17 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
-import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
-import io.choerodon.devops.infra.dataobject.ApplicationDO;
-import io.choerodon.devops.infra.dataobject.DevopsGitlabCommitDO;
-import io.choerodon.devops.infra.dataobject.DevopsGitlabPipelineDO;
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
+import io.choerodon.devops.infra.dataobject.*;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -157,6 +148,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private GitlabGroupMemberRepository gitlabGroupMemberRepository;
     @Autowired
     private GitlabUserRepository gitlabUserRepository;
+    @Autowired
+    private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
     private GitUtil gitUtil;
 
@@ -789,12 +782,34 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.11.2".equals(version)) {
                 syncCommandId();
                 syncCommandVersionId();
-            }else {
+            } else if ("0.14.0".equals(version)) {
+                syncDevopsEnvPodNodeNameAndRestartCount();
+            } else {
                 LOGGER.info("version not matched");
             }
             devopsCheckLogE.setLog(JSON.toJSONString(logs));
             devopsCheckLogE.setEndCheckDate(new Date());
             devopsCheckLogRepository.create(devopsCheckLogE);
+        }
+
+        /**
+         * 为devops_env_pod表的遗留数据的新增的node_name和restart_count字段同步数据
+         */
+        private void syncDevopsEnvPodNodeNameAndRestartCount() {
+            List<DevopsEnvPodDO> pods = devopsEnvPodMapper.selectAll();
+            pods.forEach(pod -> {
+                try {
+                    if (StringUtils.isEmpty(pod.getNodeName())) {
+                        String message = devopsEnvResourceRepository.getResourceDetailByNameAndTypeAndInstanceId(pod.getAppInstanceId(), pod.getName(), ResourceType.POD);
+                        V1Pod v1Pod = json.deserialize(message, V1Pod.class);
+                        pod.setNodeName(v1Pod.getSpec().getNodeName());
+                        pod.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
+                        devopsEnvPodMapper.updateByPrimaryKey(pod);
+                    }
+                } catch (Exception e) {
+                    LOGGER.warn("Processing node name and restart count for pod with name {} failed. \n exception is: {}", pod.getName(), e);
+                }
+            });
         }
 
 

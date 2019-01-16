@@ -14,8 +14,10 @@ public class DevopsEnvPodE {
     private String name;
     private String ip;
     private Boolean isReady;
+    private String nodeName;
     private ApplicationInstanceE applicationInstanceE;
     private String status;
+    private Long restartCount;
     private String appName;
     private String appVersion;
     private String publishLevel;
@@ -213,5 +215,21 @@ public class DevopsEnvPodE {
 
     public void setContainers(List<ContainerDTO> containers) {
         this.containers = containers;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public Long getRestartCount() {
+        return restartCount;
+    }
+
+    public void setRestartCount(Long restartCount) {
+        this.restartCount = restartCount;
     }
 }
