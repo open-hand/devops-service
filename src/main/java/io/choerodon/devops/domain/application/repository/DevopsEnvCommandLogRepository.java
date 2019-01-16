@@ -14,4 +14,6 @@ public interface DevopsEnvCommandLogRepository {
     DevopsEnvCommandLogE query(Long logId);
 
     List<DevopsEnvCommandLogE> queryByDeployId(Long deployId);
+
+    void deletePreInstanceCommandLog(Long instanceId);
 }

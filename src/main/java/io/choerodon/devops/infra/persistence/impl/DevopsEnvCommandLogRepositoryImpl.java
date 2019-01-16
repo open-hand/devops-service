@@ -2,14 +2,13 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandLogE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandLogRepository;
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommandLogDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/4/24.
@@ -46,5 +45,10 @@ public class DevopsEnvCommandLogRepositoryImpl implements DevopsEnvCommandLogRep
         devopsEnvCommandLogDO.setCommandId(commandId);
         List<DevopsEnvCommandLogDO> devopsEnvCommandLogDOS = devopsEnvCommandLogMapper.select(devopsEnvCommandLogDO);
         return ConvertHelper.convertList(devopsEnvCommandLogDOS, DevopsEnvCommandLogE.class);
+    }
+
+    @Override
+    public void deletePreInstanceCommandLog(Long instanceId) {
+        devopsEnvCommandLogMapper.deletePreInstanceCommandLog(instanceId);
     }
 }

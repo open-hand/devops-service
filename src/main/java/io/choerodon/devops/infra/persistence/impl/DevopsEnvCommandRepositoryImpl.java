@@ -40,12 +40,6 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
         if (devopsEnvCommandMapper.insert(devopsEnvCommandDO) != 1) {
             throw new CommonException("error.env.command.insert");
         }
-
-        // 删除实例历史日志以及事件记录
-        if (INSTANCE_TYPE.equals(devopsEnvCommandDO.getObject())) {
-            commandEventMapper.deletePreInstanceCommandEvent(devopsEnvCommandDO.getObjectId());
-            devopsEnvCommandLogMapper.deletePreInstanceCommandLog(devopsEnvCommandDO.getObjectId());
-        }
         return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandE.class);
     }
 

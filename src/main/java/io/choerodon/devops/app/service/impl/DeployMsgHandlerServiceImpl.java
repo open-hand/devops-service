@@ -573,6 +573,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                 .selectByCode(KeyParseTool.getReleaseName(key), envId);
+        // 删除实例历史日志记录
+        devopsEnvCommandLogRepository.deletePreInstanceCommandLog(applicationInstanceE.getId());
         if (applicationInstanceE != null) {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
@@ -1419,6 +1421,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         try {
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.INSTANCE.getType(), devopsEnvResourceE.getApplicationInstanceE().getId());
+            // 删除实例事件记录
+            devopsCommandEventRepository.deletePreInstanceCommandEvent(devopsEnvCommandE.getObjectId());
             DevopsCommandEventE devopsCommandEventE = new DevopsCommandEventE();
             devopsCommandEventE.setEventCreationTime(event.getMetadata().getCreationTimestamp());
             devopsCommandEventE.setMessage(event.getMessage());

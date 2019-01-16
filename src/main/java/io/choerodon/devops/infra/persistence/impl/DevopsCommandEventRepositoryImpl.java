@@ -2,14 +2,13 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.domain.application.entity.DevopsCommandEventE;
 import io.choerodon.devops.domain.application.repository.DevopsCommandEventRepository;
 import io.choerodon.devops.infra.dataobject.DevopsCommandEventDO;
 import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DevopsCommandEventRepositoryImpl implements DevopsCommandEventRepository {
@@ -29,5 +28,10 @@ public class DevopsCommandEventRepositoryImpl implements DevopsCommandEventRepos
         devopsCommandEventDO.setType(type);
         return ConvertHelper.convertList(
                 devopsCommandEventMapper.select(devopsCommandEventDO), DevopsCommandEventE.class);
+    }
+
+    @Override
+    public void deletePreInstanceCommandEvent(Long instanceId) {
+        devopsCommandEventMapper.deletePreInstanceCommandEvent(instanceId);
     }
 }
