@@ -330,9 +330,9 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
             }
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
-            ApplicationVersionE applicationVersionE = applicationVersionRepository.queryByCommitSha(devopsGitlabPipelineDO.getSha());
-            if (applicationVersionE != null) {
-                devopsGitlabPipelineDTO.setVersion(applicationVersionE.getVersion());
+            String  version  = applicationVersionRepository.queryByPipelineId(devopsGitlabPipelineDO.getPipelineId(),devopsGitlabPipelineDO.getSha());
+            if (version != null) {
+                devopsGitlabPipelineDTO.setVersion(version);
             }
             //pipeline阶段信息
             List<Stage> stages = JSONArray.parseArray(devopsGitlabPipelineDO.getStage(), Stage.class);
