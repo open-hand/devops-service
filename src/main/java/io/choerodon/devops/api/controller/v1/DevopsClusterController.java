@@ -302,8 +302,7 @@ public class DevopsClusterController {
      */
     @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "根据集群id和节点名查询节点状态信息")
-    @CustomPageRequest
-    @PostMapping(value = "/nodes")
+    @GetMapping(value = "/nodes")
     public ResponseEntity<ClusterNodeInfoDTO> queryNodeInfo(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,

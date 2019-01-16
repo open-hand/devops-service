@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @Service
 public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String REDIS_CLUSTER_KEY_TEMPLATE = "node_info_org_id_%s_cluster_id_%s";
+    private static final String CPU_MEASURE_FORMAT = "%.3f";
 
     @Autowired
     private DevopsClusterRepository devopsClusterRepository;
@@ -40,13 +41,27 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     @Override
     public void setValueForKey(String redisClusterKey, List<ClusterNodeInfoDTO> clusterNodeInfoDTOList) {
         stringRedisTemplate.delete(redisClusterKey);
-        stringRedisTemplate.opsForList().rightPushAll(redisClusterKey, clusterNodeInfoDTOList.stream().map(JSONObject::toJSONString).collect(Collectors.toList()));
+        stringRedisTemplate.opsForList().rightPushAll(redisClusterKey, clusterNodeInfoDTOList.stream().map(node -> {
+            node.setCpuAllocatable(dealCpuMeasure(node.getCpuAllocatable()));
+            node.setCpuCapacity(dealCpuMeasure(node.getCpuCapacity()));
+            node.setCpuLimit(dealCpuMeasure(node.getCpuLimit()));
+            node.setCpuRequest(dealCpuMeasure(node.getCpuRequest()));
+            return JSONObject.toJSONString(node);
+        }).collect(Collectors.toList()));
+    }
+
+    private String dealCpuMeasure(String cpuAmount) {
+        if (cpuAmount.endsWith("m")) {
+            double amount = Long.parseLong(cpuAmount.substring(0, cpuAmount.length() - 1)) / 1000.0;
+            return String.format(CPU_MEASURE_FORMAT, amount);
+        }
+        return cpuAmount;
     }
 
     @Override
     public Page<ClusterNodeInfoDTO> pageQueryClusterNodeInfo(Long clusterId, Long organizationId, PageRequest pageRequest) {
-        long start = pageRequest.getPage() * pageRequest.getSize();
-        long stop = start + pageRequest.getSize() - 1;
+        long start = (long) pageRequest.getPage() * (long) pageRequest.getSize();
+        long stop = start + (long) pageRequest.getSize() - 1;
         String redisKey = getRedisClusterKey(clusterId, organizationId);
 
         long total = stringRedisTemplate.opsForList().size(redisKey);
