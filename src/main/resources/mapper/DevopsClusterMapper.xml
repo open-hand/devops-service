@@ -59,7 +59,7 @@
                  INNER JOIN devops_env env ON instance.env_id = env.id
                  INNER JOIN devops_cluster cluster ON env.cluster_id = cluster.id
         WHERE cluster.id = #{clusterId}
-          AND pod.node_name = #{nodeName};
+          AND pod.node_name = #{nodeName}
     </select>
 
 </mapper>
