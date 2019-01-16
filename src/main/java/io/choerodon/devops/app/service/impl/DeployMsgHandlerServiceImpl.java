@@ -15,10 +15,8 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.GitConfigDTO;
-import io.choerodon.devops.api.dto.JobLogDTO;
-import io.choerodon.devops.api.dto.PodUpdateDTO;
-import io.choerodon.devops.api.dto.TestReleaseStatus;
+import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.app.service.ClusterNodeInfoService;
 import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
@@ -142,6 +140,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private SagaClient sagaClient;
     @Autowired
     private DevopsConfigMapRepository devopsConfigMapRepository;
+    @Autowired
+    private ClusterNodeInfoService clusterNodeInfoService;
 
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -1916,6 +1916,11 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             envId = devopsEnvironmentE.getId();
         }
         return envId;
+    }
+
+    @Override
+    public void handleNodeSync(String msg, Long clusterId) {
+        clusterNodeInfoService.setValueForKey(clusterNodeInfoService.getRedisClusterKey(clusterId), JSONArray.parseArray(msg, ClusterNodeInfoDTO.class));
     }
 }
 

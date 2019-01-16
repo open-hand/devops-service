@@ -200,6 +200,8 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case CERT_MANAGER_INFO:
                 deployMsgHandlerService.getCertManagerInfo(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
+            case NODE_SYNC:
+                deployMsgHandlerService.handleNodeSync(msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
             default:
                 break;
         }
