@@ -367,4 +367,28 @@ public class DevopsEnvironmentController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.cluster.query"));
     }
+
+
+    /**
+     * 根据环境编码查询环境
+     *
+     * @param projectId 项目ID
+     * @param code      环境code
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "根据环境编码查询环境")
+    @GetMapping(value = "/query_by_code")
+    public ResponseEntity<DevopsEnviromentRepDTO> queryByCode(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "集群Id", required = true)
+            @RequestParam(value = "cluster_id") Long clusterId,
+            @ApiParam(value = "环境编码", required = true)
+            @RequestParam(value = "code") String code) {
+        return Optional.ofNullable(devopsEnvironmentService.queryByCode(clusterId,code))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.environment.query"));
+    }
+
+
 }

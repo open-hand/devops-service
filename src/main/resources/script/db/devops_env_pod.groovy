@@ -32,4 +32,13 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env_pod.groovy') {
         addUniqueConstraint(tableName: 'devops_env_pod',
                 constraintName: 'devops_pod_uk_namespace_name', columnNames: 'namespace,name')
     }
+
+    changeSet(author: 'zmf', id: '2019-01-14-add-fields-in-pod') {
+        addColumn(tableName: 'devops_env_pod') {
+            column(name: 'node_name', type: 'VARCHAR(255)', remarks: '节点名称', afterColumn: 'namespace')
+        }
+        addColumn(tableName: 'devops_env_pod') {
+            column(name: 'restart_count', type: 'BIGINT UNSIGNED', remarks: 'Pod的重启次数，由Pod中的容器重启次数累加', afterColumn: 'status')
+        }
+    }
 }

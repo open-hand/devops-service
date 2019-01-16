@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
 import io.kubernetes.client.JSON;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -107,5 +108,10 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     @Override
     public List<DevopsClusterE> list() {
         return ConvertHelper.convertList(devopsClusterMapper.selectAll(), DevopsClusterE.class);
+    }
+
+    @Override
+    public Page<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+        return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> devopsClusterMapper.pageQueryPodsByNodeName(clusterId, nodeName, searchParam)), DevopsEnvPodE.class);
     }
 }

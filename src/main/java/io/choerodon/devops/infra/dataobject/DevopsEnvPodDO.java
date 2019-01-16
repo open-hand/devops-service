@@ -27,6 +27,8 @@ public class DevopsEnvPodDO extends AuditDomain {
     private Boolean isReady;
     private String resourceVersion;
     private String namespace;
+    private String nodeName;
+    private Long restartCount;
 
     @Transient
     private String appName;
@@ -190,5 +192,21 @@ public class DevopsEnvPodDO extends AuditDomain {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public Long getRestartCount() {
+        return restartCount;
+    }
+
+    public void setRestartCount(Long restartCount) {
+        this.restartCount = restartCount;
     }
 }

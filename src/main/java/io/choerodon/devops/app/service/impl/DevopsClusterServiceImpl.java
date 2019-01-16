@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -256,5 +258,10 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     @Override
     public DevopsClusterRepDTO getCluster(Long clusterId) {
         return ConvertHelper.convert(devopsClusterRepository.query(clusterId), DevopsClusterRepDTO.class);
+    }
+
+    @Override
+    public Page<DevopsEnvPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+        return ConvertPageHelper.convertPage(devopsClusterRepository.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam), DevopsEnvPodDTO.class);
     }
 }

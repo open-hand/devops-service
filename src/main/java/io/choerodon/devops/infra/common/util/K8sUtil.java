@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.common.util;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import io.kubernetes.client.JSON;
 import io.kubernetes.client.models.*;
 import org.springframework.util.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by younger on 2018/4/25.
@@ -222,6 +222,43 @@ public class K8sUtil {
             return "80,443";
         }
         return "80";
+    }
+
+    /**
+     * get restart count for the pod according to the logic of kubernetes's <code>printers.go#printPod</code>
+     *
+     * @param v1Pod a valid pod instance
+     * @return the restart count of the pod.
+     */
+    public static long getRestartCountForPod(V1Pod v1Pod) {
+        long restarts = 0;
+        boolean initializing = false;
+        if (!ArrayUtil.isEmpty(v1Pod.getStatus().getInitContainerStatuses())) {
+            for (V1ContainerStatus containerStatus : v1Pod.getStatus().getInitContainerStatuses()) {
+                restarts += containerStatus.getRestartCount();
+                if (containerStatus.getState().getTerminated() != null) {
+                    if (containerStatus.getState().getTerminated().getExitCode() == 0) {
+                        continue;
+                    } else {
+                        initializing = true;
+                    }
+                } else if (containerStatus.getState().getWaiting() != null && !StringUtils.isEmpty(containerStatus.getState().getWaiting().getReason()) && !"PodInitializing".equals(containerStatus.getState().getWaiting().getReason())) {
+                    initializing = true;
+                } else {
+                    initializing = true;
+                }
+                break;
+            }
+        }
+
+        if (!initializing) {
+            restarts = 0;
+            if (!ArrayUtil.isEmpty(v1Pod.getStatus().getContainerStatuses())) {
+                restarts = v1Pod.getStatus().getContainerStatuses().stream().map(V1ContainerStatus::getRestartCount).reduce((x, y) -> x + y).orElse(0);
+            }
+        }
+
+        return restarts;
     }
 
     /**

@@ -188,6 +188,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvPodE.setResourceVersion(resourceVersion);
         devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
         devopsEnvPodE.setReady(getReadyValue(status, v1Pod));
+        devopsEnvPodE.setNodeName(v1Pod.getSpec().getNodeName());
+        devopsEnvPodE.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
 
         Boolean flag = false;
         if (applicationInstanceE.getId() != null) {
@@ -1401,6 +1403,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         devopsEnvPodE.setNamespace(v1Pod.getMetadata().getNamespace());
         devopsEnvPodE.setReady(getReadyValue(status, v1Pod));
         devopsEnvPodE.initApplicationInstanceE(applicationInstanceE.getId());
+        devopsEnvPodE.setNodeName(v1Pod.getSpec().getNodeName());
+        devopsEnvPodE.setRestartCount(K8sUtil.getRestartCountForPod(v1Pod));
         devopsEnvPodRepository.insert(devopsEnvPodE);
         Long podId = devopsEnvPodRepository.get(devopsEnvPodE).getId();
         v1Pod.getSpec().getContainers().forEach(t ->

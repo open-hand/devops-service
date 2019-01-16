@@ -24,6 +24,8 @@ public class DevopsEnvPodDTO {
     private Boolean isConnect;
     private Long clusterId;
     private List<ContainerDTO> containers;
+    private String nodeName;
+    private Long restartCount;
 
     public Long getId() {
         return id;
@@ -175,5 +177,21 @@ public class DevopsEnvPodDTO {
 
     public void setContainers(List<ContainerDTO> containers) {
         this.containers = containers;
+    }
+
+    public String getNodeName() {
+        return nodeName;
+    }
+
+    public void setNodeName(String nodeName) {
+        this.nodeName = nodeName;
+    }
+
+    public Long getRestartCount() {
+        return restartCount;
+    }
+
+    public void setRestartCount(Long restartCount) {
+        this.restartCount = restartCount;
     }
 }
