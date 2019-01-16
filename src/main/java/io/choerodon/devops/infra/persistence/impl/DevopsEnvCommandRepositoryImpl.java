@@ -1,8 +1,7 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.Date;
 import java.util.List;
-
-import org.springframework.stereotype.Service;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -12,6 +11,7 @@ import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
 import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import org.springframework.stereotype.Service;
 
 /**
  * @author crcokitwood
@@ -82,5 +82,10 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     @Override
     public List<DevopsEnvCommandE> queryInstanceCommand(String objectType, Long objectId) {
         return ConvertHelper.convertList(devopsEnvCommandMapper.queryInstanceCommand(objectType, objectId), DevopsEnvCommandE.class);
+    }
+
+    @Override
+    public List<DevopsEnvCommandE> listByObject(String objectType, Long objectId, Date startTime, Date endTime) {
+        return ConvertHelper.convertList(devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())), DevopsEnvCommandE.class);
     }
 }

@@ -756,4 +756,34 @@ public class ApplicationInstanceController {
             @RequestParam Long count) {
         applicationInstanceService.operationPodCount(deploymentName, envId, count);
     }
+
+
+    /**
+     * 获取实例操作日志
+     *
+     * @param projectId     项目id
+     * @param appInstanceId 实例id
+     * @param startTime     开始时间
+     * @param endTime       结束时间
+     * @return List
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取实例操作日志")
+    @CustomPageRequest
+    @GetMapping(value = "/command_log/{appInstanceId}")
+    public ResponseEntity<List<AppInstanceCommandLogDTO>> listCommandLogs(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "实例 ID", required = true)
+            @PathVariable Long appInstanceId,
+            @ApiParam(value = "startTime")
+            @RequestParam(required = false) Date startTime,
+            @ApiParam(value = "endTime")
+            @RequestParam(required = false) Date endTime) {
+        return Optional.ofNullable(applicationInstanceService.listAppInstanceCommand(appInstanceId, startTime, endTime))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.deploy.log.get"));
+    }
 }
