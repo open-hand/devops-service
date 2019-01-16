@@ -1111,7 +1111,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         String fileName = GenerateUUID.generateUUID() + YAML_SUFFIX;
         String path = "deployfile";
-        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue.replace("\"", ""));
+        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
         ReplaceResult replaceResult;
         try {
             replaceResult = FileUtil.replaceNew(path + System.getProperty(FILE_SEPARATOR) + fileName);
