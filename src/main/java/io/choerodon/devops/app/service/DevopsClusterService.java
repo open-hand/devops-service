@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.ClusterWithNodesDTO;
 import io.choerodon.devops.api.dto.DevopsClusterRepDTO;
 import io.choerodon.devops.api.dto.DevopsClusterReqDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
@@ -27,7 +28,7 @@ public interface DevopsClusterService {
 
     void checkCode(Long organizationId, String code);
 
-    Page<DevopsClusterRepDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
+    Page<ClusterWithNodesDTO> pageClusters(Long organizationId, Boolean doPage, PageRequest pageRequest, String params);
 
     List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId);
 

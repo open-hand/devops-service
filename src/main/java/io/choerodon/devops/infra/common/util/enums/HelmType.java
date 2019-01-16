@@ -60,7 +60,8 @@ public enum HelmType {
     TEST_STATUS_RESPONSE("test_status_response"),
     TEST_STATUS("test_status"),
     CERT_MANAGER_INFO("cert_manager_info"),
-    EXECUTE_TEST("execute_test");
+    EXECUTE_TEST("execute_test"),
+    NODE_SYNC("node_sync");
 
     private static HashMap<String, HelmType> valuesMap = new HashMap<>(6);
 
