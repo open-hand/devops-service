@@ -1,0 +1,134 @@
+# Default values for api-gateway.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry.choerodon.com.cn/choerodon-c7ncd/choerodon-front-devops
+  pullPolicy: Always
+
+preJob:
+  preConfig:
+    mysql:
+      host: localhost
+      port: 3306
+      username: choerodon
+      password: 123456
+      dbname: iam_service
+      enabledelete: true
+      upattrs: sort
+
+service:
+  enable: false
+  type: ClusterIP
+  port: 80
+  name: choerodon-front-devops
+
+ingress:
+  enable: false
+  host: devops.choerodon.alpha.saas.hand-china.com
+
+env:
+  open:
+    PRO_API_HOST: gateway.choerodon.com.cn
+    PRO_DEVOPS_HOST: localhost:8060
+    PRO_CLIENT_ID: devops
+    PRO_LOCAL: true
+    PRO_TITLE_NAME: Choerodon
+    PRO_HEADER_TITLE_NAME: Choerodon
+    PRO_COOKIE_SERVER: choerodon.com.cn
+    PRO_HTTP: http
+    PRO_FILE_SERVER: http://minio.choerodon.com.cn
+
+metrics:
+  path: /prometheus
+  group: nginx
+
+logs:
+  parser: nginx
+
+resources: 
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources,such as Minikube. If you do want to specify resources,uncomment the following
+  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.
+  limits:
+    # cpu: 100m
+    # memory: 2Gi
+  requests:
+    # cpu: 100m
+    # memory: 1Gi
+
+---
+# 实例的副本数
+replicaCount: 1
+
+image:
+  repository: registry.saas.crland.com.cn/crland-shop/shop-base
+  pullPolicy: Always
+
+env:
+  open:
+    #运行环境dev，uat，prod，部署的时候需要指定和修改，默认dev
+    SPRING_PROFILES_ACTIVE: dev1
+    EUREKA_DEFAULT_ZONE: http://txeureka-dev.saas.crland.com.cn/eureka/
+service:
+  port: 8000
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 2Gi
+  requests:
+    cpu: 100m
+    memory: 1Gi
+
+log:
+  fluent:
+    # 日志采集程序环境变量, 是否启用，默认不启用ENABLE:false
+    enable: false
+    # 机房 crland | aliyun | tencent
+    idc:
+    # 环境 dev | uat | sit | prod
+    env: 
+    # 以Choerodon上[project_name]-[application_name]组合,比如techplatform-pmdms
+    tag: 
+    fluentd:
+      # fluentd程序的地址，详情联系技术中台人员
+      host: 
+      port: 8014
+    parse:
+      # 日志时间和内容匹配正则(ruby)，必须要time,level,message三段，参考 http://rubular.com/r/X7BH0M4Ivm
+      timeformat: %Y-%m-%d %H:%M:%S:%L
+      regex: ^(?<time>\d{4}-\d{1,2}-\d{1,2}\s\d{1,2}:\d{1,2}:\d{1,2}:\d{1,3})\s*(?<level>[^ ]*)\s*(?<message>[\s\S]*)$
+  # 日志文件目录
+  path: /logs
+
+metrics:
+  enable: false
+  path: /prometheus
+  port: 
+
+
+# 健康检查，通过则接入流量
+readinessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 8000
+  failureThreshold: 3
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  successThreshold: 1
+  timeoutSeconds: 3
+
+# 健康检查，不通过时重启容器
+livenessProbe:
+  httpGet:
+    path: /actuator/health
+    port: 8000
+  initialDelaySeconds: 300
+  periodSeconds: 20
+  successThreshold: 1
+  timeoutSeconds: 3
+

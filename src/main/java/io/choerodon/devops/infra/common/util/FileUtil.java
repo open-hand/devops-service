@@ -457,6 +457,9 @@ public class FileUtil {
 
     private static ReplaceResult loadResult(String yml) {
         String[] strings = yml.split("------love----you------choerodon----");
+        if (yml == null) {
+            throw new CommonException("error.value.illeage");
+        }
         Yaml yaml = new Yaml();
         Object map = yaml.load(strings[2]);
         ReplaceResult replaceResult = replaceNew(strings[0], (Map) map);
