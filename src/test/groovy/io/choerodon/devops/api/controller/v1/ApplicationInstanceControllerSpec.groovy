@@ -1087,10 +1087,10 @@ class ApplicationInstanceControllerSpec extends Specification {
     def "listCommandLogs"() {
 
         when: '获取commandLogs操作信息'
-        def results = restTemplate.getForObject("/v1/projects/1/app_instances//command_log/1", List.class)
+        def page = restTemplate.postForObject("/v1/projects/1/app_instances/command_log/1", null, Page.class)
 
         then: '校验返回值'
-        results.size() == 5
+        page.size() == 5
     }
 
     // 清除测试数据

@@ -772,17 +772,18 @@ public class ApplicationInstanceController {
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "获取实例操作日志")
     @CustomPageRequest
-    @GetMapping(value = "/command_log/{appInstanceId}")
-    public ResponseEntity<List<AppInstanceCommandLogDTO>> listCommandLogs(
+    @PostMapping(value = "/command_log/{appInstanceId}")
+    public ResponseEntity<Page<AppInstanceCommandLogDTO>> listCommandLogs(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数") PageRequest pageRequest,
             @ApiParam(value = "实例 ID", required = true)
             @PathVariable Long appInstanceId,
             @ApiParam(value = "startTime")
             @RequestParam(required = false) Date startTime,
             @ApiParam(value = "endTime")
             @RequestParam(required = false) Date endTime) {
-        return Optional.ofNullable(applicationInstanceService.listAppInstanceCommand(appInstanceId, startTime, endTime))
+        return Optional.ofNullable(applicationInstanceService.listAppInstanceCommand(pageRequest, appInstanceId, startTime, endTime))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.deploy.log.get"));
     }

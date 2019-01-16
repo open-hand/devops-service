@@ -448,14 +448,16 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
-    public List<AppInstanceCommandLogDTO> listAppInstanceCommand(Long appInstanceId, Date startTime, Date endTime) {
-        List<DevopsEnvCommandE> devopsEnvCommandES = devopsEnvCommandRepository.listByObject(ObjectType.INSTANCE.getType(), appInstanceId, startTime, endTime);
+    public Page<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime) {
+        Page<DevopsEnvCommandE> devopsEnvCommandES = devopsEnvCommandRepository.listByObject(pageRequest, ObjectType.INSTANCE.getType(), appInstanceId, startTime, endTime);
         Set<Long> userIds = new HashSet<>();
         devopsEnvCommandES.stream().forEach(devopsEnvCommandE ->
                 userIds.add(devopsEnvCommandE.getCreatedBy())
         );
         List<UserE> userES = iamRepository.listUsersByIds(new ArrayList<>(userIds));
+        Page<AppInstanceCommandLogDTO> pageAppInstanceCommandLogDTOS = new Page<>();
         List<AppInstanceCommandLogDTO> appInstanceCommandLogDTOS = new ArrayList<>();
+        BeanUtils.copyProperties(devopsEnvCommandES, pageAppInstanceCommandLogDTOS);
         devopsEnvCommandES.stream().forEach(devopsEnvCommandE -> {
             AppInstanceCommandLogDTO appInstanceCommandLogDTO = new AppInstanceCommandLogDTO();
             appInstanceCommandLogDTO.setType(devopsEnvCommandE.getCommandType());
@@ -467,7 +469,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             appInstanceCommandLogDTO.setCreateTime(devopsEnvCommandE.getCreationDate());
             appInstanceCommandLogDTOS.add(appInstanceCommandLogDTO);
         });
-        return appInstanceCommandLogDTOS;
+        pageAppInstanceCommandLogDTOS.setContent(appInstanceCommandLogDTOS);
+        return pageAppInstanceCommandLogDTOS;
     }
 
     private DevopsEnvironmentE checkEnvPermission(Long envId) {

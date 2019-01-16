@@ -272,6 +272,6 @@ public interface ApplicationInstanceService {
     void operationPodCount(String deploymentName, Long envId, Long count);
 
 
-    List<AppInstanceCommandLogDTO> listAppInstanceCommand(Long appInstanceId, Date startTime, Date endTime);
+    Page<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime);
 
 }

@@ -4,13 +4,18 @@ import java.util.Date;
 import java.util.List;
 
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
 import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 /**
@@ -79,7 +84,9 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     }
 
     @Override
-    public List<DevopsEnvCommandE> listByObject(String objectType, Long objectId, Date startTime, Date endTime) {
-        return ConvertHelper.convertList(devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())), DevopsEnvCommandE.class);
+    public Page<DevopsEnvCommandE> listByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
+        Page<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.doPageAndSort(pageRequest, () ->
+                devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
+        return ConvertPageHelper.convertPage(applicationInstanceDOPage, DevopsEnvCommandE.class);
     }
 }
