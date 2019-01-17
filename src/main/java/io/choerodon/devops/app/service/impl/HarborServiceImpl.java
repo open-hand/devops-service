@@ -41,19 +41,14 @@ public class HarborServiceImpl implements HarborService {
         //创建harbor仓库
         try {
             Response<Object> result = null;
-            System.out.println("testtest" + harborConfigurationProperties.getParams());
+            LOGGER.info(harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
-                System.out.println("testurlurl1");
                 result = harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
-                System.out.println("testurlurl1" + result.raw().request().url().toString());
             } else {
-                System.out.println("testurlurl2");
                 Map<String, String> params = new HashMap<>();
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
                 result = harborClient.insertProject(params, new Project(harborPayload.getProjectCode(), 1)).execute();
-                System.out.println("testurlurl2" + result.raw().request().url().toString());
             }
-            System.out.println("testurlurl3" + result.raw().request().url().toString());
             if (result.raw().code() != 201 || result.raw().code() != 409) {
                 LOGGER.error("The request url is ", result.raw().request().url().toString());
                 LOGGER.error("create harbor project error {}", result.errorBody());
