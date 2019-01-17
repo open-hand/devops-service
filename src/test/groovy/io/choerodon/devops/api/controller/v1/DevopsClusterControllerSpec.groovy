@@ -5,17 +5,28 @@ import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
+import io.choerodon.devops.api.dto.ClusterNodeInfoDTO
 import io.choerodon.devops.api.dto.DevopsClusterRepDTO
 import io.choerodon.devops.api.dto.DevopsClusterReqDTO
+import io.choerodon.devops.app.service.ClusterNodeInfoService
+import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.infra.common.util.EnvUtil
+import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO
 import io.choerodon.devops.infra.dataobject.DevopsClusterProPermissionDO
+import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO
+import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
+import io.choerodon.devops.infra.dataobject.DevopsServiceAppInstanceDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.IamServiceClient
+import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper
 import io.choerodon.devops.infra.mapper.DevopsClusterMapper
 import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper
+import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.devops.infra.mapper.DevopsServiceAppInstanceMapper
 import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -23,8 +34,11 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
+import org.springframework.data.redis.core.ListOperations
+import org.springframework.data.redis.core.StringRedisTemplate
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
@@ -45,7 +59,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class DevopsClusterControllerSpec extends Specification {
 
     private static final String MAPPING = "/v1/organizations/{organization_id}/clusters"
-    private static Long ID;
+    private static Long ID
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -58,13 +72,39 @@ class DevopsClusterControllerSpec extends Specification {
     private DevopsClusterProPermissionMapper devopsClusterProPermissionMapper
 
     @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper
+    @Autowired
+    private DevopsEnvPodMapper devopsEnvPodMapper
+    @Autowired
+    private ApplicationInstanceMapper applicationInstanceMapper
+
+    @Autowired
+    private ClusterNodeInfoServiceImpl clusterNodeInfoService
+
+    @Autowired
     @Qualifier("mockEnvUtil")
     private EnvUtil envUtil
 
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+    StringRedisTemplate mockStringRedisTemplate = Mockito.mock(StringRedisTemplate)
+
+    private DevopsClusterDO devopsClusterDO = new DevopsClusterDO()
+    private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    private ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    private DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
+
+    @Shared
+    private boolean isToInit = true
+    @Shared
+    private boolean isToClean = false
 
     def setup() {
+        if (!isToInit) {
+            return
+        }
+
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+        DependencyInjectUtil.setAttribute(clusterNodeInfoService, "stringRedisTemplate", mockStringRedisTemplate)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setId(1L)
@@ -85,10 +125,59 @@ class DevopsClusterControllerSpec extends Specification {
         projectDOPage.setContent(projectDOList)
         ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
         Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[].class))).thenReturn(projectDOPageResponseEntity)
+
+        devopsClusterDO.setCode("uat")
+        devopsClusterDO.setId(1000L)
+        devopsClusterDO.setName("uat")
+        devopsClusterDO.setOrganizationId(1L)
+        devopsClusterMapper.insert(devopsClusterDO)
+
+        devopsEnvironmentDO.setName("env")
+        devopsEnvironmentDO.setCode("env")
+        devopsEnvironmentDO.setClusterId(devopsClusterDO.getId())
+        devopsEnvironmentMapper.insert(devopsEnvironmentDO)
+
+        applicationInstanceDO.setAppId(1000L)
+        applicationInstanceDO.setAppName("app")
+        applicationInstanceMapper.insert(applicationInstanceDO)
+
+        devopsEnvPodDO.setAppInstanceId(applicationInstanceDO.getId())
+        devopsEnvPodDO.setNodeName("uat01")
+        devopsEnvPodDO.setRestartCount(11L)
+        devopsEnvPodDO.setName("pod01")
+        devopsEnvPodMapper.insert(devopsEnvPodDO)
+
+        ListOperations<String, String> mockListOperations = Mockito.mock(ListOperations)
+        Mockito.when(mockStringRedisTemplate.opsForList()).thenReturn(mockListOperations)
+        Mockito.when(mockListOperations.size(anyString())).thenReturn(1L)
+
+        ClusterNodeInfoDTO clusterNodeInfoDTO = new ClusterNodeInfoDTO()
+        clusterNodeInfoDTO.setNodeName("uat01")
+
+        Mockito.when(mockListOperations.range(anyString(), anyLong(), anyLong())).thenReturn(Arrays.asList(clusterNodeInfoDTO))
+    }
+
+    def cleanup() {
+        if (!isToClean) {
+            return
+        }
+        DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
+        DependencyInjectUtil.restoreDefaultDependency(clusterNodeInfoService, "stringRedisTemplate")
+
+        // 删除cluster
+        devopsClusterMapper.selectAll().forEach{ devopsClusterMapper.delete(it) }
+
+        // 删除clusterProRel
+        devopsClusterProPermissionMapper.selectAll().forEach{ devopsClusterProPermissionMapper.delete(it) }
+        devopsEnvironmentMapper.selectAll().forEach{ devopsEnvironmentMapper.delete(it) }
+        devopsEnvPodMapper.selectAll().forEach{ devopsEnvPodMapper.delete(it) }
+        applicationInstanceMapper.selectAll().forEach{ applicationInstanceMapper.delete(it) }
+
     }
 
     def "Create"() {
         given: '初始化DTO'
+        isToInit = false
         DevopsClusterReqDTO devopsClusterReqDTO = new DevopsClusterReqDTO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(1L)
@@ -112,11 +201,11 @@ class DevopsClusterControllerSpec extends Specification {
         devopsClusterReqDTO.setCode("cluster")
         devopsClusterReqDTO.setProjects(projectIds)
         devopsClusterReqDTO.setName("updateCluster")
-        ID  = devopsClusterMapper.selectAll().get(0).getId()
+        ID = devopsClusterMapper.selectAll().get(0).getId()
         devopsClusterReqDTO.setSkipCheckProjectPermission(false)
 
         when: '更新集群下的项目'
-        restTemplate.put(MAPPING + "?clusterId="+ID, devopsClusterReqDTO, 2L)
+        restTemplate.put(MAPPING + "?clusterId=" + ID, devopsClusterReqDTO, 2L)
 
         then: '校验是否更新'
         devopsClusterMapper.selectAll().get(0)["name"] == "updateCluster"
@@ -124,7 +213,7 @@ class DevopsClusterControllerSpec extends Specification {
 
     def "Query"() {
         when: '查询单个集群信息'
-        def dto = restTemplate.getForObject(MAPPING + "/"+ID, DevopsClusterRepDTO.class, 1L)
+        def dto = restTemplate.getForObject(MAPPING + "/" + ID, DevopsClusterRepDTO.class, 1L)
 
         then: '校验返回值'
         dto["name"] == "updateCluster"
@@ -154,7 +243,7 @@ class DevopsClusterControllerSpec extends Specification {
         str[0] = "{}"
 
         when: '分页查询项目列表'
-        def e = restTemplate.postForEntity(MAPPING + "/page_projects?page=0&size=10&cluster_id="+ID, str, Page.class, 1L)
+        def e = restTemplate.postForEntity(MAPPING + "/page_projects?page=0&size=10&cluster_id=" + ID, str, Page.class, 1L)
 
         then: '校验返回值'
         e.getBody().get(0)["code"] == "pro"
@@ -201,6 +290,43 @@ class DevopsClusterControllerSpec extends Specification {
         e.getBody().get(0)["code"] == "cluster"
     }
 
+    def "get pods in node"() {
+        given: '准备查询数据'
+
+        when: '发送请求'
+        def e = restTemplate.postForEntity(MAPPING + "/page_node_pods?page=0&size=10&cluster_id={clusterId}&node_name={nodeName}", str, Page.class, 1L, devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
+
+        then: '校验结果'
+        e.getStatusCode().is2xxSuccessful()
+        e.getBody().getContent().size() == 1
+    }
+
+    // 分页查询集群下的节点
+    def "list cluster nodes"() {
+        given: "准备数据"
+        def url = MAPPING + "/page_nodes?cluster_id={cluster_id}&page=0&size=10"
+
+        when: "发送请求"
+        def res = restTemplate.getForEntity(url, Page, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId())
+
+        then: "校验结果"
+        res.getStatusCode().is2xxSuccessful()
+        res.getBody().getContent().size() == 1
+    }
+
+    // 根据集群id和节点名查询节点状态信息
+    def "get certain node information"() {
+        given: "准备数据"
+        def url = MAPPING + "/nodes?cluster_id={}&node_name={}"
+
+        when: "发送请求"
+        def res = restTemplate.getForEntity(url, ClusterNodeInfoDTO, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
+
+        then: "校验结果"
+        res.getStatusCode().is2xxSuccessful()
+        res.getBody().getNodeName() == devopsEnvPodDO.getNodeName()
+    }
+
     def "DeleteCluster"() {
         given: 'mock envUtil'
         List<Long> envList = new ArrayList<>()
@@ -212,21 +338,10 @@ class DevopsClusterControllerSpec extends Specification {
 
         then: '校验返回值'
         devopsClusterMapper.selectAll().size() == 0
+    }
 
-        and: '清理数据'
-        // 删除cluster
-        List<DevopsClusterDO> list = devopsClusterMapper.selectAll()
-        if (list != null && !list.isEmpty()) {
-            for (DevopsClusterDO e : list) {
-                devopsClusterMapper.delete(e)
-            }
-        }
-        // 删除clusterProRel
-        List<DevopsClusterProPermissionDO> list1 = devopsClusterProPermissionMapper.selectAll()
-        if (list1 != null && !list1.isEmpty()) {
-            for (DevopsClusterProPermissionDO e : list1) {
-                devopsClusterProPermissionMapper.delete(e)
-            }
-        }
+    def clean() {
+        given:
+        isToClean = true
     }
 }
