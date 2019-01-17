@@ -41,6 +41,7 @@ public class HarborServiceImpl implements HarborService {
         //创建harbor仓库
         try {
             Response<Object> result = null;
+            LOGGER.info(harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
                 result = harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
             } else {
