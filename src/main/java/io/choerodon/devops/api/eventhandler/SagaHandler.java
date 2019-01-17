@@ -77,7 +77,7 @@ public class SagaHandler {
             description = "devops 创建 GitOps Group",
             sagaCode = "iam-create-project",
             maxRetryCount = 3,
-            seq = 1)
+            seq = 2)
     public String handleGitOpsGroupEvent(String msg) {
         ProjectEvent projectEvent = gson.fromJson(msg, ProjectEvent.class);
         GitlabGroupPayload gitlabGroupPayload = new GitlabGroupPayload();

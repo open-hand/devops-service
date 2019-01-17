@@ -1,17 +1,22 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.Date;
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO;
 import io.choerodon.devops.infra.mapper.DevopsCommandEventMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandLogMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvCommandMapper;
+import io.choerodon.mybatis.pagehelper.PageHelper;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 /**
  * @author crcokitwood
@@ -39,12 +44,6 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
         DevopsEnvCommandDO devopsEnvCommandDO = ConvertHelper.convert(devopsEnvCommandE, DevopsEnvCommandDO.class);
         if (devopsEnvCommandMapper.insert(devopsEnvCommandDO) != 1) {
             throw new CommonException("error.env.command.insert");
-        }
-
-        // 删除实例历史日志以及事件记录
-        if (INSTANCE_TYPE.equals(devopsEnvCommandDO.getObject())) {
-            commandEventMapper.deletePreInstanceCommandEvent(devopsEnvCommandDO.getObjectId());
-            devopsEnvCommandLogMapper.deletePreInstanceCommandLog(devopsEnvCommandDO.getObjectId());
         }
         return ConvertHelper.convert(devopsEnvCommandDO, DevopsEnvCommandE.class);
     }
@@ -82,5 +81,12 @@ public class DevopsEnvCommandRepositoryImpl implements DevopsEnvCommandRepositor
     @Override
     public List<DevopsEnvCommandE> queryInstanceCommand(String objectType, Long objectId) {
         return ConvertHelper.convertList(devopsEnvCommandMapper.queryInstanceCommand(objectType, objectId), DevopsEnvCommandE.class);
+    }
+
+    @Override
+    public Page<DevopsEnvCommandE> listByObject(PageRequest pageRequest, String objectType, Long objectId, Date startTime, Date endTime) {
+        Page<ApplicationInstanceDO> applicationInstanceDOPage = PageHelper.doPageAndSort(pageRequest, () ->
+                devopsEnvCommandMapper.listByObject(objectType, objectId, startTime == null ? null : new java.sql.Date(startTime.getTime()), endTime == null ? null : new java.sql.Date(endTime.getTime())));
+        return ConvertPageHelper.convertPage(applicationInstanceDOPage, DevopsEnvCommandE.class);
     }
 }

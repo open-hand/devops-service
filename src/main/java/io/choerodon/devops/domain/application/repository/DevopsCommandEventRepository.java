@@ -10,4 +10,6 @@ public interface DevopsCommandEventRepository {
 
     List<DevopsCommandEventE> listByCommandIdAndType(Long commandId, String type);
 
+    void deletePreInstanceCommandEvent(Long instanceId);
+
 }

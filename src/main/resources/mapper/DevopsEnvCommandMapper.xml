@@ -14,6 +14,22 @@
     </select>
 
 
+    <select id="listByObject" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
+        SELECT
+        d.*
+        FROM
+        devops_env_command d
+        WHERE
+        d.object = #{objectType} and d.object_id = #{objectId}
+        <if test="startTime != null">
+            AND d.creation_date >= CONCAT('','${startTime}',' 00:00:00')
+        </if>
+        <if test="endTime != null">
+            AND d.creation_date <![CDATA[<=]]>  CONCAT('','${endTime}',' 23:59:59')
+        </if>
+        ORDER BY d.id DESC
+    </select>
+
     <select id="queryInstanceCommand" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvCommandDO">
         SELECT
         d.*
@@ -24,4 +40,6 @@
         and d.command_type in ('update','create')
         ORDER BY d.id DESC LIMIT 4
     </select>
+
+
 </mapper>

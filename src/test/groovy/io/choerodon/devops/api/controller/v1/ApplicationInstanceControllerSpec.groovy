@@ -533,8 +533,10 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         List<UserDO> userDOList = new ArrayList<>()
         UserDO userDO1 = new UserDO()
+        userDO1.setId(1)
         userDO1.setLoginName("loginName")
         userDO1.setRealName("realName")
+        userDO1.setImageUrl("imageUrl")
         userDOList.add(userDO1)
         ResponseEntity<List<UserDO>> responseEntity7 = new ResponseEntity<>(userDOList, HttpStatus.OK)
         Mockito.when(iamServiceClient.listUsersByIds(any(Long[].class))).thenReturn(responseEntity7)
@@ -1079,6 +1081,16 @@ class ApplicationInstanceControllerSpec extends Specification {
 
         then: '校验返回值'
         page.get(0)["appName"] == "appName"
+    }
+
+
+    def "listCommandLogs"() {
+
+        when: '获取commandLogs操作信息'
+        def page = restTemplate.postForObject("/v1/projects/1/app_instances/command_log/1", null, Page.class)
+
+        then: '校验返回值'
+        page.size() == 5
     }
 
     // 清除测试数据

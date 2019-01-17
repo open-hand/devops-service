@@ -117,7 +117,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private CheckOptionsHandler checkOptionsHandler;
 
 
-
     @Override
     public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                      Long envId, Long versionId, Long appId, String params) {
@@ -446,6 +445,32 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             return;
         }
         deployService.operatePodCount(deploymentName, devopsEnvironmentE.getCode(), devopsEnvironmentE.getClusterE().getId(), count);
+    }
+
+    @Override
+    public Page<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime) {
+        Page<DevopsEnvCommandE> devopsEnvCommandES = devopsEnvCommandRepository.listByObject(pageRequest, ObjectType.INSTANCE.getType(), appInstanceId, startTime, endTime);
+        Set<Long> userIds = new HashSet<>();
+        devopsEnvCommandES.stream().forEach(devopsEnvCommandE ->
+                userIds.add(devopsEnvCommandE.getCreatedBy())
+        );
+        List<UserE> userES = iamRepository.listUsersByIds(new ArrayList<>(userIds));
+        Page<AppInstanceCommandLogDTO> pageAppInstanceCommandLogDTOS = new Page<>();
+        List<AppInstanceCommandLogDTO> appInstanceCommandLogDTOS = new ArrayList<>();
+        BeanUtils.copyProperties(devopsEnvCommandES, pageAppInstanceCommandLogDTOS);
+        devopsEnvCommandES.stream().forEach(devopsEnvCommandE -> {
+            AppInstanceCommandLogDTO appInstanceCommandLogDTO = new AppInstanceCommandLogDTO();
+            appInstanceCommandLogDTO.setType(devopsEnvCommandE.getCommandType());
+            userES.stream().filter(userE -> userE.getId().equals(devopsEnvCommandE.getCreatedBy())).forEach(userE -> {
+                appInstanceCommandLogDTO.setUserImage(userE.getImageUrl());
+                appInstanceCommandLogDTO.setLoginName(userE.getLoginName());
+                appInstanceCommandLogDTO.setRealName(userE.getRealName());
+            });
+            appInstanceCommandLogDTO.setCreateTime(devopsEnvCommandE.getCreationDate());
+            appInstanceCommandLogDTOS.add(appInstanceCommandLogDTO);
+        });
+        pageAppInstanceCommandLogDTOS.setContent(appInstanceCommandLogDTOS);
+        return pageAppInstanceCommandLogDTOS;
     }
 
     private DevopsEnvironmentE checkEnvPermission(Long envId) {
@@ -1111,7 +1136,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         String fileName = GenerateUUID.generateUUID() + YAML_SUFFIX;
         String path = "deployfile";
-        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue.replace("\"", ""));
+        FileUtil.saveDataToFile(path, fileName, versionValue + "\n" + "---" + "\n" + deployValue);
         ReplaceResult replaceResult;
         try {
             replaceResult = FileUtil.replaceNew(path + System.getProperty(FILE_SEPARATOR) + fileName);

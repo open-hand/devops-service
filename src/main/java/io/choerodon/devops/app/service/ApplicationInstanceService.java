@@ -261,5 +261,17 @@ public interface ApplicationInstanceService {
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 
 
+    /**
+     * 操作pod的数量
+     *
+     * @param envId          环境id
+     * @param deploymentName deploymentName
+     * @param count          pod数量
+     * @return ApplicationInstanceDTO
+     */
     void operationPodCount(String deploymentName, Long envId, Long count);
+
+
+    Page<AppInstanceCommandLogDTO> listAppInstanceCommand(PageRequest pageRequest, Long appInstanceId, Date startTime, Date endTime);
+
 }
