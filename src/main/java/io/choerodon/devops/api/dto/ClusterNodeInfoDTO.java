@@ -11,17 +11,30 @@ public class ClusterNodeInfoDTO {
     private String nodeName;
     private String status;
     private String createTime;
-    private String cpuCapacity;
-    private String cpuAllocatable;
-    private Long podAllocatable;
-    private Long podCapacity;
-    private String memoryCapacity;
-    private String memoryAllocatable;
-    private String memoryRequest;
-    private String memoryLimit;
+
+    private String cpuTotal;
     private String cpuRequest;
     private String cpuLimit;
+    private String cpuRequestPercentage;
+    private String cpuLimitPercentage;
+
+    private String memoryTotal;
+    private String memoryRequest;
+    private String memoryLimit;
+    private String memoryRequestPercentage;
+    private String memoryLimitPercentage;
+
+    private Long podTotal;
     private Long podCount;
+    private String podPercentage;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getNodeName() {
         return nodeName;
@@ -39,14 +52,6 @@ public class ClusterNodeInfoDTO {
         this.status = status;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getCreateTime() {
         return createTime;
     }
@@ -55,68 +60,12 @@ public class ClusterNodeInfoDTO {
         this.createTime = createTime;
     }
 
-    public String getCpuCapacity() {
-        return cpuCapacity;
+    public String getCpuTotal() {
+        return cpuTotal;
     }
 
-    public void setCpuCapacity(String cpuCapacity) {
-        this.cpuCapacity = cpuCapacity;
-    }
-
-    public String getCpuAllocatable() {
-        return cpuAllocatable;
-    }
-
-    public void setCpuAllocatable(String cpuAllocatable) {
-        this.cpuAllocatable = cpuAllocatable;
-    }
-
-    public Long getPodAllocatable() {
-        return podAllocatable;
-    }
-
-    public void setPodAllocatable(Long podAllocatable) {
-        this.podAllocatable = podAllocatable;
-    }
-
-    public Long getPodCapacity() {
-        return podCapacity;
-    }
-
-    public void setPodCapacity(Long podCapacity) {
-        this.podCapacity = podCapacity;
-    }
-
-    public String getMemoryCapacity() {
-        return memoryCapacity;
-    }
-
-    public void setMemoryCapacity(String memoryCapacity) {
-        this.memoryCapacity = memoryCapacity;
-    }
-
-    public String getMemoryAllocatable() {
-        return memoryAllocatable;
-    }
-
-    public void setMemoryAllocatable(String memoryAllocatable) {
-        this.memoryAllocatable = memoryAllocatable;
-    }
-
-    public String getMemoryRequest() {
-        return memoryRequest;
-    }
-
-    public void setMemoryRequest(String memoryRequest) {
-        this.memoryRequest = memoryRequest;
-    }
-
-    public String getMemoryLimit() {
-        return memoryLimit;
-    }
-
-    public void setMemoryLimit(String memoryLimit) {
-        this.memoryLimit = memoryLimit;
+    public void setCpuTotal(String cpuTotal) {
+        this.cpuTotal = cpuTotal;
     }
 
     public String getCpuRequest() {
@@ -135,11 +84,83 @@ public class ClusterNodeInfoDTO {
         this.cpuLimit = cpuLimit;
     }
 
+    public String getCpuRequestPercentage() {
+        return cpuRequestPercentage;
+    }
+
+    public void setCpuRequestPercentage(String cpuRequestPercentage) {
+        this.cpuRequestPercentage = cpuRequestPercentage;
+    }
+
+    public String getCpuLimitPercentage() {
+        return cpuLimitPercentage;
+    }
+
+    public void setCpuLimitPercentage(String cpuLimitPercentage) {
+        this.cpuLimitPercentage = cpuLimitPercentage;
+    }
+
+    public String getMemoryTotal() {
+        return memoryTotal;
+    }
+
+    public void setMemoryTotal(String memoryTotal) {
+        this.memoryTotal = memoryTotal;
+    }
+
+    public String getMemoryRequest() {
+        return memoryRequest;
+    }
+
+    public void setMemoryRequest(String memoryRequest) {
+        this.memoryRequest = memoryRequest;
+    }
+
+    public String getMemoryLimit() {
+        return memoryLimit;
+    }
+
+    public void setMemoryLimit(String memoryLimit) {
+        this.memoryLimit = memoryLimit;
+    }
+
+    public String getMemoryRequestPercentage() {
+        return memoryRequestPercentage;
+    }
+
+    public void setMemoryRequestPercentage(String memoryRequestPercentage) {
+        this.memoryRequestPercentage = memoryRequestPercentage;
+    }
+
+    public String getMemoryLimitPercentage() {
+        return memoryLimitPercentage;
+    }
+
+    public void setMemoryLimitPercentage(String memoryLimitPercentage) {
+        this.memoryLimitPercentage = memoryLimitPercentage;
+    }
+
+    public Long getPodTotal() {
+        return podTotal;
+    }
+
+    public void setPodTotal(Long podTotal) {
+        this.podTotal = podTotal;
+    }
+
     public Long getPodCount() {
         return podCount;
     }
 
     public void setPodCount(Long podCount) {
         this.podCount = podCount;
+    }
+
+    public String getPodPercentage() {
+        return podPercentage;
+    }
+
+    public void setPodPercentage(String podPercentage) {
+        this.podPercentage = podPercentage;
     }
 }

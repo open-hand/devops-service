@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.AgentNodeInfoDTO;
 import io.choerodon.devops.api.dto.ClusterNodeInfoDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -32,9 +33,9 @@ public interface ClusterNodeInfoService {
      * The previous value will be discarded.
      *
      * @param redisClusterKey        the key
-     * @param clusterNodeInfoDTOList the information of nodes.
+     * @param agentNodeInfoDTOS the information of nodes.
      */
-    void setValueForKey(String redisClusterKey, List<ClusterNodeInfoDTO> clusterNodeInfoDTOList);
+    void setValueForKey(String redisClusterKey, List<AgentNodeInfoDTO> agentNodeInfoDTOS);
 
     /**
      * page query the node information of the cluster
