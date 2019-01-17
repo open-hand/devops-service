@@ -11,6 +11,8 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
+import io.choerodon.devops.app.service.HarborService;
+import io.choerodon.devops.domain.application.event.HarborPayload;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -36,6 +38,8 @@ public class ApplicationInstanceController {
     private ApplicationInstanceService applicationInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
+    @Autowired
+    private HarborService harborService;
 
     /**
      * 分页查询应用部署
@@ -336,6 +340,7 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "value", required = true)
             @RequestBody ReplaceResult replaceResult) {
+        harborService.createHarbor(new HarborPayload(1L,"123"));
         return new ResponseEntity<>(applicationInstanceService.formatValue(replaceResult), HttpStatus.OK);
     }
 
