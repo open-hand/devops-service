@@ -15,7 +15,7 @@ public class HarborConfigurationProperties {
 
     private String password;
 
-    private Map<String,String> params;
+    private String params;
 
     public Boolean isEnabled() {
         return enabled;
@@ -49,11 +49,11 @@ public class HarborConfigurationProperties {
         this.password = password;
     }
 
-    public Map<String, String> getParams() {
+    public String getParams() {
         return params;
     }
 
-    public void setParams(Map<String, String> params) {
+    public void setParams(String params) {
         this.params = params;
     }
 }
