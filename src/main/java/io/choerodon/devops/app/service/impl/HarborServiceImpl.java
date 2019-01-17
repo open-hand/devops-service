@@ -49,6 +49,7 @@ public class HarborServiceImpl implements HarborService {
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
                 result = harborClient.insertProject(params, new Project(harborPayload.getProjectCode(), 1)).execute();
             }
+            System.out.println(result.raw().request().url().toString());
             if (result.raw().code() != 201 || result.raw().code() != 409) {
                 LOGGER.error("The request url is ", result.raw().request().url().toString());
                 LOGGER.error("create harbor project error {}", result.errorBody());
