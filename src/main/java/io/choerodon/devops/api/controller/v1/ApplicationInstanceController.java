@@ -38,8 +38,6 @@ public class ApplicationInstanceController {
     private ApplicationInstanceService applicationInstanceService;
     @Autowired
     private DevopsEnvResourceService devopsEnvResourceService;
-    @Autowired
-    private HarborService harborService;
 
     /**
      * 分页查询应用部署
@@ -340,7 +338,6 @@ public class ApplicationInstanceController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "value", required = true)
             @RequestBody ReplaceResult replaceResult) {
-        harborService.createHarbor(new HarborPayload(1L,""));
         return new ResponseEntity<>(applicationInstanceService.formatValue(replaceResult), HttpStatus.OK);
     }
 
