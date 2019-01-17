@@ -29,8 +29,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String REDIS_CLUSTER_KEY_TEMPLATE = "node_info_org_id_%s_cluster_id_%s";
     private static final String CPU_MEASURE_FORMAT = "%.3f";
     private static final String MEMORY_MEASURE_FORMAT = "%.3f%s";
-    private static final String[] MEMORY_MEASURE = {"K", "M", "G"};
-    private static final String PERCENTAGE_FORMAT = "%.1f%%";
+    private static final String[] MEMORY_MEASURE = {"Ki", "Ki", "Mi", "Gi"};
+    private static final String PERCENTAGE_FORMAT = "%.2f%%";
     private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNodeInfoServiceImpl.class);
 
@@ -87,9 +87,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         node.setPodTotal(Long.parseLong(StringUtils.isEmpty(raw.getPodAllocatable()) ? raw.getPodCapacity() : raw.getPodAllocatable()));
         node.setMemoryTotal(StringUtils.isEmpty(raw.getMemoryAllocatable()) ? raw.getMemoryCapacity() : raw.getMemoryAllocatable());
 
-        setMemoryPercentage(node);
+        setMemoryInfo(node);
 
-        node.setMemoryTotal(dealWithMemoryMeasure(node.getMemoryTotal()));
         node.setPodPercentage(String.format(PERCENTAGE_FORMAT, node.getPodCount() * 1.0 / node.getPodTotal() * 100));
 
         setCpuPercentage(node);
@@ -103,53 +102,59 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     }
 
     /**
-     * set the percentage values for memory
+     * set the values for memory
      *
      * @param node the node information
      */
-    private void setMemoryPercentage(ClusterNodeInfoDTO node) {
-        double total = Double.parseDouble(node.getMemoryTotal().substring(0, node.getMemoryTotal().indexOf('K')));
-        long request = getKbOfMemory(node.getMemoryRequest());
-        long limit = getKbOfMemory(node.getMemoryLimit());
+    private void setMemoryInfo(ClusterNodeInfoDTO node) {
+        double total = ((Long)getByteOfMemory(node.getMemoryTotal())).doubleValue();
+        long request = getByteOfMemory(node.getMemoryRequest());
+        long limit = getByteOfMemory(node.getMemoryLimit());
         node.setMemoryLimitPercentage(String.format(PERCENTAGE_FORMAT, limit / total * 100));
         node.setMemoryRequestPercentage(String.format(PERCENTAGE_FORMAT, request / total * 100));
+
+        node.setMemoryTotal(dealWithMemoryMeasure(total));
+        node.setMemoryRequest(dealWithMemoryMeasure(request));
+        node.setMemoryLimit(dealWithMemoryMeasure(limit));
     }
 
     /**
-     * get kb value from memory string of other measure format
+     * get byte value from memory string of other measure format
      *
      * @param memory the memory string
-     * @return kb value
+     * @return byte value
      */
-    private long getKbOfMemory(String memory) {
+    private long getByteOfMemory(String memory) {
         int index;
         if ((index = memory.indexOf('K')) != -1) {
-            return Long.parseLong(memory.substring(0, index));
-        } else if ((index = memory.indexOf('M')) != -1) {
             return Long.parseLong(memory.substring(0, index)) << 10;
-        } else if ((index = memory.indexOf('G')) != -1) {
+        } else if ((index = memory.indexOf('M')) != -1) {
             return Long.parseLong(memory.substring(0, index)) << 20;
+        } else if ((index = memory.indexOf('G')) != -1) {
+            return Long.parseLong(memory.substring(0, index)) << 30;
+        } else if (memory.matches("^\\d+$")){
+            return Long.parseLong(memory);
         } else {
             return 0;
         }
     }
 
     /**
-     * from Ki to M or G
+     * from byte to M or G
      *
      * @param memory the memory string
      * @return the memory string
      */
-    private String dealWithMemoryMeasure(String memory) {
-        int index = memory.indexOf('K');
-        index = index == -1 ? memory.indexOf('k') : index;
-        if (index == -1) return memory;
-
-        double value = Double.parseDouble(memory.substring(0, index));
+    private String dealWithMemoryMeasure(final double memory) {
+        double value = memory;
         int count = 0;
         while (value >= 1024 && count < MEMORY_MEASURE.length - 1) {
             value /= 1024;
             count++;
+        }
+
+        if (count == 0) {
+            value /= 1024;
         }
         return String.format(MEMORY_MEASURE_FORMAT, value, MEMORY_MEASURE[count]);
     }
