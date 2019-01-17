@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
+import com.google.gson.Gson;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.domain.application.event.HarborPayload;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
@@ -23,7 +26,7 @@ import retrofit2.Response;
 @Component
 public class HarborServiceImpl implements HarborService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarborServiceImpl.class);
-
+    private static final Gson gson = new Gson();
     private HarborClient harborClient;
 
     @Autowired
@@ -38,10 +41,12 @@ public class HarborServiceImpl implements HarborService {
         //创建harbor仓库
         try {
             Response<Object> result = null;
-            if (harborConfigurationProperties.getParams() == null) {
+            if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
                 result = harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
             } else {
-                result = harborClient.insertProject(harborConfigurationProperties.getParams(), new Project(harborPayload.getProjectCode(), 1)).execute();
+                Map<String, String> params = new HashMap<>();
+                params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
+                result = harborClient.insertProject(params, new Project(harborPayload.getProjectCode(), 1)).execute();
             }
             if (result.raw().code() != 201 || result.raw().code() != 409) {
                 LOGGER.error("create harbor project error {}", result.errorBody());

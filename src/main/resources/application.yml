@@ -18,7 +18,7 @@ services:
     baseUrl: "harbor.example.com"
     username: "123456"
     password: "123456"
-    params: {}
+    params:
   gitlab:
     url: "gitlab.example.com"
     sshUrl: "gitlab.example.com"
