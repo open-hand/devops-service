@@ -43,9 +43,11 @@ public class HarborServiceImpl implements HarborService {
             Response<Object> result = null;
             System.out.println("testtest" + harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
+                System.out.println("testurlurl1");
                 result = harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
                 System.out.println("testurlurl1" + result.raw().request().url().toString());
             } else {
+                System.out.println("testurlurl2");
                 Map<String, String> params = new HashMap<>();
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
                 result = harborClient.insertProject(params, new Project(harborPayload.getProjectCode(), 1)).execute();
