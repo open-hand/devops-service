@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1
 
+import com.alibaba.fastjson.JSONObject
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
@@ -8,25 +9,17 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.ClusterNodeInfoDTO
 import io.choerodon.devops.api.dto.DevopsClusterRepDTO
 import io.choerodon.devops.api.dto.DevopsClusterReqDTO
-import io.choerodon.devops.app.service.ClusterNodeInfoService
 import io.choerodon.devops.app.service.impl.ClusterNodeInfoServiceImpl
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO
 import io.choerodon.devops.infra.dataobject.DevopsClusterDO
-import io.choerodon.devops.infra.dataobject.DevopsClusterProPermissionDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
-import io.choerodon.devops.infra.dataobject.DevopsServiceAppInstanceDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
 import io.choerodon.devops.infra.feign.IamServiceClient
-import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper
-import io.choerodon.devops.infra.mapper.DevopsClusterMapper
-import io.choerodon.devops.infra.mapper.DevopsClusterProPermissionMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
-import io.choerodon.devops.infra.mapper.DevopsServiceAppInstanceMapper
+import io.choerodon.devops.infra.mapper.*
 import io.choerodon.websocket.helper.EnvListener
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -88,9 +81,13 @@ class DevopsClusterControllerSpec extends Specification {
     IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
     StringRedisTemplate mockStringRedisTemplate = Mockito.mock(StringRedisTemplate)
 
+    @Shared
     private DevopsClusterDO devopsClusterDO = new DevopsClusterDO()
+    @Shared
     private DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO()
+    @Shared
     private ApplicationInstanceDO applicationInstanceDO = new ApplicationInstanceDO()
+    @Shared
     private DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
 
     @Shared
@@ -139,6 +136,7 @@ class DevopsClusterControllerSpec extends Specification {
 
         applicationInstanceDO.setAppId(1000L)
         applicationInstanceDO.setAppName("app")
+        applicationInstanceDO.setEnvId(devopsEnvironmentDO.getId())
         applicationInstanceMapper.insert(applicationInstanceDO)
 
         devopsEnvPodDO.setAppInstanceId(applicationInstanceDO.getId())
@@ -154,7 +152,7 @@ class DevopsClusterControllerSpec extends Specification {
         ClusterNodeInfoDTO clusterNodeInfoDTO = new ClusterNodeInfoDTO()
         clusterNodeInfoDTO.setNodeName("uat01")
 
-        Mockito.when(mockListOperations.range(anyString(), anyLong(), anyLong())).thenReturn(Arrays.asList(clusterNodeInfoDTO))
+        Mockito.when(mockListOperations.range(anyString(), anyLong(), anyLong())).thenReturn(Arrays.asList(JSONObject.toJSONString(clusterNodeInfoDTO)))
     }
 
     def cleanup() {
@@ -195,20 +193,26 @@ class DevopsClusterControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化DTO'
+        def searchCondition = new DevopsClusterDO()
+        searchCondition.setCode("cluster")
+        searchCondition.setName("cluster")
+        ID = devopsClusterMapper.selectOne(searchCondition).getId()
+
         DevopsClusterReqDTO devopsClusterReqDTO = new DevopsClusterReqDTO()
         List<Long> projectIds = new ArrayList<>()
         projectIds.add(2L)
         devopsClusterReqDTO.setCode("cluster")
         devopsClusterReqDTO.setProjects(projectIds)
         devopsClusterReqDTO.setName("updateCluster")
-        ID = devopsClusterMapper.selectAll().get(0).getId()
         devopsClusterReqDTO.setSkipCheckProjectPermission(false)
+
+        searchCondition.setName("updateCluster")
 
         when: '更新集群下的项目'
         restTemplate.put(MAPPING + "?clusterId=" + ID, devopsClusterReqDTO, 2L)
 
         then: '校验是否更新'
-        devopsClusterMapper.selectAll().get(0)["name"] == "updateCluster"
+        devopsClusterMapper.selectOne(searchCondition).getName() == "updateCluster"
     }
 
     def "Query"() {
@@ -294,7 +298,7 @@ class DevopsClusterControllerSpec extends Specification {
         given: '准备查询数据'
 
         when: '发送请求'
-        def e = restTemplate.postForEntity(MAPPING + "/page_node_pods?page=0&size=10&cluster_id={clusterId}&node_name={nodeName}", str, Page.class, 1L, devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
+        def e = restTemplate.postForEntity(MAPPING + "/page_node_pods?page=0&size=10&cluster_id={clusterId}&node_name={nodeName}", "{}", Page.class, 1L, devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
 
         then: '校验结果'
         e.getStatusCode().is2xxSuccessful()
@@ -317,7 +321,7 @@ class DevopsClusterControllerSpec extends Specification {
     // 根据集群id和节点名查询节点状态信息
     def "get certain node information"() {
         given: "准备数据"
-        def url = MAPPING + "/nodes?cluster_id={}&node_name={}"
+        def url = MAPPING + "/nodes?cluster_id={clusterId}&node_name={nodeName}"
 
         when: "发送请求"
         def res = restTemplate.getForEntity(url, ClusterNodeInfoDTO, devopsClusterDO.getOrganizationId(), devopsClusterDO.getId(), devopsEnvPodDO.getNodeName())
@@ -334,10 +338,10 @@ class DevopsClusterControllerSpec extends Specification {
         envUtil.getConnectedEnvList(_ as EnvListener) >> envList
 
         when: '删除集群'
-        restTemplate.delete(MAPPING + "/{clusterId}", 1L, ID)
+        restTemplate.delete(MAPPING + "/{clusterId}", 1L, devopsClusterMapper.selectByPrimaryKey(ID).getId())
 
         then: '校验返回值'
-        devopsClusterMapper.selectAll().size() == 0
+        devopsClusterMapper.selectByPrimaryKey(ID) == null
     }
 
     def clean() {
