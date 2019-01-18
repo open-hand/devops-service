@@ -468,8 +468,8 @@ public class FileUtil {
 
     private static ReplaceResult loadResult(String yml) {
         String[] strings = yml.split("------love----you------choerodon----");
-        if (yml == null) {
-            throw new CommonException("error.value.illeage");
+        if (strings.length < 2) {
+            throw new CommonException("error.value.illegal");
         }
         Yaml yaml = new Yaml();
         Object map = yaml.load(strings[2]);

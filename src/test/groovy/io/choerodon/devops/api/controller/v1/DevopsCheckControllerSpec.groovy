@@ -56,6 +56,7 @@ import static org.mockito.Mockito.when
 @Stepwise
 class DevopsCheckControllerSpec extends Specification {
     def BASE_URL = "/v1/upgrade?version={version}"
+    def SLEEP_TIME_SECOND = 3
 
     @Autowired
     private TestRestTemplate restTemplate
@@ -95,7 +96,19 @@ class DevopsCheckControllerSpec extends Specification {
     private DevopsCheckLogMapper devopsCheckLogMapper
     @Autowired
     private DevopsGitlabPipelineMapper devopsGitlabPipelineMapper
+    @Autowired
+    private DevopsEnvPodMapper devopsEnvPodMapper
+    @Autowired
+    private DevopsEnvResourceMapper devopsEnvResourceMapper
+    @Autowired
+    private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper
 
+    @Shared
+    private DevopsEnvResourceDetailDO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDO()
+    @Shared
+    private DevopsEnvResourceDO devopsEnvResourceDO = new DevopsEnvResourceDO()
+    @Shared
+    private DevopsEnvPodDO devopsEnvPodDO = new DevopsEnvPodDO()
     @Shared
     private ApplicationDO applicationDO = new ApplicationDO()
     @Shared
@@ -296,6 +309,23 @@ class DevopsCheckControllerSpec extends Specification {
         UserDO userDOForGitlabUsername = new UserDO()
         userDOForGitlabUsername.setUsername("validUsername")
         when(mockGitlabServiceClient.queryUserByUserId(eq(TypeUtil.objToInteger(userAttrDO2.getGitlabUserId())))).thenReturn(new ResponseEntity<>(userDOForGitlabUsername, HttpStatus.OK))
+
+        //  data for upgrading 0.14.0
+        devopsEnvPodDO.setId(100L)
+        devopsEnvPodDO.setName("fssc-db1f0-ffddcfcdc-kbj84")
+        devopsEnvPodDO.setAppInstanceId(1022L)
+        devopsEnvPodMapper.insert(devopsEnvPodDO)
+
+        devopsEnvResourceDetailDO.setId(124L)
+        devopsEnvResourceDetailDO.setMessage("{\"metadata\":{\"name\":\"fssc-db1f0-ffddcfcdc-kbj84\",\"generateName\":\"fssc-db1f0-ffddcfcdc-\",\"namespace\":\"cmcc-fssc-cmcc\",\"selfLink\":\"/api/v1/namespaces/cmcc-fssc-cmcc/pods/fssc-db1f0-ffddcfcdc-kbj84\",\"uid\":\"8b11c181-5f4a-11e8-b11c-00163e04f544\",\"resourceVersion\":\"16049404\",\"creationTimestamp\":\"2018-05-24T12:04:00Z\",\"labels\":{\"choerodon.io/release\":\"fssc-db1f0\",\"pod-template-hash\":\"998879787\"},\"annotations\":{\"kubernetes.io/created-by\":\"{\\\"kind\\\":\\\"SerializedReference\\\",\\\"apiVersion\\\":\\\"v1\\\",\\\"reference\\\":{\\\"kind\\\":\\\"ReplicaSet\\\",\\\"namespace\\\":\\\"cmcc-fssc-cmcc\\\",\\\"name\\\":\\\"fssc-db1f0-ffddcfcdc\\\",\\\"uid\\\":\\\"8b0e4cbe-5f4a-11e8-b11c-00163e04f544\\\",\\\"apiVersion\\\":\\\"extensions\\\",\\\"resourceVersion\\\":\\\"16048306\\\"}}\\n\"},\"ownerReferences\":[{\"apiVersion\":\"extensions/v1beta1\",\"kind\":\"ReplicaSet\",\"name\":\"fssc-db1f0-ffddcfcdc\",\"uid\":\"8b0e4cbe-5f4a-11e8-b11c-00163e04f544\",\"controller\":true,\"blockOwnerDeletion\":true}]},\"spec\":{\"volumes\":[{\"name\":\"default-token-wmrfv\",\"secret\":{\"secretName\":\"default-token-wmrfv\",\"defaultMode\":420}}],\"containers\":[{\"name\":\"fssc-db1f0\",\"image\":\"registry.choerodon.com.cn/cmcc-fssc/fssc:0.1.0-dev.20180524192305\",\"ports\":[{\"name\":\"http\",\"containerPort\":8080,\"protocol\":\"TCP\"}],\"env\":[{\"name\":\"ORACLE_HOST\",\"value\":\"116.228.77.183\"},{\"name\":\"ORACLE_PASS\",\"value\":\"hap_dev\"},{\"name\":\"ORACLE_PORT\",\"value\":\"30171\"},{\"name\":\"ORACLE_SID\",\"value\":\"TEST\"},{\"name\":\"ORACLE_USER\",\"value\":\"hap_dev\"},{\"name\":\"RABBITMQ_HOST\",\"value\":\"baozhang-rabbitmq.baozhang.svc\"},{\"name\":\"RABBITMQ_PASSWORD\",\"value\":\"guest\"},{\"name\":\"RABBITMQ_PORT\",\"value\":\"5672\"},{\"name\":\"RABBITMQ_USERNAME\",\"value\":\"guest\"},{\"name\":\"REDIS_DB\",\"value\":\"8\"},{\"name\":\"REDIS_IP\",\"value\":\"baozhang-redis.baozhang.svc\"}],\"resources\":{\"limits\":{\"memory\":\"2560Mi\"},\"requests\":{\"memory\":\"1536Mi\"}},\"volumeMounts\":[{\"name\":\"default-token-wmrfv\",\"readOnly\":true,\"mountPath\":\"/var/run/secrets/kubernetes.io/serviceaccount\"}],\"terminationMessagePath\":\"/dev/termination-log\",\"terminationMessagePolicy\":\"File\",\"imagePullPolicy\":\"Always\"}],\"restartPolicy\":\"Always\",\"terminationGracePeriodSeconds\":30,\"dnsPolicy\":\"ClusterFirst\",\"serviceAccountName\":\"default\",\"serviceAccount\":\"default\",\"nodeName\":\"cmccnode3\",\"securityContext\":{},\"schedulerName\":\"default-scheduler\"},\"status\":{\"phase\":\"Running\",\"conditions\":[{\"type\":\"Initialized\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:04:00Z\"},{\"type\":\"Ready\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:14:59Z\"},{\"type\":\"PodScheduled\",\"status\":\"True\",\"lastProbeTime\":null,\"lastTransitionTime\":\"2018-05-24T12:04:00Z\"}],\"hostIP\":\"172.20.117.95\",\"podIP\":\"192.168.17.49\",\"startTime\":\"2018-05-24T12:04:00Z\",\"containerStatuses\":[{\"name\":\"fssc-db1f0\",\"state\":{\"running\":{\"startedAt\":\"2018-05-24T12:14:59Z\"}},\"lastState\":{},\"ready\":true,\"restartCount\":1,\"image\":\"registry.choerodon.com.cn/cmcc-fssc/fssc:0.1.0-dev.20180524192305\",\"imageID\":\"docker-pullable://registry.choerodon.com.cn/cmcc-fssc/fssc@sha256:f94a9149b0d21f5eb8ec2968b3336081b5c7daa597deb2e0bd2cd87a42b9905a\",\"containerID\":\"docker://db7e30d1bccbaf51d40783aafe4b547a9a11e1be5ac847404d4abf785897e70e\"}],\"qosClass\":\"Burstable\"}}")
+        devopsEnvResourceDetailMapper.insert(devopsEnvResourceDetailDO)
+
+        devopsEnvResourceDO.setId(143L)
+        devopsEnvResourceDO.setName(devopsEnvPodDO.getName())
+        devopsEnvResourceDO.setAppInstanceId(devopsEnvPodDO.getAppInstanceId())
+        devopsEnvResourceDO.setKind("Pod")
+        devopsEnvResourceDO.setResourceDetailId(devopsEnvResourceDetailDO.getId())
+        devopsEnvResourceMapper.insert(devopsEnvResourceDO)
     }
 
     def cleanup() {
@@ -321,6 +351,9 @@ class DevopsCheckControllerSpec extends Specification {
         devopsCheckLogMapper.selectAll().forEach { devopsCheckLogMapper.delete(it) }
         devopsGitlabPipelineMapper.selectAll().forEach { devopsGitlabPipelineMapper.delete(it) }
         previousDevopsProjectDOList.forEach { devopsProjectMapper.insert(it) }
+        devopsEnvPodMapper.selectAll().forEach{ devopsEnvPodMapper.delete(it) }
+        devopsEnvResourceMapper.selectAll().forEach{ devopsEnvResourceMapper.delete(it) }
+        devopsEnvResourceDetailMapper.selectAll().forEach{ devopsEnvResourceDetailMapper.delete(it) }
     }
 
     // 平滑升级到0.8版本
@@ -334,7 +367,7 @@ class DevopsCheckControllerSpec extends Specification {
         when: "平滑升级到0.8"
         restTemplate.getForEntity(BASE_URL, Object, "0.8")
         // 睡眠一定时间等待异步升级任务完成执行
-        TimeUnit.SECONDS.sleep(5)
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
 
         then: "校验结果"
         applicationMapper.selectByPrimaryKey(applicationDO.getId()).getHookId() == 2L
@@ -346,7 +379,7 @@ class DevopsCheckControllerSpec extends Specification {
         when: "平滑升级到0.9"
         restTemplate.getForEntity(BASE_URL, Object, "0.9")
         // 睡眠一定时间等待异步升级任务完成执行
-        TimeUnit.SECONDS.sleep(5)
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
 
         then: "校验结果"
         devopsProjectMapper.selectAll().stream().allMatch { it.devopsEnvGroupId != null }
@@ -363,7 +396,7 @@ class DevopsCheckControllerSpec extends Specification {
         when: "升级到0.10.0"
         restTemplate.getForEntity(BASE_URL, Object, "0.10.0")
         // 睡眠一定时间等待异步升级任务完成执行
-        TimeUnit.SECONDS.sleep(5)
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
 
         then: "校验结果"
         devopsGitlabCommitMapper.select(searchCondition) != null
@@ -375,7 +408,7 @@ class DevopsCheckControllerSpec extends Specification {
         when: "升级到0.10.4"
         restTemplate.getForEntity(BASE_URL, Object, "0.10.4")
         // 睡眠一定时间等待异步升级任务完成执行
-        TimeUnit.SECONDS.sleep(5)
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
 
         then: "校验结果"
         devopsGitlabPipelineMapper.selectByPrimaryKey(devopsGitlabPipelineDO.getId()).getStatus() != null
@@ -387,7 +420,7 @@ class DevopsCheckControllerSpec extends Specification {
         when: "升级到0.11.0"
         restTemplate.getForEntity(BASE_URL, Object, "0.11.0")
         // 睡眠一定时间等待异步升级任务完成执行
-        TimeUnit.SECONDS.sleep(5)
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
 
         then: "校验结果"
         noExceptionThrown()
@@ -398,11 +431,28 @@ class DevopsCheckControllerSpec extends Specification {
         when: "升级到0.12.0"
         restTemplate.getForEntity(BASE_URL, Object, "0.12.0")
         // 睡眠一定时间等待异步升级任务完成执行
-        TimeUnit.SECONDS.sleep(5)
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
 
         then: "校验结果"
         userAttrMapper.selectByPrimaryKey(userAttrDO.getIamUserId()).getGitlabUserName() == "root"
         userAttrMapper.selectByPrimaryKey(userAttrDO2.getIamUserId()).getGitlabUserName() == "validUsername"
+    }
+
+    def "upgrade 0.14.0"() {
+        given: "准备校验条件"
+        def searchCondition = new DevopsEnvPodDO()
+        searchCondition.setName("fssc-db1f0-ffddcfcdc-kbj84")
+
+        when: "升级到0.14.0"
+        restTemplate.getForEntity(BASE_URL, Object, "0.14.0")
+        // 睡眠一定时间等待异步升级任务完成执行
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
+        def result = devopsEnvPodMapper.selectOne(searchCondition)
+
+        then: "校验结果"
+        result != null
+        result.getNodeName() == "cmccnode3"
+        result.getRestartCount() == 1
     }
 
     def "clean data"() {

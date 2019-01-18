@@ -31,7 +31,11 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
     private static final String MEMORY_MEASURE_FORMAT = "%.3f%s";
     private static final String[] MEMORY_MEASURE = {"Ki", "Ki", "Mi", "Gi"};
     private static final String PERCENTAGE_FORMAT = "%.2f%%";
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    /**
+     * 如果出现时间的解析失误，可能是并发问题，不建议作为局部变量，可以考虑使用Joda-Time库，
+     * 目前考虑Agent发送消息的间隔不会产生并发问题，当前日期(201901018)
+     */
+    private final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final Logger LOGGER = LoggerFactory.getLogger(ClusterNodeInfoServiceImpl.class);
 
     @Autowired
