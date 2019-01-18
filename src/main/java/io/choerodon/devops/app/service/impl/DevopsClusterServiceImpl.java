@@ -7,10 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.api.dto.ClusterWithNodesDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
+import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,18 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.DevopsClusterRepDTO;
-import io.choerodon.devops.api.dto.DevopsClusterReqDTO;
-import io.choerodon.devops.api.dto.ProjectDTO;
 import io.choerodon.devops.app.service.DevopsClusterService;
-import io.choerodon.devops.domain.application.entity.DevopsClusterE;
-import io.choerodon.devops.domain.application.entity.DevopsClusterProPermissionE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
@@ -66,6 +56,8 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
     private ClusterNodeInfoService clusterNodeInfoService;
+    @Autowired
+    private DevopsEnvPodContainerRepository devopsEnvPodContainerRepository;
 
 
     @Override
@@ -233,7 +225,9 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return clusterEList.stream().map(cluster -> {
             ClusterWithNodesDTO clusterWithNodesDTO = new ClusterWithNodesDTO();
             BeanUtils.copyProperties(cluster, clusterWithNodesDTO);
-            clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageQueryClusterNodeInfo(cluster.getId(), organizationId, pageRequest));
+            if (Boolean.TRUE.equals(clusterWithNodesDTO.getConnect())) {
+                clusterWithNodesDTO.setNodes(clusterNodeInfoService.pageQueryClusterNodeInfo(cluster.getId(), organizationId, pageRequest));
+            }
             return clusterWithNodesDTO;
         }).collect(Collectors.toList());
     }
@@ -283,7 +277,28 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public Page<DevopsEnvPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
-        return ConvertPageHelper.convertPage(devopsClusterRepository.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam), DevopsEnvPodDTO.class);
+    public Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
+        Page<DevopsEnvPodE> ePage = devopsClusterRepository.pageQueryPodsByNodeName(clusterId, nodeName, pageRequest, searchParam);
+        Page<DevopsClusterPodDTO> clusterPodDTOPage = new Page<>();
+        BeanUtils.copyProperties(ePage, clusterPodDTOPage, "content");
+        clusterPodDTOPage.setContent(ePage.getContent().stream().map(this::podE2ClusterPodDTO).collect(Collectors.toList()));
+        return clusterPodDTOPage;
+    }
+
+    /**
+     * pod entity to cluster pod dto
+     * @param pod pod entity
+     * @return the cluster pod dto
+     */
+    private DevopsClusterPodDTO podE2ClusterPodDTO(DevopsEnvPodE pod) {
+        DevopsClusterPodDTO devopsEnvPodDTO = new DevopsClusterPodDTO();
+        BeanUtils.copyProperties(pod, devopsEnvPodDTO);
+        devopsEnvPodDTO.setContainersForLogs(
+                devopsEnvPodContainerRepository.list(new DevopsEnvPodContainerDO(pod.getId()))
+                .stream()
+                .map(container -> new DevopsEnvPodContainerLogDTO(pod.getName(), container.getContainerName()))
+                .collect(Collectors.toList())
+        );
+        return devopsEnvPodDTO;
     }
 }

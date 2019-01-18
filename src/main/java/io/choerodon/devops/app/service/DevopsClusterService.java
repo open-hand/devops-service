@@ -3,11 +3,7 @@ package io.choerodon.devops.app.service;
 import java.util.List;
 
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.ClusterWithNodesDTO;
-import io.choerodon.devops.api.dto.DevopsClusterRepDTO;
-import io.choerodon.devops.api.dto.DevopsClusterReqDTO;
-import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
-import io.choerodon.devops.api.dto.ProjectDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.swagger.annotations.ApiParam;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -44,5 +40,5 @@ public interface DevopsClusterService {
      * @param searchParam 查询参数
      * @return pods
      */
-    Page<DevopsEnvPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+    Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 }
