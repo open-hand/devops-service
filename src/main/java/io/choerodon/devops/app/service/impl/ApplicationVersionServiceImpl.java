@@ -60,8 +60,19 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Value("${services.helm.url}")
     private String helmUrl;
 
+    /**
+     * 方法中抛出runtime Exception而不是CommonException是为了返回非200的状态码。
+     */
     @Override
     public void create(String image, String token, String version, String commit, MultipartFile files) {
+        try {
+            doCreate(image, token, version, commit, files);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private void doCreate(String image, String token, String version, String commit, MultipartFile files) {
         ApplicationE applicationE = applicationRepository.queryByToken(token);
 
         ApplicationVersionValueE applicationVersionValueE = new ApplicationVersionValueE();
