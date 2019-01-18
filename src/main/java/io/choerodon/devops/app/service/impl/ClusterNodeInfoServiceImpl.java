@@ -138,6 +138,8 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
             return Long.parseLong(memory.substring(0, index)) << 30;
         } else if (memory.matches("^\\d+$")){
             return Long.parseLong(memory);
+        } else if ((index = memory.indexOf('m')) != -1) {
+            return Long.parseLong(memory.substring(0, index)) / 1000;
         } else {
             return 0;
         }

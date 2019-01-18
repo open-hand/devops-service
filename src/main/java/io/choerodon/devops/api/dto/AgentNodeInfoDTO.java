@@ -4,21 +4,21 @@ package io.choerodon.devops.api.dto;
  * @author zmf
  */
 public class AgentNodeInfoDTO {
-    public String nodeName;
-    public String status;
-    public String type;
-    public String createTime;
-    public String cpuCapacity;
-    public String cpuAllocatable;
-    public String podAllocatable;
-    public String podCapacity;
-    public String memoryCapacity;
-    public String memoryAllocatable;
-    public String memoryRequest;
-    public String memoryLimit;
-    public String cpuRequest;
-    public String cpuLimit;
-    public Long podCount;
+    private String nodeName;
+    private String status;
+    private String type;
+    private String createTime;
+    private String cpuCapacity;
+    private String cpuAllocatable;
+    private String podAllocatable;
+    private String podCapacity;
+    private String memoryCapacity;
+    private String memoryAllocatable;
+    private String memoryRequest;
+    private String memoryLimit;
+    private String cpuRequest;
+    private String cpuLimit;
+    private Long podCount;
 
     public String getNodeName() {
         return nodeName;
