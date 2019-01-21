@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -68,7 +69,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         try {
             doCreate(image, token, version, commit, files);
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            if (e instanceof CommonException) {
+                throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
+            }
+            throw new DevopsCiInvalidException(e.getMessage());
         }
     }
 
