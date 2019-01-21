@@ -61,15 +61,16 @@ function chart_build(){
     TEMP=${CHART_PATH%/*}
     FILE_NAME=${TEMP##*/}
     # 通过Choerodon API上传chart包
-    curl -X POST \
+    result_http_code=`curl -X POST \
         -F "token=${Token}" \
         -F "version=${CI_COMMIT_TAG}" \
         -F "file=@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
         -F "commit=${CI_COMMIT_SHA}" \
         -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
-        "${CHOERODON_URL}/devops/ci"
+        "${CHOERODON_URL}/devops/ci" \
+        -w %{http_code}`
     # 判断本次上传是否出错
-    if [ $? -ne 0 ]; then
+    if [ "$result_http_code" != "200" ]; then
         echo "upload chart error"
         exit 1
     fi
