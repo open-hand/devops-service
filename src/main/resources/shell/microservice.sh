@@ -67,6 +67,7 @@ function chart_build(){
     helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
     TEMP=${CHART_PATH%/*}
     FILE_NAME=${TEMP##*/}
+    # 通过Choerodon API上传chart包
     result_http_code=`curl -X POST \
         -F "token=${Token}" \
         -F "version=${CI_COMMIT_TAG}" \
@@ -74,9 +75,13 @@ function chart_build(){
         -F "commit=${CI_COMMIT_SHA}" \
         -F "image=${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}" \
         "${CHOERODON_URL}/devops/ci" \
+        -o "${CI_COMMIT_SHA}-ci.response" \
         -w %{http_code}`
     # 判断本次上传是否出错
+    response_content=`cat "${CI_COMMIT_SHA}-ci.response"`
+    rm "${CI_COMMIT_SHA}-ci.response"
     if [ "$result_http_code" != "200" ]; then
+        echo $response_content
         echo "upload chart error"
         exit 1
     fi
