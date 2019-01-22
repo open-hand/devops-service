@@ -45,10 +45,6 @@ env:
     SERVICES_HARBOR_BASEURL: https://registry.choerodon.com.cn
     SERVICES_HARBOR_USERNAME:  admin
     SERVICES_HARBOR_PASSWORD:
-    # the special params to access to operate harbor api
-    # for example,the params values can be '{param1:value1,param2:value2}'
-    # the request url will be http://harbor.example.com/api/projects?param1=values1&param2=values2
-    SERVICES_HARBOR_PARAMS:
     SERVICES_SONARQUBE_URL:
     SERVICES_GATEWAY_URL: http://api.example.com
     AGENT_VERSION: 0.5.0.RELEASE
