@@ -38,13 +38,5 @@ public interface DevopsClusterService {
      */
     Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
-    /**
-     * 查询单个集群的节点列表
-     *
-     * @param organizationId 组织ID
-     * @param clusterId      组织ID
-     * @return List
-     */
-    List<ClusterNodeInfoDTO> listClusterNodes(Long organizationId, Long clusterId);
 
 }
