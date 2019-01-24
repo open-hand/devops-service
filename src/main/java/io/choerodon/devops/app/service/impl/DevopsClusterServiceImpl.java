@@ -163,10 +163,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
 
     @Override
     public String queryShell(Long clusterId) {
-        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE);
+        DevopsClusterE devopsClusterE = getDevopsClusterEStatus(clusterId);
         InputStream inputStream;
         if (devopsClusterE.getUpgrade()) {
             inputStream = this.getClass().getResourceAsStream("/shell/cluster-upgrade.sh");
@@ -183,6 +180,14 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         params.put("{CLUSTERID}", devopsClusterE
                 .getId().toString());
         return FileUtil.replaceReturnString(inputStream, params);
+    }
+
+    private DevopsClusterE getDevopsClusterEStatus(Long clusterId) {
+        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        setClusterStatus(connectedEnvList, updatedEnvList, devopsClusterE);
+        return devopsClusterE;
     }
 
     @Override
@@ -280,14 +285,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         clusterPodDTOPage.setContent(ePage.getContent().stream().map(this::podE2ClusterPodDTO).collect(Collectors.toList()));
         return clusterPodDTOPage;
     }
-
-    @Override
-    public List<ClusterNodeInfoDTO> listClusterNodes(Long organizationId, Long clusterId) {
-        List<DevopsClusterE> devopsClusterES = Arrays.asList(devopsClusterRepository.query(clusterId));
-        List<ClusterNodeInfoDTO> clusterNodeInfoDTOS = fromClusterE2ClusterWithNodesDTO(devopsClusterES, organizationId).get(0).getNodes();
-        return clusterNodeInfoDTOS == null ? new ArrayList<>() : clusterNodeInfoDTOS;
-    }
-
+    
     /**
      * pod entity to cluster pod dto
      *

@@ -217,27 +217,6 @@ public class DevopsClusterController {
 
 
     /**
-     * 查询单个集群的节点列表
-     *
-     * @param organizationId 组织ID
-     * @param clusterId      组织ID
-     * @return List
-     */
-    @Permission(level = ResourceLevel.ORGANIZATION,
-            roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
-    @ApiOperation(value = "查询单个集群的节点列表")
-    @GetMapping("/{cluster_id}/list_nodes")
-    public ResponseEntity<List<ClusterNodeInfoDTO>> listNode(
-            @ApiParam(value = "组织ID", required = true)
-            @PathVariable(value = "organization_id") Long organizationId,
-            @ApiParam(value = "组织ID", required = true)
-            @PathVariable(value = "cluster_id") Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.listClusterNodes(organizationId, clusterId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
-    }
-
-    /**
      * 删除集群
      *
      * @param organizationId 组织ID
