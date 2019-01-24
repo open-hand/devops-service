@@ -3,8 +3,16 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
+import io.choerodon.devops.app.service.DevopsClusterService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,15 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.app.service.DevopsClusterService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 @RestController
 @RequestMapping(value = "/v1/organizations/{organization_id}/clusters")
@@ -210,8 +209,30 @@ public class DevopsClusterController {
             @ApiParam(value = "是否需要分页")
             @RequestParam(value = "doPage", required = false) Boolean doPage,
             @ApiParam(value = "查询参数")
-            @RequestBody String params) {
+            @RequestBody(required = false) String params) {
         return Optional.ofNullable(devopsClusterService.pageClusters(organizationId, doPage, pageRequest, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+    }
+
+
+    /**
+     * 查询单个集群的节点列表
+     *
+     * @param organizationId 组织ID
+     * @param clusterId      组织ID
+     * @return List
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "查询单个集群的节点列表")
+    @GetMapping("/{cluster_id}/list_nodes")
+    public ResponseEntity<List<ClusterNodeInfoDTO>> listNode(
+            @ApiParam(value = "组织ID", required = true)
+            @PathVariable(value = "organization_id") Long organizationId,
+            @ApiParam(value = "组织ID", required = true)
+            @PathVariable(value = "cluster_id") Long clusterId) {
+        return Optional.ofNullable(devopsClusterService.listClusterNodes(organizationId, clusterId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
     }
