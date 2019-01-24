@@ -5,10 +5,6 @@ import java.util.List;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.swagger.annotations.ApiParam;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import springfox.documentation.annotations.ApiIgnore;
 
 public interface DevopsClusterService {
 
@@ -41,4 +37,14 @@ public interface DevopsClusterService {
      * @return pods
      */
     Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+
+    /**
+     * 查询单个集群的节点列表
+     *
+     * @param organizationId 组织ID
+     * @param clusterId      组织ID
+     * @return List
+     */
+    List<ClusterNodeInfoDTO> listClusterNodes(Long organizationId, Long clusterId);
+
 }
