@@ -1,6 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -565,25 +564,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 gitlabUrl, organization.getCode(), projectE.getCode(),
                 devopsEnvironmentE.getCode()));
         return envSyncStatusDTO;
-    }
-
-    @Override
-    public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
-        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        //本地路径
-        String path = String.format("gitops/%s/%s/%s",
-                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-        //生成环境git仓库ssh地址
-        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
-                projectE.getCode(), devopsEnvironmentE.getCode());
-
-        File file = new File(path);
-        gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
-        if (!file.exists()) {
-            gitUtil.cloneBySsh(path, url);
-        }
-        return path;
     }
 
     @Override
