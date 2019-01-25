@@ -1,7 +1,10 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.convertor.ConvertHelper;
@@ -285,7 +288,7 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         clusterPodDTOPage.setContent(ePage.getContent().stream().map(this::podE2ClusterPodDTO).collect(Collectors.toList()));
         return clusterPodDTOPage;
     }
-    
+
     /**
      * pod entity to cluster pod dto
      *
