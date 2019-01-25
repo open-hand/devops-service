@@ -152,6 +152,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private DevopsEnvPodMapper devopsEnvPodMapper;
     @Autowired
     private GitUtil gitUtil;
+    @Autowired
+    private EnvUtil envUtil;
 
     @Override
     public void checkLog(String version) {
@@ -828,7 +830,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("{}:{}  begin to upgrade!", devopsEnvironmentE.getCode(), devopsEnvironmentE.getId());
                     String filePath;
                     try {
-                        filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+                        filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
                     } catch (Exception e) {
                         LOGGER.info("clone git  env repo error {}", e);
                         return;

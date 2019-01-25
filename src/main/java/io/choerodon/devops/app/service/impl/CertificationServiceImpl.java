@@ -180,7 +180,7 @@ public class CertificationServiceImpl implements CertificationService {
                                       C7nCertification c7nCertification) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
-        devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+        envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
         ObjectOperation<C7nCertification> objectOperation = new ObjectOperation<>();
         objectOperation.setType(c7nCertification);
@@ -246,7 +246,7 @@ public class CertificationServiceImpl implements CertificationService {
             certificationOperation.operationEnvGitlabFile(
                     null, gitLabEnvProjectId,
                     "delete", userAttrE.getGitlabUserId(), certId, certificateType, null, certEnvId,
-                    devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE));
+                    envUtil.handDevopsEnvGitRepository(devopsEnvironmentE));
         }
     }
 
