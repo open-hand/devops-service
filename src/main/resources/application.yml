@@ -18,6 +18,7 @@ services:
     baseUrl: "harbor.example.com"
     username: "123456"
     password: "123456"
+    insecureSkipTlsVerify: false
     params: {}
   gitlab:
     url: "gitlab.example.com"
