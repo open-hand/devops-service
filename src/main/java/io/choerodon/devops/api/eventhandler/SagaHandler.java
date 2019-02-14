@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import feign.FeignException;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -39,6 +42,7 @@ public class SagaHandler {
     private final OrganizationService organizationService;
     private final GitlabGroupMemberService gitlabGroupMemberService;
     private final GitlabUserService gitlabUserService;
+
 
     @Autowired
     public SagaHandler(ProjectService projectService, GitlabGroupService gitlabGroupService,
@@ -200,8 +204,12 @@ public class SagaHandler {
             gitlabUserReqDTO.setName(t.getName());
             gitlabUserReqDTO.setCanCreateGroup(true);
             gitlabUserReqDTO.setProjectsLimit(100);
-
-            gitlabUserService.createGitlabUser(gitlabUserReqDTO);
+            try{
+                gitlabUserService.createGitlabUser(gitlabUserReqDTO);
+            } catch (FeignException e) {
+                LOGGER.info("the sync failed username is:" + gitlabUserReqDTO.getUsername());
+                throw new CommonException(e);
+            }
         });
         return gitlabUserDTO;
     }
