@@ -58,6 +58,12 @@ function docker_build(){
     docker push ${DOCKER_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}:${CI_COMMIT_TAG}
 }
 function chart_build(){
+    #判断chart主目录名是否与应用编码保持一致
+    CHART_DIRECTORY_PATH=`find . -maxdepth 2 -name ${PROJECT_NAME}`
+    if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
+        echo "The chart's home directory should be consistent with the application code!"
+        exit 1
+    fi
     CHART_PATH=`find . -maxdepth 3 -name Chart.yaml`
     sed -i 's/repository:.*$/repository\:\ '${DOCKER_REGISTRY}'\/'${GROUP_NAME}'\/'${PROJECT_NAME}'/g' ${CHART_PATH%/*}/values.yaml
     helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
