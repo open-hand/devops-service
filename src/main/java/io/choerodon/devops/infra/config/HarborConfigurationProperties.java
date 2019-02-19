@@ -17,6 +17,8 @@ public class HarborConfigurationProperties {
 
     private String params;
 
+    private Boolean insecureSkipTlsVerify;
+
     public Boolean isEnabled() {
         return enabled;
     }
@@ -55,5 +57,13 @@ public class HarborConfigurationProperties {
 
     public void setParams(String params) {
         this.params = params;
+    }
+
+    public Boolean getInsecureSkipTlsVerify() {
+        return insecureSkipTlsVerify;
+    }
+
+    public void setInsecureSkipTlsVerify(Boolean insecureSkipTlsVerify) {
+        this.insecureSkipTlsVerify = insecureSkipTlsVerify;
     }
 }
