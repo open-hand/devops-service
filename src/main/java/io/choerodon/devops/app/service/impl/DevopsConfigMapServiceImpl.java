@@ -65,10 +65,11 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private CheckOptionsHandler checkOptionsHandler;
 
     @Override
-    public void createOrUpdate(Long projectId, DevopsConfigMapDTO devopsConfigMapDTO) {
+    public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapDTO devopsConfigMapDTO) {
         //校验用户是否有环境的权限
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsConfigMapDTO.getEnvId());
-
+        if(!sync) {
+            devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), devopsConfigMapDTO.getEnvId());
+        }
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsConfigMapDTO.getEnvId());
         //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
@@ -91,14 +92,18 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             }
         }
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
-
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-
+        UserAttrE userAttrE = null;
+        if(!sync) {
+             userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            //检验gitops库是否存在，校验操作人是否是有gitops库的权限
+            gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
+        }else {
+            userAttrE = new UserAttrE();
+            userAttrE.setGitlabUserId(1L);
+        }
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
         String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
-        //检验gitops库是否存在，校验操作人是否是有gitops库的权限
-        gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
