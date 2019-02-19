@@ -777,7 +777,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             }
 
             //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-            String filePath = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+            String filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
             //在gitops库处理instance文件
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
@@ -978,7 +978,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         applicationInstanceRepository.update(instanceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
         //如果对象所在文件只有一个对象，则直接删除文件,否则把对象从文件中去掉，更新文件
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository

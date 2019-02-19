@@ -346,10 +346,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void fileResourceSync(PushWebHookDTO pushWebHookDTO) {
         final Integer gitLabProjectId = pushWebHookDTO.getProjectId();
-        final Integer gitLabUserId = pushWebHookDTO.getUserId();
+        Integer gitLabUserId = pushWebHookDTO.getUserId();
         Long userId = userAttrRepository.queryUserIdByGitlabUserId(TypeUtil.objToLong(gitLabUserId));
         if (userId == null) {
-            return;
+            gitLabUserId = 1;
         }
 
         List<String> operationFiles = new ArrayList<>();

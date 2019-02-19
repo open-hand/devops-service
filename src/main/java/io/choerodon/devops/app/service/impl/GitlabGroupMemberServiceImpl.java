@@ -65,16 +65,20 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         gitlabGroupMemberDTOList.stream()
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
-                    List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                    if (userMemberRoleList == null) {
-                        userMemberRoleList = new ArrayList<>();
-                        LOGGER.info("user member role is empty");
+                    try {
+                        List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
+                        if (userMemberRoleList == null) {
+                            userMemberRoleList = new ArrayList<>();
+                            LOGGER.info("user member role is empty");
+                        }
+                        MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
+                        operation(gitlabGroupMemberDTO.getResourceId(),
+                                gitlabGroupMemberDTO.getResourceType(),
+                                memberHelper,
+                                gitlabGroupMemberDTO.getUserId());
+                    }catch (Exception e) {
+                        throw new CommonException(e);
                     }
-                    MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
-                    operation(gitlabGroupMemberDTO.getResourceId(),
-                            gitlabGroupMemberDTO.getResourceType(),
-                            memberHelper,
-                            gitlabGroupMemberDTO.getUserId());
                 });
     }
 
