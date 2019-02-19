@@ -42,7 +42,7 @@ public class DevopsProjectController {
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询项目Gitlab Group是否创建成功")
     @GetMapping("/gitlabGroupCheck")
-    public ResponseEntity<Boolean> queryByAppId(
+    public ResponseEntity<Boolean> queryProjectGroupReady(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return new ResponseEntity<>(projectService.queryProjectGitlabGroupReady(projectId), HttpStatus.OK);
