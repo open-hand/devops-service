@@ -162,6 +162,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1Endpoints v1Endpoints = null;
         if (devopsServiceReqDTO.getEndPoints() != null) {
             v1Endpoints = initV1EndPoints(devopsServiceReqDTO);
+            v1Service.getMetadata().setLabels(null);
         }
         //在gitops库处理service文件
         operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
