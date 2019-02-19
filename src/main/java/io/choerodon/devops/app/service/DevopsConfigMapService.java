@@ -7,7 +7,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 public interface DevopsConfigMapService {
 
-    void createOrUpdate(Long projectId, DevopsConfigMapDTO devopsConfigMapDTO);
+    void createOrUpdate(Long projectId, Boolean IsSync, DevopsConfigMapDTO devopsConfigMapDTO);
 
     void deleteByGitOps(Long configMapId);
 
