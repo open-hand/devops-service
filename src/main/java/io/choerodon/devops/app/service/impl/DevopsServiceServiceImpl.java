@@ -222,7 +222,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private DevopsServiceE initDevopsService(DevopsServiceE devopsServiceE, DevopsServiceReqDTO devopsServiceReqDTO, List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES, List<String> beforeDevopsServiceAppInstanceES) {
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
-
+        ApplicationE applicationE = applicationRepository.query(devopsServiceReqDTO.getAppId());
         if (devopsServiceReqDTO.getLabel() != null) {
             devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         } else {
@@ -243,6 +243,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         Map<String, String> annotations = new HashMap<>();
         if (!serviceInstances.isEmpty()) {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
+            annotations.put("choerodon.io/network-service-app",applicationE.getCode());
         }
 
         devopsServiceE.setAnnotations(gson.toJson(annotations));
