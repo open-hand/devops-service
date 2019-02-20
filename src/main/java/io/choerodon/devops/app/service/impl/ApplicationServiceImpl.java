@@ -368,8 +368,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         List<ApplicationTemplateE> applicationTemplateES = applicationTemplateRepository.list(projectE.getOrganization().getId())
                 .stream()
                 .filter(ApplicationTemplateE::getSynchro).collect(Collectors.toList());
-        if (isPredefined) {
-            applicationTemplateES = applicationTemplateES.stream().filter(applicationTemplateE -> applicationTemplateE.getOrganization() == null).collect(Collectors.toList());
+        if (isPredefined != null && isPredefined) {
+            applicationTemplateES = applicationTemplateES.stream().filter(applicationTemplateE -> applicationTemplateE.getOrganization().getId() == null).collect(Collectors.toList());
         }
         return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRepDTO.class);
     }
