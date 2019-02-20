@@ -24,9 +24,11 @@ public interface DevopsClusterService {
 
     List<ProjectDTO> listClusterProjects(Long organizationId, Long clusterId);
 
-    String deleteCluster(Long clusterId);
+    void deleteCluster(Long clusterId);
 
     DevopsClusterRepDTO getCluster(Long clusterId);
+
+    Boolean IsClusterRelatedEnvs(Long clusterId);
 
     /**
      * 分页查询节点下的Pod
@@ -37,6 +39,5 @@ public interface DevopsClusterService {
      * @return pods
      */
     Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
-
 
 }

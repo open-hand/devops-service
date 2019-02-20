@@ -226,16 +226,34 @@ public class DevopsClusterController {
     @Permission(level = ResourceLevel.ORGANIZATION,
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "删除集群")
-    @CustomPageRequest
     @DeleteMapping("/{clusterId}")
-    public ResponseEntity<String> deleteCluster(
+    public void deleteCluster(
             @ApiParam(value = "组织ID", required = true)
             @PathVariable(value = "organization_id") Long organizationId,
             @ApiParam(value = "集群Id")
             @PathVariable Long clusterId) {
-        return Optional.ofNullable(devopsClusterService.deleteCluster(clusterId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.cluster.delete"));
+        devopsClusterService.deleteCluster(clusterId);
+    }
+
+    /**
+     * 查询集群下是否关联已连接环境
+     *
+     * @param organizationId 组织ID
+     * @param clusterId      集群Id
+     * @return String
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION,
+            roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "查询集群下是否关联已连接环境")
+    @GetMapping("/{clusterId}/connect_envs")
+    public ResponseEntity<Boolean> hasConnectEnvs(
+            @ApiParam(value = "组织ID", required = true)
+            @PathVariable(value = "organization_id") Long organizationId,
+            @ApiParam(value = "集群Id")
+            @PathVariable Long clusterId) {
+        return Optional.ofNullable(devopsClusterService.IsClusterRelatedEnvs(clusterId))
+                .map(target->new ResponseEntity<>(target,HttpStatus.OK))
+                .orElseThrow(()->new CommonException("error.connect.env.query"));
     }
 
     /**

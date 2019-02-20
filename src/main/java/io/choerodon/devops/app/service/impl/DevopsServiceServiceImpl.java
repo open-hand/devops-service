@@ -162,7 +162,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         V1Endpoints v1Endpoints = null;
         if (devopsServiceReqDTO.getEndPoints() != null) {
             v1Endpoints = initV1EndPoints(devopsServiceReqDTO);
-            v1Service.getMetadata().setLabels(null);
         }
         //在gitops库处理service文件
         operateEnvGitLabFile(v1Service, v1Endpoints, true, devopsServiceE, devopsServiceAppInstanceES, beforeDevopsServiceAppInstanceES, devopsEnvCommandE);
@@ -243,7 +242,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         Map<String, String> annotations = new HashMap<>();
         if (!serviceInstances.isEmpty()) {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
-            annotations.put("choerodon.io/network-service-app",applicationE.getCode());
+            annotations.put("choerodon.io/network-service-app", applicationE.getCode());
         }
 
         devopsServiceE.setAnnotations(gson.toJson(annotations));
@@ -577,9 +576,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 return v1EndpointAddress;
 
             }).collect(Collectors.toList()));
+            final Integer[] serialNumber = {0};
             v1EndpointSubset.setPorts(value.stream().map(port -> {
                 V1EndpointPort v1EndpointPort = new V1EndpointPort();
                 v1EndpointPort.setPort(port.getPort());
+                v1EndpointPort.setName("http" + serialNumber[0]++);
                 v1EndpointPort.setName(port.getName());
                 return v1EndpointPort;
             }).collect(Collectors.toList()));
