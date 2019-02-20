@@ -76,6 +76,10 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 memberHelper,
                                 gitlabGroupMemberDTO.getUserId());
                     } catch (Exception e) {
+                        if(e.getMessage().equals(ERROR_GITLAB_GROUP_ID_SELECT)) {
+                            LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
+                            return;
+                        }
                         throw new CommonException(e);
                     }
                 });
