@@ -7,17 +7,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
-import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -37,6 +26,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
@@ -46,9 +36,18 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/3/28.
@@ -364,11 +363,15 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationTemplateRepDTO> listTemplate(Long projectId) {
+    public List<ApplicationTemplateRepDTO> listTemplate(Long projectId, Boolean isPredefined) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        return ConvertHelper.convertList(applicationTemplateRepository.list(projectE.getOrganization().getId()),
-                ApplicationTemplateRepDTO.class).stream()
-                .filter(ApplicationTemplateRepDTO::getSynchro).collect(Collectors.toList());
+        List<ApplicationTemplateE> applicationTemplateES = applicationTemplateRepository.list(projectE.getOrganization().getId())
+                .stream()
+                .filter(ApplicationTemplateE::getSynchro).collect(Collectors.toList());
+        if (isPredefined) {
+            applicationTemplateES = applicationTemplateES.stream().filter(applicationTemplateE -> applicationTemplateE.getOrganization() == null).collect(Collectors.toList());
+        }
+        return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRepDTO.class);
     }
 
     @Override
@@ -852,7 +855,7 @@ public class ApplicationServiceImpl implements ApplicationService {
      *
      * @param gitPlatformType git platform type
      * @param repositoryUrl   repository url
-     * @param accessToken    access token (Nullable)
+     * @param accessToken     access token (Nullable)
      */
     private void checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String accessToken) {
         Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
@@ -943,7 +946,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public ApplicationRepDTO queryByCode(Long projectId, String code) {
-        return ConvertHelper.convert(applicationRepository.queryByCode(code,projectId),ApplicationRepDTO.class);
+        return ConvertHelper.convert(applicationRepository.queryByCode(code, projectId), ApplicationRepDTO.class);
     }
 
     private ApplicationE fromImportDtoToEntity(ApplicationImportDTO applicationImportDTO) {
