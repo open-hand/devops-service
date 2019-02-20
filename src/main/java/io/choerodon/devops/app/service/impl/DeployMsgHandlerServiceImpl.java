@@ -1453,7 +1453,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                         iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
                                 .getOrganization().getId().equals(orgId))
                 .collect(Collectors.toList());
-        applications = findAppInAppMarket(applicationES, applicationList);
+        applications.addAll(findAppInAppMarket(applicationES, applicationList));
         return applications;
     }
 
