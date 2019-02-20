@@ -1444,17 +1444,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         List<ApplicationE> applications = new ArrayList<>();
         ApplicationE applicationE = applicationRepository
                 .queryByCode(appName, projectId);
-        if (applicationE == null) {
-            List<ApplicationE> applicationES = applicationRepository.listByCode(appName);
-            List<ApplicationE> applicationList = applicationES.stream()
-                    .filter(newApplicationE ->
-                            iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
-                                    .getOrganization().getId().equals(orgId))
-                    .collect(Collectors.toList());
-            applications = findAppInAppMarket(applicationES, applicationList);
-        } else {
+        if (applicationE != null) {
             applications.add(applicationE);
         }
+        List<ApplicationE> applicationES = applicationRepository.listByCode(appName);
+        List<ApplicationE> applicationList = applicationES.stream()
+                .filter(newApplicationE ->
+                        iamRepository.queryIamProject(newApplicationE.getProjectE().getId())
+                                .getOrganization().getId().equals(orgId))
+                .collect(Collectors.toList());
+        applications = findAppInAppMarket(applicationES, applicationList);
         return applications;
     }
 
@@ -1466,17 +1465,16 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     applications.add(applicationE);
                 }
             });
-        } else {
-            if (applicationES.isEmpty()) {
-                applicationES.forEach(applicationE -> {
-                    ApplicationMarketE applicationMarketE =
-                            applicationMarketRepository.queryByAppId(applicationE.getId());
-                    if (applicationMarketE != null
-                            || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
-                        applications.add(applicationE);
-                    }
-                });
-            }
+        }
+        if (!applicationES.isEmpty()) {
+            applicationES.forEach(applicationE -> {
+                ApplicationMarketE applicationMarketE =
+                        applicationMarketRepository.queryByAppId(applicationE.getId());
+                if (applicationMarketE != null
+                        || !applicationMarketE.getPublishLevel().equals(PUBLIC)) {
+                    applications.add(applicationE);
+                }
+            });
         }
         return applications;
     }
@@ -1947,7 +1945,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
             devopsConfigMapDTO.setType("create");
             devopsConfigMapDTO.setValue(v1ConfigMap.getData());
-            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(),true, devopsConfigMapDTO);
+            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
         }
     }
 }
