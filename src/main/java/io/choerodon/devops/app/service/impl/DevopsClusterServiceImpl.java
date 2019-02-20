@@ -263,17 +263,20 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
     }
 
     @Override
-    public String deleteCluster(Long clusterId) {
+    public void deleteCluster(Long clusterId) {
+        devopsClusterRepository.delete(clusterId);
+    }
+
+    @Override
+    public Boolean IsClusterRelatedEnvs(Long clusterId) {
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnvironmentRepository.listByClusterId(clusterId);
-        if (!connectedEnvList.contains(clusterId) && devopsEnvironmentES.isEmpty()) {
-            devopsClusterRepository.delete(clusterId);
-        } else {
+        if (connectedEnvList.contains(clusterId) && devopsEnvironmentES.isEmpty()) {
             throw new CommonException("error.cluster.delete");
         }
-        InputStream inputStream = this.getClass().getResourceAsStream("/shell/cluster-delete.sh");
-        return FileUtil.replaceReturnString(inputStream, null);
+        return true;
     }
+
 
     @Override
     public DevopsClusterRepDTO getCluster(Long clusterId) {
