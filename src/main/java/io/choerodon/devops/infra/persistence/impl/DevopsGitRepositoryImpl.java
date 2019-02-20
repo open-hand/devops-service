@@ -7,16 +7,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import feign.FeignException;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -25,6 +15,7 @@ import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
@@ -43,6 +34,15 @@ import io.choerodon.devops.infra.mapper.DevopsMergeRequestMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.util.StringUtil;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: Runge
@@ -76,6 +76,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
     private DevopsMergeRequestMapper devopsMergeRequestMapper;
     @Autowired
     private DevopsMergeRequestRepository devopsMergeRequestRepository;
+    @Autowired
+    private GitlabProjectRepository gitlabProjectRepository;
 
     @Override
     public void createTag(Integer gitLabProjectId, String tag, String ref, String msg, String releaseNotes, Integer userId) {
@@ -214,6 +216,13 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
 
     @Override
     public Page<TagDTO> getTags(Long appId, String path, Integer page, String params, Integer size, Integer userId) {
+        ApplicationE applicationE = applicationRepository.query(appId);
+        GitlabMemberE newGroupMemberE = gitlabProjectRepository.getProjectMember(
+                TypeUtil.objToInteger(applicationE.getGitlabProjectE().getId()),
+                userId);
+        if (newGroupMemberE == null) {
+            throw new CommonException("error.user.not.the.pro.authority");
+        }
         Integer projectId = getGitLabId(appId);
         List<TagDO> tagTotalList = getGitLabTags(projectId, userId);
         Page<TagDTO> tagsPage = new Page<>();
