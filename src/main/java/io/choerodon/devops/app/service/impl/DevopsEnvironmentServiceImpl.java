@@ -281,6 +281,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         if (active) {
             DevopsEnvGroupE devopsEnvGroupE = devopsEnvGroupRepository.query(devopsEnvironmentE.getDevopsEnvGroupId());
             if (devopsEnvironmentE.getDevopsEnvGroupId() == null || devopsEnvGroupE == null) {
+                devopsEnvironmentE.setDevopsEnvGroupId(null);
+                devopsEnviromentRepository.update(devopsEnvironmentE);
                 devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
                         devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             } else {
