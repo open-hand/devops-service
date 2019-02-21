@@ -64,7 +64,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
     private static final String DOCKER_FILE_NAME = "Dockerfile";
     private static final String CHART_DIR = "charts";
-    private static final ConcurrentMap<String, String> templateDockerfileMap = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
 
     private static final IOFileFilter filenameFilter = new IOFileFilter() {
         @Override
@@ -396,12 +396,13 @@ public class ApplicationServiceImpl implements ApplicationService {
     /**
      * analyze location of the dockerfile in the template
      *
-     * @param templateWorkDir template work dir
+     * @param templateWorkDir       template work dir
+     * @param applicationTemplateId application template id
      */
-    private void analyzeDockerfileToMap(File templateWorkDir) {
+    private void analyzeDockerfileToMap(File templateWorkDir, Long applicationTemplateId) {
         Collection<File> dockerfile = FileUtils.listFiles(templateWorkDir, filenameFilter, TrueFileFilter.INSTANCE);
         Optional<File> df = dockerfile.stream().findFirst();
-        templateDockerfileMap.putIfAbsent(templateWorkDir.getAbsolutePath(), df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse("Dockerfile"));
+        templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse("Dockerfile"));
     }
 
     @Override
@@ -630,7 +631,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             // 将模板库中文件复制到代码库中
             File templateWorkDir = new File(gitUtil.getWorkingDirectory(templateDir));
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
-            mergeTemplateToApplication(templateWorkDir, applicationWorkDir);
+            mergeTemplateToApplication(templateWorkDir, applicationWorkDir, applicationTemplateE.getName());
 
             // 获取push代码所需的access token
             String accessToken = getToken(devOpsAppImportPayload, applicationDir, userAttrE);
@@ -710,10 +711,11 @@ public class ApplicationServiceImpl implements ApplicationService {
      * 将模板库中的chart包，dockerfile，gitlab-ci文件复制到导入的代码仓库中
      * 复制文件前会判断文件是否存在，如果存在则不复制
      *
-     * @param templateWorkDir    模板库工作目录
-     * @param applicationWorkDir 应用库工作目录
+     * @param templateWorkDir         模板库工作目录
+     * @param applicationWorkDir      应用库工作目录
+     * @param applicationTemplateId application template id
      */
-    private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir) {
+    private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir, Long applicationTemplateId) {
         // ci 文件
         File appGitlabCiFile = new File(applicationWorkDir, GITLAB_CI_FILE);
         File templateGitlabCiFile = new File(templateWorkDir, GITLAB_CI_FILE);
@@ -722,11 +724,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         // Dockerfile 文件
-        if (!templateDockerfileMap.containsKey(applicationWorkDir.getAbsolutePath())) {
-            analyzeDockerfileToMap(templateWorkDir);
+        if (!templateDockerfileMap.containsKey(applicationTemplateId)) {
+            analyzeDockerfileToMap(templateWorkDir, applicationTemplateId);
         }
-        File appDockerFile = new File(applicationWorkDir, templateDockerfileMap.get(templateWorkDir.getAbsolutePath()));
-        File templateDockerFile = new File(templateWorkDir, templateDockerfileMap.get(templateWorkDir.getAbsolutePath()));
+        File appDockerFile = new File(applicationWorkDir, templateDockerfileMap.get(applicationTemplateId));
+        File templateDockerFile = new File(templateWorkDir, templateDockerfileMap.get(applicationTemplateId));
         if (!appDockerFile.exists() && templateDockerFile.exists()) {
             FileUtil.copyFile(templateDockerFile, appDockerFile);
         }
