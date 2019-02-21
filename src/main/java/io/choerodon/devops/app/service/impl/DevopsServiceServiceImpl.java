@@ -581,7 +581,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 V1EndpointPort v1EndpointPort = new V1EndpointPort();
                 v1EndpointPort.setPort(port.getPort());
                 v1EndpointPort.setName("http" + serialNumber[0]++);
-                v1EndpointPort.setName(port.getName());
                 return v1EndpointPort;
             }).collect(Collectors.toList()));
             v1EndpointSubsets.add(v1EndpointSubset);
