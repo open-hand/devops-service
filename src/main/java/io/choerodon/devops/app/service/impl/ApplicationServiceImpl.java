@@ -631,7 +631,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             // 将模板库中文件复制到代码库中
             File templateWorkDir = new File(gitUtil.getWorkingDirectory(templateDir));
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
-            mergeTemplateToApplication(templateWorkDir, applicationWorkDir, applicationTemplateE.getName());
+            mergeTemplateToApplication(templateWorkDir, applicationWorkDir, applicationTemplateE.getId());
 
             // 获取push代码所需的access token
             String accessToken = getToken(devOpsAppImportPayload, applicationDir, userAttrE);
