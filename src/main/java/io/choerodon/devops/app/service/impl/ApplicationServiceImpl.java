@@ -1,11 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -40,6 +34,10 @@ import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.tool.UUIDTool;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.eclipse.jgit.api.Git;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +47,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 /**
  * Created by younger on 2018/3/28.
  */
@@ -56,8 +62,21 @@ import org.springframework.stereotype.Service;
 public class ApplicationServiceImpl implements ApplicationService {
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
-    private static final String DOCKER_FILE = "src/main/docker/Dockerfile";
+    private static final String DOCKER_FILE_NAME = "Dockerfile";
     private static final String CHART_DIR = "charts";
+    private static final ConcurrentMap<String, String> templateDockerfileMap = new ConcurrentHashMap<>();
+
+    private static final IOFileFilter filenameFilter = new IOFileFilter() {
+        @Override
+        public boolean accept(File file) {
+            return accept(null, file.getName());
+        }
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return DOCKER_FILE_NAME.equals(name);
+        }
+    };
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String MASTER = "master";
@@ -374,6 +393,17 @@ public class ApplicationServiceImpl implements ApplicationService {
         return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRepDTO.class);
     }
 
+    /**
+     * analyze location of the dockerfile in the template
+     *
+     * @param templateWorkDir template work dir
+     */
+    private void analyzeDockerfileToMap(File templateWorkDir) {
+        Collection<File> dockerfile = FileUtils.listFiles(templateWorkDir, filenameFilter, TrueFileFilter.INSTANCE);
+        Optional<File> df = dockerfile.stream().findFirst();
+        templateDockerfileMap.putIfAbsent(templateWorkDir.getAbsolutePath(), df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse("Dockerfile"));
+    }
+
     @Override
     public void operationApplication(DevOpsAppPayload gitlabProjectPayload) {
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
@@ -588,13 +618,13 @@ public class ApplicationServiceImpl implements ApplicationService {
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
                     applicationE.getApplicationTemplateE().getId());
             // 拉取模板
-            String templateDir = APPLICATION + System.currentTimeMillis();
+            String templateDir = APPLICATION + UUIDTool.genUuid();
             Git templateGit = cloneTemplate(applicationTemplateE, templateDir);
             // 渲染模板里面的参数
             replaceParams(applicationE, projectE, organization, templateDir);
 
             // clone外部代码仓库
-            String applicationDir = APPLICATION + System.currentTimeMillis();
+            String applicationDir = APPLICATION + UUIDTool.genUuid();
             Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppImportPayload.getRepositoryUrl(), devOpsAppImportPayload.getAccessToken());
 
             // 将模板库中文件复制到代码库中
@@ -692,8 +722,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         // Dockerfile 文件
-        File appDockerFile = new File(applicationWorkDir, DOCKER_FILE);
-        File templateDockerFile = new File(templateWorkDir, DOCKER_FILE);
+        if (!templateDockerfileMap.containsKey(applicationWorkDir.getAbsolutePath())) {
+            analyzeDockerfileToMap(templateWorkDir);
+        }
+        File appDockerFile = new File(applicationWorkDir, templateDockerfileMap.get(templateWorkDir.getAbsolutePath()));
+        File templateDockerFile = new File(templateWorkDir, templateDockerfileMap.get(templateWorkDir.getAbsolutePath()));
         if (!appDockerFile.exists() && templateDockerFile.exists()) {
             FileUtil.copyFile(templateDockerFile, appDockerFile);
         }
