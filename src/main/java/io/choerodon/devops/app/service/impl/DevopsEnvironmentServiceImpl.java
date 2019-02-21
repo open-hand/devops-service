@@ -277,9 +277,10 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, true);
         devopsEnvironmentE.setActive(active);
-        //启用环境，原环境不在环境组内，则序列在默认组内环境递增，员环境在环境组内，则序列在环境组内环境递增
+        //启用环境，原环境不在环境组内或者原环境所在环境组被删除，则序列在默认组内环境递增，原环境在环境组内，则序列在环境组内环境递增
         if (active) {
-            if (devopsEnvironmentE.getDevopsEnvGroupId() == null) {
+            DevopsEnvGroupE devopsEnvGroupE = devopsEnvGroupRepository.query(devopsEnvironmentE.getDevopsEnvGroupId());
+            if (devopsEnvironmentE.getDevopsEnvGroupId() == null || devopsEnvGroupE == null) {
                 devopsEnvironmentE.initSequence(devopsEnvironmentES.stream().filter(devopsEnvironmentE1 ->
                         devopsEnvironmentE1.getDevopsEnvGroupId() == null).collect(Collectors.toList()));
             } else {
@@ -723,7 +724,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnviromentRepDTO queryByCode(Long clusterId, String code) {
-        return ConvertHelper.convert(devopsEnviromentRepository.queryByClusterIdAndCode(clusterId,code),DevopsEnviromentRepDTO.class);
+        return ConvertHelper.convert(devopsEnviromentRepository.queryByClusterIdAndCode(clusterId, code), DevopsEnviromentRepDTO.class);
     }
 
     @Override
