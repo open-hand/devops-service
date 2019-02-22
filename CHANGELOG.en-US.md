@@ -1,6 +1,39 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+
+[0.14.0] - 2019-02-15
+###Added
+- Added the node list to view detailed information about cluster nodes in the cluster page.
+- Added instance operation logs in the instance details section which support viewing detailed operation records of each instance. 
+- Added the entry to build reports on the continuous integration card in the development console page pipeline module.
+- Add the entry to the deployment report on the Deployment Overview page.
+###Changed
+- Optimized the logic to increase or decrease the number of Pods in the instance details, the number of Pods cannot be reduced to zero
+- Optimized the logic and auto-refresh issues in the development console page pipeline section
+- Changed the input box for adding NodePort to LoadBalancer to be non-required
+- Modified the empty interface prompt copy when there is no branch
+- Optimized the empty value display of the address value of the ingress in the instance details
+- Optimized the logic of GitLab synchronization users, adding query operations before synchronization
+
+###Fixed
+- Fixed the issue where the selected options could not be forked in the filter table.
+ - Fixed an issue where network module external IP update failed.
+- Fixed a cache issue in the "Recent" section of the Development Pipeline Module application selection box.
+- Fixed a logical issue with filter table filtering in the application management interface.
+- Fixed an issue where GitLab failed to sync mailbox after platform update user mailbox.
+- Fixed an issue where the version of the different cluster versions of StatefulSet was unreachable and the Agent Controller was compatible with different cluster versions.
+- Fixed the issue about the request to the development console.
+- Fixed a problem with the loss of the stage of the sonarqube in the pipeline.
+- Fixed issue with suffix name format issues when exporting apps.
+- Fixed an issue with name verification due to name verification when creating an environment.
+- Fixed an issue where the instance name was empty when the instance was created.
+- Fixed an issue where the job order in the pipeline in the development console was abnormal.
+- Fixed an issue where the delete command was first popped up when deleting a cluster with an associated environment.
+
+###Removed
+- Removed the feature of clicking the step bar to back in the platform.
+
 ##[0.13.0] - 2019-01-07
 ###add
 - New pipeline module for development console interface, including: branch management, continuous integration and application version; support for branch-centric development in the pipeline
