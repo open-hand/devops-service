@@ -74,8 +74,8 @@
         FROM
             devops_application da
         WHERE
-            da.is_active
-          AND da.gitlab_project_id is not null
+            da.is_active is true
+          AND da.is_synchro is true
           AND da.project_id = #{projectId}
     </select>
 
