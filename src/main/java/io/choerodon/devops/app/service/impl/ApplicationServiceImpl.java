@@ -1,23 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.InputStream;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
-import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
-import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -37,6 +20,7 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
@@ -46,9 +30,30 @@ import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
+import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.tool.UUIDTool;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/3/28.
@@ -57,8 +62,21 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class ApplicationServiceImpl implements ApplicationService {
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
-    private static final String DOCKER_FILE = "src/main/docker/Dockerfile";
+    private static final String DOCKER_FILE_NAME = "Dockerfile";
     private static final String CHART_DIR = "charts";
+    private static final ConcurrentMap<Long, String> templateDockerfileMap = new ConcurrentHashMap<>();
+
+    private static final IOFileFilter filenameFilter = new IOFileFilter() {
+        @Override
+        public boolean accept(File file) {
+            return accept(null, file.getName());
+        }
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return DOCKER_FILE_NAME.equals(name);
+        }
+    };
 
     public static final Logger LOGGER = LoggerFactory.getLogger(ApplicationServiceImpl.class);
     private static final String MASTER = "master";
@@ -364,11 +382,27 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public List<ApplicationTemplateRepDTO> listTemplate(Long projectId) {
+    public List<ApplicationTemplateRepDTO> listTemplate(Long projectId, Boolean isPredefined) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
-        return ConvertHelper.convertList(applicationTemplateRepository.list(projectE.getOrganization().getId()),
-                ApplicationTemplateRepDTO.class).stream()
-                .filter(ApplicationTemplateRepDTO::getSynchro).collect(Collectors.toList());
+        List<ApplicationTemplateE> applicationTemplateES = applicationTemplateRepository.list(projectE.getOrganization().getId())
+                .stream()
+                .filter(ApplicationTemplateE::getSynchro).collect(Collectors.toList());
+        if (isPredefined != null && isPredefined) {
+            applicationTemplateES = applicationTemplateES.stream().filter(applicationTemplateE -> applicationTemplateE.getOrganization().getId() == null).collect(Collectors.toList());
+        }
+        return ConvertHelper.convertList(applicationTemplateES, ApplicationTemplateRepDTO.class);
+    }
+
+    /**
+     * analyze location of the dockerfile in the template
+     *
+     * @param templateWorkDir       template work dir
+     * @param applicationTemplateId application template id
+     */
+    private void analyzeDockerfileToMap(File templateWorkDir, Long applicationTemplateId) {
+        Collection<File> dockerfile = FileUtils.listFiles(templateWorkDir, filenameFilter, TrueFileFilter.INSTANCE);
+        Optional<File> df = dockerfile.stream().findFirst();
+        templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse("Dockerfile"));
     }
 
     @Override
@@ -585,19 +619,19 @@ public class ApplicationServiceImpl implements ApplicationService {
             ApplicationTemplateE applicationTemplateE = applicationTemplateRepository.query(
                     applicationE.getApplicationTemplateE().getId());
             // 拉取模板
-            String templateDir = APPLICATION + System.currentTimeMillis();
+            String templateDir = APPLICATION + UUIDTool.genUuid();
             Git templateGit = cloneTemplate(applicationTemplateE, templateDir);
             // 渲染模板里面的参数
             replaceParams(applicationE, projectE, organization, templateDir);
 
             // clone外部代码仓库
-            String applicationDir = APPLICATION + System.currentTimeMillis();
+            String applicationDir = APPLICATION + UUIDTool.genUuid();
             Git repositoryGit = gitUtil.cloneRepository(applicationDir, devOpsAppImportPayload.getRepositoryUrl(), devOpsAppImportPayload.getAccessToken());
 
             // 将模板库中文件复制到代码库中
             File templateWorkDir = new File(gitUtil.getWorkingDirectory(templateDir));
             File applicationWorkDir = new File(gitUtil.getWorkingDirectory(applicationDir));
-            mergeTemplateToApplication(templateWorkDir, applicationWorkDir);
+            mergeTemplateToApplication(templateWorkDir, applicationWorkDir, applicationTemplateE.getId());
 
             // 获取push代码所需的access token
             String accessToken = getToken(devOpsAppImportPayload, applicationDir, userAttrE);
@@ -677,10 +711,11 @@ public class ApplicationServiceImpl implements ApplicationService {
      * 将模板库中的chart包，dockerfile，gitlab-ci文件复制到导入的代码仓库中
      * 复制文件前会判断文件是否存在，如果存在则不复制
      *
-     * @param templateWorkDir    模板库工作目录
-     * @param applicationWorkDir 应用库工作目录
+     * @param templateWorkDir         模板库工作目录
+     * @param applicationWorkDir      应用库工作目录
+     * @param applicationTemplateId application template id
      */
-    private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir) {
+    private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir, Long applicationTemplateId) {
         // ci 文件
         File appGitlabCiFile = new File(applicationWorkDir, GITLAB_CI_FILE);
         File templateGitlabCiFile = new File(templateWorkDir, GITLAB_CI_FILE);
@@ -689,8 +724,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         // Dockerfile 文件
-        File appDockerFile = new File(applicationWorkDir, DOCKER_FILE);
-        File templateDockerFile = new File(templateWorkDir, DOCKER_FILE);
+        if (!templateDockerfileMap.containsKey(applicationTemplateId)) {
+            analyzeDockerfileToMap(templateWorkDir, applicationTemplateId);
+        }
+        File appDockerFile = new File(applicationWorkDir, templateDockerfileMap.get(applicationTemplateId));
+        File templateDockerFile = new File(templateWorkDir, templateDockerfileMap.get(applicationTemplateId));
         if (!appDockerFile.exists() && templateDockerFile.exists()) {
             FileUtil.copyFile(templateDockerFile, appDockerFile);
         }
@@ -852,7 +890,7 @@ public class ApplicationServiceImpl implements ApplicationService {
      *
      * @param gitPlatformType git platform type
      * @param repositoryUrl   repository url
-     * @param accessToken    access token (Nullable)
+     * @param accessToken     access token (Nullable)
      */
     private void checkRepositoryUrlAndToken(GitPlatformType gitPlatformType, String repositoryUrl, String accessToken) {
         Boolean validationResult = validateRepositoryUrlAndToken(gitPlatformType, repositoryUrl, accessToken);
@@ -943,7 +981,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public ApplicationRepDTO queryByCode(Long projectId, String code) {
-        return ConvertHelper.convert(applicationRepository.queryByCode(code,projectId),ApplicationRepDTO.class);
+        return ConvertHelper.convert(applicationRepository.queryByCode(code, projectId), ApplicationRepDTO.class);
     }
 
     private ApplicationE fromImportDtoToEntity(ApplicationImportDTO applicationImportDTO) {

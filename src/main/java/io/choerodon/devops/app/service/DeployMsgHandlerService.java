@@ -88,4 +88,6 @@ public interface DeployMsgHandlerService {
     void getCertManagerInfo(String msg, Long clusterId);
 
     void handleNodeSync(String msg, Long clusterId);
+
+    void handleConfigUpdate(String key, String msg, Long clusterId);
 }

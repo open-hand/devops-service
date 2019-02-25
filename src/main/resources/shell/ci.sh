@@ -52,6 +52,12 @@ function git_merge(){
 }
 # 此项为上传构建并上传chart包到Choerodon中，只有通过此函数Choerodon才会有相应版本记录。
 function chart_build(){
+    #判断chart主目录名是否与应用编码保持一致
+    CHART_DIRECTORY_PATH=`find . -maxdepth 2 -name ${PROJECT_NAME}`
+    if [ ! -n "${CHART_DIRECTORY_PATH}" ]; then
+        echo "The chart's home directory should be consistent with the application code!"
+        exit 1
+    fi
     # 查找Chart.yaml文件
     CHART_PATH=`find . -maxdepth 3 -name Chart.yaml`
     # 重置values.yaml文件中image.repository属性

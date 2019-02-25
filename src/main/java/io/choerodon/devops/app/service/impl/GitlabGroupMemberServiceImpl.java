@@ -6,11 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
@@ -28,6 +23,10 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * Created Zenger qs on 2018/3/28.
@@ -65,16 +64,24 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
         gitlabGroupMemberDTOList.stream()
                 .filter(gitlabGroupMemberDTO -> !gitlabGroupMemberDTO.getResourceType().equals(SITE))
                 .forEach(gitlabGroupMemberDTO -> {
-                    List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
-                    if (userMemberRoleList == null) {
-                        userMemberRoleList = new ArrayList<>();
-                        LOGGER.info("user member role is empty");
+                    try {
+                        List<String> userMemberRoleList = gitlabGroupMemberDTO.getRoleLabels();
+                        if (userMemberRoleList == null) {
+                            userMemberRoleList = new ArrayList<>();
+                            LOGGER.info("user member role is empty");
+                        }
+                        MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
+                        operation(gitlabGroupMemberDTO.getResourceId(),
+                                gitlabGroupMemberDTO.getResourceType(),
+                                memberHelper,
+                                gitlabGroupMemberDTO.getUserId());
+                    } catch (Exception e) {
+                        if(e.getMessage().equals(ERROR_GITLAB_GROUP_ID_SELECT)) {
+                            LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
+                            return;
+                        }
+                        throw new CommonException(e);
                     }
-                    MemberHelper memberHelper = getGitlabGroupMemberRole(userMemberRoleList);
-                    operation(gitlabGroupMemberDTO.getResourceId(),
-                            gitlabGroupMemberDTO.getResourceType(),
-                            memberHelper,
-                            gitlabGroupMemberDTO.getUserId());
                 });
     }
 
@@ -122,8 +129,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                                 applicationRepository.listByProjectId(gitlabGroupMemberDTO.getResourceId()).stream()
                                         .map(ApplicationE::getId).collect(Collectors.toList()),
                                 userAttrE.getIamUserId());
-                    }
-                    else {
+                    } else {
                         Organization organization =
                                 iamRepository.queryOrganizationById(gitlabGroupMemberDTO.getResourceId());
                         gitlabGroupE = gitlabRepository.queryGroupByName(
@@ -178,6 +184,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
      */
     private void operation(Long resourceId, String resourceType, MemberHelper memberHelper, Long userId) {
         UserAttrE userAttrE = userAttrRepository.queryById(userId);
+        if (userAttrE == null) {
+            throw new CommonException("The user you want to assign a role to is not created successfully!");
+        }
         Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
         GitlabGroupE gitlabGroupE;
         GitlabMemberE groupMemberE;
@@ -204,7 +213,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 try {
                     gitlabProjectDO = gitlabRepository.getProjectById(e);
                 } catch (CommonException exception) {
-                        LOGGER.info("project not found");
+                    LOGGER.info("project not found");
                 }
                 if (gitlabProjectDO.getId() != null) {
                     GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(e, gitlabUserId);
@@ -213,13 +222,12 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                     }
                 }
             });
-        }
-        else if (AccessLevel.OWNER.equals(accessLevel)) {
+        } else if (AccessLevel.OWNER.equals(accessLevel)) {
             if (resourceType.equals(PROJECT)) {
                 try {
                     // 删除用户时同时清除gitlab的权限
                     List<Integer> gitlabProjectIds = applicationRepository
-                            .listByProjectId(resourceId).stream().filter(e->e.getGitlabProjectE().getId()!=null)
+                            .listByProjectId(resourceId).stream().filter(e -> e.getGitlabProjectE().getId() != null)
                             .map(e -> e.getGitlabProjectE().getId()).map(TypeUtil::objToInteger)
                             .collect(Collectors.toList());
                     gitlabProjectIds.forEach(e -> {
@@ -246,8 +254,7 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 } catch (Exception e) {
                     LOGGER.info(ERROR_GITLAB_GROUP_ID_SELECT);
                 }
-            }
-            else {
+            } else {
                 //给组织对应的模板库分配owner角色
                 Organization organization = iamRepository.queryOrganizationById(resourceId);
                 gitlabGroupE = gitlabRepository.queryGroupByName(

@@ -1,14 +1,11 @@
 package io.choerodon.devops.infra.common.util;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
 
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitConfigDTO;
@@ -20,6 +17,9 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Creator: Runge
@@ -40,6 +40,8 @@ public class EnvUtil {
     private IamRepository iamRepository;
     @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    private GitUtil gitUtil;
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -152,4 +154,22 @@ public class EnvUtil {
         return gitConfigDTO;
     }
 
+
+    public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
+        ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+        //本地路径
+        String path = String.format("gitops/%s/%s/%s",
+                organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+        //生成环境git仓库ssh地址
+        String url = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(),
+                projectE.getCode(), devopsEnvironmentE.getCode());
+
+        File file = new File(path);
+        gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
+        if (!file.exists()) {
+            gitUtil.cloneBySsh(path, url);
+        }
+        return path;
+    }
 }

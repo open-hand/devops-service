@@ -330,7 +330,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 devopsGitlabPipelineDTO.setStatus(devopsGitlabPipelineDO.getStatus());
             }
             devopsGitlabPipelineDTO.setRef(devopsGitlabPipelineDO.getRef());
-            String  version  = applicationVersionRepository.queryByPipelineId(devopsGitlabPipelineDO.getPipelineId(),devopsGitlabPipelineDO.getSha());
+            String  version  = applicationVersionRepository.queryByPipelineId(devopsGitlabPipelineDO.getPipelineId(),devopsGitlabPipelineDO.getRef());
             if (version != null) {
                 devopsGitlabPipelineDTO.setVersion(version);
             }

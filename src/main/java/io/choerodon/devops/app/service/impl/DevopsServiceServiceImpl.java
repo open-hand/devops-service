@@ -221,7 +221,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     private DevopsServiceE initDevopsService(DevopsServiceE devopsServiceE, DevopsServiceReqDTO devopsServiceReqDTO, List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES, List<String> beforeDevopsServiceAppInstanceES) {
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
-
+        ApplicationE applicationE = applicationRepository.query(devopsServiceReqDTO.getAppId());
         if (devopsServiceReqDTO.getLabel() != null) {
             devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
         } else {
@@ -242,6 +242,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         Map<String, String> annotations = new HashMap<>();
         if (!serviceInstances.isEmpty()) {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
+            annotations.put("choerodon.io/network-service-app", applicationE.getCode());
         }
 
         devopsServiceE.setAnnotations(gson.toJson(annotations));
@@ -410,7 +411,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceRepository.update(devopsServiceE);
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
         //查询改对象所在文件中是否含有其它对象
         DevopsEnvFileResourceE devopsEnvFileResourceE = devopsEnvFileResourceRepository
@@ -575,10 +576,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
                 return v1EndpointAddress;
 
             }).collect(Collectors.toList()));
+            final Integer[] serialNumber = {0};
             v1EndpointSubset.setPorts(value.stream().map(port -> {
                 V1EndpointPort v1EndpointPort = new V1EndpointPort();
                 v1EndpointPort.setPort(port.getPort());
-                v1EndpointPort.setName(port.getName());
+                v1EndpointPort.setName("http" + serialNumber[0]++);
                 return v1EndpointPort;
             }).collect(Collectors.toList()));
             v1EndpointSubsets.add(v1EndpointSubset);
@@ -670,7 +672,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         }
 
         //判断当前容器目录下是否存在环境对应的gitops文件目录，不存在则克隆
-        String path = devopsEnvironmentService.handDevopsEnvGitRepository(devopsEnvironmentE);
+        String path = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
 
         //处理文件
         ObjectOperation<V1Service> objectOperation = new ObjectOperation<>();

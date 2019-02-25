@@ -167,9 +167,10 @@ public interface ApplicationService {
      * 查询应用模板
      *
      * @param projectId 项目ID
+     * @param isPredefined 是否只查询预定义模板
      * @return Page
      */
-    List<ApplicationTemplateRepDTO> listTemplate(Long projectId);
+    List<ApplicationTemplateRepDTO> listTemplate(Long projectId,Boolean isPredefined);
 
     /**
      * 项目下查询已经启用有版本未发布的应用
