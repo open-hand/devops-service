@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -103,10 +105,39 @@ public class DevopsAutoDeployController {
 
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下查询所有自动部署")
+    @GetMapping("/list")
+    public ResponseEntity<List<DevopsAutoDeployDTO>> queryByProjectId(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(
+                devopsAutoDeployService.queryByProjectId(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.auto.deploy.list"));
+    }
+
+
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下根据Id查询自动部署")
+    @GetMapping("/{autoDeployId}/detail")
+    public ResponseEntity<DevopsAutoDeployDTO> queryById(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "自动部署id", required = true)
+            @PathVariable Long autoDeployId) {
+        return Optional.ofNullable(
+                devopsAutoDeployService.queryById(projectId,autoDeployId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.auto.deploy.query"));
+    }
+
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下分页查询自动部署记录")
     @CustomPageRequest
-    @PostMapping("/list_record")
-    public ResponseEntity<Page<DevopsAutoDeployRecordDTO>> pageByOptions(
+    @PostMapping("/list_record_options")
+    public ResponseEntity<Page<DevopsAutoDeployRecordDTO>> queryRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")

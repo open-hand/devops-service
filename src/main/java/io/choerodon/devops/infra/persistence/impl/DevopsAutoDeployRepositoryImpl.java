@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -87,5 +88,19 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
                             mapParams.get("param").toString()));
         }
         return ConvertPageHelper.convertPage(devopsAutoDeployDOS, DevopsAutoDeployE.class);
+    }
+
+    @Override
+    public List<DevopsAutoDeployE> queryByProjectId(Long projectId) {
+        DevopsAutoDeployDO devopsAutoDeployDO=new DevopsAutoDeployDO();
+        devopsAutoDeployDO.setProjectId(projectId);
+        return ConvertHelper.convertList(devopsAutoDeployMapper.select(devopsAutoDeployDO),DevopsAutoDeployE.class);
+    }
+
+    @Override
+    public DevopsAutoDeployE queryById(Long autoDeployId) {
+        DevopsAutoDeployDO devopsAutoDeployDO=new DevopsAutoDeployDO();
+        devopsAutoDeployDO.setId(autoDeployId);
+        return ConvertHelper.convert(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO),DevopsAutoDeployE.class);
     }
 }

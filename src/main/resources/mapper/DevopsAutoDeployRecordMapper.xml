@@ -6,6 +6,8 @@
         SELECT
         dadr.task_name,
         dadr.last_update_date,
+        dadr.app_id,
+        dadr.env_id,
         da. NAME AS appName,
         dav.version,
         de. NAME AS envName,
