@@ -17,6 +17,8 @@ public interface ApplicationVersionRepository {
 
     List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
 
+    Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam);
+
     List<ApplicationVersionE> listDeployedByAppId(Long projectId, Long appId);
 
     ApplicationVersionE query(Long appVersionId);

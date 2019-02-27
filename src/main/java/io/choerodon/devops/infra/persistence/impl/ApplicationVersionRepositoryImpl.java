@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.gson.Gson;
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,7 @@ import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionReadmeMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.util.Assert;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -34,6 +36,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     private static final String APP_CODE = "appCode";
     private static final String APP_NAME = "appName";
     private static JSON json = new JSON();
+    private static final Gson gson = new Gson();
 
     @Autowired
     private ApplicationVersionMapper applicationVersionMapper;
@@ -71,6 +74,27 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
             return Collections.emptyList();
         }
         return ConvertHelper.convertList(applicationVersionDOS, ApplicationVersionE.class);
+    }
+
+    @Override
+    public Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
+        pageRequest.setSize(10);
+        Page<ApplicationVersionDO> applicationVersionDOPage;
+        applicationVersionDOPage = PageHelper.doPageAndSort(pageRequest,
+                () -> applicationVersionMapper.selectByAppIdAndParamWithPage(appId, isPublish, searchParam));
+        if (appVersionId != null) {
+            ApplicationVersionDO versionDO = new ApplicationVersionDO();
+            versionDO.setId(appVersionId);
+            ApplicationVersionDO searchDO = applicationVersionMapper.selectByPrimaryKey(versionDO);
+            if (applicationVersionDOPage.getContent().contains(searchDO)) {
+                applicationVersionDOPage.getContent().remove(searchDO);
+            }
+            applicationVersionDOPage.getContent().add(0, searchDO);
+        }
+        if (applicationVersionDOPage.isEmpty()) {
+            return new Page<>();
+        }
+        return ConvertPageHelper.convertPage(applicationVersionDOPage, ApplicationVersionE.class);
     }
 
     @Override
