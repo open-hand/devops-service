@@ -15,6 +15,8 @@ public class DevopsAutoDeployRecordDTO {
     private String envName;
     private String instanceName;
     private Date lastUpdateDate;
+    private Long envId;
+    private Long appId;
 
     public Long getId() {
         return id;
@@ -70,5 +72,21 @@ public class DevopsAutoDeployRecordDTO {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.appId = appId;
     }
 }

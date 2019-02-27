@@ -4,7 +4,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsAutoDeployDTO;
 import io.choerodon.devops.api.dto.DevopsAutoDeployRecordDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -51,6 +52,14 @@ public interface DevopsAutoDeployService {
     /**
      * 项目下查询自动部署信息
      *
+     * @param projectId 项目Id
+     * @return
+     */
+    List<DevopsAutoDeployDTO> queryByProjectId(Long projectId);
+
+    /**
+     * 项目下查询自动部署信息
+     *
      * @param projectId   项目Id
      * @param appId       应用Id
      * @param envId       环境Id
@@ -68,5 +77,12 @@ public interface DevopsAutoDeployService {
                                                  PageRequest pageRequest,
                                                  String params);
 
+    /**
+     * 项目下根据ID查询自动部署
+     * @param projectId
+     * @param autoDeployId
+     * @return
+     */
+    DevopsAutoDeployDTO queryById(Long projectId,Long autoDeployId);
 
 }

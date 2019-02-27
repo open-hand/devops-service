@@ -4,6 +4,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:11 2019/2/26
@@ -22,4 +24,8 @@ public interface DevopsAutoDeployRepository {
                                           Boolean doPage,
                                           PageRequest pageRequest,
                                           String params);
+
+    List<DevopsAutoDeployE> queryByProjectId(Long projectId);
+
+    DevopsAutoDeployE queryById(Long autoDeployId);
 }

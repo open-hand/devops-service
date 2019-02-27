@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.persistence.impl;
 import com.google.gson.Gson;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -45,12 +44,12 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
         }
         //是否需要分页
         if (doPage != null && !doPage) {
-            devopsAutoDeployRecordDOS.setContent(devopsAutoDeployRecordMapper.list(projectId, appId, envId,taskName,
+            devopsAutoDeployRecordDOS.setContent(devopsAutoDeployRecordMapper.list(projectId, appId, envId, taskName,
                     (Map<String, Object>) mapParams.get("searchParam"),
                     mapParams.get("param").toString()));
         } else {
             devopsAutoDeployRecordDOS = PageHelper
-                    .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId, appId, envId,taskName,
+                    .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId, appId, envId, taskName,
                             (Map<String, Object>) mapParams.get("searchParam"),
                             mapParams.get("param").toString()));
         }

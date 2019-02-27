@@ -11,10 +11,11 @@ import io.choerodon.devops.domain.application.entity.DevopsAutoDeployValueE;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployValueRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -24,8 +25,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     @Autowired
-    private IamRepository iamRepository;
-    @Autowired
     private DevopsAutoDeployRepository devopsAutoDeployRepository;
     @Autowired
     private DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
@@ -34,8 +33,6 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
 
     @Override
     public DevopsAutoDeployDTO createOrUpdate(Long projectId, DevopsAutoDeployDTO devopsAutoDeployDTO) {
-        //校验project ID
-//        iamRepository.queryIamProject(projectId);
         //校验taskName
         devopsAutoDeployRepository.checkTaskName(projectId, devopsAutoDeployDTO.getTaskName());
         DevopsAutoDeployE devopsAutoDeployE = ConvertHelper.convert(devopsAutoDeployDTO, DevopsAutoDeployE.class);
@@ -52,19 +49,26 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
 
     @Override
     public void delete(Long projectId, Long autoDeployId) {
-//        iamRepository.queryIamProject(projectId);
         devopsAutoDeployRepository.delete(autoDeployId);
     }
 
     @Override
     public Page<DevopsAutoDeployDTO> listByOptions(Long projectId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
-//        iamRepository.queryIamProject(projectId);
         return ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
     }
 
     @Override
+    public List<DevopsAutoDeployDTO> queryByProjectId(Long projectId) {
+        return ConvertHelper.convertList(devopsAutoDeployRepository.queryByProjectId(projectId), DevopsAutoDeployDTO.class);
+    }
+
+    @Override
     public Page<DevopsAutoDeployRecordDTO> queryRecords(Long projectId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
-//        iamRepository.queryIamProject(projectId);
         return ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
+    }
+
+    @Override
+    public DevopsAutoDeployDTO queryById(Long projectId, Long autoDeployId) {
+        return ConvertHelper.convert(devopsAutoDeployRepository.queryById(autoDeployId), DevopsAutoDeployDTO.class);
     }
 }
