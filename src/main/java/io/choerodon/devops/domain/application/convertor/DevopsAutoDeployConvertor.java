@@ -45,6 +45,7 @@ public class DevopsAutoDeployConvertor implements ConvertorI<DevopsAutoDeployE, 
     public DevopsAutoDeployE doToEntity(DevopsAutoDeployDO devopsAutoDeployDO) {
         DevopsAutoDeployE devopsAutoDeployE = new DevopsAutoDeployE();
         BeanUtils.copyProperties(devopsAutoDeployDO, devopsAutoDeployE);
+        devopsAutoDeployE.setEnvStatus(devopsAutoDeployDO.getEnvStatus() == 1);
         return devopsAutoDeployE;
     }
 }

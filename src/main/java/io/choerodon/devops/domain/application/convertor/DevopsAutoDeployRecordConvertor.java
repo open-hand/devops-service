@@ -18,6 +18,7 @@ public class DevopsAutoDeployRecordConvertor implements ConvertorI<DevopsAutoDep
     public DevopsAutoDeployRecordE doToEntity(DevopsAutoDeployRecordDO devopsAutoDeployRecordDO) {
         DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE();
         BeanUtils.copyProperties(devopsAutoDeployRecordDO, devopsAutoDeployRecordE);
+        devopsAutoDeployRecordE.setEnvStatus(devopsAutoDeployRecordDO.getEnvStatus() == 1);
         return devopsAutoDeployRecordE;
     }
 

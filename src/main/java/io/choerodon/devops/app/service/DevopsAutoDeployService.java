@@ -79,10 +79,19 @@ public interface DevopsAutoDeployService {
 
     /**
      * 项目下根据ID查询自动部署
+     *
      * @param projectId
      * @param autoDeployId
      * @return
      */
-    DevopsAutoDeployDTO queryById(Long projectId,Long autoDeployId);
+    DevopsAutoDeployDTO queryById(Long projectId, Long autoDeployId);
+
+    /**
+     * 项目下校验名称是否存在
+     *
+     * @param projectId
+     * @param name
+     */
+    void checkName(Long projectId, String name);
 
 }

@@ -157,4 +157,22 @@ public class DevopsAutoDeployController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.auto.deploy.record.get"));
     }
+
+    /**
+     * 创建自动部署校验名称是否存在
+     *
+     * @param projectId 项目id
+     * @param name      名称
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "创建自动部署校验名称是否存在")
+    @GetMapping(value = "/check_name")
+    public void checkName(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境名", required = true)
+            @RequestParam String name) {
+        devopsAutoDeployService.checkName(projectId, name);
+    }
+
 }
