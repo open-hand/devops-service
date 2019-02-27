@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.DevopsAutoDeployMapper">
+    <select id="list" resultType="io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO">
+        SELECT
+        dad.id,
+        dad.project_id,
+        dad.task_name,
+        da. CODE AS appName,
+        dad.app_id,
+        dad.trigger_version,
+        dad.env_id,
+        da. NAME AS envName,
+        dad.value_id,
+        dad.last_update_date,
+        dad.object_version_number
+        FROM devops_auto_deploy dad
+        JOIN devops_application da
+        ON dad.app_id = da.id
+        JOIN devops_env de
+        ON dad.env_id = de.id
+        where dad.project_id = #{projectId}
+        <if test="appId != null">
+            AND dad.app_id = #{appId}
+        </if>
+        <if test="envId != null">
+            AND dad.env_id = #{envId}
+        </if>
+        <include refid="sqlparam"/>
+    </select>
+
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.taskName != null and searchParam.taskName.size > 0'>
+                AND
+                <foreach collection="searchParam.taskName" item="taskName" open="(" separator=" OR " close=")">
+                    dad.task_name LIKE CONCAT(CONCAT('%', #{taskName, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.triggerVersion != null and searchParam.triggerVersion.size > 0'>
+                AND
+                <foreach collection="searchParam.triggerVersion" item="triggerVersion">
+                    dad.trigger_version LIKE CONCAT(CONCAT('%', #{triggerVersion, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dad.task_name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dad.trigger_version LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            )
+        </if>
+    </sql>
+
+
+</mapper>
