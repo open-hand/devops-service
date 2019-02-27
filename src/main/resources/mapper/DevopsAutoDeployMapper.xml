@@ -14,7 +14,8 @@
         da. NAME AS envName,
         dad.value_id,
         dad.last_update_date,
-        dad.object_version_number
+        dad.object_version_number,
+        de.is_active AS envStatus
         FROM devops_auto_deploy dad
         JOIN devops_application da
         ON dad.app_id = da.id

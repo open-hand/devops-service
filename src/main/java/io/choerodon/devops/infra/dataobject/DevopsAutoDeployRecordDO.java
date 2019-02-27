@@ -39,6 +39,8 @@ public class DevopsAutoDeployRecordDO {
     private String envName;
     @Transient
     private String appName;
+    @Transient
+    private Integer envStatus;
 
     public Long getId() {
         return id;
@@ -142,5 +144,13 @@ public class DevopsAutoDeployRecordDO {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Integer getEnvStatus() {
+        return envStatus;
+    }
+
+    public void setEnvStatus(Integer envStatus) {
+        this.envStatus = envStatus;
     }
 }

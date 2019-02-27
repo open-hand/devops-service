@@ -19,6 +19,7 @@ public class DevopsAutoDeployRecordE {
     private Date lastUpdateDate;
     private Long envId;
     private Long appId;
+    private Boolean envStatus;
 
 
     public DevopsAutoDeployRecordE() {
@@ -110,5 +111,13 @@ public class DevopsAutoDeployRecordE {
 
     public void setAppId(Long appId) {
         this.appId = appId;
+    }
+
+    public Boolean getEnvStatus() {
+        return envStatus;
+    }
+
+    public void setEnvStatus(Boolean envStatus) {
+        this.envStatus = envStatus;
     }
 }

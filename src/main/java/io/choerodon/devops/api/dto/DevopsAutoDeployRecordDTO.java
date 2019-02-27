@@ -17,6 +17,7 @@ public class DevopsAutoDeployRecordDTO {
     private Date lastUpdateDate;
     private Long envId;
     private Long appId;
+    private Boolean envStatus;
 
     public Long getId() {
         return id;
@@ -88,5 +89,13 @@ public class DevopsAutoDeployRecordDTO {
 
     public void setAppId(Long appId) {
         this.appId = appId;
+    }
+
+    public Boolean getEnvStatus() {
+        return envStatus;
+    }
+
+    public void setEnvStatus(Boolean envStatus) {
+        this.envStatus = envStatus;
     }
 }

@@ -71,4 +71,9 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     public DevopsAutoDeployDTO queryById(Long projectId, Long autoDeployId) {
         return ConvertHelper.convert(devopsAutoDeployRepository.queryById(autoDeployId), DevopsAutoDeployDTO.class);
     }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        devopsAutoDeployRepository.checkTaskName(projectId, name);
+    }
 }

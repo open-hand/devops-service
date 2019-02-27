@@ -21,6 +21,7 @@ public class DevopsAutoDeployDTO {
     private String envName;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
+    private Boolean envStatus;
 
 
     public Long getId() {
@@ -117,5 +118,13 @@ public class DevopsAutoDeployDTO {
 
     public void setLastUpdateDate(Date lastUpdateDate) {
         this.lastUpdateDate = lastUpdateDate;
+    }
+
+    public Boolean getEnvStatus() {
+        return envStatus;
+    }
+
+    public void setEnvStatus(Boolean envStatus) {
+        this.envStatus = envStatus;
     }
 }
