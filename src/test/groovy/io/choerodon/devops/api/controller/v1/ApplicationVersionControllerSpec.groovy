@@ -220,14 +220,16 @@ class ApplicationVersionControllerSpec extends Specification {
 
     // 应用下查询应用所有版本
     def "QueryByAppId"() {
+        given:
+        String version = "0.1.0-dev.20180521111826";
         when: '应用下查询应用所有版本'
-        def list = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true", List.class, project_id, init_id)
+        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true?page=0&version={version}", Page.class, project_id, init_id,version)
 
         then: '返回值'
-        list.size() == 1
+        page.size() == 1
 
         expect: '校验返回结果'
-        list.get(0).version == "0.1.0-dev.20180521111826"
+        page.get(0).version == "0.1.0-dev.20180521111826"
     }
 
     // 项目下查询应用所有已部署版本

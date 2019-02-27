@@ -1,0 +1,97 @@
+# Default values for manager-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: registry.choerodon.com.cn/choerodon-c7ncd/devops-service
+  pullPolicy: Always
+
+preJob:
+  preConfig:
+    configFile: application.yml
+    mysql:
+      host: 192.168.12.175
+      port: 3306
+      database: manager_service
+      username: root
+      password: choerodon
+  preInitDB:
+    mysql:
+      host: 192.168.12.175
+      port: 3306
+      database: devops_service
+      username: root
+      password: choerodon
+
+deployment:
+  managementPort: 8061
+
+env:
+  open:
+    SPRING_REDIS_HOST: devops-redis.devops.svc
+    EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://register-server.io-choerodon:8000/eureka/
+    SPRING_DATASOURCE_URL: jdbc:mysql://mysql.db.svc:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
+    SPRING_DATASOURCE_USERNAME: root
+    SPRING_DATASOURCE_PASSWORD: choerodon
+    CHOERODON_EVENT_CONSUMER_KAFKA_BOOTSTRAP_SERVERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_BROKERS: kafka-0.kafka-headless.kafka.svc.cluster.local:9092,kafka-1.kafka-headless.kafka.svc.cluster.local:9092,kafka-2.kafka-headless.kafka.svc.cluster.local:9092
+    SPRING_CLOUD_STREAM_KAFKA_BINDER_ZK_NODES: zookeeper-0.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-1.zookeeper-headless.zookeeper.svc.cluster.local:2181,zookeeper-2.zookeeper-headless.zookeeper.svc.cluster.local:2181
+    SPRING_CLOUD_CONFIG_URI: http://config-server.framework:8010/
+    SPRING_CLOUD_CONFIG_ENABLED: true
+    SERVICES_GITLAB_URL: http://git.choerodon.com.cn
+    SERVICES_GITLAB_PASSWORD: abc123456
+    SERVICES_GITLAB_PROJECTLIMIT: 100
+    SERVICES_HELM_URL: helm.example.com
+    SERVICES_HARBOR_BASEURL: https://registry.choerodon.com.cn
+    SERVICES_HARBOR_USERNAME:  admin
+    SERVICES_HARBOR_PASSWORD:
+    SERVICES_SONARQUBE_URL:
+    SERVICES_GATEWAY_URL: http://api.example.com
+    AGENT_VERSION: 0.5.0.RELEASE
+    SECURITY_BASIC_ENABLE: false
+    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**
+    AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
+    AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
+    TEMPLATE_VERSION_MICROSERVICE: 0.7.0
+    TEMPLATE_VERSION_MICROSERVICEFRONT: 0.7.0
+    TEMPLATE_VERSION_JAVALIB: 0.7.0
+metrics:
+  path: /prometheus
+  group: spring-boot
+
+logs:
+  parser: spring-boot
+
+persistence:
+  enabled: true
+  existingClaim:
+  subPath:
+  ## A manually managed Persistent Volume and Claim
+  ## Requires persistence.enabled: true
+  ## If defined, PVC must be created manually before volume will be bound
+  # existingClaim: 
+  # subPath: 
+
+service:
+  name: devops-service
+  enable: false
+  type: ClusterIP
+  port: 8060
+
+resources: 
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources,such as Minikube. If you do want to specify resources,uncomment the following
+  # lines,adjust them as necessary,and remove the curly braces after 'resources:'.
+  limits:
+    # cpu: 100m
+    memory: 4Gi
+  requests:
+    # cpu: 100m
+    memory: 2Gi
+
+ingress:
+  enable: false
+  host: devops-service.choerodon.com.cn

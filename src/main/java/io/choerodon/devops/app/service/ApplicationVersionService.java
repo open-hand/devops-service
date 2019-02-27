@@ -36,6 +36,18 @@ public interface ApplicationVersionService {
     List<ApplicationVersionRepDTO> listByAppId(Long appId, Boolean isPublish);
 
     /**
+     * 根据参数和页数在应用下查询应用所有版本
+     *
+     * @param appId     应用Id
+     * @param appVersionId     应用版本Id
+     * @param isPublish 是否发布
+     * @param pageRequest 分页参数
+     * @param searchParam 查询参数
+     * @return List
+     */
+    Page<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam);
+
+    /**
      * 项目下查询应用所有已部署版本
      *
      * @param projectId 项目ID

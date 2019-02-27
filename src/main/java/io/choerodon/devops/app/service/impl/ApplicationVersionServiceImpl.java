@@ -133,6 +133,12 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
+    public Page<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam) {
+        return ConvertPageHelper.convertPage(
+                applicationVersionRepository.listByAppIdAndParamWithPage(appId, isPublish,appVersionId,pageRequest,searchParam), ApplicationVersionRepDTO.class);
+    }
+
+    @Override
     public List<ApplicationVersionRepDTO> listDeployedByAppId(Long projectId, Long appId) {
         return ConvertHelper.convertList(
                 applicationVersionRepository.listDeployedByAppId(projectId, appId), ApplicationVersionRepDTO.class);
