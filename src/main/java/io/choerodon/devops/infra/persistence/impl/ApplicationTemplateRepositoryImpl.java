@@ -114,10 +114,7 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
 
     @Override
     public ApplicationTemplateE queryByCode(Long organizationId, String code) {
-        ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO();
-        applicationTemplateDO.setCode(code);
-        applicationTemplateDO.setOrganizationId(organizationId);
-        ApplicationTemplateDO applicationTemplate = applicationTemplateMapper.selectOne(applicationTemplateDO);
+        ApplicationTemplateDO applicationTemplate = applicationTemplateMapper.queryByCode(organizationId,code);
         return ConvertHelper.convert(applicationTemplate, ApplicationTemplateE.class);
     }
 
