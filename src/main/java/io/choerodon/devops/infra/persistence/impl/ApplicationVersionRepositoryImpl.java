@@ -77,18 +77,19 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     }
 
     @Override
-    public Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId, PageRequest pageRequest, String searchParam) {
-        pageRequest.setSize(15);
+    public Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
+        pageRequest.setSize(10);
         Page<ApplicationVersionDO> applicationVersionDOPage;
-        applicationVersionDOPage = PageHelper
-                .doPageAndSort(pageRequest, () -> applicationVersionMapper.selectByAppIdAndParamWithPage(appId, isPublish, searchParam));
-        if(appVersionId != null) {
-            applicationVersionDOPage.getContent().stream().forEach(v->{
-                if(v.getId() == appVersionId){
-                    applicationVersionDOPage.getContent().remove(v);
-                    applicationVersionDOPage.getContent().add(0,v);
-                }
-            });
+        applicationVersionDOPage = PageHelper.doPageAndSort(pageRequest,
+                () -> applicationVersionMapper.selectByAppIdAndParamWithPage(appId, isPublish, searchParam));
+        if (appVersionId != null) {
+            ApplicationVersionDO versionDO = new ApplicationVersionDO();
+            versionDO.setId(appVersionId);
+            ApplicationVersionDO searchDO = applicationVersionMapper.selectByPrimaryKey(versionDO);
+            if (applicationVersionDOPage.getContent().contains(searchDO)) {
+                applicationVersionDOPage.getContent().remove(searchDO);
+            }
+            applicationVersionDOPage.getContent().add(0, searchDO);
         }
         if (applicationVersionDOPage.isEmpty()) {
             return new Page<>();

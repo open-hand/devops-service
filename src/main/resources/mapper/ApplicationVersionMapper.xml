@@ -138,8 +138,10 @@
                 AND ( is_publish != TRUE OR is_publish IS NULL )
             </if>
         </if>
-        AND
-        dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+        <if test="version != null">
+            AND
+            dav.version LIKE CONCAT(CONCAT('%', #{version, jdbcType=VARCHAR}),'%')
+        </if>
         ORDER BY
         dav.id DESC
     </select>
