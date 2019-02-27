@@ -68,12 +68,12 @@ public class DevopsAutoDeployController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除自动部署")
-    @DeleteMapping("/{autoDeployId}")
+    @DeleteMapping("/{auto_deploy_id}")
     public ResponseEntity deleteById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "自动部署id", required = true)
-            @PathVariable Long autoDeployId) {
+            @PathVariable(value = "auto_deploy_id") Long autoDeployId) {
         devopsAutoDeployService.delete(projectId, autoDeployId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
@@ -120,14 +120,14 @@ public class DevopsAutoDeployController {
     @Permission(level = ResourceLevel.PROJECT,
             roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下根据Id查询自动部署")
-    @GetMapping("/{autoDeployId}/detail")
+    @GetMapping("/{auto_deploy_id}/detail")
     public ResponseEntity<DevopsAutoDeployDTO> queryById(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "自动部署id", required = true)
-            @PathVariable Long autoDeployId) {
+            @PathVariable(value = "auto_deploy_id") Long autoDeployId) {
         return Optional.ofNullable(
-                devopsAutoDeployService.queryById(projectId,autoDeployId))
+                devopsAutoDeployService.queryById(projectId, autoDeployId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.auto.deploy.query"));
     }

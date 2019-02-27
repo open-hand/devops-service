@@ -92,15 +92,15 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
 
     @Override
     public List<DevopsAutoDeployE> queryByProjectId(Long projectId) {
-        DevopsAutoDeployDO devopsAutoDeployDO=new DevopsAutoDeployDO();
+        DevopsAutoDeployDO devopsAutoDeployDO = new DevopsAutoDeployDO();
         devopsAutoDeployDO.setProjectId(projectId);
-        return ConvertHelper.convertList(devopsAutoDeployMapper.select(devopsAutoDeployDO),DevopsAutoDeployE.class);
+        return ConvertHelper.convertList(devopsAutoDeployMapper.select(devopsAutoDeployDO), DevopsAutoDeployE.class);
     }
 
     @Override
     public DevopsAutoDeployE queryById(Long autoDeployId) {
-        DevopsAutoDeployDO devopsAutoDeployDO=new DevopsAutoDeployDO();
+        DevopsAutoDeployDO devopsAutoDeployDO = new DevopsAutoDeployDO();
         devopsAutoDeployDO.setId(autoDeployId);
-        return ConvertHelper.convert(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO),DevopsAutoDeployE.class);
+        return ConvertHelper.convert(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO), DevopsAutoDeployE.class);
     }
 }
