@@ -7,6 +7,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy_record.groovy') {
                 constraints(primaryKey: true)
             }
 
+            column(name: 'task_name', type: 'VARCHAR(50)', remarks: '任务名称') {
+                constraints(nullable: false)
+            }
+
             column(name: 'auto_deploy_id', type: 'BIGINT UNSIGNED', remarks: '自动部署') {
                 constraints(nullable: false)
             }

@@ -35,10 +35,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy.groovy') {
         }
 
         createIndex(indexName: "idx_task_name", tableName: "devops_auto_deploy") {
-            column(name: 'project_id,task_name')
+            column(name: 'task_name')
         }
 
         addUniqueConstraint(tableName: 'devops_auto_deploy',
-                constraintName: 'uk_task_name', columnNames: 'task_name')
+                constraintName: 'uk_task_name', columnNames: 'project_id,task_name')
     }
 }
