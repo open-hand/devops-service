@@ -223,7 +223,7 @@ class ApplicationVersionControllerSpec extends Specification {
         given:
         String version = "0.1.0-dev.20180521111826";
         when: '应用下查询应用所有版本'
-        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true?page=0&version={version}", Page.class, project_id, init_id,version)
+        def page = restTemplate.getForObject(mapping + "/list_by_app/{app_id}?is_publish=true&page=0&version={version}", Page.class, project_id, init_id,version)
 
         then: '返回值'
         page.size() == 1
