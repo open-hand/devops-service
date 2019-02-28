@@ -3,7 +3,7 @@ package io.choerodon.devops.domain.application.entity;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
