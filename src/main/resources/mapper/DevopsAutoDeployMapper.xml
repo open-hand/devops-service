@@ -15,6 +15,8 @@
         dad.value_id,
         dad.last_update_date,
         dad.object_version_number,
+        dad.instance_id,
+        dad.is_enabled,
         de.is_active AS envStatus
         FROM devops_auto_deploy dad
         JOIN devops_application da
@@ -53,6 +55,24 @@
             )
         </if>
     </sql>
+
+    <select id="queryById" resultType="io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO">
+        SELECT
+            dad.app_id,
+            dad.id,
+            dad.project_id,
+            dad.env_id,
+            dad.value_id,
+            dad.task_name,
+            dad.trigger_version,
+            dad.object_version_number,
+            dadv.VALUE
+        FROM
+            devops_auto_deploy dad
+        LEFT JOIN devops_auto_deploy_value dadv
+        ON dad.value_id = dadv.id
+        WHERE dad.id = #{autoDeployId}
+    </select>
 
 
 </mapper>

@@ -41,4 +41,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy.groovy') {
         addUniqueConstraint(tableName: 'devops_auto_deploy',
                 constraintName: 'uk_task_name', columnNames: 'project_id,task_name')
     }
+
+    changeSet(author: 'scp', id: '2019-02-28-add-column') {
+        addColumn(tableName: 'devops_auto_deploy') {
+            column(name: 'instance_id', type: 'BIGINT UNSIGNED', remarks: '实例ID')
+            column(name: 'is_enabled', type: 'TINYINT UNSIGNED', remarks: '是否启用', defaultValue: "1")
+        }
+    }
 }

@@ -274,4 +274,10 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
     public String queryByPipelineId(Long pipelineId, String branch) {
         return applicationVersionMapper.queryByPipelineId(pipelineId, branch);
     }
+
+    @Override
+    public String queryValueById(Long appId) {
+        return applicationVersionMapper.queryValueById(appId);
+    }
+
 }

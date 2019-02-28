@@ -1,11 +1,11 @@
 package io.choerodon.devops.domain.application.repository;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -17,7 +17,7 @@ public interface ApplicationVersionRepository {
 
     List<ApplicationVersionE> listByAppId(Long appId, Boolean isPublish);
 
-    Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam);
+    Page<ApplicationVersionE> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam);
 
     List<ApplicationVersionE> listDeployedByAppId(Long projectId, Long appId);
 
@@ -57,4 +57,6 @@ public interface ApplicationVersionRepository {
     List<ApplicationVersionE> listByAppIdAndBranch(Long appId, String branch);
 
     String queryByPipelineId(Long pipelineId, String branch);
+
+    String queryValueById(Long appId);
 }

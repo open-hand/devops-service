@@ -102,4 +102,13 @@ public interface ApplicationVersionService {
 
     Boolean queryByPipelineId(Long pipelineId, String branch);
 
+    /**
+     * 项目下根据应用Id查询value
+     *
+     * @param projectId
+     * @param appId
+     * @return
+     */
+    String queryValueById(Long projectId, Long appId);
+
 }

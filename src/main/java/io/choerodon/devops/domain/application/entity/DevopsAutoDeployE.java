@@ -26,6 +26,8 @@ public class DevopsAutoDeployE {
     private Long objectVersionNumber;
     private Date lastUpdateDate;
     private Boolean envStatus;
+    private Long instanceId;
+    private Integer isEnabled;
 
     public DevopsAutoDeployE() {
     }
@@ -136,5 +138,21 @@ public class DevopsAutoDeployE {
 
     public void setEnvStatus(Boolean envStatus) {
         this.envStatus = envStatus;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public Integer getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Integer isEnabled) {
+        this.isEnabled = isEnabled;
     }
 }
