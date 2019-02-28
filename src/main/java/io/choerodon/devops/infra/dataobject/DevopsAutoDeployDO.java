@@ -7,7 +7,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
