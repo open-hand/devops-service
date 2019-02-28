@@ -116,4 +116,12 @@ public class DevopsClusterRepositoryImpl implements DevopsClusterRepository {
     public Page<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam) {
         return ConvertPageHelper.convertPage(PageHelper.doPageAndSort(pageRequest, () -> devopsClusterMapper.pageQueryPodsByNodeName(clusterId, nodeName, searchParam)), DevopsEnvPodE.class);
     }
+
+    @Override
+    public DevopsClusterE queryByCode(Long organizationId, String code) {
+        DevopsClusterDO devopsClusterDO = new DevopsClusterDO();
+        devopsClusterDO.setOrganizationId(organizationId);
+        devopsClusterDO.setCode(code);
+        return ConvertHelper.convert(devopsClusterMapper.selectOne(devopsClusterDO),DevopsClusterE.class);
+    }
 }

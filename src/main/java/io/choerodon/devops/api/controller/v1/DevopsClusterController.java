@@ -89,6 +89,25 @@ public class DevopsClusterController {
     }
 
     /**
+     * 根据code查询集群
+     *
+     * @param organizationId 组织Id
+     * @param code           集群Code
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @ApiOperation(value = "根据code查询集群")
+    @GetMapping("/query_by_code")
+    public ResponseEntity<DevopsClusterRepDTO> queryByCode(
+            @ApiParam(value = "组织Id", required = true)
+            @PathVariable(value = "organization_id") Long organizationId,
+            @ApiParam(value = "集群Code")
+            @RequestParam String code) {
+        return Optional.ofNullable(devopsClusterService.queryByCode(organizationId, code))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_CLUSTER_QUERY));
+    }
+
+    /**
      * 校验集群名唯一性
      *
      * @param organizationId 项目id
@@ -252,8 +271,8 @@ public class DevopsClusterController {
             @ApiParam(value = "集群Id")
             @PathVariable Long clusterId) {
         return Optional.ofNullable(devopsClusterService.IsClusterRelatedEnvs(clusterId))
-                .map(target->new ResponseEntity<>(target,HttpStatus.OK))
-                .orElseThrow(()->new CommonException("error.connect.env.query"));
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.connect.env.query"));
     }
 
     /**
@@ -330,4 +349,6 @@ public class DevopsClusterController {
             @RequestParam(value = "node_name") String nodeName) {
         return new ResponseEntity<>(clusterNodeInfoService.getNodeInfo(organizationId, clusterId, nodeName), HttpStatus.OK);
     }
+
+
 }
