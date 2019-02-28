@@ -1,34 +1,53 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+        import io.choerodon.core.convertor.ConvertHelper;
+        import io.choerodon.core.convertor.ConvertPageHelper;
+        import io.choerodon.core.domain.Page;
+        import io.choerodon.core.exception.CommonException;
+        import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
+        import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+        import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
+        import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
+        import io.choerodon.devops.api.dto.DeployVersionDTO;
+        import io.choerodon.devops.app.service.ApplicationVersionService;
+        import io.choerodon.devops.domain.application.entity.ApplicationE;
+        import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+        import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+        import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
+        import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+        import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+        import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+        import io.choerodon.devops.domain.application.entity.ProjectE;
+        import io.choerodon.devops.domain.application.entity.UserAttrE;
+        import io.choerodon.devops.domain.application.entity.iam.UserE;
+        import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
+        import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+        import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+        import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+        import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
+        import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+        import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+        import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+        import io.choerodon.devops.domain.application.repository.IamRepository;
+        import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+        import io.choerodon.devops.domain.application.valueobject.Organization;
+        import io.choerodon.devops.infra.common.util.FileUtil;
+        import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+        import io.choerodon.devops.infra.common.util.TypeUtil;
+        import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+        import org.springframework.beans.factory.annotation.Autowired;
+        import org.springframework.beans.factory.annotation.Value;
+        import org.springframework.stereotype.Service;
+        import org.springframework.web.multipart.MultipartFile;
 
-import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import io.choerodon.core.convertor.ConvertHelper;
-import io.choerodon.core.convertor.ConvertPageHelper;
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
-import io.choerodon.devops.app.service.ApplicationVersionService;
-import io.choerodon.devops.domain.application.entity.*;
-import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.*;
-import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+        import java.io.File;
+        import java.io.FileInputStream;
+        import java.io.IOException;
+        import java.util.ArrayList;
+        import java.util.List;
+        import java.util.Map;
+        import java.util.Objects;
+        import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -133,9 +152,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     }
 
     @Override
-    public Page<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish,Long appVersionId,PageRequest pageRequest,String searchParam) {
+    public Page<ApplicationVersionRepDTO> listByAppIdAndParamWithPage(Long appId, Boolean isPublish, Long appVersionId, PageRequest pageRequest, String searchParam) {
         return ConvertPageHelper.convertPage(
-                applicationVersionRepository.listByAppIdAndParamWithPage(appId, isPublish,appVersionId,pageRequest,searchParam), ApplicationVersionRepDTO.class);
+                applicationVersionRepository.listByAppIdAndParamWithPage(appId, isPublish, appVersionId, pageRequest, searchParam), ApplicationVersionRepDTO.class);
     }
 
     @Override
@@ -257,6 +276,11 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Override
     public Boolean queryByPipelineId(Long pipelineId, String branch) {
         return applicationVersionRepository.queryByPipelineId(pipelineId, branch) != null;
+    }
+
+    @Override
+    public String queryValueById(Long projectId, Long appId) {
+        return applicationVersionRepository.queryValueById(appId);
     }
 
 

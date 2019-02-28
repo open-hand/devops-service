@@ -1,15 +1,5 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import springfox.documentation.annotations.ApiIgnore;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -21,6 +11,21 @@ import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.choerodon.swagger.annotation.Permission;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -68,12 +73,12 @@ public class ApplicationVersionController {
     /**
      * 应用下查询应用所有版本
      *
-     * @param projectId 项目id
-     * @param appId     应用Id
-     * @param appVersionId     应用版本Id
-     * @param isPublish 版本是否发布
-     * @param pageRequest 分页参数
-     * @param searchParam 查询参数
+     * @param projectId    项目id
+     * @param appId        应用Id
+     * @param appVersionId 应用版本Id
+     * @param isPublish    版本是否发布
+     * @param pageRequest  分页参数
+     * @param searchParam  查询参数
      * @return List
      */
     @ApiOperation(value = "应用下查询应用所有版本")
@@ -87,15 +92,15 @@ public class ApplicationVersionController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "应用Id")
             @PathVariable(value = "app_id") Long appId,
-            @ApiParam(value = "应用版本Id",required = false)
-            @RequestParam(value = "app_version_id",required = false) Long appVersionId,
+            @ApiParam(value = "应用版本Id", required = false)
+            @RequestParam(value = "app_version_id", required = false) Long appVersionId,
             @ApiParam(value = "是否发布", required = false)
             @RequestParam(value = "is_publish", required = false) Boolean isPublish,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
             @RequestParam(value = "version", required = false) String searchParam) {
-        return Optional.ofNullable(applicationVersionService.listByAppIdAndParamWithPage(appId, isPublish,appVersionId,pageRequest,searchParam))
+        return Optional.ofNullable(applicationVersionService.listByAppIdAndParamWithPage(appId, isPublish, appVersionId, pageRequest, searchParam))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
     }
@@ -287,5 +292,27 @@ public class ApplicationVersionController {
         return Optional.ofNullable(applicationVersionService.queryByPipelineId(pipelineId, branch))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+    /**
+     * 根据应用ID查询最新生成版本
+     *
+     * @param projectId
+     * @param appId
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询所有自动部署")
+    @GetMapping("/value")
+    public ResponseEntity<String> queryByProjectId(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam(value = "app_id") Long appId) {
+        return Optional.ofNullable(
+                applicationVersionService.queryValueById(projectId, appId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.version.value.query"));
     }
 }

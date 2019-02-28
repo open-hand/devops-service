@@ -30,6 +30,8 @@ public class DevopsAutoDeployDO {
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
+    private Long instanceId;
+    private Integer isEnabled;
 
     @Transient
     private String appName;
@@ -37,6 +39,8 @@ public class DevopsAutoDeployDO {
     private String envName;
     @Transient
     private Integer envStatus;
+    @Transient
+    private String value;
 
 
     public Long getId() {
@@ -133,6 +137,30 @@ public class DevopsAutoDeployDO {
 
     public void setEnvStatus(Integer envStatus) {
         this.envStatus = envStatus;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public Integer getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Integer isEnabled) {
+        this.isEnabled = isEnabled;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
     }
 }
 

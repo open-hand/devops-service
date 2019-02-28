@@ -254,5 +254,17 @@
         and dav.version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
     </select>
 
+    <select id="queryValueById" resultType="java.lang.String">
+        SELECT
+        davv.value
+        FROM
+        devops_app_version dav
+        LEFT JOIN devops_app_version_value davv
+        ON davv.id = dav.value_id
+        WHERE
+        dav.app_id = #{appId}
+        ORDER BY dav.id DESC
+        LIMIT 1
+    </select>
 
 </mapper>
