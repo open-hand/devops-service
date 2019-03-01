@@ -18,6 +18,8 @@ public class DevopsAutoDeployRecordDTO {
     private Long envId;
     private Long appId;
     private Boolean envStatus;
+    private String instanceStatus;
+    private String status;
 
     public Long getId() {
         return id;
@@ -97,5 +99,21 @@ public class DevopsAutoDeployRecordDTO {
 
     public void setEnvStatus(Boolean envStatus) {
         this.envStatus = envStatus;
+    }
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

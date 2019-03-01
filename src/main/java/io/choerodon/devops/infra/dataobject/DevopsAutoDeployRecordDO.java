@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dataobject;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -17,7 +18,7 @@ import java.util.Date;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_auto_deploy_record")
-public class DevopsAutoDeployRecordDO {
+public class DevopsAutoDeployRecordDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
@@ -28,6 +29,7 @@ public class DevopsAutoDeployRecordDO {
     private Long envId;
     private Long appId;
     private String status;
+    private String instanceStatus;
     private Date lastUpdateDate;
 
 
@@ -138,19 +140,19 @@ public class DevopsAutoDeployRecordDO {
         this.appName = appName;
     }
 
-    public Date getLastUpdateDate() {
-        return lastUpdateDate;
-    }
-
-    public void setLastUpdateDate(Date lastUpdateDate) {
-        this.lastUpdateDate = lastUpdateDate;
-    }
-
     public Integer getEnvStatus() {
         return envStatus;
     }
 
     public void setEnvStatus(Integer envStatus) {
         this.envStatus = envStatus;
+    }
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
     }
 }

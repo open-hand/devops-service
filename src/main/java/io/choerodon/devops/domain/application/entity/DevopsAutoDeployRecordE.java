@@ -20,6 +20,7 @@ public class DevopsAutoDeployRecordE {
     private Long envId;
     private Long appId;
     private Boolean envStatus;
+    private String instanceStatus;
 
 
     public DevopsAutoDeployRecordE() {
@@ -119,5 +120,13 @@ public class DevopsAutoDeployRecordE {
 
     public void setEnvStatus(Boolean envStatus) {
         this.envStatus = envStatus;
+    }
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
     }
 }

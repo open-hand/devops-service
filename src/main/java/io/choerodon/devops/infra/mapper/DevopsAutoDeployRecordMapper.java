@@ -19,4 +19,7 @@ public interface DevopsAutoDeployRecordMapper extends BaseMapper<DevopsAutoDeplo
                                         @Param("taskName") String taskName,
                                         @Param("searchParam") Map<String, Object> searchParam,
                                         @Param("param") String param);
+
+    void banchUpdateStatus(@Param("autoDeployId") Long autoDeployId,
+                           @Param("status") String status);
 }
