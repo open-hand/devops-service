@@ -48,4 +48,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy.groovy') {
             column(name: 'is_enabled', type: 'TINYINT UNSIGNED', remarks: '是否启用', defaultValue: "1")
         }
     }
+
+    changeSet(author: 'scp', id: '2019-03-01-add-column') {
+        addColumn(tableName: 'devops_auto_deploy') {
+            column(name: 'instance_name', type: 'VARCHAR(100)', remarks: '实例名称')
+        }
+    }
 }

@@ -18,4 +18,6 @@ public interface DevopsAutoDeployRecordRepository {
                                                 Boolean doPage,
                                                 PageRequest pageRequest,
                                                 String params);
+
+    void updateStatus(Long autoDeployId, String status);
 }

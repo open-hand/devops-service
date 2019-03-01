@@ -24,7 +24,7 @@ public class DevopsAutoDeployDTO {
     private Boolean envStatus;
     private Long instanceId;
     private Integer isEnabled;
-
+    private String instanceName;
 
     public Long getId() {
         return id;
@@ -144,5 +144,13 @@ public class DevopsAutoDeployDTO {
 
     public void setIsEnabled(Integer isEnabled) {
         this.isEnabled = isEnabled;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 }

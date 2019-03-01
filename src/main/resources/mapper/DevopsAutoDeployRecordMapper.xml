@@ -9,6 +9,8 @@
         dadr.last_update_date,
         dadr.app_id,
         dadr.env_id,
+        dadr.status,
+        dadr.instance_status,
         da. NAME AS appName,
         dav.version,
         de. NAME AS envName,
@@ -54,5 +56,9 @@
             )
         </if>
     </sql>
-
+    <update id="banchUpdateStatus" >
+        UPDATE devops_auto_deploy_record dadr
+        SET dadr. STATUS = #{status}
+        WHERE dadr.auto_deploy_id = #{autoDeployId}
+    </update>
 </mapper>

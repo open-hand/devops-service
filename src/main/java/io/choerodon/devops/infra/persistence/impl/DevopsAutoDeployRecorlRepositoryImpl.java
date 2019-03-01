@@ -55,4 +55,9 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
         }
         return ConvertPageHelper.convertPage(devopsAutoDeployRecordDOS, DevopsAutoDeployRecordE.class);
     }
+
+    @Override
+    public void updateStatus(Long autoDeployId, String status) {
+        devopsAutoDeployRecordMapper.banchUpdateStatus(autoDeployId,status);
+    }
 }

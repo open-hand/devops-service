@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -161,7 +162,7 @@ public class DevopsAutoDeployController {
     /**
      * 创建自动部署校验名称是否存在
      *
-     * @param projectId 项目id
+     * @param projectId 项目Id
      * @param name      名称
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
@@ -173,6 +174,29 @@ public class DevopsAutoDeployController {
             @ApiParam(value = "环境名", required = true)
             @RequestParam String name) {
         devopsAutoDeployService.checkName(projectId, name);
+    }
+
+    /**
+     * 根据自动部署ID跟新是否启动
+     *
+     * @param projectId    项目Id
+     * @param autoDeployId 自动部署Id
+     * @param isEnabled    是否启用
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "根据自动部署ID跟新是否启动")
+    @PutMapping(value = "/{auto_deploy_id}")
+    public ResponseEntity<DevopsAutoDeployDTO> updateIsEnabled(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "自动部署id", required = true)
+            @PathVariable(value = "auto_deploy_id") Long autoDeployId,
+            @ApiParam(value = "是否启用", required = true)
+            @RequestParam Integer isEnabled) {
+        return Optional.ofNullable(devopsAutoDeployService.updateIsEnabled(autoDeployId, isEnabled))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.auto.deploy.update"));
     }
 
 }

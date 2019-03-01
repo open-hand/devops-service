@@ -28,4 +28,6 @@ public interface DevopsAutoDeployRepository {
     List<DevopsAutoDeployE> queryByProjectId(Long projectId);
 
     DevopsAutoDeployE queryById(Long autoDeployId);
+
+    DevopsAutoDeployE updateIsEnabled(Long autoDeployId, Integer isEnabled);
 }

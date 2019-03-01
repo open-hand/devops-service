@@ -14,6 +14,7 @@ import io.choerodon.devops.domain.application.repository.DevopsAutoDeployValueRe
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,6 +25,8 @@ import java.util.List;
  */
 @Service
 public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
+    private static final String STATUS_DEL = "deleted";
+
     @Autowired
     private DevopsAutoDeployRepository devopsAutoDeployRepository;
     @Autowired
@@ -48,7 +51,9 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     }
 
     @Override
+    @Transactional
     public void delete(Long projectId, Long autoDeployId) {
+        devopsAutoDeployRecordRepository.updateStatus(autoDeployId,STATUS_DEL);
         devopsAutoDeployRepository.delete(autoDeployId);
     }
 
@@ -75,5 +80,10 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     @Override
     public void checkName(Long projectId, String name) {
         devopsAutoDeployRepository.checkTaskName(projectId, name);
+    }
+
+    @Override
+    public DevopsAutoDeployDTO updateIsEnabled(Long autoDeployId, Integer isEnabled) {
+        return ConvertHelper.convert( devopsAutoDeployRepository.updateIsEnabled(autoDeployId,isEnabled), DevopsAutoDeployDTO.class);
     }
 }
