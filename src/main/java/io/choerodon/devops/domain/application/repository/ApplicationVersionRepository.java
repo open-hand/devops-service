@@ -59,4 +59,7 @@ public interface ApplicationVersionRepository {
     String queryByPipelineId(Long pipelineId, String branch);
 
     String queryValueById(Long appId);
+
+    ApplicationVersionE queryByAppAndCode(Long appId, String appVersion);
+
 }

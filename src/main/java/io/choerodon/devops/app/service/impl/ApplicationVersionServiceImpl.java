@@ -357,4 +357,11 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public String queryValueById(Long projectId, Long appId) {
         return applicationVersionRepository.queryValueById(appId);
     }
+
+    @Override
+    public ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version) {
+        return ConvertHelper.convert(applicationVersionRepository.queryByAppAndCode(appId,version), ApplicationVersionRepDTO.class);
+    }
+
+
 }
