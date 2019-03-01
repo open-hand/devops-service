@@ -1,11 +1,11 @@
 package io.choerodon.devops.app.service;
 
-        import io.choerodon.core.domain.Page;
-        import io.choerodon.devops.api.dto.DevopsAutoDeployDTO;
-        import io.choerodon.devops.api.dto.DevopsAutoDeployRecordDTO;
-        import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.DevopsAutoDeployDTO;
+import io.choerodon.devops.api.dto.DevopsAutoDeployRecordDTO;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
-        import java.util.List;
+import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
