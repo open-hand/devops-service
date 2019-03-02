@@ -41,7 +41,7 @@ public class SagaHandler {
     private final GitlabUserService gitlabUserService;
 
     @Autowired
-    public SagaHandler(ProjectService projectService, GitlabGroupService gitlabGroupService,
+    public SagaHandler(GitlabGroupService gitlabGroupService,
                        HarborService harborService, OrganizationService organizationService,
                        GitlabGroupMemberService gitlabGroupMemberService, GitlabUserService gitlabUserService) {
         this.gitlabGroupService = gitlabGroupService;

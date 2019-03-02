@@ -15,13 +15,11 @@ import io.choerodon.devops.infra.dataobject.gitlab.*;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 
 
 /**
  * Created by younger on 2018/3/29.
  */
-@Component
 public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
@@ -205,6 +203,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
 
     @Override
     public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
+        return new ResponseEntity("error.file.create", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<RepositoryFile> createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branchName) {
         return new ResponseEntity("error.file.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

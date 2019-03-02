@@ -146,6 +146,14 @@ public interface GitlabServiceClient {
                                               @RequestParam("commitMessage") String commitMessage,
                                               @RequestParam("userId") Integer userId);
 
+    @PostMapping(value = "/v1/projects/{projectId}/repository/file")
+    ResponseEntity<RepositoryFile> createFile(@PathVariable("projectId") Integer projectId,
+                                              @RequestParam("path") String path,
+                                              @RequestParam("content") String content,
+                                              @RequestParam("commitMessage") String commitMessage,
+                                              @RequestParam("userId") Integer userId,
+                                              @RequestParam("branch_name") String branchName);
+
     @PutMapping(value = "/v1/projects/{projectId}/repository/file")
     ResponseEntity<RepositoryFile> updateFile(@PathVariable("projectId") Integer projectId,
                                               @RequestParam("path") String path,

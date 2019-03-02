@@ -1,9 +1,6 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import io.choerodon.core.exception.CommonException;
@@ -293,7 +290,9 @@ public class GitlabGroupMemberServiceImpl implements GitlabGroupMemberService {
                 if (groupMemberE == null) {
                     gitlabGroupMemberRepository.insertMember(groupId, requestMember);
                 } else {
-                    gitlabGroupMemberRepository.updateMember(groupId, requestMember);
+                    if (!Objects.equals(requestMember.getAccessLevel(), groupMemberE.getAccessLevel())) {
+                        gitlabGroupMemberRepository.updateMember(groupId, requestMember);
+                    }
                 }
                 break;
             default:
