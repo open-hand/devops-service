@@ -1,17 +1,17 @@
 package io.choerodon.devops.domain.application.convertor;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
+import io.choerodon.devops.api.dto.UserAttrDTO;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.infra.dataobject.UserAttrDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/3/29.
  */
 @Component
-public class UserAttrConvertor implements ConvertorI<UserAttrE, UserAttrDO, Object> {
+public class UserAttrConvertor implements ConvertorI<UserAttrE, UserAttrDO, UserAttrDTO> {
 
     @Override
     public UserAttrE doToEntity(UserAttrDO userAttrDO) {
@@ -25,5 +25,12 @@ public class UserAttrConvertor implements ConvertorI<UserAttrE, UserAttrDO, Obje
         UserAttrDO userAttrDO = new UserAttrDO();
         BeanUtils.copyProperties(userAttrE, userAttrDO);
         return userAttrDO;
+    }
+
+    @Override
+    public UserAttrDTO entityToDto(UserAttrE userAttrE) {
+        UserAttrDTO userAttrDTO = new UserAttrDTO();
+        BeanUtils.copyProperties(userAttrE, userAttrDTO);
+        return userAttrDTO;
     }
 }

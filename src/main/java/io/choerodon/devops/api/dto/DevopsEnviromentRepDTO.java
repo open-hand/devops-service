@@ -11,6 +11,7 @@ public class DevopsEnviromentRepDTO {
     private String code;
     private Boolean isActive;
     private Boolean isConnected;
+    private Long gitlabEnvProjectId;
     private String clusterName;
     private Long clusterId;
     private Long sequence;
@@ -122,5 +123,13 @@ public class DevopsEnviromentRepDTO {
 
     public void setClusterId(Long clusterId) {
         this.clusterId = clusterId;
+    }
+
+    public Long getGitlabEnvProjectId() {
+        return gitlabEnvProjectId;
+    }
+
+    public void setGitlabEnvProjectId(Long gitlabEnvProjectId) {
+        this.gitlabEnvProjectId = gitlabEnvProjectId;
     }
 }
