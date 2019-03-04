@@ -167,7 +167,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
         applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
-        triggerAutoDelpoy(applicationE.getId());
+//        triggerAutoDelpoy(applicationE.getId());
     }
 
     /**
@@ -178,7 +178,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private void triggerAutoDelpoy(Long appId) {
         ApplicationVersionE applicationVersionE = applicationVersionRepository.getLatestVersion(appId);
         String branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst().get();
-        if (!branch.isEmpty()) {
+        if (branch != null && !branch.isEmpty()) {
             List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), branch);
             autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE.getId()));
         }
@@ -195,7 +195,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
         ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(appVersionId, devopsAutoDeployE.getEnvId(),
                 devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
-                devopsAutoDeployE.getInstanceName(), true,devopsAutoDeployRecordE.getId());
+                devopsAutoDeployE.getInstanceName(), true, devopsAutoDeployRecordE.getId());
         //更改上下文用户
         CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
         //触发saga

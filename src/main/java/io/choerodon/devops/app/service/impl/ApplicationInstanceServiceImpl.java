@@ -3,7 +3,6 @@ package io.choerodon.devops.app.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -36,7 +35,6 @@ import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvCommandValueE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
@@ -122,7 +120,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
-    private static final String STATUS_FIN = "finished";
 
     private static Gson gson = new Gson();
 
@@ -177,9 +174,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
-    @Autowired
-    private DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
-
 
     @Override
     public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -859,21 +853,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
 
-    @SagaTask(code = "devops-auto-deploy-create-instance",
-            description = "devops create auto deploy instance",
-            sagaCode = "devops-create-auto-deploy-instance",
-            maxRetryCount = 3,
-            seq = 1)
-    public void createAutoDeployInstance(String data) {
-        //创建或更新实例
-        ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
-        ApplicationInstanceDTO applicationInstanceDTO = createOrUpdate(applicationDeployDTO);
-        //更新记录表中的实例
-        DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FIN,
-                applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getStatus(), applicationInstanceDTO.getId());
-        devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-    }
-
+    @Override
     public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(applicationDeployDTO.getEnvironmentId());

@@ -7,6 +7,7 @@ import io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -37,7 +38,11 @@ public class DevopsAutoDeployConvertor implements ConvertorI<DevopsAutoDeployE, 
     public DevopsAutoDeployDTO entityToDto(DevopsAutoDeployE devopsAutoDeployE) {
         DevopsAutoDeployDTO devopsAutoDeployDTO = new DevopsAutoDeployDTO();
         BeanUtils.copyProperties(devopsAutoDeployE, devopsAutoDeployDTO);
-        devopsAutoDeployDTO.setTriggerVersion(Arrays.asList(devopsAutoDeployE.getTriggerVersion().split(",")));
+        if (devopsAutoDeployE.getTriggerVersion() != null && !devopsAutoDeployE.getTriggerVersion().isEmpty()) {
+            devopsAutoDeployDTO.setTriggerVersion(Arrays.asList(devopsAutoDeployE.getTriggerVersion().split(",")));
+        } else {
+            devopsAutoDeployDTO.setTriggerVersion(new ArrayList<>());
+        }
         return devopsAutoDeployDTO;
     }
 

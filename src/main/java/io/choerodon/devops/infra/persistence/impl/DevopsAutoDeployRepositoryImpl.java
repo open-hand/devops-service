@@ -46,6 +46,7 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
     public DevopsAutoDeployE createOrUpdate(DevopsAutoDeployE devopsAutoDeployE) {
         DevopsAutoDeployDO devopsAutoDeployDO = ConvertHelper.convert(devopsAutoDeployE, DevopsAutoDeployDO.class);
         if (devopsAutoDeployDO.getId() == null) {
+            devopsAutoDeployDO.setIsEnabled(1);
             if (devopsAutoDeployMapper.insert(devopsAutoDeployDO) != 1) {
                 throw new CommonException("error.auto.deploy.create.error");
             }

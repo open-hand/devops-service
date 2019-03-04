@@ -66,7 +66,8 @@
             dad.task_name,
             dad.trigger_version,
             dad.object_version_number,
-            dadv.VALUE
+            dadv.VALUE,
+            dad.instance_name
         FROM
             devops_auto_deploy dad
         LEFT JOIN devops_auto_deploy_value dadv
@@ -91,7 +92,8 @@
         ON dad.value_id = dadv.id
         WHERE
             dad.app_id = #{appId}
-        AND dad.trigger_version LIKE CONCAT('%', #{branch},'%')
+        AND (dad.trigger_version LIKE CONCAT('%', #{branch},'%')
+        	OR dad.trigger_version is NULL)
     </select>
 
 </mapper>
