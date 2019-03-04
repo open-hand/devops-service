@@ -20,4 +20,7 @@ public interface DevopsAutoDeployMapper extends BaseMapper<DevopsAutoDeployDO> {
                                   @Param("param") String param);
 
     DevopsAutoDeployDO queryById(@Param("autoDeployId") Long autoDeployId);
+
+    List<DevopsAutoDeployDO> queryByVersion(@Param("versionId") Long versionId,
+                                            @Param("branch") String branch);
 }

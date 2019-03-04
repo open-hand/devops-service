@@ -29,6 +29,7 @@ public class DevopsAutoDeployE {
     private Long instanceId;
     private Integer isEnabled;
     private String instanceName;
+    private Long createdBy;
 
     public DevopsAutoDeployE() {
     }
@@ -163,5 +164,13 @@ public class DevopsAutoDeployE {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+    }
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 }

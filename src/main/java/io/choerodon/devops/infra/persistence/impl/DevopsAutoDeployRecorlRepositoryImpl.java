@@ -1,8 +1,10 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import com.google.gson.Gson;
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -58,6 +60,24 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
 
     @Override
     public void updateStatus(Long autoDeployId, String status) {
-        devopsAutoDeployRecordMapper.banchUpdateStatus(autoDeployId,status);
+        devopsAutoDeployRecordMapper.banchUpdateStatus(autoDeployId, status);
+    }
+
+    @Override
+    public DevopsAutoDeployRecordE createOrUpdate(DevopsAutoDeployRecordE devopsAutoDeployRecordE) {
+        DevopsAutoDeployRecordDO devopsAutoDeployRecordDO = ConvertHelper.convert(devopsAutoDeployRecordE, DevopsAutoDeployRecordDO.class);
+        if (devopsAutoDeployRecordDO.getId() == null) {
+            if (devopsAutoDeployRecordMapper.insert(devopsAutoDeployRecordDO) != 1) {
+                throw new CommonException("error.auto.deploy.record.create.error");
+            }
+        } else {
+            devopsAutoDeployRecordDO.setObjectVersionNumber(devopsAutoDeployRecordMapper.selectOne(devopsAutoDeployRecordDO).getObjectVersionNumber());
+            if (devopsAutoDeployRecordMapper.updateByPrimaryKeySelective(devopsAutoDeployRecordDO) != 1) {
+                throw new CommonException("error.auto.deploy.record.update.error");
+            }
+        }
+        devopsAutoDeployRecordDO.setObjectVersionNumber(null);
+        return ConvertHelper.convert(devopsAutoDeployRecordMapper.selectOne(devopsAutoDeployRecordDO), DevopsAutoDeployRecordE.class);
+
     }
 }

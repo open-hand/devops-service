@@ -21,9 +21,30 @@ public class DevopsAutoDeployRecordE {
     private Long appId;
     private Boolean envStatus;
     private String instanceStatus;
-
+    private Long versionId;
+    private Long instanceId;
+    private Long projectId;
 
     public DevopsAutoDeployRecordE() {
+    }
+
+    public DevopsAutoDeployRecordE(Long autoDeployId, String taskName, String status, Long envId, Long appId, Long versionId, Long instanceId, Long projectId) {
+        this.autoDeployId = autoDeployId;
+        this.taskName = taskName;
+        this.status = status;
+        this.envId = envId;
+        this.appId = appId;
+        this.versionId = versionId;
+        this.instanceId = instanceId;
+        this.projectId = projectId;
+    }
+
+    public DevopsAutoDeployRecordE(Long id, String status, String instanceName, String instanceStatus, Long instanceId) {
+        this.id = id;
+        this.status = status;
+        this.instanceName = instanceName;
+        this.instanceStatus = instanceStatus;
+        this.instanceId = instanceId;
     }
 
     public Long getId() {
@@ -128,5 +149,29 @@ public class DevopsAutoDeployRecordE {
 
     public void setInstanceStatus(String instanceStatus) {
         this.instanceStatus = instanceStatus;
+    }
+
+    public Long getVersionId() {
+        return versionId;
+    }
+
+    public void setVersionId(Long versionId) {
+        this.versionId = versionId;
+    }
+
+    public Long getInstanceId() {
+        return instanceId;
+    }
+
+    public void setInstanceId(Long instanceId) {
+        this.instanceId = instanceId;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 }

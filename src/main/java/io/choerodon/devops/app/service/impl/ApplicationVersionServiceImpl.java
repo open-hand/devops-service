@@ -1,53 +1,65 @@
 package io.choerodon.devops.app.service.impl;
 
-        import io.choerodon.core.convertor.ConvertHelper;
-        import io.choerodon.core.convertor.ConvertPageHelper;
-        import io.choerodon.core.domain.Page;
-        import io.choerodon.core.exception.CommonException;
-        import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
-        import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
-        import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
-        import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
-        import io.choerodon.devops.api.dto.DeployVersionDTO;
-        import io.choerodon.devops.app.service.ApplicationVersionService;
-        import io.choerodon.devops.domain.application.entity.ApplicationE;
-        import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-        import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-        import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
-        import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
-        import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-        import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
-        import io.choerodon.devops.domain.application.entity.ProjectE;
-        import io.choerodon.devops.domain.application.entity.UserAttrE;
-        import io.choerodon.devops.domain.application.entity.iam.UserE;
-        import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
-        import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-        import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-        import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-        import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
-        import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
-        import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-        import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
-        import io.choerodon.devops.domain.application.repository.IamRepository;
-        import io.choerodon.devops.domain.application.repository.UserAttrRepository;
-        import io.choerodon.devops.domain.application.valueobject.Organization;
-        import io.choerodon.devops.infra.common.util.FileUtil;
-        import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-        import io.choerodon.devops.infra.common.util.TypeUtil;
-        import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-        import org.springframework.beans.factory.annotation.Autowired;
-        import org.springframework.beans.factory.annotation.Value;
-        import org.springframework.stereotype.Service;
-        import org.springframework.web.multipart.MultipartFile;
+import com.google.gson.Gson;
+import io.choerodon.asgard.saga.annotation.Saga;
+import io.choerodon.asgard.saga.dto.StartInstanceDTO;
+import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.convertor.ConvertPageHelper;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
+import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
+import io.choerodon.devops.api.dto.DeployVersionDTO;
+import io.choerodon.devops.app.service.ApplicationVersionService;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
+import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
+import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.CutomerContextUtil;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
-        import java.io.File;
-        import java.io.FileInputStream;
-        import java.io.IOException;
-        import java.util.ArrayList;
-        import java.util.List;
-        import java.util.Map;
-        import java.util.Objects;
-        import java.util.stream.Collectors;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -55,7 +67,11 @@ package io.choerodon.devops.app.service.impl;
 @Service
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
 
+    private static final String CREATE = "create";
+    private static final String UPDATE = "update";
+    private static final String STATUS_RUN = "running";
     private static final String DESTPATH = "devops";
+    private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom"};
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Autowired
@@ -76,9 +92,17 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private UserAttrRepository userAttrRepository;
     @Autowired
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
+    @Autowired
+    private DevopsAutoDeployRepository devopsAutoDeployRepository;
+    @Autowired
+    private DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
+    @Autowired
+    private SagaClient sagaClient;
 
     @Value("${services.helm.url}")
     private String helmUrl;
+
+    private Gson gson = new Gson();
 
     /**
      * 方法中抛出runtime Exception而不是CommonException是为了返回非200的状态码。
@@ -143,6 +167,40 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
         applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
+        triggerAutoDelpoy(applicationE.getId());
+    }
+
+    /**
+     * 根据appId触发自动部署
+     *
+     * @param appId
+     */
+    private void triggerAutoDelpoy(Long appId) {
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.getLatestVersion(appId);
+        String branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst().get();
+        if (!branch.isEmpty()) {
+            List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), branch);
+            autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE.getId()));
+        }
+    }
+
+    @Saga(code = "devops-create-auto-deploy-instance",
+            description = "创建自动部署实例", inputSchema = "{}")
+    private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, Long appVersionId) {
+        //创建自动部记录，状态为running
+        DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(devopsAutoDeployE.getId(), devopsAutoDeployE.getTaskName(), STATUS_RUN,
+                devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), appVersionId, null, devopsAutoDeployE.getProjectId());
+        devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+        //将devopsAutoDeployE转换为ApplicationDeployDTO
+        String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
+        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(appVersionId, devopsAutoDeployE.getEnvId(),
+                devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
+                devopsAutoDeployE.getInstanceName(), true,devopsAutoDeployRecordE.getId());
+        //更改上下文用户
+        CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
+        //触发saga
+        String input = gson.toJson(applicationDeployDTO);
+        sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
     }
 
     @Override

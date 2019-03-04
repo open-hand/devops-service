@@ -15,7 +15,6 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -104,12 +103,17 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
     }
 
     @Override
-    public DevopsAutoDeployE updateIsEnabled(Long autoDeployId,Integer isEnabled) {
-        DevopsAutoDeployDO devopsAutoDeployDO =new DevopsAutoDeployDO();
+    public DevopsAutoDeployE updateIsEnabled(Long autoDeployId, Integer isEnabled) {
+        DevopsAutoDeployDO devopsAutoDeployDO = new DevopsAutoDeployDO();
         devopsAutoDeployDO.setId(autoDeployId);
         devopsAutoDeployDO.setObjectVersionNumber(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO).getObjectVersionNumber());
         devopsAutoDeployDO.setIsEnabled(isEnabled);
         devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO);
         return ConvertHelper.convert(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO), DevopsAutoDeployE.class);
+    }
+
+    @Override
+    public List<DevopsAutoDeployE> queryByVersion(Long versionId, String branch) {
+        return ConvertHelper.convertList(devopsAutoDeployMapper.queryByVersion(versionId, branch), DevopsAutoDeployE.class);
     }
 }
