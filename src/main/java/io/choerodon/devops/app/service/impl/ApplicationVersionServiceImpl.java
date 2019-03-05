@@ -339,6 +339,4 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     public String queryValueById(Long projectId, Long appId) {
         return applicationVersionRepository.queryValueById(appId);
     }
-
-
 }
