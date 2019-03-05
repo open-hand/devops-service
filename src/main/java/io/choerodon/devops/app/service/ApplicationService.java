@@ -1,13 +1,19 @@
 package io.choerodon.devops.app.service;
 
-import java.util.List;
-
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.dto.ApplicationCodeDTO;
+import io.choerodon.devops.api.dto.ApplicationImportDTO;
+import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * Created by younger on 2018/3/28.
@@ -129,7 +135,7 @@ public interface ApplicationService {
      * @param pageRequest 分页参数
      * @return list of ApplicationRepDTO
      */
-    Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest);
+    Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
     /**
      * 项目下查询所有已经启用的应用

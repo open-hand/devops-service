@@ -1,13 +1,16 @@
 package io.choerodon.devops.api.controller.v1;
 
-import java.util.List;
-import java.util.Optional;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.dto.ApplicationCodeDTO;
+import io.choerodon.devops.api.dto.ApplicationImportDTO;
+import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -19,8 +22,19 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by younger on 2018/4/4.
@@ -209,9 +223,11 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "应用 Id")
+            @RequestParam(value = "app_id") Long appId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, pageRequest))
+        return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, appId,pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appName.query"));
     }
