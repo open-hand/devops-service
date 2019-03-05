@@ -1,31 +1,40 @@
 package io.choerodon.devops.api.eventhandler;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.ApplicationTemplateService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /**
  * Creator: Runge
@@ -37,6 +46,8 @@ import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImp
 public class DevopsSagaHandler {
     private static final String TEMPLATE = "template";
     private static final String APPLICATION = "application";
+    private static final String STATUS_FIN = "finished";
+    private static final String STATUS_FAILED = "failed";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsSagaHandler.class);
 
     private final Gson gson = new Gson();
@@ -50,6 +61,8 @@ public class DevopsSagaHandler {
     private final ApplicationRepository applicationRepository;
     private final ApplicationTemplateRepository applicationTemplateRepository;
     private final DevopsEnvironmentRepository devopsEnvironmentRepository;
+    private final DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
+    private final ApplicationInstanceService applicationInstanceService;
 
     @Autowired
     public DevopsSagaHandler(DevopsEnvironmentService devopsEnvironmentService,
@@ -59,7 +72,9 @@ public class DevopsSagaHandler {
                              DevopsGitlabPipelineService devopsGitlabPipelineService,
                              ApplicationRepository applicationRepository,
                              ApplicationTemplateRepository applicationTemplateRepository,
-                             DevopsEnvironmentRepository devopsEnvironmentRepository) {
+                             DevopsEnvironmentRepository devopsEnvironmentRepository,
+                             DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository,
+                             ApplicationInstanceService applicationInstanceService) {
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsGitService = devopsGitService;
         this.applicationTemplateService = applicationTemplateService;
@@ -68,6 +83,8 @@ public class DevopsSagaHandler {
         this.applicationRepository = applicationRepository;
         this.applicationTemplateRepository = applicationTemplateRepository;
         this.devopsEnvironmentRepository = devopsEnvironmentRepository;
+        this.devopsAutoDeployRecordRepository = devopsAutoDeployRecordRepository;
+        this.applicationInstanceService = applicationInstanceService;
     }
 
     /**
@@ -292,4 +309,28 @@ public class DevopsSagaHandler {
         devopsGitlabPipelineService.handleCreate(pipelineWebHookDTO);
         return data;
     }
+
+    @SagaTask(code = "devops-auto-deploy-create-instance",
+            description = "devops create auto deploy instance",
+            sagaCode = "devops-create-auto-deploy-instance",
+            maxRetryCount = 3,
+            seq = 1)
+    public void createAutoDeployInstance(String data) {
+        //创建或更新实例
+        ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
+        try {
+            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
+            //更新记录表中的实例
+            DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FIN,
+                    applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getStatus(), applicationInstanceDTO.getId());
+            devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+        } catch (CommonException e) {
+            //实例创建失败,回写记录表
+            DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
+                    null, null, null);
+            devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+        }
+
+    }
+
 }

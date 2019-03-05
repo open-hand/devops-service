@@ -30,4 +30,6 @@ public interface DevopsAutoDeployRepository {
     DevopsAutoDeployE queryById(Long autoDeployId);
 
     DevopsAutoDeployE updateIsEnabled(Long autoDeployId, Integer isEnabled);
+
+    List<DevopsAutoDeployE> queryByVersion(Long versionId,String branch);
 }

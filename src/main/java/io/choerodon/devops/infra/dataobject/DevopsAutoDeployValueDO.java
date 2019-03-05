@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dataobject;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -15,7 +16,7 @@ import javax.persistence.Table;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_auto_deploy_value")
-public class DevopsAutoDeployValueDO {
+public class DevopsAutoDeployValueDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;

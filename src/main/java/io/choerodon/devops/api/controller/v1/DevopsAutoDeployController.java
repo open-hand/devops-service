@@ -50,7 +50,7 @@ public class DevopsAutoDeployController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建或更新自动部署")
     @PostMapping
-    public ResponseEntity<DevopsAutoDeployDTO> create(
+    public ResponseEntity<DevopsAutoDeployDTO> createOrUpdate(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "自动部署信息", required = true)

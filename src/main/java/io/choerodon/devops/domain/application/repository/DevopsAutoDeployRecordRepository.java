@@ -20,4 +20,6 @@ public interface DevopsAutoDeployRecordRepository {
                                                 String params);
 
     void updateStatus(Long autoDeployId, String status);
+
+    DevopsAutoDeployRecordE createOrUpdate(DevopsAutoDeployRecordE devopsAutoDeployRecordE);
 }

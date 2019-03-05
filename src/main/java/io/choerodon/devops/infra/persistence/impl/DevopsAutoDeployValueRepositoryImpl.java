@@ -27,11 +27,13 @@ public class DevopsAutoDeployValueRepositoryImpl implements DevopsAutoDeployValu
             if (devopsAutoDeployValueMapper.insert(devopsAutoDeployValueDO) != 1) {
                 throw new CommonException("error.auto.deploy.value.create");
             }
+            return devopsAutoDeployValueMapper.selectOne(devopsAutoDeployValueDO).getId();
         } else {
-            if (devopsAutoDeployValueMapper.updateByPrimaryKeySelective(devopsAutoDeployValueDO) != 1) {
+            devopsAutoDeployValueDO.setObjectVersionNumber(devopsAutoDeployValueMapper.selectByPrimaryKey(devopsAutoDeployValueDO).getObjectVersionNumber());
+            if (devopsAutoDeployValueMapper.updateByPrimaryKey(devopsAutoDeployValueDO) != 1) {
                 throw new CommonException("error.auto.deploy.value.update");
             }
+            return devopsAutoDeployValueDO.getId();
         }
-        return devopsAutoDeployValueMapper.selectOne(devopsAutoDeployValueDO).getId();
     }
 }

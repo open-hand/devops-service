@@ -1,12 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -14,23 +7,73 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AppInstanceCodeDTO;
+import io.choerodon.devops.api.dto.AppInstanceCommandLogDTO;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
+import io.choerodon.devops.api.dto.ApplicationInstancesDTO;
+import io.choerodon.devops.api.dto.DeployAppDTO;
+import io.choerodon.devops.api.dto.DeployAppDetail;
+import io.choerodon.devops.api.dto.DeployDetailDTO;
+import io.choerodon.devops.api.dto.DeployFrequencyDTO;
+import io.choerodon.devops.api.dto.DeployTimeDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewAppDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewDTO;
+import io.choerodon.devops.api.dto.DevopsEnvPreviewInstanceDTO;
+import io.choerodon.devops.api.dto.DevopsEnvResourceDTO;
+import io.choerodon.devops.api.dto.EnvInstanceDTO;
+import io.choerodon.devops.api.dto.EnvInstancesDTO;
+import io.choerodon.devops.api.dto.EnvVersionDTO;
+import io.choerodon.devops.api.dto.ErrorLineDTO;
+import io.choerodon.devops.api.dto.InstanceControllerDetailDTO;
 import io.choerodon.devops.api.validator.AppInstanceValidator;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.DevopsEnvResourceService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandValueE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
 import io.choerodon.devops.domain.application.valueobject.Metadata;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
-import io.choerodon.devops.infra.common.util.*;
-import io.choerodon.devops.infra.common.util.enums.*;
+import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.JsonYamlConversionUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.CommandStatus;
+import io.choerodon.devops.infra.common.util.enums.CommandType;
+import io.choerodon.devops.infra.common.util.enums.HelmType;
+import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
+import io.choerodon.devops.infra.common.util.enums.ObjectType;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.dataobject.ApplicationInstanceDO;
 import io.choerodon.devops.infra.dataobject.ApplicationInstancesDO;
 import io.choerodon.devops.infra.dataobject.ApplicationLatestVersionDO;
@@ -49,6 +92,21 @@ import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
  * Created by Zenger on 2018/4/12.
  */
@@ -62,6 +120,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
+
     private static Gson gson = new Gson();
 
     @Value("${agent.version}")
@@ -115,7 +174,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;
-
 
     @Override
     public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -795,6 +853,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
     }
 
+    @Override
     public ApplicationInstanceDTO createOrUpdateByGitOps(ApplicationDeployDTO applicationDeployDTO, Long userId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(applicationDeployDTO.getEnvironmentId());
