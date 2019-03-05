@@ -33,11 +33,11 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
     private DevopsAutoDeployMapper devopsAutoDeployMapper;
 
     @Override
-    public void checkTaskName(Long projectId, String taskName) {
+    public void checkTaskName(Long id, Long projectId, String taskName) {
         DevopsAutoDeployDO devopsAutoDeployDO = new DevopsAutoDeployDO();
         devopsAutoDeployDO.setTaskName(taskName);
         devopsAutoDeployDO.setProjectId(projectId);
-        if (devopsAutoDeployMapper.selectOne(devopsAutoDeployDO) != null) {
+        if (!devopsAutoDeployMapper.checkTaskName(id, projectId, taskName).isEmpty()) {
             throw new CommonException("error.auto.deploy.name.exist");
         }
     }
@@ -50,13 +50,13 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
             if (devopsAutoDeployMapper.insert(devopsAutoDeployDO) != 1) {
                 throw new CommonException("error.auto.deploy.create.error");
             }
-            return ConvertHelper.convert(devopsAutoDeployMapper.selectOne(devopsAutoDeployDO), DevopsAutoDeployE.class);
         } else {
             if (devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO) != 1) {
                 throw new CommonException("error.auto.deploy.update.error");
             }
-            return devopsAutoDeployE;
+            devopsAutoDeployDO.setObjectVersionNumber(null);
         }
+        return ConvertHelper.convert(devopsAutoDeployMapper.selectOne(devopsAutoDeployDO), DevopsAutoDeployE.class);
     }
 
     @Override
@@ -114,7 +114,12 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
     }
 
     @Override
-    public List<DevopsAutoDeployE> queryByVersion(Long versionId, String branch) {
-        return ConvertHelper.convertList(devopsAutoDeployMapper.queryByVersion(versionId, branch), DevopsAutoDeployE.class);
+    public List<DevopsAutoDeployE> queryByVersion(Long appId, String branch) {
+        return ConvertHelper.convertList(devopsAutoDeployMapper.queryByVersion(appId, branch), DevopsAutoDeployE.class);
+    }
+
+    @Override
+    public void updateInstanceId(Long instanceId) {
+        devopsAutoDeployMapper.updateInstanceId(instanceId);
     }
 }

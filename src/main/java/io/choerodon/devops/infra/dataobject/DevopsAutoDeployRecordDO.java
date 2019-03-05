@@ -29,10 +29,11 @@ public class DevopsAutoDeployRecordDO extends AuditDomain {
     private Long envId;
     private Long appId;
     private String status;
-    private String instanceStatus;
     private Date lastUpdateDate;
+    private Long projectId;
 
-
+    @Transient
+    private String instanceStatus;
     @Transient
     private String instanceName;
     @Transient
@@ -146,6 +147,14 @@ public class DevopsAutoDeployRecordDO extends AuditDomain {
 
     public void setEnvStatus(Integer envStatus) {
         this.envStatus = envStatus;
+    }
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
     }
 
     public String getInstanceStatus() {

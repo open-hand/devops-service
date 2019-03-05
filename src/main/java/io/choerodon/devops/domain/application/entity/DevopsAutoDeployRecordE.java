@@ -39,11 +39,10 @@ public class DevopsAutoDeployRecordE {
         this.projectId = projectId;
     }
 
-    public DevopsAutoDeployRecordE(Long id, String status, String instanceName, String instanceStatus, Long instanceId) {
+    public DevopsAutoDeployRecordE(Long id, String status, String instanceName, Long instanceId) {
         this.id = id;
         this.status = status;
         this.instanceName = instanceName;
-        this.instanceStatus = instanceStatus;
         this.instanceId = instanceId;
     }
 

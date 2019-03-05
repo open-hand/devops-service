@@ -18,7 +18,7 @@ public class DevopsAutoDeployRecordConvertor implements ConvertorI<DevopsAutoDep
     public DevopsAutoDeployRecordE doToEntity(DevopsAutoDeployRecordDO devopsAutoDeployRecordDO) {
         DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE();
         BeanUtils.copyProperties(devopsAutoDeployRecordDO, devopsAutoDeployRecordE);
-        devopsAutoDeployRecordE.setEnvStatus(devopsAutoDeployRecordDO.getEnvStatus() == 1);
+        devopsAutoDeployRecordE.setEnvStatus(devopsAutoDeployRecordDO.getEnvStatus() != null && devopsAutoDeployRecordDO.getEnvStatus() == 1);
         return devopsAutoDeployRecordE;
     }
 
@@ -27,6 +27,14 @@ public class DevopsAutoDeployRecordConvertor implements ConvertorI<DevopsAutoDep
         DevopsAutoDeployRecordDTO devopsAutoDeployRecordDTO = new DevopsAutoDeployRecordDTO();
         BeanUtils.copyProperties(devopsAutoDeployRecordE, devopsAutoDeployRecordDTO);
         return devopsAutoDeployRecordDTO;
+    }
+
+    @Override
+    public DevopsAutoDeployRecordDO entityToDo(DevopsAutoDeployRecordE devopsAutoDeployRecordE) {
+        DevopsAutoDeployRecordDO devopsAutoDeployRecordDO = new DevopsAutoDeployRecordDO();
+        BeanUtils.copyProperties(devopsAutoDeployRecordE, devopsAutoDeployRecordDO);
+        devopsAutoDeployRecordDO.setEnvStatus(devopsAutoDeployRecordE.getEnvStatus() != null && devopsAutoDeployRecordE.getEnvStatus() ? 1 : 0);
+        return devopsAutoDeployRecordDO;
     }
 
 }

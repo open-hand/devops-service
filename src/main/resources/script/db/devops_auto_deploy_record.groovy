@@ -53,4 +53,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_auto_deploy_record.groovy') {
             column(name: 'instance_status', type: 'VARCHAR(32)', remarks: '实例状态')
         }
     }
+
+    changeSet(author: 'scp', id: '2019-03-01-del-column') {
+        dropColumn(columnName: "instance_status", tableName: "devops_auto_deploy_record")
+    }
 }

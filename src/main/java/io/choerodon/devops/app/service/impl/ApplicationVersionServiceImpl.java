@@ -59,6 +59,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -71,7 +72,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private static final String UPDATE = "update";
     private static final String STATUS_RUN = "running";
     private static final String DESTPATH = "devops";
-    private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom"};
+    private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Autowired
@@ -165,37 +166,35 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             throw new CommonException("error.version.insert", e);
         }
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
-        applicationVersionRepository.create(applicationVersionE);
+        applicationVersionE = applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
-//        triggerAutoDelpoy(applicationE.getId());
+        triggerAutoDelpoy(applicationVersionE);
     }
 
     /**
      * 根据appId触发自动部署
      *
-     * @param appId
+     * @param applicationVersionE
      */
-    private void triggerAutoDelpoy(Long appId) {
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.getLatestVersion(appId);
-        String branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst().get();
-        if (branch != null && !branch.isEmpty()) {
-            List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), branch);
-            autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE.getId()));
-        }
+    public void triggerAutoDelpoy(ApplicationVersionE applicationVersionE) {
+        Optional<String> branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
+        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
+        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), version);
+        autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
     }
 
     @Saga(code = "devops-create-auto-deploy-instance",
             description = "创建自动部署实例", inputSchema = "{}")
-    private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, Long appVersionId) {
+    private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, ApplicationVersionE applicationVersionE) {
         //创建自动部记录，状态为running
         DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(devopsAutoDeployE.getId(), devopsAutoDeployE.getTaskName(), STATUS_RUN,
-                devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), appVersionId, null, devopsAutoDeployE.getProjectId());
-        devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+                devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), applicationVersionE.getId(), null, devopsAutoDeployE.getProjectId());
+        devopsAutoDeployRecordE = devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
         //将devopsAutoDeployE转换为ApplicationDeployDTO
         String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
-        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(appVersionId, devopsAutoDeployE.getEnvId(),
+        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
                 devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
-                devopsAutoDeployE.getInstanceName(), true, devopsAutoDeployRecordE.getId());
+                devopsAutoDeployE.getInstanceName(), false, devopsAutoDeployRecordE.getId());
         //更改上下文用户
         CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
         //触发saga

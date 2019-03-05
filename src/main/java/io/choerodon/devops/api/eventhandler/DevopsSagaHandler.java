@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
@@ -322,12 +321,12 @@ public class DevopsSagaHandler {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             //更新记录表中的实例
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FIN,
-                    applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getStatus(), applicationInstanceDTO.getId());
+                    applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getId());
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-        } catch (CommonException e) {
+        } catch (Exception e) {
             //实例创建失败,回写记录表
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
-                    null, null, null);
+                    null,  null);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
         }
 

@@ -92,7 +92,7 @@ public interface DevopsAutoDeployService {
      * @param projectId
      * @param name
      */
-    void checkName(Long projectId, String name);
+    void checkName(Long id, Long projectId, String name);
 
     DevopsAutoDeployDTO updateIsEnabled(Long autoDeployId, Integer isEnabled);
 }

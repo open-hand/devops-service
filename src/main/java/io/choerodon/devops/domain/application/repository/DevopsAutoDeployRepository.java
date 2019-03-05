@@ -12,7 +12,7 @@ import java.util.List;
  * Description:
  */
 public interface DevopsAutoDeployRepository {
-    void checkTaskName(Long projectId, String taskName);
+    void checkTaskName(Long id, Long projectId, String taskName);
 
     DevopsAutoDeployE createOrUpdate(DevopsAutoDeployE devopsAutoDeployE);
 
@@ -31,5 +31,8 @@ public interface DevopsAutoDeployRepository {
 
     DevopsAutoDeployE updateIsEnabled(Long autoDeployId, Integer isEnabled);
 
-    List<DevopsAutoDeployE> queryByVersion(Long versionId,String branch);
+    List<DevopsAutoDeployE> queryByVersion(Long appId, String branch);
+
+
+    void updateInstanceId(Long instanceId);
 }
