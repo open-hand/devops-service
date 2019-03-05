@@ -116,7 +116,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
             }
-            throw new DevopsCiInvalidException(e.getMessage());
+            throw new DevopsCiInvalidException(e.getMessage(),e);
         }
     }
 
