@@ -64,7 +64,7 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         if (applicationVersionMapper.insert(applicationVersionDO) != 1) {
             throw new CommonException("error.version.insert");
         }
-        return ConvertHelper.convert(applicationVersionDO, ApplicationVersionE.class);
+        return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO), ApplicationVersionE.class);
     }
 
     @Override

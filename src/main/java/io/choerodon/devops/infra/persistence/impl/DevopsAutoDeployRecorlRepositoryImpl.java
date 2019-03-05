@@ -71,13 +71,18 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
                 throw new CommonException("error.auto.deploy.record.create.error");
             }
         } else {
-            devopsAutoDeployRecordDO.setObjectVersionNumber(devopsAutoDeployRecordMapper.selectOne(devopsAutoDeployRecordDO).getObjectVersionNumber());
+            devopsAutoDeployRecordDO.setObjectVersionNumber(devopsAutoDeployRecordMapper.selectByPrimaryKey(devopsAutoDeployRecordDO).getObjectVersionNumber());
             if (devopsAutoDeployRecordMapper.updateByPrimaryKeySelective(devopsAutoDeployRecordDO) != 1) {
                 throw new CommonException("error.auto.deploy.record.update.error");
             }
         }
         devopsAutoDeployRecordDO.setObjectVersionNumber(null);
         return ConvertHelper.convert(devopsAutoDeployRecordMapper.selectOne(devopsAutoDeployRecordDO), DevopsAutoDeployRecordE.class);
+
+    }
+
+    @Override
+    public void updateInstanceId(Long instanceId) {
 
     }
 }

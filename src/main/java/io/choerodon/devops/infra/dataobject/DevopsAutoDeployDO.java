@@ -29,8 +29,6 @@ public class DevopsAutoDeployDO extends AuditDomain {
     private Long envId;
     private Long valueId;
     private Long projectId;
-    private Long objectVersionNumber;
-    private Date lastUpdateDate;
     private Long instanceId;
     private Integer isEnabled;
     private String instanceName;

@@ -171,9 +171,9 @@ public class DevopsAutoDeployController {
     public void checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "环境名", required = true)
+            @ApiParam(value = "任务名称", required = true)
             @RequestParam String name) {
-        devopsAutoDeployService.checkName(projectId, name);
+        devopsAutoDeployService.checkName(null,projectId, name);
     }
 
     /**

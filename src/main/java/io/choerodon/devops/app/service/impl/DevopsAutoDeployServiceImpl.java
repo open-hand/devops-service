@@ -37,7 +37,7 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     @Override
     public DevopsAutoDeployDTO createOrUpdate(Long projectId, DevopsAutoDeployDTO devopsAutoDeployDTO) {
         //校验taskName
-        devopsAutoDeployRepository.checkTaskName(projectId, devopsAutoDeployDTO.getTaskName());
+        devopsAutoDeployRepository.checkTaskName(devopsAutoDeployDTO.getId(), projectId, devopsAutoDeployDTO.getTaskName());
         DevopsAutoDeployE devopsAutoDeployE = ConvertHelper.convert(devopsAutoDeployDTO, DevopsAutoDeployE.class);
         devopsAutoDeployE.setProjectId(projectId);
         //保存value信息
@@ -53,7 +53,7 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     @Override
     @Transactional
     public void delete(Long projectId, Long autoDeployId) {
-        devopsAutoDeployRecordRepository.updateStatus(autoDeployId,STATUS_DEL);
+        devopsAutoDeployRecordRepository.updateStatus(autoDeployId, STATUS_DEL);
         devopsAutoDeployRepository.delete(autoDeployId);
     }
 
@@ -78,12 +78,12 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     }
 
     @Override
-    public void checkName(Long projectId, String name) {
-        devopsAutoDeployRepository.checkTaskName(projectId, name);
+    public void checkName(Long id, Long projectId, String name) {
+        devopsAutoDeployRepository.checkTaskName(id, projectId, name);
     }
 
     @Override
     public DevopsAutoDeployDTO updateIsEnabled(Long autoDeployId, Integer isEnabled) {
-        return ConvertHelper.convert( devopsAutoDeployRepository.updateIsEnabled(autoDeployId,isEnabled), DevopsAutoDeployDTO.class);
+        return ConvertHelper.convert(devopsAutoDeployRepository.updateIsEnabled(autoDeployId, isEnabled), DevopsAutoDeployDTO.class);
     }
 }
