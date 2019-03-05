@@ -1,15 +1,6 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.google.gson.Gson;
-import io.kubernetes.client.JSON;
-import org.apache.commons.lang.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -22,6 +13,14 @@ import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.kubernetes.client.JSON;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by younger on 2018/3/28.
@@ -156,14 +155,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listByEnvId(Long projectId, Long envId, String status) {
-        return ConvertHelper.convertList(applicationMapper.listByEnvId(projectId, envId, status), ApplicationE.class);
+        return ConvertHelper.convertList(applicationMapper.listByEnvId(projectId, envId, null,status), ApplicationE.class);
     }
 
     @Override
-    public Page<ApplicationE> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest) {
+    public Page<ApplicationE> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
         return ConvertPageHelper.convertPage(
                 PageHelper.doPageAndSort(
-                        pageRequest, () -> applicationMapper.listByEnvId(projectId, envId, "nodeleted")),
+                        pageRequest, () -> applicationMapper.listByEnvId(projectId, envId, appId,"nodeleted")),
                 ApplicationE.class
         );
     }

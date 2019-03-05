@@ -28,6 +28,7 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
 
     List<ApplicationDO> listByEnvId(@Param("projectId") Long projectId,
                                     @Param("envId") Long envId,
+                                    @Param("appId") Long appId,
                                     @Param("status") String status);
 
     List<ApplicationDO> listByActiveAndPubAndVersion(@Param("projectId") Long projectId,

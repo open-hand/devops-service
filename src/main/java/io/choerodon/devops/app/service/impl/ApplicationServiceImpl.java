@@ -10,11 +10,23 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
+import io.choerodon.devops.api.dto.ApplicationCodeDTO;
+import io.choerodon.devops.api.dto.ApplicationImportDTO;
+import io.choerodon.devops.api.dto.ApplicationRepDTO;
+import io.choerodon.devops.api.dto.ApplicationReqDTO;
+import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
+import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.AppUserPermissionE;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
+import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
+import io.choerodon.devops.domain.application.entity.DevopsBranchE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
@@ -24,11 +36,27 @@ import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
+import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
+import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.common.util.*;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
+import io.choerodon.devops.infra.common.util.GitUserNameUtil;
+import io.choerodon.devops.infra.common.util.GitUtil;
+import io.choerodon.devops.infra.common.util.HttpClientUtil;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
@@ -49,7 +77,13 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
@@ -851,8 +885,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
-    public Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest) {
-        return ConvertPageHelper.convertPage(applicationRepository.pageByEnvId(projectId, envId, pageRequest),
+    public Page<ApplicationCodeDTO> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
+        return ConvertPageHelper.convertPage(applicationRepository.pageByEnvId(projectId, envId, appId, pageRequest),
                 ApplicationCodeDTO.class);
     }
 

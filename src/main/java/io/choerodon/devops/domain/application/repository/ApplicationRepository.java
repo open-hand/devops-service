@@ -36,7 +36,7 @@ public interface ApplicationRepository {
 
     List<ApplicationE> listByEnvId(Long projectId, Long envId, String status);
 
-    Page<ApplicationE> pageByEnvId(Long projectId, Long envId, PageRequest pageRequest);
+    Page<ApplicationE> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest);
 
     List<ApplicationE> listByActive(Long projectId);
 

@@ -66,6 +66,9 @@
         WHERE
         de.project_id = #{projectId}
         AND de.id = #{envId}
+        <if test="appId!=null and appId !=''">
+            ORDER BY da.id not in (#{appId})
+        </if>
     </select>
 
     <select id="listActive" resultType="io.choerodon.devops.infra.dataobject.ApplicationDO">

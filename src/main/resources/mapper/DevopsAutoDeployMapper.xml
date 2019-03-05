@@ -67,7 +67,8 @@
             dad.trigger_version,
             dad.object_version_number,
             dadv.VALUE,
-            dad.instance_name
+            dad.instance_name,
+            dad.instance_id
         FROM
             devops_auto_deploy dad
         LEFT JOIN devops_auto_deploy_value dadv
