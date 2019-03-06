@@ -91,7 +91,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -1083,7 +1082,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     userAttrE.getGitlabUserId(),
                     instanceE.getId(), C7NHELM_RELEASE, null, devopsEnvironmentE.getId(), path);
         }
-        devopsAutoDeployRepository.updateInstanceId(instanceId);
+        devopsAutoDeployRepository.deleteInstanceId(instanceId);
     }
 
     @Override

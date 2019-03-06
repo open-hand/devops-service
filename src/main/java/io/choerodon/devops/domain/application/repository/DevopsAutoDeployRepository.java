@@ -34,5 +34,7 @@ public interface DevopsAutoDeployRepository {
     List<DevopsAutoDeployE> queryByVersion(Long appId, String branch);
 
 
-    void updateInstanceId(Long instanceId);
+    void deleteInstanceId(Long instanceId);
+
+    void updateInstanceId(Long autoDeployId, Long instanceId);
 }
