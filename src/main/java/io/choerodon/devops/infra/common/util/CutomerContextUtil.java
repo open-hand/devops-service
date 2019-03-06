@@ -38,7 +38,7 @@ public class CutomerContextUtil {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
         } catch (Exception e) {
-            throw new CommonException("change user expection", e);
+            throw new CommonException("context.set.error", e);
         }
     }
 }
