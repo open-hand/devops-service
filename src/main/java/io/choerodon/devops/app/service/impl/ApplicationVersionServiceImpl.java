@@ -117,7 +117,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             if (e instanceof CommonException) {
                 throw new DevopsCiInvalidException(((CommonException) e).getCode(), e.getCause());
             }
-            throw new DevopsCiInvalidException(e.getMessage(),e);
+            throw new DevopsCiInvalidException(e.getMessage(), e);
         }
     }
 
@@ -207,7 +207,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
                     devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
-                    devopsAutoDeployE.getInstanceName(), false, devopsAutoDeployRecordE.getId());
+                    devopsAutoDeployE.getInstanceName(), false, devopsAutoDeployRecordE.getId(), devopsAutoDeployE.getId());
             //触发saga
             String input = gson.toJson(applicationDeployDTO);
             sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));

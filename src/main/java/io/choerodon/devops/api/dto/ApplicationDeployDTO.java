@@ -12,11 +12,12 @@ public class ApplicationDeployDTO {
     private boolean isNotChange;
     //触发自动部署时使用
     private Long recordId;
+    private Long autoDeployId;
 
     public ApplicationDeployDTO() {
     }
 
-    public ApplicationDeployDTO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, Long commandId, String instanceName, boolean isNotChange, Long recordId) {
+    public ApplicationDeployDTO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, Long commandId, String instanceName, boolean isNotChange, Long recordId, Long autoDeployId) {
         this.appVersionId = appVersionId;
         this.environmentId = environmentId;
         this.values = values;
@@ -27,6 +28,7 @@ public class ApplicationDeployDTO {
         this.instanceName = instanceName;
         this.isNotChange = isNotChange;
         this.recordId = recordId;
+        this.autoDeployId = autoDeployId;
     }
 
     public Long getAppVersionId() {
@@ -107,5 +109,13 @@ public class ApplicationDeployDTO {
 
     public void setRecordId(Long recordId) {
         this.recordId = recordId;
+    }
+
+    public Long getAutoDeployId() {
+        return autoDeployId;
+    }
+
+    public void setAutoDeployId(Long autoDeployId) {
+        this.autoDeployId = autoDeployId;
     }
 }

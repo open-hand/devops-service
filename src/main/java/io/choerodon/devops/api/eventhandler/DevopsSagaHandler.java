@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
@@ -25,6 +26,7 @@ import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
@@ -61,6 +63,7 @@ public class DevopsSagaHandler {
     private final ApplicationTemplateRepository applicationTemplateRepository;
     private final DevopsEnvironmentRepository devopsEnvironmentRepository;
     private final DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
+    private final DevopsAutoDeployRepository devopsAutoDeployRepository;
     private final ApplicationInstanceService applicationInstanceService;
 
     @Autowired
@@ -73,6 +76,7 @@ public class DevopsSagaHandler {
                              ApplicationTemplateRepository applicationTemplateRepository,
                              DevopsEnvironmentRepository devopsEnvironmentRepository,
                              DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository,
+                             DevopsAutoDeployRepository devopsAutoDeployRepository,
                              ApplicationInstanceService applicationInstanceService) {
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsGitService = devopsGitService;
@@ -83,6 +87,7 @@ public class DevopsSagaHandler {
         this.applicationTemplateRepository = applicationTemplateRepository;
         this.devopsEnvironmentRepository = devopsEnvironmentRepository;
         this.devopsAutoDeployRecordRepository = devopsAutoDeployRecordRepository;
+        this.devopsAutoDeployRepository = devopsAutoDeployRepository;
         this.applicationInstanceService = applicationInstanceService;
     }
 
@@ -323,11 +328,13 @@ public class DevopsSagaHandler {
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FIN,
                     applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getId());
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+            devopsAutoDeployRepository.updateInstanceId(applicationDeployDTO.getAutoDeployId(),applicationInstanceDTO.getId());
         } catch (Exception e) {
             //实例创建失败,回写记录表
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
                     null,  null);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+            throw new CommonException("auto.deploy.create.instance.error", e);
         }
 
     }

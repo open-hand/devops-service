@@ -119,7 +119,16 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
     }
 
     @Override
-    public void updateInstanceId(Long instanceId) {
+    public void deleteInstanceId(Long instanceId) {
         devopsAutoDeployMapper.updateInstanceId(instanceId);
+    }
+
+    @Override
+    public void updateInstanceId(Long autoDeployId, Long instanceId) {
+        DevopsAutoDeployDO devopsAutoDeployDO = new DevopsAutoDeployDO();
+        devopsAutoDeployDO.setId(autoDeployId);
+        devopsAutoDeployDO.setInstanceId(instanceId);
+        devopsAutoDeployDO.setObjectVersionNumber(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO).getObjectVersionNumber());
+        devopsAutoDeployMapper.updateByPrimaryKey(devopsAutoDeployDO);
     }
 }
