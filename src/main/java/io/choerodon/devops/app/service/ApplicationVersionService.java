@@ -111,4 +111,5 @@ public interface ApplicationVersionService {
      */
     String queryValueById(Long projectId, Long appId);
 
+    void triggerAutoDelpoyTest(Long appId);
 }

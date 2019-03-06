@@ -71,6 +71,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
     private static final String STATUS_RUN = "running";
+    private static final String STATUS_FAILED = "failed";
     private static final String DESTPATH = "devops";
     private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
     @Value("${services.gitlab.url}")
@@ -183,6 +184,15 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
     }
 
+    @Override
+    public void triggerAutoDelpoyTest(Long appId) {
+        ApplicationVersionE applicationVersionE = applicationVersionRepository.getLatestVersion(appId);
+        Optional<String> branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
+        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
+        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), version);
+        autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
+    }
+
     @Saga(code = "devops-create-auto-deploy-instance",
             description = "创建自动部署实例", inputSchema = "{}")
     private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, ApplicationVersionE applicationVersionE) {
@@ -191,15 +201,23 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                 devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), applicationVersionE.getId(), null, devopsAutoDeployE.getProjectId());
         devopsAutoDeployRecordE = devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
         //将devopsAutoDeployE转换为ApplicationDeployDTO
-        String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
-        ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
-                devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
-                devopsAutoDeployE.getInstanceName(), false, devopsAutoDeployRecordE.getId());
-        //更改上下文用户
-        CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
-        //触发saga
-        String input = gson.toJson(applicationDeployDTO);
-        sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
+        try {
+            //更改上下文用户
+            CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
+            String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
+            ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
+                    devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
+                    devopsAutoDeployE.getInstanceName(), false, devopsAutoDeployRecordE.getId());
+            //触发saga
+            String input = gson.toJson(applicationDeployDTO);
+            sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
+        }catch (Exception e){
+            //实例创建失败,回写记录表
+            devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
+            devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+            throw new CommonException("create or saga expection");
+        }
+
     }
 
     @Override

@@ -96,10 +96,10 @@
         <choose>
             <when test='branch != null and branch != ""'>
                 AND (dad.trigger_version LIKE CONCAT('%', #{branch},'%')
-                OR dad.trigger_version is NULL)
+                OR dad.trigger_version = '')
             </when>
             <otherwise>
-                AND dad.trigger_version is NULL
+                AND dad.trigger_version = ''
             </otherwise>
         </choose>
 
