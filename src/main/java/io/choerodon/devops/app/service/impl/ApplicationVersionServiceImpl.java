@@ -196,14 +196,14 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Saga(code = "devops-create-auto-deploy-instance",
             description = "创建自动部署实例", inputSchema = "{}")
     private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, ApplicationVersionE applicationVersionE) {
+        //更改上下文用户
+        CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
         //创建自动部记录，状态为running
         DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(devopsAutoDeployE.getId(), devopsAutoDeployE.getTaskName(), STATUS_RUN,
                 devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), applicationVersionE.getId(), null, devopsAutoDeployE.getProjectId());
         devopsAutoDeployRecordE = devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
         //将devopsAutoDeployE转换为ApplicationDeployDTO
         try {
-            //更改上下文用户
-            CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
             String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
                     devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
@@ -211,11 +211,11 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             //触发saga
             String input = gson.toJson(applicationDeployDTO);
             sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
-        }catch (Exception e){
+        } catch (Exception e) {
             //实例创建失败,回写记录表
             devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            throw new CommonException("create or saga expection");
+            throw new CommonException("create or saga expection", e);
         }
 
     }

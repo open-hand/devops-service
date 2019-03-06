@@ -22,8 +22,8 @@ public class CutomerContextUtil {
             OAuth2Authentication user = (OAuth2Authentication) SecurityContextHolder.getContext().getAuthentication();
             user.setDetails(customUserDetails);
             SecurityContextHolder.getContext().setAuthentication(user);
-        }catch (Exception e){
-            throw new CommonException("change user expection");
+        } catch (Exception e) {
+            throw new CommonException("change user expection", e);
         }
     }
 }
