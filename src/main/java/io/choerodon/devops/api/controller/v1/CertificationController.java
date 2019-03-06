@@ -157,6 +157,30 @@ public class CertificationController {
 
 
     /**
+     * 根据证书名称查询证书
+     *
+     * @param projectId 项目id
+     * @param envId     环境ID
+     * @param certName  证书名称
+     * @return CertificationDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据证书名称查询证书")
+    @GetMapping("/query_by_name")
+    public ResponseEntity<CertificationDTO> queryByName(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境ID", required = true)
+            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "证书名称", required = true)
+            @RequestParam(value = "cert_name") String certName) {
+        return Optional.ofNullable(certificationService.queryByName(envId, certName))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.certification.queryByDomain"));
+    }
+
+    /**
      * 查询项目下有权限的组织层证书
      *
      * @param projectId 项目id

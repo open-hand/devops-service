@@ -39,6 +39,16 @@ public interface CertificationService {
 
     Boolean checkCertNameUniqueInEnv(Long envId, String certName);
 
+
+    /**
+     * 根据证书名称查询证书
+     *
+     * @param envId     环境ID
+     * @param certName  证书名称
+     * @return CertificationDTO
+     */
+    CertificationDTO  queryByName(Long envId , String certName);
+
     Long createCertCommandE(String type, Long certId, Long userId);
 
     List<OrgCertificationDTO> listByProject(Long projectId);
