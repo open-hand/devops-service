@@ -113,6 +113,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
+    public DevopsServiceDTO queryByName(Long envId, String serviceName) {
+        return ConvertHelper.convert(devopsServiceRepository.selectByNameAndEnvId(serviceName,envId), DevopsServiceDTO.class);
+    }
+
+    @Override
     public List<DevopsServiceDTO> listDevopsService(Long envId) {
         return ConvertHelper.convertList(
                 devopsServiceRepository.listDevopsService(envId), DevopsServiceDTO.class);
