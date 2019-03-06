@@ -224,10 +224,10 @@ public class ApplicationController {
             @ApiParam(value = "环境 ID", required = true)
             @RequestParam(value = "env_id") Long envId,
             @ApiParam(value = "应用 Id")
-            @RequestParam(value = "app_id") Long appId,
+            @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest) {
-        return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, appId,pageRequest))
+        return Optional.ofNullable(applicationService.pageByEnvId(projectId, envId, appId, pageRequest))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.appName.query"));
     }
@@ -362,7 +362,7 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "是否只查询预定义")
             @RequestParam(required = false) Boolean isPredefined) {
-        return Optional.ofNullable(applicationService.listTemplate(projectId,isPredefined))
+        return Optional.ofNullable(applicationService.listTemplate(projectId, isPredefined))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.template.get"));
     }

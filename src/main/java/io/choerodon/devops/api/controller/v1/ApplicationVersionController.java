@@ -315,4 +315,23 @@ public class ApplicationVersionController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.version.value.query"));
     }
+
+    /**
+     * 根据应用ID查询最新生成版本
+     *
+     * @param projectId
+     * @param appId
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "项目下查询所有自动部署")
+    @GetMapping("/test")
+    public void test(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam(value = "app_id") Long appId) {
+                applicationVersionService.triggerAutoDelpoyTest(appId);
+    }
 }
