@@ -25,6 +25,9 @@ public class CutomerContextUtil {
         try {
             CustomUserDetails customUserDetails = DetailsHelper.getUserDetails() == null ? new CustomUserDetails("unknown", "unknown", Collections.emptyList()) : DetailsHelper.getUserDetails();
             customUserDetails.setUserId(uesrId);
+            customUserDetails.setOrganizationId(1L);
+            customUserDetails.setLanguage("zh_CN");
+            customUserDetails.setTimeZone("CCT");
             Authentication user = new UsernamePasswordAuthenticationToken("default", "N/A", Collections.emptyList());
             OAuth2Request request = new OAuth2Request(new HashMap<>(0), "", Collections.emptyList(), true,
                     Collections.emptySet(), Collections.emptySet(), null, null, null);
