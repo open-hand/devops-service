@@ -20,7 +20,7 @@ import java.util.HashMap;
  * Description:
  */
 public class CutomerContextUtil {
-    
+
     public static void setUserId(Long uesrId) {
         try {
             CustomUserDetails customUserDetails = DetailsHelper.getUserDetails() == null ? new CustomUserDetails("unknown", "unknown", Collections.emptyList()) : DetailsHelper.getUserDetails();
