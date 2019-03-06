@@ -215,7 +215,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             //实例创建失败,回写记录表
             devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            throw new CommonException("create or saga expection", e);
+            throw new CommonException("create.auto.deploy.instance.error", e);
         }
 
     }
