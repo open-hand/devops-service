@@ -20,13 +20,11 @@ import java.util.HashMap;
  * Description:
  */
 public class CutomerContextUtil {
-
-
+    
     public static void setUserId(Long uesrId) {
         try {
-            CustomUserDetails customUserDetails = DetailsHelper.getUserDetails();
+            CustomUserDetails customUserDetails = DetailsHelper.getUserDetails() == null ? new CustomUserDetails("unknown", "unknown", Collections.emptyList()) : DetailsHelper.getUserDetails();
             customUserDetails.setUserId(uesrId);
-
             Authentication user = new UsernamePasswordAuthenticationToken("default", "N/A", Collections.emptyList());
             OAuth2Request request = new OAuth2Request(new HashMap<>(0), "", Collections.emptyList(), true,
                     Collections.emptySet(), Collections.emptySet(), null, null, null);
