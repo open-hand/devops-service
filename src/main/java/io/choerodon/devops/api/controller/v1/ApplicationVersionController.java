@@ -334,4 +334,32 @@ public class ApplicationVersionController {
             @RequestParam(value = "app_id") Long appId) {
                 applicationVersionService.triggerAutoDelpoyTest(appId);
     }
+
+
+    /**
+     * 根据应用和版本号查询应用版本
+     *
+     * @param projectId  项目ID
+     * @param appId  应用Id
+     * @param version  版本
+     * @return ApplicationVersionRepDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT,
+            roles = {InitRoleCode.PROJECT_OWNER,
+                    InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据应用和版本号查询应用版本")
+    @GetMapping(value = "/query_by_version")
+    public ResponseEntity<ApplicationVersionRepDTO> queryByVersion(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam Long appId,
+            @ApiParam(value = "版本号", required = true)
+            @RequestParam String version) {
+        return Optional.ofNullable(applicationVersionService.queryByAppAndVersion(appId, version))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(VERSION_QUERY_ERROR));
+    }
+
+
 }

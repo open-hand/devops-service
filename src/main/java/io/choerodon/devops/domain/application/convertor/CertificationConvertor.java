@@ -59,6 +59,15 @@ public class CertificationConvertor implements ConvertorI<CertificationE, Certif
         return certificationDO;
     }
 
+
+
+    @Override
+    public CertificationDTO entityToDto(CertificationE certificationE) {
+        CertificationDTO certificationDTO = new CertificationDTO();
+        BeanUtils.copyProperties(certificationE, certificationDTO);
+        return certificationDTO;
+    }
+
     @Override
     public CertificationDTO doToDto(CertificationDO dataObject) {
         CertificationDTO certificationDTO = new CertificationDTO();

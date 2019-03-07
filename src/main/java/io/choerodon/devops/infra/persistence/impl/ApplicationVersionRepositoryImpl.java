@@ -277,4 +277,11 @@ public class ApplicationVersionRepositoryImpl implements ApplicationVersionRepos
         return applicationVersionMapper.queryValueById(appId);
     }
 
+    @Override
+    public ApplicationVersionE queryByAppAndCode(Long appId, String appVersion) {
+        ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO();
+        applicationVersionDO.setAppId(appId);
+        applicationVersionDO.setVersion(appVersion);
+        return ConvertHelper.convert(applicationVersionMapper.selectOne(applicationVersionDO),ApplicationVersionE.class);
+    }
 }

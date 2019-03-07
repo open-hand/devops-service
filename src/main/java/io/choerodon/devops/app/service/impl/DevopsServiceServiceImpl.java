@@ -113,6 +113,11 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
+    public DevopsServiceDTO queryByName(Long envId, String serviceName) {
+        return ConvertHelper.convert(devopsServiceRepository.selectByNameAndEnvId(serviceName,envId), DevopsServiceDTO.class);
+    }
+
+    @Override
     public List<DevopsServiceDTO> listDevopsService(Long envId) {
         return ConvertHelper.convertList(
                 devopsServiceRepository.listDevopsService(envId), DevopsServiceDTO.class);
@@ -223,7 +228,13 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         devopsServiceE.setAppId(devopsServiceReqDTO.getAppId());
         ApplicationE applicationE = applicationRepository.query(devopsServiceReqDTO.getAppId());
         if (devopsServiceReqDTO.getLabel() != null) {
-            devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+            if (devopsServiceReqDTO.getLabel().size() == 1 && devopsServiceReqDTO.getLabel().containsKey(SERVICE_LABLE)) {
+                devopsServiceRepository.setLablesToNull(devopsServiceE.getId());
+                devopsServiceE.setLabels(null);
+            } else {
+                devopsServiceReqDTO.getLabel().remove(SERVICE_LABLE);
+                devopsServiceE.setLabels(gson.toJson(devopsServiceReqDTO.getLabel()));
+            }
         } else {
             devopsServiceRepository.setLablesToNull(devopsServiceE.getId());
             devopsServiceE.setLabels(null);

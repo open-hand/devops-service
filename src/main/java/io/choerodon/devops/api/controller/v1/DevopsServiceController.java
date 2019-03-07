@@ -171,6 +171,30 @@ public class DevopsServiceController {
 
 
     /**
+     * 根据网络名查询网络
+     *
+     * @param projectId 项目id
+     * @param envId   网络id
+     * @param name  网络名
+     * @return DevopsServiceDTO
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+            InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据网络名查询网络")
+    @GetMapping(value = "/query_by_name")
+    public ResponseEntity<DevopsServiceDTO> queryByName(
+            @ApiParam(value = "项目ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境Id", required = true)
+            @RequestParam Long envId,
+            @ApiParam(value = "网络名", required = true)
+            @RequestParam String name) {
+        return Optional.ofNullable(devopsServiceService.queryByName(envId,name))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException(ERROR_APP_K8S_SERVICE_QUERY));
+    }
+
+    /**
      * 环境总览网络查询
      *
      * @param projectId   项目id

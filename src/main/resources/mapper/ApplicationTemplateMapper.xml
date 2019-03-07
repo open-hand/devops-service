@@ -56,4 +56,24 @@
             OR dat.type = #{param,jdbcType=TINYINT})
         </if>
     </select>
+
+
+    <select id="queryByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationTemplateDO">
+    select
+   dat.id,
+        dat.name,
+        dat.code,
+        dat.organization_id,
+        dat.description,
+        dat.copy_from,
+        dat.repo_url,
+        dat.type,
+        dat.uuid,
+        dat.is_synchro,
+        dat.is_failed,
+        dat.gitlab_project_id
+        FROM devops_app_template dat
+        where (dat.organization_id is null and code = #{code})
+        or (dat.organization_id = #{organizationId} and code = #{code})
+    </select>
 </mapper>

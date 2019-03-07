@@ -40,4 +40,13 @@ public interface DevopsClusterService {
      */
     Page<DevopsClusterPodDTO> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
 
+
+    /**
+     *  根据组织Id和集群编码查询集群信息
+     *
+     * @param organizationId organization id
+     * @param code      the cluster code
+     * @return the node information
+     */
+    DevopsClusterRepDTO queryByCode(Long organizationId, String code);
 }

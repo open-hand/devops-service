@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.C7nCertificationDTO;
 import io.choerodon.devops.api.dto.CertificationDTO;
@@ -299,6 +300,11 @@ public class CertificationServiceImpl implements CertificationService {
     @Override
     public Boolean checkCertNameUniqueInEnv(Long envId, String certName) {
         return certificationRepository.checkCertNameUniqueInEnv(envId, certName);
+    }
+
+    @Override
+    public CertificationDTO queryByName(Long envId, String certName) {
+        return ConvertHelper.convert(certificationRepository.queryByEnvAndName(envId,certName),CertificationDTO.class);
     }
 
     @Override

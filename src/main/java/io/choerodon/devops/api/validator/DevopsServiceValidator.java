@@ -60,6 +60,6 @@ public class DevopsServiceValidator {
     }
 
     private static Boolean checkPort(Long port) {
-        return port >= 1 && port <= 65535;
+        return port >= 0 && port <= 65535;
     }
 }

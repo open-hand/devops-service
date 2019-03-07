@@ -292,6 +292,12 @@ public class DevopsClusterServiceImpl implements DevopsClusterService {
         return clusterPodDTOPage;
     }
 
+    @Override
+    public DevopsClusterRepDTO queryByCode(Long organizationId, String code) {
+        devopsClusterRepository.queryByCode(organizationId, code);
+        return ConvertHelper.convert(devopsClusterRepository.queryByCode(organizationId, code),DevopsClusterRepDTO.class);
+    }
+
     /**
      * pod entity to cluster pod dto
      *

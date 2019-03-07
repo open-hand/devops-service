@@ -107,4 +107,12 @@ public interface ApplicationTemplateService {
     void setAppTemplateErrStatus(String gitlabProjectEventDTO, Long organizationId);
 
     void initMockService(SagaClient sagaClient);
+
+    /**
+     * 根据模板code查询模板
+     *
+     * @param organizationId 组织id
+     * @param code           模板code
+     */
+    ApplicationTemplateRepDTO queryByCode(Long organizationId, String code);
 }

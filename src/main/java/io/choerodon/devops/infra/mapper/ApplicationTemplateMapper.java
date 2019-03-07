@@ -15,4 +15,7 @@ public interface ApplicationTemplateMapper extends BaseMapper<ApplicationTemplat
     List<ApplicationTemplateDO> list(@Param("organizationId") Long organizationId,
                                      @Param("searchParam") Map<String, Object> searchParam,
                                      @Param("param") String param);
+
+    ApplicationTemplateDO  queryByCode(@Param("organizationId") Long organizationId,
+                                       @Param("code") String code);
 }

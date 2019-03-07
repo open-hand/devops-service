@@ -283,6 +283,14 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
     }
 
     @Override
+    public ApplicationTemplateRepDTO queryByCode(Long organizationId, String code) {
+       return ConvertHelper.convert(applicationTemplateRepository.queryByCode(organizationId,code),ApplicationTemplateRepDTO.class);
+    }
+
+
+
+
+    @Override
     public Boolean applicationTemplateExist(String uuid) {
         return applicationTemplateRepository.applicationTemplateExist(uuid);
     }

@@ -106,4 +106,13 @@ public interface DevopsServiceService {
     Page<DevopsServiceDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String searchParam);
 
 
+    /**
+     * 根据网络名查询网络
+     *
+     * @param envId   网络id
+     * @param serviceName  网络名
+     * @return DevopsServiceDTO
+     */
+    DevopsServiceDTO queryByName(Long envId, String serviceName);
+
 }

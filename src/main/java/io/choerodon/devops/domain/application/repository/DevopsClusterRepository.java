@@ -39,4 +39,6 @@ public interface DevopsClusterRepository {
      * @return pods
      */
     Page<DevopsEnvPodE> pageQueryPodsByNodeName(Long clusterId, String nodeName, PageRequest pageRequest, String searchParam);
+
+    DevopsClusterE queryByCode(Long organizationId, String code);
 }

@@ -191,4 +191,24 @@ public class ApplicationTemplateController {
             @RequestParam String code) {
         applicationTemplateService.checkCode(organizationId, code);
     }
+
+    /**
+     * 根据模板code查询模板
+     *
+     * @param organizationId 组织id
+     * @param code           模板code
+     */
+    @Permission(level = ResourceLevel.ORGANIZATION)
+    @ApiOperation(value = "根据模板code查询模板")
+    @GetMapping(value = "/query_by_code")
+    public ResponseEntity<ApplicationTemplateRepDTO> queryByCode(
+            @ApiParam(value = "组织ID", required = true)
+            @PathVariable(value = "organization_id") Long organizationId,
+            @ApiParam(value = "环境名", required = true)
+            @RequestParam String code) {
+        return Optional.ofNullable(applicationTemplateService.queryByCode(organizationId, code))
+                .map(t->new ResponseEntity<>(t,HttpStatus.OK))
+                .orElseThrow(()->new CommonException(ERROR_GET));
+    }
+
 }
