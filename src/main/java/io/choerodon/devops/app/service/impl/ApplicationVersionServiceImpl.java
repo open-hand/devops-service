@@ -184,35 +184,21 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
     }
 
-    @Override
-    public void triggerAutoDelpoyTest(Long appId) {
-        ApplicationVersionE applicationVersionE = applicationVersionRepository.getLatestVersion(appId);
-        Optional<String> branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
-        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
-        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), version);
-        autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
-    }
-
     @Saga(code = "devops-create-auto-deploy-instance",
             description = "创建自动部署实例", inputSchema = "{}")
     private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, ApplicationVersionE applicationVersionE) {
-        //更改上下文用户
         CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
-        //创建自动部记录，状态为running
         DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(devopsAutoDeployE.getId(), devopsAutoDeployE.getTaskName(), STATUS_RUN,
                 devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), applicationVersionE.getId(), null, devopsAutoDeployE.getProjectId());
         devopsAutoDeployRecordE = devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-        //将devopsAutoDeployE转换为ApplicationDeployDTO
         try {
             String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
-                    devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(), null,
-                    devopsAutoDeployE.getInstanceName(), false, devopsAutoDeployRecordE.getId(), devopsAutoDeployE.getId());
-            //触发saga
+                    devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(),
+                    devopsAutoDeployE.getInstanceName(), devopsAutoDeployRecordE.getId(), devopsAutoDeployE.getId());
             String input = gson.toJson(applicationDeployDTO);
             sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
         } catch (Exception e) {
-            //实例创建失败,回写记录表
             devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
             throw new CommonException("create.auto.deploy.instance.error", e);

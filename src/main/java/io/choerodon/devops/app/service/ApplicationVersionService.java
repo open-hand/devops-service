@@ -111,8 +111,6 @@ public interface ApplicationVersionService {
      */
     String queryValueById(Long projectId, Long appId);
 
-    void triggerAutoDelpoyTest(Long appId);
-
     /**
      * 根据应用和版本号查询应用版本
      *
@@ -121,5 +119,4 @@ public interface ApplicationVersionService {
      * @return ApplicationVersionRepDTO
      */
     ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version);
-
 }

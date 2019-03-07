@@ -334,6 +334,7 @@ public class DevopsSagaHandler {
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
                     null,  null);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+            throw new CommonException("create.auto.instance.error", e);
         }
 
     }

@@ -17,16 +17,14 @@ public class ApplicationDeployDTO {
     public ApplicationDeployDTO() {
     }
 
-    public ApplicationDeployDTO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, Long commandId, String instanceName, boolean isNotChange, Long recordId, Long autoDeployId) {
+    public ApplicationDeployDTO(Long appVersionId, Long environmentId, String values, Long appId, String type, Long appInstanceId, String instanceName, Long recordId, Long autoDeployId) {
         this.appVersionId = appVersionId;
         this.environmentId = environmentId;
         this.values = values;
         this.appId = appId;
         this.type = type;
         this.appInstanceId = appInstanceId;
-        this.commandId = commandId;
         this.instanceName = instanceName;
-        this.isNotChange = isNotChange;
         this.recordId = recordId;
         this.autoDeployId = autoDeployId;
     }
