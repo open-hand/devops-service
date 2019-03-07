@@ -941,6 +941,12 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     @Override
+    public List<AppInstanceCodeDTO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        return ConvertHelper.convertList(applicationInstanceRepository
+                .getByAppIdAndEnvId(projectId, appId, envId), AppInstanceCodeDTO.class);
+    }
+
+    @Override
     public void instanceStop(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限

@@ -57,6 +57,8 @@ public class ApplicationInstanceDO extends AuditDomain {
     private String error;
     @Transient
     private Long projectId;
+    @Transient
+    private Integer isEnabled;
 
     public Long getId() {
         return id;
@@ -233,5 +235,13 @@ public class ApplicationInstanceDO extends AuditDomain {
 
     public void setCommandVersionId(Long commandVersionId) {
         this.commandVersionId = commandVersionId;
+    }
+
+    public Integer getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Integer isEnabled) {
+        this.isEnabled = isEnabled;
     }
 }

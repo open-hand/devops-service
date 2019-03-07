@@ -33,6 +33,10 @@ public interface ApplicationInstanceMapper extends BaseMapper<ApplicationInstanc
                                                              @Param("envId") Long envId,
                                                              @Param("appId") Long appId);
 
+    List<ApplicationInstanceDO> getRunningAndFailedInstance(@Param("projectId") Long projectId,
+                                                             @Param("envId") Long envId,
+                                                             @Param("appId") Long appId);
+
     int checkOptions(@Param("envId") Long envId,
                      @Param("appId") Long appId,
                      @Param("appInstanceCode") String appInstanceCode);
