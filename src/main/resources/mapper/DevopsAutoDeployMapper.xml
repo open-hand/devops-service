@@ -93,6 +93,7 @@
         ON dad.value_id = dadv.id
         WHERE
            dad.app_id = #{appId}
+        AND dad.is_enabled=1
         <choose>
             <when test='branch != null and branch != ""'>
                 AND (dad.trigger_version LIKE CONCAT('%', #{branch},'%')
