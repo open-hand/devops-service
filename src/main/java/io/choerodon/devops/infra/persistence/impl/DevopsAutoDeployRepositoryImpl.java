@@ -129,6 +129,6 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
         devopsAutoDeployDO.setId(autoDeployId);
         devopsAutoDeployDO.setInstanceId(instanceId);
         devopsAutoDeployDO.setObjectVersionNumber(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO).getObjectVersionNumber());
-        devopsAutoDeployMapper.updateByPrimaryKey(devopsAutoDeployDO);
+        devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO);
     }
 }
