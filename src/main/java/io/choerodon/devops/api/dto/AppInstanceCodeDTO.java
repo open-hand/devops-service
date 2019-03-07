@@ -8,6 +8,7 @@ public class AppInstanceCodeDTO {
     private String id;
     private String code;
     private String appVersion;
+    private Integer isEnabled;
 
     public String getId() {
         return id;
@@ -31,5 +32,13 @@ public class AppInstanceCodeDTO {
 
     public void setAppVersion(String appVersion) {
         this.appVersion = appVersion;
+    }
+
+    public Integer getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Integer isEnabled) {
+        this.isEnabled = isEnabled;
     }
 }

@@ -86,6 +86,13 @@ public class ApplicationInstanceRepositoryImpl implements ApplicationInstanceRep
     }
 
     @Override
+    public List<ApplicationInstanceE> getByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        return ConvertHelper.convertList(applicationInstanceMapper.getRunningAndFailedInstance(
+                projectId, envId, appId),
+                ApplicationInstanceE.class);
+    }
+
+    @Override
     public int checkOptions(Long envId, Long appId, String appInstanceCode) {
         return applicationInstanceMapper.checkOptions(envId, appId, appInstanceCode);
     }

@@ -30,6 +30,7 @@ public class ApplicationInstanceE {
     private String error;
     private Boolean isConnect;
     private Long projectId;
+    private Integer isEnabled;
 
     public ApplicationInstanceE() {
     }
@@ -220,5 +221,13 @@ public class ApplicationInstanceE {
 
     public void setCommandVersionId(Long commandVersionId) {
         this.commandVersionId = commandVersionId;
+    }
+
+    public Integer getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Integer isEnabled) {
+        this.isEnabled = isEnabled;
     }
 }

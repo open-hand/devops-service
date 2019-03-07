@@ -123,6 +123,42 @@
         dai.id DESC
     </select>
 
+    <select id="getRunningAndFailedInstance" resultType="io.choerodon.devops.infra.dataobject.ApplicationInstanceDO">
+        SELECT
+        dai.id id,
+        dai.`code` CODE,
+        dav.version appVersion,
+        dav.id appVersionId,
+        IF (
+        dai.id IN (
+        SELECT
+        dad.instance_id
+        FROM
+        devops_auto_deploy dad
+        WHERE
+        dad.app_id = #{appId}
+        AND dad.env_id = #{envId}
+        AND dad.project_id = #{projectId}
+        ),0,1 ) isEnabled
+        FROM
+        devops_app_instance dai,
+        devops_application da,
+        devops_env de,
+        devops_app_version dav,
+        devops_env_command dc
+        WHERE
+        dai.app_id = da.id
+        AND dai.command_id = dc.id
+        AND dai.env_id = de.id
+        AND dai.`status` in ('running','failed')
+        AND de.project_id = #{projectId}
+        AND dc.object_version_id= dav.id
+        AND dai.env_id = #{envId}
+        AND dai.app_id = #{appId}
+        ORDER BY
+        dai.id DESC
+    </select>
+
     <select id="checkOptions" resultType="java.lang.Integer">
         SELECT
         COUNT(1)

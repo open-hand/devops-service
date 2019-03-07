@@ -86,6 +86,17 @@ public interface ApplicationInstanceService {
     List<AppInstanceCodeDTO> listByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 
     /**
+     * 环境下某应用运行中或失败的实例，判断自动部署是否可替换该实例
+     *
+     * @param projectId 项目id
+     * @param appId     应用id
+     * @param envId     环境id
+     * @return list of AppInstanceCodeDTO
+     */
+    List<AppInstanceCodeDTO> getByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+
+
+    /**
      * 实例停止
      *
      * @param instanceId 实例id
