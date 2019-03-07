@@ -3,6 +3,7 @@ package io.choerodon.devops.infra.persistence.impl;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
@@ -65,11 +66,13 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
 
     @Override
     public ApplicationTemplateE update(ApplicationTemplateE applicationTemplateE) {
-        ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(
-                applicationTemplateE.getId());
         ApplicationTemplateDO newApplicationTemplateDO = ConvertHelper.convert(applicationTemplateE,
                 ApplicationTemplateDO.class);
-        newApplicationTemplateDO.setObjectVersionNumber(applicationTemplateDO.getObjectVersionNumber());
+        if(applicationTemplateE.getObjectVersionNumber() == null) {
+            ApplicationTemplateDO applicationTemplateDO = applicationTemplateMapper.selectByPrimaryKey(
+                    applicationTemplateE.getId());
+            newApplicationTemplateDO.setObjectVersionNumber(applicationTemplateDO.getObjectVersionNumber());
+        }
         if (applicationTemplateMapper.updateByPrimaryKeySelective(newApplicationTemplateDO) != 1) {
             throw new CommonException("error.update.appTemplate");
         }

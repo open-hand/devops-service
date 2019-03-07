@@ -34,6 +34,7 @@ public class ApplicationE {
     private Boolean isFailed;
     private String type;
     private Boolean isSkipCheckPermission;
+    private Long objectVersionNumber;
 
     public ApplicationE() {
     }
@@ -248,5 +249,13 @@ public class ApplicationE {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
