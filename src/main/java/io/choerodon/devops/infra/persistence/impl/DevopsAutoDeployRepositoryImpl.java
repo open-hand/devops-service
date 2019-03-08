@@ -77,17 +77,10 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
             mapParams.put("searchParam", TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
             mapParams.put("param", TypeUtil.cast(maps.get(TypeUtil.PARAM)));
         }
-        //是否需要分页
-        if (doPage != null && !doPage) {
-            devopsAutoDeployDOS.setContent(devopsAutoDeployMapper.list(projectId, appId, envId,
-                    (Map<String, Object>) mapParams.get("searchParam"),
-                    mapParams.get("param").toString()));
-        } else {
-            devopsAutoDeployDOS = PageHelper
-                    .doPageAndSort(pageRequest, () -> devopsAutoDeployMapper.list(projectId, appId, envId,
-                            (Map<String, Object>) mapParams.get("searchParam"),
-                            mapParams.get("param").toString()));
-        }
+        devopsAutoDeployDOS = PageHelper
+                .doPageAndSort(pageRequest, () -> devopsAutoDeployMapper.list(projectId, appId, envId,
+                        (Map<String, Object>) mapParams.get("searchParam"),
+                        mapParams.get("param").toString(), checkSortIsEmpty(pageRequest)));
         return ConvertPageHelper.convertPage(devopsAutoDeployDOS, DevopsAutoDeployE.class);
     }
 
@@ -130,5 +123,13 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
         devopsAutoDeployDO.setInstanceId(instanceId);
         devopsAutoDeployDO.setObjectVersionNumber(devopsAutoDeployMapper.selectByPrimaryKey(devopsAutoDeployDO).getObjectVersionNumber());
         devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO);
+    }
+
+    private String checkSortIsEmpty(PageRequest pageRequest) {
+        String index = "";
+        if (pageRequest.getSort() == null) {
+            index = "true";
+        }
+        return index;
     }
 }
