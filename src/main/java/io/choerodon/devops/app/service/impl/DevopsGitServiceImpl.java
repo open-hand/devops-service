@@ -27,7 +27,6 @@ import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
@@ -60,6 +59,7 @@ import io.choerodon.devops.domain.service.impl.ConvertV1ConfigMapServiceImpl;
 import io.choerodon.devops.domain.service.impl.ConvertV1EndPointsServiceImpl;
 import io.choerodon.devops.domain.service.impl.ConvertV1ServiceServiceImpl;
 import io.choerodon.devops.domain.service.impl.ConvertV1beta1IngressServiceImpl;
+import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
@@ -240,18 +240,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
     @Override
     public Page<BranchDTO> listBranches(Long projectId, PageRequest pageRequest, Long applicationId, String params) {
-        // 查询创建应用所在的gitlab应用组
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
-        GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
-                TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-            throw new CommonException("error.user.not.in.group");
-        }
-
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         ApplicationE applicationE = applicationRepository.query(applicationId);
+        // 查询用户是否在该gitlab project下
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+            throw new CommonException("error.user.not.in.project");
+        }
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
         String path = String.format("%s%s%s-%s/%s",
