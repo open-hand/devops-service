@@ -59,7 +59,6 @@ import io.choerodon.devops.domain.service.impl.ConvertV1ConfigMapServiceImpl;
 import io.choerodon.devops.domain.service.impl.ConvertV1EndPointsServiceImpl;
 import io.choerodon.devops.domain.service.impl.ConvertV1ServiceServiceImpl;
 import io.choerodon.devops.domain.service.impl.ConvertV1beta1IngressServiceImpl;
-import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
@@ -244,9 +243,11 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         ApplicationE applicationE = applicationRepository.query(applicationId);
         // 查询用户是否在该gitlab project下
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-            throw new CommonException("error.user.not.in.project");
+        if (!iamRepository.isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE)) {
+            GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+            if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
+                throw new CommonException("error.user.not.in.project");
+            }
         }
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         String urlSlash = gitlabUrl.endsWith("/") ? "" : "/";
