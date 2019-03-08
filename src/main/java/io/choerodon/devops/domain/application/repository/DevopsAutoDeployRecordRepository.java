@@ -23,5 +23,4 @@ public interface DevopsAutoDeployRecordRepository {
 
     DevopsAutoDeployRecordE createOrUpdate(DevopsAutoDeployRecordE devopsAutoDeployRecordE);
 
-    void updateInstanceId(Long instanceId);
 }

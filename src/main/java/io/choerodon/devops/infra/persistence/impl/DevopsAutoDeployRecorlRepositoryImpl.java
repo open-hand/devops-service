@@ -80,9 +80,4 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
         return ConvertHelper.convert(devopsAutoDeployRecordMapper.selectOne(devopsAutoDeployRecordDO), DevopsAutoDeployRecordE.class);
 
     }
-
-    @Override
-    public void updateInstanceId(Long instanceId) {
-
-    }
 }
