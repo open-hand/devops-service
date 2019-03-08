@@ -31,6 +31,11 @@
             AND dad.env_id = #{envId}
         </if>
         <include refid="sqlparam"/>
+        <if test="index !=''">
+            ORDER BY
+            dad.is_enabled DESC,
+            dad.id DESC
+        </if>
     </select>
 
 
