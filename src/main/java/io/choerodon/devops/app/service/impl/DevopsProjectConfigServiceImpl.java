@@ -11,6 +11,7 @@ import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepo
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 /**
  * @author zongw.lee@gmail.com
@@ -33,6 +34,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Override
     public DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
+        if(!ObjectUtils.isEmpty(devopsProjectConfigDTO.getType())){
+            DevopsProjectConfigValidator.checkConfigType(devopsProjectConfigDTO);
+        }
         return ConvertHelper.convert(devopsProjectConfigRepository.updateByPrimaryKeySelective(devopsProjectConfigE), DevopsProjectConfigDTO.class);
     }
 

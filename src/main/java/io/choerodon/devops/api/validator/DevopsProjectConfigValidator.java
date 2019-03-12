@@ -17,7 +17,7 @@ public class DevopsProjectConfigValidator {
             case CHART:
                 break;
             default:
-                throw new CommonException("error.projectConfig.type");
+                throw new CommonException("error.project.config.type");
         }
     }
 }

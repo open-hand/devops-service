@@ -24,7 +24,7 @@ import java.util.Optional;
  * @since 2019/03/11
  */
 @RestController
-@RequestMapping(value = "/v1/projects/{project_id}/projectConfig")
+@RequestMapping(value = "/v1/projects/{project_id}/project_config")
 public class DevopsProjectConfigController {
 
     @Autowired
@@ -47,7 +47,7 @@ public class DevopsProjectConfigController {
             @RequestBody DevopsProjectConfigDTO devopsProjectConfigDTO) {
         return Optional.ofNullable(devopsProjectConfigService.create(projectId, devopsProjectConfigDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.insert"));
+                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.create"));
     }
 
     /**
@@ -58,7 +58,7 @@ public class DevopsProjectConfigController {
      * @return ResponseEntity<DevopsProjectConfigDTO>
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下更新应用信息")
+    @ApiOperation(value = "项目下更新配置信息")
     @PutMapping
     public ResponseEntity<DevopsProjectConfigDTO> update(
             @ApiParam(value = "项目id", required = true)
@@ -79,18 +79,18 @@ public class DevopsProjectConfigController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除配置")
-    @DeleteMapping("/{projectConfigId}")
+    @DeleteMapping("/{project_config_id}")
     public ResponseEntity deleteByProjectConfigId(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用id", required = true)
-            @PathVariable Long projectConfigId) {
+            @ApiParam(value = "配置id", required = true)
+            @PathVariable(value = "project_config_id") Long projectConfigId) {
         devopsProjectConfigService.delete(projectConfigId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**
-     * 项目下分页查询应用
+     * 项目下分页查询配置
      *
      * @param projectId   项目id
      * @param pageRequest 分页参数
@@ -111,11 +111,11 @@ public class DevopsProjectConfigController {
         return Optional.ofNullable(
                 devopsProjectConfigService.listByOptions(projectId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.get"));
+                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.list.by.options.get"));
     }
 
     /**
-     * 项目下根据Id查询应用
+     * 项目下根据Id查询配置
      *
      * @param projectId       项目id
      * @param projectConfigId 配置id
@@ -124,15 +124,15 @@ public class DevopsProjectConfigController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询配置")
     @CustomPageRequest
-    @GetMapping("/{project_configId}")
+    @GetMapping("/{project_config_id}")
     public ResponseEntity<DevopsProjectConfigDTO> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置Id", required = true)
-            @PathVariable(value = "project_configId") Long projectConfigId) {
+            @PathVariable(value = "project_config_id") Long projectConfigId) {
         return Optional.ofNullable(
                 devopsProjectConfigService.queryByPrimaryKey(projectConfigId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.projectConfig.get"));
+                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.get"));
     }
 }

@@ -43,10 +43,10 @@ public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectCo
 
         if (ObjectUtils.isEmpty(checkedDO)) {
             if (configMapper.insert(paramDO) != 1) {
-                throw new CommonException("error.devops.project.config.insert");
+                throw new CommonException("error.devops.project.config.create");
             }
         } else {
-            throw new CommonException("error.devops.project.config.projectId.name.already.exist");
+            throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
         }
         return ConvertHelper.convert(configMapper.selectOne(paramDO), DevopsProjectConfigE.class);
     }
