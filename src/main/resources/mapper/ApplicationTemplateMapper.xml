@@ -71,7 +71,8 @@
         dat.uuid,
         dat.is_synchro,
         dat.is_failed,
-        dat.gitlab_project_id
+        dat.gitlab_project_id,
+        dat.object_version_number
         FROM devops_app_template dat
         where (dat.organization_id is null and code = #{code})
         or (dat.organization_id = #{organizationId} and code = #{code})

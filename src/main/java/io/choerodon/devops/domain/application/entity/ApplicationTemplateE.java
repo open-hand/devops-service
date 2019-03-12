@@ -24,6 +24,7 @@ public class ApplicationTemplateE {
     private String uuid;
     private Boolean isSynchro;
     private Boolean isFailed;
+    private Long objectVersionNumber;
 
 
     public ApplicationTemplateE() {
@@ -136,5 +137,13 @@ public class ApplicationTemplateE {
 
     public void setFailed(Boolean failed) {
         isFailed = failed;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }

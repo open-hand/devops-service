@@ -21,6 +21,7 @@ public class ApplicationRepDTO {
     private Boolean isFail;
     private String type;
     private Boolean permission;
+    private Long objectVersionNumber;
 
     public Long getId() {
         return id;
@@ -140,5 +141,13 @@ public class ApplicationRepDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
