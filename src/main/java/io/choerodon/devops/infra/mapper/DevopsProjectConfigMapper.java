@@ -17,4 +17,6 @@ public interface DevopsProjectConfigMapper extends BaseMapper<DevopsProjectConfi
                              @Param("searchParam") Map<String, Object> searchParam,
                              @Param("param") String param,
                              @Param("index") String index);
+
+    List<DevopsProjectConfigDO> queryByIdAndType(@Param("projectId") Long projectId, @Param("type") String type);
 }

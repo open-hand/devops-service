@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ObjectUtils;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -117,5 +118,10 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
         if (configMapper.deleteByPrimaryKey(paramDO) != 1) {
             throw new CommonException("error.devops.project.config.delete");
         }
+    }
+
+    @Override
+    public List<DevopsProjectConfigE> queryByIdAndType(Long projectId, String type) {
+        return ConvertHelper.convertList(configMapper.queryByIdAndType(projectId,type),DevopsProjectConfigE.class);
     }
 }

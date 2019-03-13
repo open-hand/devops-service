@@ -42,8 +42,8 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void batchAddVariable(Integer gitlabProjectId, Integer userId, VariableDTO variableDTO) {
-        gitlabServiceClient.batchAddVariable(gitlabProjectId, userId, variableDTO);
+    public void batchAddVariable(Integer gitlabProjectId, Integer userId,  List<VariableDTO> variableDTOS) {
+        gitlabServiceClient.batchAddVariable(gitlabProjectId, userId, variableDTOS);
     }
 
     @Override

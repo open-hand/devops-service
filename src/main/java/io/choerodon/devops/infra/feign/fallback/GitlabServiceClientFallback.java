@@ -100,7 +100,7 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     }
 
     @Override
-    public ResponseEntity<List<Map<String, Object>>> batchAddVariable(Integer projectId, Integer userId, VariableDTO variableDTO) {
+    public ResponseEntity<List<Map<String, Object>>> batchAddVariable(Integer projectId, Integer userId, List<VariableDTO> variableDTOS) {
         return new ResponseEntity("error.variable.batch.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

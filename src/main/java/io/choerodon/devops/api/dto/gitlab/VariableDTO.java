@@ -15,6 +15,15 @@ public class VariableDTO {
     @NotNull
     private Boolean protecteds;
 
+    public VariableDTO() {
+    }
+
+    public VariableDTO(String key, String value, Boolean protecteds) {
+        this.key = key;
+        this.value = value;
+        this.protecteds = protecteds;
+    }
+
     public String getKey() {
         return key;
     }

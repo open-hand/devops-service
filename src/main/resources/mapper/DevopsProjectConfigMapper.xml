@@ -39,4 +39,22 @@
             )
         </if>
     </sql>
+    <select id="queryByIdAndType"  resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
+            SELECT
+                dpc.id,
+                dpc.project_id,
+                dpc.name,
+                dpc.type
+            FROM
+                devops_project_config dpc
+            WHERE
+                (
+                    dpc.project_id = #{projectId}
+                    OR dpc.project_id IS NULL
+                )
+            AND dpc.type = #{type}
+            ORDER BY
+                project_id ASC,
+                id ASC
+    </select>
 </mapper>

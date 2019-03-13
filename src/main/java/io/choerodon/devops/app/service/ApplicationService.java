@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
@@ -266,4 +267,13 @@ public interface ApplicationService {
      * @return Boolean
      */
     Boolean checkChartIsUsable(String url);
+
+    /**
+     * 根据配置Id查询配置并转换成VariableDTO
+     *
+     * @param harborConfigId harbor配置Id
+     * @param chartConfigId  chart配置Id
+     * @return
+     */
+    List<VariableDTO> setVariableDTO(Long harborConfigId, Long chartConfigId);
 }

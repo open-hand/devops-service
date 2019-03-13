@@ -11,6 +11,8 @@ public class ApplicationUpdateDTO {
     private String name;
     private List<Long> userIds;
     private Boolean isSkipCheckPermission;
+    private Long harborConfigId;
+    private Long chartConfigId;
 
     public Long getId() {
         return id;
@@ -42,5 +44,21 @@ public class ApplicationUpdateDTO {
 
     public void setIsSkipCheckPermission(Boolean skipCheckPermission) {
         isSkipCheckPermission = skipCheckPermission;
+    }
+
+    public Long getHarborConfigId() {
+        return harborConfigId;
+    }
+
+    public void setHarborConfigId(Long harborConfigId) {
+        this.harborConfigId = harborConfigId;
+    }
+
+    public Long getChartConfigId() {
+        return chartConfigId;
+    }
+
+    public void setChartConfigId(Long chartConfigId) {
+        this.chartConfigId = chartConfigId;
     }
 }
