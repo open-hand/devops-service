@@ -23,11 +23,14 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Autowired
     DevopsProjectConfigRepository devopsProjectConfigRepository;
 
+    @Autowired
+    DevopsProjectConfigValidator configValidator;
+
     @Override
     public DevopsProjectConfigDTO create(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         devopsProjectConfigE.setProjectId(projectId);
-        DevopsProjectConfigValidator.checkConfigType(devopsProjectConfigDTO);
+        configValidator.checkConfigType(devopsProjectConfigDTO);
         return ConvertHelper.convert(devopsProjectConfigRepository.create(devopsProjectConfigE), DevopsProjectConfigDTO.class);
     }
 
@@ -35,7 +38,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     public DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         if(!ObjectUtils.isEmpty(devopsProjectConfigDTO.getType())){
-            DevopsProjectConfigValidator.checkConfigType(devopsProjectConfigDTO);
+            configValidator.checkConfigType(devopsProjectConfigDTO);
         }
         return ConvertHelper.convert(devopsProjectConfigRepository.updateByPrimaryKeySelective(devopsProjectConfigE), DevopsProjectConfigDTO.class);
     }

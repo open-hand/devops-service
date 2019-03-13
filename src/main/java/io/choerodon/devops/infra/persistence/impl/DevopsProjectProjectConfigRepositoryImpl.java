@@ -35,6 +35,8 @@ public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectCo
     @Override
     public DevopsProjectConfigE create(DevopsProjectConfigE devopsProjectConfigE) {
         DevopsProjectConfigDO paramDO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigDO.class);
+        String configJson = gson.toJson(devopsProjectConfigE.getConfig());
+        paramDO.setConfig(configJson);
 
         DevopsProjectConfigDO checkParamDO = new DevopsProjectConfigDO();
         checkParamDO.setName(paramDO.getName());
@@ -54,6 +56,8 @@ public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectCo
     @Override
     public DevopsProjectConfigE updateByPrimaryKeySelective(DevopsProjectConfigE devopsProjectConfigE) {
         DevopsProjectConfigDO paramDO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigDO.class);
+        String configJson = gson.toJson(devopsProjectConfigE.getConfig());
+        paramDO.setConfig(configJson);
         if (configMapper.updateByPrimaryKeySelective(paramDO) != 1) {
             throw new CommonException("error.devops.project.config.update");
         }
