@@ -1,16 +1,13 @@
 package io.choerodon.devops.infra.task;
 
-import com.alibaba.fastjson.JSONObject;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.ProjectConfigDTO;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -37,27 +34,26 @@ public class DevopsCommandRunner implements CommandLineRunner {
     @Override
     public void run(String... strings) {
         try {
-            Map<String, Object> harborMap = new HashMap<>();
-            harborMap.put("baseUrl", servicesHarborBaseurl);
-            harborMap.put("username", servicesHarborUsername);
-            harborMap.put("password", servicesHarborPassword);
-            initConfig(harborMap, HARBOR_NAME, HARBOR);
+            ProjectConfigDTO harborConfig = new ProjectConfigDTO();
+            harborConfig.setUrl(servicesHarborBaseurl);
+            harborConfig.setUserName(servicesHarborUsername);
+            harborConfig.setPassword(servicesHarborPassword);
+            initConfig(harborConfig, HARBOR_NAME, HARBOR);
 
-            Map<String, Object> chartMap = new HashMap<>();
-            chartMap.put("url", servicesHelmUrl);
-            initConfig(chartMap, CHART_NAME, CHART);
+            ProjectConfigDTO chartConfig = new ProjectConfigDTO();
+            chartConfig.setUrl(servicesHarborBaseurl);
+            initConfig(chartConfig, CHART_NAME, CHART);
         } catch (Exception e) {
             throw new CommonException("error.init.project.config", e);
         }
     }
 
-    private void initConfig(Map<String, Object> map, String configName, String configType) {
-        String json = new JSONObject(map).toJSONString();
-        DevopsProjectConfigE newConfigE = new DevopsProjectConfigE(configName, json, configType);
+    private void initConfig(ProjectConfigDTO configDTO, String configName, String configType) {
+        DevopsProjectConfigE newConfigE = new DevopsProjectConfigE(configName, configDTO, configType);
         DevopsProjectConfigE oldConfigE = devopsProjectConfigRepository.queryByName(null, configName);
         if (oldConfigE == null) {
             devopsProjectConfigRepository.create(newConfigE);
-        } else if (!json.equals(oldConfigE.getConfig())) {
+        } else if (!configDTO.equals(oldConfigE.getConfig())) {
             newConfigE.setId(oldConfigE.getId());
             newConfigE.setObjectVersionNumber(oldConfigE.getObjectVersionNumber());
             devopsProjectConfigRepository.updateByPrimaryKeySelective(newConfigE);
