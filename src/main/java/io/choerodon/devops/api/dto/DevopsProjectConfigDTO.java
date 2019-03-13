@@ -5,11 +5,17 @@ package io.choerodon.devops.api.dto;
  * @since 2019/03/11
  */
 public class DevopsProjectConfigDTO {
+
     private Long id;
+
     private String name;
-    private String config;
+
+    private ProjectConfigDTO config;
+
     private Long projectId;
+
     private String type;
+
     private Long objectVersionNumber;
 
     public Long getId() {
@@ -28,11 +34,11 @@ public class DevopsProjectConfigDTO {
         this.name = name;
     }
 
-    public String getConfig() {
+    public ProjectConfigDTO getConfig() {
         return config;
     }
 
-    public void setConfig(String config) {
+    public void setConfig(ProjectConfigDTO config) {
         this.config = config;
     }
 
