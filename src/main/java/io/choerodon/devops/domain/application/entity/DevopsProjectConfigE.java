@@ -12,6 +12,15 @@ public class DevopsProjectConfigE {
     private String type;
     private Long objectVersionNumber;
 
+    public DevopsProjectConfigE() {
+    }
+
+    public DevopsProjectConfigE(String name, String config, String type) {
+        this.name = name;
+        this.config = config;
+        this.type = type;
+    }
+
     public Long getId() {
         return id;
     }

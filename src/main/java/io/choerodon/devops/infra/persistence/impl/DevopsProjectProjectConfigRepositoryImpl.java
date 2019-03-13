@@ -68,6 +68,14 @@ public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectCo
     }
 
     @Override
+    public DevopsProjectConfigE queryByName(Long projectId, String name) {
+        DevopsProjectConfigDO paramDO = new DevopsProjectConfigDO();
+        paramDO.setProjectId(projectId);
+        paramDO.setName(name);
+        return ConvertHelper.convert(configMapper.selectOne(paramDO), DevopsProjectConfigE.class);
+    }
+
+    @Override
     public Page<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = new HashMap<>();
         mapParams.put("searchParam", null);

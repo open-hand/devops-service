@@ -112,10 +112,10 @@ public interface GitlabServiceClient {
                                                     @RequestParam("protecteds") Boolean protecteds,
                                                     @RequestParam("userId") Integer userId);
 
-    @PostMapping(value = "/v1/projects/{projectId}/variables")
+    @PutMapping(value = "/v1/projects/{projectId}/variables")
     ResponseEntity<List<Map<String, Object>>> batchAddVariable(@PathVariable("projectId") Integer projectId,
-                                                               @RequestParam Integer userId,
-                                                               @RequestBody VariableDTO variableDTO);
+                                                               @RequestParam("userId") Integer userId,
+                                                               @RequestBody @Valid VariableDTO variableDTO);
 
     @DeleteMapping(value = "/v1/projects/{projectId}")
     ResponseEntity deleteProject(@PathVariable("projectId") Integer projectId,
