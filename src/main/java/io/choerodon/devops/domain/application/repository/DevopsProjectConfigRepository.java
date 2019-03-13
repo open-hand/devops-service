@@ -15,6 +15,8 @@ public interface DevopsProjectConfigRepository {
 
     DevopsProjectConfigE queryByPrimaryKey(Long id);
 
+    DevopsProjectConfigE queryByName(Long projectId, String name);
+
     Page<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params);
 
     void delete(Long id);

@@ -1,21 +1,40 @@
 package io.choerodon.devops.infra.feign;
 
-import javax.validation.Valid;
-import java.util.List;
-import java.util.Map;
-
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
+import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
+import io.choerodon.devops.infra.dataobject.gitlab.JobDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
+import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
 import io.choerodon.devops.infra.feign.fallback.GitlabServiceClientFallback;
 import org.springframework.cloud.netflix.feign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.validation.Valid;
+import java.util.List;
+import java.util.Map;
 
 
 
@@ -92,6 +111,11 @@ public interface GitlabServiceClient {
                                                     @RequestParam("value") String value,
                                                     @RequestParam("protecteds") Boolean protecteds,
                                                     @RequestParam("userId") Integer userId);
+
+    @PutMapping(value = "/v1/projects/{projectId}/variables")
+    ResponseEntity<List<Map<String, Object>>> batchAddVariable(@PathVariable("projectId") Integer projectId,
+                                                               @RequestParam("userId") Integer userId,
+                                                               @RequestBody @Valid VariableDTO variableDTO);
 
     @DeleteMapping(value = "/v1/projects/{projectId}")
     ResponseEntity deleteProject(@PathVariable("projectId") Integer projectId,
@@ -446,6 +470,10 @@ public interface GitlabServiceClient {
     @PostMapping("/v1/projects/{projectId}/members")
     ResponseEntity addMemberIntoProject(@PathVariable("projectId") Integer projectId,
                                         @RequestBody MemberDTO memberDTO);
+
+    @PutMapping("/v1/projects/{projectId}/members")
+    ResponseEntity updateMemberIntoProject(@PathVariable("projectId") Integer projectId,
+                                           @RequestBody List<MemberDTO> list);
 
     @GetMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity<MemberDO> getProjectMember(@PathVariable("projectId") Integer projectId,

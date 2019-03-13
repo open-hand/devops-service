@@ -1,6 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -15,6 +16,8 @@ import java.util.List;
 public interface GitlabRepository {
 
     void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId);
+
+    void batchAddVariable(Integer gitlabProjectId, Integer userId, VariableDTO variableDTO);
 
     List<String> listTokenByUserId(Integer gitlabProjectId, String name, Integer userId);
 
@@ -63,6 +66,8 @@ public interface GitlabRepository {
      * 将成员添加到gitlab项目，应该先检查成员是否存在，否则会报成员已存在的异常
      */
     void addMemberIntoProject(Integer projectId, MemberDTO memberDTO);
+
+    void updateMemberIntoProject(Integer projectId, List<MemberDTO> list);
 
     void removeMemberFromProject(Integer projectId, Integer userId);
 

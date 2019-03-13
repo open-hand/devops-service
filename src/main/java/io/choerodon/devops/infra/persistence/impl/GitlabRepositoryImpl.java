@@ -1,12 +1,10 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
@@ -20,6 +18,9 @@ import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by younger on 2018/3/29.
@@ -38,6 +39,11 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     @Override
     public void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId) {
         gitlabServiceClient.addVariable(gitlabProjectId, key, value, protecteds, userId);
+    }
+
+    @Override
+    public void batchAddVariable(Integer gitlabProjectId, Integer userId, VariableDTO variableDTO) {
+        gitlabServiceClient.batchAddVariable(gitlabProjectId, userId, variableDTO);
     }
 
     @Override
@@ -266,6 +272,15 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             gitlabServiceClient.addMemberIntoProject(projectId, memberDTO);
         } catch (Exception e) {
             throw new CommonException("error.member.add", e);
+        }
+    }
+
+    @Override
+    public void updateMemberIntoProject(Integer projectId, List<MemberDTO> list) {
+        try {
+            gitlabServiceClient.updateMemberIntoProject(projectId, list);
+        } catch (Exception e) {
+            throw new CommonException("error.member.update", e);
         }
     }
 
