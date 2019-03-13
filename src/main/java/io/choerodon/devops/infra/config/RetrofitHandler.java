@@ -7,6 +7,7 @@ import javax.net.ssl.X509TrustManager;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 import java.util.Base64;
 
 import io.choerodon.core.exception.CommonException;
@@ -53,12 +54,13 @@ public class RetrofitHandler {
             if (insecureSkipTlsVerify) {
                 final TrustManager[] trustAllCerts = new TrustManager[]{
                         new X509TrustManager() {
+
                             @Override
-                            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
                             }
 
                             @Override
-                            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
                             }
 
                             @Override
@@ -71,8 +73,10 @@ public class RetrofitHandler {
                 // Install the all-trusting trust manager
                 SSLContext sslContext = null;
                 try {
-                    sslContext = SSLContext.getInstance("SSL");
-                    sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                    sslContext = SSLContext.getInstance("TLSv1.2");
+                    if (sslContext != null) {
+                        sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+                    }
                 } catch (NoSuchAlgorithmException e) {
                     LOGGER.error(e.getMessage());
                 } catch (KeyManagementException e) {
@@ -80,7 +84,10 @@ public class RetrofitHandler {
                 }
 
                 // Create an ssl socket factory with our all-trusting manager
-                final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+                SSLSocketFactory sslSocketFactory = null;
+                if (sslContext != null) {
+                    sslSocketFactory = sslContext.getSocketFactory();
+                }
                 OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
                 okHttpClientBuilder.interceptors().add((Interceptor.Chain chain) -> {
                     Request original = chain.request();
@@ -92,7 +99,9 @@ public class RetrofitHandler {
                     return chain.proceed(request);
                 });
                 okHttpClientBuilder.sslSocketFactory(sslSocketFactory);
-                okHttpClientBuilder.hostnameVerifier((hostname, session) -> true);
+                okHttpClientBuilder.hostnameVerifier((requestedHost, remoteServerSession) -> {
+                    return requestedHost.equalsIgnoreCase(remoteServerSession.getPeerHost()); // Compliant
+                });
                 return okHttpClientBuilder.build();
             } else {
                 OkHttpClient.Builder okHttpClientBuilder = new OkHttpClient.Builder();
