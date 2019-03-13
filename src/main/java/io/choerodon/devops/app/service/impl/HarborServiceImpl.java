@@ -7,7 +7,9 @@ import java.util.Map;
 import com.google.gson.Gson;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.domain.application.event.HarborPayload;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.harbor.Project;
 import io.choerodon.devops.infra.feign.HarborClient;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,19 +30,19 @@ import retrofit2.Response;
 public class HarborServiceImpl implements HarborService {
     private static final Logger LOGGER = LoggerFactory.getLogger(HarborServiceImpl.class);
     private static final Gson gson = new Gson();
-    private HarborClient harborClient;
 
     @Autowired
     private HarborConfigurationProperties harborConfigurationProperties;
 
-    public HarborServiceImpl(HarborClient harborClient) {
-        this.harborClient = harborClient;
-    }
 
     @Override
     public void createHarbor(HarborPayload harborPayload) {
         //创建harbor仓库
         try {
+            ConfigurationProperties configurationProperties = new ConfigurationProperties(harborConfigurationProperties);
+            configurationProperties.setType("harbor");
+            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+            HarborClient harborClient = retrofit.create(HarborClient.class);
             Response<Object> result = null;
             LOGGER.info(harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {

@@ -32,6 +32,7 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.*;
@@ -76,6 +77,10 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String SUCCESS = "success";
     private static final String FAILED = "failed: ";
     private static final String SERIAL_STRING = " serializable to yaml";
+    private static final String APPLICATION = "application";
+    private static final String ERROR_UPDATE_APP = "error.application.update";
+    private static final String DEVELOPMENT = "development-application";
+    private static final String TEST = "test-application";
     private static final String YAML_FILE = ".yaml";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
@@ -786,6 +791,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncCommandVersionId();
             } else if ("0.14.0".equals(version)) {
                 syncDevopsEnvPodNodeNameAndRestartCount();
+            } else if ("0.15.0".equals(version)) {
+                syncAppToIam();
             } else {
                 LOGGER.info("version not matched");
             }
@@ -814,6 +821,30 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             });
         }
 
+        /**
+         * 同步devops应用表数据到iam应用表数据
+         */
+        @Saga(code = "devops-sync-application",
+                description = "Devops同步应用到iam", inputSchema = "{}")
+        private void syncAppToIam() {
+            List<ApplicationDO> applicationDOS = applicationMapper.selectAll().stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null).collect(Collectors.toList());
+            List<IamAppPayLoad> iamAppPayLoads = applicationDOS.stream().map(applicationDO -> {
+                IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+                iamAppPayLoad.setApplicationCategory(APPLICATION);
+                iamAppPayLoad.setApplicationType(DEVELOPMENT);
+                if (applicationDO.getType().equals("test")) {
+                    iamAppPayLoad.setApplicationType(TEST);
+                }
+                iamAppPayLoad.setCode(applicationDO.getCode());
+                iamAppPayLoad.setName(applicationDO.getName());
+                iamAppPayLoad.setEnabled(true);
+                iamAppPayLoad.setProjectId(applicationDO.getProjectId());
+                return iamAppPayLoad;
+
+            }).collect(Collectors.toList());
+            String input = JSONArray.toJSONString(iamAppPayLoads);
+            sagaClient.startSaga("devops-create-application", new StartInstanceDTO(input, "", "", "", null));
+        }
 
         private void syncObjects(List<CheckLog> logs, Long envId) {
             List<DevopsEnvironmentE> devopsEnvironmentES;
@@ -889,7 +920,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
 
                 gitUtil.gitPush(git);
-
                 gitUtil.gitPushTag(git);
                 LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
             } catch (IOException e) {
