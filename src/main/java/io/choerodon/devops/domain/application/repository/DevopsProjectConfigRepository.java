@@ -4,6 +4,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import java.util.List;
+
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
@@ -20,4 +22,6 @@ public interface DevopsProjectConfigRepository {
     Page<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params);
 
     void delete(Long id);
+
+    List<DevopsProjectConfigE> queryByIdAndType(Long projectId, String type);
 }

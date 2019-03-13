@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.util.List;
+
 /**
  * @author zongw.lee@gmail.com
  * @since 2019/03/11
@@ -56,5 +58,11 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Override
     public void delete(Long id) {
         devopsProjectConfigRepository.delete(id);
+    }
+
+    @Override
+    public List<DevopsProjectConfigDTO> queryByIdAndType(Long projectId, String type) {
+        return ConvertHelper.convertList(devopsProjectConfigRepository.queryByIdAndType(projectId,type),DevopsProjectConfigDTO.class);
+
     }
 }
