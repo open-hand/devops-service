@@ -9,6 +9,7 @@ import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -44,9 +45,12 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
         checkParamDO.setName(paramDO.getName());
         checkParamDO.setProjectId(paramDO.getProjectId());
         DevopsProjectConfigDO checkedDO = configMapper.selectOne(checkParamDO);
+        ProjectConfigType type = ProjectConfigType.valueOf(paramDO.getType());
 
         if (ObjectUtils.isEmpty(checkedDO)) {
-            harborService.createHarbor(devopsProjectConfigE.getConfig(),paramDO.getProjectId());
+            if (type.equals(ProjectConfigType.HARBOR)) {
+                harborService.createHarbor(devopsProjectConfigE.getConfig(), paramDO.getProjectId());
+            }
             if (configMapper.insert(paramDO) != 1) {
                 throw new CommonException("error.devops.project.config.create");
             }
