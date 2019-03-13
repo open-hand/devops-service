@@ -5,6 +5,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -25,18 +26,19 @@ import java.util.Map;
  * @since 2019/03/11
  */
 @Component
-public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectConfigRepository {
+public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRepository {
+
+    private static final Gson gson = new Gson();
 
     @Autowired
     DevopsProjectConfigMapper configMapper;
 
-    private Gson gson = new Gson();
+    @Autowired
+    ProjectConfigHarborService harborService;
 
     @Override
     public DevopsProjectConfigE create(DevopsProjectConfigE devopsProjectConfigE) {
         DevopsProjectConfigDO paramDO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigDO.class);
-        String configJson = gson.toJson(devopsProjectConfigE.getConfig());
-        paramDO.setConfig(configJson);
 
         DevopsProjectConfigDO checkParamDO = new DevopsProjectConfigDO();
         checkParamDO.setName(paramDO.getName());
@@ -44,6 +46,7 @@ public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectCo
         DevopsProjectConfigDO checkedDO = configMapper.selectOne(checkParamDO);
 
         if (ObjectUtils.isEmpty(checkedDO)) {
+            harborService.createHarbor(devopsProjectConfigE.getConfig(),paramDO.getProjectId());
             if (configMapper.insert(paramDO) != 1) {
                 throw new CommonException("error.devops.project.config.create");
             }
@@ -56,8 +59,6 @@ public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectCo
     @Override
     public DevopsProjectConfigE updateByPrimaryKeySelective(DevopsProjectConfigE devopsProjectConfigE) {
         DevopsProjectConfigDO paramDO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigDO.class);
-        String configJson = gson.toJson(devopsProjectConfigE.getConfig());
-        paramDO.setConfig(configJson);
         if (configMapper.updateByPrimaryKeySelective(paramDO) != 1) {
             throw new CommonException("error.devops.project.config.update");
         }
@@ -92,7 +93,7 @@ public class DevopsProjectProjectConfigRepositoryImpl implements DevopsProjectCo
         }
         Page<DevopsProjectConfigDO> configDOPage = PageHelper
                 .doPageAndSort(pageRequest, () -> configMapper.list(projectId,
-                        (Map<String,Object>)mapParams.get("searchParam"),
+                        (Map<String, Object>) mapParams.get("searchParam"),
                         (String) mapParams.get("param"), checkSortIsEmpty(pageRequest)));
         return ConvertPageHelper.convertPage(configDOPage, DevopsProjectConfigE.class);
     }
