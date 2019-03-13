@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import com.alibaba.fastjson.JSON;
+
 import java.io.Serializable;
 
 /**
@@ -56,5 +58,14 @@ public class ProjectConfigDTO implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ProjectConfigDTO projectConfigDTO = (ProjectConfigDTO) o;
+        return JSON.toJSONString(o).equals(JSON.toJSONString(projectConfigDTO));
     }
 }
