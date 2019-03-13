@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-import retrofit2.converter.jackson.JacksonConverterFactory;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitHandler {
 
@@ -43,7 +43,7 @@ public class RetrofitHandler {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(configurationProperties.getBaseUrl())
                 .client(okHttpClient)
-                .addConverterFactory(JacksonConverterFactory.create())
+                .addConverterFactory(GsonConverterFactory.create())
                 .build();
         return retrofit;
     }

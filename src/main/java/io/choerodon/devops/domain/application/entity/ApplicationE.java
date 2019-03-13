@@ -2,10 +2,9 @@ package io.choerodon.devops.domain.application.entity;
 
 import java.util.Date;
 
+import io.choerodon.devops.domain.application.entity.gitlab.GitlabProjectE;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabProjectE;
 
 
 /**
@@ -20,6 +19,8 @@ public class ApplicationE {
     private String code;
     private GitlabProjectE gitlabProjectE;
     private ApplicationTemplateE applicationTemplateE;
+    private DevopsProjectConfigE harborConfigE;
+    private DevopsProjectConfigE chartConfigE;
     private Boolean isActive;
     private Boolean isSynchro;
     private String groupName;
@@ -257,5 +258,21 @@ public class ApplicationE {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public DevopsProjectConfigE initHarborConfig(Long harborConfigId) {
+        return new DevopsProjectConfigE(harborConfigId);
+    }
+
+    public DevopsProjectConfigE initChartConfig(Long chartConfigId) {
+        return new DevopsProjectConfigE(chartConfigId);
+    }
+
+    public DevopsProjectConfigE getHarborConfigE() {
+        return harborConfigE;
+    }
+
+    public DevopsProjectConfigE getChartConfigE() {
+        return chartConfigE;
     }
 }

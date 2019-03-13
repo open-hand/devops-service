@@ -26,6 +26,8 @@ public class ApplicationDO extends AuditDomain {
     private String code;
     private Integer gitlabProjectId;
     private Long appTemplateId;
+    private Long harborConfigId;
+    private Long chartConfigId;
     private Boolean isActive;
     private Boolean isSynchro;
     private String uuid;
@@ -176,5 +178,21 @@ public class ApplicationDO extends AuditDomain {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getHarborConfigId() {
+        return harborConfigId;
+    }
+
+    public void setHarborConfigId(Long harborConfigId) {
+        this.harborConfigId = harborConfigId;
+    }
+
+    public Long getChartConfigId() {
+        return chartConfigId;
+    }
+
+    public void setChartConfigId(Long chartConfigId) {
+        this.chartConfigId = chartConfigId;
     }
 }

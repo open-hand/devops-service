@@ -8,16 +8,10 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
-import io.choerodon.devops.api.dto.OperationPodPayload;
-import io.codearte.props2yaml.Props2YAML;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.GitConfigDTO;
 import io.choerodon.devops.api.dto.GitEnvConfigDTO;
+import io.choerodon.devops.api.dto.OperationPodPayload;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
@@ -30,6 +24,11 @@ import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
 import io.choerodon.websocket.helper.EnvListener;
+import io.codearte.props2yaml.Props2YAML;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/4/18.
@@ -87,7 +86,7 @@ public class DeployServiceImpl implements DeployService {
         Msg msg = new Msg();
         Payload payload = new Payload(
                 devopsEnvironmentE.getCode(),
-                helmUrl + applicationVersionE.getRepository(),
+                applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, releaseName);
@@ -220,7 +219,7 @@ public class DeployServiceImpl implements DeployService {
         Msg msg = new Msg();
         Payload payload = new Payload(
                 null,
-                helmUrl + applicationVersionE.getRepository(),
+                applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, releaseName);

@@ -267,4 +267,8 @@
         LIMIT 1
     </select>
 
+    <update id="updateRepository">
+     update devops_app_version set repository = CONCAT(#{helmUrl},repository);
+    </update>
+
 </mapper>

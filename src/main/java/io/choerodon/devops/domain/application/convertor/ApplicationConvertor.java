@@ -1,13 +1,12 @@
 package io.choerodon.devops.domain.application.convertor;
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.ApplicationReqDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by Zenger on 2018/4/2.
@@ -25,6 +24,12 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
         if (applicationDO.getAppTemplateId() != null) {
             applicationE.initApplicationTemplateE(applicationDO.getAppTemplateId());
         }
+        if (applicationDO.getHarborConfigId() != null) {
+            applicationE.initHarborConfig(applicationDO.getHarborConfigId());
+        }
+        if (applicationDO.getChartConfigId() != null) {
+            applicationE.initChartConfig(applicationDO.getChartConfigId());
+        }
         return applicationE;
     }
 
@@ -39,6 +44,12 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
         if (applicationE.getGitlabProjectE() != null) {
             applicationDO.setGitlabProjectId(applicationE.getGitlabProjectE().getId());
         }
+        if (applicationE.getHarborConfigE() != null) {
+            applicationDO.setHarborConfigId(applicationE.getHarborConfigE().getId());
+        }
+        if (applicationE.getChartConfigE() != null) {
+            applicationDO.setChartConfigId(applicationE.getChartConfigE().getId());
+        }
         return applicationDO;
     }
 
@@ -50,6 +61,12 @@ public class ApplicationConvertor implements ConvertorI<ApplicationE, Applicatio
         applicationE.initProjectE(applicationReqDTO.getProjectId());
         if (applicationReqDTO.getApplicationTemplateId() != null) {
             applicationE.initApplicationTemplateE(applicationReqDTO.getApplicationTemplateId());
+        }
+        if (applicationReqDTO.getHarborConfigId() != null) {
+            applicationE.initHarborConfig(applicationReqDTO.getHarborConfigId());
+        }
+        if (applicationReqDTO.getChartConfigId() != null) {
+            applicationE.initChartConfig(applicationReqDTO.getChartConfigId());
         }
         return applicationE;
     }

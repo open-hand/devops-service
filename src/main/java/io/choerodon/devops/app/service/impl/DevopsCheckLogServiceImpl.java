@@ -82,6 +82,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String DEVELOPMENT = "development-application";
     private static final String TEST = "test-application";
     private static final String YAML_FILE = ".yaml";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
     private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
             0L, TimeUnit.MILLISECONDS,
@@ -159,6 +160,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private GitUtil gitUtil;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private ApplicationVersionMapper applicationVersionMapper;
 
     @Override
     public void checkLog(String version) {
@@ -508,7 +511,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             ApplicationE applicationE = applicationRepository.query(applicationInstanceE.getApplicationE().getId());
             C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
             c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
-            c7nHelmRelease.getSpec().setRepoUrl(helmUrl + applicationVersionE.getRepository());
+            c7nHelmRelease.getSpec().setRepoUrl(applicationVersionE.getRepository());
             c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
             c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
             c7nHelmRelease.getSpec().setValues(applicationInstanceService.getReplaceResult(
@@ -792,7 +795,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.14.0".equals(version)) {
                 syncDevopsEnvPodNodeNameAndRestartCount();
             } else if ("0.15.0".equals(version)) {
-                syncAppToIam();
+//                syncAppToIam();
+                syncAppVersion();
             } else {
                 LOGGER.info("version not matched");
             }
@@ -844,6 +848,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             }).collect(Collectors.toList());
             String input = JSONArray.toJSONString(iamAppPayLoads);
             sagaClient.startSaga("devops-create-application", new StartInstanceDTO(input, "", "", "", null));
+        }
+
+
+        private void syncAppVersion() {
+            if (helmUrl.endsWith("/")) {
+                helmUrl = helmUrl.substring(0, helmUrl.length() - 1);
+            }
+            applicationVersionMapper.updateRepository(helmUrl);
         }
 
         private void syncObjects(List<CheckLog> logs, Long envId) {
