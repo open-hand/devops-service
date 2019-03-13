@@ -4,23 +4,19 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.dto.GitlabUserDTO;
 import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
 import io.choerodon.devops.api.dto.RegisterOrganizationDTO;
 import io.choerodon.devops.app.service.*;
-import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
-import io.choerodon.devops.domain.application.event.HarborPayload;
-import io.choerodon.devops.domain.application.event.OrganizationEventPayload;
-import io.choerodon.devops.domain.application.event.ProjectEvent;
+import io.choerodon.devops.domain.application.event.*;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: Runge
@@ -34,22 +30,19 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
-    private final GitlabGroupService gitlabGroupService;
-    private final HarborService harborService;
-    private final OrganizationService organizationService;
-    private final GitlabGroupMemberService gitlabGroupMemberService;
-    private final GitlabUserService gitlabUserService;
-
     @Autowired
-    public SagaHandler(GitlabGroupService gitlabGroupService,
-                       HarborService harborService, OrganizationService organizationService,
-                       GitlabGroupMemberService gitlabGroupMemberService, GitlabUserService gitlabUserService) {
-        this.gitlabGroupService = gitlabGroupService;
-        this.harborService = harborService;
-        this.organizationService = organizationService;
-        this.gitlabGroupMemberService = gitlabGroupMemberService;
-        this.gitlabUserService = gitlabUserService;
-    }
+    private GitlabGroupService gitlabGroupService;
+    @Autowired
+    private HarborService harborService;
+    @Autowired
+    private OrganizationService organizationService;
+    @Autowired
+    private GitlabGroupMemberService gitlabGroupMemberService;
+    @Autowired
+    private GitlabUserService gitlabUserService;
+    @Autowired
+    private ApplicationService applicationService;
+
 
     private void loggerInfo(Object o) {
         LOGGER.info("data: {}", o);
@@ -149,6 +142,39 @@ public class SagaHandler {
         organizationService.create(organizationEventPayload);
         return payload;
     }
+
+
+    /**
+     * Iam创建应用事件
+     */
+    @SagaTask(code = "iamCreateApplication",
+            description = "Iam创建应用事件",
+            sagaCode = "iam-create-application",
+            maxRetryCount = 3,
+            seq = 1)
+    public String handleIamCreateApplication(String payload) {
+        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
+        loggerInfo(iamAppPayLoad);
+        applicationService.createIamApplication(iamAppPayLoad);
+        return payload;
+    }
+
+
+    /**
+     * Iam更新应用事件
+     */
+    @SagaTask(code = "iamCreateApplication",
+            description = "Iam更新应用事件",
+            sagaCode = "iam-update-application",
+            maxRetryCount = 3,
+            seq = 1)
+    public String handleIamUpdateApplication(String payload) {
+        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
+        loggerInfo(iamAppPayLoad);
+        applicationService.createIamApplication(iamAppPayLoad);
+        return payload;
+    }
+
 
     /**
      * 角色同步事件

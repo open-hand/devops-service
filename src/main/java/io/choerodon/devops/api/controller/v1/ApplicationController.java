@@ -1,16 +1,13 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.dto.ApplicationCodeDTO;
-import io.choerodon.devops.api.dto.ApplicationImportDTO;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.api.dto.ApplicationReqDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
 import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
@@ -22,19 +19,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * Created by younger on 2018/4/4.
@@ -347,7 +333,6 @@ public class ApplicationController {
                 .orElseThrow(() -> new CommonException("error.application.get"));
     }
 
-
     /**
      * 查询应用模板
      *
@@ -436,6 +421,58 @@ public class ApplicationController {
         return Optional.ofNullable(applicationService.listAllUserPermission(appId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.app.user.permission.get"));
+    }
+
+
+    /**
+     * 校验harbor配置信息是否正确
+     *
+     * @param url      harbor地址
+     * @param userName harbor用户名
+     * @param passWord harbor密码
+     * @param project  harbor项目
+     * @param email    harbor邮箱
+     * @return Boolean
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "校验harbor配置信息是否正确")
+    @GetMapping(value = "check_harbor")
+    public ResponseEntity<Boolean> checkHarbor(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "harbor地址", required = true)
+            @RequestParam String url,
+            @ApiParam(value = "harbor用户名", required = true)
+            @RequestParam String userName,
+            @ApiParam(value = "harbor密码", required = true)
+            @RequestParam String passWord,
+            @ApiParam(value = "harborProject", required = true)
+            @RequestParam String project,
+            @ApiParam(value = "harbor邮箱", required = true)
+            @RequestParam String email) {
+        return Optional.ofNullable(applicationService.checkHarborIsUsable(url, userName, passWord, project, email))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.harbor.check"));
+    }
+
+
+    /**
+     * 校验chart配置信息是否正确
+     *
+     * @param url chartmusume地址
+     * @return Boolean
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "校验chart配置信息是否正确")
+    @GetMapping(value = "check_chart")
+    public ResponseEntity<Boolean> checkHarbor(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "chartmusume地址", required = true)
+            @RequestParam String url) {
+        return Optional.ofNullable(applicationService.checkChartIsUsable(url))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.chart.check"));
     }
 
     /**

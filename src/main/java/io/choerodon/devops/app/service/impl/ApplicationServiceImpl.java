@@ -1,5 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -10,23 +18,11 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.dto.ApplicationCodeDTO;
-import io.choerodon.devops.api.dto.ApplicationImportDTO;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.api.dto.ApplicationReqDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.domain.application.entity.AppUserPermissionE;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.DevopsBranchE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
@@ -35,32 +31,22 @@ import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
-import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
-import io.choerodon.devops.infra.common.util.HttpClientUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.HarborConfigurationProperties;
+import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.feign.ChartClient;
+import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
 import org.apache.commons.io.FileUtils;
@@ -72,27 +58,18 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * Created by younger on 2018/3/28.
  */
 @Service
+@EnableConfigurationProperties(HarborConfigurationProperties.class)
 public class ApplicationServiceImpl implements ApplicationService {
     private static final Pattern REPOSITORY_URL_PATTERN = Pattern.compile("^http.*\\.git");
     private static final String GITLAB_CI_FILE = ".gitlab-ci.yml";
@@ -116,6 +93,9 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
     private static final String ERROR_UPDATE_APP = "error.application.update";
+    private static final String DEVELOPMENT = "development-application";
+    private static final String TEST = "test-application";
+
     private Gson gson = new Gson();
 
     @Value("${services.gitlab.url}")
@@ -155,43 +135,29 @@ public class ApplicationServiceImpl implements ApplicationService {
     private AppUserPermissionRepository appUserPermissionRepository;
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
+    @Autowired
+    private HarborConfigurationProperties harborConfigurationProperties;
 
     @Override
-    @Saga(code = "devops-create-gitlab-project",
-            description = "Devops创建gitlab项目", inputSchema = "{}")
+    @Saga(code = "devops-create-application",
+            description = "Devops创建应用", inputSchema = "{}")
     public ApplicationRepDTO create(Long projectId, ApplicationReqDTO applicationReqDTO) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         ApplicationValidator.checkApplication(applicationReqDTO);
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-        ApplicationE applicationE = ConvertHelper.convert(applicationReqDTO, ApplicationE.class);
-        applicationE.initProjectE(projectId);
-        applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
-        applicationRepository.checkCode(applicationE);
-        applicationE.initActive(true);
-        applicationE.initSynchro(false);
-        applicationE.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
-
         // 查询创建应用所在的gitlab应用组
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
                 TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
             throw new CommonException("error.user.not.owner");
         }
-        // 创建saga payload
-        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
-        devOpsAppPayload.setType(APPLICATION);
-        devOpsAppPayload.setPath(applicationReqDTO.getCode());
-        devOpsAppPayload.setOrganizationId(organization.getId());
-        devOpsAppPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
-        devOpsAppPayload.setUserIds(applicationReqDTO.getUserIds());
-        devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+
+        ApplicationE applicationE = getApplicationE(projectId, applicationReqDTO);
         applicationE = applicationRepository.create(applicationE);
-        devOpsAppPayload.setAppId(applicationE.getId());
-        devOpsAppPayload.setIamProjectId(projectId);
+
         Long appId = applicationE.getId();
         if (appId == null) {
             throw new CommonException("error.application.create.insert");
@@ -202,12 +168,37 @@ public class ApplicationServiceImpl implements ApplicationService {
             userIds.forEach(e -> appUserPermissionRepository.create(e, appId));
         }
 
-        String input = gson.toJson(devOpsAppPayload);
-        sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+        iamAppPayLoad.setApplicationCategory(APPLICATION);
+        iamAppPayLoad.setApplicationType(DEVELOPMENT);
+        if (applicationReqDTO.getType().equals("test")) {
+            iamAppPayLoad.setApplicationType(TEST);
+        }
+        iamAppPayLoad.setCode(applicationReqDTO.getCode());
+        iamAppPayLoad.setName(applicationReqDTO.getName());
+        iamAppPayLoad.setEnabled(true);
+        iamAppPayLoad.setOrganizationId(organization.getId());
+        iamAppPayLoad.setProjectId(projectId);
+        iamAppPayLoad.setCreateBy(userAttrE.getGitlabUserId());
+        String input = gson.toJson(iamAppPayLoad);
+        sagaClient.startSaga("devops-create-application", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
 
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
                 applicationE.getProjectE().getId()), ApplicationRepDTO.class);
     }
+
+    private ApplicationE getApplicationE(Long projectId, ApplicationReqDTO applicationReqDTO) {
+
+        ApplicationE applicationE = ConvertHelper.convert(applicationReqDTO, ApplicationE.class);
+        applicationE.initProjectE(projectId);
+        applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
+        applicationRepository.checkCode(applicationE);
+        applicationE.initActive(true);
+        applicationE.initSynchro(false);
+        applicationE.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+        return applicationE;
+    }
+
 
     @Override
     public ApplicationRepDTO query(Long projectId, Long applicationId) {
@@ -228,6 +219,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     }
 
     @Override
+    @Saga(code = "devops-delete-application",
+            description = "Devops删除创建失败应用", inputSchema = "{}")
     public void delete(Long projectId, Long applicationId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -235,6 +228,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         UserAttrE userAttrE = userAttrRepository.queryById(DetailsHelper.getUserDetails().getUserId());
         gitlabRepository.deleteDevOpsApp(organization.getCode() + "-" + projectE.getCode(),
                 applicationE.getCode(), userAttrE.getGitlabUserId().intValue());
+        IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+        iamAppPayLoad.setProjectId(projectId);
+        iamAppPayLoad.setOrganizationId(organization.getId());
+        iamAppPayLoad.setOrganizationId(organization.getId());
+        iamAppPayLoad.setCode(applicationE.getCode());
+        iamAppPayLoad.setName(applicationE.getName());
+        String input = gson.toJson(iamAppPayLoad);
+        sagaClient.startSaga("devops-delete-application", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
         applicationRepository.delete(applicationId);
     }
 
@@ -253,6 +254,14 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException(ERROR_UPDATE_APP);
+        }
+
+        if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
+            IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+            iamAppPayLoad.setProjectId(oldApplicationE.getProjectE().getId());
+            iamAppPayLoad.setName(applicationUpdateDTO.getName());
+            iamAppPayLoad.setCode(oldApplicationE.getCode());
+            startUpdateIamApp(iamAppPayLoad);
         }
 
         // 创建gitlabUserPayload
@@ -281,11 +290,15 @@ public class ApplicationServiceImpl implements ApplicationService {
         return true;
     }
 
+    @Saga(code = "devops-update-application",
+            description = "Devops更新应用", inputSchema = "{}")
+    public void startUpdateIamApp(IamAppPayLoad iamAppPayLoad) {
+        String input = gson.toJson(iamAppPayLoad);
+        sagaClient.startSaga("devops-update-application", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), iamAppPayLoad.getProjectId()));
+    }
+
     @Override
     public Boolean active(Long applicationId, Boolean active) {
-        if (!active) {
-            applicationRepository.checkAppCanDisable(applicationId);
-        }
         ApplicationE applicationE = applicationRepository.query(applicationId);
         applicationE.initActive(active);
         if (applicationRepository.update(applicationE) != 1) {
@@ -745,8 +758,8 @@ public class ApplicationServiceImpl implements ApplicationService {
      * 将模板库中的chart包，dockerfile，gitlab-ci文件复制到导入的代码仓库中
      * 复制文件前会判断文件是否存在，如果存在则不复制
      *
-     * @param templateWorkDir         模板库工作目录
-     * @param applicationWorkDir      应用库工作目录
+     * @param templateWorkDir       模板库工作目录
+     * @param applicationWorkDir    应用库工作目录
      * @param applicationTemplateId application template id
      */
     private void mergeTemplateToApplication(File templateWorkDir, File applicationWorkDir, Long applicationTemplateId) {
@@ -1017,6 +1030,106 @@ public class ApplicationServiceImpl implements ApplicationService {
     public ApplicationRepDTO queryByCode(Long projectId, String code) {
         return ConvertHelper.convert(applicationRepository.queryByCode(code, projectId), ApplicationRepDTO.class);
     }
+
+
+    @Override
+    @Saga(code = "devops-create-gitlab-project",
+            description = "Devops创建gitlab项目", inputSchema = "{}")
+    public void createIamApplication(IamAppPayLoad iamAppPayLoad) {
+
+        List<Long> userIds = new ArrayList<>();
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        if (applicationE == null) {
+            applicationE = new ApplicationE();
+            applicationE.setIsSkipCheckPermission(true);
+            applicationE.setName(iamAppPayLoad.getName());
+            applicationE.setCode(iamAppPayLoad.getCode());
+            applicationE.initActive(true);
+            applicationE.initSynchro(false);
+            applicationE.initProjectE(iamAppPayLoad.getProjectId());
+            applicationE.setType("normal");
+            if (iamAppPayLoad.getApplicationType().equals(TEST)) {
+                applicationE.setType("test");
+            }
+            applicationE = applicationRepository.create(applicationE);
+        } else {
+            //创建iam入口过来的应用直接跳过权限校验，从devops入口过来的应用选择了特定用户权限，需要给特定用户分配该用户权限
+            if (!applicationE.getIsSkipCheckPermission()) {
+                userIds = appUserPermissionRepository.listAll(applicationE.getId()).stream().map(AppUserPermissionE::getIamUserId).collect(Collectors.toList());
+            }
+        }
+
+        //创建iam入口过来的应用直接用管理员去gitlab创建对应的project,避免没有对应项目的权限导致创建失败
+        Long gitlabUserId = 1L;
+        if (iamAppPayLoad.getCreateBy() != null) {
+            gitlabUserId = iamAppPayLoad.getCreateBy();
+        }
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
+
+
+        //创建saga payload
+        DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
+        devOpsAppPayload.setType(APPLICATION);
+        devOpsAppPayload.setPath(iamAppPayLoad.getCode());
+        devOpsAppPayload.setOrganizationId(iamAppPayLoad.getOrganizationId());
+        devOpsAppPayload.setUserId(TypeUtil.objToInteger(gitlabUserId));
+        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
+        devOpsAppPayload.setUserIds(userIds);
+        devOpsAppPayload.setSkipCheckPermission(applicationE.getIsSkipCheckPermission());
+        devOpsAppPayload.setAppId(applicationE.getId());
+        devOpsAppPayload.setIamProjectId(iamAppPayLoad.getProjectId());
+        //0.14.0-0.15.0的时候，同步已有的app到iam，此时app已经存在gitlab project,不需要再创建
+        if (applicationE.getGitlabProjectE() == null) {
+            String input = gson.toJson(devOpsAppPayload);
+            sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), iamAppPayLoad.getProjectId()));
+        }
+    }
+
+    @Override
+    public void updateIamApplication(IamAppPayLoad iamAppPayLoad) {
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        applicationE.setName(iamAppPayLoad.getName());
+        applicationRepository.update(applicationE);
+    }
+
+    @Override
+    public Boolean checkHarborIsUsable(String url, String userName, String password, String project, String email) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(url);
+        configurationProperties.setUsername(userName);
+        configurationProperties.setPassword(password);
+        configurationProperties.setInsecureSkipTlsVerify(false);
+        configurationProperties.setProject(project);
+        configurationProperties.setType("harbor");
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        HarborClient harborClient = retrofit.create(HarborClient.class);
+        Call<Object> getUser = harborClient.getCurrentUser();
+        Response<Object> userResponse = RetrofitHandler.execute(getUser);
+        if (!email.equals(((LinkedHashMap) userResponse.body()).get("email").toString())) {
+            throw new CommonException("error.user.email.not.equal");
+        }
+        Call<Object> listProject = harborClient.listProject(project);
+        Response<Object> projectResponse = RetrofitHandler.execute(listProject);
+        if (projectResponse.body() == null) {
+            throw new CommonException("error.harbor.project.permission");
+        }
+        return true;
+    }
+
+
+    @Override
+    public Boolean checkChartIsUsable(String url) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(url);
+        configurationProperties.setType("chart");
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        ChartClient chartClient = retrofit.create(ChartClient.class);
+        chartClient.getHealth();
+        Call<Object> getHealth = chartClient.getHealth();
+        RetrofitHandler.execute(getHealth);
+        return true;
+    }
+
 
     private ApplicationE fromImportDtoToEntity(ApplicationImportDTO applicationImportDTO) {
         ApplicationE applicationE = ApplicationFactory.createApplicationE();

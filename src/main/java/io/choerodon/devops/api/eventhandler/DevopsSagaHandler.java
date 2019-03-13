@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
@@ -8,12 +10,7 @@ import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.ApplicationTemplateService;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
-import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
+import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
@@ -22,19 +19,13 @@ import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 /**
  * Creator: Runge
@@ -169,13 +160,6 @@ public class DevopsSagaHandler {
             } catch (Exception e) {
                 applicationService.setAppErrStatus(data, devOpsAppPayload.getIamProjectId());
                 throw e;
-            }
-            ApplicationE applicationE = applicationRepository.query(devOpsAppPayload.getAppId());
-            if (applicationE.getFailed() != null && applicationE.getFailed()) {
-                applicationE.setFailed(false);
-                if (1 != applicationRepository.update(applicationE)) {
-                    LOGGER.error("update application set create success status error");
-                }
             }
         }
         return data;

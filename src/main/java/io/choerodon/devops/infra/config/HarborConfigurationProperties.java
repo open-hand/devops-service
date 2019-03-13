@@ -1,7 +1,5 @@
 package io.choerodon.devops.infra.config;
 
-import java.util.*;
-
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "services.harbor")
@@ -18,6 +16,8 @@ public class HarborConfigurationProperties {
     private String params;
 
     private Boolean insecureSkipTlsVerify;
+
+    private String project;
 
     public Boolean isEnabled() {
         return enabled;
@@ -65,5 +65,13 @@ public class HarborConfigurationProperties {
 
     public void setInsecureSkipTlsVerify(Boolean insecureSkipTlsVerify) {
         this.insecureSkipTlsVerify = insecureSkipTlsVerify;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
     }
 }
