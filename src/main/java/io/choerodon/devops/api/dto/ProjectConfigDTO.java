@@ -64,8 +64,6 @@ public class ProjectConfigDTO implements Serializable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
-        ProjectConfigDTO projectConfigDTO = (ProjectConfigDTO) o;
-        return JSON.toJSONString(o).equals(JSON.toJSONString(projectConfigDTO));
+        return JSON.toJSONString(this).equals(JSON.toJSONString(o));
     }
 }
