@@ -17,7 +17,7 @@ public interface GitlabRepository {
 
     void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId);
 
-    void batchAddVariable(Integer gitlabProjectId, Integer userId, VariableDTO variableDTO);
+    void batchAddVariable(Integer gitlabProjectId, Integer userId,  List<VariableDTO> variableDTOS);
 
     List<String> listTokenByUserId(Integer gitlabProjectId, String name, Integer userId);
 
