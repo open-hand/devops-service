@@ -17,7 +17,7 @@ public class DevopsProjectConfigE {
     public DevopsProjectConfigE() {
     }
 
-    public DevopsProjectConfigE(String name, String config, String type) {
+    public DevopsProjectConfigE(String name, ProjectConfigDTO config, String type) {
         this.name = name;
         this.config = config;
         this.type = type;
