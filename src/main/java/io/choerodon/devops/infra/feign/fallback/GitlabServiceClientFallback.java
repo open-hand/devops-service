@@ -1,20 +1,32 @@
 package io.choerodon.devops.infra.feign.fallback;
 
-import java.util.List;
-import java.util.Map;
-
-
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
+import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
 import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.RepositoryFile;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.dataobject.gitlab.*;
+import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
+import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
+import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
+import io.choerodon.devops.infra.dataobject.gitlab.JobDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
+import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
+import io.choerodon.devops.infra.dataobject.gitlab.RequestMemberDO;
+import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
+import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -85,6 +97,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity<Map<String, Object>> addVariable(Integer projectId, String key, String value, Boolean protecteds, Integer userId) {
         return new ResponseEntity("error.variable.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<List<Map<String, Object>>> batchAddVariable(Integer projectId, Integer userId, VariableDTO variableDTO) {
+        return new ResponseEntity("error.variable.batch.create", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -345,6 +362,11 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     @Override
     public ResponseEntity removeMemberFromProject(Integer projectId, Integer userId) {
         return new ResponseEntity("error.member.remove", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity updateMemberIntoProject(Integer projectId, List<MemberDTO> list) {
+        return new ResponseEntity("error.member.update", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override

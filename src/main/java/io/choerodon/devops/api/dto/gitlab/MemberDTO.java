@@ -21,6 +21,11 @@ public class MemberDTO {
         this.expiresAt = expiresAt;
     }
 
+    public MemberDTO(@NotNull Integer userId, @NotNull Integer accessLevel) {
+        this.userId = userId;
+        this.accessLevel = accessLevel;
+    }
+
     public Integer getUserId() {
         return userId;
     }
