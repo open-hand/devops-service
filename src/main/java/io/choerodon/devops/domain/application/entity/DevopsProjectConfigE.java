@@ -17,11 +17,17 @@ public class DevopsProjectConfigE {
     public DevopsProjectConfigE() {
     }
 
+
     public DevopsProjectConfigE(String name, ProjectConfigDTO config, String type) {
         this.name = name;
         this.config = config;
         this.type = type;
     }
+
+    public DevopsProjectConfigE(Long id) {
+        this.id = id;
+    }
+
 
     public Long getId() {
         return id;

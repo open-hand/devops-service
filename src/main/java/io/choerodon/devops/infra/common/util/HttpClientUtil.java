@@ -4,12 +4,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import io.choerodon.core.exception.CommonException;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-
-import io.choerodon.core.exception.CommonException;
 
 public class HttpClientUtil {
 
@@ -39,7 +38,6 @@ public class HttpClientUtil {
             throw new CommonException(e.getMessage());
         }
     }
-
 
     public static Integer getSonar(String sonarUrl) {
         try (CloseableHttpClient httpclient = HttpClients.createDefault()) {
