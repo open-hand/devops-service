@@ -135,8 +135,8 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String TEST = "test-application";
     private static final String DOCKER_REGISTRY = "DOCKER_REGISTRY";
     private static final String DOCKER_PROJECT = "DOCKER_PROJECT";
-    private static final String DOCKER_USERNAME = "DOCKER_PROJECT";
-    private static final String DOCKER_PASSWORD = "DOCKER_PASSWORD";
+    private static final String DOCKER_USERNAME = "DOCKER_USERNAME";
+    private static final String DOCKER_CODE = "DOCKER_PASSWORD";
     private static final String CHART_REGISTRY = "CHART_REGISTRY";
 
     private Gson gson = new Gson();
@@ -1199,7 +1199,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             variableDTOS.add(new VariableDTO(DOCKER_REGISTRY, devopsProjectConfigE.getConfig().getUrl(), false));
             variableDTOS.add(new VariableDTO(DOCKER_PROJECT, devopsProjectConfigE.getConfig().getProject(), false));
             variableDTOS.add(new VariableDTO(DOCKER_USERNAME, devopsProjectConfigE.getConfig().getUserName(), false));
-            variableDTOS.add(new VariableDTO(DOCKER_PASSWORD, devopsProjectConfigE.getConfig().getPassword(), false));
+            variableDTOS.add(new VariableDTO(DOCKER_CODE, devopsProjectConfigE.getConfig().getPassword(), false));
         }
         devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(chartConfigId);
         if (devopsProjectConfigE != null) {
