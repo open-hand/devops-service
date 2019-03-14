@@ -22,6 +22,7 @@ import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
+import io.choerodon.devops.infra.common.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +56,7 @@ public class DevopsSagaHandler {
     private final DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
     private final DevopsAutoDeployRepository devopsAutoDeployRepository;
     private final ApplicationInstanceService applicationInstanceService;
+    private final GitlabRepository gitlabRepository;
 
     @Autowired
     public DevopsSagaHandler(DevopsEnvironmentService devopsEnvironmentService,
@@ -67,6 +69,7 @@ public class DevopsSagaHandler {
                              DevopsEnvironmentRepository devopsEnvironmentRepository,
                              DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository,
                              DevopsAutoDeployRepository devopsAutoDeployRepository,
+                             GitlabRepository gitlabRepository,
                              ApplicationInstanceService applicationInstanceService) {
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsGitService = devopsGitService;
@@ -78,6 +81,7 @@ public class DevopsSagaHandler {
         this.devopsEnvironmentRepository = devopsEnvironmentRepository;
         this.devopsAutoDeployRecordRepository = devopsAutoDeployRecordRepository;
         this.devopsAutoDeployRepository = devopsAutoDeployRepository;
+        this.gitlabRepository = gitlabRepository;
         this.applicationInstanceService = applicationInstanceService;
     }
 
@@ -189,6 +193,8 @@ public class DevopsSagaHandler {
                     LOGGER.error("update application set create success status error");
                 }
             }
+            gitlabRepository.batchAddVariable(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabUserId()),
+                    applicationService.setVariableDTO(applicationE.getHarborConfigE().getId(),applicationE.getChartConfigE().getId()));
         }
         return data;
     }

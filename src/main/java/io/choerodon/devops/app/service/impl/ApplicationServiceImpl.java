@@ -1063,6 +1063,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppImportPayload.setPlatformType(gitPlatformType);
         devOpsAppImportPayload.setRepositoryUrl(applicationImportDTO.getRepositoryUrl());
         devOpsAppImportPayload.setAccessToken(applicationImportDTO.getAccessToken());
+        devOpsAppImportPayload.setGitlabUserId(userAttrE.getGitlabUserId());
 
         // 如果不跳过权限检查
         List<Long> userIds = applicationImportDTO.getUserIds();
