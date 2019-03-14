@@ -32,7 +32,7 @@ public class DevopsGitlabEmailController {
      * @return Boolean
      */
     @ApiOperation(value = "根据用户Id获得用户信息")
-    @GetMapping(value = "/email/check")
+    @GetMapping(value = "/check")
     public ResponseEntity<Boolean> checkEmailIsExist(
             @ApiParam(value = "用户邮箱", required = true)
             @RequestParam(value = "email") String email) {
