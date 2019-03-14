@@ -260,12 +260,12 @@ public class ApplicationE {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public DevopsProjectConfigE initHarborConfig(Long harborConfigId) {
-        return new DevopsProjectConfigE(harborConfigId);
+    public void initHarborConfig(Long harborConfigId) {
+        this.harborConfigE = new DevopsProjectConfigE(harborConfigId);
     }
 
-    public DevopsProjectConfigE initChartConfig(Long chartConfigId) {
-        return new DevopsProjectConfigE(chartConfigId);
+    public void initChartConfig(Long chartConfigId) {
+        this.chartConfigE =  new DevopsProjectConfigE(chartConfigId);
     }
 
     public DevopsProjectConfigE getHarborConfigE() {

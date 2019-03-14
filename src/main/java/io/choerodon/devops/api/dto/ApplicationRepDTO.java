@@ -22,6 +22,8 @@ public class ApplicationRepDTO {
     private String type;
     private Boolean permission;
     private Long objectVersionNumber;
+    private Long harborConfigId;
+    private Long chartConfigId;
 
     public Long getId() {
         return id;
@@ -149,5 +151,21 @@ public class ApplicationRepDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
+    }
+
+    public Long getHarborConfigId() {
+        return harborConfigId;
+    }
+
+    public void setHarborConfigId(Long harborConfigId) {
+        this.harborConfigId = harborConfigId;
+    }
+
+    public Long getChartConfigId() {
+        return chartConfigId;
+    }
+
+    public void setChartConfigId(Long chartConfigId) {
+        this.chartConfigId = chartConfigId;
     }
 }

@@ -23,6 +23,12 @@ public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object,
         } else {
             applicationRepDTO.setPermission(false);
         }
+        if (applicationE.getHarborConfigE() != null) {
+            applicationRepDTO.setHarborConfigId(applicationE.getHarborConfigE().getId());
+        }
+        if (applicationE.getChartConfigE() != null) {
+            applicationRepDTO.setChartConfigId(applicationE.getChartConfigE().getId());
+        }
         applicationRepDTO.setRepoUrl(applicationE.getGitlabProjectE().getRepoURL());
         applicationRepDTO.setFail(applicationE.getFailed());
         applicationRepDTO.setProjectId(applicationE.getProjectE().getId());
