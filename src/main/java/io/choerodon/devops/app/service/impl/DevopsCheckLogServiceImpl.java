@@ -927,13 +927,15 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             sagaClient.startSaga("devops-create-application", new StartInstanceDTO(input, "", "", "", null));
         }
 
-        private void syncCiVariableAndRole() {
+        private void syncCiVariableAndRole(List<CheckLog> logs) {
             List<Integer> gitlabProjectIds = applicationMapper.selectAll().stream()
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                     .map(ApplicationDO::getGitlabProjectId).collect(Collectors.toList());
             //changRole
             gitlabProjectIds.forEach(t -> {
+                CheckLog checkLog = new CheckLog();
                 try {
+                    checkLog.setContent("gitlabProjectId: " + t + " sync gitlab variable and role");
                     List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().filter(m -> m.getAccessLevel() == 40).map(memberE ->
                             new MemberDTO(memberE.getId(), 30)).collect(Collectors.toList());
                     if (!memberDTOS.isEmpty()) {
@@ -941,9 +943,13 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     }
                     gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
                             devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId()));
+                    checkLog.setResult(SUCCESS);
                 } catch (Exception e) {
                     LOGGER.info("gitlab.project.is.not.exist,gitlabProjectId: " + t, e);
+                    checkLog.setResult(FAILED + e.getMessage());
                 }
+                LOGGER.info(checkLog.toString());
+                logs.add(checkLog);
             });
         }
 
