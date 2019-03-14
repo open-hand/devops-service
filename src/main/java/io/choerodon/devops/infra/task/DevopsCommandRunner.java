@@ -4,6 +4,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ProjectConfigDTO;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -18,8 +19,6 @@ import org.springframework.stereotype.Component;
 public class DevopsCommandRunner implements CommandLineRunner {
     private static final String HARBOR_NAME = "harbor_default";
     private static final String CHART_NAME = "chart_default";
-    private static final String HARBOR = "harbor";
-    private static final String CHART = "chart";
     @Autowired
     DevopsProjectConfigRepository devopsProjectConfigRepository;
     @Value("${services.helm.url}")
@@ -38,11 +37,11 @@ public class DevopsCommandRunner implements CommandLineRunner {
             harborConfig.setUrl(servicesHarborBaseurl);
             harborConfig.setUserName(servicesHarborUsername);
             harborConfig.setPassword(servicesHarborPassword);
-            initConfig(harborConfig, HARBOR_NAME, HARBOR);
+            initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.toString());
 
             ProjectConfigDTO chartConfig = new ProjectConfigDTO();
             chartConfig.setUrl(servicesHarborBaseurl);
-            initConfig(chartConfig, CHART_NAME, CHART);
+            initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.toString());
         } catch (Exception e) {
             throw new CommonException("error.init.project.config", e);
         }
