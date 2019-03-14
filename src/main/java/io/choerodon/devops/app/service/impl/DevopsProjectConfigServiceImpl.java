@@ -50,7 +50,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         devopsProjectConfigE.setProjectId(projectId);
         configValidator.checkConfigType(devopsProjectConfigDTO);
-        ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType());
+        ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType().toUpperCase());
 
         DevopsProjectConfigE res;
         if (devopsProjectConfigRepository.checkNameWithProjectUniqueness(devopsProjectConfigE)) {

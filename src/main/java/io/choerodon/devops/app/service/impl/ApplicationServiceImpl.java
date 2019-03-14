@@ -1121,7 +1121,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         Call<Object> getUser = harborClient.getCurrentUser();
         Response<Object> userResponse = RetrofitHandler.execute(getUser);
         //校验用户的邮箱是否匹配
-        if (!email.equals(((LinkedHashMap) userResponse.body()).get("email").toString())) {
+        if (!email.equals(((LinkedTreeMap) userResponse.body()).get("email").toString())) {
             throw new CommonException("error.user.email.not.equal");
         }
 
