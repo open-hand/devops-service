@@ -37,11 +37,11 @@ public class DevopsCommandRunner implements CommandLineRunner {
             harborConfig.setUrl(servicesHarborBaseurl);
             harborConfig.setUserName(servicesHarborUsername);
             harborConfig.setPassword(servicesHarborPassword);
-            initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.toString());
+            initConfig(harborConfig, HARBOR_NAME, ProjectConfigType.HARBOR.getType());
 
             ProjectConfigDTO chartConfig = new ProjectConfigDTO();
             chartConfig.setUrl(servicesHarborBaseurl);
-            initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.toString());
+            initConfig(chartConfig, CHART_NAME, ProjectConfigType.CHART.getType());
         } catch (Exception e) {
             throw new CommonException("error.init.project.config", e);
         }

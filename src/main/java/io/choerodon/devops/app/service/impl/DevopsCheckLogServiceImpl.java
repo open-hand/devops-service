@@ -11,8 +11,10 @@ import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.app.service.DevopsCheckLogService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
@@ -39,7 +41,6 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabPipelineE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.event.DevopsVariablePayLoad;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
@@ -75,6 +76,7 @@ import io.choerodon.devops.infra.common.util.K8sUtil;
 import io.choerodon.devops.infra.common.util.SkipNullRepresenterUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
@@ -234,6 +236,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private ApplicationVersionMapper applicationVersionMapper;
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
+    @Autowired
+    private ApplicationService applicationService;
 
     @Override
     public void checkLog(String version) {
@@ -869,6 +873,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.15.0".equals(version)) {
 //                syncAppToIam();
                 syncAppVersion();
+//                syncCiVariableAndRole();
             } else {
                 LOGGER.info("version not matched");
             }
@@ -922,18 +927,24 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             sagaClient.startSaga("devops-create-application", new StartInstanceDTO(input, "", "", "", null));
         }
 
-        /**
-         * 同步应用组件配置到gitlab环境变量
-         */
-        @Saga(code = "devops-sync-variable",
-                description = "Devops同步组件配置到variable", inputSchema = "{}")
-        private void syncCiVariable() {
+        private void syncCiVariableAndRole() {
             List<Integer> gitlabProjectIds = applicationMapper.selectAll().stream()
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
-                    .map(a -> a.getGitlabProjectId()).collect(Collectors.toList());
-//            devopsProjectConfigRepository.queryByIdAndType(null,)
-//            DevopsVariablePayLoad devopsVariablePayLoad=new DevopsVariablePayLoad(gitlabProjectIds,)
-
+                    .map(ApplicationDO::getGitlabProjectId).collect(Collectors.toList());
+            //ciVariable
+            gitlabProjectIds.forEach(t ->
+                    gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
+                            devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId())));
+            //changRole
+            gitlabProjectIds.forEach(t -> {
+                List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().map(memberE -> {
+                    if (memberE.getAccessLevel() == 40) {
+                        return new MemberDTO(memberE.getId(), 30);
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+                gitlabRepository.updateMemberIntoProject(t, memberDTOS);
+            });
         }
 
         private void syncAppVersion() {
