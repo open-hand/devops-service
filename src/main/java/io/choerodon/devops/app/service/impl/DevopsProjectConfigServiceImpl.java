@@ -62,7 +62,6 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public List<DevopsProjectConfigDTO> queryByIdAndType(Long projectId, String type) {
-        return ConvertHelper.convertList(devopsProjectConfigRepository.queryByIdAndType(projectId,type),DevopsProjectConfigDTO.class);
-
+        return ConvertHelper.convertList(devopsProjectConfigRepository.queryByIdAndType(projectId, type), DevopsProjectConfigDTO.class);
     }
 }

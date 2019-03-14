@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
@@ -152,14 +153,14 @@ public class DevopsProjectConfigController {
      * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下分页查询配置")
+    @ApiOperation(value = "根据项目Id和类型查询配置")
     @CustomPageRequest
-    @GetMapping("/{type}")
+    @GetMapping("/type")
     public ResponseEntity<List<DevopsProjectConfigDTO>> queryByIdAndType(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置类型", required = true)
-            @PathVariable(value = "type") String type) {
+            @RequestParam(value = "type") String type) {
         return Optional.ofNullable(
                 devopsProjectConfigService.queryByIdAndType(projectId,type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))

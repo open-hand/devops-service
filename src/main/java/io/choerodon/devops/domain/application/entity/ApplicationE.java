@@ -36,8 +36,6 @@ public class ApplicationE {
     private String type;
     private Boolean isSkipCheckPermission;
     private Long objectVersionNumber;
-    private Long harborConfigId;
-    private Long chartConfigId;
 
     public ApplicationE() {
     }
@@ -276,21 +274,5 @@ public class ApplicationE {
 
     public DevopsProjectConfigE getChartConfigE() {
         return chartConfigE;
-    }
-
-    public Long getHarborConfigId() {
-        return harborConfigId;
-    }
-
-    public void setHarborConfigId(Long harborConfigId) {
-        this.harborConfigId = harborConfigId;
-    }
-
-    public Long getChartConfigId() {
-        return chartConfigId;
-    }
-
-    public void setChartConfigId(Long chartConfigId) {
-        this.chartConfigId = chartConfigId;
     }
 }

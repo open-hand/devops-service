@@ -9,6 +9,7 @@ public class DevOpsAppImportPayload extends DevOpsAppPayload {
     private String repositoryUrl;
     private String accessToken;
     private GitPlatformType platformType;
+    private Long gitlabUserId;
 
     public String getRepositoryUrl() {
         return repositoryUrl;
@@ -32,5 +33,13 @@ public class DevOpsAppImportPayload extends DevOpsAppPayload {
 
     public void setPlatformType(GitPlatformType platformType) {
         this.platformType = platformType;
+    }
+
+    public Long getGitlabUserId() {
+        return gitlabUserId;
+    }
+
+    public void setGitlabUserId(Long gitlabUserId) {
+        this.gitlabUserId = gitlabUserId;
     }
 }
