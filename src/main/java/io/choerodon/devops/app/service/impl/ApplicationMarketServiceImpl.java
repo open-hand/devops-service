@@ -28,6 +28,9 @@ import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -325,6 +328,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         FileUtil.deleteFile(path);
         File zipDirectory = new File(destPath);
         AppMarketTgzDTO appMarketTgzDTO = new AppMarketTgzDTO();
+
         if (zipDirectory.exists() && zipDirectory.isDirectory()) {
             File[] chartsDirectory = zipDirectory.listFiles();
             if (chartsDirectory != null && chartsDirectory.length == 1) {
@@ -509,7 +513,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             configurationProperties.setBaseUrl(applicationVersionE.getRepository().split(organization.getCode())[0]);
             Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
             ChartClient chartClient = retrofit.create(ChartClient.class);
-            Call<ResponseBody> getTaz = chartClient.getTaz(organization.getCode(), projectE.getCode(), applicationE.getCode(), applicationVersionE.getVersion());
+            Call<ResponseBody> getTaz = chartClient.downloadTaz(organization.getCode(), projectE.getCode(), applicationE.getCode(), applicationVersionE.getVersion());
             try {
                 Response<ResponseBody> response = getTaz.execute();
                 try (FileOutputStream fos = new FileOutputStream(String.format("%s%s%s-%s.tgz",
@@ -569,7 +573,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         );
         applicationVersionE.setImage(image);
         applicationVersionE.setRepository(String.format("%s%s%s%s%s",
-                FILE_SEPARATOR,
+                helmUrl,
                 organizationCode,
                 FILE_SEPARATOR,
                 projectCode,
@@ -621,7 +625,26 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     FILE_SEPARATOR,
                     projectCode);
             FileUtil.copyFile(tgzVersions.get(0).getAbsolutePath(), classPath);
+            //上传tgz包到chart仓库
+            uploadChart(organizationCode, projectCode, tgzVersions);
             FileUtil.deleteDirectory(new File(appCode));
+        }
+    }
+
+    private void uploadChart(String organizationCode, String projectCode, List<File> tgzVersions) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setType("chart");
+        configurationProperties.setBaseUrl(helmUrl);
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        File file = new File(tgzVersions.get(0).getAbsolutePath());
+        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
+        MultipartBody.Part body = MultipartBody.Part.createFormData("chart", file.getName(), requestFile);
+        ChartClient chartClient = retrofit.create(ChartClient.class);
+        Call<Object> uploadTaz = chartClient.uploadTaz(organizationCode, projectCode, body);
+        try {
+            uploadTaz.execute();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

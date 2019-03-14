@@ -1,8 +1,8 @@
 package io.choerodon.devops.api.dto;
 
-import com.alibaba.fastjson.JSON;
-
 import java.io.Serializable;
+
+import com.alibaba.fastjson.JSON;
 
 /**
  * @author zongw.lee@gmail.com
@@ -19,6 +19,8 @@ public class ProjectConfigDTO implements Serializable {
     private String project;
 
     private String email;
+
+    private Boolean isPrivate;
 
     public String getUrl() {
         return url;
@@ -58,6 +60,14 @@ public class ProjectConfigDTO implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Boolean getPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(Boolean aPrivate) {
+        isPrivate = aPrivate;
     }
 
     @Override
