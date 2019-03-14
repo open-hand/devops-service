@@ -570,7 +570,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
         try {
             gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
-                    setVariableDTO(applicationE.getHarborConfigId(), applicationE.getChartConfigId()));
+                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
             String applicationToken = getApplicationToken(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
             applicationE.setToken(applicationToken);
             applicationE.initGitlabProjectE(TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
