@@ -133,7 +133,7 @@ public class DevopsProjectConfigController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下根据配置Id查询配置")
     @GetMapping("/{project_config_id}")
-    public ResponseEntity<DevopsProjectConfigDTO> pageByOptions(
+    public ResponseEntity<DevopsProjectConfigDTO> queryByPrimaryKey(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置Id", required = true)
