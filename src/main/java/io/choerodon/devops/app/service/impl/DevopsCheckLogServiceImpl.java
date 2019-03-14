@@ -931,19 +931,19 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<Integer> gitlabProjectIds = applicationMapper.selectAll().stream()
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                     .map(ApplicationDO::getGitlabProjectId).collect(Collectors.toList());
-            //ciVariable
-            gitlabProjectIds.forEach(t ->
-                    gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
-                            devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId())));
             //changRole
             gitlabProjectIds.forEach(t -> {
-                List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().map(memberE -> {
-                    if (memberE.getAccessLevel() == 40) {
-                        return new MemberDTO(memberE.getId(), 30);
+                try {
+                    List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().filter(m -> m.getAccessLevel() == 40).map(memberE ->
+                            new MemberDTO(memberE.getId(), 30)).collect(Collectors.toList());
+                    if (!memberDTOS.isEmpty()) {
+                        gitlabRepository.updateMemberIntoProject(t, memberDTOS);
                     }
-                    return null;
-                }).collect(Collectors.toList());
-                gitlabRepository.updateMemberIntoProject(t, memberDTOS);
+                    gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
+                            devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId()));
+                } catch (Exception e) {
+                    LOGGER.info("gitlab.project.is.not.exist,gitlabProjectId: " + t, e);
+                }
             });
         }
 
