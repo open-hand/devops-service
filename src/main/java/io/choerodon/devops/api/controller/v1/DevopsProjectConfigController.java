@@ -56,7 +56,7 @@ public class DevopsProjectConfigController {
             @RequestBody DevopsProjectConfigDTO devopsProjectConfigDTO) {
         return Optional.ofNullable(devopsProjectConfigService.create(projectId, devopsProjectConfigDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.create"));
+                .orElseThrow(() -> new CommonException("error.devops.project.config.create"));
     }
 
     /**
@@ -76,7 +76,7 @@ public class DevopsProjectConfigController {
             @RequestBody DevopsProjectConfigDTO devopsProjectConfigDTO) {
         return Optional.ofNullable(devopsProjectConfigService.updateByPrimaryKeySelective(projectId, devopsProjectConfigDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.update"));
+                .orElseThrow(() -> new CommonException("error.devops.project.config.update"));
     }
 
     /**
@@ -120,7 +120,7 @@ public class DevopsProjectConfigController {
         return Optional.ofNullable(
                 devopsProjectConfigService.listByOptions(projectId, pageRequest, param))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.list.by.options.get"));
+                .orElseThrow(() -> new CommonException("error.devops.project.config.list.by.options.get"));
     }
 
     /**
@@ -131,8 +131,7 @@ public class DevopsProjectConfigController {
      * @return ResponseEntity<DevopsProjectConfigDTO>
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "项目下分页查询配置")
-    @CustomPageRequest
+    @ApiOperation(value = "项目下根据配置Id查询配置")
     @GetMapping("/{project_config_id}")
     public ResponseEntity<DevopsProjectConfigDTO> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
@@ -142,18 +141,18 @@ public class DevopsProjectConfigController {
         return Optional.ofNullable(
                 devopsProjectConfigService.queryByPrimaryKey(projectConfigId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.get"));
+                .orElseThrow(() -> new CommonException("error.devops.project.config.get"));
     }
 
     /**
      * 根据项目Id和类型查询配置
      *
      * @param projectId 项目id
-     * @param type      配置id
+     * @param type      配置类型
      * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
-    @ApiOperation(value = "根据项目Id和类型查询配置")
+    @ApiOperation(value = "项目下根据类型查询配置")
     @CustomPageRequest
     @GetMapping("/type")
     public ResponseEntity<List<DevopsProjectConfigDTO>> queryByIdAndType(
@@ -164,6 +163,6 @@ public class DevopsProjectConfigController {
         return Optional.ofNullable(
                 devopsProjectConfigService.queryByIdAndType(projectId,type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.devopsProjectConfig.get.type"));
+                .orElseThrow(() -> new CommonException("error.devops.project.config.get.type"));
     }
 }
