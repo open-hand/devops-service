@@ -35,30 +35,23 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
     @Autowired
     DevopsProjectConfigMapper configMapper;
 
-    @Autowired
-    ProjectConfigHarborService harborService;
-
     @Override
     public DevopsProjectConfigE create(DevopsProjectConfigE devopsProjectConfigE) {
         DevopsProjectConfigDO paramDO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigDO.class);
-
-        DevopsProjectConfigDO checkParamDO = new DevopsProjectConfigDO();
-        checkParamDO.setName(paramDO.getName());
-        checkParamDO.setProjectId(paramDO.getProjectId());
-        DevopsProjectConfigDO checkedDO = configMapper.selectOne(checkParamDO);
-        ProjectConfigType type = ProjectConfigType.valueOf(paramDO.getType());
-
-        if (ObjectUtils.isEmpty(checkedDO)) {
-            if (type.equals(ProjectConfigType.HARBOR)) {
-                harborService.createHarbor(devopsProjectConfigE.getConfig(), paramDO.getProjectId());
-            }
-            if (configMapper.insert(paramDO) != 1) {
-                throw new CommonException("error.devops.project.config.create");
-            }
-        } else {
-            throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
+        if (configMapper.insert(paramDO) != 1) {
+            throw new CommonException("error.devops.project.config.create");
         }
         return ConvertHelper.convert(configMapper.selectOne(paramDO), DevopsProjectConfigE.class);
+    }
+
+    /**
+     * @param devopsProjectConfigE
+     * @return true为不存在同名值  false存在
+     */
+    @Override
+    public Boolean checkNameWithProjectUniqueness(DevopsProjectConfigE devopsProjectConfigE) {
+        DevopsProjectConfigDO checkParamDO = ConvertHelper.convert(devopsProjectConfigE, DevopsProjectConfigDO.class);
+        return ObjectUtils.isEmpty(configMapper.selectOne(checkParamDO));
     }
 
     @Override
@@ -122,6 +115,6 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
 
     @Override
     public List<DevopsProjectConfigE> queryByIdAndType(Long projectId, String type) {
-        return ConvertHelper.convertList(configMapper.queryByIdAndType(projectId,type),DevopsProjectConfigE.class);
+        return ConvertHelper.convertList(configMapper.queryByIdAndType(projectId, type), DevopsProjectConfigE.class);
     }
 }

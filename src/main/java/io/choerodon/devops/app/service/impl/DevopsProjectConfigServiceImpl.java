@@ -1,17 +1,17 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.internal.LinkedTreeMap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
+import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.feign.HarborClient;
@@ -22,6 +22,9 @@ import org.springframework.util.ObjectUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author zongw.lee@gmail.com
@@ -36,6 +39,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Autowired
     DevopsProjectConfigValidator configValidator;
 
+    @Autowired
+    ProjectConfigHarborService harborService;
+
     @Override
     public DevopsProjectConfigDTO create(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
         if (devopsProjectConfigDTO.getType().equals("harbor") && devopsProjectConfigDTO.getConfig().getProject() != null) {
@@ -44,8 +50,18 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         devopsProjectConfigE.setProjectId(projectId);
         configValidator.checkConfigType(devopsProjectConfigDTO);
+        ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType().toUpperCase());
 
-        return ConvertHelper.convert(devopsProjectConfigRepository.create(devopsProjectConfigE), DevopsProjectConfigDTO.class);
+        DevopsProjectConfigE res;
+        if (devopsProjectConfigRepository.checkNameWithProjectUniqueness(devopsProjectConfigE)) {
+            if (type.equals(ProjectConfigType.HARBOR)) {
+                harborService.createHarbor(devopsProjectConfigE.getConfig(), devopsProjectConfigE.getProjectId());
+            }
+            res = devopsProjectConfigRepository.create(devopsProjectConfigE);
+        } else {
+            throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
+        }
+        return ConvertHelper.convert(res, DevopsProjectConfigDTO.class);
     }
 
     private void checkRegistryProjectIsPrivate(DevopsProjectConfigDTO devopsProjectConfigDTO) {

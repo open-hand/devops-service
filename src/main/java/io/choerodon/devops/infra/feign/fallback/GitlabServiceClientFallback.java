@@ -383,4 +383,9 @@ public class GitlabServiceClientFallback implements GitlabServiceClient {
     public ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(Integer userId) {
         return new ResponseEntity("error.project.get.by.userId", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity<Boolean> checkEmailIsExist(String email) {
+        return new ResponseEntity("error.gitlab.user.email.check", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

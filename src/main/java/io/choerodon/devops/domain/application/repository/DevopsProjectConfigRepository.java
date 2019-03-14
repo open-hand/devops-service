@@ -13,6 +13,8 @@ import java.util.List;
 public interface DevopsProjectConfigRepository {
     DevopsProjectConfigE create(DevopsProjectConfigE devopsProjectConfigE);
 
+    Boolean checkNameWithProjectUniqueness(DevopsProjectConfigE devopsProjectConfigE);
+
     DevopsProjectConfigE updateByPrimaryKeySelective(DevopsProjectConfigE devopsProjectConfigE);
 
     DevopsProjectConfigE queryByPrimaryKey(Long id);

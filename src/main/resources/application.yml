@@ -64,7 +64,7 @@ eureka:
 security:
   basic:
       enabled: false
-  ignored: /ci,/webhook/**,/v2/api-docs,/agent/**,/ws/**
+  ignored: /ci,/webhook/**,/v2/api-docs,/agent/**,/ws/**,/gitlab/email
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:

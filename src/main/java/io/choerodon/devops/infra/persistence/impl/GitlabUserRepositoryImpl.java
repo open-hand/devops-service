@@ -92,4 +92,9 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
     public void initMockService(GitlabServiceClient gitlabServiceClient) {
         this.gitlabServiceClient = gitlabServiceClient;
     }
+
+    @Override
+    public Boolean checkEmailIsExist(String email) {
+        return gitlabServiceClient.checkEmailIsExist(email).getBody();
+    }
 }
