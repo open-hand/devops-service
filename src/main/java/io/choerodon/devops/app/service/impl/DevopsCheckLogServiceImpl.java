@@ -932,7 +932,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                     .map(a -> a.getGitlabProjectId()).collect(Collectors.toList());
 //            devopsProjectConfigRepository.queryByIdAndType(null,)
-            DevopsVariablePayLoad devopsVariablePayLoad=new DevopsVariablePayLoad(gitlabProjectIds,)
+//            DevopsVariablePayLoad devopsVariablePayLoad=new DevopsVariablePayLoad(gitlabProjectIds,)
 
         }
 
