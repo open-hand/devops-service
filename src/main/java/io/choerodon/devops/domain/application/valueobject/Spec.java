@@ -1,10 +1,13 @@
 package io.choerodon.devops.domain.application.valueobject;
 
+import java.util.List;
+
 public class Spec {
 
 
     private String repoUrl;
     private String chartName;
+    private List<ImagePullSecret> imagePullSecrets;
     private String chartVersion;
     private String values;
 
@@ -38,5 +41,13 @@ public class Spec {
 
     public void setValues(String values) {
         this.values = values;
+    }
+
+    public List<ImagePullSecret> getImagePullSecrets() {
+        return imagePullSecrets;
+    }
+
+    public void setImagePullSecrets(List<ImagePullSecret> imagePullSecrets) {
+        this.imagePullSecrets = imagePullSecrets;
     }
 }

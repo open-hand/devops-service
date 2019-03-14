@@ -3,6 +3,7 @@ package io.choerodon.devops.domain.service;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.devops.api.dto.ProjectConfigDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
@@ -33,4 +34,6 @@ public interface DeployService {
     void createCertManager(Long clusterId);
 
     void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
+
+    void operateSecret(Long clusterId, String namespace, ProjectConfigDTO projectConfigDTO, String type);
 }

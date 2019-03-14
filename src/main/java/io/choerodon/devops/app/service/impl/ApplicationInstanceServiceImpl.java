@@ -26,6 +26,7 @@ import io.choerodon.devops.domain.application.handler.CheckOptionsHandler;
 import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
+import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
 import io.choerodon.devops.domain.application.valueobject.Metadata;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.domain.service.DeployService;
@@ -118,6 +119,10 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private CheckOptionsHandler checkOptionsHandler;
     @Autowired
     private DevopsAutoDeployRepository devopsAutoDeployRepository;
+    @Autowired
+    private DevopsProjectConfigRepository devopsProjectConfigRepository;
+    @Autowired
+    private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
 
     @Override
     public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
@@ -746,6 +751,36 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             checkOptionsHandler.check(devopsEnvironmentE, applicationDeployDTO.getAppInstanceId(), code, C7NHELM_RELEASE);
         }
 
+        String secretName = null;
+        //如果应用绑定了私有镜像库,则处理secret
+        if (applicationE.getHarborConfigE() != null) {
+            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
+            if (devopsProjectConfigE.getConfig().getPrivate()) {
+                DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByEnv(devopsEnvironmentE.getId(), devopsProjectConfigE.getId());
+                if (devopsRegistrySecretE == null) {
+                    //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
+                    List<DevopsRegistrySecretE> devopsRegistrySecretES = devopsRegistrySecretRepository.listByConfig(devopsProjectConfigE.getId());
+                    String secretCode = null;
+                    if (devopsRegistrySecretES.isEmpty()) {
+                        secretCode = String.format("%s%s%s%s", "registry-secret-", devopsProjectConfigE.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
+                    } else {
+                        secretCode = devopsRegistrySecretES.get(0).getSecretCode();
+                    }
+                    devopsRegistrySecretE = new DevopsRegistrySecretE(devopsEnvironmentE.getId(), devopsProjectConfigE.getId(), secretCode, gson.toJson(devopsProjectConfigE.getConfig()));
+                    devopsRegistrySecretRepository.create(devopsRegistrySecretE);
+                    deployService.operateSecret(devopsEnvironmentE.getClusterE().getId(), devopsEnvironmentE.getCode(), devopsProjectConfigE.getConfig(), "create");
+                } else {
+                    //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
+                    if (!devopsRegistrySecretE.getSecretDetail().equals(gson.toJson(devopsProjectConfigE.getConfig()))) {
+                        devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
+                        devopsRegistrySecretRepository.update(devopsRegistrySecretE);
+                        deployService.operateSecret(devopsEnvironmentE.getClusterE().getId(), devopsEnvironmentE.getCode(), devopsProjectConfigE.getConfig(), "update");
+                    }
+                }
+                secretName = devopsRegistrySecretE.getSecretCode();
+            }
+        }
+
         //检验gitops库是否存在，校验操作人是否是有gitops库的权限
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
         gitlabGroupMemberService.checkEnvProject(devopsEnvironmentE, userAttrE);
@@ -784,7 +819,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             //在gitops库处理instance文件
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
-                    code, applicationVersionE, applicationDeployDTO, applicationE));
+                    code, applicationVersionE, applicationDeployDTO, applicationE, secretName));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             objectOperation.operationEnvGitlabFile(
                     RELEASE_PREFIX + code,
@@ -939,7 +974,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验用户是否有环境的权限
+        //校验用户是否有环境的权限c
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
                 instanceE.getDevopsEnvironmentE().getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
@@ -1121,12 +1156,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     private C7nHelmRelease getC7NHelmRelease(String code, ApplicationVersionE applicationVersionE,
-                                             ApplicationDeployDTO applicationDeployDTO, ApplicationE applicationE) {
+                                             ApplicationDeployDTO applicationDeployDTO, ApplicationE applicationE, String secretName) {
         C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
         c7nHelmRelease.getMetadata().setName(code);
         c7nHelmRelease.getSpec().setRepoUrl(applicationVersionE.getRepository());
         c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
         c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
+        if (secretName != null) {
+            c7nHelmRelease.getSpec().setImagePullSecrets(Arrays.asList(new ImagePullSecret(secretName)));
+        }
         c7nHelmRelease.getSpec().setValues(
                 getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),
                         applicationDeployDTO.getValues()).getDeltaYaml().trim());

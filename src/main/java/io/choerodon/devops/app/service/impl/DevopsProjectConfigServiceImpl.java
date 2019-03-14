@@ -1,5 +1,9 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.internal.LinkedTreeMap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -8,12 +12,16 @@ import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.infra.config.ConfigurationProperties;
+import io.choerodon.devops.infra.config.RetrofitHandler;
+import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-
-import java.util.List;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * @author zongw.lee@gmail.com
@@ -30,16 +38,39 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public DevopsProjectConfigDTO create(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
+        if (devopsProjectConfigDTO.getType().equals("harbor") && devopsProjectConfigDTO.getConfig().getProject() != null) {
+            checkRegistryProjectIsPrivate(devopsProjectConfigDTO);
+        }
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         devopsProjectConfigE.setProjectId(projectId);
         configValidator.checkConfigType(devopsProjectConfigDTO);
+
         return ConvertHelper.convert(devopsProjectConfigRepository.create(devopsProjectConfigE), DevopsProjectConfigDTO.class);
+    }
+
+    private void checkRegistryProjectIsPrivate(DevopsProjectConfigDTO devopsProjectConfigDTO) {
+        ConfigurationProperties configurationProperties = new ConfigurationProperties();
+        configurationProperties.setBaseUrl(devopsProjectConfigDTO.getConfig().getUrl());
+        configurationProperties.setUsername(devopsProjectConfigDTO.getConfig().getUserName());
+        configurationProperties.setPassword(devopsProjectConfigDTO.getConfig().getPassword());
+        configurationProperties.setInsecureSkipTlsVerify(false);
+        configurationProperties.setProject(devopsProjectConfigDTO.getConfig().getProject());
+        configurationProperties.setType("harbor");
+        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
+        HarborClient harborClient = retrofit.create(HarborClient.class);
+        Call<Object> listProject = harborClient.listProject(devopsProjectConfigDTO.getConfig().getProject());
+        Response<Object> projectResponse = RetrofitHandler.execute(listProject);
+        if ("false".equals(((LinkedTreeMap) ((LinkedTreeMap) ((ArrayList) projectResponse.body()).get(0)).get("metadata")).get("public").toString())) {
+            devopsProjectConfigDTO.getConfig().setPrivate(true);
+        } else {
+            devopsProjectConfigDTO.getConfig().setPrivate(false);
+        }
     }
 
     @Override
     public DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
-        if(!ObjectUtils.isEmpty(devopsProjectConfigDTO.getType())){
+        if (!ObjectUtils.isEmpty(devopsProjectConfigDTO.getType())) {
             configValidator.checkConfigType(devopsProjectConfigDTO);
         }
         return ConvertHelper.convert(devopsProjectConfigRepository.updateByPrimaryKeySelective(devopsProjectConfigE), DevopsProjectConfigDTO.class);
@@ -47,12 +78,12 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public DevopsProjectConfigDTO queryByPrimaryKey(Long id) {
-        return ConvertHelper.convert(devopsProjectConfigRepository.queryByPrimaryKey(id),DevopsProjectConfigDTO.class);
+        return ConvertHelper.convert(devopsProjectConfigRepository.queryByPrimaryKey(id), DevopsProjectConfigDTO.class);
     }
 
     @Override
     public Page<DevopsProjectConfigDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
-        return ConvertPageHelper.convertPage(devopsProjectConfigRepository.listByOptions(projectId,pageRequest,params),DevopsProjectConfigDTO.class);
+        return ConvertPageHelper.convertPage(devopsProjectConfigRepository.listByOptions(projectId, pageRequest, params), DevopsProjectConfigDTO.class);
     }
 
     @Override
