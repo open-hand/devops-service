@@ -1,8 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.internal.LinkedTreeMap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -14,14 +11,10 @@ import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-<<<<<<< HEAD
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.feign.HarborClient;
-=======
-import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
-import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
->>>>>>> [ADD] 修改创建配置逻辑
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +22,9 @@ import org.springframework.util.ObjectUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author zongw.lee@gmail.com
@@ -54,10 +50,6 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         devopsProjectConfigE.setProjectId(projectId);
         configValidator.checkConfigType(devopsProjectConfigDTO);
-<<<<<<< HEAD
-
-        return ConvertHelper.convert(devopsProjectConfigRepository.create(devopsProjectConfigE), DevopsProjectConfigDTO.class);
-=======
         ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType());
 
         DevopsProjectConfigE res;
@@ -70,7 +62,6 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
             throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
         }
         return ConvertHelper.convert(res, DevopsProjectConfigDTO.class);
->>>>>>> [ADD] 修改创建配置逻辑
     }
 
     private void checkRegistryProjectIsPrivate(DevopsProjectConfigDTO devopsProjectConfigDTO) {
