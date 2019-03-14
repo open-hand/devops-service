@@ -95,4 +95,9 @@ public class GitlabUserServiceImpl implements GitlabUserService {
         }
         gitlabUserRequestDTO.setUsername(newUserName.toString());
     }
+
+    @Override
+    public Boolean checkEmailIsExist(String email) {
+        return gitlabUserRepository.checkEmailIsExist(email);
+    }
 }

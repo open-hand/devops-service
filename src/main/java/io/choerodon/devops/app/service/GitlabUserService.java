@@ -14,4 +14,6 @@ public interface GitlabUserService {
     void isEnabledGitlabUser(Integer userId);
 
     void disEnabledGitlabUser(Integer userId);
+
+    Boolean checkEmailIsExist(String email);
 }

@@ -37,7 +37,6 @@ import java.util.List;
 import java.util.Map;
 
 
-
 /**
  * gitlab服务 feign客户端
  * Created by Zenger on 2018/3/28.
@@ -477,7 +476,7 @@ public interface GitlabServiceClient {
 
     @GetMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity<MemberDO> getProjectMember(@PathVariable("projectId") Integer projectId,
-                                       @PathVariable("userId") Integer userId);
+                                              @PathVariable("userId") Integer userId);
 
     @DeleteMapping("/v1/projects/{projectId}/members/{userId}")
     ResponseEntity removeMemberFromProject(@PathVariable("projectId") Integer projectId,
@@ -488,4 +487,7 @@ public interface GitlabServiceClient {
 
     @GetMapping("/v1/projects/{user_id}/projects")
     ResponseEntity<List<GitlabProjectDO>> getProjectsByUserId(@PathVariable(value = "user_id") Integer id);
+
+    @GetMapping("/v1/users/email/check")
+    ResponseEntity<Boolean> checkEmailIsExist(@RequestParam(value = "email") String email);
 }

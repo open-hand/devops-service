@@ -22,4 +22,6 @@ public interface GitlabUserRepository {
     GitlabUserE getGitlabUserByUserId(Integer userId);
 
     void initMockService(GitlabServiceClient gitlabServiceClient);
+
+    Boolean checkEmailIsExist(String email);
 }
