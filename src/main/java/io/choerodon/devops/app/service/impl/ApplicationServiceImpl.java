@@ -205,6 +205,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE.initActive(true);
         applicationE.initSynchro(false);
         applicationE.setIsSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+        applicationE.initHarborConfig(applicationReqDTO.getHarborConfigId());
+        applicationE.initChartConfig(applicationReqDTO.getChartConfigId());
         return applicationE;
     }
 
@@ -1163,6 +1165,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         if (applicationImportDTO.getApplicationTemplateId() != null) {
             applicationE.initApplicationTemplateE(applicationImportDTO.getApplicationTemplateId());
         }
+        applicationE.initHarborConfig(applicationImportDTO.getHarborConfigId());
+        applicationE.initChartConfig(applicationImportDTO.getChartConfigId());
         return applicationE;
     }
 
