@@ -1,6 +1,7 @@
 package io.choerodon.devops
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
@@ -131,7 +132,7 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         try {
             jwtToken = 'Bearer ' + JwtHelper.encode(objectMapper.writeValueAsString(defaultUserDetails), signer).getEncoded()
         } catch (IOException e) {
-            e.printStackTrace()
+            throw new CommonException(e)
         }
         return jwtToken
     }
