@@ -972,6 +972,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     LOGGER.info("gitlab.env.project.is.not.exist,gitlabProjectId: " + t, e);
                     checkLog.setResult(FAILED + e.getMessage());
                 }
+                LOGGER.info(checkLog.toString());
+                logs.add(checkLog);
             });
         }
 
