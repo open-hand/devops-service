@@ -1,7 +1,9 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.GitlabUserService;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,8 @@ public class DevopsGitlabEmailController {
      * @param email 用户邮箱
      * @return Boolean
      */
+    @Permission(level = ResourceLevel.SITE,
+            permissionPublic = true)
     @ApiOperation(value = "校验用户邮箱是否在gitlab已存在")
     @GetMapping(value = "/check")
     public ResponseEntity<Boolean> checkEmailIsExist(
