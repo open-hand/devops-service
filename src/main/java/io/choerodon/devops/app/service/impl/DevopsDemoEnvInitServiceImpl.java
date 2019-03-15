@@ -1,5 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
+
 import com.alibaba.fastjson.JSONObject;
 import com.google.gson.Gson;
 import io.choerodon.core.convertor.ConvertHelper;
@@ -32,13 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
-
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * 为搭建Demo环境初始化项目中的一些数据，包含应用，分支，提交，版本，应用市场等
@@ -279,7 +279,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
             applicationVersionService.create(demoDataDTO.getAppVersion().getImage(), applicationRepository.query(appId).getToken(), demoDataDTO.getAppVersion().getVersion(), demoDataDTO.getAppVersion().getCommit(), multipartFile);
         } catch (IOException e) {
             logger.error("can not find file {}", tgzFilePath);
-            e.printStackTrace();
+            throw new CommonException(e);
         }
     }
 }

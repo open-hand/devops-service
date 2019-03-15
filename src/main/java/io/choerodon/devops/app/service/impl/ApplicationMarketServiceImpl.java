@@ -644,7 +644,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
         try {
             uploadTaz.execute();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new CommonException(e);
         }
     }
 
