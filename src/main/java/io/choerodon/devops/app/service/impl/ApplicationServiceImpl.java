@@ -279,26 +279,26 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         // 创建gitlabUserPayload
-        DevOpsUserPayload devOpsAppPayload = new DevOpsUserPayload();
-        devOpsAppPayload.setIamProjectId(projectId);
-        devOpsAppPayload.setAppId(appId);
-        devOpsAppPayload.setGitlabProjectId(oldApplicationE.getGitlabProjectE().getId());
-        devOpsAppPayload.setIamUserIds(applicationUpdateDTO.getUserIds());
+        DevOpsUserPayload devOpsUserPayload = new DevOpsUserPayload();
+        devOpsUserPayload.setIamProjectId(projectId);
+        devOpsUserPayload.setAppId(appId);
+        devOpsUserPayload.setGitlabProjectId(oldApplicationE.getGitlabProjectE().getId());
+        devOpsUserPayload.setIamUserIds(applicationUpdateDTO.getUserIds());
 
         if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
             return true;
         } else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getIsSkipCheckPermission()) {
             applicationUpdateDTO.getUserIds().forEach(e -> appUserPermissionRepository.create(e, appId));
-            devOpsAppPayload.setOption(1);
+            devOpsUserPayload.setOption(1);
         } else if (!oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
             appUserPermissionRepository.deleteByAppId(appId);
-            devOpsAppPayload.setOption(2);
+            devOpsUserPayload.setOption(2);
         } else {
             appUserPermissionRepository.deleteByAppId(appId);
             applicationUpdateDTO.getUserIds().forEach(e -> appUserPermissionRepository.create(e, appId));
-            devOpsAppPayload.setOption(3);
+            devOpsUserPayload.setOption(3);
         }
-        String input = gson.toJson(devOpsAppPayload);
+        String input = gson.toJson(devOpsUserPayload);
         sagaClient.startSaga("devops-update-gitlab-users", new StartInstanceDTO(input, "app", appId.toString(), ResourceLevel.PROJECT.value(), projectId));
 
         return true;

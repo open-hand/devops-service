@@ -92,6 +92,7 @@ import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
 import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
 import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
+import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
 import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
 import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
 import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
@@ -170,6 +171,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
     @Autowired
     private ApplicationMapper applicationMapper;
+    @Autowired
+    private DevopsEnvironmentMapper devopsEnvironmentMapper;
     @Autowired
     private GitlabRepository gitlabRepository;
     @Autowired
@@ -931,6 +934,9 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<Integer> gitlabProjectIds = applicationMapper.selectAll().stream()
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                     .map(ApplicationDO::getGitlabProjectId).collect(Collectors.toList());
+            List<Integer> envGitlabProjectIds = devopsEnvironmentMapper.selectAll().stream()
+                    .filter(environmentDO -> environmentDO.getGitlabEnvProjectId() != null)
+                    .map(t -> TypeUtil.objToInteger(t.getGitlabEnvProjectId())).collect(Collectors.toList());
             //changRole
             gitlabProjectIds.forEach(t -> {
                 CheckLog checkLog = new CheckLog();
@@ -950,6 +956,22 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 }
                 LOGGER.info(checkLog.toString());
                 logs.add(checkLog);
+            });
+            envGitlabProjectIds.forEach(t -> {
+                CheckLog checkLog = new CheckLog();
+                try {
+                    checkLog.setContent("gitlabProjectId: " + t + " sync gitlab env role");
+                    List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().filter(m -> m.getAccessLevel() == 40).map(memberE ->
+                            new MemberDTO(memberE.getId(), 30)).collect(Collectors.toList());
+                    if (!memberDTOS.isEmpty()) {
+                        gitlabRepository.updateMemberIntoProject(t, memberDTOS);
+                    }
+                    LOGGER.info(SUCCESS);
+                    checkLog.setResult(SUCCESS);
+                } catch (Exception e) {
+                    LOGGER.info("gitlab.env.project.is.not.exist,gitlabProjectId: " + t, e);
+                    checkLog.setResult(FAILED + e.getMessage());
+                }
             });
         }
 
