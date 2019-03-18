@@ -5,11 +5,9 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -116,5 +114,15 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
     @Override
     public List<DevopsProjectConfigE> queryByIdAndType(Long projectId, String type) {
         return ConvertHelper.convertList(configMapper.queryByIdAndType(projectId, type), DevopsProjectConfigE.class);
+    }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        DevopsProjectConfigDO projectConfigDO = new DevopsProjectConfigDO();
+        projectConfigDO.setProjectId(projectId);
+        projectConfigDO.setName(name);
+        if (configMapper.selectOne(projectConfigDO) != null) {
+            throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
+        }
     }
 }
