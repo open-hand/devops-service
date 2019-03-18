@@ -124,10 +124,10 @@ public class RetrofitHandler {
         try {
             response = call.execute();
             if (response.code() != 200) {
-                throw new CommonException(response.errorBody().string());
+                throw new CommonException("code:"+response.code()+",message:"+response.message()+",body:"+response.errorBody().toString());
             }
         } catch (IOException e) {
-            throw new CommonException(e);
+            throw new CommonException("error.retrofit.handler.url");
         }
         return response;
     }
