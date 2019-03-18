@@ -532,7 +532,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
                 // 当项目不存在用户权限纪录时(防止失败重试时报成员已存在异常)，添加gitlab用户权限
                 GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(gitlabProjectId.intValue(), TypeUtil.objToInteger(gitlabUserId));
                 if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
-                    MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 40, "");
+                    MemberDTO memberDTO = new MemberDTO(TypeUtil.objToInteger(gitlabUserId), 30, "");
                     gitlabRepository.addMemberIntoProject(TypeUtil.objToInteger(gitlabProjectId), memberDTO);
                 }
                 // 添加devops数据库记录
