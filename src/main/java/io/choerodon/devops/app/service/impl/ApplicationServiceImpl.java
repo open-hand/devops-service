@@ -143,8 +143,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Autowired
     private GitlabProjectRepository gitlabProjectRepository;
     @Autowired
-    private HarborConfigurationProperties harborConfigurationProperties;
-    @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
 
     @Override
@@ -189,9 +187,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         iamAppPayLoad.setOrganizationId(organization.getId());
         iamAppPayLoad.setProjectId(projectId);
         iamAppPayLoad.setCreateBy(userAttrE.getGitlabUserId());
-        String input = gson.toJson(iamAppPayLoad);
-        sagaClient.startSaga("devops-create-application", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), projectId));
 
+//        iamRepository.createIamApp(organization.getId(), iamAppPayLoad);
+        createIamApplication(iamAppPayLoad);
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
                 applicationE.getProjectE().getId()), ApplicationRepDTO.class);
     }
@@ -272,10 +270,13 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
             IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+            ProjectE projectE = iamRepository.queryIamProject(oldApplicationE.getProjectE().getId());
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            iamAppPayLoad.setOrganizationId(organization.getId());
             iamAppPayLoad.setProjectId(oldApplicationE.getProjectE().getId());
             iamAppPayLoad.setName(applicationUpdateDTO.getName());
             iamAppPayLoad.setCode(oldApplicationE.getCode());
-            startUpdateIamApp(iamAppPayLoad);
+//            iamRepository.updateIamApp(organization.getId(), null, iamAppPayLoad);
         }
 
         // 创建gitlabUserPayload
@@ -304,20 +305,21 @@ public class ApplicationServiceImpl implements ApplicationService {
         return true;
     }
 
-    @Saga(code = "devops-update-application",
-            description = "Devops更新应用", inputSchema = "{}")
-    public void startUpdateIamApp(IamAppPayLoad iamAppPayLoad) {
-        String input = gson.toJson(iamAppPayLoad);
-        sagaClient.startSaga("devops-update-application", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), iamAppPayLoad.getProjectId()));
-    }
 
     @Override
     public Boolean active(Long applicationId, Boolean active) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
+        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
+        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         applicationE.initActive(active);
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException("error.application.active");
         }
+//        if (active) {
+//            iamRepository.enableIamApp(organization.getId(), null);
+//        } else {
+//            iamRepository.disabledIamApp(organization.getId(), null);
+//        }
         return true;
     }
 

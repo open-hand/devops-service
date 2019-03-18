@@ -7,11 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
@@ -20,6 +15,7 @@ import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
@@ -27,6 +23,10 @@ import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by younger on 2018/3/29.
@@ -258,5 +258,45 @@ public class IamRepositoryImpl implements IamRepository {
                         .stream().filter(roleDTO -> roleDTO.getCode().equals(PROJECT_OWNER))
                         .collect(Collectors.toList())));
         return !roleDTOS.isEmpty();
+    }
+
+    @Override
+    public IamAppPayLoad createIamApp(Long organizationId, IamAppPayLoad iamAppPayLoad) {
+        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = null;
+        try {
+            iamAppPayLoadResponseEntity = iamServiceClient.createIamApplication(organizationId, iamAppPayLoad);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        return iamAppPayLoadResponseEntity.getBody();
+    }
+
+    @Override
+    public IamAppPayLoad updateIamApp(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad) {
+        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = null;
+        try {
+            iamAppPayLoadResponseEntity = iamServiceClient.updateIamApplication(organizationId, id, iamAppPayLoad);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+        return iamAppPayLoadResponseEntity.getBody();
+    }
+
+    @Override
+    public void disabledIamApp(Long organizationId, Long id) {
+        try {
+            iamServiceClient.disableIamApplication(organizationId, id);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public void enableIamApp(Long organizationId, Long id) {
+        try {
+            iamServiceClient.enableIamApplication(organizationId, id);
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
     }
 }
