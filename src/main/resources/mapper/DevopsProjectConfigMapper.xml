@@ -23,7 +23,7 @@
             <if test='searchParam.url != null and searchParam.url.size > 0'>
                 AND
                 <foreach collection="searchParam.url" item="url" open="(" separator=" OR " close=")">
-                    dpc.url LIKE CONCAT(CONCAT('%', #{url, jdbcType=VARCHAR}),'%')
+                    REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%', #{url, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
             <if test='searchParam.name != null and searchParam.name.size > 0'>
@@ -34,11 +34,12 @@
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND (dpc.url LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (REPLACE(json_extract(dpc.config,'$.url'),'"','') LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             OR dpc.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
             )
         </if>
     </sql>
+
     <select id="queryByIdAndType"  resultType="io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO">
             SELECT
                 dpc.id,
