@@ -588,7 +588,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                             .getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
                     if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
                         gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
-                                new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
+                                new MemberDTO(TypeUtil.objToInteger(e), 30, ""));
                     }
                 });
             }
@@ -603,7 +603,7 @@ public class ApplicationServiceImpl implements ApplicationService {
                         GitlabMemberE gitlabMemberE = gitlabProjectRepository.getProjectMember(devOpsAppPayload.getGitlabProjectId(), TypeUtil.objToInteger(e));
                         if (gitlabMemberE == null || gitlabMemberE.getId() == null) {
                             gitlabRepository.addMemberIntoProject(devOpsAppPayload.getGitlabProjectId(),
-                                    new MemberDTO(TypeUtil.objToInteger(e), 40, ""));
+                                    new MemberDTO(TypeUtil.objToInteger(e), 30, ""));
                         }
                     }
             );
