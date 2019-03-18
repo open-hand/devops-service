@@ -33,9 +33,6 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
 
     @Override
     public Page<DevopsAutoDeployRecordE> listByOptions(Long projectId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<DevopsAutoDeployRecordDO> devopsAutoDeployRecordDOS = new Page<>();
-        String param = null;
-
         Map<String, Object> mapParams = new HashMap<>();
         mapParams.put("searchParam", null);
         mapParams.put("param", null);
@@ -44,17 +41,10 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
             mapParams.put("searchParam", TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
             mapParams.put("param", TypeUtil.cast(maps.get(TypeUtil.PARAM)));
         }
-        //是否需要分页
-        if (doPage != null && !doPage) {
-            devopsAutoDeployRecordDOS.setContent(devopsAutoDeployRecordMapper.list(projectId, appId, envId, taskName,
-                    (Map<String, Object>) mapParams.get("searchParam"),
-                    mapParams.get("param").toString()));
-        } else {
-            devopsAutoDeployRecordDOS = PageHelper
-                    .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId, appId, envId, taskName,
-                            (Map<String, Object>) mapParams.get("searchParam"),
-                            mapParams.get("param").toString()));
-        }
+        Page<DevopsAutoDeployRecordDO> devopsAutoDeployRecordDOS = PageHelper
+                .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId, appId, envId, taskName,
+                        (Map<String, Object>) mapParams.get("searchParam"),
+                        mapParams.get("param").toString()));
         return ConvertPageHelper.convertPage(devopsAutoDeployRecordDOS, DevopsAutoDeployRecordE.class);
     }
 

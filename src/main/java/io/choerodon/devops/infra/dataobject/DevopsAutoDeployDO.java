@@ -38,8 +38,6 @@ public class DevopsAutoDeployDO extends AuditDomain {
     @Transient
     private String envName;
     @Transient
-    private Integer envStatus;
-    @Transient
     private String value;
 
 
@@ -113,14 +111,6 @@ public class DevopsAutoDeployDO extends AuditDomain {
 
     public void setEnvName(String envName) {
         this.envName = envName;
-    }
-
-    public Integer getEnvStatus() {
-        return envStatus;
-    }
-
-    public void setEnvStatus(Integer envStatus) {
-        this.envStatus = envStatus;
     }
 
     public Long getInstanceId() {

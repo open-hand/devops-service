@@ -8,10 +8,14 @@ import io.choerodon.devops.api.dto.DevopsAutoDeployRecordDTO;
 import io.choerodon.devops.app.service.DevopsAutoDeployService;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployValueE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.websocket.helper.EnvListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,12 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     private DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
     @Autowired
     private DevopsAutoDeployValueRepository devopsAutoDeployValueRepository;
+    @Autowired
+    private EnvUtil envUtil;
+    @Autowired
+    private EnvListener envListener;
+    @Autowired
+    private DevopsEnvironmentRepository devopsEnviromentRepository;
 
     @Override
     public DevopsAutoDeployDTO createOrUpdate(Long projectId, DevopsAutoDeployDTO devopsAutoDeployDTO) {
@@ -59,7 +69,17 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
 
     @Override
     public Page<DevopsAutoDeployDTO> listByOptions(Long projectId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
-        return ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
+        Page<DevopsAutoDeployDTO> devopsAutoDeployDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        devopsAutoDeployDTOS.forEach(autoDeployE -> {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(autoDeployE.getEnvId());
+            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
+                autoDeployE.setEnvStatus(true);
+            }
+        });
+        return devopsAutoDeployDTOS;
     }
 
     @Override
@@ -69,7 +89,17 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
 
     @Override
     public Page<DevopsAutoDeployRecordDTO> queryRecords(Long projectId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
-        return ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
+        Page<DevopsAutoDeployRecordDTO> devopsAutoDeployRecordDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        devopsAutoDeployRecordDTOS.forEach(autoDeployE -> {
+            DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(autoDeployE.getEnvId());
+            if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
+                autoDeployE.setEnvStatus(true);
+            }
+        });
+        return devopsAutoDeployRecordDTOS;
     }
 
     @Override
