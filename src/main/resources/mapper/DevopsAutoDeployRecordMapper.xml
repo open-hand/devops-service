@@ -14,7 +14,6 @@
         da. NAME AS appName,
         dav.version,
         de. NAME AS envName,
-        de.is_active AS envStatus,
         dai. CODE AS instanceName
         FROM
         devops_auto_deploy_record dadr

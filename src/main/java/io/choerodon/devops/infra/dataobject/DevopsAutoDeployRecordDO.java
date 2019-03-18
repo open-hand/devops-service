@@ -42,8 +42,6 @@ public class DevopsAutoDeployRecordDO extends AuditDomain {
     private String envName;
     @Transient
     private String appName;
-    @Transient
-    private Integer envStatus;
 
     public Long getId() {
         return id;
@@ -139,14 +137,6 @@ public class DevopsAutoDeployRecordDO extends AuditDomain {
 
     public void setAppName(String appName) {
         this.appName = appName;
-    }
-
-    public Integer getEnvStatus() {
-        return envStatus;
-    }
-
-    public void setEnvStatus(Integer envStatus) {
-        this.envStatus = envStatus;
     }
 
     public Long getProjectId() {

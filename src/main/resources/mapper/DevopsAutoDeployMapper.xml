@@ -16,8 +16,7 @@
         dad.last_update_date,
         dad.object_version_number,
         dad.instance_id,
-        dad.is_enabled,
-        de.is_active AS envStatus
+        dad.is_enabled
         FROM devops_auto_deploy dad
         JOIN devops_application da
         ON dad.app_id = da.id
