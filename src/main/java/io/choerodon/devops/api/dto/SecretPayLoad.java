@@ -5,9 +5,9 @@ package io.choerodon.devops.api.dto;
  */
 public class SecretPayLoad {
 
-
     private String namespace;
-    private String url;
+    private String server;
+    private String name;
     private String username;
     private String password;
     private String email;
@@ -20,12 +20,20 @@ public class SecretPayLoad {
         this.namespace = namespace;
     }
 
-    public String getUrl() {
-        return url;
+    public String getServer() {
+        return server;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setServer(String server) {
+        this.server = server;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getUsername() {

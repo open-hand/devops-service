@@ -2,18 +2,18 @@ package io.choerodon.devops.infra.feign.fallback;
 
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.IamServiceClient;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by younger on 2018/3/29.
@@ -99,5 +99,25 @@ public class IamServiceClientFallback implements IamServiceClient {
     @Override
     public ResponseEntity<Page<RoleDTO>> queryRoleIdByCode(RoleSearchDTO roleSearchDTO) {
         return new ResponseEntity("error.roleId.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<IamAppPayLoad> createIamApplication(Long organizationId, IamAppPayLoad iamAppPayLoad) {
+        return new ResponseEntity("error.iam.app.create", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<IamAppPayLoad> updateIamApplication(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad) {
+        return new ResponseEntity("error.iam.app.update", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<IamAppPayLoad> disableIamApplication(Long organizationId, Long id) {
+        return new ResponseEntity("error.iam.app.disabled", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @Override
+    public ResponseEntity<IamAppPayLoad> enableIamApplication(Long organizationId, Long id) {
+        return new ResponseEntity("error.iam.app.enabled", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

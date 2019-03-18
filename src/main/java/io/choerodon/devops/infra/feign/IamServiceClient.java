@@ -1,20 +1,20 @@
 package io.choerodon.devops.infra.feign;
 
-import java.util.List;
 import javax.validation.Valid;
-
-import org.springframework.cloud.netflix.feign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
 import io.choerodon.devops.api.dto.iam.*;
+import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.valueobject.MemberRoleV;
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO;
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO;
 import io.choerodon.devops.infra.dataobject.iam.UserDO;
 import io.choerodon.devops.infra.feign.fallback.IamServiceClientFallback;
+import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * Created by younger on 2018/3/29.
@@ -80,4 +80,25 @@ public interface IamServiceClient {
 
     @PostMapping(value = "/v1/roles/search")
     ResponseEntity<Page<RoleDTO>> queryRoleIdByCode(@RequestBody @Valid RoleSearchDTO roleSearchDTO);
+
+
+    @PostMapping(value = "/v1/organizations/{organization_id}/applications")
+    ResponseEntity<IamAppPayLoad> createIamApplication(@PathVariable("organization_id") Long organizationId,
+                                                       @RequestBody @Valid IamAppPayLoad iamAppPayLoad);
+
+
+    @PostMapping(value = "/v1/organizations/{organization_id}/applications/{id}")
+    ResponseEntity<IamAppPayLoad> updateIamApplication(
+            @PathVariable("organization_id") Long organizationId,
+            @PathVariable("id") Long id,
+            @RequestBody @Valid IamAppPayLoad iamAppPayLoad);
+
+
+    @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/disable")
+    ResponseEntity<IamAppPayLoad> disableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
+
+
+    @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/enable")
+    ResponseEntity<IamAppPayLoad> enableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
+
 }

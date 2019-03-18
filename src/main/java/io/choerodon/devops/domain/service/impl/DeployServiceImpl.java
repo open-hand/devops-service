@@ -41,8 +41,7 @@ public class DeployServiceImpl implements DeployService {
     private static final String DELETE_ENV = "delete_env";
     private static final String INIT_ENV = "create_env";
     private static final String OPERATE_POD_COUNT = "operate_pod_count";
-    private static final String CREATE_SECRET = "create_secret";
-    private static final String UPDATE_SECRET = "update_secret";
+    private static final String OPERATE_DOCKER_REGISTRY_SECRET = "operate_docker_registry_secret";
     Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
     private ObjectMapper mapper = new ObjectMapper();
     @Autowired
@@ -175,20 +174,19 @@ public class DeployServiceImpl implements DeployService {
         Msg msg = new Msg();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
         secretPayLoad.setEmail(projectConfigDTO.getEmail());
+        secretPayLoad.setName(projectConfigDTO.getProject());
         secretPayLoad.setNamespace(namespace);
-        secretPayLoad.setUrl(projectConfigDTO.getUrl());
+        secretPayLoad.setServer(projectConfigDTO.getUrl());
         secretPayLoad.setUsername(projectConfigDTO.getUserName());
         secretPayLoad.setPassword(projectConfigDTO.getPassword());
+
         try {
             msg.setPayload(mapper.writeValueAsString(secretPayLoad));
         } catch (IOException e) {
             throw new CommonException(ERROR_PAYLOAD_ERROR, e);
         }
-        if (Type.equals("create")) {
-            msg.setType(CREATE_SECRET);
-        } else {
-            msg.setType(UPDATE_SECRET);
-        }
+
+        msg.setType(OPERATE_DOCKER_REGISTRY_SECRET);
         msg.setKey(String.format(CLUSTER_FORMAT, clusterId
         ));
         commandSender.sendMsg(msg);
