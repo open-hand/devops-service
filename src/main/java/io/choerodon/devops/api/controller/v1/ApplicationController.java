@@ -432,12 +432,11 @@ public class ApplicationController {
      * @param passWord harbor密码
      * @param project  harbor项目
      * @param email    harbor邮箱
-     * @return Boolean
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验harbor配置信息是否正确")
     @GetMapping(value = "check_harbor")
-    public ResponseEntity<Boolean> checkHarbor(
+    public void checkHarbor(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "harbor地址", required = true)
@@ -450,9 +449,7 @@ public class ApplicationController {
             @RequestParam String project,
             @ApiParam(value = "harbor邮箱", required = true)
             @RequestParam String email) {
-        return Optional.ofNullable(applicationService.checkHarborIsUsable(url, userName, passWord, project, email))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.harbor.check"));
+        applicationService.checkHarborIsUsable(url, userName, passWord, project, email);
     }
 
 
@@ -460,19 +457,16 @@ public class ApplicationController {
      * 校验chart配置信息是否正确
      *
      * @param url chartmusume地址
-     * @return Boolean
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "校验chart配置信息是否正确")
     @GetMapping(value = "check_chart")
-    public ResponseEntity<Boolean> checkHarbor(
+    public void checkChart(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "chartmusume地址", required = true)
             @RequestParam String url) {
-        return Optional.ofNullable(applicationService.checkChartIsUsable(url))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.chart.check"));
+        applicationService.checkChartIsUsable(url);
     }
 
     /**
