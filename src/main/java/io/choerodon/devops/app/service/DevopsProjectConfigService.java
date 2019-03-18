@@ -22,4 +22,12 @@ public interface DevopsProjectConfigService {
     void delete(Long id);
 
     List<DevopsProjectConfigDTO> queryByIdAndType(Long projectId, String type);
+
+    /**
+     * 创建配置校验名称是否存在
+     *
+     * @param projectId 项目id
+     * @param name      配置name
+     */
+    void checkName(Long projectId, String name);
 }

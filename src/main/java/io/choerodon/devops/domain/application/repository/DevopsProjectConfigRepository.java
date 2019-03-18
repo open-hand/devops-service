@@ -26,4 +26,6 @@ public interface DevopsProjectConfigRepository {
     void delete(Long id);
 
     List<DevopsProjectConfigE> queryByIdAndType(Long projectId, String type);
+
+    void checkName(Long projectId, String name);
 }

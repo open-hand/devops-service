@@ -52,15 +52,11 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         configValidator.checkConfigType(devopsProjectConfigDTO);
         ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType().toUpperCase());
 
-        DevopsProjectConfigE res;
-        if (devopsProjectConfigRepository.checkNameWithProjectUniqueness(devopsProjectConfigE)) {
-            if (type.equals(ProjectConfigType.HARBOR)) {
-                harborService.createHarbor(devopsProjectConfigE.getConfig(), devopsProjectConfigE.getProjectId());
-            }
-            res = devopsProjectConfigRepository.create(devopsProjectConfigE);
-        } else {
-            throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
+        devopsProjectConfigRepository.checkName(projectId, devopsProjectConfigE.getName());
+        if (type.equals(ProjectConfigType.HARBOR)) {
+            harborService.createHarbor(devopsProjectConfigE.getConfig(), devopsProjectConfigE.getProjectId());
         }
+        DevopsProjectConfigE res = devopsProjectConfigRepository.create(devopsProjectConfigE);
         return ConvertHelper.convert(res, DevopsProjectConfigDTO.class);
     }
 
@@ -110,5 +106,10 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Override
     public List<DevopsProjectConfigDTO> queryByIdAndType(Long projectId, String type) {
         return ConvertHelper.convertList(devopsProjectConfigRepository.queryByIdAndType(projectId, type), DevopsProjectConfigDTO.class);
+    }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        devopsProjectConfigRepository.checkName(projectId, name);
     }
 }

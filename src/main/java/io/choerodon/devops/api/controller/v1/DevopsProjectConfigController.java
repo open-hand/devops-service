@@ -52,6 +52,23 @@ public class DevopsProjectConfigController {
     }
 
     /**
+     * 创建配置校验名称是否存在
+     *
+     * @param projectId 项目id
+     * @param name      配置name
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "创建配置校验名称是否存在")
+    @GetMapping(value = "/check_name")
+    public void checkName(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "配置名", required = true)
+            @RequestParam String name) {
+        devopsProjectConfigService.checkName(projectId, name);
+    }
+
+    /**
      * 项目下更新配置信息
      *
      * @param projectId              项目id

@@ -57,6 +57,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private String tgzFilePath;
 
     @Autowired
+    private DevopsProjectConfigService projectConfigService;
+    @Autowired
     private ApplicationRepository applicationRepository;
     @Autowired
     private DevopsGitService devopsGitService;
@@ -181,6 +183,13 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
         devOpsAppPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
         devOpsAppPayload.setUserIds(applicationReqDTO.getUserIds());
         devOpsAppPayload.setSkipCheckPermission(applicationReqDTO.getIsSkipCheckPermission());
+
+        //设置仓库Id
+        List<DevopsProjectConfigDTO> configDTOS1 = projectConfigService.queryByIdAndType(null,"harbor");
+        List<DevopsProjectConfigDTO> configDTOS2 = projectConfigService.queryByIdAndType(null,"chart");
+        applicationE.initHarborConfig(configDTOS1.get(0).getId());
+        applicationE.initChartConfig(configDTOS2.get(0).getId());
+
         applicationE = applicationRepository.create(applicationE);
         devOpsAppPayload.setAppId(applicationE.getId());
         devOpsAppPayload.setIamProjectId(projectId);
