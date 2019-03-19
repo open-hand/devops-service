@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.task;
 
+import java.util.Map;
+
 import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.asgard.schedule.annotation.JobParam;
 import io.choerodon.asgard.schedule.annotation.JobTask;
@@ -11,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
-
 /**
  * @author zmf
  */
@@ -23,15 +23,15 @@ public class DevopsTask {
     @Autowired
     private DevopsCheckLogService devopsCheckLogService;
 
-    @JobTask(maxRetryCount = 3, code = "syncDevopsEnvPodFields", params = {
+    @JobTask(maxRetryCount = 3, code = "syncNewVersionApplications", params = {
             @JobParam(name = "test", defaultValue = "test")
-    }, description = "升级到0.14.0处理Pod表的节点名称和重启次数字段")
-    @TimedTask(name = "syncDevopsEnvPodFields", description = "升级到0.14.0处理Pod表的节点名称和重启次数字段", oneExecution = true,
+    }, description = "升级到0.15.0同步应用到iam,给应用加配置")
+    @TimedTask(name = "syncNewVersionApplications", description = "升级到0.15.0同步应用到iam,给应用加配置", oneExecution = true,
             repeatCount = 0, repeatInterval = 1, repeatIntervalUnit = QuartzDefinition.SimpleRepeatIntervalUnit.HOURS, params = {
             @TaskParam(name = "test", value = "test")
     })
-    public void syncDevopsEnvPodFields(Map<String, Object> map) {
-        logger.info("begin to sync pod node name and restart count");
-        devopsCheckLogService.checkLog("0.14.0");
+    public void syncNewVersionApplications(Map<String, Object> map) {
+        logger.info("begin to upgrade 0.14.0 to 0.15.0");
+        devopsCheckLogService.checkLog("0.15.0");
     }
 }

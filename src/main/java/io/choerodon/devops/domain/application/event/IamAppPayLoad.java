@@ -2,6 +2,9 @@ package io.choerodon.devops.domain.application.event;
 
 public class IamAppPayLoad {
 
+
+    private Long id;
+
     private Long organizationId;
 
     private Long projectId;
@@ -16,7 +19,10 @@ public class IamAppPayLoad {
 
     private String applicationType;
 
-    private Long createBy;
+    private String from;
+
+    private Long objectVersionNumber;
+
 
     public Long getOrganizationId() {
         return organizationId;
@@ -74,11 +80,27 @@ public class IamAppPayLoad {
         this.applicationType = applicationType;
     }
 
-    public Long getCreateBy() {
-        return createBy;
+    public String getFrom() {
+        return from;
     }
 
-    public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
+    public void setFrom(String from) {
+        this.from = from;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
     }
 }
