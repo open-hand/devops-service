@@ -75,7 +75,7 @@ function chart_build(){
     response_upload_chart_content=`cat "${CI_COMMIT_SHA}-chart.response"`
     rm "${CI_COMMIT_SHA}-chart.response"
     # 判断本次上传到chartmusume是否出错
-    if [ "$result_upload_to_chart" != "200" ]; then
+    if [ "$result_upload_to_chart" != "201" ]; then
         echo $response_upload_chart_content
         echo "upload to chart error"
         exit 1
