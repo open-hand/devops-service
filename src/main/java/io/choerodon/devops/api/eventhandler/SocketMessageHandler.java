@@ -206,6 +206,12 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
             case CONFIG_UPDATE:
                 deployMsgHandlerService.handleConfigUpdate(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
+            case OPERATE_DOCKER_REGISTRY_SECRET_FAILED:
+                deployMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "failed", TypeUtil.objToLong(msg.getClusterId()));
+                break;
+            case OPERATE_DOCKER_REGISTRY_SECRET:
+                deployMsgHandlerService.operateDockerRegistrySecretResp(msg.getKey(), "success", TypeUtil.objToLong(msg.getClusterId()));
+                break;
             default:
                 break;
         }

@@ -19,4 +19,6 @@ public interface DevopsRegistrySecretRepository {
 
     List<DevopsRegistrySecretE> listByConfig(Long configId);
 
+    DevopsRegistrySecretE queryByName(Long envId, String name);
+
 }

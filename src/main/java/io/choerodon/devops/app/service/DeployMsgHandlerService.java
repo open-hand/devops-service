@@ -90,4 +90,7 @@ public interface DeployMsgHandlerService {
     void handleNodeSync(String msg, Long clusterId);
 
     void handleConfigUpdate(String key, String msg, Long clusterId);
+
+    void operateDockerRegistrySecretResp(String key, String msg, Long clusterId);
+
 }

@@ -1,8 +1,8 @@
 package script.db
 
-databaseChangeLog(logicalFilePath: 'dba/devops_secret_registry.groovy') {
+databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
     changeSet(author: 'Sheep', id: '2019-03-14-create-table') {
-        createTable(tableName: "devops_secret_registry", remarks: '私有镜像仓库密钥') {
+        createTable(tableName: "devops_registry_secret", remarks: '私有镜像仓库密钥') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
                 constraints(primaryKey: true)
             }

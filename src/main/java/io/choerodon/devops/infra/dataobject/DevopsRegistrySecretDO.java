@@ -1,5 +1,7 @@
 package io.choerodon.devops.infra.dataobject;
 
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
@@ -15,6 +17,8 @@ import io.choerodon.mybatis.domain.AuditDomain;
 @Table(name = "devops_registry_secret")
 public class DevopsRegistrySecretDO extends AuditDomain {
 
+    @Id
+    @GeneratedValue
     private Long id;
     private Long envId;
     private Long configId;
@@ -80,4 +84,5 @@ public class DevopsRegistrySecretDO extends AuditDomain {
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
     }
+
 }
