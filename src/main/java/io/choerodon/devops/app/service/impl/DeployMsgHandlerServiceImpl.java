@@ -1785,7 +1785,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     certManagerUrl,
                     "cert-manager",
                     "0.1.0",
-                    null, "choerodon-cert-manager");
+                    null, "choerodon-cert-manager",null);
             msg.setKey(String.format("cluster:%d.release:%s",
                     clusterId,
                     "choerodon-cert-manager"));
