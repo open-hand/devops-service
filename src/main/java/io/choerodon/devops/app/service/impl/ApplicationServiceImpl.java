@@ -291,6 +291,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
         applicationE.setIsSkipCheckPermission(applicationUpdateDTO.getIsSkipCheckPermission());
         applicationE.initProjectE(projectId);
+        applicationE.initHarborConfig(applicationUpdateDTO.getHarborConfigId());
+        applicationE.initChartConfig(applicationUpdateDTO.getChartConfigId());
 
         Long appId = applicationUpdateDTO.getId();
         ApplicationE oldApplicationE = applicationRepository.query(appId);
@@ -1032,6 +1034,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE.initActive(true);
         applicationE.initSynchro(false);
         applicationE.setIsSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
+        applicationE.initHarborConfig(applicationImportDTO.getHarborConfigId());
+        applicationE.initChartConfig(applicationImportDTO.getChartConfigId());
 
         // 查询创建应用所在的gitlab应用组
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
