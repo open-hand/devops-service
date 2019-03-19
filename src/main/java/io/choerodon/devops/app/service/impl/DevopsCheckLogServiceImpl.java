@@ -834,7 +834,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         /**
          * 同步devops应用表数据到iam应用表数据
          */
-        @Saga(code = "devops-sync-iam-application",
+        @Saga(code = "devops-sync-application",
                 description = "Devops同步应用到iam", inputSchema = "{}")
         private void syncAppToIam() {
             List<ApplicationDO> applicationDOS = applicationMapper.selectAll().stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null).collect(Collectors.toList());
@@ -853,7 +853,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
             }).collect(Collectors.toList());
             String input = JSONArray.toJSONString(iamAppPayLoads);
-            sagaClient.startSaga("devops-sync-iam-application", new StartInstanceDTO(input, "", "", "", null));
+            sagaClient.startSaga("devops-sync-application", new StartInstanceDTO(input, "", "", "", null));
         }
 
         private void syncCiVariableAndRole(List<CheckLog> logs) {
