@@ -7,6 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境Id')
+            column(name: 'namespace', type: 'VARCHAR(32)', remarks: '命名空间')
             column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '配置Id')
             column(name: 'secret_code', type: 'VARCHAR(32)', remarks: 'secret编码')
             column(name: 'secret_detail', type: 'VARCHAR(1000)', remarks: 'secret内容')

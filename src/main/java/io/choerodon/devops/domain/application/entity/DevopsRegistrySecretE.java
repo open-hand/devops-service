@@ -16,8 +16,8 @@ public class DevopsRegistrySecretE {
     public DevopsRegistrySecretE() {
     }
 
-    public DevopsRegistrySecretE(Long envId, Long configId, String secretCode, String secretDetail) {
-        this.devopsEnvironmentE = new DevopsEnvironmentE(envId);
+    public DevopsRegistrySecretE(Long envId, Long configId, String envCode, String secretCode, String secretDetail) {
+        this.devopsEnvironmentE = new DevopsEnvironmentE(envId, envCode);
         this.devopsProjectConfigE = new DevopsProjectConfigE(configId);
         this.secretCode = secretCode;
         this.secretDetail = secretDetail;
@@ -36,8 +36,8 @@ public class DevopsRegistrySecretE {
         return devopsEnvironmentE;
     }
 
-    public void initDevopsEnvironmentE(Long id) {
-        this.devopsEnvironmentE = new DevopsEnvironmentE(id);
+    public void initDevopsEnvironmentE(Long id, String code) {
+        this.devopsEnvironmentE = new DevopsEnvironmentE(id, code);
     }
 
     public DevopsProjectConfigE getDevopsProjectConfigE() {

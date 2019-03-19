@@ -23,6 +23,7 @@ public class DevopsRegistrySecretDO extends AuditDomain {
     private Long envId;
     private Long configId;
     private String secretCode;
+    private String namespace;
     private String secretDetail;
     private Boolean status;
     private Long objectVersionNumber;
@@ -73,6 +74,14 @@ public class DevopsRegistrySecretDO extends AuditDomain {
 
     public void setStatus(Boolean status) {
         this.status = status;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String namespace) {
+        this.namespace = namespace;
     }
 
     @Override
