@@ -12,6 +12,7 @@
         dpc.object_version_number
         FROM devops_project_config dpc
         where dpc.project_id = #{projectId}
+        OR dpc.project_id is null
         <include refid="sqlparam"/>
         <if test="index !=''">
             ORDER BY dpc.id desc
