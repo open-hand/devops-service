@@ -121,6 +121,10 @@ class ApplicationControllerSpec extends Specification {
     private boolean isToInit = true
     @Shared
     private boolean isToClean = false
+    @Shared
+    Long harborConfigId = 1L
+    @Shared
+    Long chartConfigId = 2L
 
     def setupSpec() {
         given:
@@ -229,6 +233,8 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setProjectId(project_id)
         applicationDTO.setApplicationTemplateId(init_id)
         applicationDTO.setIsSkipCheckPermission(true)
+        applicationDTO.setHarborConfigId(harborConfigId)
+        applicationDTO.setChartConfigId(chartConfigId)
         List<Long> userList = new ArrayList<>()
         userList.add(2L)
         applicationDTO.setUserIds(userList)
@@ -582,6 +588,8 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setIsSkipCheckPermission(true)
         applicationDTO.setRepositoryUrl("https://github.com/choerodon/choerodon-microservice-template.git")
         applicationDTO.setPlatformType("github")
+        applicationDTO.setHarborConfigId(harborConfigId)
+        applicationDTO.setChartConfigId(chartConfigId)
 
         def searchCondition = new ApplicationDO()
         searchCondition.setCode(applicationDTO.getCode())
