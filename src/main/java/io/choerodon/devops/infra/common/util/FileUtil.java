@@ -47,9 +47,10 @@ import org.yaml.snakeyaml.resolver.Resolver;
  * Created by younger on 2018/4/13.
  */
 public class FileUtil {
+
     private static final int BUFFER_SIZE = 2048;
     private static final Logger logger = LoggerFactory.getLogger(FileUtil.class);
-    private static final String EXEC_PATH = "C:\\project\\devops-service\\src\\main\\docker\\dist\\values_yaml\\values_yaml.exe";
+    private static final String EXEC_PATH = "/usr/lib/yaml/values_yaml";
 
 
     private FileUtil() {
