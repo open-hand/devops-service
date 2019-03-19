@@ -120,4 +120,9 @@ public class IamServiceClientFallback implements IamServiceClient {
     public ResponseEntity<IamAppPayLoad> enableIamApplication(Long organizationId, Long id) {
         return new ResponseEntity("error.iam.app.enabled", HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @Override
+    public ResponseEntity<Page<IamAppPayLoad>> getIamApplication(Long organizationId, String code) {
+        return new ResponseEntity("error.iam.app.get", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }

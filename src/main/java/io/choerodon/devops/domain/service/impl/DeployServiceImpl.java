@@ -170,11 +170,11 @@ public class DeployServiceImpl implements DeployService {
     }
 
     @Override
-    public void operateSecret(Long clusterId, String namespace, ProjectConfigDTO projectConfigDTO, String Type) {
+    public void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigDTO projectConfigDTO, String Type) {
         Msg msg = new Msg();
         SecretPayLoad secretPayLoad = new SecretPayLoad();
         secretPayLoad.setEmail(projectConfigDTO.getEmail());
-        secretPayLoad.setName(projectConfigDTO.getProject());
+        secretPayLoad.setName(secretName);
         secretPayLoad.setNamespace(namespace);
         secretPayLoad.setServer(projectConfigDTO.getUrl());
         secretPayLoad.setUsername(projectConfigDTO.getUserName());
@@ -187,7 +187,7 @@ public class DeployServiceImpl implements DeployService {
         }
 
         msg.setType(OPERATE_DOCKER_REGISTRY_SECRET);
-        msg.setKey(String.format(CLUSTER_FORMAT, clusterId
+        msg.setKey(String.format("cluster:%s.env:%s.Secret:%s", clusterId, namespace, secretName
         ));
         commandSender.sendMsg(msg);
     }

@@ -213,19 +213,15 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
         iamAppPayLoad.setApplicationCategory(APPLICATION);
-        iamAppPayLoad.setApplicationType(DEVELOPMENT);
-        if (applicationReqDTO.getType().equals("test")) {
-            iamAppPayLoad.setApplicationType(TEST);
-        }
+        iamAppPayLoad.setApplicationType(applicationReqDTO.getType());
         iamAppPayLoad.setCode(applicationReqDTO.getCode());
         iamAppPayLoad.setName(applicationReqDTO.getName());
         iamAppPayLoad.setEnabled(true);
         iamAppPayLoad.setOrganizationId(organization.getId());
         iamAppPayLoad.setProjectId(projectId);
-        iamAppPayLoad.setCreateBy(userAttrE.getGitlabUserId());
+        iamAppPayLoad.setFrom(applicationName);
 
-//        iamRepository.createIamApp(organization.getId(), iamAppPayLoad);
-        createIamApplication(iamAppPayLoad);
+        iamRepository.createIamApp(organization.getId(), iamAppPayLoad);
         return ConvertHelper.convert(applicationRepository.queryByCode(applicationE.getCode(),
                 applicationE.getProjectE().getId()), ApplicationRepDTO.class);
     }
@@ -288,6 +284,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             description = "Devops更新gitlab用户", inputSchema = "{}")
     @Override
     public Boolean update(Long projectId, ApplicationUpdateDTO applicationUpdateDTO) {
+
         ApplicationE applicationE = ConvertHelper.convert(applicationUpdateDTO, ApplicationE.class);
         applicationE.setIsSkipCheckPermission(applicationUpdateDTO.getIsSkipCheckPermission());
         applicationE.initProjectE(projectId);
@@ -307,14 +304,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
-            IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
             ProjectE projectE = iamRepository.queryIamProject(oldApplicationE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            iamAppPayLoad.setOrganizationId(organization.getId());
-            iamAppPayLoad.setProjectId(oldApplicationE.getProjectE().getId());
+            IamAppPayLoad iamAppPayLoad = iamRepository.queryIamAppByCode(organization.getId(), applicationE.getCode());
             iamAppPayLoad.setName(applicationUpdateDTO.getName());
-            iamAppPayLoad.setCode(oldApplicationE.getCode());
-//            iamRepository.updateIamApp(organization.getId(), null, iamAppPayLoad);
+            iamRepository.updateIamApp(organization.getId(), iamAppPayLoad.getId(), iamAppPayLoad);
         }
 
         // 创建gitlabUserPayload
@@ -347,17 +341,10 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public Boolean active(Long applicationId, Boolean active) {
         ApplicationE applicationE = applicationRepository.query(applicationId);
-        ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
-        Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         applicationE.initActive(active);
         if (applicationRepository.update(applicationE) != 1) {
             throw new CommonException("error.application.active");
         }
-//        if (active) {
-//            iamRepository.enableIamApp(organization.getId(), null);
-//        } else {
-//            iamRepository.disabledIamApp(organization.getId(), null);
-//        }
         return true;
     }
 
@@ -1120,8 +1107,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         //创建iam入口过来的应用直接用管理员去gitlab创建对应的project,避免没有对应项目的权限导致创建失败
         Long gitlabUserId = 1L;
-        if (iamAppPayLoad.getCreateBy() != null) {
-            gitlabUserId = iamAppPayLoad.getCreateBy();
+        if (applicationName.equals(iamAppPayLoad.getFrom())) {
+            UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+            gitlabUserId = userAttrE.getGitlabUserId();
         }
         GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
 
@@ -1138,7 +1126,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppPayload.setAppId(applicationE.getId());
         devOpsAppPayload.setIamProjectId(iamAppPayLoad.getProjectId());
         //0.14.0-0.15.0的时候，同步已有的app到iam，此时app已经存在gitlab project,不需要再创建
-        if (applicationE.getGitlabProjectE() == null) {
+        if (applicationE.getGitlabProjectE().getId() == null) {
             String input = gson.toJson(devOpsAppPayload);
             sagaClient.startSaga("devops-create-gitlab-project", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), iamAppPayLoad.getProjectId()));
         }

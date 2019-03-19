@@ -35,5 +35,5 @@ public interface DeployService {
 
     void operatePodCount(String deploymentName, String namespace, Long clusterId, Long count);
 
-    void operateSecret(Long clusterId, String namespace, ProjectConfigDTO projectConfigDTO, String type);
+    void operateSecret(Long clusterId, String namespace, String secretName, ProjectConfigDTO projectConfigDTO, String type);
 }

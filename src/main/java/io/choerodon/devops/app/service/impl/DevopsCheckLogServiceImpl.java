@@ -44,13 +44,7 @@ import io.choerodon.devops.infra.dataobject.gitlab.CommitDO;
 import io.choerodon.devops.infra.dataobject.gitlab.CommitStatuseDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
-import io.choerodon.devops.infra.mapper.ApplicationMapper;
-import io.choerodon.devops.infra.mapper.ApplicationVersionMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvPodMapper;
-import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabCommitMapper;
-import io.choerodon.devops.infra.mapper.DevopsGitlabPipelineMapper;
-import io.choerodon.devops.infra.mapper.DevopsProjectMapper;
+import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
@@ -806,7 +800,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             } else if ("0.14.0".equals(version)) {
                 syncDevopsEnvPodNodeNameAndRestartCount();
             } else if ("0.15.0".equals(version)) {
-//                syncAppToIam();
+                syncAppToIam();
                 syncAppVersion();
                 syncCiVariableAndRole(logs);
             } else {
@@ -845,12 +839,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         private void syncAppToIam() {
             List<ApplicationDO> applicationDOS = applicationMapper.selectAll().stream().filter(applicationDO -> applicationDO.getGitlabProjectId() != null).collect(Collectors.toList());
             List<IamAppPayLoad> iamAppPayLoads = applicationDOS.stream().map(applicationDO -> {
+                ProjectE projectE = iamRepository.queryIamProject(applicationDO.getProjectId());
+                Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
                 IamAppPayLoad iamAppPayLoad = new IamAppPayLoad();
+                iamAppPayLoad.setOrganizationId(organization.getId());
                 iamAppPayLoad.setApplicationCategory(APPLICATION);
-                iamAppPayLoad.setApplicationType(DEVELOPMENT);
-                if (applicationDO.getType().equals("test")) {
-                    iamAppPayLoad.setApplicationType(TEST);
-                }
+                iamAppPayLoad.setApplicationType(applicationDO.getType());
                 iamAppPayLoad.setCode(applicationDO.getCode());
                 iamAppPayLoad.setName(applicationDO.getName());
                 iamAppPayLoad.setEnabled(true);
@@ -859,7 +853,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
             }).collect(Collectors.toList());
             String input = JSONArray.toJSONString(iamAppPayLoads);
-            sagaClient.startSaga("devops-create-application", new StartInstanceDTO(input, "", "", "", null));
+            sagaClient.startSaga("devops-sync-application", new StartInstanceDTO(input, "", "", "", null));
         }
 
         private void syncCiVariableAndRole(List<CheckLog> logs) {

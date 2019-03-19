@@ -60,4 +60,12 @@ public class DevopsRegistrySecretRepositoryImpl implements DevopsRegistrySecretR
         devopsRegistrySecretDO.setConfigId(configId);
         return ConvertHelper.convertList(devopsRegistrySecretMapper.select(devopsRegistrySecretDO), DevopsRegistrySecretE.class);
     }
+
+    @Override
+    public DevopsRegistrySecretE queryByName(Long envId, String name) {
+        DevopsRegistrySecretDO devopsRegistrySecretDO = new DevopsRegistrySecretDO();
+        devopsRegistrySecretDO.setSecretCode(name);
+        devopsRegistrySecretDO.setEnvId(envId);
+        return ConvertHelper.convert(devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDO), DevopsRegistrySecretE.class);
+    }
 }

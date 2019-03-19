@@ -2,13 +2,12 @@ package io.choerodon.devops.app.service.impl;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.app.service.DeployDetailService;
 import io.choerodon.devops.domain.application.repository.DeployDetailRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: Runge
@@ -18,6 +17,7 @@ import io.choerodon.devops.domain.application.repository.DeployDetailRepository;
  */
 @Component
 public class DeployDetailServiceImpl implements DeployDetailService {
+
     @Autowired
     private DeployDetailRepository deployDetailRepository;
 

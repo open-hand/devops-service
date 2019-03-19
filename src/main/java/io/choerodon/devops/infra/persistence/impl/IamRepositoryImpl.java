@@ -283,20 +283,13 @@ public class IamRepositoryImpl implements IamRepository {
     }
 
     @Override
-    public void disabledIamApp(Long organizationId, Long id) {
+    public IamAppPayLoad queryIamAppByCode(Long organizationId, String code) {
+        ResponseEntity<Page<IamAppPayLoad>> iamAppPayLoadResponseEntity = null;
         try {
-            iamServiceClient.disableIamApplication(organizationId, id);
+            iamAppPayLoadResponseEntity = iamServiceClient.getIamApplication(organizationId, code);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-    }
-
-    @Override
-    public void enableIamApp(Long organizationId, Long id) {
-        try {
-            iamServiceClient.enableIamApplication(organizationId, id);
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
+        return iamAppPayLoadResponseEntity.getBody().getContent().isEmpty() ? null : iamAppPayLoadResponseEntity.getBody().getContent().get(0);
     }
 }

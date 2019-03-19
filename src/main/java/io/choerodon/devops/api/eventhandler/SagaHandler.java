@@ -10,7 +10,9 @@ import io.choerodon.devops.api.dto.GitlabUserDTO;
 import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
 import io.choerodon.devops.api.dto.RegisterOrganizationDTO;
 import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.event.*;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,8 @@ public class SagaHandler {
     private GitlabUserService gitlabUserService;
     @Autowired
     private ApplicationService applicationService;
+    @Autowired
+    private ApplicationRepository applicationRepository;
 
 
     private void loggerInfo(Object o) {
@@ -175,6 +179,37 @@ public class SagaHandler {
         return payload;
     }
 
+    /**
+     * Iam启用应用事件
+     */
+    @SagaTask(code = "iamEnableApplication",
+            description = "Iam启用应用事件",
+            sagaCode = "iam-enable-application",
+            maxRetryCount = 3,
+            seq = 1)
+    public String handleIamEnableApplication(String payload) {
+        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
+        loggerInfo(iamAppPayLoad);
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        applicationService.active(applicationE.getId(), true);
+        return payload;
+    }
+
+    /**
+     * Iam停用应用事件
+     */
+    @SagaTask(code = "iamDisableApplication",
+            description = "Iam停用应用事件",
+            sagaCode = "iam-disable-application",
+            maxRetryCount = 3,
+            seq = 1)
+    public String handleIamDisableApplication(String payload) {
+        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
+        loggerInfo(iamAppPayLoad);
+        ApplicationE applicationE = applicationRepository.queryByCode(iamAppPayLoad.getCode(), iamAppPayLoad.getProjectId());
+        applicationService.active(applicationE.getId(), false);
+        return payload;
+    }
 
     /**
      * 角色同步事件

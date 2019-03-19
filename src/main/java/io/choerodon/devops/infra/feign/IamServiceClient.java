@@ -101,4 +101,8 @@ public interface IamServiceClient {
     @PutMapping(value = "/v1/organizations/{organization_id}/applications/{id}/enable")
     ResponseEntity<IamAppPayLoad> enableIamApplication(@PathVariable("organization_id") Long organizationId, @PathVariable("id") Long id);
 
+
+    @GetMapping(value = "/v1/organizations/{organization_id}/applications")
+    ResponseEntity<Page<IamAppPayLoad>> getIamApplication(@PathVariable("organization_id") Long organizationId, @RequestParam("code") String code);
+
 }

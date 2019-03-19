@@ -145,6 +145,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private ClusterNodeInfoService clusterNodeInfoService;
     @Autowired
     private DevopsConfigMapService devopsConfigMapService;
+    @Autowired
+    private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
 
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -1948,5 +1950,22 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
         }
     }
+
+    @Override
+    public void operateDockerRegistrySecretResp(String key, String result, Long clusterId) {
+        Long envId = getEnvId(key, clusterId);
+        if (envId == null) {
+            logger.info(ENV_NOT_EXIST, KeyParseTool.getNamespace(key));
+            return;
+        }
+        DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByName(envId, KeyParseTool.getResourceName(key));
+        if (result.equals("failed")) {
+            devopsRegistrySecretE.setStatus(false);
+        } else {
+            devopsRegistrySecretE.setStatus(true);
+        }
+        devopsRegistrySecretRepository.update(devopsRegistrySecretE);
+    }
+
 }
 

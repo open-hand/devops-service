@@ -55,7 +55,5 @@ public interface IamRepository {
 
     IamAppPayLoad updateIamApp(Long organizationId, Long id, IamAppPayLoad iamAppPayLoad);
 
-    void disabledIamApp(Long organizationId, Long id);
-
-    void enableIamApp(Long organizationId, Long id);
+    IamAppPayLoad queryIamAppByCode(Long organizationId, String code);
 }
