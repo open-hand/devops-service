@@ -562,8 +562,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             initMasterBranch(gitlabProjectPayload, applicationE);
         }
         try {
-            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
-                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
             String applicationToken = getApplicationToken(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
             applicationE.setToken(applicationToken);
             applicationE.initGitlabProjectE(TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
@@ -571,7 +569,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             // set project hook id for application
             setProjectHook(applicationE, gitlabProjectDO.getId(), applicationToken, gitlabProjectPayload.getUserId());
-
+            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
+                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
             // 更新并校验
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException(ERROR_UPDATE_APP);

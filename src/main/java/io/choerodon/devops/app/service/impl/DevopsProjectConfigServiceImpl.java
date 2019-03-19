@@ -112,4 +112,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     public void checkName(Long projectId, String name) {
         devopsProjectConfigRepository.checkName(projectId, name);
     }
+
+    @Override
+    public Boolean checkIsUsed(Long configId) {
+        return  devopsProjectConfigRepository.checkIsUsed(configId);
+    }
 }

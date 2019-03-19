@@ -125,4 +125,9 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
             throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
         }
     }
+
+    @Override
+    public Boolean checkIsUsed(Long checkIsUsed) {
+        return configMapper.checkIsUsed(checkIsUsed).size() == 0;
+    }
 }

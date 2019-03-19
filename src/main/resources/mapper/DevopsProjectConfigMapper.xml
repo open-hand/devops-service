@@ -59,4 +59,14 @@
                 project_id ASC,
                 id ASC
     </select>
+
+    <select id="checkIsUsed"  resultType="java.lang.Integer">
+            SELECT
+                da.id
+            FROM
+                devops_application da
+            WHERE
+                da.chart_config_id = #{configId}
+            OR da.harbor_config_id = #{configId}
+    </select>
 </mapper>
