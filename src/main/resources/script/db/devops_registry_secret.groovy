@@ -9,7 +9,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_registry_secret.groovy') {
             column(name: 'env_id', type: 'BIGINT UNSIGNED', remarks: '环境Id')
             column(name: 'config_id', type: 'BIGINT UNSIGNED', remarks: '配置Id')
             column(name: 'secret_code', type: 'VARCHAR(32)', remarks: 'secret编码')
-            column(name: 'secret_detail', type: 'VARCHAR(64)', remarks: 'secret内容')
+            column(name: 'secret_detail', type: 'VARCHAR(1000)', remarks: 'secret内容')
             column(name: 'status', type: 'VARCHAR(32)', remarks: 'secret状态')
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
