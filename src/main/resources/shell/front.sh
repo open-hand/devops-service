@@ -1,4 +1,10 @@
+# 获取的组织编码-项目编码
 export GROUP_NAME={{ GROUP_NAME }}
+# 获取的组织编码
+export ORG_CODE= {{ ORG_CODE }}
+# 获取的项目编码
+export PRO_CODE= {{ PRO_CODE }}
+# 获取的应用名称
 export PROJECT_NAME={{ PROJECT_NAME }}
 
 
@@ -75,7 +81,7 @@ function chart_build(){
     # 通过Chartmusume API上传chart包到chart仓库
     result_upload_to_chart=`curl -X POST \
             --data-binary "@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
-            "${CHART_REGISTRY}/${GROUP_NAME}/${PROJECT_NAME}/api/charts" \
+            "${CHART_REGISTRY}/${ORG_CODE}/${PRO_CODE}/api/charts" \
             -o "${CI_COMMIT_SHA}-chart.response" \
             -w %{http_code}`
     response_upload_chart_content=`cat "${CI_COMMIT_SHA}-chart.response"`

@@ -25,7 +25,7 @@ public interface DeployService {
 
     void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId);
 
-    void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, Long clusterId, String values);
+    void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, String secretName, Long clusterId, String values);
 
     void getTestAppStatus(Map<Long, List<String>> testReleases);
 

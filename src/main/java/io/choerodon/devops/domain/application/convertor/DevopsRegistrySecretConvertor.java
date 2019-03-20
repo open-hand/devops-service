@@ -20,7 +20,7 @@ public class DevopsRegistrySecretConvertor implements ConvertorI<DevopsRegistryS
             devopsRegistrySecretE.initDevopsProjectConfigE(devopsRegistrySecretDO.getConfigId());
         }
         if (devopsRegistrySecretDO.getEnvId() != null) {
-            devopsRegistrySecretE.initDevopsEnvironmentE(devopsRegistrySecretDO.getEnvId());
+            devopsRegistrySecretE.initDevopsEnvironmentE(devopsRegistrySecretDO.getEnvId(), devopsRegistrySecretDO.getNamespace());
         }
         return devopsRegistrySecretE;
     }
@@ -31,6 +31,7 @@ public class DevopsRegistrySecretConvertor implements ConvertorI<DevopsRegistryS
         BeanUtils.copyProperties(devopsRegistrySecretE, devopsRegistrySecretDO);
         if (devopsRegistrySecretE.getDevopsEnvironmentE() != null) {
             devopsRegistrySecretDO.setEnvId(devopsRegistrySecretE.getDevopsEnvironmentE().getId());
+            devopsRegistrySecretDO.setNamespace(devopsRegistrySecretE.getDevopsEnvironmentE().getCode());
         }
         if (devopsRegistrySecretE.getDevopsProjectConfigE() != null) {
             devopsRegistrySecretDO.setConfigId(devopsRegistrySecretE.getDevopsProjectConfigE().getId());

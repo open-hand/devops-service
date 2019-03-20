@@ -1,4 +1,10 @@
+# 获取的组织编码-项目编码
 export GROUP_NAME={{ GROUP_NAME }}
+# 获取的组织编码
+export ORG_CODE= {{ ORG_CODE }}
+# 获取的项目编码
+export PRO_CODE= {{ PRO_CODE }}
+# 获取的应用名称
 export PROJECT_NAME={{ PROJECT_NAME }}
 
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
