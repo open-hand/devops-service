@@ -70,20 +70,6 @@ function chart_build(){
     helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
     TEMP=${CHART_PATH%/*}
     FILE_NAME=${TEMP##*/}
-    # 通过Chartmusume API上传chart包到chart仓库
-    result_upload_to_chart=`curl -X POST \
-            --data-binary "@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
-            "${CHART_REGISTRY}/${ORG_CODE}/${PRO_CODE}/api/charts" \
-            -o "${CI_COMMIT_SHA}-chart.response" \
-            -w %{http_code}`
-    response_upload_chart_content=`cat "${CI_COMMIT_SHA}-chart.response"`
-    rm "${CI_COMMIT_SHA}-chart.response"
-    # 判断本次上传到chartmusume是否出错
-    if [ "$result_upload_to_chart" != "201" ]; then
-        echo $response_upload_chart_content
-        echo "upload to chart error"
-        exit 1
-    fi
     # 通过Choerodon API上传chart包到devops-service
     result_upload_to_devops=`curl -X POST \
         -F "token=${Token}" \
@@ -100,6 +86,20 @@ function chart_build(){
     if [ "$result_upload_to_devops" != "200" ]; then
         echo $response_upload_to_devops
         echo "upload to devops error"
+        exit 1
+    fi
+     # 通过Chartmusume API上传chart包到chart仓库
+    result_upload_to_chart=`curl -X POST \
+            --data-binary "@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
+            "${CHART_REGISTRY}/${ORG_CODE}/${PRO_CODE}/api/charts" \
+            -o "${CI_COMMIT_SHA}-chart.response" \
+            -w %{http_code}`
+    response_upload_chart_content=`cat "${CI_COMMIT_SHA}-chart.response"`
+    rm "${CI_COMMIT_SHA}-chart.response"
+    # 判断本次上传到chartmusume是否出错
+    if [ "$result_upload_to_chart" != "201" ]; then
+        echo $response_upload_chart_content
+        echo "upload to chart error"
         exit 1
     fi
 }
