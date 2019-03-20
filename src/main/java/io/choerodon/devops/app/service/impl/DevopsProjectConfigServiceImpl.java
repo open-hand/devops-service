@@ -53,10 +53,10 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType().toUpperCase());
 
         devopsProjectConfigRepository.checkName(projectId, devopsProjectConfigE.getName());
+        DevopsProjectConfigE res = devopsProjectConfigRepository.create(devopsProjectConfigE);
         if (type.equals(ProjectConfigType.HARBOR)) {
             harborService.createHarbor(devopsProjectConfigE.getConfig(), devopsProjectConfigE.getProjectId());
         }
-        DevopsProjectConfigE res = devopsProjectConfigRepository.create(devopsProjectConfigE);
         return ConvertHelper.convert(res, DevopsProjectConfigDTO.class);
     }
 

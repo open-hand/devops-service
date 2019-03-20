@@ -1,20 +1,20 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.alibaba.fastjson.JSONObject
-import io.choerodon.core.exception.CommonException
+
+import io.choerodon.core.domain.Page
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO
 import io.choerodon.devops.api.dto.ProjectConfigDTO
+import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.ProjectConfigHarborService
-import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper
-import io.choerodon.core.domain.Page
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.http.ResponseEntity
+import org.springframework.context.annotation.Primary
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
@@ -43,12 +43,12 @@ class DevopsProjectConfigControllerSpec extends Specification {
     private TestRestTemplate restTemplate
 
     @Autowired
-    @Qualifier("mockIamRepository")
-    private IamRepository iamRepository
-
-    @Autowired
     @Qualifier("mockProjectConfigHarborService")
     private ProjectConfigHarborService configHarborService
+
+    @Autowired
+    @Qualifier("mockApplicationService")
+    private ApplicationService applicationService
 
     @Autowired
     DevopsProjectConfigMapper configMapper
@@ -58,14 +58,16 @@ class DevopsProjectConfigControllerSpec extends Specification {
         given: '初始化数据'
         ProjectConfigDTO configDTO = new ProjectConfigDTO(url: "https://registry.saas.hand-china.com",
                 userName: "admin", password: "Handhand123", email: "zhuang.chang@hand-china.com")
+        ProjectConfigDTO configDTO2 = new ProjectConfigDTO(url: "http://helm-charts.staging.saas.hand-china.com/")
 
         DevopsProjectConfigDTO harborProjectConfigDTO = new DevopsProjectConfigDTO(name: "newTestHarborCreate", type: "harbor", config: configDTO)
-        DevopsProjectConfigDTO chartprojectConfigDTO = new DevopsProjectConfigDTO(name: "newTestChartCreate", type: "harbor", config: configDTO)
+        DevopsProjectConfigDTO chartprojectConfigDTO = new DevopsProjectConfigDTO(name: "newTestChartCreate", type: "chart", config: configDTO2)
 
         when: '创建项目配置'
         def res = restTemplate.postForEntity(MAPPING, harborProjectConfigDTO, DevopsProjectConfigDTO.class, projectId)
 
         then:"mock"
+        1 * applicationService.checkHarborIsUsable(_,_,_,_,_) >> true
         1 * configHarborService.createHarbor(_,_)
 
         then: '校验结果'
@@ -78,6 +80,9 @@ class DevopsProjectConfigControllerSpec extends Specification {
         when: '创建项目配置'
         res = restTemplate.postForEntity(MAPPING, chartprojectConfigDTO, DevopsProjectConfigDTO.class, projectId)
 
+        then:"mock"
+        1 * applicationService.checkChartIsUsable(_) >> true
+
         then: '校验结果'
         res.statusCode.is2xxSuccessful()
         def check2 = configMapper.selectByPrimaryKey(res.getBody())
@@ -88,11 +93,17 @@ class DevopsProjectConfigControllerSpec extends Specification {
         when: '测试创建项目配置时候名称重复'
         def resultFailure = restTemplate.postForEntity(MAPPING, harborProjectConfigDTO, DevopsProjectConfigDTO.class, projectId)
 
+        then:"mock"
+        1 * applicationService.checkHarborIsUsable(_,_,_,_,_) >> true
+
         then: '校验结果'
         resultFailure.statusCode.is2xxSuccessful()
 
         when: '测试创建项目配置时候类型输入错误'
         resultFailure = restTemplate.postForEntity(MAPPING, harborProjectConfigDTO, DevopsProjectConfigDTO.class, projectId)
+
+        then:"mock"
+        1 * applicationService.checkHarborIsUsable(_,_,_,_,_) >> true
 
         then: '校验结果'
         resultFailure.statusCode.is2xxSuccessful()
@@ -100,8 +111,6 @@ class DevopsProjectConfigControllerSpec extends Specification {
 
     def "Update"() {
         given: '初始化数据'
-        ProjectConfigDTO configDTO = new ProjectConfigDTO(url: "https://registry.saas.hand-china.com",
-                userName: "admin", password: "Handhand123", email: "zhuang.chang@hand-china.com")
         DevopsProjectConfigDTO projectConfigDTO = new DevopsProjectConfigDTO(id: configIds.get(0),name: "newTestHarborUpdate",objectVersionNumber: 1L)
 
         when: '修改项目配置'
@@ -127,9 +136,6 @@ class DevopsProjectConfigControllerSpec extends Specification {
     }
 
     def "QueryByPrimaryKey"() {
-        given:
-        DevopsProjectConfigDTO configDTO = new DevopsProjectConfigDTO(id: configIds.get(0))
-
         when: '根据ID查找项目配置'
         def res = restTemplate.getForEntity(MAPPING+"/{project_config_id}",DevopsProjectConfigDTO.class, projectId,configIds.get(0))
 
