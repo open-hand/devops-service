@@ -1,6 +1,5 @@
 package io.choerodon.devops.api.controller.v1
 
-import com.fasterxml.jackson.databind.JsonNode
 import io.choerodon.core.domain.Page
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.ExportOctetStream2HttpMessageConverter
@@ -8,7 +7,6 @@ import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.AppMarketDownloadDTO
 import io.choerodon.devops.api.dto.AppMarketTgzDTO
 import io.choerodon.devops.api.dto.AppMarketVersionDTO
-import io.choerodon.devops.api.dto.AppMarketVersionListRepDTO
 import io.choerodon.devops.api.dto.ApplicationReleasingDTO
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
@@ -132,6 +130,7 @@ class ApplicationMarketControllerSpec extends Specification {
         applicationVersionDO.setIsPublish(1L)
         applicationVersionDO.setVersion("0.0")
         applicationVersionDO.setReadmeValueId(1L)
+        applicationVersionDO.setRepository("http://helm-charts.saas.hand-china.com/ystest/ystest/")
 
         // dai
         applicationInstanceDO.setId(1L)

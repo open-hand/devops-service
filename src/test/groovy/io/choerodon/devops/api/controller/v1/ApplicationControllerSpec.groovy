@@ -18,6 +18,7 @@ import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.domain.application.event.IamAppPayLoad
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
@@ -245,6 +246,13 @@ class ApplicationControllerSpec extends Specification {
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
+
+        and: 'mock iam创建用户'
+        IamAppPayLoad iamAppPayLoad =new IamAppPayLoad()
+        iamAppPayLoad.setProjectId(init_id)
+        iamAppPayLoad.setOrganizationId(init_id)
+        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = new ResponseEntity<>(iamAppPayLoad, HttpStatus.OK)
+        Mockito.when(iamServiceClient.createIamApplication(anyLong(), any(IamAppPayLoad))).thenReturn(iamAppPayLoadResponseEntity)
 
         and: 'mock启动sagaClient'
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
