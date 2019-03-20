@@ -128,6 +128,6 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
 
     @Override
     public Boolean checkIsUsed(Long checkIsUsed) {
-        return configMapper.checkIsUsed(checkIsUsed).size() == 0;
+        return configMapper.checkIsUsed(checkIsUsed).isEmpty();
     }
 }
