@@ -63,7 +63,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
-    public static final String CHOERODON = "choerodon";
+    public static final String CHOERODON = "choerodon-test";
 
     private static Gson gson = new Gson();
 

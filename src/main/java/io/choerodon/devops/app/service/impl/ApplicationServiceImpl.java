@@ -1134,6 +1134,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         Response<Object> projectResponse = RetrofitHandler.execute(listProject);
         if (projectResponse.body() == null) {
             throw new CommonException("error.harbor.project.permission");
+        } else {
+            List<LinkedTreeMap> projects = (List<LinkedTreeMap>) ((ArrayList) projectResponse.body()).stream().filter(a -> ((LinkedTreeMap) a).get("name").equals(configurationProperties.getProject())).collect(Collectors.toList());
+            if (projects.isEmpty()) {
+                throw new CommonException("error.harbor.project.permission");
+            }
         }
         return true;
     }
