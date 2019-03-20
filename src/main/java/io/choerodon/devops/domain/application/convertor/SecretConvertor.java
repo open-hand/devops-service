@@ -40,21 +40,19 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO
     }
 
     @Override
-    public DevopsSecretDO entityToDo(DevopsSecretE entity) {
+    public DevopsSecretDO entityToDo(DevopsSecretE devopsSecretE) {
         DevopsSecretDO devopsSecretDO = new DevopsSecretDO();
-        BeanUtils.copyProperties(entity, devopsSecretDO);
-        if(entity.getValue()!=null) {
-            devopsSecretDO.setValue(gson.toJson(entity.getValue()));
-        }
+        BeanUtils.copyProperties(devopsSecretE, devopsSecretDO);
+        devopsSecretDO.setValue(gson.toJson(devopsSecretE.getValue()));
         return devopsSecretDO;
     }
 
     @Override
-    public DevopsSecretE doToEntity(DevopsSecretDO dataObject) {
+    public DevopsSecretE doToEntity(DevopsSecretDO devopsSecretDO) {
         DevopsSecretE devopsSecretE = new DevopsSecretE();
-        BeanUtils.copyProperties(dataObject, devopsSecretE);
+        BeanUtils.copyProperties(devopsSecretDO, devopsSecretE);
         Map<String, String> secretMaps = gson
-                .fromJson(dataObject.getValue(), new TypeToken<Map<String, String>>() {
+                .fromJson(devopsSecretDO.getValue(), new TypeToken<Map<String, String>>() {
                 }.getType());
         devopsSecretE.setValue(secretMaps);
         return devopsSecretE;
