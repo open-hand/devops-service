@@ -406,7 +406,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String secretCode = null;
         if (applicationE.getHarborConfigE() != null) {
             DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
-            if (devopsProjectConfigE.getConfig().getPrivate()) {
+            if (devopsProjectConfigE.getConfig().getPrivate() != null) {
                 DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByEnv(CHOERODON, devopsProjectConfigE.getId());
                 if (devopsRegistrySecretE == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
@@ -756,7 +756,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //如果应用绑定了私有镜像库,则处理secret
         if (applicationE.getHarborConfigE() != null) {
             DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
-            if (devopsProjectConfigE.getConfig().getPrivate()) {
+            if (devopsProjectConfigE.getConfig().getPrivate() != null) {
                 DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByEnv(devopsEnvironmentE.getCode(), devopsProjectConfigE.getId());
                 if (devopsRegistrySecretE == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
