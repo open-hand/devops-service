@@ -23,25 +23,25 @@ import io.choerodon.devops.infra.dataobject.DevopsSecretDO;
  * Description:
  */
 @Component
-public class SecretRepConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO, SecretRepDTO> {
+public class SecretRepConvertor implements ConvertorI<DevopsSecretE, Object, SecretRepDTO> {
 
     private static final Gson gson = new Gson();
 
-    @Override
-    public SecretRepDTO doToDto(DevopsSecretDO dataObject) {
-        SecretRepDTO secretRepDTO = new SecretRepDTO();
-        BeanUtils.copyProperties(dataObject, secretRepDTO);
-        Map<String, String> secretMaps = gson
-                .fromJson(dataObject.getValue(), new TypeToken<Map<String, String>>() {
-                }.getType());
-        List<String> key = new ArrayList<>();
-        secretMaps.forEach((key1, value) -> key.add(key1));
-        secretRepDTO.setKey(key);
-        secretRepDTO.setCommandStatus(dataObject.getStatus());
-        secretRepDTO.setLastUpdateDate(dataObject.getLastUpdateDate());
-        secretRepDTO.setValue(secretMaps);
-        return secretRepDTO;
-    }
+//    @Override
+//    public SecretRepDTO doToDto(DevopsSecretDO dataObject) {
+//        SecretRepDTO secretRepDTO = new SecretRepDTO();
+//        BeanUtils.copyProperties(dataObject, secretRepDTO);
+//        Map<String, String> secretMaps = gson
+//                .fromJson(dataObject.getValue(), new TypeToken<Map<String, String>>() {
+//                }.getType());
+//        List<String> key = new ArrayList<>();
+//        secretMaps.forEach((key1, value) -> key.add(key1));
+//        secretRepDTO.setKey(key);
+//        secretRepDTO.setCommandStatus(dataObject.getStatus());
+//        secretRepDTO.setLastUpdateDate(dataObject.getLastUpdateDate());
+//        secretRepDTO.setValue(secretMaps);
+//        return secretRepDTO;
+//    }
 
     @Override
     public SecretRepDTO entityToDto(DevopsSecretE entity) {
