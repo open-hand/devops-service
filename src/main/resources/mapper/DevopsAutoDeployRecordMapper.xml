@@ -17,9 +17,14 @@
         dai. CODE AS instanceName
         FROM
         devops_auto_deploy_record dadr
-        LEFT JOIN devops_application da ON dadr.app_id = da.id
-        LEFT JOIN devops_app_version dav ON dadr.version_id = dav.id
-        LEFT JOIN devops_env de ON dadr.env_id = de.id
+        JOIN devops_application da ON dadr.app_id = da.id
+        JOIN devops_app_version dav ON dadr.version_id = dav.id
+        JOIN devops_env de ON dadr.env_id = de.id
+        JOIN devops_env_user_permission deup ON (
+        deup.iam_user_id = #{userId}
+        AND deup.is_permitted = 1
+        AND dadr.env_id = deup.env_id
+        )
         LEFT JOIN devops_app_instance dai ON dadr.instance_id = dai.id
         where dadr.project_id = #{projectId}
         <if test="appId != null">
@@ -56,7 +61,7 @@
         </if>
     </sql>
 
-    <update id="banchUpdateStatus" >
+    <update id="banchUpdateStatus">
         UPDATE devops_auto_deploy_record dadr
         SET dadr. STATUS = #{status}
         WHERE dadr.auto_deploy_id = #{autoDeployId}

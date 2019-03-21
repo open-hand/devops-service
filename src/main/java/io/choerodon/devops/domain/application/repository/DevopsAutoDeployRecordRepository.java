@@ -12,6 +12,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface DevopsAutoDeployRecordRepository {
 
     Page<DevopsAutoDeployRecordE> listByOptions(Long projectId,
+                                                Long userId,
                                                 Long appId,
                                                 Long envId,
                                                 String taskName,

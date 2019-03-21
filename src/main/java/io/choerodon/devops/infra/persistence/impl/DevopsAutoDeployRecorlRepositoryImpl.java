@@ -32,7 +32,7 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
     private DevopsAutoDeployRecordMapper devopsAutoDeployRecordMapper;
 
     @Override
-    public Page<DevopsAutoDeployRecordE> listByOptions(Long projectId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
+    public Page<DevopsAutoDeployRecordE> listByOptions(Long projectId, Long userId,Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
         Map<String, Object> mapParams = new HashMap<>();
         mapParams.put("searchParam", null);
         mapParams.put("param", null);
@@ -42,7 +42,7 @@ public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRec
             mapParams.put("param", TypeUtil.cast(maps.get(TypeUtil.PARAM)));
         }
         Page<DevopsAutoDeployRecordDO> devopsAutoDeployRecordDOS = PageHelper
-                .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId, appId, envId, taskName,
+                .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId,userId, appId, envId, taskName,
                         (Map<String, Object>) mapParams.get("searchParam"),
                         mapParams.get("param").toString()));
         return ConvertPageHelper.convertPage(devopsAutoDeployRecordDOS, DevopsAutoDeployRecordE.class);

@@ -47,7 +47,7 @@ public class DevopsAutoDeployController {
      * @param devopsAutoDeployDTO 自动部署DTO
      * @return ApplicationRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建或更新自动部署")
     @PostMapping
     public ResponseEntity<DevopsAutoDeployDTO> createOrUpdate(
@@ -67,7 +67,7 @@ public class DevopsAutoDeployController {
      * @param autoDeployId 自动部署id
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除自动部署")
     @DeleteMapping("/{auto_deploy_id}")
     public ResponseEntity deleteById(
@@ -88,6 +88,8 @@ public class DevopsAutoDeployController {
     public ResponseEntity<Page<DevopsAutoDeployDTO>> pageByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam(value = "user_id") Long userId,
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "环境Id")
@@ -99,7 +101,7 @@ public class DevopsAutoDeployController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                devopsAutoDeployService.listByOptions(projectId, appId, envId, doPage, pageRequest, params))
+                devopsAutoDeployService.listByOptions(projectId, userId, appId, envId, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.auto.deploy.get"));
     }
@@ -110,9 +112,11 @@ public class DevopsAutoDeployController {
     @GetMapping("/list")
     public ResponseEntity<List<DevopsAutoDeployDTO>> queryByProjectId(
             @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId) {
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam(value = "user_id") Long userId) {
         return Optional.ofNullable(
-                devopsAutoDeployService.queryByProjectId(projectId))
+                devopsAutoDeployService.queryByProjectId(projectId, userId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.auto.deploy.list"));
     }
@@ -141,6 +145,8 @@ public class DevopsAutoDeployController {
     public ResponseEntity<Page<DevopsAutoDeployRecordDTO>> queryRecord(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "用户Id", required = true)
+            @RequestParam(value = "user_id") Long userId,
             @ApiParam(value = "应用Id")
             @RequestParam(value = "app_id", required = false) Long appId,
             @ApiParam(value = "环境Id")
@@ -154,7 +160,7 @@ public class DevopsAutoDeployController {
             @ApiParam(value = "查询参数")
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(
-                devopsAutoDeployService.queryRecords(projectId, appId, envId, taskName, doPage, pageRequest, params))
+                devopsAutoDeployService.queryRecords(projectId, userId, appId, envId, taskName, doPage, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.auto.deploy.record.get"));
     }
@@ -165,7 +171,7 @@ public class DevopsAutoDeployController {
      * @param projectId 项目Id
      * @param name      名称
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "创建自动部署校验名称是否存在")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -173,7 +179,7 @@ public class DevopsAutoDeployController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "任务名称", required = true)
             @RequestParam String name) {
-        devopsAutoDeployService.checkName(null,projectId, name);
+        devopsAutoDeployService.checkName(null, projectId, name);
     }
 
     /**
@@ -184,7 +190,7 @@ public class DevopsAutoDeployController {
      * @param isEnabled    是否启用
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "根据自动部署ID跟新是否启动")
     @PutMapping(value = "/{auto_deploy_id}")
     public ResponseEntity<DevopsAutoDeployDTO> updateIsEnabled(

@@ -68,8 +68,8 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     }
 
     @Override
-    public Page<DevopsAutoDeployDTO> listByOptions(Long projectId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<DevopsAutoDeployDTO> devopsAutoDeployDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
+    public Page<DevopsAutoDeployDTO> listByOptions(Long projectId, Long userId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
+        Page<DevopsAutoDeployDTO> devopsAutoDeployDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, userId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsAutoDeployDTOS.forEach(autoDeployE -> {
@@ -83,13 +83,13 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     }
 
     @Override
-    public List<DevopsAutoDeployDTO> queryByProjectId(Long projectId) {
-        return ConvertHelper.convertList(devopsAutoDeployRepository.queryByProjectId(projectId), DevopsAutoDeployDTO.class);
+    public List<DevopsAutoDeployDTO> queryByProjectId(Long projectId, Long userId) {
+        return ConvertHelper.convertList(devopsAutoDeployRepository.queryByProjectId(projectId, userId), DevopsAutoDeployDTO.class);
     }
 
     @Override
-    public Page<DevopsAutoDeployRecordDTO> queryRecords(Long projectId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<DevopsAutoDeployRecordDTO> devopsAutoDeployRecordDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
+    public Page<DevopsAutoDeployRecordDTO> queryRecords(Long projectId, Long userId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
+        Page<DevopsAutoDeployRecordDTO> devopsAutoDeployRecordDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, userId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsAutoDeployRecordDTOS.forEach(autoDeployE -> {

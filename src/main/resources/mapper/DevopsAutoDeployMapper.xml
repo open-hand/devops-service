@@ -22,6 +22,11 @@
         ON dad.app_id = da.id
         JOIN devops_env de
         ON dad.env_id = de.id
+        JOIN devops_env_user_permission deup ON (
+        deup.iam_user_id = #{userId}
+        AND deup.is_permitted = 1
+        AND dad.env_id = deup.env_id
+        )
         where dad.project_id = #{projectId}
         <if test="appId != null">
             AND dad.app_id = #{appId}
@@ -137,4 +142,27 @@
         SET dad.instance_id = NULL
         WHERE dad.instance_id = #{instanceId}
     </update>
+
+    <select id="queryByProjectId" resultType="io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO">
+        SELECT
+            dad.id,
+            dad.project_id,
+            dad.task_name,
+            dad.app_id,
+            dad.trigger_version,
+            dad.env_id,
+            dad.value_id,
+            dad.instance_id,
+            dad.is_enabled
+        FROM
+            devops_auto_deploy dad
+        JOIN devops_env de ON dad.env_id = de.id
+        JOIN devops_env_user_permission deup ON (
+            deup.iam_user_id = #{userId}
+            AND deup.is_permitted = 1
+            AND dad.env_id = deup.env_id
+        )
+        WHERE
+            dad.project_id = #{projectId}
+    </select>
 </mapper>
