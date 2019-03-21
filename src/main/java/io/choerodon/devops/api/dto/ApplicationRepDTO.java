@@ -11,6 +11,7 @@ public class ApplicationRepDTO {
     private String code;
     private Long projectId;
     private Long applicationTemplateId;
+    private Long gitlabProjectId;
     private String repoUrl;
     private Boolean isSynchro;
     private Boolean isActive;
@@ -167,5 +168,13 @@ public class ApplicationRepDTO {
 
     public void setChartConfigId(Long chartConfigId) {
         this.chartConfigId = chartConfigId;
+    }
+
+    public Long getGitlabProjectId() {
+        return gitlabProjectId;
+    }
+
+    public void setGitlabProjectId(Long gitlabProjectId) {
+        this.gitlabProjectId = gitlabProjectId;
     }
 }

@@ -46,6 +46,7 @@
                 dpc.id,
                 dpc.project_id,
                 dpc.name,
+                dpc.config,
                 dpc.type
             FROM
                 devops_project_config dpc
