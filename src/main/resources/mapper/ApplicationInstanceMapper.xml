@@ -394,7 +394,7 @@
         FROM
         devops_app_version dav
         WHERE
-        dav.id = dai.app_version_id
+        dav.id = cmd.object_version_id
         ) AS appVersion,
         cmd.creation_date,
         cmd.error error,
