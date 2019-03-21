@@ -98,7 +98,8 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 oldMap.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
             }
             if (oldMap.equals(secretReqDTO.getValue())) {
-                return ConvertHelper.convert(oldSecretE, SecretRepDTO.class);
+                devopsSecretRepository.update(devopsSecretE);
+                return ConvertHelper.convert(devopsSecretE, SecretRepDTO.class);
             }
         }
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(secretReqDTO.getType());
