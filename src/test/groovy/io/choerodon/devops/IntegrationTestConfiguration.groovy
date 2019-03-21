@@ -99,12 +99,6 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
         detachedMockFactory.Mock(ProjectConfigHarborService)
     }
 
-    @Bean("mockApplicationService")
-    @Primary
-    ApplicationService applicationService() {
-        detachedMockFactory.Mock(ApplicationService)
-    }
-
     @PostConstruct
     void init() {
         liquibaseExecutor.execute(new String()[])
