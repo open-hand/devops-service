@@ -884,24 +884,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 LOGGER.info(checkLog.toString());
                 logs.add(checkLog);
             });
-            envGitlabProjectIds.forEach(t -> {
-                CheckLog checkLog = new CheckLog();
-                try {
-                    checkLog.setContent("gitlabProjectId: " + t + " sync gitlab env role");
-                    List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().filter(m -> m.getAccessLevel() == 40).map(memberE ->
-                            new MemberDTO(memberE.getId(), 30)).collect(Collectors.toList());
-                    if (!memberDTOS.isEmpty()) {
-                        gitlabRepository.updateMemberIntoProject(t, memberDTOS);
-                    }
-                    LOGGER.info(SUCCESS);
-                    checkLog.setResult(SUCCESS);
-                } catch (Exception e) {
-                    LOGGER.info("gitlab.env.project.is.not.exist,gitlabProjectId: " + t, e);
-                    checkLog.setResult(FAILED + e.getMessage());
-                }
-                LOGGER.info(checkLog.toString());
-                logs.add(checkLog);
-            });
         }
 
         private void syncAppVersion() {

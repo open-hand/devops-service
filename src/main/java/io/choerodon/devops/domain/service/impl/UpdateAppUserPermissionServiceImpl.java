@@ -62,7 +62,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 deleteGitlabUserIds = new ArrayList<>(allMemberGitlabIdsWithoutOwner);
                 deleteGitlabUserIds.removeAll(updateGitlabUserIds);
 
-                super.updateGitlabUserPermission(gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
+                super.updateGitlabUserPermission("app",gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
             // 原来不跳过，现在跳过，需要删除权限表中的所有人，然后把项目下所有项目成员加入gitlab权限
             case 2:
@@ -74,7 +74,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                                 .map(GitlabMemberE::getId).collect(Collectors.toList()).contains(e))
                         .collect(Collectors.toList());
 
-                super.updateGitlabUserPermission(gitlabProjectId, addGitlabUserIds, new ArrayList<>());
+                super.updateGitlabUserPermission("app",gitlabProjectId, addGitlabUserIds, new ArrayList<>());
                 return true;
             // 原来不跳过，现在也不跳过，需要更新权限表
             case 3:
@@ -89,7 +89,7 @@ public class UpdateAppUserPermissionServiceImpl extends UpdateUserPermissionServ
                 deleteGitlabUserIds = new ArrayList<>(currentGitlabUserIds);
                 deleteGitlabUserIds.removeAll(updateGitlabUserIds);
 
-                super.updateGitlabUserPermission(gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
+                super.updateGitlabUserPermission("app",gitlabProjectId, addGitlabUserIds, deleteGitlabUserIds);
                 return true;
             default:
                 return true;

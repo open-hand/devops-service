@@ -1,6 +1,31 @@
 # Changelog
 All notable changes to devops-service will be documented in this file.
 
+[0.15.0] - 2019-03-19
+###Added
+- Added the feature of automatic deployment in the deployment pipeline
+- Added the feature of elements setup and currently supports the creation of Docker repositories and Helm repositories for application selection in projects.
+- Added the advanced settings in the pages of creating and editing application
+###Changed
+- Optimized the application and environment rights assignment module, the role of the project members assigned permissions in gitlab is changed to developer
+- Optimized the error message after the fuse is executed in the creation operation of the platform
+- Optimized display of cluster list at the organizational layer
+- Optimized the deletion logic of the organization layer cluster, only the clusters without associated environments can be deleted
+- Optimized display of operation log pages in the instance
+- Optimized the diff effect of the Values ​​component, and supports switching editor mode to compare the addition, deletion, and modification of the code line.
+
+###Fixed
+- Fixed an issue where Dockerfile was missing after selecting some templates for import when importing apps
+- Fixed an issue with incorrect error message when there was no permission in the branch interface 
+- Fixed an issue where the agent was disconnected from devops-service but the cluster still showed normal 
+- Fixed an issue with the IP selector in network editing
+- Fixed an issue with incorrect prompt information when working with instances 
+- Fixed an issue in the deployment pipeline that switched the top environment and made a page jump 
+- Fixed an issue where clicking the Retry button error jump in the pipeline section of the build report 
+- Fixed paging issue for organization layer cluster pages
+###Removed
+- Removed the ability to delete failed apps 
+- Removed restrictions for app suspension: Can’t deactivate apps with linked instances
 
 [0.14.0] - 2019-02-15
 ###Added
