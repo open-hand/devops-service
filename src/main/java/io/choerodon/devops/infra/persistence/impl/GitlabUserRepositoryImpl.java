@@ -34,7 +34,8 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
             responseEntity = gitlabServiceClient.createGitLabUser(
                     password, projectsLimit, gitlabUserEvent);
         } catch (FeignException e) {
-            if(e.getMessage().equals("Email has already been taken")) {
+            logger.info(e.getMessage());
+            if(e.status() == 409) {
                 logger.info("邮箱在gitlab上已被使用");
             }
             throw new CommonException(e);
