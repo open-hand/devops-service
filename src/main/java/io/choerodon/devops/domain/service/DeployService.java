@@ -17,7 +17,7 @@ public interface DeployService {
 
     void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE,
                 String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values,
-                Long commandId);
+                Long commandId, String secretCode);
 
     void initCluster(Long clusterId);
 
