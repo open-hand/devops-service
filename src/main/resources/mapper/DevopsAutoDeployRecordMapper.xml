@@ -20,11 +20,13 @@
         JOIN devops_application da ON dadr.app_id = da.id
         JOIN devops_app_version dav ON dadr.version_id = dav.id
         JOIN devops_env de ON dadr.env_id = de.id
-        JOIN devops_env_user_permission deup ON (
-        deup.iam_user_id = #{userId}
-        AND deup.is_permitted = 1
-        AND dadr.env_id = deup.env_id
-        )
+        <if test="userId !=null">
+            JOIN devops_env_user_permission deup ON (
+            deup.iam_user_id = #{userId}
+            AND deup.is_permitted = 1
+            AND dadr.env_id = deup.env_id
+            )
+        </if>
         LEFT JOIN devops_app_instance dai ON dadr.instance_id = dai.id
         where dadr.project_id = #{projectId}
         <if test="appId != null">
