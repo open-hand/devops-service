@@ -572,6 +572,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 appVersion.getVersion()
         );
         applicationVersionE.setImage(image);
+        helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl;
         applicationVersionE.setRepository(String.format("%s%s%s%s%s",
                 helmUrl,
                 organizationCode,
