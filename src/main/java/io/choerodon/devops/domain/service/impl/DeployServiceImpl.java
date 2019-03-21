@@ -81,13 +81,17 @@ public class DeployServiceImpl implements DeployService {
     @Override
     public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId, String secretCode) {
         Msg msg = new Msg();
-        List<ImagePullSecret> imagePullSecrets = Arrays.asList(new ImagePullSecret(secretCode));
+        List<ImagePullSecret> imagePullSecrets = null;
+        if (secretCode != null) {
+            imagePullSecrets = Arrays.asList(new ImagePullSecret(secretCode));
+        }
         Payload payload = new Payload(
                 devopsEnvironmentE.getCode(),
                 applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
                 values, releaseName, imagePullSecrets);
+
         msg.setKey(String.format("cluster:%d.env:%s.envId:%d.release:%s",
                 devopsEnvironmentE.getClusterE().getId(),
                 devopsEnvironmentE.getCode(),
