@@ -50,7 +50,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         Integer gitlabProjectId = TypeUtil
                 .objToInteger(devopsEnviromentRepository.queryById(id).getGitlabEnvProjectId());
 
-        super.updateGitlabUserPermission("env",gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
+        super.updateGitlabUserPermission("env", gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
         devopsEnvUserPermissionRepository.updateEnvUserPermission(id, addIamUserIds, deleteIamUserIds);
         return true;
     }
