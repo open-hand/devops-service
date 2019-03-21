@@ -81,6 +81,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
+        if (devopsProjectConfigDTO.getType().equals("harbor") && devopsProjectConfigDTO.getConfig().getProject() != null) {
+            checkRegistryProjectIsPrivate(devopsProjectConfigDTO);
+        }
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         if (!ObjectUtils.isEmpty(devopsProjectConfigDTO.getType())) {
             configValidator.checkConfigType(devopsProjectConfigDTO);

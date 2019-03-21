@@ -42,6 +42,7 @@ import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
@@ -258,8 +259,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         Long appId = applicationUpdateDTO.getId();
         ApplicationE oldApplicationE = applicationRepository.query(appId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
-                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
+//        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+//                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
             applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         }
@@ -533,8 +534,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             // set project hook id for application
             setProjectHook(applicationE, gitlabProjectDO.getId(), applicationToken, gitlabProjectPayload.getUserId());
-            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
-                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
+//            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
+//                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
             // 更新并校验
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException(ERROR_UPDATE_APP);
@@ -864,16 +865,39 @@ public class ApplicationServiceImpl implements ApplicationService {
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             InputStream inputStream;
+            ProjectConfigDTO harborProjectConfig;
+            ProjectConfigDTO chartProjectConfig;
+            if (applicationE.getHarborConfigE() != null) {
+                harborProjectConfig = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId()).getConfig();
+            } else {
+                harborProjectConfig = devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig();
+            }
+            if (applicationE.getChartConfigE() != null) {
+                chartProjectConfig = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId()).getConfig();
+            } else {
+                chartProjectConfig = devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig();
+            }
             if (type == null) {
                 inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             } else {
                 inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
             }
             Map<String, String> params = new HashMap<>();
-            params.put("{{ GROUP_NAME }}", organization.getCode() + "-" + projectE.getCode());
+            String groupName = organization.getCode() + "-" + projectE.getCode();
+            if (harborProjectConfig.getProject() != null) {
+                groupName = harborProjectConfig.getProject();
+            }
+            String dockerUrl = harborProjectConfig.getUrl().replace("http://", "").replace("https://", "");
+            dockerUrl = dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
+
+            params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", applicationE.getCode());
             params.put("{{ PRO_CODE }}", projectE.getCode());
             params.put("{{ ORG_CODE }}", organization.getCode());
+            params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
+            params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
+            params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
+            params.put("{{ CHART_REGISTRY }}", chartProjectConfig.getUrl().endsWith("/") ? chartProjectConfig.getUrl().substring(0, chartProjectConfig.getUrl().length() - 1) : chartProjectConfig.getUrl());
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (CommonException e) {
             return null;

@@ -22,6 +22,13 @@
         ON dad.app_id = da.id
         JOIN devops_env de
         ON dad.env_id = de.id
+        <if test="userId !=null">
+            JOIN devops_env_user_permission deup ON (
+            deup.iam_user_id = #{userId}
+            AND deup.is_permitted = 1
+            AND dad.env_id = deup.env_id
+            )
+        </if>
         where dad.project_id = #{projectId}
         <if test="appId != null">
             AND dad.app_id = #{appId}
@@ -97,7 +104,7 @@
         LEFT JOIN devops_auto_deploy_value dadv
         ON dad.value_id = dadv.id
         WHERE
-           dad.app_id = #{appId}
+            dad.app_id = #{appId}
         AND dad.is_enabled=1
         <choose>
             <when test='branch != null and branch != ""'>
@@ -128,13 +135,38 @@
             dad.project_id = #{projectId}
         AND dad.task_name = #{taskName}
         <if test='id != null and id != ""'>
-           AND  dad.id != #{id}
+            AND dad.id != #{id}
         </if>
     </select>
 
-    <update id="updateInstanceId" >
+    <update id="updateInstanceId">
         UPDATE devops_auto_deploy dad
         SET dad.instance_id = NULL
         WHERE dad.instance_id = #{instanceId}
     </update>
+
+    <select id="queryByProjectId" resultType="io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO">
+        SELECT
+            dad.id,
+            dad.project_id,
+            dad.task_name,
+            dad.app_id,
+            dad.trigger_version,
+            dad.env_id,
+            dad.value_id,
+            dad.instance_id,
+            dad.is_enabled
+        FROM
+            devops_auto_deploy dad
+        JOIN devops_env de ON dad.env_id = de.id
+        <if test="userId !=null">
+            JOIN devops_env_user_permission deup ON (
+                deup.iam_user_id = #{userId}
+                AND deup.is_permitted = 1
+                AND dad.env_id = deup.env_id
+            )
+        </if>
+        WHERE
+            dad.project_id = #{projectId}
+    </select>
 </mapper>

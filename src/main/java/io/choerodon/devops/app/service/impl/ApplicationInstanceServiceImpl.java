@@ -406,7 +406,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         String secretCode = null;
         if (applicationE.getHarborConfigE() != null) {
             DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
-            if (devopsProjectConfigE.getConfig().getPrivate()) {
+            if (devopsProjectConfigE.getConfig().getPrivate() != null) {
                 DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByEnv(CHOERODON, devopsProjectConfigE.getId());
                 if (devopsRegistrySecretE == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
@@ -756,7 +756,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         //如果应用绑定了私有镜像库,则处理secret
         if (applicationE.getHarborConfigE() != null) {
             DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
-            if (devopsProjectConfigE.getConfig().getPrivate()) {
+            if (devopsProjectConfigE.getConfig().getPrivate() != null) {
                 DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByEnv(devopsEnvironmentE.getCode(), devopsProjectConfigE.getId());
                 if (devopsRegistrySecretE == null) {
                     //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
@@ -823,7 +823,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
             devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE.getCode(), devopsEnvironmentE,
-                    devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                    devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId(),secretCode);
         } else {
             //存储数据
             if (applicationDeployDTO.getType().equals(CREATE)) {
@@ -1003,7 +1003,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验用户是否有环境的权限c
+        //校验用户是否有环境的权限
         devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
                 instanceE.getDevopsEnvironmentE().getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
@@ -1020,7 +1020,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
         instanceE.setCommandId(commandId);
         applicationInstanceRepository.update(instanceE);
-        deployService.deploy(applicationE, applicationVersionE, instanceE.getCode(), devopsEnvironmentE, value, commandId);
+        deployService.deploy(applicationE, applicationVersionE, instanceE.getCode(), devopsEnvironmentE, value, commandId,null);
     }
 
     @Override

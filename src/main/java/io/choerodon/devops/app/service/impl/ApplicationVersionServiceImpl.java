@@ -118,7 +118,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             return;
         }
         String destFilePath = DESTPATH + version;
-        FileUtil.unTarGZ(storeFilePath + System.getProperty("file.separator") + files.getOriginalFilename() + "", destFilePath);
+        String path = FileUtil.multipartFileToFile(storeFilePath, files);
+        FileUtil.unTarGZ(path, destFilePath);
         String values;
         try (FileInputStream fis = new FileInputStream(new File(Objects.requireNonNull(FileUtil.queryFileFromFiles(
                 new File(destFilePath), "values.yaml")).getAbsolutePath()))) {

@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.mapper;
 
-        import io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO;
-        import io.choerodon.mybatis.common.BaseMapper;
-        import org.apache.ibatis.annotations.Param;
+import io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO;
+import io.choerodon.mybatis.common.BaseMapper;
+import org.apache.ibatis.annotations.Param;
 
-        import java.util.List;
-        import java.util.Map;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -14,6 +14,7 @@ package io.choerodon.devops.infra.mapper;
  */
 public interface DevopsAutoDeployMapper extends BaseMapper<DevopsAutoDeployDO> {
     List<DevopsAutoDeployDO> list(@Param("projectId") Long projectId,
+                                  @Param("userId") Long userId,
                                   @Param("appId") Long appId,
                                   @Param("envId") Long envId,
                                   @Param("searchParam") Map<String, Object> searchParam,
@@ -30,4 +31,7 @@ public interface DevopsAutoDeployMapper extends BaseMapper<DevopsAutoDeployDO> {
                                            @Param("taskName") String taskName);
 
     void updateInstanceId(@Param("instanceId") Long instanceId);
+
+    List<DevopsAutoDeployDO> queryByProjectId(@Param("projectId") Long projectId,
+                                              @Param("userId") Long userId);
 }

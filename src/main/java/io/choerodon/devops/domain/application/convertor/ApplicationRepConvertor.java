@@ -1,12 +1,12 @@
 package io.choerodon.devops.domain.application.convertor;
 
 
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.ApplicationRepDTO;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.infra.common.util.TypeUtil;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 @Component
 public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object, ApplicationRepDTO> {
@@ -28,6 +28,9 @@ public class ApplicationRepConvertor implements ConvertorI<ApplicationE, Object,
         }
         if (applicationE.getChartConfigE() != null) {
             applicationRepDTO.setChartConfigId(applicationE.getChartConfigE().getId());
+        }
+        if (applicationE.getGitlabProjectE() != null) {
+            applicationRepDTO.setGitlabProjectId(TypeUtil.objToLong(applicationE.getGitlabProjectE().getId()));
         }
         applicationRepDTO.setRepoUrl(applicationE.getGitlabProjectE().getRepoURL());
         applicationRepDTO.setFail(applicationE.getFailed());

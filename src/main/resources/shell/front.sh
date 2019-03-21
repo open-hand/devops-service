@@ -1,11 +1,19 @@
-# 获取的组织编码-项目编码
-export GROUP_NAME={{ GROUP_NAME }}
 # 获取的组织编码
 export ORG_CODE={{ ORG_CODE }}
 # 获取的项目编码
 export PRO_CODE={{ PRO_CODE }}
 # 获取的应用名称
 export PROJECT_NAME={{ PROJECT_NAME }}
+# 应用Chart仓库地址
+export CHART_REGISTRY={{ CHART_REGISTRY }}
+# 应用harbor仓库地址
+export DOCKER_REGISTRY={{ DOCKER_REGISTRY }}
+# 应用harbor仓库用户名
+export DOCKER_USERNAME={{ DOCKER_USERNAME }}
+# 应用harbor仓库密码
+export DOCKER_PASSWORD={{ DOCKER_PASSWORD }}
+# 获取的组织编码-项目编码(harbor Project地址)
+export GROUP_NAME={{ GROUP_NAME }}
 
 
 C7N_COMMIT_TIMESTAMP=$(git log -1 --pretty=format:"%ci"| awk '{print $1$2}' | sed 's/[-:]//g')
@@ -78,20 +86,6 @@ function chart_build(){
     helm package ${CHART_PATH%/*} --version ${CI_COMMIT_TAG} --app-version ${CI_COMMIT_TAG}
     TEMP=${CHART_PATH%/*}
     FILE_NAME=${TEMP##*/}
-    # 通过Chartmusume API上传chart包到chart仓库
-    result_upload_to_chart=`curl -X POST \
-            --data-binary "@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
-            "${CHART_REGISTRY}/${ORG_CODE}/${PRO_CODE}/api/charts" \
-            -o "${CI_COMMIT_SHA}-chart.response" \
-            -w %{http_code}`
-    response_upload_chart_content=`cat "${CI_COMMIT_SHA}-chart.response"`
-    rm "${CI_COMMIT_SHA}-chart.response"
-    # 判断本次上传到chartmusume是否出错
-    if [ "$result_upload_to_chart" != "201" ]; then
-        echo $response_upload_chart_content
-        echo "upload to chart error"
-        exit 1
-    fi
     # 通过Choerodon API上传chart包到devops-service
     result_upload_to_devops=`curl -X POST \
         -F "token=${Token}" \
@@ -108,6 +102,20 @@ function chart_build(){
     if [ "$result_upload_to_devops" != "200" ]; then
         echo $response_upload_to_devops
         echo "upload to devops error"
+        exit 1
+    fi
+    # 通过Chartmusume API上传chart包到chart仓库
+    result_upload_to_chart=`curl -X POST \
+            --data-binary "@${FILE_NAME}-${CI_COMMIT_TAG}.tgz" \
+            "${CHART_REGISTRY}/${ORG_CODE}/${PRO_CODE}/api/charts" \
+            -o "${CI_COMMIT_SHA}-chart.response" \
+            -w %{http_code}`
+    response_upload_chart_content=`cat "${CI_COMMIT_SHA}-chart.response"`
+    rm "${CI_COMMIT_SHA}-chart.response"
+    # 判断本次上传到chartmusume是否出错
+    if [ "$result_upload_to_chart" != "201" ]; then
+        echo $response_upload_chart_content
+        echo "upload to chart error"
         exit 1
     fi
 }

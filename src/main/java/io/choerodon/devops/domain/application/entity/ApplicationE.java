@@ -149,7 +149,7 @@ public class ApplicationE {
     }
 
     public void initGitlabProjectEByUrl(String url) {
-        this.gitlabProjectE = new GitlabProjectE(url);
+        this.gitlabProjectE.setRepoURL(url);
     }
 
     public void initGitlabProjectE(Integer id) {
