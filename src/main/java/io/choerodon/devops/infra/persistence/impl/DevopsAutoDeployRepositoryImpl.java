@@ -51,7 +51,7 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
                 throw new CommonException("error.auto.deploy.create.error");
             }
         } else {
-            if (devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO) != 1) {
+            if (devopsAutoDeployMapper.updateByPrimaryKey(devopsAutoDeployDO) != 1) {
                 throw new CommonException("error.auto.deploy.update.error");
             }
             devopsAutoDeployDO.setObjectVersionNumber(null);
