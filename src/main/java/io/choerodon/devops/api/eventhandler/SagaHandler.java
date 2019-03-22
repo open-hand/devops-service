@@ -259,8 +259,8 @@ public class SagaHandler {
             gitlabUserReqDTO.setUsername(t.getUsername());
             gitlabUserReqDTO.setEmail(t.getEmail());
             gitlabUserReqDTO.setName(t.getName());
-            if(t.getName()==null) {
-            gitlabUserReqDTO.setName(t.getUsername());
+            if (t.getName() == null) {
+                gitlabUserReqDTO.setName(t.getUsername());
             }
             gitlabUserReqDTO.setCanCreateGroup(true);
             gitlabUserReqDTO.setProjectsLimit(100);
