@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class GitlabUserRepositoryImpl implements GitlabUserRepository {
 
-    Logger logger = LoggerFactory.getLogger(this.getClass());
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabUserRepositoryImpl.class);
 
     private GitlabServiceClient gitlabServiceClient;
 
@@ -34,10 +34,6 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
             responseEntity = gitlabServiceClient.createGitLabUser(
                     password, projectsLimit, gitlabUserEvent);
         } catch (FeignException e) {
-            logger.info("gitlab create error message:{}，status:{}",e.getMessage(),e.status());
-            if(e.status() == 400) {
-                logger.info("邮箱在gitlab上已被使用");
-            }
             throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
