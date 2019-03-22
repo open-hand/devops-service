@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
@@ -318,7 +317,7 @@ public class DevopsSagaHandler {
             sagaCode = "devops-create-auto-deploy-instance",
             maxRetryCount = 3,
             seq = 1)
-    public void createAutoDeployInstance(String data) {
+    public Exception createAutoDeployInstance(String data) {
         //创建或更新实例
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
         try {
@@ -335,8 +334,9 @@ public class DevopsSagaHandler {
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
                     null, null);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            throw new CommonException("error.create.auto.deploy.instance", e);
+            return e;
         }
+        return null;
     }
 
 }
