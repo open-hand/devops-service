@@ -34,6 +34,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
             responseEntity = gitlabServiceClient.createGitLabUser(
                     password, projectsLimit, gitlabUserEvent);
         } catch (FeignException e) {
+            LOGGER.info("error.gitlab.user.create");
             throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);
