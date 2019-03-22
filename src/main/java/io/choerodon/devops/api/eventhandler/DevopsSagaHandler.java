@@ -317,7 +317,7 @@ public class DevopsSagaHandler {
             sagaCode = "devops-create-auto-deploy-instance",
             maxRetryCount = 3,
             seq = 1)
-    public Exception createAutoDeployInstance(String data) {
+    public void createAutoDeployInstance(String data) {
         //创建或更新实例
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
         try {
@@ -334,9 +334,8 @@ public class DevopsSagaHandler {
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
                     null, null);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            return e;
+            LOGGER.error("error create auto deploy instance {}", e.getMessage());
         }
-        return null;
     }
 
 }
