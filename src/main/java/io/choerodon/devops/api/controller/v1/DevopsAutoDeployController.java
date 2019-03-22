@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
@@ -54,7 +55,7 @@ public class DevopsAutoDeployController {
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "自动部署信息", required = true)
-            @RequestBody DevopsAutoDeployDTO devopsAutoDeployDTO) {
+            @RequestBody  @Valid DevopsAutoDeployDTO devopsAutoDeployDTO) {
         return Optional.ofNullable(devopsAutoDeployService.createOrUpdate(projectId, devopsAutoDeployDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.auto.deploy.create"));
