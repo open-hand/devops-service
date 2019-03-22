@@ -327,7 +327,7 @@ public class DevopsSagaHandler {
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FIN,
                     applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getId());
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            if (devopsAutoDeployRecordE.getInstanceId() == null) {
+            if (devopsAutoDeployRepository.queryById(applicationDeployDTO.getAutoDeployId()).getInstanceId() == null) {
                 devopsAutoDeployRepository.updateInstanceId(applicationDeployDTO.getAutoDeployId(), applicationInstanceDTO.getId());
             }
         } catch (Exception e) {
