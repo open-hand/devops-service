@@ -1098,7 +1098,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         logger.info("你好:" + gitOpsSync.getMetadata().getCommit());
         devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitE.getId());
-        devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+        devopsEnvironmentRepository.updateAgentSyncEnvCommit(devopsEnvironmentE);
         logger.info("成功:" + gitOpsSync.getMetadata().getCommit());
         if (gitOpsSync.getResourceIDs() == null) {
             return;

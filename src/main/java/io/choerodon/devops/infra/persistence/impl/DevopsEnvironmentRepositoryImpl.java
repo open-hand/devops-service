@@ -110,11 +110,23 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     }
 
     @Override
-    public void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
-        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(),
-                devopsEnvironmentE.getSagaSyncCommit(), devopsEnvironmentE.getDevopsSyncCommit(),
+    public void updateSagaSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateSagaSyncEnvCommit(devopsEnvironmentE.getId(),
+                devopsEnvironmentE.getSagaSyncCommit());
+    }
+
+    @Override
+    public void updateDevopsSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateDevopsSyncEnvCommit(devopsEnvironmentE.getId(),
+                devopsEnvironmentE.getDevopsSyncCommit());
+    }
+
+    @Override
+    public void updateAgentSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateAgentSyncEnvCommit(devopsEnvironmentE.getId(),
                 devopsEnvironmentE.getAgentSyncCommit());
     }
+
 
     @Override
     public void deleteById(Long id) {

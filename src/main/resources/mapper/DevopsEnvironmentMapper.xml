@@ -7,11 +7,17 @@
         UPDATE devops_env de set de.devops_env_group_id = null where de.id = #{envId}
     </update>
 
-    <update id="updateDevopsEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
-        UPDATE devops_env de set de.saga_sync_commit = #{gitCommit} , de.devops_sync_commit = #{devopsSyncCommit} ,
-        de.agent_sync_commit = #{agentSyncCommit} where de.id = #{envId}
+    <update id="updateSagaSyncEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+        UPDATE devops_env de set de.saga_sync_commit = #{sagaSyncCommit} where de.id = #{envId}
     </update>
 
+    <update id="updateDevopsEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+        UPDATE devops_env de set de.devops_sync_commit = #{devopsSyncCommit} where de.id = #{envId}
+    </update>
+
+    <update id="updateAgentSyncEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+        UPDATE devops_env de set de.agent_sync_commit = #{agentSyncCommit} where de.id = #{envId}
+    </update>
 
     <select id="queryByToken" resultType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
       select * from devops_env de where de.token = #{token}

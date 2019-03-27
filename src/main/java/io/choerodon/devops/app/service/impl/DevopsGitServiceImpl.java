@@ -387,7 +387,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository
                 .queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
         devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
-        devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+        devopsEnvironmentRepository.updateSagaSyncEnvCommit(devopsEnvironmentE);
         LOGGER.info("更新devopsCommit成功:" +pushWebHookDTO.getCheckoutSha());
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
@@ -493,7 +493,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
             //更新环境 解释commit
-            devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+            devopsEnvironmentRepository.updateDevopsSyncEnvCommit(devopsEnvironmentE);
             //向agent发送同步指令
             deployService.sendCommand(devopsEnvironmentE);
             LOGGER.info("发送gitops同步成功指令成功");
