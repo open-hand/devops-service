@@ -29,7 +29,12 @@ public interface DevopsEnvironmentRepository {
 
     List<DevopsEnvironmentE> list();
 
-    void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+    void updateSagaSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+
+    void updateDevopsSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+
+    void updateAgentSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE);
+
 
     void deleteById(Long id);
 
