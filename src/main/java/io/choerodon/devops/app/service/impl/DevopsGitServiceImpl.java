@@ -369,6 +369,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     @Saga(code = "devops-sync-gitops", description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookDTO.class)
     public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
+        LOGGER.info("`````````````````````````````" +pushWebHookDTO.getCheckoutSha());
         pushWebHookDTO.setToken(token);
         String input;
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());

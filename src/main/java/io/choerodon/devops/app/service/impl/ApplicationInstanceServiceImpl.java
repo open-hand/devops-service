@@ -984,8 +984,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
         //校验用户是否有环境的权限
-//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-//                instanceE.getDevopsEnvironmentE().getId());
+        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+                instanceE.getDevopsEnvironmentE().getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
         ApplicationVersionE applicationVersionE = applicationVersionRepository
