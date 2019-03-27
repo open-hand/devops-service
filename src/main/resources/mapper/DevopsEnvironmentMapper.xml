@@ -11,7 +11,7 @@
         UPDATE devops_env de set de.saga_sync_commit = #{sagaSyncCommit} where de.id = #{envId}
     </update>
 
-    <update id="updateDevopsEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
+    <update id="updateDevopsSyncEnvCommit" parameterType="io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO">
         UPDATE devops_env de set de.devops_sync_commit = #{devopsSyncCommit} where de.id = #{envId}
     </update>
 
