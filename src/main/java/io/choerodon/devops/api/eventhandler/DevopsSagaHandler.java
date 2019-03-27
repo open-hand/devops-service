@@ -315,6 +315,7 @@ public class DevopsSagaHandler {
     @SagaTask(code = "devops-auto-deploy-create-instance",
             description = "devops create auto deploy instance",
             sagaCode = "devops-create-auto-deploy-instance",
+            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
             maxRetryCount = 3,
             seq = 1)
     public void createAutoDeployInstance(String data) {
