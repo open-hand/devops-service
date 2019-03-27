@@ -172,7 +172,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(),
                     devopsAutoDeployE.getInstanceName(), devopsAutoDeployRecordE.getId(), devopsAutoDeployE.getId());
             String input = gson.toJson(applicationDeployDTO);
-            sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
+            sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "devopsAutoDeploy", devopsAutoDeployE.getId().toString(), ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
         } catch (Exception e) {
             devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
