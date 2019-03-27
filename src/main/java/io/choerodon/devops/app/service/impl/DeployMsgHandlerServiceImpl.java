@@ -1091,12 +1091,15 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (agentSyncCommit != null && agentSyncCommit.getCommitSha().equals(gitOpsSync.getMetadata().getCommit())) {
             return;
         }
+        logger.info("大佬:" + gitOpsSync.getMetadata().getCommit());
         DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository.queryByEnvIdAndCommit(envId, gitOpsSync.getMetadata().getCommit());
         if (devopsEnvCommitE == null) {
             return;
         }
+        logger.info("你好:" + gitOpsSync.getMetadata().getCommit());
         devopsEnvironmentE.setAgentSyncCommit(devopsEnvCommitE.getId());
         devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+        logger.info("成功:" + gitOpsSync.getMetadata().getCommit());
         if (gitOpsSync.getResourceIDs() == null) {
             return;
         }
