@@ -9,9 +9,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 import io.choerodon.resource.annoation.EnableChoerodonResourceServer;
 
-@EnableEurekaClient
 @EnableFeignClients("io.choerodon")
-@EnableScheduling
+@EnableEurekaClient
 @SpringBootApplication
 @EnableChoerodonResourceServer
 @EnableAsync
