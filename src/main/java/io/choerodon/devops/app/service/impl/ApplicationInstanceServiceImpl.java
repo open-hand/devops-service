@@ -544,7 +544,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             InputStreamResource inputStreamResource = new InputStreamResource(new FileInputStream(file));
             YamlPropertySourceLoader yamlPropertySourceLoader = new YamlPropertySourceLoader();
             try {
-                yamlPropertySourceLoader.load("test", inputStreamResource, null);
+                yamlPropertySourceLoader.load("test", inputStreamResource);
             } catch (Exception e) {
                 FileUtil.deleteFile(path + System.getProperty(FILE_SEPARATOR) + fileName);
                 return getErrorLine(e.getMessage());

@@ -10,6 +10,7 @@ spring:
      charset: UTF-8
      force: true
      enabled: true
+  servlet:
     multipart:
      max-file-size: 30MB
      max-request-size: 30MB
@@ -64,7 +65,7 @@ eureka:
 security:
   basic:
       enabled: false
-  ignored: /ci,/webhook/**,/v2/api-docs,/agent/**,/ws/**,/gitlab/email
+#  ignored: /ci,/webhook/**,/v2/api-docs,/agent/**,/ws/**,/gitlab/email
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:
