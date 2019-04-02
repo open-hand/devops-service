@@ -33,7 +33,7 @@ spec:
         - /bin/sh
         - -c
         - '
-          java -Dspring.datasource.url="{{ .Values.preJob.preConfig.datasource.url }}" -Dspring.datasource.username={{ .Values.preJob.preConfig.datasource.username }} -Dspring.datasource.password={{ .Values.preJob.preConfig.datasource.password }} -Dservice.name={{ .Chart.Name }} -Dservice.version={{ .Chart.Version }} -Dconfig.file={{ .Values.preJob.preConfig.configFile }} -Dconfig.jar=/{{ .Chart.Name }}.jar -jar /var/choerodon/choerodon-tool-config.jar;
+          java -Dspring.datasource.url="{{ .Values.preJob.preConfig.datasource.url }}" -Dspring.datasource.username={{ .Values.preJob.preConfig.datasource.username }} -Dspring.datasource.password={{ .Values.preJob.preConfig.datasource.password }} -Dconfig.type={{ .Values.preJob.preConfig.configType }} -Dregister.host={{ .Values.preJob.preConfig.registerHost }} -Dservice.namespace={{ .Release.Namespace }} -Dservice.name={{ .Chart.Name }} -Dservice.version={{ .Chart.Version }} -Dconfig.file={{ .Values.preJob.preConfig.configFile }} -Dconfig.jar=/{{ .Chart.Name }}.jar -jar /var/choerodon/choerodon-tool-config.jar;
           '
         volumeMounts:
         - mountPath: /var/choerodon

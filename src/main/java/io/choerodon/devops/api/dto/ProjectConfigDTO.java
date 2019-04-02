@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.dto;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.alibaba.fastjson.JSON;
 
@@ -75,5 +76,10 @@ public class ProjectConfigDTO implements Serializable {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         return JSON.toJSONString(this).equals(JSON.toJSONString(o));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(url, userName, password, project, email, isPrivate);
     }
 }

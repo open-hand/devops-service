@@ -4,6 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>devops-service</artifactId>
+    <version>0.8.0.RELEASE</version>
     <packaging>jar</packaging>
 
     <!--加parent-->
@@ -47,12 +48,13 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.18.1</version>
                 <configuration>
+
                     <includes>
                         <include>**/*Test.java</include>
                         <include>**/*Spec.java</include>
                     </includes>
                     <forkMode>once</forkMode>
-                    <argLine>-Dfile.encoding=UTF-8 -Xmx1024m -XX:PermSize=256m -XX:MaxPermSize=256m</argLine>
+                    <argLine>@{argLine}</argLine>
                     <runOrder>alphabetical</runOrder>
                 </configuration>
             </plugin>
@@ -61,7 +63,7 @@
 
     <properties>
         <choerodon.starters.version>0.9.2.RELEASE</choerodon.starters.version>
-
+        <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
         <!--use powermock-->
         <powermock.version>1.7.4</powermock.version>
     </properties>

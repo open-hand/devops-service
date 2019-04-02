@@ -1,11 +1,11 @@
 package io.choerodon.devops.infra.dataobject.harbor;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.gson.annotations.SerializedName;
 
 public class Project {
-    @JsonProperty("project_name")
+    @SerializedName("project_name")
     private String name;
-    @JsonProperty("public")
+    @SerializedName("public")
     private Integer isPublic;
 
     public Project(String name, Integer isPublic) {
