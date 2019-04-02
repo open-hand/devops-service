@@ -1,3 +1,10 @@
 spring:
   profiles:
     active: test
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+      - org.springframework.cloud.client.discovery.simple.SimpleDiscoveryClientAutoConfiguration
+      - org.springframework.cloud.client.discovery.composite.CompositeDiscoveryClientAutoConfiguration
+      - org.springframework.cloud.client.discovery.noop.NoopDiscoveryClientAutoConfiguration

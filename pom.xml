@@ -64,7 +64,7 @@
     <properties>
         <choerodon.starters.version>0.10.0.RELEASE</choerodon.starters.version>
         <!--use powermock-->
-        <powermock.version>1.7.4</powermock.version>
+        <powermock.version>2.0.0-beta.5</powermock.version>
     </properties>
 
     <dependencies>
@@ -184,6 +184,11 @@
             <version>4.7.0.201704051617-r</version>
         </dependency>
         <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.24.0-GA</version>
+        </dependency>
+        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.4</version>
@@ -282,7 +287,7 @@
         <!--use powermock-->
         <dependency>
             <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
+            <artifactId>powermock-api-mockito2</artifactId>
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
