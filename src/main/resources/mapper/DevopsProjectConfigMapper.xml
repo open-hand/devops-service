@@ -46,6 +46,7 @@
                 dpc.id,
                 dpc.project_id,
                 dpc.name,
+                dpc.config,
                 dpc.type
             FROM
                 devops_project_config dpc
@@ -58,5 +59,15 @@
             ORDER BY
                 project_id ASC,
                 id ASC
+    </select>
+
+    <select id="checkIsUsed"  resultType="java.lang.Integer">
+            SELECT
+                da.id
+            FROM
+                devops_application da
+            WHERE
+                da.chart_config_id = #{configId}
+            OR da.harbor_config_id = #{configId}
     </select>
 </mapper>

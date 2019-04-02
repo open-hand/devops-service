@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public interface DevopsAutoDeployRecordMapper extends BaseMapper<DevopsAutoDeployRecordDO> {
     List<DevopsAutoDeployRecordDO> list(@Param("projectId") Long projectId,
+                                        @Param("userId") Long userId,
                                         @Param("appId") Long appId,
                                         @Param("envId") Long envId,
                                         @Param("taskName") String taskName,

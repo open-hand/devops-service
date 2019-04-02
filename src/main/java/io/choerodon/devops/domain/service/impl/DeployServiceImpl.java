@@ -1,10 +1,7 @@
 package io.choerodon.devops.domain.service.impl;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.alibaba.fastjson.JSONArray;
@@ -12,6 +9,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.valueobject.ImagePullSecret;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.Payload;
 import io.choerodon.devops.domain.service.DeployService;
@@ -81,14 +79,19 @@ public class DeployServiceImpl implements DeployService {
 
 
     @Override
-    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId) {
+    public void deploy(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, DevopsEnvironmentE devopsEnvironmentE, String values, Long commandId, String secretCode) {
         Msg msg = new Msg();
+        List<ImagePullSecret> imagePullSecrets = null;
+        if (secretCode != null) {
+            imagePullSecrets = Arrays.asList(new ImagePullSecret(secretCode));
+        }
         Payload payload = new Payload(
                 devopsEnvironmentE.getCode(),
                 applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
-                values, releaseName);
+                values, releaseName, imagePullSecrets);
+
         msg.setKey(String.format("cluster:%d.env:%s.envId:%d.release:%s",
                 devopsEnvironmentE.getClusterE().getId(),
                 devopsEnvironmentE.getCode(),
@@ -119,7 +122,7 @@ public class DeployServiceImpl implements DeployService {
                 "choerodon-cluster-agent",
                 agentExpectVersion,
                 Props2YAML.fromContent(FileUtil.propertiesToString(configs))
-                        .convert(), "choerodon-cluster-agent-" + devopsClusterE.getCode());
+                        .convert(), "choerodon-cluster-agent-" + devopsClusterE.getCode(), null);
         msg.setKey(String.format(KEY_FORMAT,
                 devopsClusterE.getId(),
                 "choerodon-cluster-agent-" + devopsClusterE.getCode()));
@@ -140,7 +143,7 @@ public class DeployServiceImpl implements DeployService {
                 agentRepoUrl,
                 "cert-manager",
                 agentExpectVersion,
-                null, "choerodon-cert-manager");
+                null, "choerodon-cert-manager", null);
         msg.setKey(String.format(KEY_FORMAT, clusterId, "choerodon-cert-manager"));
         msg.setType(HelmType.HELM_INSTALL_RELEASE.toValue());
         try {
@@ -237,14 +240,15 @@ public class DeployServiceImpl implements DeployService {
     }
 
     @Override
-    public void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, Long clusterId, String values) {
+    public void deployTestApp(ApplicationE applicationE, ApplicationVersionE applicationVersionE, String releaseName, String secretName, Long clusterId, String values) {
         Msg msg = new Msg();
+        List<ImagePullSecret> imagePullSecrets = Arrays.asList(new ImagePullSecret(secretName));
         Payload payload = new Payload(
                 null,
                 applicationVersionE.getRepository(),
                 applicationE.getCode(),
                 applicationVersionE.getVersion(),
-                values, releaseName);
+                values, releaseName, imagePullSecrets);
         msg.setKey(String.format(KEY_FORMAT, clusterId, releaseName));
         msg.setType(HelmType.EXECUTE_TEST.toValue());
         try {

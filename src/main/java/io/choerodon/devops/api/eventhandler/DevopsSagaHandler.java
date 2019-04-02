@@ -1,7 +1,5 @@
 package io.choerodon.devops.api.eventhandler;
 
-import java.io.IOException;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.SagaDefinition;
@@ -10,7 +8,12 @@ import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.ApplicationInstanceDTO;
 import io.choerodon.devops.api.dto.PipelineWebHookDTO;
 import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.ApplicationTemplateService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
+import io.choerodon.devops.app.service.DevopsGitService;
+import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
@@ -19,14 +22,20 @@ import io.choerodon.devops.domain.application.event.DevOpsAppImportPayload;
 import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
-import io.choerodon.devops.infra.common.util.TypeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 /**
  * Creator: Runge
@@ -193,8 +202,8 @@ public class DevopsSagaHandler {
                     LOGGER.error("update application set create success status error");
                 }
             }
-            gitlabRepository.batchAddVariable(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabUserId()),
-                    applicationService.setVariableDTO(applicationE.getHarborConfigE().getId(),applicationE.getChartConfigE().getId()));
+//            gitlabRepository.batchAddVariable(applicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(devOpsAppImportPayload.getGitlabUserId()),
+//                    applicationService.setVariableDTO(applicationE.getHarborConfigE().getId(),applicationE.getChartConfigE().getId()));
         }
         return data;
     }
@@ -317,14 +326,16 @@ public class DevopsSagaHandler {
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FIN,
                     applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getId());
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            devopsAutoDeployRepository.updateInstanceId(applicationDeployDTO.getAutoDeployId(),applicationInstanceDTO.getId());
+            if (devopsAutoDeployRepository.queryById(applicationDeployDTO.getAutoDeployId()).getInstanceId() == null) {
+                devopsAutoDeployRepository.updateInstanceId(applicationDeployDTO.getAutoDeployId(), applicationInstanceDTO.getId());
+            }
         } catch (Exception e) {
             //实例创建失败,回写记录表
             DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
-                    null,  null);
+                    null, null);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
+            LOGGER.error("error create auto deploy instance {}", e.getMessage());
         }
-
     }
 
 }

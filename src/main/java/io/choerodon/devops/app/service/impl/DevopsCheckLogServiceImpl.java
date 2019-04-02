@@ -35,7 +35,6 @@ import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
-import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.devops.infra.common.util.enums.ServiceStatus;
 import io.choerodon.devops.infra.dataobject.*;
@@ -874,30 +873,12 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         gitlabRepository.updateMemberIntoProject(t, memberDTOS);
                     }
                     LOGGER.info("update project member maintainer to developer success");
-                    gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
-                            devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId()));
-                    LOGGER.info("the project add Variable success,gitlabProjectId: " + t);
+//                    gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
+//                            devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId()));
+//                    LOGGER.info("the project add Variable success,gitlabProjectId: " + t);
                     checkLog.setResult(SUCCESS);
                 } catch (Exception e) {
                     LOGGER.info("gitlab.project.is.not.exist,gitlabProjectId: " + t, e);
-                    checkLog.setResult(FAILED + e.getMessage());
-                }
-                LOGGER.info(checkLog.toString());
-                logs.add(checkLog);
-            });
-            envGitlabProjectIds.forEach(t -> {
-                CheckLog checkLog = new CheckLog();
-                try {
-                    checkLog.setContent("gitlabProjectId: " + t + " sync gitlab env role");
-                    List<MemberDTO> memberDTOS = gitlabProjectRepository.getAllMemberByProjectId(t).stream().filter(m -> m.getAccessLevel() == 40).map(memberE ->
-                            new MemberDTO(memberE.getId(), 30)).collect(Collectors.toList());
-                    if (!memberDTOS.isEmpty()) {
-                        gitlabRepository.updateMemberIntoProject(t, memberDTOS);
-                    }
-                    LOGGER.info(SUCCESS);
-                    checkLog.setResult(SUCCESS);
-                } catch (Exception e) {
-                    LOGGER.info("gitlab.env.project.is.not.exist,gitlabProjectId: " + t, e);
                     checkLog.setResult(FAILED + e.getMessage());
                 }
                 LOGGER.info(checkLog.toString());

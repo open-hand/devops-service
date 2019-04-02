@@ -96,7 +96,6 @@ class DevopsConfigMapControllerSpec extends Specification {
         DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
         DependencyInjectUtil.setAttribute(gitlabRepository, "gitlabServiceClient", gitlabServiceClient)
         DependencyInjectUtil.setAttribute(gitlabGroupMemberRepository, "gitlabServiceClient", gitlabServiceClient)
-        DependencyInjectUtil.setAttribute(devopsConfigMapServiceImpl, "devopsEnvironmentService", devopsEnvironmentService)
 
         ProjectDO projectDO = new ProjectDO()
         projectDO.setName("pro")
@@ -124,9 +123,6 @@ class DevopsConfigMapControllerSpec extends Specification {
         ResponseEntity<MemberDO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity1)
 
-        String path = "gitops/testConfigMap"
-        Mockito.when(devopsEnvironmentService.handDevopsEnvGitRepository(any(DevopsEnvironmentE.class))).thenReturn(path)
-
         RepositoryFile file = new RepositoryFile()
         file.setFilePath("filePath")
         ResponseEntity<RepositoryFile> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)
@@ -143,7 +139,7 @@ class DevopsConfigMapControllerSpec extends Specification {
         DependencyInjectUtil.restoreDefaultDependency(iamRepository, "iamServiceClient")
         DependencyInjectUtil.restoreDefaultDependency(gitlabRepository, "gitlabServiceClient")
         DependencyInjectUtil.restoreDefaultDependency(gitlabGroupMemberRepository, "gitlabServiceClient")
-        DependencyInjectUtil.restoreDefaultDependency(devopsConfigMapServiceImpl, "devopsEnvironmentService")
+//        DependencyInjectUtil.restoreDefaultDependency(devopsConfigMapServiceImpl, "devopsEnvironmentService")
 
         // 删除secret
         devopsConfigMapMapper.selectAll().forEach{devopsConfigMapMapper.delete(it)}

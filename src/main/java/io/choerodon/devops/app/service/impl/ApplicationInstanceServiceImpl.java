@@ -63,6 +63,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     private static final String FILE_SEPARATOR = "file.separator";
     private static final String C7NHELM_RELEASE = "C7NHelmRelease";
     private static final String RELEASE_NAME = "ReleaseName";
+    public static final String CHOERODON = "choerodon-test";
 
     private static Gson gson = new Gson();
 
@@ -401,11 +402,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public void deployTestApp(ApplicationDeployDTO applicationDeployDTO) {
         String versionValue = applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId());
         ApplicationE applicationE = applicationRepository.query(applicationDeployDTO.getAppId());
+
+        String secretCode = null;
+        secretCode = getSecret(applicationE, secretCode, CHOERODON, null, applicationDeployDTO.getEnvironmentId());
+
         ApplicationVersionE applicationVersionE = applicationVersionRepository.query(applicationDeployDTO.getAppVersionId());
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
         String deployValue = getReplaceResult(versionValue,
                 applicationDeployDTO.getValues()).getDeltaYaml().trim();
-        deployService.deployTestApp(applicationE, applicationVersionE, applicationDeployDTO.getInstanceName(), applicationDeployDTO.getEnvironmentId(), deployValue);
+        deployService.deployTestApp(applicationE, applicationVersionE, applicationDeployDTO.getInstanceName(), secretCode, applicationDeployDTO.getEnvironmentId(), deployValue);
     }
 
     @Override
@@ -722,35 +727,8 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(applicationDeployDTO);
         DevopsEnvCommandValueE devopsEnvCommandValueE = initDevopsEnvCommandValueE(applicationDeployDTO);
 
-        String secretName = null;
-        //如果应用绑定了私有镜像库,则处理secret
-        if (applicationE.getHarborConfigE() != null) {
-            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
-            if (devopsProjectConfigE.getConfig().getPrivate()) {
-                DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByEnv(devopsEnvironmentE.getId(), devopsProjectConfigE.getId());
-                if (devopsRegistrySecretE == null) {
-                    //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
-                    List<DevopsRegistrySecretE> devopsRegistrySecretES = devopsRegistrySecretRepository.listByConfig(devopsProjectConfigE.getId());
-                    String secretCode = null;
-                    if (devopsRegistrySecretES.isEmpty()) {
-                        secretCode = String.format("%s%s%s%s", "registry-secret-", devopsProjectConfigE.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
-                    } else {
-                        secretCode = devopsRegistrySecretES.get(0).getSecretCode();
-                    }
-                    devopsRegistrySecretE = new DevopsRegistrySecretE(devopsEnvironmentE.getId(), devopsProjectConfigE.getId(), secretCode, gson.toJson(devopsProjectConfigE.getConfig()));
-                    devopsRegistrySecretRepository.create(devopsRegistrySecretE);
-                    deployService.operateSecret(devopsEnvironmentE.getClusterE().getId(), devopsEnvironmentE.getCode(), secretCode, devopsProjectConfigE.getConfig(), "create");
-                } else {
-                    //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
-                    if (!devopsRegistrySecretE.getSecretDetail().equals(gson.toJson(devopsProjectConfigE.getConfig()))) {
-                        devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
-                        devopsRegistrySecretRepository.update(devopsRegistrySecretE);
-                        deployService.operateSecret(devopsEnvironmentE.getClusterE().getId(), devopsEnvironmentE.getCode(), devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), "update");
-                    }
-                }
-                secretName = devopsRegistrySecretE.getSecretCode();
-            }
-        }
+        String secretCode = null;
+        secretCode = getSecret(applicationE, secretCode, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvironmentE.getClusterE().getId());
 
         //校验更新实例时values是否删除key
         if (!applicationDeployDTO.getIsNotChange() && applicationDeployDTO.getType().equals(UPDATE)) {
@@ -794,7 +772,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
             devopsEnvCommandE.setStatus(CommandStatus.OPERATING.getStatus());
             deployService.deploy(applicationE, applicationVersionE, applicationInstanceE.getCode(), devopsEnvironmentE,
-                    devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId());
+                    devopsEnvCommandValueE.getValue(), devopsEnvCommandRepository.create(devopsEnvCommandE).getId(), secretCode);
         } else {
             //存储数据
             if (applicationDeployDTO.getType().equals(CREATE)) {
@@ -819,7 +797,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
             //在gitops库处理instance文件
             ObjectOperation<C7nHelmRelease> objectOperation = new ObjectOperation<>();
             objectOperation.setType(getC7NHelmRelease(
-                    code, applicationVersionE, applicationDeployDTO, applicationE, secretName));
+                    code, applicationVersionE, applicationDeployDTO, applicationE, secretCode));
             Integer projectId = TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId());
             objectOperation.operationEnvGitlabFile(
                     RELEASE_PREFIX + code,
@@ -830,6 +808,37 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
 
         }
         return ConvertHelper.convert(applicationInstanceE, ApplicationInstanceDTO.class);
+    }
+
+    private String getSecret(ApplicationE applicationE, String secretCode, String namespace, Long envId, Long clusterId) {
+        //如果应用绑定了私有镜像库,则处理secret
+        if (applicationE.getHarborConfigE() != null) {
+            DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId());
+            if (devopsProjectConfigE.getConfig().getPrivate() != null) {
+                DevopsRegistrySecretE devopsRegistrySecretE = devopsRegistrySecretRepository.queryByEnv(namespace, devopsProjectConfigE.getId());
+                if (devopsRegistrySecretE == null) {
+                    //当配置在当前环境下没有创建过secret.则新增secret信息，并通知k8s创建secret
+                    List<DevopsRegistrySecretE> devopsRegistrySecretES = devopsRegistrySecretRepository.listByConfig(devopsProjectConfigE.getId());
+                    if (devopsRegistrySecretES.isEmpty()) {
+                        secretCode = String.format("%s%s%s%s", "registry-secret-", devopsProjectConfigE.getId(), "-", GenerateUUID.generateUUID().substring(0, 5));
+                    } else {
+                        secretCode = devopsRegistrySecretES.get(0).getSecretCode();
+                    }
+                    devopsRegistrySecretE = new DevopsRegistrySecretE(envId, devopsProjectConfigE.getId(), namespace, secretCode, gson.toJson(devopsProjectConfigE.getConfig()));
+                    devopsRegistrySecretRepository.create(devopsRegistrySecretE);
+                    deployService.operateSecret(clusterId, namespace, secretCode, devopsProjectConfigE.getConfig(), "create");
+                } else {
+                    //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
+                    if (!devopsRegistrySecretE.getSecretDetail().equals(gson.toJson(devopsProjectConfigE.getConfig()))) {
+                        devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
+                        devopsRegistrySecretRepository.update(devopsRegistrySecretE);
+                        deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), "update");
+                    }
+                    secretCode = devopsRegistrySecretE.getSecretCode();
+                }
+            }
+        }
+        return secretCode;
     }
 
     @Override
@@ -974,9 +983,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public void instanceReStart(Long instanceId) {
         ApplicationInstanceE instanceE = applicationInstanceRepository.selectById(instanceId);
-        //校验用户是否有环境的权限c
-        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
-                instanceE.getDevopsEnvironmentE().getId());
+        //校验用户是否有环境的权限
+//        devopsEnvUserPermissionRepository.checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()),
+//                instanceE.getDevopsEnvironmentE().getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(instanceE.getCommandId());
         ApplicationE applicationE = applicationRepository.query(instanceE.getApplicationE().getId());
         ApplicationVersionE applicationVersionE = applicationVersionRepository
@@ -991,7 +1000,9 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         Long commandId = devopsEnvCommandRepository.create(devopsEnvCommandE).getId();
         instanceE.setCommandId(commandId);
         applicationInstanceRepository.update(instanceE);
-        deployService.deploy(applicationE, applicationVersionE, instanceE.getCode(), devopsEnvironmentE, value, commandId);
+        String secretCode = null;
+        secretCode = getSecret(applicationE, secretCode, devopsEnvironmentE.getCode(), devopsEnvironmentE.getId(), devopsEnvironmentE.getClusterE().getId());
+        deployService.deploy(applicationE, applicationVersionE, instanceE.getCode(), devopsEnvironmentE, value, commandId, secretCode);
     }
 
     @Override

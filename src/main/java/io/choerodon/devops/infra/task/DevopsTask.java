@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.task;
 
-import java.util.Map;
+import java.util.*;
 
 import io.choerodon.asgard.schedule.QuartzDefinition;
 import io.choerodon.asgard.schedule.annotation.JobParam;

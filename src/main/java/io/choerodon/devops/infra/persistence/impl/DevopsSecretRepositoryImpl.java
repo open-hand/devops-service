@@ -52,7 +52,7 @@ public class DevopsSecretRepositoryImpl implements DevopsSecretRepository {
             throw new CommonException("secret.not.exists");
         }
         devopsSecretDO.setObjectVersionNumber(oldSecretDO.getObjectVersionNumber());
-        if (devopsSecretMapper.updateByPrimaryKey(devopsSecretDO) != 1) {
+        if (devopsSecretMapper.updateByPrimaryKeySelective(devopsSecretDO) != 1) {
             throw new CommonException("secret.update.error");
         }
     }

@@ -15,7 +15,7 @@ public interface DevopsRegistrySecretRepository {
 
     DevopsRegistrySecretE update(DevopsRegistrySecretE devopsRegistrySecretE);
 
-    DevopsRegistrySecretE queryByEnv(Long envId, Long configId);
+    DevopsRegistrySecretE queryByEnv(String namespace, Long configId);
 
     List<DevopsRegistrySecretE> listByConfig(Long configId);
 

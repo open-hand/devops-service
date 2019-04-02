@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.dto;
 
+import io.swagger.annotations.ApiModelProperty;
+
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +17,7 @@ public class DevopsAutoDeployDTO {
     private Long appId;
     private List<String> triggerVersion;
     private Long envId;
+    @NotNull(message = "error.value.is.empty")
     private String value;
     private Long valueId;
     private Long projectId;

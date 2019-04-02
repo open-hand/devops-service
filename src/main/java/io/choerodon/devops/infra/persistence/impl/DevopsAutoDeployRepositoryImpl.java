@@ -51,7 +51,7 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
                 throw new CommonException("error.auto.deploy.create.error");
             }
         } else {
-            if (devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO) != 1) {
+            if (devopsAutoDeployMapper.updateByPrimaryKey(devopsAutoDeployDO) != 1) {
                 throw new CommonException("error.auto.deploy.update.error");
             }
             devopsAutoDeployDO.setObjectVersionNumber(null);
@@ -65,7 +65,7 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
     }
 
     @Override
-    public Page<DevopsAutoDeployE> listByOptions(Long projectId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
+    public Page<DevopsAutoDeployE> listByOptions(Long projectId, Long userId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
         Page<DevopsAutoDeployDO> devopsAutoDeployDOS = new Page<>();
         String param = null;
 
@@ -78,17 +78,15 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
             mapParams.put("param", TypeUtil.cast(maps.get(TypeUtil.PARAM)));
         }
         devopsAutoDeployDOS = PageHelper
-                .doPageAndSort(pageRequest, () -> devopsAutoDeployMapper.list(projectId, appId, envId,
+                .doPageAndSort(pageRequest, () -> devopsAutoDeployMapper.list(projectId, userId, appId, envId,
                         (Map<String, Object>) mapParams.get("searchParam"),
                         mapParams.get("param").toString(), checkSortIsEmpty(pageRequest)));
         return ConvertPageHelper.convertPage(devopsAutoDeployDOS, DevopsAutoDeployE.class);
     }
 
     @Override
-    public List<DevopsAutoDeployE> queryByProjectId(Long projectId) {
-        DevopsAutoDeployDO devopsAutoDeployDO = new DevopsAutoDeployDO();
-        devopsAutoDeployDO.setProjectId(projectId);
-        return ConvertHelper.convertList(devopsAutoDeployMapper.select(devopsAutoDeployDO), DevopsAutoDeployE.class);
+    public List<DevopsAutoDeployE> queryByProjectId(Long projectId, Long userId) {
+        return ConvertHelper.convertList(devopsAutoDeployMapper.queryByProjectId(projectId, userId), DevopsAutoDeployE.class);
     }
 
     @Override

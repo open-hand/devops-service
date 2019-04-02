@@ -245,7 +245,7 @@ public class SagaHandler {
      * 用户创建事件
      */
     @SagaTask(code = "devopsCreateUser", description = "用户创建事件",
-            sagaCode = "iam-create-user", maxRetryCount = 1,
+            sagaCode = "iam-create-user", maxRetryCount = 5,
             seq = 1)
     public List<GitlabUserDTO> handleCreateUserEvent(String payload) {
         List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
@@ -259,6 +259,9 @@ public class SagaHandler {
             gitlabUserReqDTO.setUsername(t.getUsername());
             gitlabUserReqDTO.setEmail(t.getEmail());
             gitlabUserReqDTO.setName(t.getName());
+            if (t.getName() == null) {
+                gitlabUserReqDTO.setName(t.getUsername());
+            }
             gitlabUserReqDTO.setCanCreateGroup(true);
             gitlabUserReqDTO.setProjectsLimit(100);
 

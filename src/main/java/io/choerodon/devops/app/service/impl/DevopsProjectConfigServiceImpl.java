@@ -53,10 +53,10 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType().toUpperCase());
 
         devopsProjectConfigRepository.checkName(projectId, devopsProjectConfigE.getName());
+        DevopsProjectConfigE res = devopsProjectConfigRepository.create(devopsProjectConfigE);
         if (type.equals(ProjectConfigType.HARBOR)) {
             harborService.createHarbor(devopsProjectConfigE.getConfig(), devopsProjectConfigE.getProjectId());
         }
-        DevopsProjectConfigE res = devopsProjectConfigRepository.create(devopsProjectConfigE);
         return ConvertHelper.convert(res, DevopsProjectConfigDTO.class);
     }
 
@@ -81,6 +81,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
+        if (devopsProjectConfigDTO.getType().equals("harbor") && devopsProjectConfigDTO.getConfig().getProject() != null) {
+            checkRegistryProjectIsPrivate(devopsProjectConfigDTO);
+        }
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         if (!ObjectUtils.isEmpty(devopsProjectConfigDTO.getType())) {
             configValidator.checkConfigType(devopsProjectConfigDTO);
@@ -111,5 +114,10 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
     @Override
     public void checkName(Long projectId, String name) {
         devopsProjectConfigRepository.checkName(projectId, name);
+    }
+
+    @Override
+    public Boolean checkIsUsed(Long configId) {
+        return  devopsProjectConfigRepository.checkIsUsed(configId);
     }
 }

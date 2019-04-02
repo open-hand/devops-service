@@ -8,6 +8,8 @@ import io.choerodon.devops.domain.application.event.GitlabUserEvent;
 import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
 import io.choerodon.devops.infra.dataobject.gitlab.UserDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class GitlabUserRepositoryImpl implements GitlabUserRepository {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GitlabUserRepositoryImpl.class);
 
     private GitlabServiceClient gitlabServiceClient;
 
@@ -30,6 +34,7 @@ public class GitlabUserRepositoryImpl implements GitlabUserRepository {
             responseEntity = gitlabServiceClient.createGitLabUser(
                     password, projectsLimit, gitlabUserEvent);
         } catch (FeignException e) {
+            LOGGER.info("error.gitlab.user.create");
             throw new CommonException(e);
         }
         return ConvertHelper.convert(responseEntity.getBody(), GitlabUserE.class);

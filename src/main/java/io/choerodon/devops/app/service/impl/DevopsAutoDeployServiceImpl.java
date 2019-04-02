@@ -9,10 +9,12 @@ import io.choerodon.devops.app.service.DevopsAutoDeployService;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployValueE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
@@ -43,6 +45,8 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     private EnvListener envListener;
     @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
+    @Autowired
+    private IamRepository iamRepository;
 
     @Override
     public DevopsAutoDeployDTO createOrUpdate(Long projectId, DevopsAutoDeployDTO devopsAutoDeployDTO) {
@@ -68,8 +72,11 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     }
 
     @Override
-    public Page<DevopsAutoDeployDTO> listByOptions(Long projectId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<DevopsAutoDeployDTO> devopsAutoDeployDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
+    public Page<DevopsAutoDeployDTO> listByOptions(Long projectId, Long userId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        //判断当前用户是否是项目所有者
+        userId = iamRepository.isProjectOwner(userId, projectE) ? null : userId;
+        Page<DevopsAutoDeployDTO> devopsAutoDeployDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, userId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsAutoDeployDTOS.forEach(autoDeployE -> {
@@ -83,13 +90,17 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     }
 
     @Override
-    public List<DevopsAutoDeployDTO> queryByProjectId(Long projectId) {
-        return ConvertHelper.convertList(devopsAutoDeployRepository.queryByProjectId(projectId), DevopsAutoDeployDTO.class);
+    public List<DevopsAutoDeployDTO> queryByProjectId(Long projectId, Long userId) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        userId = iamRepository.isProjectOwner(userId, projectE) ? null : userId;
+        return ConvertHelper.convertList(devopsAutoDeployRepository.queryByProjectId(projectId, userId), DevopsAutoDeployDTO.class);
     }
 
     @Override
-    public Page<DevopsAutoDeployRecordDTO> queryRecords(Long projectId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<DevopsAutoDeployRecordDTO> devopsAutoDeployRecordDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
+    public Page<DevopsAutoDeployRecordDTO> queryRecords(Long projectId, Long userId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
+        ProjectE projectE = iamRepository.queryIamProject(projectId);
+        userId = iamRepository.isProjectOwner(userId, projectE) ? null : userId;
+        Page<DevopsAutoDeployRecordDTO> devopsAutoDeployRecordDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, userId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsAutoDeployRecordDTOS.forEach(autoDeployE -> {

@@ -181,6 +181,8 @@
         da.is_synchro,
         da.gitlab_project_id,
         da.app_template_id,
+        da.harbor_config_id,
+        da.chart_config_id,
         da.uuid,
         da.token,
         da.object_version_number

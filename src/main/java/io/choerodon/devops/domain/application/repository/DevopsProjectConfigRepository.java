@@ -28,4 +28,6 @@ public interface DevopsProjectConfigRepository {
     List<DevopsProjectConfigE> queryByIdAndType(Long projectId, String type);
 
     void checkName(Long projectId, String name);
+
+    Boolean checkIsUsed(Long checkIsUsed);
 }

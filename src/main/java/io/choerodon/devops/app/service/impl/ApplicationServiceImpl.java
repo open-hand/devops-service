@@ -1,5 +1,13 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -11,25 +19,12 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.AppUserPermissionRepDTO;
-import io.choerodon.devops.api.dto.ApplicationCodeDTO;
-import io.choerodon.devops.api.dto.ApplicationImportDTO;
-import io.choerodon.devops.api.dto.ApplicationRepDTO;
-import io.choerodon.devops.api.dto.ApplicationReqDTO;
-import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO;
-import io.choerodon.devops.api.dto.ApplicationUpdateDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.domain.application.entity.AppUserPermissionE;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.ApplicationMarketE;
-import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.DevopsBranchE;
-import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
@@ -40,30 +35,14 @@ import io.choerodon.devops.domain.application.event.DevOpsAppPayload;
 import io.choerodon.devops.domain.application.event.DevOpsUserPayload;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
 import io.choerodon.devops.domain.application.factory.ApplicationFactory;
-import io.choerodon.devops.domain.application.repository.AppUserPermissionRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationMarketRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabRepository;
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.common.util.GitUserNameUtil;
-import io.choerodon.devops.infra.common.util.GitUtil;
-import io.choerodon.devops.infra.common.util.HttpClientUtil;
-import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.common.util.enums.GitPlatformType;
+import io.choerodon.devops.infra.common.util.enums.ProjectConfigType;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
@@ -88,20 +67,6 @@ import org.springframework.stereotype.Service;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-
-import java.io.File;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Created by younger on 2018/3/28.
@@ -294,8 +259,8 @@ public class ApplicationServiceImpl implements ApplicationService {
         Long appId = applicationUpdateDTO.getId();
         ApplicationE oldApplicationE = applicationRepository.query(appId);
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
-                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
+//        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+//                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
             applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         }
@@ -562,8 +527,6 @@ public class ApplicationServiceImpl implements ApplicationService {
             initMasterBranch(gitlabProjectPayload, applicationE);
         }
         try {
-            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
-                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
             String applicationToken = getApplicationToken(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId());
             applicationE.setToken(applicationToken);
             applicationE.initGitlabProjectE(TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
@@ -571,7 +534,8 @@ public class ApplicationServiceImpl implements ApplicationService {
 
             // set project hook id for application
             setProjectHook(applicationE, gitlabProjectDO.getId(), applicationToken, gitlabProjectPayload.getUserId());
-
+//            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),
+//                    setVariableDTO(applicationE.getHarborConfigE().getId(), applicationE.getChartConfigE().getId()));
             // 更新并校验
             if (applicationRepository.update(applicationE) != 1) {
                 throw new CommonException(ERROR_UPDATE_APP);
@@ -901,14 +865,39 @@ public class ApplicationServiceImpl implements ApplicationService {
             ProjectE projectE = iamRepository.queryIamProject(applicationE.getProjectE().getId());
             Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
             InputStream inputStream;
+            ProjectConfigDTO harborProjectConfig;
+            ProjectConfigDTO chartProjectConfig;
+            if (applicationE.getHarborConfigE() != null) {
+                harborProjectConfig = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getHarborConfigE().getId()).getConfig();
+            } else {
+                harborProjectConfig = devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getConfig();
+            }
+            if (applicationE.getChartConfigE() != null) {
+                chartProjectConfig = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId()).getConfig();
+            } else {
+                chartProjectConfig = devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getConfig();
+            }
             if (type == null) {
                 inputStream = this.getClass().getResourceAsStream("/shell/ci.sh");
             } else {
                 inputStream = this.getClass().getResourceAsStream("/shell/" + type + ".sh");
             }
             Map<String, String> params = new HashMap<>();
-            params.put("{{ GROUP_NAME }}", organization.getCode() + "-" + projectE.getCode());
+            String groupName = organization.getCode() + "-" + projectE.getCode();
+            if (harborProjectConfig.getProject() != null) {
+                groupName = harborProjectConfig.getProject();
+            }
+            String dockerUrl = harborProjectConfig.getUrl().replace("http://", "").replace("https://", "");
+            dockerUrl = dockerUrl.endsWith("/") ? dockerUrl.substring(0, dockerUrl.length() - 1) : dockerUrl;
+
+            params.put("{{ GROUP_NAME }}", groupName);
             params.put("{{ PROJECT_NAME }}", applicationE.getCode());
+            params.put("{{ PRO_CODE }}", projectE.getCode());
+            params.put("{{ ORG_CODE }}", organization.getCode());
+            params.put("{{ DOCKER_REGISTRY }}", dockerUrl);
+            params.put("{{ DOCKER_USERNAME }}", harborProjectConfig.getUserName());
+            params.put("{{ DOCKER_PASSWORD }}", harborProjectConfig.getPassword());
+            params.put("{{ CHART_REGISTRY }}", chartProjectConfig.getUrl().endsWith("/") ? chartProjectConfig.getUrl().substring(0, chartProjectConfig.getUrl().length() - 1) : chartProjectConfig.getUrl());
             return FileUtil.replaceReturnString(inputStream, params);
         } catch (CommonException e) {
             return null;
@@ -1169,6 +1158,13 @@ public class ApplicationServiceImpl implements ApplicationService {
         Response<Object> projectResponse = RetrofitHandler.execute(listProject);
         if (projectResponse.body() == null) {
             throw new CommonException("error.harbor.project.permission");
+        } else {
+            if (project != null) {
+                List<LinkedTreeMap> projects = (List<LinkedTreeMap>) ((ArrayList) projectResponse.body()).stream().filter(a -> ((LinkedTreeMap) a).get("name").equals(configurationProperties.getProject())).collect(Collectors.toList());
+                if (projects.isEmpty()) {
+                    throw new CommonException("error.harbor.project.permission");
+                }
+            }
         }
         return true;
     }

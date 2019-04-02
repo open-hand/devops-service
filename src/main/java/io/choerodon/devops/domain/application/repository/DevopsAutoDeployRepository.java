@@ -19,13 +19,14 @@ public interface DevopsAutoDeployRepository {
     void delete(Long autoDeployId);
 
     Page<DevopsAutoDeployE> listByOptions(Long projectId,
+                                          Long userId,
                                           Long appId,
                                           Long envId,
                                           Boolean doPage,
                                           PageRequest pageRequest,
                                           String params);
 
-    List<DevopsAutoDeployE> queryByProjectId(Long projectId);
+    List<DevopsAutoDeployE> queryByProjectId(Long projectId, Long userId);
 
     DevopsAutoDeployE queryById(Long autoDeployId);
 

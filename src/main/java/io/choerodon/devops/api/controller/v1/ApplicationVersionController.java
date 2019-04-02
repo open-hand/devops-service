@@ -302,7 +302,7 @@ public class ApplicationVersionController {
      * @return
      */
     @Permission(level = ResourceLevel.PROJECT,
-            roles = {InitRoleCode.PROJECT_OWNER})
+            roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询所有自动部署")
     @GetMapping("/value")
     public ResponseEntity<String> queryByProjectId(

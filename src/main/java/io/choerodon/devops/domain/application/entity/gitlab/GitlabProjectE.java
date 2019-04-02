@@ -21,6 +21,11 @@ public class GitlabProjectE {
         this.id = id;
     }
 
+    public GitlabProjectE(Integer id, String repoURL) {
+        this.id = id;
+        this.repoURL = repoURL;
+    }
+
     public Integer getId() {
         return id;
     }
@@ -37,4 +42,19 @@ public class GitlabProjectE {
         return repoURL;
     }
 
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    public void setRepoURL(String repoURL) {
+        this.repoURL = repoURL;
+    }
 }

@@ -3,6 +3,9 @@ package io.choerodon.devops
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
+import io.choerodon.devops.app.service.ApplicationService
+import io.choerodon.devops.app.service.ProjectConfigHarborService
+import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
@@ -88,6 +91,12 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Primary
     CommandSender commandSender() {
         detachedMockFactory.Mock(CommandSender)
+    }
+
+    @Bean("mockProjectConfigHarborService")
+    @Primary
+    ProjectConfigHarborService ProjectConfigHarborService() {
+        detachedMockFactory.Mock(ProjectConfigHarborService)
     }
 
     @PostConstruct

@@ -388,7 +388,14 @@
         dai.code appInstanceCode,
         da.code appCode,
         da.name appName,
-        dav.version appVersion,
+        (
+        SELECT
+        dav.version
+        FROM
+        devops_app_version dav
+        WHERE
+        dav.id = cmd.object_version_id
+        ) AS appVersion,
         cmd.creation_date,
         cmd.error error,
         cmd.status status,
@@ -397,11 +404,10 @@
         cmd.created_by
         from devops_app_instance dai
         JOIN devops_application da ON dai.app_id = da.id
-        JOIN devops_app_version dav ON dai.app_version_id = dav.id
         JOIN devops_env de ON de.id = dai.env_id
         LEFT JOIN devops_env_command cmd on dai.id = cmd.object_id
-        where da.project_id = #{projectId} and cmd.command_type in ('create','update') and cmd.`status` not in
-        ('doing','operating')
+        where  cmd.command_type in ('create','update')
+        and cmd.`status` not in ('doing','operating')
         <if test="startTime != null">
             AND cmd.creation_date >= CONCAT('','${startTime}',' 00:00:00')
         </if>

@@ -14,7 +14,7 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 
 /**
  * Created by n!Ck
- * Date: 2018/11/21
+ * Date: 2018//21
  * Time: 16:42
  * Description:
  */
@@ -50,7 +50,7 @@ public class UpdateEnvUserPermissionServiceImpl extends UpdateUserPermissionServ
         Integer gitlabProjectId = TypeUtil
                 .objToInteger(devopsEnviromentRepository.queryById(id).getGitlabEnvProjectId());
 
-        super.updateGitlabUserPermission(gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
+        super.updateGitlabUserPermission("env", gitlabProjectId, addgitlabUserIds, deleteGitlabUserIds);
         devopsEnvUserPermissionRepository.updateEnvUserPermission(id, addIamUserIds, deleteIamUserIds);
         return true;
     }

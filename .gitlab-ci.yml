@@ -1,4 +1,4 @@
-image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/cibase:0.8.1
+image: registry${ALIYUN_VPC}.cn-shanghai.aliyuncs.com/choerodon-tools/cibase:0.8.1
 
 stages:
   - build
