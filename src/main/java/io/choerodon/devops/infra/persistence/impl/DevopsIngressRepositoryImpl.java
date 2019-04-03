@@ -50,29 +50,17 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
 
     @Value("${agent.version}")
     private String agentExpectVersion;
+    @Autowired
     private DevopsIngressMapper devopsIngressMapper;
+    @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper;
+    @Autowired
     private DevopsEnvironmentRepository environmentRepository;
+    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
-    private EnvListener envListener;
-
     @Autowired
     private CertificationRepository certificationRepository;
 
-    /**
-     * 构造函数
-     */
-    public DevopsIngressRepositoryImpl(DevopsIngressMapper devopsIngressMapper,
-                                       DevopsIngressPathMapper devopsIngressPathMapper,
-                                       DevopsEnvironmentRepository environmentRepository,
-                                       DevopsServiceRepository devopsServiceRepository,
-                                       EnvListener envListener) {
-        this.devopsIngressMapper = devopsIngressMapper;
-        this.devopsIngressPathMapper = devopsIngressPathMapper;
-        this.environmentRepository = environmentRepository;
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.envListener = envListener;
-    }
 
     @Override
     public DevopsIngressDO createIngress(DevopsIngressDO devopsIngressDO) {
@@ -145,7 +133,6 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
         Page<DevopsIngressDO> devopsIngressDOS =
                 PageHelper.doPageAndSort(pageRequest,
                         () -> devopsIngressMapper.selectIngress(projectId, envId, searchParamMap, paramMap));
-        Map<String, EnvSession> envs = envListener.connectedEnv();
         devopsIngressDOS.getContent().forEach(t -> {
             DevopsIngressDTO devopsIngressDTO =
                     new DevopsIngressDTO(t.getId(), t.getDomain(), t.getName(),
@@ -155,14 +142,6 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
             devopsIngressDTO.setCommandType(t.getCommandType());
             devopsIngressDTO.setError(t.getError());
             setIngressDTOCert(t.getCertId(), devopsIngressDTO);
-            for (Map.Entry<String, EnvSession> entry : envs.entrySet()) {
-                EnvSession envSession = entry.getValue();
-                DevopsEnvironmentE devopsEnvironmentE = environmentRepository.queryById(t.getEnvId());
-                if (envSession.getClusterId().equals(devopsEnvironmentE.getClusterE().getId())
-                        && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1) {
-                    devopsIngressDTO.setEnvStatus(true);
-                }
-            }
             DevopsIngressPathDO devopsIngressPathDO = new DevopsIngressPathDO(t.getId());
             devopsIngressPathMapper.select(devopsIngressPathDO).forEach(e -> getDevopsIngressDTO(devopsIngressDTO, e));
             devopsIngressDTOS.add(devopsIngressDTO);

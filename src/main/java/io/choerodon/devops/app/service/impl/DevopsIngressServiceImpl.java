@@ -25,6 +25,7 @@ import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressPathDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.helper.EnvListener;
+import io.choerodon.websocket.helper.EnvSession;
 import io.kubernetes.client.custom.IntOrString;
 import io.kubernetes.client.models.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -248,6 +249,9 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     public Page<DevopsIngressDTO> listByEnv(Long projectId, Long envId, PageRequest pageRequest, String params) {
         Page<DevopsIngressDTO> devopsIngressDTOS = devopsIngressRepository
                 .getIngress(projectId, envId, pageRequest, params);
+
+        Map<String, EnvSession> envs = envListener.connectedEnv();
+
         List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
         List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
         devopsIngressDTOS.forEach(devopsIngressDTO -> {

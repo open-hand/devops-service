@@ -63,10 +63,6 @@ public class DeployServiceImpl implements DeployService {
     @Value("${agent.serviceUrl}")
     private String agentServiceUrl;
 
-    @Autowired
-    public DeployServiceImpl(CommandSender commandSender) {
-        this.commandSender = commandSender;
-    }
 
     @Override
     public void sendCommand(DevopsEnvironmentE devopsEnvironmentE) {
