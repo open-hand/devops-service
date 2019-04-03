@@ -50,29 +50,19 @@ public class DevopsIngressRepositoryImpl implements DevopsIngressRepository {
 
     @Value("${agent.version}")
     private String agentExpectVersion;
+    @Autowired
     private DevopsIngressMapper devopsIngressMapper;
+    @Autowired
     private DevopsIngressPathMapper devopsIngressPathMapper;
+    @Autowired
     private DevopsEnvironmentRepository environmentRepository;
+    @Autowired
     private DevopsServiceRepository devopsServiceRepository;
+    @Autowired
     private EnvListener envListener;
-
     @Autowired
     private CertificationRepository certificationRepository;
 
-    /**
-     * 构造函数
-     */
-    public DevopsIngressRepositoryImpl(DevopsIngressMapper devopsIngressMapper,
-                                       DevopsIngressPathMapper devopsIngressPathMapper,
-                                       DevopsEnvironmentRepository environmentRepository,
-                                       DevopsServiceRepository devopsServiceRepository,
-                                       EnvListener envListener) {
-        this.devopsIngressMapper = devopsIngressMapper;
-        this.devopsIngressPathMapper = devopsIngressPathMapper;
-        this.environmentRepository = environmentRepository;
-        this.devopsServiceRepository = devopsServiceRepository;
-        this.envListener = envListener;
-    }
 
     @Override
     public DevopsIngressDO createIngress(DevopsIngressDO devopsIngressDO) {
