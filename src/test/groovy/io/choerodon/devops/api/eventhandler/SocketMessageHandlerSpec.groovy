@@ -3,11 +3,15 @@ package io.choerodon.devops.api.eventhandler
 import io.choerodon.devops.app.service.DeployMsgHandlerService
 import io.choerodon.devops.infra.common.util.enums.HelmType
 import io.choerodon.websocket.Msg
+import io.choerodon.websocket.process.SocketMsgDispatcher
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.modules.junit4.PowerMockRunnerDelegate
 import org.spockframework.runtime.Sputnik
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.annotation.Bean
 import spock.lang.Specification
 import spock.lang.Unroll
 
@@ -21,6 +25,9 @@ import spock.lang.Unroll
 @RunWith(PowerMockRunner.class)
 @PowerMockRunnerDelegate(Sputnik)
 class SocketMessageHandlerSpec extends Specification {
+    @Autowired
+    @Qualifier("mockSocketMsgDispatcher")
+    private SocketMsgDispatcher socketMsgDispatcher
 
     private DeployMsgHandlerService deployMsgHandlerService = PowerMockito.mock(DeployMsgHandlerService)
 
