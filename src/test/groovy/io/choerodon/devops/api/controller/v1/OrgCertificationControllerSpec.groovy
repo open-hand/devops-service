@@ -76,7 +76,7 @@ class OrgCertificationControllerSpec extends Specification {
         projectDOList.add(projectDO)
         projectDOPage.setContent(projectDOList)
         ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[].class))).thenReturn(projectDOPageResponseEntity)
+        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), any(), any())).thenReturn(projectDOPageResponseEntity)
     }
 
     def "Create"() {

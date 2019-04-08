@@ -4,7 +4,7 @@ kind: C7NHelmRelease
 metadata:
   name: instest2
 spec:
-  chartName: testapp
+  chartName: testApp
   chartVersion: 2018.8.21-091848-release-0-9-0
   repoUrl: http://chart.choerodon.com.cn/choerodon/c7ncd/
   values: |-

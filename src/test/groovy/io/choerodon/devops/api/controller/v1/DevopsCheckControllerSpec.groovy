@@ -400,7 +400,7 @@ class DevopsCheckControllerSpec extends Specification {
 
         then: "校验结果"
         devopsGitlabCommitMapper.select(searchCondition) != null
-        devopsGitlabCommitMapper.select(searchCondition).size() == 2
+        devopsGitlabCommitMapper.select(searchCondition).size() == 1
     }
 
     // 升级到0.10.4

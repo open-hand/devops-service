@@ -32,20 +32,31 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
-    @Autowired
     private GitlabGroupService gitlabGroupService;
-    @Autowired
     private HarborService harborService;
-    @Autowired
     private OrganizationService organizationService;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
-    @Autowired
     private GitlabUserService gitlabUserService;
-    @Autowired
     private ApplicationService applicationService;
-    @Autowired
     private ApplicationRepository applicationRepository;
+
+
+    public SagaHandler(GitlabGroupService gitlabGroupService,
+                       HarborService harborService,
+                       OrganizationService organizationService,
+                       GitlabGroupMemberService gitlabGroupMemberService,
+                       GitlabUserService gitlabUserService,
+                       ApplicationService applicationService,
+                       ApplicationRepository applicationRepository) {
+        this.gitlabGroupService = gitlabGroupService;
+        this.harborService = harborService;
+        this.organizationService = organizationService;
+        this.gitlabGroupMemberService = gitlabGroupMemberService;
+        this.gitlabUserService = gitlabUserService;
+        this.applicationService = applicationService;
+        this.applicationRepository = applicationRepository;
+
+    }
 
 
     private void loggerInfo(Object o) {

@@ -7,6 +7,7 @@ import io.choerodon.devops.api.dto.RegisterOrganizationDTO
 import io.choerodon.devops.app.service.*
 import io.choerodon.devops.domain.application.event.OrganizationEventPayload
 import io.choerodon.devops.domain.application.event.ProjectEvent
+import io.choerodon.devops.domain.application.repository.ApplicationRepository
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.modules.junit4.PowerMockRunner
@@ -27,15 +28,19 @@ class SagaHandlerSpec extends Specification {
 
     private final Gson gson = new Gson()
 
-    private ProjectService projectService = PowerMockito.mock(ProjectService)
+    private ApplicationService applicationService =  PowerMockito.mock(ApplicationService)
     private GitlabGroupService gitlabGroupService = PowerMockito.mock(GitlabGroupService)
     private HarborService harborService = PowerMockito.mock(HarborService)
     private OrganizationService organizationService = PowerMockito.mock(OrganizationService)
     private GitlabGroupMemberService gitlabGroupMemberService = PowerMockito.mock(GitlabGroupMemberService)
     private GitlabUserService gitlabUserService = PowerMockito.mock(GitlabUserService)
+    private ApplicationRepository applicationRepository = PowerMockito.mock(ApplicationRepository)
 
-    private SagaHandler sagaHandler = new SagaHandler(projectService, gitlabGroupService, harborService,
-            organizationService, gitlabGroupMemberService, gitlabUserService)
+    private SagaHandler sagaHandler = new SagaHandler(gitlabGroupService, harborService,
+            organizationService, gitlabGroupMemberService, gitlabUserService,  applicationService,applicationRepository)
+
+
+
 
     def "HandleGitlabGroupEvent"() {
         given: '初始化msg'

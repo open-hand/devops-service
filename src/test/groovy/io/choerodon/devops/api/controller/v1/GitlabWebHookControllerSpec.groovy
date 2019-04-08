@@ -35,6 +35,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import static org.mockito.ArgumentMatchers.any
 import static org.mockito.Matchers.anyString
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
@@ -133,7 +134,7 @@ class GitlabWebHookControllerSpec extends Specification {
             commit.setUrl("http://www.baidu.com")
             commit.setCommittedDate(new Date())
             ResponseEntity<CommitDO> res = new ResponseEntity<>(commit, HttpStatus.OK)
-            Mockito.when(mockGitlabServiceClient.getCommit(Mockito.anyInt(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
+            Mockito.when(mockGitlabServiceClient.getCommit(any(), Mockito.anyString(), Mockito.anyInt())).thenReturn(res)
 
             // mock env util
             Mockito.when(mockEnvUtil.getConnectedEnvList(Mockito.any(EnvListener))).thenReturn(Arrays.asList(1L))

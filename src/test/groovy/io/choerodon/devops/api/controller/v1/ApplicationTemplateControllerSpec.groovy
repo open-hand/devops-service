@@ -97,6 +97,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         organization.setCode("org")
 
         organizationDO.setCode("orgDO")
+        organizationDO.setId(org_id)
 
         gitlabGroupE.setName("org_template")
         gitlabGroupE.setPath("org_template")

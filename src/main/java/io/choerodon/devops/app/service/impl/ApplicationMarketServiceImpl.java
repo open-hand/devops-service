@@ -521,13 +521,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         FILE_SEPARATOR,
                         applicationE.getCode(),
                         applicationVersionE.getVersion()))) {
-                    InputStream is = response.body().byteStream();
-                    byte[] buffer = new byte[4096];
-                    int r = 0;
-                    while ((r = is.read(buffer)) > 0) {
-                        fos.write(buffer, 0, r);
+                    if(response.body()!=null) {
+                        InputStream is = response.body().byteStream();
+                        byte[] buffer = new byte[4096];
+                        int r = 0;
+                        while ((r = is.read(buffer)) > 0) {
+                            fos.write(buffer, 0, r);
+                        }
+                        is.close();
                     }
-                    is.close();
                 }
             } catch (IOException e) {
                 throw new CommonException(e.getMessage(), e);
