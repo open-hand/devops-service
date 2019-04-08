@@ -55,7 +55,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class ApplicationTemplateControllerSpec extends Specification {
 
     @Autowired
-    TestRestTemplate restTemplate
+    private TestRestTemplate restTemplate
     @Autowired
     private DevopsGitService devopsGitService
     @Autowired
@@ -90,7 +90,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Shared
     Long template_id = 4L
 
-    // 初始化部分对象
+     //初始化部分对象
     def setupSpec() {
         given:
         organization.setId(init_id)
@@ -113,7 +113,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         searchParam.put("param", "")
     }
 
-    // 组织下创建应用模板
+     //组织下创建应用模板
     def "createTemplate"() {
         given: "初始化数据"
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()

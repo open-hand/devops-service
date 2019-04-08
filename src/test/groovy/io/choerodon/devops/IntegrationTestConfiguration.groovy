@@ -11,6 +11,7 @@ import io.choerodon.liquibase.LiquibaseExecutor
 import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
 import io.choerodon.websocket.process.SocketMsgDispatcher
+import org.apache.http.client.config.RequestConfig
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
