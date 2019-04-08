@@ -451,8 +451,12 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
 
             if (devopsServiceE.getType().equals("LoadBalancer")) {
                 if (v1Service.getSpec().getLoadBalancerIP() != null) {
-                    devopsServiceE.setLoadBalanceIp(v1Service.getSpec().getLoadBalancerIP());
-                    devopsServiceRepository.update(devopsServiceE);
+                    if (v1Service.getStatus() != null && v1Service.getStatus().getLoadBalancer() != null) {
+                        if (!v1Service.getStatus().getLoadBalancer().getIngress().isEmpty()) {
+                            devopsServiceE.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
+                            devopsServiceRepository.update(devopsServiceE);
+                        }
+                    }
                 }
             }
             if (devopsServiceE.getType().equals("NodePort")) {
@@ -1788,7 +1792,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     certManagerUrl,
                     "cert-manager",
                     "0.1.0",
-                    null, "choerodon-cert-manager",null);
+                    null, "choerodon-cert-manager", null);
             msg.setKey(String.format("cluster:%d.release:%s",
                     clusterId,
                     "choerodon-cert-manager"));

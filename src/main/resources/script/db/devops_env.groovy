@@ -114,4 +114,12 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
     changeSet(author: 'zmf', id: '2018-12-13-alter-unique-constraint') {
         dropUniqueConstraint(constraintName: "uk_project_id_name",tableName: "devops_env")
     }
+
+
+    changeSet(author: 'younger', id: '2019-04-08-drop-constraint')
+            {
+                dropUniqueConstraint(constraintName: "devops_envs_uk_cluster_id_code", tableName: "devops_env")
+                addUniqueConstraint(tableName: 'devops_env',
+                        constraintName: 'devops_envs_uk_cluster_and_project_code', columnNames: 'cluster_id,project_id,code')
+            }
 }
