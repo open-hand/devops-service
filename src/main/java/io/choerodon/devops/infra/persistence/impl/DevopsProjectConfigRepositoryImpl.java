@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import io.choerodon.devops.infra.mapper.DevopsProjectConfigMapper;
@@ -85,14 +86,6 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
                         (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
                         (String) mapParams.get(TypeUtil.PARAM), checkSortIsEmpty(pageRequest)));
         return ConvertPageHelper.convertPage(configDOPage, DevopsProjectConfigE.class);
-    }
-
-    private String checkSortIsEmpty(PageRequest pageRequest) {
-        String index = "";
-        if (pageRequest.getSort() == null) {
-            index = "true";
-        }
-        return index;
     }
 
     @Override

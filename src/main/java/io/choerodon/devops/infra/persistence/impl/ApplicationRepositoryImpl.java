@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -200,15 +201,6 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public List<ApplicationE> listByCode(String code) {
         return ConvertHelper.convertList(applicationMapper.listByCode(code), ApplicationE.class);
-    }
-
-    @Override
-    public String checkSortIsEmpty(PageRequest pageRequest) {
-        String index = "";
-        if (pageRequest.getSort() == null) {
-            index = "true";
-        }
-        return index;
     }
 
     @Override

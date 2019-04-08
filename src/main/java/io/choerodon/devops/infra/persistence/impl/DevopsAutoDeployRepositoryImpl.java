@@ -7,6 +7,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
 import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO;
 import io.choerodon.devops.infra.mapper.DevopsAutoDeployMapper;
@@ -64,11 +65,12 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
 
     @Override
     public Page<DevopsAutoDeployE> listByOptions(Long projectId, Long userId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
-        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        Map maps = gson.fromJson(params, Map.class);
+        Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
+        String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         Page<DevopsAutoDeployDO> devopsAutoDeployDOS = PageHelper
                 .doPageAndSort(pageRequest, () -> devopsAutoDeployMapper.list(projectId, userId, appId, envId,
-                        (Map<String, Object>) mapParams.get("searchParam"),
-                        mapParams.get("param").toString(), checkSortIsEmpty(pageRequest)));
+                        searchParamMap, paramMap, PageRequestUtil.checkSortIsEmpty(pageRequest)));
         return ConvertPageHelper.convertPage(devopsAutoDeployDOS, DevopsAutoDeployE.class);
     }
 
@@ -111,11 +113,4 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
         devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO);
     }
 
-    private String checkSortIsEmpty(PageRequest pageRequest) {
-        String index = "";
-        if (pageRequest.getSort() == null) {
-            index = "true";
-        }
-        return index;
-    }
 }
