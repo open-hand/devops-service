@@ -482,7 +482,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             String appMarketJson = gson.toJson(applicationReleasingDTO);
             FileUtil.saveDataToFile(destpath, applicationReleasingDTO.getCode() + JSON_FILE, appMarketJson);
             //下载chart taz包
-            getChart(images, appMarketDownloadDTO, destpath, applicationE, projectE, organization);
+//            getChart(images, appMarketDownloadDTO, destpath, applicationE, projectE, organization);
             StringBuilder stringBuilder = new StringBuilder();
             for (String image : images) {
                 stringBuilder.append(image);

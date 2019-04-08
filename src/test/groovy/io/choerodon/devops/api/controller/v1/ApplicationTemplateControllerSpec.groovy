@@ -38,7 +38,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
