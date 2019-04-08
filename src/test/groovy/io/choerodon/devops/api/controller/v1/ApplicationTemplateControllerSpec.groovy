@@ -113,7 +113,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         searchParam.put("param", "")
     }
 
-     //组织下创建应用模板
+    //组织下创建应用模板
     def "createTemplate"() {
         given: "初始化数据"
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()

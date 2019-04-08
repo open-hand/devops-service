@@ -597,7 +597,6 @@ public class FileUtil {
     }
 
 
-
     /**
      * 使用renameTo移动文件，重复文件跳过
      *
@@ -780,13 +779,15 @@ public class FileUtil {
         res.setHeader("Content-Length", "" + file.length());
         try {
             OutputStream os = res.getOutputStream();
-            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
-            byte[] buff = new byte[bis.available()];
-            bis.read(buff);
-            bis.close();
-            os.write(buff);
-            os.flush();
-            os.close();
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
+                byte[] buff = new byte[bis.available()];
+                int count = bis.read(buff);
+                while (count > 0) {
+                    os.write(buff);
+                    os.flush();
+                    os.close();
+                }
+            }
         } catch (IOException e) {
             throw new CommonException(e);
         }
