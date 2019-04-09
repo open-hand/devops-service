@@ -84,7 +84,7 @@ public class GitUtil {
         try {
             int size = lsRemoteCommand.call().size();
             if (size == 0) {
-                return Boolean.FALSE;
+                return null;
             } else {
                 return Boolean.TRUE;
             }
