@@ -1,10 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.internal.LinkedTreeMap;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.api.validator.DevopsProjectConfigValidator;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
@@ -22,9 +24,6 @@ import org.springframework.util.ObjectUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 import retrofit2.Retrofit;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author zongw.lee@gmail.com
@@ -74,10 +73,12 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         HarborClient harborClient = retrofit.create(HarborClient.class);
         Call<Object> listProject = harborClient.listProject(devopsProjectConfigDTO.getConfig().getProject());
         Response<Object> projectResponse = RetrofitHandler.execute(listProject);
-        if ("false".equals(((LinkedTreeMap) ((LinkedTreeMap) ((ArrayList) projectResponse.body()).get(0)).get("metadata")).get("public").toString())) {
-            devopsProjectConfigDTO.getConfig().setPrivate(true);
-        } else {
-            devopsProjectConfigDTO.getConfig().setPrivate(false);
+        if (projectResponse != null) {
+            if ("false".equals(((LinkedTreeMap) ((LinkedTreeMap) ((ArrayList) projectResponse.body()).get(0)).get("metadata")).get("public").toString())) {
+                devopsProjectConfigDTO.getConfig().setPrivate(true);
+            } else {
+                devopsProjectConfigDTO.getConfig().setPrivate(false);
+            }
         }
     }
 

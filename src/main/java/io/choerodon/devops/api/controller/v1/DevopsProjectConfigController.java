@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -14,19 +17,8 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author zongw.lee@gmail.com
@@ -68,12 +60,13 @@ public class DevopsProjectConfigController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建配置校验名称是否存在")
     @GetMapping(value = "/check_name")
-    public void checkName(
+    public ResponseEntity checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置名", required = true)
             @RequestParam String name) {
         devopsProjectConfigService.checkName(projectId, name);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**

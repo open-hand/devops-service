@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -18,9 +21,6 @@ import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by younger on 2018/3/29.
@@ -94,14 +94,14 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId) {
-        ResponseEntity<GroupDO> groupDO;
+        ResponseEntity<GroupDO> groupDOResponseEntity;
+        GroupDO groupDO = ConvertHelper.convert(gitlabGroupE, GroupDO.class);
         try {
-            groupDO = gitlabServiceClient.createGroup(ConvertHelper.convert(
-                    gitlabGroupE, GroupDO.class), userId);
+            groupDOResponseEntity = gitlabServiceClient.createGroup(groupDO, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(groupDO.getBody(), GitlabGroupE.class);
+        return ConvertHelper.convert(groupDOResponseEntity.getBody(), GitlabGroupE.class);
     }
 
     @Override
@@ -171,13 +171,10 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public String updateProject(Integer projectId, Integer userId) {
-        try {
-            return gitlabServiceClient.updateProject(projectId, userId).getBody().getDefaultBranch();
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
+    public void updateGroup(Integer projectId, Integer userId, GroupDO groupDO) {
+        gitlabServiceClient.updateGroup(projectId, userId, groupDO);
     }
+
 
     @Override
     public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {

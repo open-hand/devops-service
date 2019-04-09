@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
@@ -7,8 +9,7 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-
-import java.util.List;
+import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 
 /**
  * Created by younger on 2018/3/29.
@@ -40,7 +41,7 @@ public interface GitlabRepository {
 
     void deleteProject(Integer projectId, Integer userId);
 
-    String updateProject(Integer projectId, Integer userId);
+    void updateGroup(Integer projectId, Integer userId, GroupDO groupDO);
 
     ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook);
 

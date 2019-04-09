@@ -1100,8 +1100,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             gitlabUserId = userAttrE.getGitlabUserId();
         }
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
 
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
 
         //创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();

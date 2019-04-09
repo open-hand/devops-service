@@ -4,9 +4,6 @@ package io.choerodon.devops.app.service.impl;
 import java.util.List;
 
 import feign.FeignException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.GitlabGroupService;
@@ -23,6 +20,8 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created with IntelliJ IDEA.
@@ -117,7 +116,7 @@ public class GitlabGroupServiceImpl implements GitlabGroupService {
             groupId = TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId());
         }
         try {
-            gitlabServiceClient.updateGroup(groupId, TypeUtil.objToInteger(userAttrE.getGitlabUserId()), group);
+            gitlabRepository.updateGroup(groupId, TypeUtil.objToInteger(userAttrE.getGitlabUserId()), group);
         } catch (FeignException e) {
             throw new CommonException(e);
         }

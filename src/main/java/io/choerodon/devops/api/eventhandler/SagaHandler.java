@@ -13,7 +13,6 @@ import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.dto.GitlabUserDTO;
 import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
-import io.choerodon.devops.api.dto.RegisterOrganizationDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.event.*;
@@ -331,17 +330,4 @@ public class SagaHandler {
         return payload;
     }
 
-    /**
-     * 注册组织事件
-     */
-    @SagaTask(code = "devopsOrgRegister", description = "注册组织",
-            sagaCode = "org-register", maxRetryCount = 3,
-            seq = 1)
-    public String registerOrganization(String payload) {
-        RegisterOrganizationDTO registerOrganizationDTO = gson.fromJson(payload, RegisterOrganizationDTO.class);
-        loggerInfo(registerOrganizationDTO);
-
-        organizationService.registerOrganization(registerOrganizationDTO);
-        return payload;
-    }
 }
