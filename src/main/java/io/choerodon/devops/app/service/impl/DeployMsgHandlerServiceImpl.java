@@ -453,19 +453,14 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                     v1Service.getStatus() != null &&
                     v1Service.getStatus().getLoadBalancer() != null &&
                     !v1Service.getStatus().getLoadBalancer().getIngress().isEmpty()) {
+
                 devopsServiceE.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
+                List<PortMapE> portMapES = getPortMapES(v1Service);
+                devopsServiceE.setPorts(portMapES);
                 devopsServiceRepository.update(devopsServiceE);
             }
             if (devopsServiceE.getType().equals("NodePort") && v1Service.getSpec().getPorts() != null) {
-                List<PortMapE> portMapES = v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
-                    PortMapE portMapE = new PortMapE();
-                    portMapE.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
-                    portMapE.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
-                    portMapE.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
-                    portMapE.setProtocol(v1ServicePort.getProtocol());
-                    portMapE.setName(v1ServicePort.getName());
-                    return portMapE;
-                }).collect(Collectors.toList());
+                List<PortMapE> portMapES = getPortMapES(v1Service);
                 devopsServiceE.setPorts(portMapES);
                 devopsServiceRepository.update(devopsServiceE);
 
@@ -505,6 +500,18 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
                 }
             }
         }
+    }
+
+    private List<PortMapE> getPortMapES(V1Service v1Service) {
+        return v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
+            PortMapE portMapE = new PortMapE();
+            portMapE.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
+            portMapE.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
+            portMapE.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
+            portMapE.setProtocol(v1ServicePort.getProtocol());
+            portMapE.setName(v1ServicePort.getName());
+            return portMapE;
+        }).collect(Collectors.toList());
     }
 
     @Override
