@@ -41,19 +41,7 @@ public interface DeployMsgHandlerService {
 
     void helmReleaeStopFail(String key, String msg, Long clusterId);
 
-    void netWorkUpdate(String key, String msg, Long clusterId);
-
-    void helmReleaseGetContent(String key, String msg, Long clusterId);
-
     void commandNotSend(Long commandId, String msg);
-
-    void netWorkServiceFail(String key, String msg, Long clusterId);
-
-    void netWorkIngressFail(String key, String msg, Long clusterId);
-
-    void netWorkServiceDeleteFail(String key, String msg, Long clusterId);
-
-    void netWorkIngressDeleteFail(String key, String msg, Long clusterId);
 
     void resourceSync(String key, String msg, Long clusterId);
 

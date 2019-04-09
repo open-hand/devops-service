@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.controller.v1
 
+
+import io.choerodon.asgard.saga.dto.SagaInstanceDTO
+import io.choerodon.asgard.saga.dto.StartInstanceDTO
 import io.choerodon.asgard.saga.feign.SagaClient
 import io.choerodon.core.domain.Page
 import io.choerodon.core.domain.PageInfo
@@ -12,14 +15,10 @@ import io.choerodon.devops.api.dto.iam.UserDTO
 import io.choerodon.devops.api.dto.iam.UserWithRoleDTO
 import io.choerodon.devops.app.service.DevopsCheckLogService
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository
-import io.choerodon.devops.domain.application.repository.GitlabRepository
-import io.choerodon.devops.domain.application.repository.GitlabUserRepository
-import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.ProjectHook
 import io.choerodon.devops.infra.common.util.TypeUtil
+import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.common.util.enums.PipelineStatus
 import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.*
@@ -42,7 +41,7 @@ import spock.lang.Subject
 
 import java.util.concurrent.TimeUnit
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.mockito.Mockito.when
 
 /**
@@ -102,6 +101,8 @@ class DevopsCheckControllerSpec extends Specification {
     private DevopsEnvResourceMapper devopsEnvResourceMapper
     @Autowired
     private DevopsEnvResourceDetailMapper devopsEnvResourceDetailMapper
+    @Autowired
+    private ApplicationVersionMapper applicationVersionMapper
 
     @Shared
     private DevopsEnvResourceDetailDO devopsEnvResourceDetailDO = new DevopsEnvResourceDetailDO()
@@ -122,11 +123,15 @@ class DevopsCheckControllerSpec extends Specification {
     @Shared
     private DevopsProjectDO devopsProjectDO = new DevopsProjectDO()
     @Shared
+    private DevopsProjectDO newDevopsProjectDO = new DevopsProjectDO()
+    @Shared
     private DevopsBranchDO branchDO = new DevopsBranchDO()
     @Shared
     private DevopsGitlabPipelineDO devopsGitlabPipelineDO = new DevopsGitlabPipelineDO()
     @Shared
     private List<DevopsProjectDO> previousDevopsProjectDOList = new ArrayList<>()
+    @Shared
+    private ApplicationVersionDO applicationVersionDO = new ApplicationVersionDO()
     @Shared
     private boolean isToInit = true
     @Shared
@@ -154,6 +159,7 @@ class DevopsCheckControllerSpec extends Specification {
         applicationDO.setGitlabProjectId(1)
         applicationDO.setProjectId(1L)
         applicationDO.setActive(true)
+        applicationDO.setGitlabProjectId(1)
         applicationDO.setCode("test")
         applicationDO.setName("test")
         applicationMapper.insert(applicationDO)
@@ -193,7 +199,10 @@ class DevopsCheckControllerSpec extends Specification {
         devopsProjectDO.setDevopsAppGroupId(104L)
         devopsProjectDO.setIamProjectId(122L)
         devopsProjectDO.setDevopsEnvGroupId(231244L)
+        newDevopsProjectDO.setDevopsAppGroupId(105L)
+        newDevopsProjectDO.setIamProjectId(123L)
         devopsProjectMapper.insert(devopsProjectDO)
+        devopsProjectMapper.insert(newDevopsProjectDO)
 
         when(mockIamServiceClient.queryIamProject(anyLong())).thenReturn(new ResponseEntity<>(createFakeProjectDO(), HttpStatus.OK))
         OrganizationDO organizationDO = new OrganizationDO()
@@ -280,6 +289,7 @@ class DevopsCheckControllerSpec extends Specification {
 
         MemberDO memberDO = new MemberDO()
         memberDO.setId(TypeUtil.objToInteger(userAttrDO.getGitlabUserId()))
+        memberDO.setAccessLevel(AccessLevel.MASTER)
         when(mockGitlabServiceClient.getUserMemberByUserId(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsEnvGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
         when(mockGitlabServiceClient.getUserMemberByUserId(eq(TypeUtil.objToInteger(devopsProjectDO.getDevopsAppGroupId())), eq(TypeUtil.objToInteger(userAttrDO.getGitlabUserId())))).thenReturn(new ResponseEntity<>(memberDO, HttpStatus.OK))
 
@@ -310,7 +320,7 @@ class DevopsCheckControllerSpec extends Specification {
         userDOForGitlabUsername.setUsername("validUsername")
         when(mockGitlabServiceClient.queryUserByUserId(eq(TypeUtil.objToInteger(userAttrDO2.getGitlabUserId())))).thenReturn(new ResponseEntity<>(userDOForGitlabUsername, HttpStatus.OK))
 
-        //  data for upgrading 0.14.0
+        //  准备升级到0.14.0的数据
         devopsEnvPodDO.setId(100L)
         devopsEnvPodDO.setName("fssc-db1f0-ffddcfcdc-kbj84")
         devopsEnvPodDO.setAppInstanceId(1022L)
@@ -326,6 +336,20 @@ class DevopsCheckControllerSpec extends Specification {
         devopsEnvResourceDO.setKind("Pod")
         devopsEnvResourceDO.setResourceDetailId(devopsEnvResourceDetailDO.getId())
         devopsEnvResourceMapper.insert(devopsEnvResourceDO)
+
+        // 准备升级到0.15.0的数据
+        Mockito.doReturn(new SagaInstanceDTO()).when(mockSagaClient).startSaga(anyString(), any(StartInstanceDTO))
+        applicationVersionDO.setAppId(1L)
+        applicationVersionDO.setRepository("test")
+        applicationVersionDO.setVersion("test")
+        applicationVersionDO.setImage("test")
+
+
+        List<MemberDO> memberDOList = new ArrayList<>()
+        memberDOList.add(memberDO)
+        ResponseEntity<List<MemberDO>> listResponseEntity = new ResponseEntity<>(memberDOList, HttpStatus.OK)
+        Mockito.doReturn(listResponseEntity).when(mockGitlabServiceClient).getAllMemberByProjectId(any())
+        Mockito.doReturn(null).when(mockGitlabServiceClient).updateMemberIntoProject(any(), any())
     }
 
     def cleanup() {
@@ -347,6 +371,7 @@ class DevopsCheckControllerSpec extends Specification {
         userAttrMapper.delete(userAttrDO2)
         devopsGitlabCommitMapper.selectAll().forEach { devopsGitlabCommitMapper.delete(it) }
         devopsProjectMapper.delete(devopsProjectDO)
+        devopsProjectMapper.delete(newDevopsProjectDO)
         devopsEnvironmentMapper.delete(devopsEnvironmentDO)
         devopsCheckLogMapper.selectAll().forEach { devopsCheckLogMapper.delete(it) }
         devopsGitlabPipelineMapper.selectAll().forEach { devopsGitlabPipelineMapper.delete(it) }
@@ -382,7 +407,6 @@ class DevopsCheckControllerSpec extends Specification {
         TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
 
         then: "校验结果"
-        devopsProjectMapper.selectAll().stream().allMatch { it.devopsEnvGroupId != null }
         devopsEnvironmentMapper.selectOne(devopsEnvironmentDO).getGitlabEnvProjectId() != null
     }
 
@@ -453,6 +477,20 @@ class DevopsCheckControllerSpec extends Specification {
         result != null
         result.getNodeName() == "cmccnode3"
         result.getRestartCount() == 1
+    }
+
+
+    def "upgrade 0.15.0"() {
+        given:
+        applicationVersionMapper.insert(applicationVersionDO)
+
+        when: "升级到0.15.0"
+        restTemplate.getForEntity(BASE_URL, Object, "0.15.0")
+        // 睡眠一定时间等待异步升级任务完成执行
+        TimeUnit.SECONDS.sleep(SLEEP_TIME_SECOND)
+
+        then: "校验结果"
+        noExceptionThrown()
     }
 
     def "clean data"() {
