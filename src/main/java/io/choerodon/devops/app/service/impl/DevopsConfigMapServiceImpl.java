@@ -33,9 +33,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
-    public static final String CREATE = "create";
-    public static final String UPDATE = "update";
-    public static final String DELETE = "delete";
+    public static final String CREATE_TYPE = "create";
+    public static final String UPDATE_TYPE = "update";
+    public static final String DELETE_TYPE = "delete";
     public static final String CONFIGMAP = "ConfigMap";
     public static final String CONFIG_MAP_PREFIX = "configMap-";
     private Gson gson = new Gson();
@@ -81,7 +81,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsConfigMapE devopsConfigMapE = ConvertHelper.convert(devopsConfigMapDTO, DevopsConfigMapE.class);
         devopsConfigMapE.setValue(gson.toJson(devopsConfigMapDTO.getValue()));
         //更新判断configMap key-value是否改变
-        if (devopsConfigMapDTO.getType().equals(UPDATE)) {
+        if (devopsConfigMapDTO.getType().equals(DELETE_TYPE)) {
 
             //更新configMap的时候校验gitops库文件是否存在,处理部署configMap时，由于没有创gitops文件导致的部署失败
             checkOptionsHandler.check(devopsEnvironmentE, devopsConfigMapDTO.getId(), devopsConfigMapDTO.getName(), CONFIGMAP);
@@ -107,7 +107,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         //在gitops库处理ingress文件
         operateEnvGitLabFile(
-                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE);
+                TypeUtil.objToInteger(devopsEnvironmentE.getGitlabEnvProjectId()), v1ConfigMap, devopsConfigMapDTO.getType().equals(CREATE_TYPE), filePath, devopsConfigMapE, userAttrE, devopsEnvCommandE);
     }
 
 
@@ -123,7 +123,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(devopsConfigMapDTO.getType());
         devopsEnvCommandE.setCreatedBy(userId);
 
-        if (devopsConfigMapDTO.getType().equals(CREATE)) {
+        if (devopsConfigMapDTO.getType().equals(CREATE_TYPE)) {
             Long configMapId = devopsConfigMapRepository.create(devopsConfigMapE).getId();
             devopsEnvCommandE.setObjectId(configMapId);
             devopsConfigMapE.setId(configMapId);
@@ -186,7 +186,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 //        //校验环境是否连接
         envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
 
-        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
+        DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE_TYPE);
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 
@@ -240,7 +240,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
             objectOperation.operationEnvGitlabFile(
                     null,
                     projectId,
-                    DELETE,
+                    DELETE_TYPE,
                     userAttrE.getGitlabUserId(),
                     devopsConfigMapE.getId(), CONFIGMAP, null, devopsEnvironmentE.getId(), path);
         }
@@ -290,7 +290,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
         ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
         objectOperation.setType(v1ConfigMap);
-        objectOperation.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE : UPDATE,
+        objectOperation.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), envGitLabProjectId, isCreate ? CREATE_TYPE : UPDATE_TYPE,
                 userAttrE.getGitlabUserId(), devopsConfigMapE.getId(), CONFIGMAP, null, devopsConfigMapE.getDevopsEnvironmentE().getId(), path);
 
 
@@ -299,9 +299,9 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
 
     private DevopsEnvCommandE initDevopsEnvCommandE(String type) {
         DevopsEnvCommandE devopsEnvCommandE = new DevopsEnvCommandE();
-        if (type.equals(CREATE)) {
+        if (type.equals(CREATE_TYPE)) {
             devopsEnvCommandE.setCommandType(CommandType.CREATE.getType());
-        } else if (type.equals(UPDATE)) {
+        } else if (type.equals(UPDATE_TYPE)) {
             devopsEnvCommandE.setCommandType(CommandType.UPDATE.getType());
         } else {
             devopsEnvCommandE.setCommandType(CommandType.DELETE.getType());

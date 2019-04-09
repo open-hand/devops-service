@@ -33,6 +33,8 @@ import java.util.List;
 @Service
 public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigService {
 
+    private static final String HARBOR = "harbor";
+
     @Autowired
     DevopsProjectConfigRepository devopsProjectConfigRepository;
 
@@ -44,7 +46,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public DevopsProjectConfigDTO create(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        if (devopsProjectConfigDTO.getType().equals("harbor") && devopsProjectConfigDTO.getConfig().getProject() != null) {
+        if (devopsProjectConfigDTO.getType().equals(HARBOR) && devopsProjectConfigDTO.getConfig().getProject() != null) {
             checkRegistryProjectIsPrivate(devopsProjectConfigDTO);
         }
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
@@ -67,7 +69,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         configurationProperties.setPassword(devopsProjectConfigDTO.getConfig().getPassword());
         configurationProperties.setInsecureSkipTlsVerify(false);
         configurationProperties.setProject(devopsProjectConfigDTO.getConfig().getProject());
-        configurationProperties.setType("harbor");
+        configurationProperties.setType(HARBOR);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
         Call<Object> listProject = harborClient.listProject(devopsProjectConfigDTO.getConfig().getProject());
@@ -81,7 +83,7 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public DevopsProjectConfigDTO updateByPrimaryKeySelective(Long projectId, DevopsProjectConfigDTO devopsProjectConfigDTO) {
-        if (devopsProjectConfigDTO.getType().equals("harbor") && devopsProjectConfigDTO.getConfig().getProject() != null) {
+        if (devopsProjectConfigDTO.getType().equals(HARBOR) && devopsProjectConfigDTO.getConfig().getProject() != null) {
             checkRegistryProjectIsPrivate(devopsProjectConfigDTO);
         }
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);

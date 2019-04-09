@@ -38,6 +38,8 @@ public class GitUtil {
     public static final String TEMPLATE = "template";
     private static final String MASTER = "master";
     private static final String PATH = "/";
+    private static final String GIT_SUFFIX = "/.git";
+    private static final String ERROR_GIT_CLONE = "error.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
 
@@ -82,7 +84,7 @@ public class GitUtil {
         try {
             int size = lsRemoteCommand.call().size();
             if (size == 0) {
-                return null;
+                return Boolean.FALSE;
             } else {
                 return Boolean.TRUE;
             }
@@ -266,11 +268,11 @@ public class GitUtil {
                             .setBranch(branch)
                             .setDirectory(localPathFile)
                             .call();
-                    FileUtil.deleteDirectory(new File(localPathFile + "/.git"));
+                    FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
                     git = Git.init().setDirectory(localPathFile).call();
 
                 } catch (GitAPIException e) {
-                    throw new CommonException("error.git.clone", e);
+                    throw new CommonException(ERROR_GIT_CLONE, e);
                 }
                 break;
         }
@@ -288,13 +290,13 @@ public class GitUtil {
                         .setDirectory(new File(TEMPLATE))
                         .call();
             }
-            if (new File(TEMPLATE + "/" + type + "/.git").exists()) {
-                FileUtil.deleteFile(new File(TEMPLATE + "/" + type + "/.git"));
+            if (new File(TEMPLATE + "/" + type + GIT_SUFFIX).exists()) {
+                FileUtil.deleteFile(new File(TEMPLATE + "/" + type + GIT_SUFFIX));
             }
             FileUtil.copyDir(new File(TEMPLATE + "/" + type), new File(localPathFile));
             git = Git.init().setDirectory(new File(localPathFile)).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.clone", e);
+            throw new CommonException(ERROR_GIT_CLONE, e);
         }
         return git;
     }
@@ -320,10 +322,10 @@ public class GitUtil {
                     .setCredentialsProvider(StringUtils.isEmpty(accessToken) ? null : new UsernamePasswordCredentialsProvider("", accessToken))
                     .setDirectory(localPathFile)
                     .call();
-            FileUtil.deleteDirectory(new File(localPathFile + "/.git"));
+            FileUtil.deleteDirectory(new File(localPathFile + GIT_SUFFIX));
             git = Git.init().setDirectory(localPathFile).call();
         } catch (GitAPIException e) {
-            throw new CommonException("error.git.clone", e);
+            throw new CommonException(ERROR_GIT_CLONE, e);
         }
         return git;
     }

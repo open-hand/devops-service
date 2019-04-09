@@ -12,11 +12,9 @@ import io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO;
 import io.choerodon.devops.infra.mapper.DevopsAutoDeployMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -66,18 +64,8 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
 
     @Override
     public Page<DevopsAutoDeployE> listByOptions(Long projectId, Long userId, Long appId, Long envId, Boolean doPage, PageRequest pageRequest, String params) {
-        Page<DevopsAutoDeployDO> devopsAutoDeployDOS = new Page<>();
-        String param = null;
-
-        Map<String, Object> mapParams = new HashMap<>();
-        mapParams.put("searchParam", null);
-        mapParams.put("param", null);
-        if (!StringUtils.isEmpty(params)) {
-            Map maps = gson.fromJson(params, Map.class);
-            mapParams.put("searchParam", TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
-            mapParams.put("param", TypeUtil.cast(maps.get(TypeUtil.PARAM)));
-        }
-        devopsAutoDeployDOS = PageHelper
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+        Page<DevopsAutoDeployDO> devopsAutoDeployDOS = PageHelper
                 .doPageAndSort(pageRequest, () -> devopsAutoDeployMapper.list(projectId, userId, appId, envId,
                         (Map<String, Object>) mapParams.get("searchParam"),
                         mapParams.get("param").toString(), checkSortIsEmpty(pageRequest)));

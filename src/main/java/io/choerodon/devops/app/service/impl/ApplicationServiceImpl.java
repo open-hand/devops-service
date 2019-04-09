@@ -284,7 +284,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsUserPayload.setIamUserIds(applicationUpdateDTO.getUserIds());
 
         if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
-            return true;
+            return false;
         } else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getIsSkipCheckPermission()) {
             applicationUpdateDTO.getUserIds().forEach(e -> appUserPermissionRepository.create(e, appId));
             devOpsUserPayload.setOption(1);
@@ -455,7 +455,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private void analyzeDockerfileToMap(File templateWorkDir, Long applicationTemplateId) {
         Collection<File> dockerfile = FileUtils.listFiles(templateWorkDir, filenameFilter, TrueFileFilter.INSTANCE);
         Optional<File> df = dockerfile.stream().findFirst();
-        templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse("Dockerfile"));
+        templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse(DOCKER_FILE_NAME));
     }
 
     @Override
