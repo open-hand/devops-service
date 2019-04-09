@@ -106,10 +106,6 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.helmReleaseHookLogs(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case NETWORK_SERVICE_UPDATE:
-                deployMsgHandlerService.netWorkUpdate(
-                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
-                break;
             case HELM_RELEASE_DELETE_FAILED:
                 deployMsgHandlerService.helmReleaseDeleteFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
@@ -133,26 +129,8 @@ public class SocketMessageHandler extends AbstractAgentMsgHandler {
                 deployMsgHandlerService.helmReleaseUpgradeFail(
                         msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
-            case HELM_RELEASE_GET_CONTENT:
-                deployMsgHandlerService.helmReleaseGetContent(
-                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
-                break;
             case COMMAND_NOT_SEND:
                 deployMsgHandlerService.commandNotSend(msg.getCommandId(), msg.getPayload());
-                break;
-            case NETWORK_SERVICE_FAILED:
-                deployMsgHandlerService.netWorkServiceFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
-                break;
-            case NETWORK_INGRESS_FAILED:
-                deployMsgHandlerService.netWorkIngressFail(
-                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
-                break;
-            case NETWORK_SERVICE_DELETE_FAILED:
-                deployMsgHandlerService.netWorkServiceDeleteFail(msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
-                break;
-            case NETWORK_INGRESS_DELETE_FAILED:
-                deployMsgHandlerService.netWorkIngressDeleteFail(
-                        msg.getKey(), msg.getPayload(), TypeUtil.objToLong(msg.getClusterId()));
                 break;
             case RESOURCE_SYNC:
                 deployMsgHandlerService.resourceSync(
