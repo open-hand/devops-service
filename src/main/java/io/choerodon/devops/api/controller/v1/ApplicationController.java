@@ -260,7 +260,7 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listByActive(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("ERROR_APPLICATION_GET"));
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
     /**
@@ -331,7 +331,7 @@ public class ApplicationController {
             @RequestParam String code) {
         return Optional.ofNullable(applicationService.queryByCode(projectId, code))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("ERROR_APPLICATION_GET"));
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
     /**
@@ -374,7 +374,7 @@ public class ApplicationController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("ERROR_APPLICATION_GET"));
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
     /**

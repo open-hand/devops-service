@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.dto.GitlabUserDTO;
@@ -14,11 +19,7 @@ import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.event.*;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
 
 /**
  * Creator: Runge
@@ -184,10 +185,7 @@ public class SagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String handleIamUpdateApplication(String payload) {
-        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
-        loggerInfo(iamAppPayLoad);
-        applicationService.createIamApplication(iamAppPayLoad);
-        return payload;
+        return handleIamCreateApplication(payload);
     }
 
     /**

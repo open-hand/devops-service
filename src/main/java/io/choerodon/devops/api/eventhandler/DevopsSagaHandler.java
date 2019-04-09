@@ -1,7 +1,14 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.io.IOException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.asgard.saga.SagaDefinition;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
@@ -30,12 +37,6 @@ import io.choerodon.devops.domain.application.repository.DevopsEnvironmentReposi
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
 
 /**
  * Creator: Runge

@@ -448,31 +448,27 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         V1Service v1Service = json.deserialize(msg, V1Service.class);
         if (v1Service.getMetadata().getAnnotations() != null) {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
-
-            if (devopsServiceE.getType().equals("LoadBalancer")) {
-                if (v1Service.getSpec().getLoadBalancerIP() != null) {
-                    if (v1Service.getStatus() != null && v1Service.getStatus().getLoadBalancer() != null) {
-                        if (!v1Service.getStatus().getLoadBalancer().getIngress().isEmpty()) {
-                            devopsServiceE.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
-                            devopsServiceRepository.update(devopsServiceE);
-                        }
-                    }
-                }
+            if (devopsServiceE.getType().equals("LoadBalancer") &&
+                    v1Service.getSpec().getLoadBalancerIP() != null &&
+                    v1Service.getStatus() != null &&
+                    v1Service.getStatus().getLoadBalancer() != null &&
+                    !v1Service.getStatus().getLoadBalancer().getIngress().isEmpty()) {
+                devopsServiceE.setLoadBalanceIp(v1Service.getStatus().getLoadBalancer().getIngress().get(0).getIp());
+                devopsServiceRepository.update(devopsServiceE);
             }
-            if (devopsServiceE.getType().equals("NodePort")) {
-                if (v1Service.getSpec().getPorts() != null) {
-                    List<PortMapE> portMapES = v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
-                        PortMapE portMapE = new PortMapE();
-                        portMapE.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
-                        portMapE.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
-                        portMapE.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
-                        portMapE.setProtocol(v1ServicePort.getProtocol());
-                        portMapE.setName(v1ServicePort.getName());
-                        return portMapE;
-                    }).collect(Collectors.toList());
-                    devopsServiceE.setPorts(portMapES);
-                    devopsServiceRepository.update(devopsServiceE);
-                }
+            if (devopsServiceE.getType().equals("NodePort") && v1Service.getSpec().getPorts() != null) {
+                List<PortMapE> portMapES = v1Service.getSpec().getPorts().stream().map(v1ServicePort -> {
+                    PortMapE portMapE = new PortMapE();
+                    portMapE.setPort(TypeUtil.objToLong(v1ServicePort.getPort()));
+                    portMapE.setTargetPort(TypeUtil.objToString(v1ServicePort.getTargetPort()));
+                    portMapE.setNodePort(TypeUtil.objToLong(v1ServicePort.getNodePort()));
+                    portMapE.setProtocol(v1ServicePort.getProtocol());
+                    portMapE.setName(v1ServicePort.getName());
+                    return portMapE;
+                }).collect(Collectors.toList());
+                devopsServiceE.setPorts(portMapES);
+                devopsServiceRepository.update(devopsServiceE);
+
             }
 
             String releaseNames = v1Service.getMetadata().getAnnotations()
@@ -582,9 +578,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         ApplicationInstanceE applicationInstanceE = applicationInstanceRepository
                 .selectByCode(KeyParseTool.getReleaseName(key), envId);
-        // 删除实例历史日志记录
-        devopsEnvCommandLogRepository.deletePreInstanceCommandLog(applicationInstanceE.getId());
         if (applicationInstanceE != null) {
+            // 删除实例历史日志记录
+            devopsEnvCommandLogRepository.deletePreInstanceCommandLog(applicationInstanceE.getId());
             DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository
                     .queryByObject(ObjectType.INSTANCE.getType(), applicationInstanceE.getId());
             if (devopsEnvCommandE != null) {
@@ -1653,15 +1649,15 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Override
     public void upgradeCluster(String key, String msg) {
         //0.10.0-0.11.0  初始化集群信息
-        logger.info("upgradeCluster message:" + msg);
+        logger.info(String.format("upgradeCluster message: %s",msg));
         UpgradeCluster upgradeCluster = json.deserialize(msg, UpgradeCluster.class);
         DevopsClusterE devopsClusterE = devopsClusterRepository.queryByToken(upgradeCluster.getToken());
         if (devopsClusterE == null) {
-            logger.info("the cluster is not exist:" + upgradeCluster.getToken());
+            logger.info(String.format("the cluster is not exist: %s", upgradeCluster.getToken()));
             return;
         }
         if (devopsClusterE.getInit() != null) {
-            logger.info("the cluster has bean init:" + devopsClusterE.getName());
+            logger.info(String.format("the cluster has bean init: %s",devopsClusterE.getName()));
             return;
         }
         if (upgradeCluster.getEnvs() != null) {

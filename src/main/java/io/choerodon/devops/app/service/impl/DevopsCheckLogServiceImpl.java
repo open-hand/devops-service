@@ -18,6 +18,22 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -45,21 +61,6 @@ import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -76,9 +77,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String FAILED = "failed: ";
     private static final String SERIAL_STRING = " serializable to yaml";
     private static final String APPLICATION = "application";
-    private static final String ERROR_UPDATE_APP = "error.application.update";
-    private static final String DEVELOPMENT = "development-application";
-    private static final String TEST = "test-application";
     private static final String YAML_FILE = ".yaml";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
@@ -859,9 +857,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<Integer> gitlabProjectIds = applicationMapper.selectAll().stream()
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                     .map(ApplicationDO::getGitlabProjectId).collect(Collectors.toList());
-            List<Integer> envGitlabProjectIds = devopsEnvironmentMapper.selectAll().stream()
-                    .filter(environmentDO -> environmentDO.getGitlabEnvProjectId() != null)
-                    .map(t -> TypeUtil.objToInteger(t.getGitlabEnvProjectId())).collect(Collectors.toList());
             //changRole
             gitlabProjectIds.forEach(t -> {
                 CheckLog checkLog = new CheckLog();
@@ -873,9 +868,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         gitlabRepository.updateMemberIntoProject(t, memberDTOS);
                     }
                     LOGGER.info("update project member maintainer to developer success");
-//                    gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
-//                            devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId()));
-//                    LOGGER.info("the project add Variable success,gitlabProjectId: " + t);
                     checkLog.setResult(SUCCESS);
                 } catch (Exception e) {
                     LOGGER.info("gitlab.project.is.not.exist,gitlabProjectId: " + t, e);
@@ -888,13 +880,11 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncAppVersion() {
             List<ApplicationVersionDO> applicationVersionDOS = applicationVersionMapper.selectAll();
-            if (!applicationVersionDOS.isEmpty()) {
-                if (!applicationVersionDOS.get(0).getRepository().contains(helmUrl)) {
-                    if (helmUrl.endsWith("/")) {
-                        helmUrl = helmUrl.substring(0, helmUrl.length() - 1);
-                    }
-                    applicationVersionMapper.updateRepository(helmUrl);
+            if (!applicationVersionDOS.isEmpty() && !applicationVersionDOS.get(0).getRepository().contains(helmUrl)) {
+                if (helmUrl.endsWith("/")) {
+                    helmUrl = helmUrl.substring(0, helmUrl.length() - 1);
                 }
+                applicationVersionMapper.updateRepository(helmUrl);
             }
         }
 
