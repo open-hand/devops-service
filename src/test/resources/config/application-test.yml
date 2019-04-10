@@ -37,6 +37,7 @@ services:
     url: "http://helm-charts.staging.saas.hand-china.com"
   gitlab:
     sshUrl: "git.vk.vu:2289"
+    url: "http://git.alpha.saas.hand-china.com"
 choerodon:
   event:
     consumer:

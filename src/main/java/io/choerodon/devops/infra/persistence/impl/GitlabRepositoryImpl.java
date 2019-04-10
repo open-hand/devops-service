@@ -18,6 +18,7 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -42,7 +43,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void batchAddVariable(Integer gitlabProjectId, Integer userId,  List<VariableDTO> variableDTOS) {
+    public void batchAddVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTOS) {
         gitlabServiceClient.batchAddVariable(gitlabProjectId, userId, variableDTOS);
     }
 
@@ -108,6 +109,16 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         ResponseEntity<RepositoryFile> result = gitlabServiceClient
                 .createFile(projectId, path, content, commitMessage, userId);
+        if (result.getBody().getFilePath() == null) {
+            throw new CommonException("error.file.create");
+        }
+    }
+
+
+    @Override
+    public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                .createFile(projectId, path, content, commitMessage, userId, branch);
         if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.create");
         }
@@ -297,5 +308,19 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         } catch (FeignException e) {
             throw new CommonException("error.project.get.by.userId", e);
         }
+    }
+
+    @Override
+    public MergeRequestDO createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
+        try {
+            return gitlabServiceClient.createMergeRequest(projectId, sourceBranch, targetBranch, title, description, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public void acceptMergeRequest(Integer projectId, Integer mergeRequestId, String mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId) {
+        gitlabServiceClient.acceptMergeRequest(projectId,mergeRequestId,mergeCommitMessage,shouldRemoveSourceBranch,mergeWhenPipelineSucceeds,userId);
     }
 }

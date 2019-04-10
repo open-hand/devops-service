@@ -69,8 +69,6 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     @Autowired
     private ApplicationTemplateService applicationTemplateService;
     @Autowired
-    private GitlabServiceClient gitlabServiceClient;
-    @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
     private IamRepository iamRepository;
@@ -82,6 +80,8 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private AppUserPermissionRepository appUserPermissionRepository;
     @Autowired
     private DevopsSagaHandler devopsSagaHandler;
+    @Autowired
+    private GitlabRepository gitlabRepository;
 
     private Gson gson = new Gson();
 
@@ -234,7 +234,7 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
      * @param gitlabProjectId gitlab project id
      */
     private void newCommit(Integer gitlabProjectId) {
-        gitlabServiceClient.createFile(gitlabProjectId, "newFile" + UUID.randomUUID().toString().replaceAll("-", ""), "a new commit.", "[ADD] a new file", gitlabUserId, demoDataDTO.getBranchInfo().getBranchName());
+        gitlabRepository.createFile(gitlabProjectId, "newFile" + UUID.randomUUID().toString().replaceAll("-", ""), "a new commit.", "[ADD] a new file", gitlabUserId, demoDataDTO.getBranchInfo().getBranchName());
     }
 
 
@@ -246,10 +246,10 @@ public class DevopsDemoEnvInitServiceImpl implements DevopsDemoEnvInitService {
     private void mergeBranch(Integer gitlabProjectId) {
         try {
             // 创建merge request
-            MergeRequestDO mergeRequest = gitlabServiceClient.createMergeRequest(gitlabProjectId, demoDataDTO.getBranchInfo().getBranchName(), "master", "a new merge request", "[ADD] add instant push", gitlabUserId).getBody();
+            MergeRequestDO mergeRequest = gitlabRepository.createMergeRequest(gitlabProjectId, demoDataDTO.getBranchInfo().getBranchName(), "master", "a new merge request", "[ADD] add instant push", gitlabUserId);
 
             // 确认merge request
-            gitlabServiceClient.acceptMergeRequest(gitlabProjectId, mergeRequest.getId(), "", Boolean.FALSE, Boolean.TRUE, gitlabUserId);
+            gitlabRepository.acceptMergeRequest(gitlabProjectId, mergeRequest.getId(), "", Boolean.FALSE, Boolean.TRUE, gitlabUserId);
         } catch (Exception e) {
             logger.error("Error occurred when merge request. Exception is {}", e);
         }
