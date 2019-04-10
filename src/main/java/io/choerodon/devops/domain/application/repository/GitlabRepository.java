@@ -11,8 +11,6 @@ import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * Created by younger on 2018/3/29.

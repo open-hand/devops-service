@@ -30,7 +30,6 @@ import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.AccessLevel;
 import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
-import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

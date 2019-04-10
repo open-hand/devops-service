@@ -19,12 +19,7 @@ import io.choerodon.devops.domain.application.valueobject.Variable
 import io.choerodon.devops.infra.common.util.FileUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
-import io.choerodon.devops.infra.dataobject.ApplicationDO
-import io.choerodon.devops.infra.dataobject.ApplicationVersionDO
-import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO
-import io.choerodon.devops.infra.dataobject.DevopsBranchDO
-import io.choerodon.devops.infra.dataobject.DevopsProjectDO
-import io.choerodon.devops.infra.dataobject.UserAttrDO
+import io.choerodon.devops.infra.dataobject.*
 import io.choerodon.devops.infra.dataobject.gitlab.*
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -209,7 +204,7 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             roleAssignmentSearchDTO.setParam(param)
             Mockito.when(iamServiceClient.pagingQueryUsersByRoleIdOnProjectLevel(anyInt(), anyInt(), anyLong(), anyLong(), anyBoolean(), any(RoleAssignmentSearchDTO.class))).thenReturn(ownerPageResponseEntity)
 
-            ImpersonationTokenDO impersonationTokenDO = new ImpersonationTokenDO();
+            ImpersonationTokenDO impersonationTokenDO = new ImpersonationTokenDO()
             impersonationTokenDO.setToken("test")
             impersonationTokenDO.setId(1)
             impersonationTokenDO.setName("test")
@@ -274,7 +269,7 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
 
         then:
 
-        1 * gitUtil.getWorkingDirectory(_) >> new File("template")
+        1 * gitUtil.getWorkingDirectory(_) >> new File("chart")
         1 * gitUtil.push(_, _, _, _, _)
         result != null
 
@@ -300,11 +295,11 @@ class DemoEnvSetupSagaHandlerSpec extends Specification {
             applicationVersionMapper.delete(applicationVersionDO)
         }
         List<DevopsAppMarketDO> devopsAppMarketDOList = applicationMarketMapper.selectAll()
-        for(DevopsAppMarketDO devopsAppMarketDO:devopsAppMarketDOList) {
+        for (DevopsAppMarketDO devopsAppMarketDO : devopsAppMarketDOList) {
             applicationMarketMapper.delete(devopsAppMarketDO)
         }
         List<DevopsBranchDO> devopsBranchDOList = devopsBranchMapper.selectAll()
-        for(DevopsBranchDO devopsBranchDO:devopsBranchDOList) {
+        for (DevopsBranchDO devopsBranchDO : devopsBranchDOList) {
             devopsBranchMapper.delete(devopsBranchDO)
         }
         FileUtil.deleteFile(new File("template"))

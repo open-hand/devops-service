@@ -321,6 +321,6 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public void acceptMergeRequest(Integer projectId, Integer mergeRequestId, String mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId) {
-        gitlabServiceClient.acceptMergeRequest(projectId,mergeRequestId,mergeCommitMessage,shouldRemoveSourceBranch,mergeWhenPipelineSucceeds,userId);
+        gitlabServiceClient.acceptMergeRequest(projectId, mergeRequestId, mergeCommitMessage, shouldRemoveSourceBranch, mergeWhenPipelineSucceeds, userId);
     }
 }
