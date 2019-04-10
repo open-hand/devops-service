@@ -1,5 +1,11 @@
 package io.choerodon.devops.infra.common.util;
 
+import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by younger on 2018/3/29.
  */
@@ -7,6 +13,7 @@ public class TypeUtil {
 
     public static final String SEARCH_PARAM = "searchParam";
     public static final String PARAM = "param";
+    private static final Gson gson = new Gson();
 
     private TypeUtil() {
     }
@@ -90,5 +97,19 @@ public class TypeUtil {
         } else {
             return (T) obj;
         }
+    }
+
+    public static Map<String,Object> castMapParams(String params){
+        Map<String, Object> mapParams = new HashMap<>();
+        mapParams.put(TypeUtil.SEARCH_PARAM, null);
+        mapParams.put(TypeUtil.PARAM, null);
+
+        if (!StringUtils.isEmpty(params)) {
+            Map maps = gson.fromJson(params, Map.class);
+            mapParams.put(TypeUtil.SEARCH_PARAM, TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
+            mapParams.put(TypeUtil.PARAM, TypeUtil.cast(maps.get(TypeUtil.PARAM)));
+        }
+
+        return mapParams;
     }
 }

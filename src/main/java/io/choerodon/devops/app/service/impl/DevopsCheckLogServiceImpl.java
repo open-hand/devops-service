@@ -18,6 +18,22 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
 import feign.FeignException;
+import io.kubernetes.client.custom.IntOrString;
+import io.kubernetes.client.models.*;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.lib.Ref;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.nodes.Tag;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -45,21 +61,6 @@ import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import io.choerodon.devops.infra.mapper.*;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.custom.IntOrString;
-import io.kubernetes.client.models.*;
-import org.apache.commons.lang.StringUtils;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.lib.Ref;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.nodes.Tag;
 
 @Service
 public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
@@ -76,9 +77,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
     private static final String FAILED = "failed: ";
     private static final String SERIAL_STRING = " serializable to yaml";
     private static final String APPLICATION = "application";
-    private static final String ERROR_UPDATE_APP = "error.application.update";
-    private static final String DEVELOPMENT = "development-application";
-    private static final String TEST = "test-application";
     private static final String YAML_FILE = ".yaml";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsCheckLogServiceImpl.class);
@@ -472,277 +470,7 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
         );
     }
 
-    private class SyncInstanceByEnv {
-        private List<CheckLog> logs;
-        private DevopsEnvironmentE env;
-        private String filePath;
-        private Git git;
 
-        SyncInstanceByEnv(List<CheckLog> logs, DevopsEnvironmentE env, String filePath, Git git) {
-            this.logs = logs;
-            this.env = env;
-            this.filePath = filePath;
-            this.git = git;
-        }
-
-        void invoke() {
-            applicationInstanceRepository.selectByEnvId(env.getId()).stream()
-                    .filter(a -> !InstanceStatus.DELETED.getStatus().equals(a.getStatus()))
-                    .forEach(applicationInstanceE -> {
-                        CheckLog checkLog = new CheckLog();
-                        try {
-                            checkLog.setContent("instance: " + applicationInstanceE.getCode() + SERIAL_STRING);
-                            String fileRelativePath = "release-" + applicationInstanceE.getCode() + YAML_FILE;
-                            if (!new File(filePath + File.separator + fileRelativePath).exists()) {
-                                createGitFile(filePath, git, fileRelativePath,
-                                        getObjectYaml(getC7NHelmRelease(applicationInstanceE)));
-                                checkLog.setResult(SUCCESS);
-                            }
-                            LOGGER.info(checkLog.toString());
-                        } catch (Exception e) {
-                            LOGGER.info("{}:{} instance/{} sync failed {}",
-                                    env.getCode(), env.getId(), applicationInstanceE.getCode(), e);
-                            checkLog.setResult(FAILED + e.getMessage());
-                        }
-                        logs.add(checkLog);
-                    });
-        }
-
-
-        private C7nHelmRelease getC7NHelmRelease(ApplicationInstanceE applicationInstanceE) {
-            ApplicationVersionE applicationVersionE = applicationVersionRepository
-                    .query(applicationInstanceE.getApplicationVersionE().getId());
-            ApplicationE applicationE = applicationRepository.query(applicationInstanceE.getApplicationE().getId());
-            C7nHelmRelease c7nHelmRelease = new C7nHelmRelease();
-            c7nHelmRelease.getMetadata().setName(applicationInstanceE.getCode());
-            c7nHelmRelease.getSpec().setRepoUrl(applicationVersionE.getRepository());
-            c7nHelmRelease.getSpec().setChartName(applicationE.getCode());
-            c7nHelmRelease.getSpec().setChartVersion(applicationVersionE.getVersion());
-            c7nHelmRelease.getSpec().setValues(applicationInstanceService.getReplaceResult(
-                    applicationVersionRepository.queryValue(applicationVersionE.getId()),
-                    applicationInstanceRepository.queryValueByEnvIdAndAppId(
-                            applicationInstanceE.getDevopsEnvironmentE().getId(),
-                            applicationE.getId())).getDeltaYaml().trim());
-            return c7nHelmRelease;
-        }
-    }
-
-    private class SynServiceByEnv {
-        private List<CheckLog> logs;
-        private DevopsEnvironmentE env;
-        private String filePath;
-        private Git git;
-
-        SynServiceByEnv(List<CheckLog> logs, DevopsEnvironmentE env, String filePath, Git git) {
-            this.logs = logs;
-            this.env = env;
-            this.filePath = filePath;
-            this.git = git;
-        }
-
-        void invoke() {
-            devopsServiceRepository.selectByEnvId(env.getId()).stream()
-                    .filter(t -> !ServiceStatus.DELETED.getStatus().equals(t.getStatus()))
-                    .forEach(devopsServiceE -> {
-                        CheckLog checkLog = new CheckLog();
-                        try {
-                            checkLog.setContent("service: " + devopsServiceE.getName() + SERIAL_STRING);
-                            String fileRelativePath = "svc-" + devopsServiceE.getName() + YAML_FILE;
-                            if (!new File(filePath + File.separator + fileRelativePath).exists()) {
-                                createGitFile(filePath, git, fileRelativePath,
-                                        getObjectYaml(getService(devopsServiceE)));
-                                checkLog.setResult(SUCCESS);
-                            }
-                            LOGGER.info(checkLog.toString());
-                        } catch (Exception e) {
-                            LOGGER.info("{}:{} service/{} sync failed {}",
-                                    env.getCode(), env.getId(), devopsServiceE.getName(), e);
-                            checkLog.setResult(FAILED + e.getMessage());
-                        }
-                        logs.add(checkLog);
-                    });
-        }
-
-        private V1Service getService(DevopsServiceE devopsServiceE) {
-            V1Service service = new V1Service();
-            service.setKind("Service");
-            service.setApiVersion("v1");
-
-            // metadata
-            V1ObjectMeta metadata = new V1ObjectMeta();
-            metadata.setName(devopsServiceE.getName());
-            // metadata / labels
-            Map<String, String> label = new HashMap<>();
-            label.put(SERVICE_LABEL, SERVICE);
-            metadata.setLabels(label);
-            // metadata / annotations
-            if (devopsServiceE.getAnnotations() != null) {
-                Map<String, String> annotations = gson.fromJson(
-                        devopsServiceE.getAnnotations(), new TypeToken<Map<String, String>>() {
-                        }.getType());
-                metadata.setAnnotations(annotations);
-            }
-            // set metadata
-            service.setMetadata(metadata);
-
-            V1ServiceSpec spec = new V1ServiceSpec();
-            // spec / ports
-            spec.setPorts(getServicePort(devopsServiceE));
-
-            // spec / selector
-            if (devopsServiceE.getLabels() != null) {
-                Map<String, String> selector = gson.fromJson(
-                        devopsServiceE.getLabels(), new TypeToken<Map<String, String>>() {
-                        }.getType());
-                spec.setSelector(selector);
-            }
-
-            // spec / externalIps
-            if (!StringUtils.isEmpty(devopsServiceE.getExternalIp())) {
-                List<String> externalIps = new ArrayList<>(Arrays.asList(devopsServiceE.getExternalIp().split(",")));
-                spec.setExternalIPs(externalIps);
-            }
-
-            spec.setSessionAffinity("None");
-            spec.type("ClusterIP");
-            service.setSpec(spec);
-
-            return service;
-        }
-
-        private List<V1ServicePort> getServicePort(DevopsServiceE devopsServiceE) {
-            final Integer[] serialNumber = {0};
-            List<V1ServicePort> ports;
-            if (devopsServiceE.getPorts() == null) {
-                List<DevopsServiceAppInstanceE> devopsServiceAppInstanceES =
-                        devopsServiceInstanceRepository.selectByServiceId(devopsServiceE.getId());
-                if (!devopsServiceAppInstanceES.isEmpty()) {
-                    DevopsEnvResourceE devopsEnvResourceE = devopsEnvResourceRepository.queryResource(
-                            devopsServiceAppInstanceES.get(0).getAppInstanceId(),
-                            null, null,
-                            ResourceType.SERVICE.getType(),
-                            devopsServiceE.getName());
-                    DevopsEnvResourceDetailE devopsEnvResourceDetailE = devopsEnvResourceDetailRepository
-                            .query(devopsEnvResourceE.getDevopsEnvResourceDetailE().getId());
-                    ports = getV1ServicePortsWithNoPorts(devopsServiceE, devopsEnvResourceDetailE);
-                    devopsServiceRepository.update(devopsServiceE);
-                } else {
-                    ports = null;
-                }
-            } else {
-                ports = getV1ServicePortsWithPorts(devopsServiceE, serialNumber);
-            }
-            return ports;
-        }
-
-        private List<V1ServicePort> getV1ServicePortsWithPorts(DevopsServiceE devopsServiceE, Integer[] serialNumber) {
-            return devopsServiceE.getPorts().stream()
-                    .map(t -> {
-                        V1ServicePort v1ServicePort = new V1ServicePort();
-                        if (t.getNodePort() != null) {
-                            v1ServicePort.setNodePort(t.getNodePort().intValue());
-                        }
-                        if (t.getPort() != null) {
-                            v1ServicePort.setPort(t.getPort().intValue());
-                        }
-                        if (t.getTargetPort() != null) {
-                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
-                        }
-                        v1ServicePort.setName(t.getName() != null ? t.getName() : "http" + serialNumber[0]++);
-                        v1ServicePort.setProtocol(t.getProtocol() != null ? t.getProtocol() : "TCP");
-                        return v1ServicePort;
-                    }).collect(Collectors.toList());
-        }
-
-        private List<V1ServicePort> getV1ServicePortsWithNoPorts(DevopsServiceE devopsServiceE, DevopsEnvResourceDetailE devopsEnvResourceDetailE) {
-            List<V1ServicePort> ports;
-            V1Service v1Service = json.deserialize(devopsEnvResourceDetailE.getMessage(),
-                    V1Service.class);
-            String port = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getPort());
-            if (port == null) {
-                port = "<none>";
-            }
-            String targetPort = TypeUtil.objToString(v1Service.getSpec().getPorts().get(0).getTargetPort());
-            if (targetPort == null) {
-                targetPort = "<none>";
-            }
-            String name = v1Service.getSpec().getPorts().get(0).getName();
-            String protocol = v1Service.getSpec().getPorts().get(0).getProtocol();
-            List<PortMapE> portMapES = new ArrayList<>();
-            PortMapE portMapE = new PortMapE();
-            portMapE.setName(name);
-            portMapE.setPort(TypeUtil.objToLong(port));
-            portMapE.setProtocol(protocol);
-            portMapE.setTargetPort(targetPort);
-            portMapES.add(portMapE);
-            ports = portMapES.stream()
-                    .map(t -> {
-                        V1ServicePort v1ServicePort = new V1ServicePort();
-                        if (t.getPort() != null) {
-                            v1ServicePort.setPort(TypeUtil.objToInteger(t.getPort()));
-                        }
-                        if (t.getTargetPort() != null) {
-                            v1ServicePort.setTargetPort(new IntOrString(t.getTargetPort()));
-                        }
-                        v1ServicePort.setName(t.getName());
-                        v1ServicePort.setProtocol(t.getProtocol());
-                        return v1ServicePort;
-                    }).collect(Collectors.toList());
-            devopsServiceE.setPorts(portMapES);
-            return ports;
-        }
-    }
-
-    private class SyncIngressByEnv {
-        private List<CheckLog> logs;
-        private DevopsEnvironmentE env;
-        private String filePath;
-        private Git git;
-
-        SyncIngressByEnv(List<CheckLog> logs, DevopsEnvironmentE env, String filePath, Git git) {
-            this.logs = logs;
-            this.env = env;
-            this.filePath = filePath;
-            this.git = git;
-        }
-
-        void invoke() {
-            devopsIngressRepository.listByEnvId(env.getId())
-                    .forEach(devopsIngressE -> {
-                        CheckLog checkLog = new CheckLog();
-                        try {
-                            checkLog.setContent("ingress: " + devopsIngressE.getName() + SERIAL_STRING);
-                            String fileRelativePath = "ing-" + devopsIngressE.getName() + YAML_FILE;
-                            if (!new File(filePath + File.separator + fileRelativePath).exists()) {
-                                createGitFile(filePath, git, fileRelativePath,
-                                        getObjectYaml(getV1beta1Ingress(devopsIngressE)));
-                                checkLog.setResult(SUCCESS);
-                            }
-                            LOGGER.info(checkLog.toString());
-                        } catch (Exception e) {
-                            LOGGER.info("{}:{} ingress/{} sync failed {}",
-                                    env.getCode(), env.getId(), devopsIngressE.getName(), e);
-                            checkLog.setResult(FAILED + e.getMessage());
-                        }
-                        logs.add(checkLog);
-                    });
-        }
-
-        private V1beta1Ingress getV1beta1Ingress(DevopsIngressE devopsIngressE) {
-            V1beta1Ingress v1beta1Ingress = devopsIngressService.initV1beta1Ingress(
-                    devopsIngressE.getDomain(), devopsIngressE.getName(), devopsIngressE.getCertName());
-            List<DevopsIngressPathE> devopsIngressPathES =
-                    devopsIngressRepository.selectByIngressId(devopsIngressE.getId());
-            devopsIngressPathES.forEach(devopsIngressPathE ->
-                    v1beta1Ingress.getSpec().getRules().get(0).getHttp()
-                            .addPathsItem(devopsIngressService.createPath(
-                                    devopsIngressPathE.getPath(),
-                                    devopsIngressPathE.getServiceName(),
-                                    devopsIngressPathE.getServicePort())));
-
-            return v1beta1Ingress;
-        }
-    }
 
     class UpgradeTask implements Runnable {
         private String version;
@@ -779,7 +507,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                 syncNonEnvGroupProject(logs);
                 gitOpsUserAccess();
                 syncEnvProject(logs);
-                syncObjects(logs, this.env);
             } else if ("0.10.0".equals(version)) {
                 LOGGER.info("Start to execute upgrade task 1.0");
                 updateWebHook(logs);
@@ -859,9 +586,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
             List<Integer> gitlabProjectIds = applicationMapper.selectAll().stream()
                     .filter(applicationDO -> applicationDO.getGitlabProjectId() != null)
                     .map(ApplicationDO::getGitlabProjectId).collect(Collectors.toList());
-            List<Integer> envGitlabProjectIds = devopsEnvironmentMapper.selectAll().stream()
-                    .filter(environmentDO -> environmentDO.getGitlabEnvProjectId() != null)
-                    .map(t -> TypeUtil.objToInteger(t.getGitlabEnvProjectId())).collect(Collectors.toList());
             //changRole
             gitlabProjectIds.forEach(t -> {
                 CheckLog checkLog = new CheckLog();
@@ -873,9 +597,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                         gitlabRepository.updateMemberIntoProject(t, memberDTOS);
                     }
                     LOGGER.info("update project member maintainer to developer success");
-//                    gitlabRepository.batchAddVariable(t, null, applicationService.setVariableDTO(devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.HARBOR.getType()).get(0).getId(),
-//                            devopsProjectConfigRepository.queryByIdAndType(null, ProjectConfigType.CHART.getType()).get(0).getId()));
-//                    LOGGER.info("the project add Variable success,gitlabProjectId: " + t);
                     checkLog.setResult(SUCCESS);
                 } catch (Exception e) {
                     LOGGER.info("gitlab.project.is.not.exist,gitlabProjectId: " + t, e);
@@ -888,40 +609,14 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
 
         private void syncAppVersion() {
             List<ApplicationVersionDO> applicationVersionDOS = applicationVersionMapper.selectAll();
-            if (!applicationVersionDOS.isEmpty()) {
-                if (!applicationVersionDOS.get(0).getRepository().contains(helmUrl)) {
-                    if (helmUrl.endsWith("/")) {
-                        helmUrl = helmUrl.substring(0, helmUrl.length() - 1);
-                    }
-                    applicationVersionMapper.updateRepository(helmUrl);
+            if (!applicationVersionDOS.isEmpty() && !applicationVersionDOS.get(0).getRepository().contains(helmUrl)) {
+                if (helmUrl.endsWith("/")) {
+                    helmUrl = helmUrl.substring(0, helmUrl.length() - 1);
                 }
+                applicationVersionMapper.updateRepository(helmUrl);
             }
         }
 
-        private void syncObjects(List<CheckLog> logs, Long envId) {
-            List<DevopsEnvironmentE> devopsEnvironmentES;
-            if (envId != null) {
-                devopsEnvironmentES = new ArrayList<>();
-                devopsEnvironmentES.add(devopsEnvironmentRepository.queryById(envId));
-            } else {
-                devopsEnvironmentES = devopsEnvironmentRepository.list();
-            }
-            LOGGER.info("begin to sync env objects for {}  env", devopsEnvironmentES.size());
-            devopsEnvironmentES.forEach(devopsEnvironmentE -> {
-                gitUtil.setSshKey(devopsEnvironmentE.getEnvIdRsa());
-                if (devopsEnvironmentE.getGitlabEnvProjectId() != null) {
-                    LOGGER.info("{}:{}  begin to upgrade!", devopsEnvironmentE.getCode(), devopsEnvironmentE.getId());
-                    String filePath;
-                    try {
-                        filePath = envUtil.handDevopsEnvGitRepository(devopsEnvironmentE);
-                    } catch (Exception e) {
-                        LOGGER.info("clone git  env repo error {}", e);
-                        return;
-                    }
-                    syncFiles(logs, devopsEnvironmentE, gitUtil, filePath);
-                }
-            });
-        }
 
         private void syncEnvProject(List<CheckLog> logs) {
             LOGGER.info("start to sync env project");
@@ -961,25 +656,6 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                     });
         }
 
-        private void syncFiles(List<CheckLog> logs, DevopsEnvironmentE env, GitUtil gitUtil, String filePath) {
-            try (Git git = Git.open(new File(filePath))) {
-                new SyncInstanceByEnv(logs, env, filePath, git).invoke();
-                new SynServiceByEnv(logs, env, filePath, git).invoke();
-                new SyncIngressByEnv(logs, env, filePath, git).invoke();
-
-                if (git.tagList().call().stream().map(Ref::getName).noneMatch("agent-sync"::equals)) {
-                    git.tag().setName("agent-sync").call();
-                }
-
-                gitUtil.gitPush(git);
-                gitUtil.gitPushTag(git);
-                LOGGER.info("{}:{} finish to upgrade", env.getCode(), env.getId());
-            } catch (IOException e) {
-                LOGGER.info("error.git.open: " + filePath, e);
-            } catch (GitAPIException e) {
-                LOGGER.info("error.git.push: {},{}", filePath, e.getMessage());
-            }
-        }
 
         private void syncWebHook(ApplicationDO applicationDO, List<CheckLog> logs) {
             CheckLog checkLog = new CheckLog();

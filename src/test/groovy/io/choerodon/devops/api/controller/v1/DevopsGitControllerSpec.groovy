@@ -125,7 +125,7 @@ class DevopsGitControllerSpec extends Specification {
         page.setTotalElements(5)
         page.setContent(userDOList)
         ResponseEntity<Page<UserDO>> responseEntityPage = new ResponseEntity<>(page, HttpStatus.OK)
-        Mockito.when(iamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(responseEntityPage)
+        Mockito.when(iamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), isNull())).thenReturn(responseEntityPage)
 
         TagDO tagDO = new TagDO()
         tagDO.setName("testTag")

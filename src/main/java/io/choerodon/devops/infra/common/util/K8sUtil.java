@@ -1,12 +1,12 @@
 package io.choerodon.devops.infra.common.util;
 
-import io.kubernetes.client.JSON;
-import io.kubernetes.client.models.*;
-import org.springframework.util.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import io.kubernetes.client.JSON;
+import io.kubernetes.client.models.*;
+import org.springframework.util.StringUtils;
 
 /**
  * Created by younger on 2018/4/25.
@@ -83,36 +83,30 @@ public class K8sUtil {
      * @return string
      */
     public static String getServiceExternalIp(V1Service v1Service) {
-        if (v1Service.getSpec().getExternalIPs() == null) {
-            return NONE_LABEL;
-        }
         switch (v1Service.getSpec().getType()) {
             case "ClusterIP":
-                if (!v1Service.getSpec().getExternalIPs().isEmpty()) {
+                if (v1Service.getSpec().getExternalIPs() != null && !v1Service.getSpec().getExternalIPs().isEmpty()) {
                     return String.join(",", v1Service.getSpec().getExternalIPs());
                 } else {
                     return NONE_LABEL;
                 }
             case "NodePort":
-                if (!v1Service.getSpec().getExternalIPs().isEmpty()) {
+                if (v1Service.getSpec().getExternalIPs() != null && !v1Service.getSpec().getExternalIPs().isEmpty()) {
                     return String.join(",", v1Service.getSpec().getExternalIPs());
                 } else {
                     return NONE_LABEL;
                 }
             case "LoadBalancer":
                 String lbips = loadBalancerStatusStringer(v1Service.getStatus().getLoadBalancer());
-                List<String> result = new ArrayList<>();
-                if (!v1Service.getSpec().getExternalIPs().isEmpty()) {
+                if (!lbips.equals("")) {
+                    List<String> result = new ArrayList<>();
                     if (lbips.length() > 0) {
                         result = Arrays.asList(lbips.split(","));
                     }
-                    result.addAll(v1Service.getSpec().getExternalIPs());
                     return String.join(",", result);
+                } else {
+                    return NONE_LABEL;
                 }
-                if (lbips.length() > 0) {
-                    return lbips;
-                }
-                return "<pending>";
             case "ExternalName":
                 return v1Service.getSpec().getExternalName();
             default:

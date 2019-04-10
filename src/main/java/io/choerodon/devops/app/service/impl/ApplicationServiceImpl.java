@@ -10,6 +10,22 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -52,21 +68,6 @@ import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * Created by younger on 2018/3/28.
@@ -96,7 +97,6 @@ public class ApplicationServiceImpl implements ApplicationService {
     private static final String MASTER = "master";
     private static final String APPLICATION = "application";
     private static final String ERROR_UPDATE_APP = "error.application.update";
-    private static final String DEVELOPMENT = "development-application";
     private static final String TEST = "test-application";
     private static final String DOCKER_REGISTRY = "DOCKER_REGISTRY";
     private static final String DOCKER_PROJECT = "DOCKER_PROJECT";
@@ -258,7 +258,7 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Long appId = applicationUpdateDTO.getId();
         ApplicationE oldApplicationE = applicationRepository.query(appId);
-        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+//        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 //        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
 //                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
@@ -284,7 +284,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsUserPayload.setIamUserIds(applicationUpdateDTO.getUserIds());
 
         if (oldApplicationE.getIsSkipCheckPermission() && applicationUpdateDTO.getIsSkipCheckPermission()) {
-            return true;
+            return false;
         } else if (oldApplicationE.getIsSkipCheckPermission() && !applicationUpdateDTO.getIsSkipCheckPermission()) {
             applicationUpdateDTO.getUserIds().forEach(e -> appUserPermissionRepository.create(e, appId));
             devOpsUserPayload.setOption(1);
@@ -455,7 +455,7 @@ public class ApplicationServiceImpl implements ApplicationService {
     private void analyzeDockerfileToMap(File templateWorkDir, Long applicationTemplateId) {
         Collection<File> dockerfile = FileUtils.listFiles(templateWorkDir, filenameFilter, TrueFileFilter.INSTANCE);
         Optional<File> df = dockerfile.stream().findFirst();
-        templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse("Dockerfile"));
+        templateDockerfileMap.putIfAbsent(applicationTemplateId, df.map(f -> f.getAbsolutePath().replace(templateWorkDir.getAbsolutePath() + System.getProperty("file.separator"), "")).orElse(DOCKER_FILE_NAME));
     }
 
     @Override
@@ -1100,8 +1100,8 @@ public class ApplicationServiceImpl implements ApplicationService {
             UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
             gitlabUserId = userAttrE.getGitlabUserId();
         }
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
 
+        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
 
         //创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
@@ -1147,10 +1147,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         }
 
         //如果没有传入project的时候，校验填写的用户是不是管理员
-        if (project == null) {
-            if ("0.0".equals(((LinkedTreeMap) userResponse.body()).get("has_admin_role").toString())) {
-                throw new CommonException("error.user.is.not.admin");
-            }
+        if (project == null && "0.0".equals(((LinkedTreeMap) userResponse.body()).get("has_admin_role").toString())) {
+            throw new CommonException("error.user.is.not.admin");
+
         }
 
         //如果传入了project,校验用户是否有project的权限

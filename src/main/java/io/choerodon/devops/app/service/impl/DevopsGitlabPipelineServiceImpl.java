@@ -36,6 +36,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineService {
 
     private static final Integer ADMIN = 1;
+    private static final String SONARQUBE = "sonarqube";
     private ObjectMapper objectMapper = new ObjectMapper();
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -98,7 +99,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
             if (gitlabJobIds.contains(commitStatuseDO.getId())) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
                 stages.add(stage);
-            } else if (commitStatuseDO.getName().equals("sonarqube") && !stageNames.contains("sonarqube") && !stages.isEmpty()) {
+            } else if (commitStatuseDO.getName().equals(SONARQUBE) && !stageNames.contains(SONARQUBE) && !stages.isEmpty()) {
                 Stage stage = getPipelibeStage(commitStatuseDO);
                 sonar = stage;
                 stages.add(stage);
@@ -134,7 +135,7 @@ public class DevopsGitlabPipelineServiceImpl implements DevopsGitlabPipelineServ
                 }
                 result.add(original);
             });
-            if (sonar != null && result.stream().noneMatch(x -> x.getName().equals("sonarqube"))) {
+            if (sonar != null && result.stream().noneMatch(x -> x.getName().equals(SONARQUBE))) {
                 result.add(sonar);
             }
             devopsGitlabPipelineE.setStage(JSONArray.toJSONString(result));

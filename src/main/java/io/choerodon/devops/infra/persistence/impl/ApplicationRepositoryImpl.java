@@ -18,7 +18,6 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -103,26 +102,18 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     public Page<ApplicationE> listByOptions(Long projectId, Boolean isActive, Boolean hasVersion,
                                             String type, Boolean doPage, PageRequest pageRequest, String params) {
         Page<ApplicationDO> applicationES = new Page<>();
-        String param = null;
 
-        Map<String,Object>  mapParams = new HashMap<>();
-        mapParams.put("searchParam", null);
-        mapParams.put("param",null);
-        if (!StringUtils.isEmpty(params)) {
-            Map maps = gson.fromJson(params, Map.class);
-            mapParams.put("searchParam", TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
-            mapParams.put("param",TypeUtil.cast(maps.get(TypeUtil.PARAM)));
-        }
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         //是否需要分页
         if (doPage != null && !doPage) {
                 applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
-                        (Map<String,Object>)mapParams.get("searchParam"),
-                        mapParams.get("param").toString(), checkSortIsEmpty(pageRequest)));
+                        (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
+                        mapParams.get(TypeUtil.PARAM).toString(), checkSortIsEmpty(pageRequest)));
         } else {
             applicationES = PageHelper
                     .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
-                            (Map<String,Object>)mapParams.get("searchParam"),
-                            (String)mapParams.get("param"), checkSortIsEmpty(pageRequest)));
+                            (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
+                            (String)mapParams.get(TypeUtil.PARAM), checkSortIsEmpty(pageRequest)));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }

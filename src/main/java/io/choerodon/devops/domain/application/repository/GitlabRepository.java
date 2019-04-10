@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.repository;
 
+import java.util.List;
+
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
@@ -7,8 +9,8 @@ import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
-
-import java.util.List;
+import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 
 /**
  * Created by younger on 2018/3/29.
@@ -17,7 +19,7 @@ public interface GitlabRepository {
 
     void addVariable(Integer gitlabProjectId, String key, String value, Boolean protecteds, Integer userId);
 
-    void batchAddVariable(Integer gitlabProjectId, Integer userId,  List<VariableDTO> variableDTOS);
+    void batchAddVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTOS);
 
     List<String> listTokenByUserId(Integer gitlabProjectId, String name, Integer userId);
 
@@ -28,6 +30,9 @@ public interface GitlabRepository {
     GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId);
 
     void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId);
+
+    void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch);
+
 
     void updateFile(Integer projectId, String path, String content, String commitMessage, Integer userId);
 
@@ -40,7 +45,7 @@ public interface GitlabRepository {
 
     void deleteProject(Integer projectId, Integer userId);
 
-    String updateProject(Integer projectId, Integer userId);
+    void updateGroup(Integer projectId, Integer userId, GroupDO groupDO);
 
     ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook);
 
@@ -72,4 +77,8 @@ public interface GitlabRepository {
     void removeMemberFromProject(Integer projectId, Integer userId);
 
     List<GitlabProjectDO> getProjectsByUserId(Integer userId);
+
+    MergeRequestDO createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId);
+
+    void acceptMergeRequest(Integer projectId, Integer mergeRequestId, String mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId);
 }

@@ -369,7 +369,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     @Saga(code = "devops-sync-gitops", description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookDTO.class)
     public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
-        LOGGER.info("`````````````````````````````" +pushWebHookDTO.getCheckoutSha());
+        LOGGER.info(String.format("````````````````````````````` %s", pushWebHookDTO.getCheckoutSha()));
         pushWebHookDTO.setToken(token);
         String input;
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
@@ -388,7 +388,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                 .queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
         devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
         devopsEnvironmentRepository.updateSagaSyncEnvCommit(devopsEnvironmentE);
-        LOGGER.info("更新devopsCommit成功:" +pushWebHookDTO.getCheckoutSha());
+        LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookDTO.getCheckoutSha()));
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
             sagaClient.startSaga("devops-sync-gitops",

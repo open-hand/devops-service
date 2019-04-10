@@ -33,7 +33,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -163,7 +163,7 @@ class ApplicationMarketControllerSpec extends Specification {
         projectDOList.add(projectDO)
         projectDOPage.setContent(projectDOList)
         ResponseEntity<Page<ProjectDO>> projectDOPageResponseEntity = new ResponseEntity<>(projectDOPage, HttpStatus.OK)
-        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), anyString(), any(String[].class))).thenReturn(projectDOPageResponseEntity)
+        Mockito.when(iamServiceClient.queryProjectByOrgId(anyLong(), anyInt(), anyInt(), isNull(), isNull())).thenReturn(projectDOPageResponseEntity)
     }
 
     def "Create"() {
@@ -332,6 +332,7 @@ class ApplicationMarketControllerSpec extends Specification {
         then: '验证返回值'
         File file = new File("tmp/org")
         file.listFiles().size() == 0
+        FileUtil.deleteDirectory(new File("Charts"))
     }
 
     def "ExportFile"() {

@@ -826,13 +826,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     }
                     devopsRegistrySecretE = new DevopsRegistrySecretE(envId, devopsProjectConfigE.getId(), namespace, secretCode, gson.toJson(devopsProjectConfigE.getConfig()));
                     devopsRegistrySecretRepository.create(devopsRegistrySecretE);
-                    deployService.operateSecret(clusterId, namespace, secretCode, devopsProjectConfigE.getConfig(), "create");
+                    deployService.operateSecret(clusterId, namespace, secretCode, devopsProjectConfigE.getConfig(), CREATE);
                 } else {
                     //判断如果某个配置有发生过修改，则需要修改secret信息，并通知k8s更新secret
                     if (!devopsRegistrySecretE.getSecretDetail().equals(gson.toJson(devopsProjectConfigE.getConfig()))) {
                         devopsRegistrySecretE.setSecretDetail(gson.toJson(devopsProjectConfigE.getConfig()));
                         devopsRegistrySecretRepository.update(devopsRegistrySecretE);
-                        deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), "update");
+                        deployService.operateSecret(clusterId, namespace, devopsRegistrySecretE.getSecretCode(), devopsProjectConfigE.getConfig(), UPDATE);
                     }
                     secretCode = devopsRegistrySecretE.getSecretCode();
                 }
