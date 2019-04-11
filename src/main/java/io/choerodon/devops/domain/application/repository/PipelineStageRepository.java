@@ -18,4 +18,6 @@ public interface PipelineStageRepository {
     List<PipelineStageE> queryByPipelineId(Long pipelineId);
 
     void delete(Long stageId);
+
+    PipelineStageE queryById(Long stageId);
 }

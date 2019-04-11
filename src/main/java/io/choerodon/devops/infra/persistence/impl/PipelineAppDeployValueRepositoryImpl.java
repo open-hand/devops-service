@@ -9,6 +9,8 @@ import io.choerodon.devops.infra.mapper.PipelineAppDeployValueMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  15:14 2019/4/8
@@ -42,5 +44,12 @@ public class PipelineAppDeployValueRepositoryImpl implements PipelineAppDeployVa
         PipelineAppDeployValueDO valueDO = new PipelineAppDeployValueDO();
         valueDO.setId(valueId);
         return ConvertHelper.convert(deployValueMapper.selectByPrimaryKey(valueDO), PipelineAppDeployValueE.class);
+    }
+
+    @Override
+    public List<PipelineAppDeployValueE> queryByValueId(Long pipelineValueId) {
+        PipelineAppDeployValueDO valueDO = new PipelineAppDeployValueDO();
+        valueDO.setValueId(pipelineValueId);
+        return ConvertHelper.convertList(deployValueMapper.select(valueDO), PipelineAppDeployValueE.class);
     }
 }

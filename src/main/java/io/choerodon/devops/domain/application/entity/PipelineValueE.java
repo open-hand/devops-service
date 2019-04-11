@@ -17,6 +17,24 @@ public class PipelineValueE {
     private String description;
     private Long createBy;
     private Date lastUpdatedBy;
+    private String appName;
+    private String envName;
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
 
     public Date getLastUpdatedBy() {
         return lastUpdatedBy;

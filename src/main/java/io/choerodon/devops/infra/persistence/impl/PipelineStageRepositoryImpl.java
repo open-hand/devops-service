@@ -53,4 +53,11 @@ public class PipelineStageRepositoryImpl implements PipelineStageRepository {
         pipelineStageDO.setId(stageId);
         stageMapper.deleteByPrimaryKey(pipelineStageDO);
     }
+
+    @Override
+    public PipelineStageE queryById(Long stageId) {
+        PipelineStageDO pipelineStageDO = new PipelineStageDO();
+        pipelineStageDO.setId(stageId);
+        return ConvertHelper.convert(stageMapper.selectByPrimaryKey(pipelineStageDO), PipelineStageE.class);
+    }
 }

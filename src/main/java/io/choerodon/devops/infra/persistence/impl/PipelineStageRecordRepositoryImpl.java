@@ -28,11 +28,34 @@ public class PipelineStageRecordRepositoryImpl implements PipelineStageRecordRep
     }
 
     @Override
-    public PipelineStageRecordE create(PipelineStageRecordE stageRecordE) {
+    public PipelineStageRecordE createOrUpdate(PipelineStageRecordE stageRecordE) {
         PipelineStageRecordDO stageRecordDO = ConvertHelper.convert(stageRecordE, PipelineStageRecordDO.class);
-        if (stageRecordMapper.insert(stageRecordDO) != 1) {
-            throw new CommonException("error.insert.pipeline.stage.record");
+        if (stageRecordDO.getId() == null) {
+            if (stageRecordMapper.insert(stageRecordDO) != 1) {
+                throw new CommonException("error.insert.pipeline.stage.record");
+            }
+        } else {
+            stageRecordDO.setObjectVersionNumber(stageRecordMapper.selectByPrimaryKey(stageRecordDO).getObjectVersionNumber());
+            if (stageRecordMapper.updateByPrimaryKeySelective(stageRecordDO) != 1) {
+                throw new CommonException("error.update.pipeline.stage.record");
+            }
+            stageRecordDO.setObjectVersionNumber(null);
         }
         return ConvertHelper.convert(stageRecordMapper.selectOne(stageRecordDO), PipelineStageRecordE.class);
+    }
+
+    @Override
+    public List<PipelineStageRecordE> queryByPipeRecordId(Long pipelineRecordId, Long stageId) {
+        PipelineStageRecordDO stageRecordDO = new PipelineStageRecordDO();
+        stageRecordDO.setPipelineRecordId(pipelineRecordId);
+        stageRecordDO.setStageId(stageId);
+        return ConvertHelper.convertList(stageRecordMapper.select(stageRecordDO), PipelineStageRecordE.class);
+    }
+
+    @Override
+    public PipelineStageRecordE queryById(Long recordId) {
+        PipelineStageRecordDO stageRecordDO = new PipelineStageRecordDO();
+        stageRecordDO.setId(recordId);
+        return ConvertHelper.convert(stageRecordMapper.selectByPrimaryKey(stageRecordDO), PipelineStageRecordE.class);
     }
 }

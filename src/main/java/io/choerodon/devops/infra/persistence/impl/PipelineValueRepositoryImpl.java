@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import io.choerodon.devops.infra.dataobject.PipelineValueDO;
 import io.choerodon.devops.infra.mapper.PipelineValueMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -67,5 +68,15 @@ public class PipelineValueRepositoryImpl implements PipelineValueRepository {
         PipelineValueDO pipelineValueDO = new PipelineValueDO();
         pipelineValueDO.setId(valueId);
         return ConvertHelper.convert(valueMapper.selectByPrimaryKey(pipelineValueDO), PipelineValueE.class);
+    }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        PipelineValueDO pipelineValueDO = new PipelineValueDO();
+        pipelineValueDO.setProjectId(projectId);
+        pipelineValueDO.setName(name);
+        if (valueMapper.selectOne(pipelineValueDO) != null) {
+            throw new CommonException("error.devops.pipeline.value.name.exit");
+        }
     }
 }

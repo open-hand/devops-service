@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.dataobject;
 
 import io.choerodon.mybatis.annotation.ModifyAudit;
 import io.choerodon.mybatis.annotation.VersionAudit;
+import io.choerodon.mybatis.domain.AuditDomain;
 
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,7 +17,7 @@ import java.sql.Date;
 @VersionAudit
 @ModifyAudit
 @Table(name = "devops_pipeline_stage_record")
-public class PipelineStageRecordDO {
+public class PipelineStageRecordDO extends AuditDomain {
     @Id
     @GeneratedValue
     private Long id;
@@ -26,10 +27,22 @@ public class PipelineStageRecordDO {
     private Integer isParallel;
     private Date executionTime;
     private Long projectId;
+    private Long stageId;
 
     public PipelineStageRecordDO(Long projectId, Long pipelineRecordId) {
         this.pipelineRecordId = pipelineRecordId;
         this.projectId = projectId;
+    }
+
+    public PipelineStageRecordDO() {
+    }
+
+    public Long getStageId() {
+        return stageId;
+    }
+
+    public void setStageId(Long stageId) {
+        this.stageId = stageId;
     }
 
     public Long getProjectId() {

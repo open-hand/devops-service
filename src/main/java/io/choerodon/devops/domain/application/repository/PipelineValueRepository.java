@@ -17,4 +17,6 @@ public interface PipelineValueRepository {
     void delete(Long valueId);
 
     PipelineValueE queryById(Long valueId);
+
+    void checkName(Long projectId, String name);
 }

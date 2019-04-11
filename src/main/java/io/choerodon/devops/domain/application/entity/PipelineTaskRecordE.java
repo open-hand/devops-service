@@ -22,6 +22,15 @@ public class PipelineTaskRecordE {
     private Date executionTime;
     private Integer isCountersigned;
     private String value;
+    private Long taskId;
+
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
 
     public PipelineTaskRecordE() {
     }

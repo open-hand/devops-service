@@ -10,6 +10,7 @@ import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.PipelineAppDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -37,6 +38,8 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     private EnvListener envListener;
     @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
+    @Autowired
+    private PipelineAppDeployValueRepository appDeployValueRepository;
 
     @Override
     public PipelineValueDTO createOrUpdate(PipelineValueDTO pipelineValueDTO) {
@@ -46,8 +49,13 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public void delete(Long projectId, Long valueId) {
-        valueRepository.delete(valueId);
+    public Boolean delete(Long projectId, Long valueId) {
+        if (appDeployValueRepository.queryByValueId(valueId).size() == 0) {
+            valueRepository.delete(valueId);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -73,6 +81,13 @@ public class PipelineValueServiceImpl implements PipelineValueService {
 
     @Override
     public PipelineValueDTO queryById(Long valueId) {
-        return ConvertHelper.convert(valueRepository.queryById(valueId), PipelineValueDTO.class);
+        PipelineValueDTO valueDTO = ConvertHelper.convert(valueRepository.queryById(valueId), PipelineValueDTO.class);
+        valueDTO.setIndex(appDeployValueRepository.queryByValueId(valueId).size() == 0);
+        return valueDTO;
+    }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        valueRepository.checkName(projectId, name);
     }
 }

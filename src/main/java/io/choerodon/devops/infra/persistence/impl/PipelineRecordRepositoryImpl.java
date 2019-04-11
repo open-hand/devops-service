@@ -52,10 +52,24 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
     public PipelineRecordE update(PipelineRecordE pipelineRecordE) {
         PipelineRecordDO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDO.class);
         pipelineRecordDO.setObjectVersionNumber(pipelineRecordMapper.selectByPrimaryKey(pipelineRecordDO).getObjectVersionNumber());
-        if (pipelineRecordMapper.updateByPrimaryKey(pipelineRecordDO) != 1) {
+        if (pipelineRecordMapper.updateByPrimaryKeySelective(pipelineRecordDO) != 1) {
             throw new CommonException("error.update.pipeline.record");
         }
         pipelineRecordDO.setObjectVersionNumber(null);
+        return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
+    }
+
+    @Override
+    public PipelineRecordE queryByProInstanceId(String proInstanceId) {
+        PipelineRecordDO pipelineRecordDO = new PipelineRecordDO();
+        pipelineRecordDO.setProcessInstanceId(proInstanceId);
+        return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
+    }
+
+    @Override
+    public PipelineRecordE queryById(Long recordId) {
+        PipelineRecordDO pipelineRecordDO = new PipelineRecordDO();
+        pipelineRecordDO.setPipelineId(recordId);
         return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
     }
 }

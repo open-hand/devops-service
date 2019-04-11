@@ -248,31 +248,38 @@ public class PipelineController {
     public ResponseEntity setTaskStatus(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "taskRecordId", required = true)
-            @RequestParam Long taskRecordId) {
-        pipelineService.setTaskStatus(taskRecordId);
+            @ApiParam(value = "task_record_id", required = true)
+            @RequestParam Long taskRecordId,
+            @ApiParam(value = "pro_instance_id", required = true)
+            @RequestParam String proInstanceId) {
+        pipelineService.setTaskStatus(taskRecordId, proInstanceId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     /**
      * 人工审核
      *
-     * @param stageRecordId 阶段记录Id
-     * @param taskId        任务Id
+     * @param projectId
+     * @param recordId
+     * @param type      流程、阶段、任务
+     * @param isApprove 是否同意
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "人工审核")
     @CustomPageRequest
-    @GetMapping("/audit")
+    @GetMapping("/{pipeline_record_id}/audit")
     public ResponseEntity audit(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "taskRecordId", required = true)
-            @RequestParam Long stageRecordId,
-            @ApiParam(value = "taskId", required = true)
-            @RequestParam Long taskId) {
-        pipelineService.autoDeploy(stageRecordId, taskId);
+            @ApiParam(value = "记录Id", required = true)
+            @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "record_id", required = true)
+            @RequestParam Long recordId,
+            @ApiParam(value = "type", required = true)
+            @RequestParam String type,
+            @ApiParam(value = "is_approve", required = true)
+            @RequestParam Boolean isApprove) {
+        pipelineService.audit(projectId, pipelineRecordId, recordId, type, isApprove);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

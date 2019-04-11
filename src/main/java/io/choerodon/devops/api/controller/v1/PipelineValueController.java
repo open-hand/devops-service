@@ -52,10 +52,10 @@ public class PipelineValueController {
     public ResponseEntity<Page<PipelineValueDTO>> listByOptions(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "应用Id", required = true)
-            @RequestParam(value = "app_id") Long appId,
-            @ApiParam(value = "环境Id", required = true)
-            @RequestParam(value = "env_id") Long envId,
+            @ApiParam(value = "应用Id", required = false)
+            @RequestParam(value = "app_id", required = false) Long appId,
+            @ApiParam(value = "环境Id", required = false)
+            @RequestParam(value = "env_id", required = false) Long envId,
             @ApiParam(value = "分页参数")
             @ApiIgnore PageRequest pageRequest,
             @ApiParam(value = "查询参数")
@@ -74,7 +74,6 @@ public class PipelineValueController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建流水线配置")
-    @CustomPageRequest
     @PostMapping
     public ResponseEntity<PipelineValueDTO> createOrUpdate(
             @ApiParam(value = "项目Id", required = true)
@@ -95,13 +94,12 @@ public class PipelineValueController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下查询配置详情")
-    @CustomPageRequest
     @GetMapping
     public ResponseEntity<PipelineValueDTO> queryById(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "valueId")
-            @ApiIgnore Long valueId) {
+            @ApiParam(value = "valueId", required = true)
+            @ApiIgnore(value = "value_id") Long valueId) {
         return Optional.ofNullable(pipelineValueService.queryById(valueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.queryById"));
@@ -116,15 +114,32 @@ public class PipelineValueController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除配置")
-    @CustomPageRequest
     @DeleteMapping
-    public ResponseEntity delete(
+    public ResponseEntity<Boolean> delete(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "valueId")
-            @ApiIgnore Long valueId) {
-        return Optional.ofNullable(pipelineValueService.queryById(valueId))
+            @ApiParam(value = "valueId", required = true)
+            @ApiIgnore(value = "value_id") Long valueId) {
+        return Optional.ofNullable(pipelineValueService.delete(projectId, valueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.delete"));
+    }
+
+
+    /**
+     * 名称校验
+     *
+     * @param projectId
+     * @param name
+     * @return
+     */
+    @ApiOperation(value = "名称校验")
+    @GetMapping("/check_name")
+    public void checkName(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "名称", required = true)
+            @RequestParam(value = "name") String name) {
+        pipelineValueService.checkName(projectId, name);
     }
 }

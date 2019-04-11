@@ -13,6 +13,18 @@ public class PipelineStageRecordE {
     private Long projectId;
     private Long pipelineRecordId;
     private String status;
+    private Long stageId;
+
+    public Long getStageId() {
+        return stageId;
+    }
+
+    public void setStageId(Long stageId) {
+        this.stageId = stageId;
+    }
+
+    public PipelineStageRecordE() {
+    }
 
     public PipelineStageRecordE(String triggerType, Integer isParallel, Long projectId, Long pipelineRecordId) {
         this.triggerType = triggerType;

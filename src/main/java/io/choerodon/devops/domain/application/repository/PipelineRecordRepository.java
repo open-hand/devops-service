@@ -15,4 +15,8 @@ public interface PipelineRecordRepository {
     PipelineRecordE create(PipelineRecordE pipelineRecordE);
 
     PipelineRecordE update(PipelineRecordE pipelineRecordE);
+
+    PipelineRecordE queryByProInstanceId(String proInstanceId);
+
+    PipelineRecordE queryById(Long recordId);
 }

@@ -13,7 +13,16 @@ import org.springframework.stereotype.Component;
 public class PipelineAppDeployValueE {
     private Long id;
     private String value;
+    private Long valueId;
     private Long objectVersionNumber;
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
+    }
 
     public Long getId() {
         return id;

@@ -21,6 +21,33 @@ public class PipelineValueDTO {
     private Long createBy;
     private Boolean envStatus;
     private Date lastUpdatedBy;
+    private Boolean index;
+    private String envName;
+    private String appName;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public Boolean getIndex() {
+        return index;
+    }
+
+    public void setIndex(Boolean index) {
+        this.index = index;
+    }
 
     public Date getLastUpdatedBy() {
         return lastUpdatedBy;

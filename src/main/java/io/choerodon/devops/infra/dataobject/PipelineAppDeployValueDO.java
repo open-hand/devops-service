@@ -21,6 +21,15 @@ public class PipelineAppDeployValueDO extends AuditDomain {
     @GeneratedValue
     private Long id;
     private String value;
+    private Long valueId;
+
+    public Long getValueId() {
+        return valueId;
+    }
+
+    public void setValueId(Long valueId) {
+        this.valueId = valueId;
+    }
 
     public Long getId() {
         return id;

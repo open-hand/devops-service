@@ -12,9 +12,11 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 public interface PipelineValueService {
     PipelineValueDTO createOrUpdate(PipelineValueDTO pipelineValueDTO);
 
-    void delete(Long projectId, Long valueId);
+    Boolean delete(Long projectId, Long valueId);
 
     Page<PipelineValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
 
     PipelineValueDTO queryById(Long valueId);
+
+    void checkName(Long projectId, String name);
 }

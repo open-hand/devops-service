@@ -3,7 +3,6 @@ package io.choerodon.devops.infra.persistence.impl;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
-import io.choerodon.devops.infra.feign.IamServiceClient;
 import io.choerodon.devops.infra.feign.WorkFlowServiceClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +36,11 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
     }
 
     @Override
-    public void approveUserTask(Long projectId, String instanceId) {
-        ResponseEntity responseEntity = workFlowServiceClient.approveUserTask(projectId, instanceId);
+    public String approveUserTask(Long projectId, String instanceId, Boolean isApprove) {
+        ResponseEntity<String> responseEntity = workFlowServiceClient.approveUserTask(projectId, instanceId, isApprove);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.approve");
         }
+        return responseEntity.getBody();
     }
 }

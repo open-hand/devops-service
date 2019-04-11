@@ -30,5 +30,14 @@ public interface PipelineService {
 
     void autoDeploy(Long stageRecordId, Long taskId);
 
-    void setTaskStatus(Long taskRecordId);
+    void setTaskStatus(Long taskRecordId, String proInstanceId);
+
+    /**
+     * 人工审核
+     *
+     * @param recordId
+     * @param type
+     * @param isApprove
+     */
+    void audit(Long projectId, Long pipelineRecordId, Long recordId, String type, Boolean isApprove);
 }

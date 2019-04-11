@@ -12,5 +12,9 @@ import java.util.List;
 public interface PipelineStageRecordRepository {
     List<PipelineStageRecordE> list(Long projectId, Long pipelineId);
 
-    PipelineStageRecordE create(PipelineStageRecordE stageRecordE);
+    PipelineStageRecordE createOrUpdate(PipelineStageRecordE stageRecordE);
+
+    List<PipelineStageRecordE> queryByPipeRecordId(Long pipelineRecordId, Long stageId);
+
+    PipelineStageRecordE queryById(Long recordId);
 }
