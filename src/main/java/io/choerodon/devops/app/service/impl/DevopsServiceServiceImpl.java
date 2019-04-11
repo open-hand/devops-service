@@ -109,7 +109,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     @Override
     public DevopsServiceDTO queryByName(Long envId, String serviceName) {
-        return ConvertHelper.convert(devopsServiceRepository.selectByNameAndEnvId(serviceName,envId), DevopsServiceDTO.class);
+        return ConvertHelper.convert(devopsServiceRepository.selectByNameAndEnvId(serviceName, envId), DevopsServiceDTO.class);
     }
 
     @Override
@@ -248,7 +248,9 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
         Map<String, String> annotations = new HashMap<>();
         if (!serviceInstances.isEmpty()) {
             annotations.put("choerodon.io/network-service-instances", serviceInstances);
-            annotations.put("choerodon.io/network-service-app", applicationE.getCode());
+            if (applicationE != null) {
+                annotations.put("choerodon.io/network-service-app", applicationE.getCode());
+            }
         }
 
         devopsServiceE.setAnnotations(gson.toJson(annotations));
