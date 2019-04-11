@@ -38,7 +38,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -55,7 +55,7 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class ApplicationTemplateControllerSpec extends Specification {
 
     @Autowired
-    TestRestTemplate restTemplate
+    private TestRestTemplate restTemplate
     @Autowired
     private DevopsGitService devopsGitService
     @Autowired
@@ -90,13 +90,14 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Shared
     Long template_id = 4L
 
-    // 初始化部分对象
+     //初始化部分对象
     def setupSpec() {
         given:
         organization.setId(init_id)
         organization.setCode("org")
 
         organizationDO.setCode("orgDO")
+        organizationDO.setId(org_id)
 
         gitlabGroupE.setName("org_template")
         gitlabGroupE.setPath("org_template")
@@ -112,7 +113,7 @@ class ApplicationTemplateControllerSpec extends Specification {
         searchParam.put("param", "")
     }
 
-    // 组织下创建应用模板
+    //组织下创建应用模板
     def "createTemplate"() {
         given: "初始化数据"
         ApplicationTemplateDTO applicationTemplateDTO = new ApplicationTemplateDTO()

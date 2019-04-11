@@ -35,6 +35,7 @@ public interface DevopsAutoDeployService {
      * 项目下查询自动部署信息
      *
      * @param projectId   项目Id
+     * @param userId      用户Id
      * @param appId       应用Id
      * @param envId       环境Id
      * @param doPage      是否分页
@@ -43,6 +44,7 @@ public interface DevopsAutoDeployService {
      * @return
      */
     Page<DevopsAutoDeployDTO> listByOptions(Long projectId,
+                                            Long userId,
                                             Long appId,
                                             Long envId,
                                             Boolean doPage,
@@ -53,14 +55,16 @@ public interface DevopsAutoDeployService {
      * 项目下查询自动部署信息
      *
      * @param projectId 项目Id
+     * @param projectId 用户Id
      * @return
      */
-    List<DevopsAutoDeployDTO> queryByProjectId(Long projectId);
+    List<DevopsAutoDeployDTO> queryByProjectId(Long projectId, Long userId);
 
     /**
      * 项目下查询自动部署信息
      *
      * @param projectId   项目Id
+     * @param userId      用户Id
      * @param appId       应用Id
      * @param envId       环境Id
      * @param taskName    任务名称
@@ -70,6 +74,7 @@ public interface DevopsAutoDeployService {
      * @return
      */
     Page<DevopsAutoDeployRecordDTO> queryRecords(Long projectId,
+                                                 Long userId,
                                                  Long appId,
                                                  Long envId,
                                                  String taskName,

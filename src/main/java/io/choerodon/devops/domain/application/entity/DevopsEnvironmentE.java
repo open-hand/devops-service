@@ -77,6 +77,11 @@ public class DevopsEnvironmentE {
         this.id = id;
     }
 
+    public DevopsEnvironmentE(Long id, String code) {
+        this.id = id;
+        this.code = code;
+    }
+
     public Long getId() {
         return id;
     }

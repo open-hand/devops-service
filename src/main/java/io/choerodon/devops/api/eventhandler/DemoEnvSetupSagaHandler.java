@@ -1,10 +1,15 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.util.Collections;
+import java.util.HashMap;
+
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.asgard.saga.consumer.MockHttpServletRequest;
 import io.choerodon.core.oauth.CustomUserDetails;
-import io.choerodon.devops.app.service.*;
+import io.choerodon.devops.app.service.DevopsDemoEnvInitService;
+import io.choerodon.devops.app.service.GitlabGroupService;
+import io.choerodon.devops.app.service.OrganizationService;
 import io.choerodon.devops.domain.application.event.GitlabGroupPayload;
 import io.choerodon.devops.domain.application.event.OrganizationEventPayload;
 import io.choerodon.devops.domain.application.event.OrganizationRegisterEventPayload;
@@ -19,9 +24,6 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.security.oauth2.provider.OAuth2Request;
 import org.springframework.security.oauth2.provider.authentication.OAuth2AuthenticationDetails;
 import org.springframework.stereotype.Component;
-
-import java.util.Collections;
-import java.util.HashMap;
 
 /**
  * Handle saga events for setting up demo environment.
@@ -85,36 +87,14 @@ public class DemoEnvSetupSagaHandler {
     }
 
 
-    @SagaTask(code = "register-devops-init-demo-data", description = "初始化Demo环境的项目相关数据", sagaCode = "register-org", maxRetryCount = 0, seq = 150)
-    public OrganizationRegisterEventPayload initDemoProject(String payload) {
-        logInfoPayload("register-devops-init-demo-data", payload);
-        OrganizationRegisterEventPayload registerInfo = gson.fromJson(payload, OrganizationRegisterEventPayload.class);
-        beforeInvoke(registerInfo);
-        devopsDemoEnvInitService.initialDemoEnv(registerInfo);
-        afterInvoke();
-        return registerInfo;
-    }
-
-    /**
-     * log info payload
-     *
-     * @param sagaTaskCode the saga task's payload
-     * @param payload      the payload
-     */
-    private void logInfoPayload(String sagaTaskCode, String payload) {
-        LOGGER.info("saga task code: {}, payload: {}", sagaTaskCode, payload);
-    }
-
-
     /**
      * 设置Demo流程的用户上下文
      *
-     * @param registerInfo 注册信息
      */
-    private void beforeInvoke(OrganizationRegisterEventPayload registerInfo) {
-        CustomUserDetails customUserDetails = new CustomUserDetails(registerInfo.getUser().getLoginName(), "unknown", Collections.emptyList());
-        customUserDetails.setUserId(registerInfo.getUser().getId());
-        customUserDetails.setOrganizationId(registerInfo.getOrganization().getId());
+    public static void beforeInvoke(String loginName, Long userId, Long orgId) {
+        CustomUserDetails customUserDetails = new CustomUserDetails(loginName, "unknown", Collections.emptyList());
+        customUserDetails.setUserId(userId);
+        customUserDetails.setOrganizationId(orgId);
         customUserDetails.setLanguage("zh_CN");
         customUserDetails.setTimeZone("CCT");
 
@@ -128,11 +108,30 @@ public class DemoEnvSetupSagaHandler {
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
+    /**
+     * log info payload
+     *
+     * @param sagaTaskCode the saga task's payload
+     * @param payload      the payload
+     */
+    private void logInfoPayload(String sagaTaskCode, String payload) {
+        LOGGER.info("saga task code: {}, payload: {}", sagaTaskCode, payload);
+    }
 
     /**
      * 清空当前用户上下文
      */
-    private void afterInvoke() {
+    public static void afterInvoke() {
         SecurityContextHolder.clearContext();
+    }
+
+    @SagaTask(code = "register-devops-init-demo-data", description = "初始化Demo环境的项目相关数据", sagaCode = "register-org", maxRetryCount = 0, seq = 150)
+    public OrganizationRegisterEventPayload initDemoProject(String payload) {
+        logInfoPayload("register-devops-init-demo-data", payload);
+        OrganizationRegisterEventPayload registerInfo = gson.fromJson(payload, OrganizationRegisterEventPayload.class);
+        beforeInvoke(registerInfo.getUser().getLoginName(), registerInfo.getUser().getId(), registerInfo.getOrganization().getId());
+        devopsDemoEnvInitService.initialDemoEnv(registerInfo);
+        afterInvoke();
+        return registerInfo;
     }
 }

@@ -13,7 +13,10 @@ import io.choerodon.devops.domain.application.event.DevOpsUserPayload
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload
 import io.choerodon.devops.domain.application.repository.ApplicationRepository
 import io.choerodon.devops.domain.application.repository.ApplicationTemplateRepository
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository
+import io.choerodon.devops.domain.application.repository.GitlabRepository
 import org.junit.runner.RunWith
 import org.powermock.api.mockito.PowerMockito
 import org.powermock.modules.junit4.PowerMockRunner
@@ -44,10 +47,15 @@ class DevopsSagaHandlerSpec extends Specification {
     private ApplicationRepository applicationRepository = PowerMockito.mock(ApplicationRepository)
     private ApplicationTemplateRepository applicationTemplateRepository = PowerMockito.mock(ApplicationTemplateRepository)
     private DevopsEnvironmentRepository devopsEnvironmentRepository = PowerMockito.mock(DevopsEnvironmentRepository)
+    private DevopsAutoDeployRecordRepository deployRecordRepository = PowerMockito.mock(DevopsAutoDeployRecordRepository)
+    private DevopsAutoDeployRepository devopsAutoDeployRepository = PowerMockito.mock(DevopsAutoDeployRepository)
+    private GitlabRepository gitlabRepository = PowerMockito.mock(GitlabRepository)
+    private ApplicationInstanceService applicationInstanceService = PowerMockito.mock(ApplicationInstanceService)
+
 
     private DevopsSagaHandler devopsSagaHandler = new DevopsSagaHandler(devopsEnvironmentService,
             devopsGitService, applicationTemplateService, applicationService, devopsGitlabPipelineService, applicationRepository,
-            applicationTemplateRepository, devopsEnvironmentRepository)
+            applicationTemplateRepository, devopsEnvironmentRepository,deployRecordRepository,devopsAutoDeployRepository,gitlabRepository,applicationInstanceService)
 
     def "DevopsCreateEnv"() {
         given: '初始化GitlabProjectPayload'
@@ -58,7 +66,7 @@ class DevopsSagaHandlerSpec extends Specification {
         and: '构造DevopsEnvironmentE'
         DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
         devopsEnvironmentE.setFailed(true)
-        PowerMockito.when(devopsEnvironmentRepository.queryByClusterIdAndCode(anyLong(), anyString())).thenReturn(devopsEnvironmentE)
+        PowerMockito.when(devopsEnvironmentRepository.queryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
 
         when: '方法调用'
         def str = devopsSagaHandler.devopsCreateEnv(data)
@@ -77,7 +85,7 @@ class DevopsSagaHandlerSpec extends Specification {
         and: '构造DevopsEnvironmentE'
         DevopsEnvironmentE devopsEnvironmentE = new DevopsEnvironmentE()
         devopsEnvironmentE.setFailed(true)
-        PowerMockito.when(devopsEnvironmentRepository.queryByClusterIdAndCode(anyLong(), anyString())).thenReturn(devopsEnvironmentE)
+        PowerMockito.when(devopsEnvironmentRepository.queryByClusterIdAndCode(any(), any())).thenReturn(devopsEnvironmentE)
 
         when: '方法调用'
         def str = devopsSagaHandler.setEnvErr(data)
@@ -113,7 +121,7 @@ class DevopsSagaHandlerSpec extends Specification {
         and: 'mock方法调用'
         ApplicationE applicationE = new ApplicationE()
         applicationE.setFailed(true)
-        PowerMockito.when(applicationRepository.query(anyLong())).thenReturn(applicationE)
+        PowerMockito.when(applicationRepository.query(any())).thenReturn(applicationE)
         PowerMockito.when(applicationRepository.update(any(ApplicationE.class))).thenReturn(0)
 
         when: '方法调用'
@@ -153,7 +161,7 @@ class DevopsSagaHandlerSpec extends Specification {
 
         and: 'mock方法调用'
         ApplicationE applicationE = new ApplicationE()
-        PowerMockito.when(applicationRepository.query(anyLong())).thenReturn(applicationE)
+        PowerMockito.when(applicationRepository.query(any())).thenReturn(applicationE)
         PowerMockito.when(applicationRepository.update(any(ApplicationE.class))).thenReturn(0)
 
         when: '方法调用'
@@ -173,7 +181,7 @@ class DevopsSagaHandlerSpec extends Specification {
 
         and: 'mock方法调用'
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE(1L)
-        PowerMockito.when(applicationTemplateRepository.queryByCode(anyLong(), anyString())).thenReturn(applicationTemplateE)
+        PowerMockito.when(applicationTemplateRepository.queryByCode(any(), any())).thenReturn(applicationTemplateE)
 
         when: '方法调用'
         def str = devopsSagaHandler.setAppTemplateErr(data)
@@ -194,7 +202,7 @@ class DevopsSagaHandlerSpec extends Specification {
         and: 'mock方法调用'
         ApplicationTemplateE applicationTemplateE = new ApplicationTemplateE(1L)
         applicationTemplateE.setFailed(true)
-        PowerMockito.when(applicationTemplateRepository.queryByCode(anyLong(), anyString())).thenReturn(applicationTemplateE)
+        PowerMockito.when(applicationTemplateRepository.queryByCode(any(), any())).thenReturn(applicationTemplateE)
 
         when: '方法调用'
         def str = devopsSagaHandler.createTemplate(data)

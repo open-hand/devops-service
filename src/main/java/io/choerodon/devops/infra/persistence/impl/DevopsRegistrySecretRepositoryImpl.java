@@ -47,10 +47,10 @@ public class DevopsRegistrySecretRepositoryImpl implements DevopsRegistrySecretR
     }
 
     @Override
-    public DevopsRegistrySecretE queryByEnv(Long envId, Long configId) {
+    public DevopsRegistrySecretE queryByEnv(String namespace, Long configId) {
         DevopsRegistrySecretDO devopsRegistrySecretDO = new DevopsRegistrySecretDO();
         devopsRegistrySecretDO.setConfigId(configId);
-        devopsRegistrySecretDO.setEnvId(envId);
+        devopsRegistrySecretDO.setNamespace(namespace);
         return ConvertHelper.convert(devopsRegistrySecretMapper.selectOne(devopsRegistrySecretDO), DevopsRegistrySecretE.class);
     }
 

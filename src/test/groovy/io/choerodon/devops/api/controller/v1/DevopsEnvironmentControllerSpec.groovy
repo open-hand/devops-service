@@ -542,7 +542,9 @@ class DevopsEnvironmentControllerSpec extends Specification {
         devopsEnvCommitDO.setId(1L)
         devopsEnvCommitDO.setCommitSha("testCommitSha")
         devopsEnvCommitMapper.insert(devopsEnvCommitDO)
-        devopsEnvironmentMapper.updateDevopsEnvCommit(1L, 1L, 1L, 1L)
+        devopsEnvironmentMapper.updateAgentSyncEnvCommit(1L,1L)
+        devopsEnvironmentMapper.updateDevopsSyncEnvCommit(1L,1L)
+        devopsEnvironmentMapper.updateSagaSyncEnvCommit(1L,1L)
 
         when: '查询环境同步状态'
         def envSyncStatusDTO = restTemplate.getForObject("/v1/projects/1/envs/1/status", EnvSyncStatusDTO.class)

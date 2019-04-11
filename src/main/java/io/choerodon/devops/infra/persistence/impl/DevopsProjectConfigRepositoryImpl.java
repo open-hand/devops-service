@@ -78,19 +78,12 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
 
     @Override
     public Page<DevopsProjectConfigE> listByOptions(Long projectId, PageRequest pageRequest, String params) {
-        Map<String, Object> mapParams = new HashMap<>();
-        mapParams.put("searchParam", null);
-        mapParams.put("param", null);
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
 
-        if (!StringUtils.isEmpty(params)) {
-            Map maps = gson.fromJson(params, Map.class);
-            mapParams.put("searchParam", TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
-            mapParams.put("param", TypeUtil.cast(maps.get(TypeUtil.PARAM)));
-        }
         Page<DevopsProjectConfigDO> configDOPage = PageHelper
                 .doPageAndSort(pageRequest, () -> configMapper.list(projectId,
-                        (Map<String, Object>) mapParams.get("searchParam"),
-                        (String) mapParams.get("param"), checkSortIsEmpty(pageRequest)));
+                        (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
+                        (String) mapParams.get(TypeUtil.PARAM), checkSortIsEmpty(pageRequest)));
         return ConvertPageHelper.convertPage(configDOPage, DevopsProjectConfigE.class);
     }
 
@@ -124,5 +117,10 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
         if (configMapper.selectOne(projectConfigDO) != null) {
             throw new CommonException("error.devops.project.config.name.with.projectId.already.exist");
         }
+    }
+
+    @Override
+    public Boolean checkIsUsed(Long checkIsUsed) {
+        return configMapper.checkIsUsed(checkIsUsed).isEmpty();
     }
 }

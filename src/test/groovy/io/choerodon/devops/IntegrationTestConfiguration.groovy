@@ -3,12 +3,15 @@ package io.choerodon.devops
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.oauth.CustomUserDetails
+import io.choerodon.devops.app.service.ProjectConfigHarborService
 import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.common.util.GitUtil
 import io.choerodon.liquibase.LiquibaseConfig
 import io.choerodon.liquibase.LiquibaseExecutor
 import io.choerodon.websocket.helper.CommandSender
 import io.choerodon.websocket.helper.EnvListener
+import io.choerodon.websocket.process.SocketMsgDispatcher
+import org.apache.http.client.config.RequestConfig
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.TestConfiguration
@@ -40,7 +43,7 @@ import java.sql.Statement
  */
 @TestConfiguration
 @Import(LiquibaseConfig)
-@Order(1)
+@Order(2)
 @TestPropertySource("classpath:application-test.yml")
 class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
 
@@ -67,6 +70,12 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     final ObjectMapper objectMapper = new ObjectMapper()
 
     @Primary
+    @Bean("mockSocketMsgDispatcher")
+    SocketMsgDispatcher socketMsgDispatcher() {
+        detachedMockFactory.Mock(SocketMsgDispatcher)
+    }
+
+    @Primary
     @Bean("mockEnvUtil")
     EnvUtil envUtil() {
         detachedMockFactory.Mock(EnvUtil)
@@ -88,6 +97,12 @@ class IntegrationTestConfiguration extends WebSecurityConfigurerAdapter {
     @Primary
     CommandSender commandSender() {
         detachedMockFactory.Mock(CommandSender)
+    }
+
+    @Bean("mockProjectConfigHarborService")
+    @Primary
+    ProjectConfigHarborService ProjectConfigHarborService() {
+        detachedMockFactory.Mock(ProjectConfigHarborService)
     }
 
     @PostConstruct

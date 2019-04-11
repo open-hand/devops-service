@@ -2,7 +2,6 @@ package io.choerodon.devops.app.service.impl
 
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
-import io.choerodon.devops.api.dto.RegisterOrganizationDTO
 import io.choerodon.devops.domain.application.event.GitlabUserEvent
 import io.choerodon.devops.domain.application.event.OrganizationEventPayload
 import io.choerodon.devops.domain.application.repository.GitlabRepository
@@ -22,7 +21,7 @@ import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
-import static org.mockito.Matchers.*
+import static org.mockito.ArgumentMatchers.*
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -79,21 +78,6 @@ class OrganizationServiceImplSpec extends Specification {
         noExceptionThrown()
     }
 
-    def "RegisterOrganization"() {
-        given: '初始化RegisterOrganizationDTO'
-        RegisterOrganizationDTO registerOrganizationDTO = new RegisterOrganizationDTO()
-        registerOrganizationDTO.setUserId(2L)
-        registerOrganizationDTO.setLoginName("loginName")
-        registerOrganizationDTO.setEmail("email")
-        registerOrganizationDTO.setRealName("realName")
-        registerOrganizationDTO.setOrganizationCode("org")
-
-        when: '调用方法'
-        organizationService.registerOrganization(registerOrganizationDTO)
-
-        then: '无返回值'
-        noExceptionThrown()
-    }
 
     def "CleanupData"() {
         given:

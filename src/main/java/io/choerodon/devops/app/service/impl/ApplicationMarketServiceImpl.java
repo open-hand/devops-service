@@ -48,6 +48,7 @@ import retrofit2.Retrofit;
 @Service
 public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private static final String CHARTS = "charts";
+    private static final String CHART = "chart";
     private static final String ORGANIZATION = "organization";
     private static final String PUBLIC = "public";
     private static final String IMAGES = "images";
@@ -509,7 +510,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
             images.add(applicationVersionE.getImage());
 
             ConfigurationProperties configurationProperties = new ConfigurationProperties();
-            configurationProperties.setType("chart");
+            configurationProperties.setType(CHART);
             configurationProperties.setBaseUrl(applicationVersionE.getRepository().split(organization.getCode())[0]);
             Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
             ChartClient chartClient = retrofit.create(ChartClient.class);
@@ -521,13 +522,15 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                         FILE_SEPARATOR,
                         applicationE.getCode(),
                         applicationVersionE.getVersion()))) {
-                    InputStream is = response.body().byteStream();
-                    byte[] buffer = new byte[4096];
-                    int r = 0;
-                    while ((r = is.read(buffer)) > 0) {
-                        fos.write(buffer, 0, r);
+                    if(response.body()!=null) {
+                        InputStream is = response.body().byteStream();
+                        byte[] buffer = new byte[4096];
+                        int r = 0;
+                        while ((r = is.read(buffer)) > 0) {
+                            fos.write(buffer, 0, r);
+                        }
+                        is.close();
                     }
-                    is.close();
                 }
             } catch (IOException e) {
                 throw new CommonException(e.getMessage(), e);
@@ -572,6 +575,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                 appVersion.getVersion()
         );
         applicationVersionE.setImage(image);
+        helmUrl = helmUrl.endsWith("/") ? helmUrl : helmUrl + "/";
         applicationVersionE.setRepository(String.format("%s%s%s%s%s",
                 helmUrl,
                 organizationCode,
@@ -633,12 +637,12 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
     private void uploadChart(String organizationCode, String projectCode, List<File> tgzVersions) {
         ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setType("chart");
+        configurationProperties.setType(CHART);
         configurationProperties.setBaseUrl(helmUrl);
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         File file = new File(tgzVersions.get(0).getAbsolutePath());
         RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData("chart", file.getName(), requestFile);
+        MultipartBody.Part body = MultipartBody.Part.createFormData(CHART, file.getName(), requestFile);
         ChartClient chartClient = retrofit.create(ChartClient.class);
         Call<Object> uploadTaz = chartClient.uploadTaz(organizationCode, projectCode, body);
         try {

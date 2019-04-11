@@ -30,6 +30,7 @@ import springfox.documentation.annotations.ApiIgnore;
 public class ApplicationController {
 
     private ApplicationService applicationService;
+    private static final String ERROR_APPLICATION_GET = "error.application.get";
 
     public ApplicationController(ApplicationService applicationService) {
         this.applicationService = applicationService;
@@ -259,7 +260,7 @@ public class ApplicationController {
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(applicationService.listByActive(projectId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
     /**
@@ -330,7 +331,7 @@ public class ApplicationController {
             @RequestParam String code) {
         return Optional.ofNullable(applicationService.queryByCode(projectId, code))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
     /**
@@ -373,7 +374,7 @@ public class ApplicationController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(applicationService.listByActiveAndPubAndVersion(projectId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.application.get"));
+                .orElseThrow(() -> new CommonException(ERROR_APPLICATION_GET));
     }
 
     /**

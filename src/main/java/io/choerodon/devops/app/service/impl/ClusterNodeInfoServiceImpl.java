@@ -3,18 +3,20 @@ package io.choerodon.devops.app.service.impl;
 import com.alibaba.fastjson.JSONObject;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.domain.PageInfo;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.AgentNodeInfoDTO;
 import io.choerodon.devops.api.dto.ClusterNodeInfoDTO;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
+import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterRepository;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -45,7 +47,12 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
 
     @Override
     public String getRedisClusterKey(Long clusterId) {
-        return getRedisClusterKey(clusterId, devopsClusterRepository.query(clusterId).getOrganizationId());
+        DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
+        if (devopsClusterE != null) {
+            return getRedisClusterKey(clusterId, devopsClusterE.getOrganizationId());
+        } else {
+            throw new CommonException("error.get.organization.id");
+        }
     }
 
     @Override

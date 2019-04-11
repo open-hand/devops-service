@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.eventhandler;
 
+import java.util.List;
+
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsClusterE;
 import io.choerodon.devops.domain.application.repository.DevopsClusterProPermissionRepository;
@@ -17,13 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 @Component
 public class AgentInitConfig implements AgentConfigurer {
 
-    @Autowired
-    CommandSender commandSender;
     @Autowired
     DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired

@@ -10,9 +10,6 @@ spring:
      charset: UTF-8
      force: true
      enabled: true
-    multipart:
-     max-file-size: 30MB
-     max-request-size: 30MB
 services:
   harbor:
     baseUrl: "harbor.example.com"
@@ -61,10 +58,6 @@ eureka:
     serviceUrl:
       defaultZone: http://localhost:8000/eureka/
     registryFetchIntervalSeconds: 1
-security:
-  basic:
-      enabled: false
-  ignored: /ci,/webhook/**,/v2/api-docs,/agent/**,/ws/**,/gitlab/email
 mybatis:
   mapperLocations: classpath*:/mapper/*.xml
   configuration:

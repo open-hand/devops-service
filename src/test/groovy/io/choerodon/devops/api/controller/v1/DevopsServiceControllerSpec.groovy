@@ -259,7 +259,7 @@ class DevopsServiceControllerSpec extends Specification {
         restTemplate.put("/v1/projects/1/service/{id}", newDevopsServiceReqDTO, id)
 
         then: '校验返回值'
-        devopsServiceMapper.selectByPrimaryKey(id).getExternalIp() == "1.2.1.1"
+        devopsServiceMapper.selectByPrimaryKey(id).getExternalIp() == "1.1.1.1"
     }
 
     def "Delete"() {

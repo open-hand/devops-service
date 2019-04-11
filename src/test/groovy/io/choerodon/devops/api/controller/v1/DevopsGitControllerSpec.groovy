@@ -6,16 +6,20 @@ import io.choerodon.core.exception.ExceptionResponse
 import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsBranchDTO
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
+import io.choerodon.devops.api.dto.iam.RoleDTO
 import io.choerodon.devops.domain.application.entity.UserAttrE
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE
 import io.choerodon.devops.domain.application.entity.iam.UserE
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Issue
+import io.choerodon.devops.infra.common.util.enums.AccessLevel
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.DevopsBranchDO
 import io.choerodon.devops.infra.dataobject.DevopsMergeRequestDO
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO
 import io.choerodon.devops.infra.dataobject.gitlab.CommitDO
+import io.choerodon.devops.infra.dataobject.gitlab.MemberDO
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO
 import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
 import io.choerodon.devops.infra.dataobject.iam.ProjectDO
@@ -121,7 +125,7 @@ class DevopsGitControllerSpec extends Specification {
         page.setTotalElements(5)
         page.setContent(userDOList)
         ResponseEntity<Page<UserDO>> responseEntityPage = new ResponseEntity<>(page, HttpStatus.OK)
-        Mockito.when(iamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), anyString())).thenReturn(responseEntityPage)
+        Mockito.when(iamServiceClient.listUsersByEmail(anyLong(), anyInt(), anyInt(), isNull())).thenReturn(responseEntityPage)
 
         TagDO tagDO = new TagDO()
         tagDO.setName("testTag")
@@ -205,6 +209,12 @@ class DevopsGitControllerSpec extends Specification {
         tagDOS.add(tagDO)
         ResponseEntity<List<TagDO>> tagResponseEntity = new ResponseEntity<>(tagDOS, HttpStatus.OK)
         Mockito.doReturn(tagResponseEntity).when(gitlabServiceClient).getTags(1, 1)
+
+        and: '数据准备'
+        MemberDO memberDO = new MemberDO()
+        memberDO.setAccessLevel(AccessLevel.OWNER)
+        ResponseEntity<MemberDO> responseEntity2 = new ResponseEntity<>(memberDO, HttpStatus.OK)
+        Mockito.when(gitlabServiceClient.getProjectMember(anyInt(), anyInt())).thenReturn(responseEntity2)
 
         when: '获取标签分页列表'
         def page = restTemplate.postForObject("/v1/projects/1/apps/1/git/tags_list_options?page=0&size=10", null, Page.class)
@@ -315,6 +325,22 @@ class DevopsGitControllerSpec extends Specification {
         userE.setImageUrl("test")
         agileRepository.initAgileServiceClient(agileServiceClient)
         Mockito.when(agileServiceClient.queryIssue(anyLong(), anyLong(), anyLong())).thenReturn(issueResponseEntity)
+
+        and: '准备数据'
+        List<RoleDTO> roleDTOList = new ArrayList<>()
+        RoleDTO roleDTO = new RoleDTO()
+        roleDTO.setCode("role/project/default/project-owner")
+        roleDTOList.add(roleDTO)
+        List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
+        ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+        projectWithRoleDTO.setName("pro")
+        projectWithRoleDTO.setRoles(roleDTOList)
+        projectWithRoleDTOList.add(projectWithRoleDTO)
+        Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
+        projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
+        projectWithRoleDTOPage.setTotalPages(2)
+        ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+        Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
 
         when: '获取工程下所有分支名'
         def branches = restTemplate.postForObject("/v1/projects/1/apps/1/git/branches?page=0&size=10", null, Page.class)

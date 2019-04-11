@@ -18,6 +18,7 @@ import io.choerodon.devops.app.service.ApplicationService
 import io.choerodon.devops.app.service.DevopsGitService
 import io.choerodon.devops.domain.application.entity.ProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
+import io.choerodon.devops.domain.application.event.IamAppPayLoad
 import io.choerodon.devops.domain.application.repository.*
 import io.choerodon.devops.domain.application.valueobject.Organization
 import io.choerodon.devops.infra.common.util.enums.AccessLevel
@@ -121,6 +122,10 @@ class ApplicationControllerSpec extends Specification {
     private boolean isToInit = true
     @Shared
     private boolean isToClean = false
+    @Shared
+    Long harborConfigId = 1L
+    @Shared
+    Long chartConfigId = 2L
 
     def setupSpec() {
         given:
@@ -229,6 +234,8 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setProjectId(project_id)
         applicationDTO.setApplicationTemplateId(init_id)
         applicationDTO.setIsSkipCheckPermission(true)
+        applicationDTO.setHarborConfigId(harborConfigId)
+        applicationDTO.setChartConfigId(chartConfigId)
         List<Long> userList = new ArrayList<>()
         userList.add(2L)
         applicationDTO.setUserIds(userList)
@@ -239,6 +246,13 @@ class ApplicationControllerSpec extends Specification {
         memberDO.setAccessLevel(AccessLevel.OWNER)
         ResponseEntity<MemberDO> memberDOResponseEntity = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(memberDOResponseEntity)
+
+        and: 'mock iam创建用户'
+        IamAppPayLoad iamAppPayLoad =new IamAppPayLoad()
+        iamAppPayLoad.setProjectId(init_id)
+        iamAppPayLoad.setOrganizationId(init_id)
+        ResponseEntity<IamAppPayLoad> iamAppPayLoadResponseEntity = new ResponseEntity<>(iamAppPayLoad, HttpStatus.OK)
+        Mockito.when(iamServiceClient.createIamApplication(anyLong(), any(IamAppPayLoad))).thenReturn(iamAppPayLoadResponseEntity)
 
         and: 'mock启动sagaClient'
         Mockito.doReturn(new SagaInstanceDTO()).when(sagaClient).startSaga(anyString(), any(StartInstanceDTO))
@@ -582,6 +596,8 @@ class ApplicationControllerSpec extends Specification {
         applicationDTO.setIsSkipCheckPermission(true)
         applicationDTO.setRepositoryUrl("https://github.com/choerodon/choerodon-microservice-template.git")
         applicationDTO.setPlatformType("github")
+        applicationDTO.setHarborConfigId(harborConfigId)
+        applicationDTO.setChartConfigId(chartConfigId)
 
         def searchCondition = new ApplicationDO()
         searchCondition.setCode(applicationDTO.getCode())

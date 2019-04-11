@@ -1,6 +1,5 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import com.google.gson.Gson;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -12,11 +11,9 @@ import io.choerodon.devops.infra.dataobject.DevopsAutoDeployRecordDO;
 import io.choerodon.devops.infra.mapper.DevopsAutoDeployRecordMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -26,25 +23,19 @@ import java.util.Map;
  */
 @Component
 public class DevopsAutoDeployRecorlRepositoryImpl implements DevopsAutoDeployRecordRepository {
-    private Gson gson = new Gson();
 
     @Autowired
     private DevopsAutoDeployRecordMapper devopsAutoDeployRecordMapper;
 
     @Override
-    public Page<DevopsAutoDeployRecordE> listByOptions(Long projectId, Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
-        Map<String, Object> mapParams = new HashMap<>();
-        mapParams.put("searchParam", null);
-        mapParams.put("param", null);
-        if (!StringUtils.isEmpty(params)) {
-            Map maps = gson.fromJson(params, Map.class);
-            mapParams.put("searchParam", TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM)));
-            mapParams.put("param", TypeUtil.cast(maps.get(TypeUtil.PARAM)));
-        }
+    public Page<DevopsAutoDeployRecordE> listByOptions(Long projectId, Long userId,Long appId, Long envId, String taskName, Boolean doPage, PageRequest pageRequest, String params) {
+        Map<String, Object> mapParams = TypeUtil.castMapParams(params);
+
         Page<DevopsAutoDeployRecordDO> devopsAutoDeployRecordDOS = PageHelper
-                .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId, appId, envId, taskName,
-                        (Map<String, Object>) mapParams.get("searchParam"),
-                        mapParams.get("param").toString()));
+                .doPageAndSort(pageRequest, () -> devopsAutoDeployRecordMapper.list(projectId,userId, appId, envId, taskName,
+                        (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
+                        mapParams.get(TypeUtil.PARAM).toString()));
+
         return ConvertPageHelper.convertPage(devopsAutoDeployRecordDOS, DevopsAutoDeployRecordE.class);
     }
 

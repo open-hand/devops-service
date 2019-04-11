@@ -259,7 +259,8 @@ public class DevopsGitRepositoryImpl implements DevopsGitRepository {
         Integer index = 0;
         if (!StringUtils.isEmpty(params)) {
             Map<String, Object> maps = json.deserialize(params, Map.class);
-            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM)).toString();
+            String param = TypeUtil.cast(maps.get(TypeUtil.PARAM));
+            param = param == null ? "" : param;
             if (!param.equals("")) {
                 if (tagDO.getName().contains(param) || tagDO.getCommit().getShortId().contains(param)
                         || tagDO.getCommit().getCommitterName().contains(param)

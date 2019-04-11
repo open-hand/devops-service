@@ -369,6 +369,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
     @Override
     @Saga(code = "devops-sync-gitops", description = "devops同步gitops库相关操作", inputSchemaClass = PushWebHookDTO.class)
     public void fileResourceSyncSaga(PushWebHookDTO pushWebHookDTO, String token) {
+        LOGGER.info(String.format("````````````````````````````` %s", pushWebHookDTO.getCheckoutSha()));
         pushWebHookDTO.setToken(token);
         String input;
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryByToken(pushWebHookDTO.getToken());
@@ -386,7 +387,8 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         DevopsEnvCommitE devopsEnvCommitE = devopsEnvCommitRepository
                 .queryByEnvIdAndCommit(devopsEnvironmentE.getId(), pushWebHookDTO.getCheckoutSha());
         devopsEnvironmentE.setSagaSyncCommit(devopsEnvCommitE.getId());
-        devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+        devopsEnvironmentRepository.updateSagaSyncEnvCommit(devopsEnvironmentE);
+        LOGGER.info(String.format("update devopsCommit successfully: %s", pushWebHookDTO.getCheckoutSha()));
         try {
             input = objectMapper.writeValueAsString(pushWebHookDTO);
             sagaClient.startSaga("devops-sync-gitops",
@@ -435,7 +437,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
         try {
             //更新本地库到最新提交
             handDevopsEnvGitRepository(path, url, devopsEnvironmentE.getEnvIdRsa(), devopsEnvCommitE.getCommitSha());
-
+            LOGGER.info("更新gitops库成功");
             //查询devops-sync tag是否存在，存在则比较tag和最新commit的diff，不存在则识别gitops库下所有文件为新增文件
             tagNotExist = getDevopsSyncTag(pushWebHookDTO);
 
@@ -464,6 +466,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
                     v1ConfigMaps, c7nSecrets, v1Endpoints, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
                     c7nCertifications);
+            LOGGER.info("序列化k8s对象成功！");
             List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
             //将k8s对象初始化为实例，网络，域名，证书，秘钥对象,处理对象文件关系
             handlerC7nReleaseRelationsService
@@ -481,7 +484,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                     .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, null, envId, projectId, path, userId);
             handlerC7nSecretRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, c7nSecrets, null, envId, projectId, path, userId);
-
+            LOGGER.info("k8s对象转换平台对象成功！");
             //处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
 
@@ -490,9 +493,10 @@ public class DevopsGitServiceImpl implements DevopsGitService {
 
             devopsEnvironmentE.setDevopsSyncCommit(devopsEnvCommitE.getId());
             //更新环境 解释commit
-            devopsEnvironmentRepository.updateEnvCommit(devopsEnvironmentE);
+            devopsEnvironmentRepository.updateDevopsSyncEnvCommit(devopsEnvironmentE);
             //向agent发送同步指令
             deployService.sendCommand(devopsEnvironmentE);
+            LOGGER.info("发送gitops同步成功指令成功");
         } catch (CommonException e) {
             String filePath = "";
             String errorCode = "";

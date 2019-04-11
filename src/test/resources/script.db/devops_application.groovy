@@ -72,4 +72,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_application.groovy') {
         // remarks: '为之前的is_skip_check_permission字段设置默认值'
         sql("UPDATE devops_application da SET da.is_skip_check_permission = FALSE WHERE da.is_skip_check_permission IS NULL")
     }
+
+    changeSet(author: '10980', id: '2019-3-13-add-column') {
+        addColumn(tableName: 'devops_application') {
+            column(name: 'harbor_config_id', type: 'BIGINT UNSIGNED', remarks: 'harbor配置信息', afterColumn: 'app_template_id')
+            column(name: 'chart_config_id', type: 'BIGINT UNSIGNED', remarks: 'chart配置信息', afterColumn: 'harbor_config_id')
+        }
+    }
 }

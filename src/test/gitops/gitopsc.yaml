@@ -48,7 +48,7 @@ apiVersion: v1
 kind: Service
 metadata:
   annotations:
-    choerodon.io/network-service-instances: instest1
+    choerodon.io/network-service-instances: insgitopsc
   labels:
     choerodon.io/network: service
   name: svcgitopsc
@@ -76,7 +76,7 @@ spec:
       http:
         paths:
           - backend:
-              serviceName: svctest1
+              serviceName: svcgitopsc
               servicePort: 8060
             path: /
 

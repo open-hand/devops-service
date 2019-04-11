@@ -1,5 +1,8 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.List;
+import java.util.Optional;
+
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
@@ -16,9 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import java.util.List;
-import java.util.Optional;
 
 /**
  * @author zongw.lee@gmail.com
@@ -60,12 +60,13 @@ public class DevopsProjectConfigController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建配置校验名称是否存在")
     @GetMapping(value = "/check_name")
-    public void checkName(
+    public ResponseEntity checkName(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "配置名", required = true)
             @RequestParam String name) {
         devopsProjectConfigService.checkName(projectId, name);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     /**
@@ -173,5 +174,26 @@ public class DevopsProjectConfigController {
                 devopsProjectConfigService.queryByIdAndType(projectId, type))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.get.type"));
+    }
+
+    /**
+     * 根据配置id查询，该配置是否被使用
+     *
+     * @param projectId 项目id
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "根据配置Id检测该配置是否被使用")
+    @CustomPageRequest
+    @GetMapping("/{project_config_id}/check")
+    public ResponseEntity<Boolean> checkIsUsed(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "配置Id", required = true)
+            @PathVariable(value = "project_config_id") Long configId) {
+        return Optional.ofNullable(
+                devopsProjectConfigService.checkIsUsed(configId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.project.config.check.is.used"));
     }
 }

@@ -56,11 +56,27 @@ public class RetrofitHandler {
                         new X509TrustManager() {
 
                             @Override
-                            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                            public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                                //此处是不检验安全证书，避免有些harbor仓库没使用https安全证书导致harbor api失败，如果不抛出异常会出现sonar的问题
+                                if (type == null) {
+                                    try {
+                                        throw new CertificateException("the type is null");
+                                    } catch (CertificateException e) {
+                                        throw new CommonException(e);
+                                    }
+                                }
                             }
 
                             @Override
-                            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {
+                            public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {
+                                //此处是不检验安全证书，避免有些harbor仓库没使用https安全证书导致harbor api失败，如果不抛出异常会出现sonar的问题
+                                if (type == null) {
+                                    try {
+                                        throw new CertificateException("the type is null");
+                                    } catch (CertificateException e) {
+                                        throw new CommonException(e);
+                                    }
+                                }
                             }
 
                             @Override

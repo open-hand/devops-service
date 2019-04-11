@@ -122,9 +122,6 @@ class DevopsSecretControllerSpec extends Specification {
         ResponseEntity<MemberDO> responseEntity1 = new ResponseEntity<>(memberDO, HttpStatus.OK)
         Mockito.when(gitlabServiceClient.getUserMemberByUserId(anyInt(), anyInt())).thenReturn(responseEntity1)
 
-        String path = "gitops/testSecret"
-        Mockito.when(devopsEnvironmentService.handDevopsEnvGitRepository(any(DevopsEnvironmentE.class))).thenReturn(path)
-
         RepositoryFile file = new RepositoryFile()
         file.setFilePath("filePath")
         ResponseEntity<RepositoryFile> responseEntity2 = new ResponseEntity<>(file, HttpStatus.OK)

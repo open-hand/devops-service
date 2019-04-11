@@ -3,27 +3,43 @@ package io.choerodon.devops.api.controller.v1
 import io.choerodon.core.domain.Page
 import io.choerodon.core.exception.CommonException
 import io.choerodon.core.exception.ExceptionResponse
+import io.choerodon.devops.DependencyInjectUtil
 import io.choerodon.devops.IntegrationTestConfiguration
 import io.choerodon.devops.api.dto.DevopsAutoDeployDTO
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO
+import io.choerodon.devops.api.dto.iam.RoleDTO
+import io.choerodon.devops.domain.application.repository.IamRepository
+import io.choerodon.devops.infra.common.util.EnvUtil
 import io.choerodon.devops.infra.dataobject.ApplicationDO
 import io.choerodon.devops.infra.dataobject.DevopsAutoDeployDO
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO
+import io.choerodon.devops.infra.dataobject.iam.OrganizationDO
+import io.choerodon.devops.infra.dataobject.iam.ProjectDO
+import io.choerodon.devops.infra.feign.IamServiceClient
 import io.choerodon.devops.infra.mapper.ApplicationMapper
 import io.choerodon.devops.infra.mapper.DevopsAutoDeployMapper
 import io.choerodon.devops.infra.mapper.DevopsAutoDeployRecordMapper
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper
+import io.choerodon.websocket.helper.EnvListener
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
+import org.springframework.http.ResponseEntity
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Stepwise
 import spock.lang.Subject
 
+import static org.mockito.ArgumentMatchers.anyInt
+import static org.mockito.ArgumentMatchers.anyInt
+import static org.mockito.ArgumentMatchers.anyLong
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT
 
 /**
@@ -38,6 +54,9 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 class DevopsAutoDeployControllerSpec extends Specification {
     private static final String MAPPING = "/v1/{project_id}/auto_deploy"
 
+
+    IamServiceClient iamServiceClient = Mockito.mock(IamServiceClient.class)
+
     @Autowired
     private TestRestTemplate restTemplate
     @Autowired
@@ -48,7 +67,13 @@ class DevopsAutoDeployControllerSpec extends Specification {
     private DevopsAutoDeployRecordMapper devopsAutoDeployRecordMapper
     @Autowired
     private DevopsEnvironmentMapper devopsEnvironmentMapper
-
+    @Autowired
+    private IamRepository iamRepository
+    @Autowired
+    @Qualifier("mockEnvUtil")
+    private EnvUtil envUtil
+    @Shared
+    private boolean isToInit = true
     @Shared
     Long project_id = 1L
     @Shared
@@ -60,13 +85,48 @@ class DevopsAutoDeployControllerSpec extends Specification {
     @Shared
     private boolean isToClean = false
 
+
+
+    def setup() {
+
+        if (isToInit) {
+            DependencyInjectUtil.setAttribute(iamRepository, "iamServiceClient", iamServiceClient)
+
+            ProjectDO projectDO = new ProjectDO()
+            projectDO.setName("pro")
+            projectDO.setOrganizationId(1L)
+            ResponseEntity<ProjectDO> responseEntity = new ResponseEntity<>(projectDO, HttpStatus.OK)
+            Mockito.doReturn(responseEntity).when(iamServiceClient).queryIamProject(1L)
+
+
+            List<RoleDTO> roleDTOList = new ArrayList<>()
+            RoleDTO roleDTO = new RoleDTO()
+            roleDTO.setCode("role/project/default/project-owner")
+            roleDTOList.add(roleDTO)
+            List<ProjectWithRoleDTO> projectWithRoleDTOList = new ArrayList<>()
+            ProjectWithRoleDTO projectWithRoleDTO = new ProjectWithRoleDTO()
+            projectWithRoleDTO.setName("pro")
+            projectWithRoleDTO.setRoles(roleDTOList)
+            projectWithRoleDTOList.add(projectWithRoleDTO)
+            Page<ProjectWithRoleDTO> projectWithRoleDTOPage = new Page<>()
+            projectWithRoleDTOPage.setContent(projectWithRoleDTOList)
+            projectWithRoleDTOPage.setTotalPages(2)
+            ResponseEntity<Page<ProjectWithRoleDTO>> pageResponseEntity = new ResponseEntity<>(projectWithRoleDTOPage, HttpStatus.OK)
+            Mockito.doReturn(pageResponseEntity).when(iamServiceClient).listProjectWithRole(anyLong(), anyInt(), anyInt())
+            isToInit = false
+        }
+    }
+
     def setupSpec() {
+
         //app
         applicationDO.setId(1L)
         applicationDO.setProjectId(1L)
         applicationDO.setName("appName")
         applicationDO.setCode("appCode")
         applicationDO.setGitlabProjectId(1)
+        applicationDO.setHarborConfigId(1L)
+        applicationDO.setChartConfigId(2L)
         //env
         devopsEnvironmentDO.setId(1L)
         devopsEnvironmentDO.setClusterId(1L)
@@ -153,8 +213,16 @@ class DevopsAutoDeployControllerSpec extends Specification {
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
         HttpEntity<String> searchParam = new HttpEntity<String>(infra, headers)
 
+        and: '数据准备'
+        List<Long> connectedEnvList = new ArrayList<>()
+        connectedEnvList.add(1L)
+        List<Long> updateEnvList = new ArrayList<>()
+        updateEnvList.add(1L)
+        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
+        envUtil.getUpdatedEnvList(_ as EnvListener) >> updateEnvList
+
         when: '分页查询应用部署'
-        def page = restTemplate.postForObject(MAPPING + "/list_by_options?envId=1&appId=1", searchParam, Page.class, 1L)
+        def page = restTemplate.postForObject(MAPPING + "/list_by_options?user_id=1&env_id=1&app_id=1", searchParam, Page.class, 1L)
 
         then: '返回值'
         page.size() == 1
@@ -165,7 +233,7 @@ class DevopsAutoDeployControllerSpec extends Specification {
 
     def "queryByProjectId"() {
         when: '分页查询应用部署'
-        def list = restTemplate.getForObject(MAPPING + "/list", List.class, 1L)
+        def list = restTemplate.getForObject(MAPPING + "/list?user_id=1", List.class, 1L)
 
         then: '返回值'
         list.size() == 1
@@ -189,8 +257,16 @@ class DevopsAutoDeployControllerSpec extends Specification {
         headers.setContentType(MediaType.valueOf("application/jsonUTF-8"))
         HttpEntity<String> searchParam = new HttpEntity<String>(infra, headers)
 
+        and: '数据准备'
+        List<Long> connectedEnvList = new ArrayList<>()
+        connectedEnvList.add(1L)
+        List<Long> updateEnvList = new ArrayList<>()
+        updateEnvList.add(1L)
+        envUtil.getConnectedEnvList(_ as EnvListener) >> connectedEnvList
+        envUtil.getUpdatedEnvList(_ as EnvListener) >> updateEnvList
+
         when: '分页查询应用部署'
-        def page = restTemplate.postForObject(MAPPING + "/list_record_options?envId=1&appId=1&task_name=task3", searchParam, Page.class, 1L)
+        def page = restTemplate.postForObject(MAPPING + "/list_record_options?user_id=1&env_id=1&app_id=1&task_name=task3", searchParam, Page.class, 1L)
 
         then: '返回值'
         page.size() == 0

@@ -30,4 +30,6 @@ public interface DevopsProjectConfigService {
      * @param name      配置name
      */
     void checkName(Long projectId, String name);
+
+    Boolean checkIsUsed(Long configId);
 }

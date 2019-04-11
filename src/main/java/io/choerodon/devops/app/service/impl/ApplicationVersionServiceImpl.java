@@ -43,6 +43,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private static final String STATUS_RUN = "running";
     private static final String STATUS_FAILED = "failed";
     private static final String DESTPATH = "devops";
+    private static final String STOREPATH = "stores";
     private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
@@ -110,17 +111,14 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             DevopsProjectConfigE devopsProjectConfigE = devopsProjectConfigRepository.queryByPrimaryKey(applicationE.getChartConfigE().getId());
             helmUrl = devopsProjectConfigE.getConfig().getUrl();
         }
-        applicationVersionE.setRepository(helmUrl + organization.getCode() + "/" + projectE.getCode() + "/");
-        String classPath = String.format("Charts%s%s%s%s",
-                System.getProperty("file.separator"),
-                organization.getCode(),
-                System.getProperty("file.separator"),
-                projectE.getCode());
-        String path = FileUtil.multipartFileToFile(classPath, files);
+
+        applicationVersionE.setRepository(helmUrl.endsWith("/") ? helmUrl : helmUrl + "/" + organization.getCode() + "/" + projectE.getCode() + "/");
+        String storeFilePath = STOREPATH + version;
         if (newApplicationVersionE != null) {
             return;
         }
         String destFilePath = DESTPATH + version;
+        String path = FileUtil.multipartFileToFile(storeFilePath, files);
         FileUtil.unTarGZ(path, destFilePath);
         String values;
         try (FileInputStream fis = new FileInputStream(new File(Objects.requireNonNull(FileUtil.queryFileFromFiles(
@@ -145,6 +143,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
         applicationVersionE = applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
+        FileUtil.deleteDirectory(new File(storeFilePath));
         triggerAutoDelpoy(applicationVersionE);
     }
 
@@ -173,7 +172,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(),
                     devopsAutoDeployE.getInstanceName(), devopsAutoDeployRecordE.getId(), devopsAutoDeployE.getId());
             String input = gson.toJson(applicationDeployDTO);
-            sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "", "", ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
+            sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "env", devopsAutoDeployE.getEnvId().toString(), ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
         } catch (Exception e) {
             devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
             devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);

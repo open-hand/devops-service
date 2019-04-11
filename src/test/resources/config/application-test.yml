@@ -8,7 +8,13 @@ spring:
 #      password: root
 #      url: jdbc:mysql://172.17.0.2:3306/devops_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
   autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration,org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+    exclude:
+    - org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
+    - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
+    - org.springframework.cloud.client.discovery.simple.SimpleDiscoveryClientAutoConfiguration
+    - org.springframework.cloud.client.discovery.composite.CompositeDiscoveryClientAutoConfiguration
+    - org.springframework.cloud.client.discovery.noop.NoopDiscoveryClientAutoConfiguration
+    - io.choerodon.websocket.SocketHelperAutoConfiguration
   h2:
     console:
       enabled: true
@@ -31,6 +37,7 @@ services:
     url: "http://helm-charts.staging.saas.hand-china.com"
   gitlab:
     sshUrl: "git.vk.vu:2289"
+    url: "http://git.alpha.saas.hand-china.com"
 choerodon:
   event:
     consumer:

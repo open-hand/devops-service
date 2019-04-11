@@ -2,14 +2,13 @@ package io.choerodon.devops.infra.persistence.impl;
 
 import java.util.List;
 
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.dataobject.DevopsEnvironmentDO;
 import io.choerodon.devops.infra.mapper.DevopsEnvironmentMapper;
+import org.springframework.stereotype.Service;
 
 /**
  * Created by younger on 2018/4/9.
@@ -68,6 +67,7 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     public void checkCode(DevopsEnvironmentE devopsEnvironmentE) {
         DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
         devopsEnvironmentDO.setClusterId(devopsEnvironmentE.getClusterE().getId());
+        devopsEnvironmentDO.setProjectId(devopsEnvironmentE.getProjectE().getId());
         devopsEnvironmentDO.setCode(devopsEnvironmentE.getCode());
         if (!devopsEnvironmentMapper.select(devopsEnvironmentDO).isEmpty()) {
             throw new CommonException("error.code.exist");
@@ -110,11 +110,23 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     }
 
     @Override
-    public void updateEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
-        devopsEnvironmentMapper.updateDevopsEnvCommit(devopsEnvironmentE.getId(),
-                devopsEnvironmentE.getSagaSyncCommit(), devopsEnvironmentE.getDevopsSyncCommit(),
+    public void updateSagaSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateSagaSyncEnvCommit(devopsEnvironmentE.getId(),
+                devopsEnvironmentE.getSagaSyncCommit());
+    }
+
+    @Override
+    public void updateDevopsSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateDevopsSyncEnvCommit(devopsEnvironmentE.getId(),
+                devopsEnvironmentE.getDevopsSyncCommit());
+    }
+
+    @Override
+    public void updateAgentSyncEnvCommit(DevopsEnvironmentE devopsEnvironmentE) {
+        devopsEnvironmentMapper.updateAgentSyncEnvCommit(devopsEnvironmentE.getId(),
                 devopsEnvironmentE.getAgentSyncCommit());
     }
+
 
     @Override
     public void deleteById(Long id) {

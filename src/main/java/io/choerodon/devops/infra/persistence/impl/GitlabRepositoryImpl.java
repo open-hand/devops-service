@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import feign.FeignException;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
@@ -15,12 +18,10 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GroupDO;
 import io.choerodon.devops.infra.dataobject.gitlab.ImpersonationTokenDO;
+import io.choerodon.devops.infra.dataobject.gitlab.MergeRequestDO;
 import io.choerodon.devops.infra.feign.GitlabServiceClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by younger on 2018/3/29.
@@ -42,7 +43,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public void batchAddVariable(Integer gitlabProjectId, Integer userId,  List<VariableDTO> variableDTOS) {
+    public void batchAddVariable(Integer gitlabProjectId, Integer userId, List<VariableDTO> variableDTOS) {
         gitlabServiceClient.batchAddVariable(gitlabProjectId, userId, variableDTOS);
     }
 
@@ -94,20 +95,30 @@ public class GitlabRepositoryImpl implements GitlabRepository {
 
     @Override
     public GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId) {
-        ResponseEntity<GroupDO> groupDO;
+        ResponseEntity<GroupDO> groupDOResponseEntity;
+        GroupDO groupDO = ConvertHelper.convert(gitlabGroupE, GroupDO.class);
         try {
-            groupDO = gitlabServiceClient.createGroup(ConvertHelper.convert(
-                    gitlabGroupE, GroupDO.class), userId);
+            groupDOResponseEntity = gitlabServiceClient.createGroup(groupDO, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(groupDO.getBody(), GitlabGroupE.class);
+        return ConvertHelper.convert(groupDOResponseEntity.getBody(), GitlabGroupE.class);
     }
 
     @Override
     public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId) {
         ResponseEntity<RepositoryFile> result = gitlabServiceClient
                 .createFile(projectId, path, content, commitMessage, userId);
+        if (result.getBody().getFilePath() == null) {
+            throw new CommonException("error.file.create");
+        }
+    }
+
+
+    @Override
+    public void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId, String branch) {
+        ResponseEntity<RepositoryFile> result = gitlabServiceClient
+                .createFile(projectId, path, content, commitMessage, userId, branch);
         if (result.getBody().getFilePath() == null) {
             throw new CommonException("error.file.create");
         }
@@ -171,13 +182,10 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public String updateProject(Integer projectId, Integer userId) {
-        try {
-            return gitlabServiceClient.updateProject(projectId, userId).getBody().getDefaultBranch();
-        } catch (FeignException e) {
-            throw new CommonException(e);
-        }
+    public void updateGroup(Integer projectId, Integer userId, GroupDO groupDO) {
+        gitlabServiceClient.updateGroup(projectId, userId, groupDO);
     }
+
 
     @Override
     public ProjectHook createWebHook(Integer projectId, Integer userId, ProjectHook projectHook) {
@@ -300,5 +308,19 @@ public class GitlabRepositoryImpl implements GitlabRepository {
         } catch (FeignException e) {
             throw new CommonException("error.project.get.by.userId", e);
         }
+    }
+
+    @Override
+    public MergeRequestDO createMergeRequest(Integer projectId, String sourceBranch, String targetBranch, String title, String description, Integer userId) {
+        try {
+            return gitlabServiceClient.createMergeRequest(projectId, sourceBranch, targetBranch, title, description, userId).getBody();
+        } catch (FeignException e) {
+            throw new CommonException(e);
+        }
+    }
+
+    @Override
+    public void acceptMergeRequest(Integer projectId, Integer mergeRequestId, String mergeCommitMessage, Boolean shouldRemoveSourceBranch, Boolean mergeWhenPipelineSucceeds, Integer userId) {
+        gitlabServiceClient.acceptMergeRequest(projectId, mergeRequestId, mergeCommitMessage, shouldRemoveSourceBranch, mergeWhenPipelineSucceeds, userId);
     }
 }

@@ -4,21 +4,21 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
+
 import io.choerodon.asgard.saga.annotation.SagaTask;
 import io.choerodon.devops.api.dto.GitlabGroupMemberDTO;
 import io.choerodon.devops.api.dto.GitlabUserDTO;
 import io.choerodon.devops.api.dto.GitlabUserRequestDTO;
-import io.choerodon.devops.api.dto.RegisterOrganizationDTO;
 import io.choerodon.devops.app.service.*;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.event.*;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+
 
 /**
  * Creator: Runge
@@ -32,20 +32,31 @@ public class SagaHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(SagaHandler.class);
     private final Gson gson = new Gson();
 
-    @Autowired
     private GitlabGroupService gitlabGroupService;
-    @Autowired
     private HarborService harborService;
-    @Autowired
     private OrganizationService organizationService;
-    @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
-    @Autowired
     private GitlabUserService gitlabUserService;
-    @Autowired
     private ApplicationService applicationService;
-    @Autowired
     private ApplicationRepository applicationRepository;
+
+
+    public SagaHandler(GitlabGroupService gitlabGroupService,
+                       HarborService harborService,
+                       OrganizationService organizationService,
+                       GitlabGroupMemberService gitlabGroupMemberService,
+                       GitlabUserService gitlabUserService,
+                       ApplicationService applicationService,
+                       ApplicationRepository applicationRepository) {
+        this.gitlabGroupService = gitlabGroupService;
+        this.harborService = harborService;
+        this.organizationService = organizationService;
+        this.gitlabGroupMemberService = gitlabGroupMemberService;
+        this.gitlabUserService = gitlabUserService;
+        this.applicationService = applicationService;
+        this.applicationRepository = applicationRepository;
+
+    }
 
 
     private void loggerInfo(Object o) {
@@ -173,10 +184,7 @@ public class SagaHandler {
             maxRetryCount = 3,
             seq = 1)
     public String handleIamUpdateApplication(String payload) {
-        IamAppPayLoad iamAppPayLoad = gson.fromJson(payload, IamAppPayLoad.class);
-        loggerInfo(iamAppPayLoad);
-        applicationService.createIamApplication(iamAppPayLoad);
-        return payload;
+        return handleIamCreateApplication(payload);
     }
 
     /**
@@ -245,7 +253,7 @@ public class SagaHandler {
      * 用户创建事件
      */
     @SagaTask(code = "devopsCreateUser", description = "用户创建事件",
-            sagaCode = "iam-create-user", maxRetryCount = 1,
+            sagaCode = "iam-create-user", maxRetryCount = 5,
             seq = 1)
     public List<GitlabUserDTO> handleCreateUserEvent(String payload) {
         List<GitlabUserDTO> gitlabUserDTO = gson.fromJson(payload, new TypeToken<List<GitlabUserDTO>>() {
@@ -259,6 +267,9 @@ public class SagaHandler {
             gitlabUserReqDTO.setUsername(t.getUsername());
             gitlabUserReqDTO.setEmail(t.getEmail());
             gitlabUserReqDTO.setName(t.getName());
+            if (t.getName() == null) {
+                gitlabUserReqDTO.setName(t.getUsername());
+            }
             gitlabUserReqDTO.setCanCreateGroup(true);
             gitlabUserReqDTO.setProjectsLimit(100);
 
@@ -319,17 +330,4 @@ public class SagaHandler {
         return payload;
     }
 
-    /**
-     * 注册组织事件
-     */
-    @SagaTask(code = "devopsOrgRegister", description = "注册组织",
-            sagaCode = "org-register", maxRetryCount = 3,
-            seq = 1)
-    public String registerOrganization(String payload) {
-        RegisterOrganizationDTO registerOrganizationDTO = gson.fromJson(payload, RegisterOrganizationDTO.class);
-        loggerInfo(registerOrganizationDTO);
-
-        organizationService.registerOrganization(registerOrganizationDTO);
-        return payload;
-    }
 }
