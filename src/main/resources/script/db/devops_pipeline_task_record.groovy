@@ -20,7 +20,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             column(name: 'execution_time', type: "DATETIME",remarks: '执行时间')
             column(name: 'is_countersigned', type: 'TINYINT UNSIGNED', remarks: '是否会签')
             column(name: 'value', type: 'TEXT', remarks: '配置信息')
-            column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
