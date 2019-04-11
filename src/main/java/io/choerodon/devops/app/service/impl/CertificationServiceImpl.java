@@ -288,7 +288,18 @@ public class CertificationServiceImpl implements CertificationService {
             params = "{}";
         }
 
-        return certificationRepository.page(projectId, null, envId, pageRequest, params);
+        Page<CertificationDTO> certificationDTOPage = certificationRepository.page(projectId, null, envId, pageRequest, params);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        certificationDTOPage.getContent().stream()
+                .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
+                .forEach(certificationDTO -> {
+                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationDTO.getEnvId());
+                    certificationDTO.setEnvConnected(
+                            connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId()));
+                });
+        return certificationDTOPage;
     }
 
     @Override
