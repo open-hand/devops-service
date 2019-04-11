@@ -84,7 +84,7 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
         Page<DevopsProjectConfigDO> configDOPage = PageHelper
                 .doPageAndSort(pageRequest, () -> configMapper.list(projectId,
                         (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
-                        (String) mapParams.get(TypeUtil.PARAM), checkSortIsEmpty(pageRequest)));
+                        (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         return ConvertPageHelper.convertPage(configDOPage, DevopsProjectConfigE.class);
     }
 

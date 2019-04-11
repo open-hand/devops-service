@@ -109,12 +109,12 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         if (doPage != null && !doPage) {
                 applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
                         (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
-                        mapParams.get(TypeUtil.PARAM).toString(), checkSortIsEmpty(pageRequest)));
+                        mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationES = PageHelper
                     .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
                             (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
-                            (String)mapParams.get(TypeUtil.PARAM), checkSortIsEmpty(pageRequest)));
+                            (String)mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
