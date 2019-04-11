@@ -1,9 +1,10 @@
 package io.choerodon.devops.infra.persistence.impl;
 
 import com.google.gson.Gson;
+import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
-import io.choerodon.devops.domain.application.entity.PipelineE;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
 import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -12,6 +13,7 @@ import io.choerodon.devops.infra.mapper.PipelineRecordMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
@@ -20,6 +22,7 @@ import java.util.Map;
  * Date:  16:39 2019/4/4
  * Description:
  */
+@Component
 public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
     private static final Gson gson = new Gson();
 
@@ -34,5 +37,25 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
         Page<PipelineRecordDO> pipelineDOS = PageHelper.doPageAndSort(pageRequest, () ->
                 pipelineRecordMapper.listByOptions(projectId, pipelineId, searchParamMap, paramMap));
         return ConvertPageHelper.convertPage(pipelineDOS, PipelineRecordE.class);
+    }
+
+    @Override
+    public PipelineRecordE create(PipelineRecordE pipelineRecordE) {
+        PipelineRecordDO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDO.class);
+        if (pipelineRecordMapper.insert(pipelineRecordDO) != 1) {
+            throw new CommonException("error.insert.pipeline.record");
+        }
+        return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
+    }
+
+    @Override
+    public PipelineRecordE update(PipelineRecordE pipelineRecordE) {
+        PipelineRecordDO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDO.class);
+        pipelineRecordDO.setObjectVersionNumber(pipelineRecordMapper.selectByPrimaryKey(pipelineRecordDO).getObjectVersionNumber());
+        if (pipelineRecordMapper.updateByPrimaryKey(pipelineRecordDO) != 1) {
+            throw new CommonException("error.update.pipeline.record");
+        }
+        pipelineRecordDO.setObjectVersionNumber(null);
+        return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
     }
 }

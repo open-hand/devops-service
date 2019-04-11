@@ -1,6 +1,6 @@
 package io.choerodon.devops.infra.mapper;
 
-import io.choerodon.devops.infra.dataobject.gitlab.PipelineDO;
+import io.choerodon.devops.infra.dataobject.PipelineDO;
 import io.choerodon.mybatis.common.BaseMapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -13,7 +13,6 @@ import java.util.Map;
  * Description:
  */
 public interface PipelineMapper extends BaseMapper<PipelineDO> {
-
     List<PipelineDO> listByOptions(@Param("projectId") Long projectId,
                                    @Param("searchParam") Map<String, Object> searchParam,
                                    @Param("param") String param,

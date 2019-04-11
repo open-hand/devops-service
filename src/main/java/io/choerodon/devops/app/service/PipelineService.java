@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
+import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -14,4 +15,20 @@ public interface PipelineService {
     Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params);
 
     Page<PipelineRecordDTO> listRecords(Long projectId, Long pipelineId, PageRequest pageRequest, String params);
+
+    PipelineReqDTO create(Long projectId, PipelineReqDTO pipelineReqDTO);
+
+    PipelineReqDTO update(Long projectId, PipelineReqDTO pipelineReqDTO);
+
+    PipelineDTO updateIsEnabled(Long projectId, Long pipelineId, Integer isEnabled);
+
+    void delete(Long projectId, Long pipelineId);
+
+    PipelineReqDTO queryById(Long projectId, Long pipelineId);
+
+    void execute(Long projectId, Long pipelineId);
+
+    void autoDeploy(Long stageRecordId, Long taskId);
+
+    void setTaskStatus(Long taskRecordId);
 }

@@ -9,10 +9,28 @@ public class PipelineRecordE {
     private Long id;
     private String name;
     private String triggerType;
-    private Integer isParallel;
     private Long projectId;
     private Long pipelineId;
     private String status;
+    private String processInstanceId;
+
+    public PipelineRecordE(Long pipelineId, String triggerType, Long projectId) {
+        this.pipelineId = pipelineId;
+        this.triggerType = triggerType;
+        this.projectId = projectId;
+    }
+
+    public String getProcessInstanceId() {
+        return processInstanceId;
+    }
+
+    public void setProcessInstanceId(String processInstanceId) {
+        this.processInstanceId = processInstanceId;
+    }
+
+    public PipelineRecordE() {
+
+    }
 
     public Long getId() {
         return id;
@@ -36,14 +54,6 @@ public class PipelineRecordE {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public Integer getIsParallel() {
-        return isParallel;
-    }
-
-    public void setIsParallel(Integer isParallel) {
-        this.isParallel = isParallel;
     }
 
     public Long getProjectId() {

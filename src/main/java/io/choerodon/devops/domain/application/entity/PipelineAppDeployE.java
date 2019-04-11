@@ -12,7 +12,6 @@ import org.springframework.stereotype.Component;
 @Scope("prototype")
 public class PipelineAppDeployE {
     private Long id;
-    private String name;
     private Long applicationId;
     private String triggerVersion;
     private Long envId;
@@ -32,14 +31,6 @@ public class PipelineAppDeployE {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public Long getApplicationId() {

@@ -7,6 +7,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
                 constraints(primaryKey: true)
             }
             column(name: 'stage_record_id', type: 'BIGINT UNSIGNED', remarks: '阶段记录Id')
+            column(name: 'task_id', type: 'BIGINT UNSIGNED', remarks: '任务Id')
             column(name: 'task_type', type: 'VARCHAR(10)', remarks: '任务类型')
             column(name: 'status', type: 'VARCHAR(10)', remarks: '状态')
             column(name: 'trigger_version', type: 'VARCHAR(255)', remarks: '触发版本')

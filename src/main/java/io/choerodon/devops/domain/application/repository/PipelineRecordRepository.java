@@ -11,4 +11,8 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface PipelineRecordRepository {
     Page<PipelineRecordE> listByOptions(Long projectId, Long pipelineId, PageRequest pageRequest, String params);
+
+    PipelineRecordE create(PipelineRecordE pipelineRecordE);
+
+    PipelineRecordE update(PipelineRecordE pipelineRecordE);
 }

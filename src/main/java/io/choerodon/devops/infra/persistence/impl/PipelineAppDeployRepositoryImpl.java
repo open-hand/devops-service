@@ -7,12 +7,14 @@ import io.choerodon.devops.domain.application.repository.PipelineAppDeployReposi
 import io.choerodon.devops.infra.dataobject.PipelineAppDeployDO;
 import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:12 2019/4/4
  * Description:
  */
+@Component
 public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployRepository {
     @Autowired
     private PipelineAppDeployMapper appDeployMapper;

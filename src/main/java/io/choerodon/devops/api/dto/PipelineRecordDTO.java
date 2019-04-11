@@ -15,6 +15,15 @@ public class PipelineRecordDTO {
     private Long projectId;
     private Date lastUpdateDate;
     private List<PipelineStageRecordDTO> stageDTOList;
+    private String processInstanceId;
+
+    public String getProcessInstanceId() {
+        return processInstanceId;
+    }
+
+    public void setProcessInstanceId(String processInstanceId) {
+        this.processInstanceId = processInstanceId;
+    }
 
     public Long getId() {
         return id;

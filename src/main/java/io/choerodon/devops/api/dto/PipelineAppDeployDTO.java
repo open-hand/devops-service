@@ -11,6 +11,7 @@ public class PipelineAppDeployDTO {
     private Long id;
     private String name;
     private Long applicationId;
+    private String type;
     private List<String> triggerVersion;
     private Long envId;
     private Long instanceId;
@@ -23,6 +24,15 @@ public class PipelineAppDeployDTO {
     private String envName;
     private Long objectVersionNumber;
     private Boolean status;
+    private Long appDeployId;
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public Long getId() {
         return id;
@@ -142,5 +152,13 @@ public class PipelineAppDeployDTO {
 
     public void setStageId(Long stageId) {
         this.stageId = stageId;
+    }
+
+    public Long getAppDeployId() {
+        return appDeployId;
+    }
+
+    public void setAppDeployId(Long appDeployId) {
+        this.appDeployId = appDeployId;
     }
 }

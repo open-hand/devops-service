@@ -11,4 +11,14 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  */
 public interface PipelineRepository {
     Page<PipelineE> listByOptions(Long projectId, PageRequest pageRequest, String params);
+
+    PipelineE create(Long projectId, PipelineE pipelineE);
+
+    PipelineE update(Long projectId, PipelineE pipelineE);
+
+    PipelineE updateIsEnabled(Long pipelineId, Integer isEnabled);
+
+    PipelineE queryById(Long pipelineId);
+
+    void delete(Long pipelineId);
 }

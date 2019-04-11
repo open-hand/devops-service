@@ -1,0 +1,44 @@
+package io.choerodon.devops.infra.persistence.impl;
+
+import io.choerodon.core.convertor.ConvertHelper;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
+import io.choerodon.devops.infra.dataobject.PipelineTaskRecordDO;
+import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+/**
+ * Creator: ChangpingShi0213@gmail.com
+ * Date:  16:24 2019/4/9
+ * Description:
+ */
+@Component
+public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepository {
+    @Autowired
+    private PipelineTaskRecordMapper taskRecordMapper;
+
+    @Override
+    public PipelineTaskRecordE createOrUpdate(PipelineTaskRecordE taskRecordE) {
+        PipelineTaskRecordDO recordDO = ConvertHelper.convert(taskRecordE, PipelineTaskRecordDO.class);
+        if (recordDO.getId() == null) {
+            if (taskRecordMapper.insert(recordDO) != 1) {
+                throw new CommonException("error.insert.pipeline.task.record");
+            }
+        } else {
+            if (taskRecordMapper.updateByPrimaryKeySelective(recordDO) != 1) {
+                throw new CommonException("error.update.pipeline.task.record");
+            }
+            recordDO.setObjectVersionNumber(null);
+        }
+        return ConvertHelper.convert(taskRecordMapper.selectOne(recordDO), PipelineTaskRecordE.class);
+    }
+
+    @Override
+    public PipelineTaskRecordE queryById(Long taskRecordId) {
+        PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
+        recordDO.setId(taskRecordId);
+        return ConvertHelper.convert(taskRecordMapper.selectByPrimaryKey(recordDO), PipelineTaskRecordE.class);
+    }
+}

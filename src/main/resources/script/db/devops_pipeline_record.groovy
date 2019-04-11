@@ -12,6 +12,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
             column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
             column(name: 'execution_time', type: 'DATETIME', remarks: '执行时间')
             column(name: 'bpm_definition', type: 'TEXT', remarks: 'bpm定义')
+            column(name: 'process_instance_id', type: 'VARCHAR(255)', remarks: '流程实例Id')
 
             column(name: "object_version_number", type: "BIGINT UNSIGNED", defaultValue: "1")
             column(name: "created_by", type: "BIGINT UNSIGNED", defaultValue: "0")
