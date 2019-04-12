@@ -54,7 +54,6 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
-    @Qualifier("newEnvListener")
     private EnvListener envListener;
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;

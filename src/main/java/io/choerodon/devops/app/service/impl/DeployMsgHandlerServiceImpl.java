@@ -144,8 +144,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private ClusterNodeInfoService clusterNodeInfoService;
     @Autowired
-    private DevopsConfigMapService devopsConfigMapService;
-    @Autowired
     private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
 
 
@@ -1721,7 +1719,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
             devopsConfigMapDTO.setType("create");
             devopsConfigMapDTO.setValue(v1ConfigMap.getData());
-            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
+//            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
         }
     }
 
