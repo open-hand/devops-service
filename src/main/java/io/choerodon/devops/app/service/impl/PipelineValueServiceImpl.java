@@ -9,6 +9,7 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.PipelineValueDTO;
 import io.choerodon.devops.app.service.PipelineValueService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployValueE;
 import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
@@ -39,20 +40,22 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     private PipelineAppDeployValueRepository appDeployValueRepository;
 
     @Override
-    public PipelineValueDTO createOrUpdate(PipelineValueDTO pipelineValueDTO) {
+    public PipelineValueDTO createOrUpdate(Long projectId, PipelineValueDTO pipelineValueDTO) {
         PipelineValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, PipelineValueE.class);
+        pipelineValueE.setProjectId(projectId);
+        valueRepository.checkName(projectId, pipelineValueE.getName());
         pipelineValueE = valueRepository.createOrUpdate(pipelineValueE);
         return ConvertHelper.convert(pipelineValueE, PipelineValueDTO.class);
     }
 
     @Override
     public Boolean delete(Long projectId, Long valueId) {
-        if (appDeployValueRepository.queryByValueId(valueId).size() == 0) {
-            valueRepository.delete(valueId);
-            return true;
-        } else {
+        List<PipelineAppDeployValueE> list = appDeployValueRepository.queryByValueId(valueId);
+        if (list == null) {
             return false;
         }
+        valueRepository.delete(valueId);
+        return true;
     }
 
     @Override

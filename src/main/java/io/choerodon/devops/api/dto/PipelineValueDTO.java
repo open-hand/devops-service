@@ -1,6 +1,7 @@
 package io.choerodon.devops.api.dto;
 
-import java.sql.Date;
+
+import java.util.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -18,12 +19,28 @@ public class PipelineValueDTO {
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
-    private Long createBy;
+    private Long createdBy;
     private Boolean envStatus;
-    private Date lastUpdatedBy;
+    private Date lastUpdateDate;
     private Boolean index;
     private String envName;
     private String appName;
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
 
     public String getEnvName() {
         return envName;
@@ -49,14 +66,6 @@ public class PipelineValueDTO {
         this.index = index;
     }
 
-    public Date getLastUpdatedBy() {
-        return lastUpdatedBy;
-    }
-
-    public void setLastUpdatedBy(Date lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
-    }
-
     public Boolean getEnvStatus() {
         return envStatus;
     }
@@ -66,11 +75,11 @@ public class PipelineValueDTO {
     }
 
     public Long getCreateBy() {
-        return createBy;
+        return createdBy;
     }
 
     public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
+        this.createdBy = createBy;
     }
 
     public String getCreateUserUrl() {

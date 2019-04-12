@@ -1,12 +1,18 @@
 package io.choerodon.devops.domain.application.entity;
 
-import java.sql.Date;
+
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+import java.util.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  9:42 2019/4/10
  * Description:
  */
+@Component
+@Scope("prototype")
 public class PipelineValueE {
     private Long id;
     private String value;
@@ -15,10 +21,26 @@ public class PipelineValueE {
     private Long appId;
     private String name;
     private String description;
-    private Long createBy;
-    private Date lastUpdatedBy;
+    private Long createdBy;
+    private Date lastUpdateDate;
     private String appName;
     private String envName;
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
 
     public String getAppName() {
         return appName;
@@ -37,19 +59,19 @@ public class PipelineValueE {
     }
 
     public Date getLastUpdatedBy() {
-        return lastUpdatedBy;
+        return lastUpdateDate;
     }
 
-    public void setLastUpdatedBy(Date lastUpdatedBy) {
-        this.lastUpdatedBy = lastUpdatedBy;
+    public void setLastUpdatedBy(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public Long getCreateBy() {
-        return createBy;
+        return createdBy;
     }
 
     public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
+        this.createdBy = createBy;
     }
 
     public Long getId() {

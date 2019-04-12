@@ -79,8 +79,8 @@ public class PipelineValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineValueDTO")
-            @ApiIgnore PipelineValueDTO pipelineValueDTO) {
-        return Optional.ofNullable(pipelineValueService.createOrUpdate(pipelineValueDTO))
+            @RequestBody PipelineValueDTO pipelineValueDTO) {
+        return Optional.ofNullable(pipelineValueService.createOrUpdate(projectId, pipelineValueDTO))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.createOrUpdate"));
     }
@@ -99,7 +99,7 @@ public class PipelineValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
-            @ApiIgnore(value = "value_id") Long valueId) {
+            @RequestParam(value = "value_id") Long valueId) {
         return Optional.ofNullable(pipelineValueService.queryById(valueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.queryById"));
@@ -119,7 +119,7 @@ public class PipelineValueController {
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
-            @ApiIgnore(value = "value_id") Long valueId) {
+            @RequestParam(value = "value_id") Long valueId) {
         return Optional.ofNullable(pipelineValueService.delete(projectId, valueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.delete"));
@@ -133,6 +133,7 @@ public class PipelineValueController {
      * @param name
      * @return
      */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "名称校验")
     @GetMapping("/check_name")
     public void checkName(

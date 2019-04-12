@@ -8,7 +8,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.dataobject.DevopsProjectConfigDO;
 import io.choerodon.devops.infra.dataobject.PipelineValueDO;
 import io.choerodon.devops.infra.mapper.PipelineValueMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
@@ -43,13 +42,13 @@ public class PipelineValueRepositoryImpl implements PipelineValueRepository {
     @Override
     public PipelineValueE createOrUpdate(PipelineValueE pipelineRecordE) {
         PipelineValueDO pipelineValueDO = ConvertHelper.convert(pipelineRecordE, PipelineValueDO.class);
-        if (pipelineValueDO.getId() != null) {
+        if (pipelineValueDO.getId() == null) {
             if (valueMapper.insert(pipelineValueDO) != 1) {
                 throw new CommonException("error.insert.pipeline.value");
             }
         } else {
             if (valueMapper.updateByPrimaryKey(pipelineValueDO) != 1) {
-                throw new CommonException("error.insert.pipeline.value");
+                throw new CommonException("error.update.pipeline.value");
             }
             pipelineValueDO.setObjectVersionNumber(null);
         }

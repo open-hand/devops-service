@@ -76,7 +76,6 @@ public class PipelineController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下获取流水线记录")
-    @CustomPageRequest
     @PostMapping("/list_record")
     public ResponseEntity<Page<PipelineRecordDTO>> listRecords(
             @ApiParam(value = "项目Id", required = true)

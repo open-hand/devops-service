@@ -10,7 +10,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
  * Description:
  */
 public interface PipelineValueService {
-    PipelineValueDTO createOrUpdate(PipelineValueDTO pipelineValueDTO);
+    PipelineValueDTO createOrUpdate(Long projectId, PipelineValueDTO pipelineValueDTO);
 
     Boolean delete(Long projectId, Long valueId);
 

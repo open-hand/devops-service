@@ -7,10 +7,11 @@
         dpv. NAME,
         dpv.description,
         dpv.created_by,
-        dpv.last_updated_by,
+        dpv.last_update_date,
         de.`name` AS envName,
         da.`name` AS appName,
-        dpv.env_id
+        dpv.env_id,
+        dpv.app_id
         FROM
         devops_pipeline_value dpv
         JOIN devops_env de ON de.id = dpv.env_id
