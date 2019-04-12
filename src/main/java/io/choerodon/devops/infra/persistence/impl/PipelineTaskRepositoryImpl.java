@@ -57,4 +57,11 @@ public class PipelineTaskRepositoryImpl implements PipelineTaskRepository {
         taskDO.setId(taskId);
         return ConvertHelper.convert(pipelineTaskMapper.selectByPrimaryKey(taskDO), PipelineTaskE.class);
     }
+
+    @Override
+    public PipelineTaskE queryByAppDeployId(Long appDeployId) {
+        PipelineTaskDO pipelineTaskDO = new PipelineTaskDO();
+        pipelineTaskDO.setAppDeployId(appDeployId);
+        return ConvertHelper.convert(pipelineTaskMapper.selectOne(pipelineTaskDO), PipelineTaskE.class);
+    }
 }

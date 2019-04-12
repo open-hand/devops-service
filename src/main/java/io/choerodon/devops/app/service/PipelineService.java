@@ -4,6 +4,9 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineReqDTO;
+import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.PipelineUserRelDTO;
+import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 /**
@@ -30,14 +33,9 @@ public interface PipelineService {
 
     void autoDeploy(Long stageRecordId, Long taskId);
 
-    void setTaskStatus(Long taskRecordId, String proInstanceId);
+    void audit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
-    /**
-     * 人工审核
-     *
-     * @param recordId
-     * @param type
-     * @param isApprove
-     */
-    void audit(Long projectId, Long pipelineRecordId, Long recordId, String type, Boolean isApprove);
+    Boolean checkDeploy(Long pipelineId);
+
+    DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId);
 }

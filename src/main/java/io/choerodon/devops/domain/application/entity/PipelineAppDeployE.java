@@ -3,6 +3,8 @@ package io.choerodon.devops.domain.application.entity;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:17 2019/4/4
@@ -24,6 +26,15 @@ public class PipelineAppDeployE {
     private String envName;
     private Long objectVersionNumber;
     private Boolean status;
+    private Date creationDate;
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
+    }
 
     public Long getId() {
         return id;

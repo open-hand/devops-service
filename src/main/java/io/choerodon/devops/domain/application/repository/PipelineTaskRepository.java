@@ -19,4 +19,6 @@ public interface PipelineTaskRepository {
     List<PipelineTaskE> queryByStageId(Long stageId);
 
     PipelineTaskE queryById(Long taskId);
+
+    PipelineTaskE queryByAppDeployId(Long appDeployId);
 }

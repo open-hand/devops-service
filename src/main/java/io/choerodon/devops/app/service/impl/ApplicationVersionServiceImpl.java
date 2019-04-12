@@ -1,11 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -15,28 +9,81 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
+import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
+import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.app.service.PipelineService;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
+import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
+import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
+import io.choerodon.devops.domain.application.entity.PipelineE;
+import io.choerodon.devops.domain.application.entity.PipelineRecordE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
+import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
+import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
+import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/3.
  */
 @Service
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
 
     private static final String CREATE = "create";
     private static final String UPDATE = "update";
@@ -73,6 +120,20 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private SagaClient sagaClient;
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
+    @Autowired
+    private PipelineAppDeployRepository appDeployRepository;
+    @Autowired
+    private PipelineTaskRepository taskRepository;
+    @Autowired
+    private PipelineStageRepository stageRepository;
+    @Autowired
+    private PipelineService pipelineService;
+    @Autowired
+    private PipelineRecordRepository pipelineRecordRepository;
+    @Autowired
+    private WorkFlowRepository workFlowRepository;
+    @Autowired
+    private PipelineRepository pipelineRepository;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -144,7 +205,60 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         applicationVersionE = applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
+        //自动部署
         triggerAutoDelpoy(applicationVersionE);
+        //流水线
+        checkAutoDeploy(applicationVersionE);
+    }
+
+    /**
+     * 检测能够触发自动部署
+     * @param versionE
+     */
+    private void checkAutoDeploy(ApplicationVersionE versionE) {
+        Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
+        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
+        if (version != null) {
+            List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
+                    .stream().filter(deployE -> deployE.getTriggerVersion().contains(version)).collect(Collectors.toList());
+
+            if (appDeployEList != null && appDeployEList.size() > 0) {
+                List<Long> stageList = appDeployEList.stream()
+                        .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()).getStageId())
+                        .distinct().collect(Collectors.toList());
+
+                List<Long> pipelineList = stageList.stream()
+                        .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
+                        .distinct().collect(Collectors.toList());
+                pipelineList.forEach(pipelineId -> {
+                    if (pipelineService.checkDeploy(pipelineId)) {
+                        executeAppDeploy(pipelineId);
+                    }
+                });
+            }
+        }
+    }
+
+    /**
+     * 执行自动部署流水线
+     */
+    private void executeAppDeploy(Long pipelineId) {
+        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+        //保存pipeline
+        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId()));
+        //准备workFlow数据
+        DevopsPipelineDTO devopsPipelineDTO = pipelineService.setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
+        pipelineRecordE.setTriggerType(gson.toJson(devopsPipelineDTO));
+        pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+        pipelineRecordRepository.update(pipelineRecordE);
+        //发送请求给workflow，创建流程实例
+        try {
+            pipelineRecordE.setProcessInstanceId(workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO));
+        } catch (Exception e) {
+            LOGGER.error(e.getMessage());
+            pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+        }
+        pipelineRecordRepository.update(pipelineRecordE);
     }
 
     /**
@@ -153,10 +267,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * @param applicationVersionE
      */
     public void triggerAutoDelpoy(ApplicationVersionE applicationVersionE) {
-        Optional<String> branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
+        Optional<String> branch = Arrays.stream(TYPE).filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
         String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
         List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), version);
-        autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
+        autoDeployES.forEach(t -> createAutoDeployInstance(t, applicationVersionE));
     }
 
     @Saga(code = "devops-create-auto-deploy-instance",

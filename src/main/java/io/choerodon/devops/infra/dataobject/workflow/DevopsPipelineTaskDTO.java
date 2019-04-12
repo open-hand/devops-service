@@ -9,7 +9,6 @@ import java.util.Map;
  */
 public class DevopsPipelineTaskDTO {
 
-    private Long taskId;
     private String taskName;
     private List<String> usernames;
     private String taskType;

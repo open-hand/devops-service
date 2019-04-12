@@ -18,6 +18,7 @@ import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.devops.api.dto.PipelineStageDTO;
 import io.choerodon.devops.api.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.api.dto.PipelineTaskDTO;
+import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.dto.PipelineUserRelDTO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
@@ -52,12 +53,17 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -68,6 +74,7 @@ import java.util.stream.Collectors;
 @Service
 public class PipelineServiceImpl implements PipelineService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
+    private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
 
     private static final Gson gson = new Gson();
     @Autowired
@@ -217,7 +224,6 @@ public class PipelineServiceImpl implements PipelineService {
         return pipelineReqDTO;
     }
 
-
     @Override
     public void execute(Long projectId, Long pipelineId) {
         //校验当前触发人员是否有权限触发
@@ -229,42 +235,14 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineUserRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
         pipelineUserRecordRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
         pipelineUserRelRecordRepository.create(pipelineUserRecordRelE);
-        //pipeline
-        DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
-        devopsPipelineDTO.setBussinessId(pipelineRecordE.getId());
-        List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
-        //stage
-        stageRepository.queryByPipelineId(pipelineId).forEach(t -> {
-            DevopsPipelineStageDTO devopsPipelineStageDTO = new DevopsPipelineStageDTO();
-            devopsPipelineStageDTO.setParallel(t.getIsParallel() == 1);
-            devopsPipelineStageDTO.setNextStageTriggerType(t.getTriggerType());
-            List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, t.getId(), null);
-            devopsPipelineStageDTO.setMultiAssign(relEList.size() > 1);
-            devopsPipelineStageDTO.setUsernames(relEList.stream().map(relE -> iamRepository.queryUserByUserId(relE.getId()).getLoginName()).collect(Collectors.toList()));
 
-            List<DevopsPipelineTaskDTO> devopsPipelineTaskDTOS = new ArrayList<>();
-
-            pipelineTaskRepository.queryByStageId(t.getId()).forEach(task -> {
-                //task
-                List<PipelineUserRelE> taskUserRels = pipelineUserRelRepository.listByOptions(null, null, task.getId());
-                DevopsPipelineTaskDTO devopsPipelineTaskDTO = new DevopsPipelineTaskDTO();
-                devopsPipelineTaskDTO.setTaskName(task.getName());
-                devopsPipelineTaskDTO.setTaskType(task.getType());
-                devopsPipelineTaskDTO.setMultiAssign(taskUserRels.size() > 1);
-                devopsPipelineTaskDTO.setUsernames(taskUserRels.stream().map(relE -> iamRepository.queryUserByUserId(relE.getId()).getLoginName()).collect(Collectors.toList()));
-
-                devopsPipelineTaskDTOS.add(devopsPipelineTaskDTO);
-            });
-            devopsPipelineStageDTO.setTasks(devopsPipelineTaskDTOS);
-            devopsPipelineStageDTOS.add(devopsPipelineStageDTO);
-        });
-
-        devopsPipelineDTO.setStages(devopsPipelineStageDTOS);
+        //准备workFlow数据
+        DevopsPipelineDTO devopsPipelineDTO = setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
         pipelineRecordE.setTriggerType(gson.toJson(devopsPipelineDTO));
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
         pipelineRecordRepository.update(pipelineRecordE);
 
-        //更新pipelineRecord状态
+        //发送请求给workflow，创建流程实例
         try {
             pipelineRecordE.setProcessInstanceId(workFlowRepository.create(projectId, devopsPipelineDTO));
         } catch (Exception e) {
@@ -273,26 +251,13 @@ public class PipelineServiceImpl implements PipelineService {
         }
         pipelineRecordRepository.update(pipelineRecordE);
 
-        //更新stageRecord
-        PipelineStageE pipelineStageE = stageRepository.queryByPipelineId(pipelineId).get(0);
-        PipelineStageRecordE stageRecordE = new PipelineStageRecordE(pipelineStageE.getTriggerType(), pipelineStageE.getIsParallel(), projectId, pipelineRecordE.getId());
-        if ("auto".equals(pipelineStageE.getTriggerType())) {
-            stageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
-            stageRecordE = stageRecordRepository.createOrUpdate(stageRecordE);
-
-            PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryByStageId(stageRecordE.getId()).get(0);
-            PipelineAppDeployE appDeployE = appDeployRepository.queryById(pipelineTaskE.getAppDeployId());
-            PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE(stageRecordE.getId(), pipelineTaskE.getType(),
-                    appDeployE.getTriggerVersion(), appDeployE.getApplicationId(),
-                    appDeployE.getEnvId(), appDeployE.getInstanceId(),
-                    valueRepository.queryById(appDeployE.getValueId()).getValue());
-            taskRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
-            taskRecordRepository.createOrUpdate(taskRecordE);
-        } else {
-            stageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
-            stageRecordRepository.createOrUpdate(stageRecordE);
-        }
-
+        //更新第一个任务状态
+        PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
+        PipelineTaskE taskE = getFirsetTask(pipelineId);
+        BeanUtils.copyProperties(taskE, taskRecordE);
+        taskRecordE.setId(taskE.getId());
+        taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+        taskRecordRepository.createOrUpdate(taskRecordE);
     }
 
     @Override
@@ -302,8 +267,18 @@ public class PipelineServiceImpl implements PipelineService {
         //获取数据
         PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryById(taskId);
         PipelineAppDeployE appDeployE = appDeployRepository.queryById(pipelineTaskE.getAppDeployId());
-        ApplicationVersionE versionE = versionRepository.getLatestVersion(appDeployE.getApplicationId());
-
+        List<ApplicationVersionE> versionES = versionRepository.listByAppId(appDeployE.getApplicationId(), null)
+                .stream().filter(t -> t.getCreationDate().getTime() > appDeployE.getCreationDate().getTime()).collect(Collectors.toList());
+        int len = versionES.size() - 1;
+        while (len > 0) {
+            ApplicationVersionE versionE = versionES.get(len);
+            Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
+            String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
+            if (version != null && appDeployE.getTriggerVersion().contains(version)) {
+                break;
+            }
+            len--;
+        }
         //保存记录
         PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(stageRecordId, pipelineTaskE.getType(),
                 appDeployE.getTriggerVersion(), appDeployE.getApplicationId(),
@@ -313,7 +288,7 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
         try {
             String type = appDeployE.getInstanceId() == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
-            ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(versionE.getId(), appDeployE.getEnvId(),
+            ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(versionES.get(len).getId(), appDeployE.getEnvId(),
                     valueRepository.queryById(appDeployE.getValueId()).getValue(), appDeployE.getApplicationId(), type, appDeployE.getInstanceId(),
                     appDeployE.getInstanceName(), pipelineTaskRecordE.getId(), appDeployE.getId());
             String input = gson.toJson(applicationDeployDTO);
@@ -325,11 +300,170 @@ public class PipelineServiceImpl implements PipelineService {
         }
     }
 
+//    public void conductTaskrecord(Long taskRecordId, String proInstacneId) {
+//        //更新此任务状态
+//        PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
+//        pipelineTaskRecordE.setId(taskRecordId);
+//        pipelineTaskRecordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
+//        taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+////        conNextTaskRecord(taskRecordId, proInstacneId, pipelineTaskRecordE.getStageRecordId());
+//    }
+
     @Override
-    public void setTaskStatus(Long taskRecordId, String proInstacneId) {
-        PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
-        pipelineTaskRecordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
-        pipelineTaskRecordE = taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+    public void audit(Long projectId, PipelineUserRecordRelDTO recordRelDTO) {
+        String status = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
+
+        PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
+        userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
+        switch (recordRelDTO.getType()) {
+            case "task": {
+                PipelineTaskRecordE recordE = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId());
+                recordE.setStatus(status);
+                taskRecordRepository.createOrUpdate(recordE);
+                userRelE.setTaskRecordId(recordE.getId());
+                conNextTaskRecord(recordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
+                break;
+            }
+            case "stage": {
+                PipelineStageRecordE recordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
+                recordE.setStatus(status);
+                stageRecordRepository.createOrUpdate(recordE);
+                userRelE.setStageRecordId(recordE.getId());
+                //阶段中的第一个任务为人工任务时
+                if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
+                    PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryByStageId(stageRecordRepository.queryById(recordRelDTO.getStageRecordId()).getStageId()).get(0);
+                    if ("manual".equals(pipelineTaskE.getType())) {
+                        PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
+                        BeanUtils.copyProperties(pipelineTaskE, taskRecordE);
+                        taskRecordE.setStageRecordId(recordRelDTO.getStageRecordId());
+                        taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+                        taskRecordRepository.createOrUpdate(taskRecordE);
+                    }
+                }
+                break;
+            }
+            case "pipeline": {
+                PipelineRecordE recordE = pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId());
+                recordE.setStatus(status);
+                pipelineRecordRepository.update(recordE);
+                userRelE.setPipelineRecordId(recordE.getId());
+                //启动第一个阶段
+                if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
+                    PipelineStageRecordE stageRecordE = stageRecordRepository.queryByPipeRecordId(recordRelDTO.getPipelineRecordId(), null).get(0);
+                    stageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+                    stageRecordRepository.createOrUpdate(stageRecordE);
+                }
+                break;
+            }
+            default: {
+                break;
+            }
+        }
+        pipelineUserRelRecordRepository.create(userRelE);
+    }
+
+    /**
+     * 检测是否满足部署条件
+     *
+     * @param pipelineId
+     * @return
+     */
+    @Override
+    public Boolean checkDeploy(Long pipelineId) {
+        List<PipelineAppDeployE> appDeployEList = new ArrayList<>();
+        //获取所有appDeploy
+        stageRepository.queryByPipelineId(pipelineId).forEach(stageE -> {
+            pipelineTaskRepository.queryByStageId(stageE.getId()).forEach(taskE -> {
+                if (taskE.getAppDeployId() != null) {
+                    PipelineAppDeployE appDeployE = appDeployRepository.queryById(taskE.getAppDeployId());
+                    appDeployEList.add(appDeployE);
+                }
+            });
+        });
+        //检测是否满足条件
+        for (PipelineAppDeployE appDeployE : appDeployEList) {
+            if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
+                return false;
+            } else {
+                //是否有对应版本
+                List<ApplicationVersionE> list = versionRepository.listByAppId(appDeployE.getApplicationId(), null)
+                        .stream()
+                        .filter(versionE -> versionE.getCreationDate().getTime() > appDeployE.getCreationDate().getTime())
+                        .collect(Collectors.toList());
+                Boolean index = false;
+                for (ApplicationVersionE versionE : list) {
+                    Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
+                    String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
+                    if (version != null && appDeployE.getTriggerVersion().contains(version)) {
+                        index = true;
+                    }
+                }
+                if (!index) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    private PipelineTaskE getFirsetTask(Long pipelineId) {
+        return pipelineTaskRepository.queryByStageId(stageRepository.queryByPipelineId(pipelineId).get(0).getId()).get(0);
+    }
+
+    /**
+     * 准备workflow创建实例所需数据
+     * 为此workflow下所有stage创建记录
+     */
+    @Override
+    public DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId) {
+        //workflow数据
+        DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
+        devopsPipelineDTO.setBussinessId(pipelineRecordId);
+        List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
+        //stage
+        stageRepository.queryByPipelineId(pipelineId).forEach(t -> {
+            //创建所有stageRecord
+            PipelineStageRecordE recordE = new PipelineStageRecordE();
+            BeanUtils.copyProperties(t, recordE);
+            recordE.setStageId(t.getId());
+            recordE.setPipelineRecordId(pipelineRecordId);
+            recordE = stageRecordRepository.createOrUpdate(recordE);
+            Long stageRecordId = recordE.getId();
+
+            //stage
+            DevopsPipelineStageDTO devopsPipelineStageDTO = new DevopsPipelineStageDTO();
+            devopsPipelineStageDTO.setParallel(t.getIsParallel() == 1);
+            devopsPipelineStageDTO.setNextStageTriggerType(t.getTriggerType());
+            List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, t.getId(), null);
+            devopsPipelineStageDTO.setMultiAssign(relEList.size() > 1);
+            devopsPipelineStageDTO.setUsernames(relEList.stream().map(relE -> iamRepository.queryUserByUserId(relE.getId()).getLoginName()).collect(Collectors.toList()));
+
+            List<DevopsPipelineTaskDTO> devopsPipelineTaskDTOS = new ArrayList<>();
+            pipelineTaskRepository.queryByStageId(t.getId()).forEach(task -> {
+                //task
+                List<PipelineUserRelE> taskUserRels = pipelineUserRelRepository.listByOptions(null, null, task.getId());
+                DevopsPipelineTaskDTO devopsPipelineTaskDTO = new DevopsPipelineTaskDTO();
+                devopsPipelineTaskDTO.setTaskName(task.getName());
+                devopsPipelineTaskDTO.setTaskType(task.getType());
+                devopsPipelineTaskDTO.setMultiAssign(taskUserRels.size() > 1);
+                devopsPipelineTaskDTO.setUsernames(taskUserRels.stream().map(relE -> iamRepository.queryUserByUserId(relE.getId()).getLoginName()).collect(Collectors.toList()));
+                Map<String, Object> params = new HashMap<>();
+                params.put("taskId", task.getId());
+                params.put("stageRecordId", stageRecordId);
+                devopsPipelineTaskDTO.setParams(params);
+                devopsPipelineTaskDTOS.add(devopsPipelineTaskDTO);
+            });
+            devopsPipelineStageDTO.setTasks(devopsPipelineTaskDTOS);
+            devopsPipelineStageDTOS.add(devopsPipelineStageDTO);
+
+
+        });
+        devopsPipelineDTO.setStages(devopsPipelineStageDTOS);
+        return devopsPipelineDTO;
+    }
+
+    private void conNextTaskRecord(Long taskRecordId, Long pipelineRecordId, Long stageRecordId) {
+
         //属于阶段的最后一个任务
         Long stageId = isStageLastTask(taskRecordId);
         if (stageId != null) {
@@ -340,7 +474,7 @@ public class PipelineServiceImpl implements PipelineService {
 
             //属于pipeline最后一个任务
             Long pipelineId = isPipelineLastTask(stageId);
-            PipelineRecordE recordE = pipelineRecordRepository.queryByProInstanceId(proInstacneId);
+            PipelineRecordE recordE = pipelineRecordRepository.queryById(pipelineRecordId);
             if (pipelineId != null) {
                 recordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
                 pipelineRecordRepository.update(recordE);
@@ -357,7 +491,7 @@ public class PipelineServiceImpl implements PipelineService {
             PipelineTaskE nextTask = getNextTask(taskRecordRepository.queryById(taskRecordId).getTaskId());
             if ("manual".equals(nextTask.getType())) {
                 PipelineTaskRecordE nextTaskRecordE = new PipelineTaskRecordE();
-                nextTaskRecordE.setStageRecordId(pipelineTaskRecordE.getStageRecordId());
+                nextTaskRecordE.setStageRecordId(stageRecordId);
                 nextTaskRecordE.setIsCountersigned(1);
                 nextTaskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
                 nextTaskRecordE.setTaskId(nextTask.getId());
@@ -365,58 +499,6 @@ public class PipelineServiceImpl implements PipelineService {
             }
         }
     }
-
-    @Override
-    public void audit(Long projectId, Long pipelineRecordId, Long recordId, String type, Boolean isApprove) {
-        String status = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(pipelineRecordId).getProcessInstanceId(), isApprove);
-
-        PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
-        userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
-        switch (type) {
-            case "task": {
-                PipelineTaskRecordE recordE = taskRecordRepository.queryById(recordId);
-                recordE.setStatus(status);
-                taskRecordRepository.createOrUpdate(recordE);
-                userRelE.setTaskRecordId(recordE.getId());
-                break;
-            }
-            case "stage": {
-                PipelineStageRecordE recordE = stageRecordRepository.queryById(recordId);
-                recordE.setStatus(status);
-                stageRecordRepository.createOrUpdate(recordE);
-                userRelE.setStageRecordId(recordE.getId());
-                //阶段中的第一个任务为人工任务时
-                if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
-                    PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryByStageId(stageRecordRepository.queryById(recordId).getStageId()).get(0);
-
-//                    if ("auto".equals(pipelineTaskE.getType()))
-//                        PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
-//                    taskRecordE.setStageRecordId(recordId);
-//                    taskRecordE.setIsCountersigned();
-                }
-                break;
-            }
-            case "pipeline": {
-                PipelineRecordE recordE = pipelineRecordRepository.queryById(recordId);
-                recordE.setStatus(status);
-                pipelineRecordRepository.update(recordE);
-                userRelE.setPipelineRecordId(recordE.getId());
-                //启动第一个阶段
-                if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
-                    PipelineStageRecordE stageRecordE = stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).get(0);
-                    stageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
-                    stageRecordRepository.createOrUpdate(stageRecordE);
-                }
-                break;
-            }
-            default: {
-                break;
-            }
-        }
-        pipelineUserRelRecordRepository.create(userRelE);
-
-    }
-
 
     private PipelineStageE getNextStage(Long stageId) {
         List<PipelineStageE> list = stageRepository.queryByPipelineId(stageRepository.queryById(stageId).getPipelineId());

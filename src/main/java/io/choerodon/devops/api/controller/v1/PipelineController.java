@@ -7,6 +7,8 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineReqDTO;
+import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.PipelineUserRelDTO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -234,52 +236,86 @@ public class PipelineController {
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
-    /**
-     * 接收任务状态
-     *
-     * @param projectId    任务Id
-     * @param taskRecordId 任务记录Id
-     * @return
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "接收任务状态")
-    @CustomPageRequest
-    @GetMapping("/status")
-    public ResponseEntity setTaskStatus(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "task_record_id", required = true)
-            @RequestParam Long taskRecordId,
-            @ApiParam(value = "pro_instance_id", required = true)
-            @RequestParam String proInstanceId) {
-        pipelineService.setTaskStatus(taskRecordId, proInstanceId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
-    }
+//    /**
+//     * 接收任务状态
+//     *
+//     * @param projectId    任务Id
+//     * @param taskRecordId 任务记录Id
+//     * @return
+//     */
+//    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "接收任务状态")
+//    @CustomPageRequest
+//    @GetMapping("/status")
+//    public ResponseEntity setTaskStatus(
+//            @ApiParam(value = "项目Id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "task_record_id", required = true)
+//            @RequestParam Long taskRecordId,
+//            @ApiParam(value = "pro_instance_id", required = true)
+//            @RequestParam String proInstanceId) {
+//        pipelineService.setTaskStatus(taskRecordId, proInstanceId);
+//        return new ResponseEntity(HttpStatus.NO_CONTENT);
+//    }
 
     /**
      * 人工审核
      *
      * @param projectId
-     * @param recordId
-     * @param type      流程、阶段、任务
-     * @param isApprove 是否同意
+     * @param userRecordRelDTO
      * @return
      */
     @ApiOperation(value = "人工审核")
     @CustomPageRequest
-    @GetMapping("/{pipeline_record_id}/audit")
+    @GetMapping("/audit")
     public ResponseEntity audit(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "记录Id", required = true)
-            @PathVariable(value = "pipeline_record_id") Long pipelineRecordId,
-            @ApiParam(value = "record_id", required = true)
-            @RequestParam Long recordId,
-            @ApiParam(value = "type", required = true)
-            @RequestParam String type,
-            @ApiParam(value = "is_approve", required = true)
-            @RequestParam Boolean isApprove) {
-        pipelineService.audit(projectId, pipelineRecordId, recordId, type, isApprove);
+            @ApiParam(value = "PipelineUserRelDTO", required = true)
+            @RequestBody PipelineUserRecordRelDTO userRecordRelDTO) {
+        pipelineService.audit(projectId, userRecordRelDTO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
+
+
+    /**
+     * 条件校验
+     *
+     * @param projectId
+     * @param pipelineId
+     * @return
+     */
+    @ApiOperation(value = "条件校验")
+    @CustomPageRequest
+    @GetMapping("/check_deploy")
+    public ResponseEntity<Boolean> checkDeploy(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "记录Id", required = true)
+            @RequestParam(value = "pipeline_id") Long pipelineId) {
+        return Optional.ofNullable(pipelineService.checkDeploy(pipelineId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.check.deploy"));
+    }
+
+    /**
+     * 检测部署任务生成实例是否成功
+     *
+     * @param projectId
+     * @param pipelineId
+     * @return
+     */
+    @ApiOperation(value = "条件校验")
+    @CustomPageRequest
+    @GetMapping("/")
+    public ResponseEntity<Boolean> getAppDeployStatus(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "记录Id", required = true)
+            @RequestParam(value = "pipeline_id") Long pipelineId) {
+        return Optional.ofNullable(pipelineService.checkDeploy(pipelineId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.check.deploy"));
+    }
+
 }

@@ -9,6 +9,8 @@ import io.choerodon.devops.infra.mapper.PipelineAppDeployMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:12 2019/4/4
@@ -45,5 +47,12 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
     @Override
     public PipelineAppDeployE queryById(Long appDelpoyId) {
         return ConvertHelper.convert(appDeployMapper.queryById(appDelpoyId), PipelineAppDeployE.class);
+    }
+
+    @Override
+    public List<PipelineAppDeployE> queryByAppId(Long appId) {
+        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+        appDeployDO.setApplicationId(appId);
+        return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
     }
 }
