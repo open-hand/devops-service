@@ -28,6 +28,8 @@ import io.choerodon.websocket.helper.EnvListener;
 import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -52,6 +54,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
+    @Qualifier("newEnvListener")
     private EnvListener envListener;
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
