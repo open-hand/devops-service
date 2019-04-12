@@ -24,7 +24,6 @@ import io.choerodon.devops.infra.common.util.enums.CommandStatus;
 import io.choerodon.devops.infra.common.util.enums.ObjectType;
 import io.choerodon.devops.infra.common.util.enums.SecretStatus;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.helper.EnvListener;
 import io.kubernetes.client.models.V1ObjectMeta;
 import io.kubernetes.client.models.V1Secret;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,8 +51,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private EnvUtil envUtil;
     @Autowired
-    private EnvListener envListener;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private UserAttrRepository userAttrRepository;
@@ -78,7 +75,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 secretReqDTO.getEnvId());
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         // 处理secret对象
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
@@ -175,7 +172,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
                 .checkEnvDeployPermission(TypeUtil.objToLong(GitUserNameUtil.getUserId()), envId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(envId);
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         DevopsEnvCommandE devopsEnvCommandE = initDevopsEnvCommandE(DELETE);
 
@@ -233,7 +230,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     public void deleteSecretByGitOps(Long secretId) {
         DevopsSecretE devopsSecretE = devopsSecretRepository.queryBySecretId(secretId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsSecretE.getEnvId());
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
         DevopsEnvCommandE devopsEnvCommandE = devopsEnvCommandRepository.query(devopsSecretE.getCommandId());
         devopsEnvCommandE.setStatus(CommandStatus.SUCCESS.getStatus());
         devopsEnvCommandRepository.update(devopsEnvCommandE);
@@ -244,7 +241,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     public void addSecretByGitOps(SecretReqDTO secretReqDTO, Long userId) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         // 处理secret对象
         DevopsSecretE devopsSecretE = handleSecret(secretReqDTO);
@@ -268,7 +265,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
 
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(secretReqDTO.getEnvId());
         //校验环境是否链接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         DevopsSecretE oldSecretE = devopsSecretRepository
                 .selectByEnvIdAndName(secretReqDTO.getEnvId(), secretReqDTO.getName());

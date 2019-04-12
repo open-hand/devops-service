@@ -1,5 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.List;
+
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -10,19 +12,12 @@ import io.choerodon.devops.domain.application.entity.DevopsAutoDeployE;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployValueE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRecordRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployRepository;
-import io.choerodon.devops.domain.application.repository.DevopsAutoDeployValueRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.helper.EnvListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -41,8 +36,6 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
     private DevopsAutoDeployValueRepository devopsAutoDeployValueRepository;
     @Autowired
     private EnvUtil envUtil;
-    @Autowired
-    private EnvListener envListener;
     @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     @Autowired
@@ -77,8 +70,8 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
         //判断当前用户是否是项目所有者
         userId = iamRepository.isProjectOwner(userId, projectE) ? null : userId;
         Page<DevopsAutoDeployDTO> devopsAutoDeployDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRepository.listByOptions(projectId, userId, appId, envId, doPage, pageRequest, params), DevopsAutoDeployDTO.class);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         devopsAutoDeployDTOS.forEach(autoDeployE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(autoDeployE.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
@@ -101,8 +94,8 @@ public class DevopsAutoDeployServiceImpl implements DevopsAutoDeployService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         userId = iamRepository.isProjectOwner(userId, projectE) ? null : userId;
         Page<DevopsAutoDeployRecordDTO> devopsAutoDeployRecordDTOS = ConvertPageHelper.convertPage(devopsAutoDeployRecordRepository.listByOptions(projectId, userId, appId, envId, taskName, doPage, pageRequest, params), DevopsAutoDeployRecordDTO.class);
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         devopsAutoDeployRecordDTOS.forEach(autoDeployE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(autoDeployE.getEnvId());
             if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())

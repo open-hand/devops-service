@@ -9,8 +9,6 @@ import io.choerodon.devops.domain.application.repository.DevopsClusterRepository
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.infra.common.util.EnvUtil;
-import io.choerodon.websocket.helper.CommandSender;
-import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.session.AgentConfigurer;
 import io.choerodon.websocket.session.AgentSessionManager;
 import io.choerodon.websocket.session.Session;
@@ -31,8 +29,6 @@ public class AgentInitConfig implements AgentConfigurer {
     @Autowired
     private DeployService deployService;
     @Autowired
-    private EnvListener envListener;
-    @Autowired
     private EnvUtil envUtil;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
@@ -48,8 +44,8 @@ public class AgentInitConfig implements AgentConfigurer {
         public void onConnected(Session session) {
             try {
                 Long clusterId = Long.valueOf(session.getRegisterKey().split(":")[1]);
-                List<Long> connected = envUtil.getConnectedEnvList(envListener);
-                List<Long> upgraded = envUtil.getUpdatedEnvList(envListener);
+                List<Long> connected = envUtil.getConnectedEnvList();
+                List<Long> upgraded = envUtil.getUpdatedEnvList();
                 if (connected.contains(clusterId) && !upgraded.contains(clusterId)) {
                     DevopsClusterE devopsClusterE = devopsClusterRepository.query(clusterId);
                     deployService.upgradeCluster(devopsClusterE);

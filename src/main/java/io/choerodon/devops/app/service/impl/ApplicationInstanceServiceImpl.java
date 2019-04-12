@@ -40,8 +40,6 @@ import io.choerodon.devops.infra.mapper.ApplicationInstanceMapper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
-import io.choerodon.websocket.helper.EnvListener;
-import io.choerodon.websocket.helper.EnvSession;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,8 +95,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
     @Autowired
-    private EnvListener envListener;
-    @Autowired
     private EnvUtil envUtil;
     @Autowired
     private UserAttrRepository userAttrRepository;
@@ -128,13 +124,13 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Override
     public Page<DevopsEnvPreviewInstanceDTO> listApplicationInstance(Long projectId, PageRequest pageRequest,
                                                                      Long envId, Long versionId, Long appId, String params) {
-        Map<String, EnvSession> envs = envListener.connectedEnv();
-
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         Page<ApplicationInstanceE> applicationInstanceEPage = applicationInstanceRepository.listApplicationInstance(
                 projectId, pageRequest, envId, versionId, appId, params);
 
         List<ApplicationInstanceE> applicationInstanceES = applicationInstanceEPage.getContent();
-        setInstanceConnect(applicationInstanceES, envs);
+        setInstanceConnect(applicationInstanceES, connectedEnvList, updatedEnvList);
 
         Page<ApplicationInstanceDTO> applicationInstanceDTOS = ConvertPageHelper
                 .convertPage(applicationInstanceEPage, ApplicationInstanceDTO.class);
@@ -490,7 +486,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 envId);
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(envId);
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
         return devopsEnvironmentE;
     }
 
@@ -573,14 +569,15 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     public DevopsEnvPreviewDTO listByEnv(Long projectId, Long envId, String params) {
         Map<String, Object> maps = gson.fromJson(params, new TypeToken<Map<String, Object>>() {
         }.getType());
-        Map<String, EnvSession> envs = envListener.connectedEnv();
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         Map<String, Object> searchParamMap = TypeUtil.cast(maps.get(TypeUtil.SEARCH_PARAM));
         String paramMap = TypeUtil.cast(maps.get(TypeUtil.PARAM));
         List<ApplicationInstanceDO> applicationInstancesDOS = applicationInstanceMapper
                 .listApplicationInstance(projectId, envId, null, null, searchParamMap, paramMap);
         List<ApplicationInstanceE> applicationInstanceES = ConvertHelper
                 .convertList(applicationInstancesDOS, ApplicationInstanceE.class);
-        setInstanceConnect(applicationInstanceES, envs);
+        setInstanceConnect(applicationInstanceES, connectedEnvList, updatedEnvList);
         Map<String, List<ApplicationInstanceE>> resultMaps = applicationInstanceES.stream()
                 .collect(Collectors.groupingBy(t -> t.getApplicationE().getName()));
         DevopsEnvPreviewDTO devopsEnvPreviewDTO = new DevopsEnvPreviewDTO();
@@ -846,7 +843,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
         DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
                 .queryById(applicationDeployDTO.getEnvironmentId());
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //校验values
         FileUtil.checkYamlFormat(applicationDeployDTO.getValues());
@@ -1087,7 +1084,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                 .queryById(instanceE.getDevopsEnvironmentE().getId());
 
         //校验环境是否连接
-        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId(), envListener);
+        envUtil.checkEnvConnection(devopsEnvironmentE.getClusterE().getId());
 
         //实例相关对象数据库操作
         DevopsEnvCommandE devopsEnvCommandE;
@@ -1154,16 +1151,17 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     }
 
     private void setInstanceConnect(List<ApplicationInstanceE> applicationInstanceES,
-                                    Map<String, EnvSession> envSessionMap) {
+                                    List<Long> connectedEnvList, List<Long> updatedEnvList) {
         applicationInstanceES.forEach(applicationInstanceE ->
-                applicationInstanceE.setConnect(envSessionMap.entrySet().stream()
-                        .anyMatch(entry -> {
-                            EnvSession envSession = entry.getValue();
-                            DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
-                                    .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
-                            return envSession.getClusterId().equals(devopsEnvironmentE.getClusterE().getId())
-                                    && EnvUtil.compareVersion(envSession.getVersion(), agentExpectVersion) != 1;
-                        })));
+                {
+                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository
+                            .queryById(applicationInstanceE.getDevopsEnvironmentE().getId());
+                    if (connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
+                            && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId())) {
+                        applicationInstanceE.setConnect(true);
+                    }
+                }
+        );
     }
 
     private C7nHelmRelease getC7NHelmRelease(String code, ApplicationVersionE applicationVersionE,

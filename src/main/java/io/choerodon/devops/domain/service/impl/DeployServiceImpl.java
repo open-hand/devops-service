@@ -19,7 +19,6 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
-import io.choerodon.websocket.helper.EnvListener;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,8 +48,6 @@ public class DeployServiceImpl implements DeployService {
     private IamRepository iamRepository;
     @Autowired
     private EnvUtil envUtil;
-    @Autowired
-    private EnvListener envListener;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -258,7 +255,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        List<Long> connected = envUtil.getConnectedEnvList(envListener);
+        List<Long> connected = envUtil.getConnectedEnvList();
         testReleases.forEach((key, value) -> {
             if (connected.contains(key)) {
                 Msg msg = new Msg();

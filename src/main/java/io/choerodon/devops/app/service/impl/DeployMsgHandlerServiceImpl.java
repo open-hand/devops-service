@@ -13,7 +13,6 @@ import com.google.gson.reflect.TypeToken;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
-import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
@@ -39,7 +38,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Service;
 
 /**
@@ -140,6 +138,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private EnvUtil envUtil;
     @Autowired
     private SagaClient sagaClient;
+    @Autowired
+    private DevopsConfigMapService devopsConfigMapService;
     @Autowired
     private DevopsConfigMapRepository devopsConfigMapRepository;
     @Autowired
@@ -1720,8 +1720,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
             devopsConfigMapDTO.setType("create");
             devopsConfigMapDTO.setValue(v1ConfigMap.getData());
-            //避免重复依赖envlistener
-            DevopsConfigMapService devopsConfigMapService = ApplicationContextHelper.getSpringFactory().getBean(DevopsConfigMapService.class);
             devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
         }
     }

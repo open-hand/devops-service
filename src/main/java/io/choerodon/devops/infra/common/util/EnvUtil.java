@@ -42,6 +42,8 @@ public class EnvUtil {
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
     @Autowired
     private GitUtil gitUtil;
+    @Autowired
+    private EnvListener envListener;
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -93,9 +95,9 @@ public class EnvUtil {
      * 检查环境是否链接
      *
      * @param clusterId   环境ID
-     * @param envListener EnvListener
+     *
      */
-    public void checkEnvConnection(Long clusterId, EnvListener envListener) {
+    public void checkEnvConnection(Long clusterId) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         boolean envConnected = connectedEnv.entrySet().stream()
                 .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
@@ -108,10 +110,9 @@ public class EnvUtil {
     /**
      * 环境链接列表
      *
-     * @param envListener EnvListener
      * @return 环境链接列表
      */
-    public List<Long> getConnectedEnvList(EnvListener envListener) {
+    public List<Long> getConnectedEnvList() {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().stream()
                 .map(t -> t.getValue().getClusterId())
@@ -121,10 +122,9 @@ public class EnvUtil {
     /**
      * 环境更新列表
      *
-     * @param envListener EnvListener
      * @return 环境更新列表
      */
-    public List<Long> getUpdatedEnvList(EnvListener envListener) {
+    public List<Long> getUpdatedEnvList() {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().stream()
                 .filter(t -> compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1)
