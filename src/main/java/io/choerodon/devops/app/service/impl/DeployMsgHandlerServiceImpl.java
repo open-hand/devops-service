@@ -13,6 +13,7 @@ import com.google.gson.reflect.TypeToken;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
+import io.choerodon.core.convertor.ApplicationContextHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ClusterNodeInfoService;
@@ -1719,7 +1720,9 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
             devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
             devopsConfigMapDTO.setType("create");
             devopsConfigMapDTO.setValue(v1ConfigMap.getData());
-//            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
+            //避免重复依赖envlistener
+            DevopsConfigMapService devopsConfigMapService = ApplicationContextHelper.getSpringFactory().getBean(DevopsConfigMapService.class);
+            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
         }
     }
 
