@@ -17,7 +17,6 @@ import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -36,14 +35,19 @@ public class EnvUtil {
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
-    @Autowired
+
     private IamRepository iamRepository;
-    @Autowired
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @Autowired
     private GitUtil gitUtil;
-    @Autowired
     private EnvListener envListener;
+
+    public EnvUtil(IamRepository iamRepository, DevopsEnvironmentRepository devopsEnvironmentRepository, GitUtil gitUtil,
+                   EnvListener envListener) {
+        this.iamRepository = iamRepository;
+        this.devopsEnvironmentRepository = devopsEnvironmentRepository;
+        this.gitUtil = gitUtil;
+        this.envListener = envListener;
+    }
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -94,8 +98,7 @@ public class EnvUtil {
     /**
      * 检查环境是否链接
      *
-     * @param clusterId   环境ID
-     *
+     * @param clusterId 环境ID
      */
     public void checkEnvConnection(Long clusterId) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
