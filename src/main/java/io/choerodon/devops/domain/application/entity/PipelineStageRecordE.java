@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:06 2019/4/4
@@ -12,8 +14,17 @@ public class PipelineStageRecordE {
     private Integer isParallel;
     private Long projectId;
     private Long pipelineRecordId;
+    private Date executionTime;
     private String status;
     private Long stageId;
+
+    public Date getExecutionTime() {
+        return executionTime;
+    }
+
+    public void setExecutionTime(Date executionTime) {
+        this.executionTime = executionTime;
+    }
 
     public Long getStageId() {
         return stageId;

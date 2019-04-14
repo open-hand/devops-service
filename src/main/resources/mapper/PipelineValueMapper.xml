@@ -4,6 +4,7 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineValueMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineValueDO">
         SELECT
+        dpv.id,
         dpv. NAME,
         dpv.description,
         dpv.created_by,
@@ -35,9 +36,16 @@
                     dpv.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
+            <if test='searchParam.description != null and searchParam.description.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    dpv.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
         </if>
         <if test='param != null and param != ""'>
-            AND dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            AND (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dpv.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%'))
         </if>
     </sql>
 </mapper>

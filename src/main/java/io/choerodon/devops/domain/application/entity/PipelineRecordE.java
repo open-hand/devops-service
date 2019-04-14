@@ -13,11 +13,20 @@ public class PipelineRecordE {
     private Long pipelineId;
     private String status;
     private String processInstanceId;
+    private String bpmDefinition;
 
     public PipelineRecordE(Long pipelineId, String triggerType, Long projectId) {
         this.pipelineId = pipelineId;
         this.triggerType = triggerType;
         this.projectId = projectId;
+    }
+
+    public String getBpmDefinition() {
+        return bpmDefinition;
+    }
+
+    public void setBpmDefinition(String bpmDefinition) {
+        this.bpmDefinition = bpmDefinition;
     }
 
     public String getProcessInstanceId() {

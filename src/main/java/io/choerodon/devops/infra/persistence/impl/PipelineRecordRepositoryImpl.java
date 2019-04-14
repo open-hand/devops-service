@@ -15,6 +15,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -69,7 +70,14 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
     @Override
     public PipelineRecordE queryById(Long recordId) {
         PipelineRecordDO pipelineRecordDO = new PipelineRecordDO();
-        pipelineRecordDO.setPipelineId(recordId);
+        pipelineRecordDO.setId(recordId);
         return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
+    }
+
+    @Override
+    public List<PipelineRecordE> queryByPipelineId(Long pipelineId) {
+        PipelineRecordDO pipelineRecordDO = new PipelineRecordDO();
+        pipelineRecordDO.setPipelineId(pipelineId);
+        return ConvertHelper.convertList(pipelineRecordMapper.select(pipelineRecordDO), PipelineRecordE.class);
     }
 }

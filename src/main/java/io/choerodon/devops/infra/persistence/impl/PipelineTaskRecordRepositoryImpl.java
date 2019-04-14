@@ -9,6 +9,8 @@ import io.choerodon.devops.infra.mapper.PipelineTaskRecordMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:24 2019/4/9
@@ -40,5 +42,13 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
         PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
         recordDO.setId(taskRecordId);
         return ConvertHelper.convert(taskRecordMapper.selectByPrimaryKey(recordDO), PipelineTaskRecordE.class);
+    }
+
+    @Override
+    public List<PipelineTaskRecordE> queryByStageRecordId(Long stageRecordId, Long taskId) {
+        PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
+        recordDO.setStageRecordId(stageRecordId);
+        recordDO.setTaskId(taskId);
+        return ConvertHelper.convertList(taskRecordMapper.select(recordDO), PipelineTaskRecordE.class);
     }
 }

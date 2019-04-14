@@ -4,6 +4,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:25 2019/4/4
@@ -19,4 +21,6 @@ public interface PipelineRecordRepository {
     PipelineRecordE queryByProInstanceId(String proInstanceId);
 
     PipelineRecordE queryById(Long recordId);
+
+    List<PipelineRecordE> queryByPipelineId(Long pipelineId);
 }

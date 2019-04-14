@@ -25,6 +25,12 @@ public class PipelineUserRecordRelDO extends AuditDomain {
     private Long stageRecordId;
     private Long taskRecordId;
 
+    public PipelineUserRecordRelDO(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
+        this.pipelineRecordId = pipelineRecordId;
+        this.stageRecordId = stageRecordId;
+        this.taskRecordId = taskRecordId;
+    }
+
     public Long getId() {
         return id;
     }

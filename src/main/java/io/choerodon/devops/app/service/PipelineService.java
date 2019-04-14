@@ -3,11 +3,13 @@ package io.choerodon.devops.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
+import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
 import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
-import io.choerodon.devops.api.dto.PipelineUserRelDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+
+import java.util.List;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -38,4 +40,14 @@ public interface PipelineService {
     Boolean checkDeploy(Long pipelineId);
 
     DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId);
+
+    String getAppDeployStatus(Long stageRecordId, Long taskId);
+
+    void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId);
+
+    PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId);
+
+    void retry(Long projectId, Long pipelineRecordId);
+
+    List<PipelineRecordDTO> queryByPipelineId(Long pipelineId);
 }

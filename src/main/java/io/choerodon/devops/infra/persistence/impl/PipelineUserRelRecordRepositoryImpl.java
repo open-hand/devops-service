@@ -9,6 +9,8 @@ import io.choerodon.devops.infra.mapper.PipelineUserRecordRelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  17:26 2019/4/9
@@ -26,5 +28,11 @@ public class PipelineUserRelRecordRepositoryImpl implements PipelineUserRelRecor
             throw new CommonException("error.insert.pipeline.user.record");
         }
         return ConvertHelper.convert(recordRelMapper.selectOne(recordRelDO), PipelineUserRecordRelE.class);
+    }
+
+    @Override
+    public List<PipelineUserRecordRelE> queryByRecordId(Long pipelineRecordId, Long stageRecordId, Long taskRecordId) {
+        PipelineUserRecordRelDO recordRelDO = new PipelineUserRecordRelDO(pipelineRecordId, stageRecordId, taskRecordId);
+        return ConvertHelper.convertList(recordRelMapper.select(recordRelDO), PipelineUserRecordRelE.class);
     }
 }
