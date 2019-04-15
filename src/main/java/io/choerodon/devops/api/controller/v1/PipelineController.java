@@ -44,56 +44,6 @@ public class PipelineController {
     private PipelineService pipelineService;
 
     /**
-     * 项目下获取流水线
-     *
-     * @param projectId   项目Id
-     * @param pageRequest 分页参数
-     * @param params      查询参数
-     * @return
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下获取流水线")
-    @CustomPageRequest
-    @PostMapping("/list_by_options")
-    public ResponseEntity<Page<PipelineDTO>> listByOptions(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(pipelineService.listByOptions(projectId, pageRequest, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.list"));
-    }
-
-    /**
-     * 项目下获取流水线记录
-     *
-     * @param projectId   项目Id
-     * @param pageRequest 分页参数
-     * @param params      查询参数
-     * @return
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "项目下获取流水线记录")
-    @CustomPageRequest
-    @PostMapping("/list_record")
-    public ResponseEntity<Page<PipelineRecordDTO>> listRecords(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "流水线Id", required = true)
-            @RequestParam(value = "pipeline_id") Long pipelineId,
-            @ApiParam(value = "分页参数")
-            @ApiIgnore PageRequest pageRequest,
-            @ApiParam(value = "查询参数")
-            @RequestBody(required = false) String params) {
-        return Optional.ofNullable(pipelineService.listRecords(projectId, pipelineId, pageRequest, params))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.list"));
-    }
-
-    /**
      * 项目下创建流水线
      *
      * @param projectId      项目id
@@ -195,6 +145,57 @@ public class PipelineController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.query"));
     }
+
+    /**
+     * 项目下获取流水线
+     *
+     * @param projectId   项目Id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下获取流水线")
+    @CustomPageRequest
+    @PostMapping("/list_by_options")
+    public ResponseEntity<Page<PipelineDTO>> listByOptions(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(pipelineService.listByOptions(projectId, pageRequest, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.list"));
+    }
+
+    /**
+     * 项目下获取流水线记录
+     *
+     * @param projectId   项目Id
+     * @param pageRequest 分页参数
+     * @param params      查询参数
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "项目下获取流水线记录")
+    @CustomPageRequest
+    @PostMapping("/list_record")
+    public ResponseEntity<Page<PipelineRecordDTO>> listRecords(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线Id", required = false)
+            @RequestParam(value = "pipeline_id", required = false) Long pipelineId,
+            @ApiParam(value = "分页参数")
+            @ApiIgnore PageRequest pageRequest,
+            @ApiParam(value = "查询参数")
+            @RequestBody(required = false) String params) {
+        return Optional.ofNullable(pipelineService.listRecords(projectId, pipelineId, pageRequest, params))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.list"));
+    }
+
 
     /**
      * 执行流水线
@@ -309,5 +310,39 @@ public class PipelineController {
         return Optional.ofNullable(pipelineService.queryByPipelineId(pipelineId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.record.list"));
+    }
+
+    /**
+     * @param projectId 项目id
+     * @param name      流水线名称
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "流水线所有记录")
+    @GetMapping(value = "/check_name")
+    public ResponseEntity checkName(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "流水线名称", required = true)
+            @RequestParam(value = "name") String name) {
+        pipelineService.checkName(projectId, name);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 获取所有流水线
+     *
+     * @param projectId 项目id
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取所有流水线")
+    @GetMapping(value = "/all_pipeline")
+    public ResponseEntity<List<PipelineDTO>> listPipelineDTO(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(pipelineService.listPipelineDTO(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.all.list"));
     }
 }

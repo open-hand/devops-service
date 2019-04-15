@@ -15,7 +15,7 @@ import javax.persistence.Table;
  */
 @VersionAudit
 @ModifyAudit
-@Table(name = "devops_pipeline")
+@Table(name = "devops_pipeline_user_rel")
 public class PipelineUserRelDO extends AuditDomain {
     @Id
     @GeneratedValue

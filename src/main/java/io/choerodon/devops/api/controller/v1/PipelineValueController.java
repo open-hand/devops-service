@@ -136,11 +136,12 @@ public class PipelineValueController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "名称校验")
     @GetMapping("/check_name")
-    public void checkName(
+    public ResponseEntity checkName(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "名称", required = true)
             @RequestParam(value = "name") String name) {
         pipelineValueService.checkName(projectId, name);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 }

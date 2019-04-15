@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +40,7 @@ public class WorkFlowController {
     @ApiOperation(value = "触发自动部署")
     @GetMapping("/auto_deploy")
     public ResponseEntity autoDeploy(
+            @ApiParam(value = "stage_record_id", required = true)
             @RequestParam Long stageRecordId,
             @ApiParam(value = "taskId", required = true)
             @RequestParam Long taskId) {
@@ -56,8 +58,8 @@ public class WorkFlowController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "接收任务状态")
-    @GetMapping("/status")
-    public ResponseEntity setAppDeployStatus(
+    @PutMapping("/status")
+    public ResponseEntity setAppDeployStatusTask(
             @ApiParam(value = "pipeline_record_id", required = true)
             @RequestParam Long pipelineRecordId,
             @ApiParam(value = "stage_record_id", required = true)
@@ -76,8 +78,8 @@ public class WorkFlowController {
      * @return
      */
     @ApiOperation(value = "检测部署任务生成实例状态")
-    @GetMapping("/app_deploy/status")
-    public ResponseEntity<String> getAppDeployStatus(
+    @GetMapping("/status")
+    public ResponseEntity<String> getAppDeployStatusTask(
             @ApiParam(value = "stage_record_id", required = true)
             @RequestParam Long stageRecordId,
             @ApiParam(value = "taskId", required = true)

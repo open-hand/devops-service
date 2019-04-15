@@ -25,6 +25,15 @@ public class PipelineValueE {
     private Date lastUpdateDate;
     private String appName;
     private String envName;
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public Long getCreatedBy() {
         return createdBy;

@@ -50,4 +50,8 @@ public interface PipelineService {
     void retry(Long projectId, Long pipelineRecordId);
 
     List<PipelineRecordDTO> queryByPipelineId(Long pipelineId);
+
+    void checkName(Long projectId, String name);
+
+    List<PipelineDTO> listPipelineDTO(Long projectId);
 }

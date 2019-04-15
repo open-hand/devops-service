@@ -47,7 +47,7 @@ public class PipelineValueRepositoryImpl implements PipelineValueRepository {
                 throw new CommonException("error.insert.pipeline.value");
             }
         } else {
-            if (valueMapper.updateByPrimaryKey(pipelineValueDO) != 1) {
+            if (valueMapper.updateByPrimaryKeySelective(pipelineValueDO) != 1) {
                 throw new CommonException("error.update.pipeline.value");
             }
             pipelineValueDO.setObjectVersionNumber(null);

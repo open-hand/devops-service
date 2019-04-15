@@ -10,12 +10,21 @@ import java.util.List;
  */
 public class PipelineRecordDTO {
     private Long id;
+    private String name;
     private String status;
     private String triggerType;
     private Long projectId;
     private Date lastUpdateDate;
     private List<PipelineStageRecordDTO> stageDTOList;
     private String processInstanceId;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getProcessInstanceId() {
         return processInstanceId;

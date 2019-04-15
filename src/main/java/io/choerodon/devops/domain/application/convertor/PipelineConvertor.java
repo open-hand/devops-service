@@ -27,4 +27,11 @@ public class PipelineConvertor implements ConvertorI<PipelineE, PipelineDO, Pipe
         BeanUtils.copyProperties(pipelineE, pipelineDO);
         return pipelineDO;
     }
+
+    @Override
+    public PipelineDTO entityToDto(PipelineE pipelineE) {
+        PipelineDTO pipelineDTO = new PipelineDTO();
+        BeanUtils.copyProperties(pipelineE, pipelineDTO);
+        return pipelineDTO;
+    }
 }

@@ -8,24 +8,15 @@ import java.util.List;
  */
 public class DevopsPipelineDTO {
 
-    private Long bussinessId;
+    private Long pipelineRecordId;
     private List<DevopsPipelineStageDTO> stages;
-    private Long projectId;
 
-    public Long getProjectId() {
-        return projectId;
+    public Long getPipelineRecordId() {
+        return pipelineRecordId;
     }
 
-    public void setProjectId(Long projectId) {
-        this.projectId = projectId;
-    }
-
-    public Long getBussinessId() {
-        return bussinessId;
-    }
-
-    public void setBussinessId(Long bussinessId) {
-        this.bussinessId = bussinessId;
+    public void setPipelineRecordId(Long pipelineRecordId) {
+        this.pipelineRecordId = pipelineRecordId;
     }
 
     public List<DevopsPipelineStageDTO> getStages() {

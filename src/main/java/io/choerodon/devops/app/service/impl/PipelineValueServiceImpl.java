@@ -1,8 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
@@ -18,8 +15,12 @@ import io.choerodon.devops.domain.application.repository.PipelineAppDeployValueR
 import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -43,7 +44,9 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     public PipelineValueDTO createOrUpdate(Long projectId, PipelineValueDTO pipelineValueDTO) {
         PipelineValueE pipelineValueE = ConvertHelper.convert(pipelineValueDTO, PipelineValueE.class);
         pipelineValueE.setProjectId(projectId);
-        valueRepository.checkName(projectId, pipelineValueE.getName());
+        if (pipelineValueE.getId() == null) {
+            valueRepository.checkName(projectId, pipelineValueE.getName());
+        }
         pipelineValueE = valueRepository.createOrUpdate(pipelineValueE);
         return ConvertHelper.convert(pipelineValueE, PipelineValueDTO.class);
     }
@@ -65,6 +68,7 @@ public class PipelineValueServiceImpl implements PipelineValueService {
 
         Page<PipelineValueDTO> valueDTOS = ConvertPageHelper.convertPage(valueRepository.listByOptions(projectId, appId, envId, pageRequest, params), PipelineValueDTO.class);
         Page<PipelineValueDTO> page = new Page<>();
+        BeanUtils.copyProperties(valueDTOS, page);
         page.setContent(valueDTOS.getContent().stream().peek(t -> {
             UserE userE = iamRepository.queryUserByUserId(t.getCreateBy());
             t.setCreateUserName(userE.getLoginName());
@@ -82,7 +86,7 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     @Override
     public PipelineValueDTO queryById(Long valueId) {
         PipelineValueDTO valueDTO = ConvertHelper.convert(valueRepository.queryById(valueId), PipelineValueDTO.class);
-        valueDTO.setIndex(appDeployValueRepository.queryByValueId(valueId).size() == 0);
+        valueDTO.setIndex(appDeployValueRepository.queryByValueId(valueId) == null);
         return valueDTO;
     }
 

@@ -25,6 +25,15 @@ public class PipelineValueDTO {
     private Boolean index;
     private String envName;
     private String appName;
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public Long getCreatedBy() {
         return createdBy;

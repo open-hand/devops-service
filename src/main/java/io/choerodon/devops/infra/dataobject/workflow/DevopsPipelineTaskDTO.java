@@ -8,12 +8,28 @@ import java.util.Map;
  * Created by Sheep on 2019/4/2.
  */
 public class DevopsPipelineTaskDTO {
-
+    private Long taskId;
     private String taskName;
     private List<String> usernames;
     private String taskType;
     private Boolean isMultiAssign;
-    private Map<String, Object> params;
+    private Long isCountersigned;
+
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
+
+    public Long getIsCountersigned() {
+        return isCountersigned;
+    }
+
+    public void setIsCountersigned(Long isCountersigned) {
+        this.isCountersigned = isCountersigned;
+    }
 
     public String getTaskName() {
         return taskName;
@@ -37,14 +53,6 @@ public class DevopsPipelineTaskDTO {
 
     public void setTaskType(String taskType) {
         this.taskType = taskType;
-    }
-
-    public Map<String, Object> getParams() {
-        return params;
-    }
-
-    public void setParams(Map<String, Object> params) {
-        this.params = params;
     }
 
     public Boolean getMultiAssign() {

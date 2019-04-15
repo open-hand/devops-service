@@ -18,4 +18,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'scp', id: '2019-04-15-devops_pipeline-drop-column') {
+        dropColumn(columnName: "is_enabled", tableName: "devops_pipeline")
+        addColumn(tableName: 'devops_pipeline') {
+            column(name: 'is_enabled', type: 'TINYINT UNSIGNED', remarks: '是否启用',defaultValue: "1")
+        }
+    }
+
 }

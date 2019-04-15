@@ -16,6 +16,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,5 +82,22 @@ public class PipelineRepositoryImpl implements PipelineRepository {
         PipelineDO pipelineDO = new PipelineDO();
         pipelineDO.setId(pipelineId);
         pipelineMapper.deleteByPrimaryKey(pipelineDO);
+    }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        PipelineDO pipelineDO = new PipelineDO();
+        pipelineDO.setProjectId(projectId);
+        pipelineDO.setName(name);
+        if (pipelineMapper.select(pipelineDO) != null) {
+            throw new CommonException("error.pipeline.name.exit");
+        }
+    }
+
+    @Override
+    public List<PipelineE> queryByProjectId(Long projectId) {
+        PipelineDO pipelineDO = new PipelineDO();
+        pipelineDO.setProjectId(projectId);
+        return ConvertHelper.convertList(pipelineMapper.select(pipelineDO), PipelineE.class);
     }
 }

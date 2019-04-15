@@ -7,13 +7,20 @@ import java.util.List;
  */
 public class DevopsPipelineStageDTO {
 
-    private Long stageId;
+    private Long stageRecordId;
     private List<DevopsPipelineTaskDTO> tasks;
     private Boolean parallel;
     private List<String> usernames;
     private String nextStageTriggerType;
     private Boolean isMultiAssign;
 
+    public Long getStageRecordId() {
+        return stageRecordId;
+    }
+
+    public void setStageRecordId(Long stageRecordId) {
+        this.stageRecordId = stageRecordId;
+    }
 
     public List<DevopsPipelineTaskDTO> getTasks() {
         return tasks;

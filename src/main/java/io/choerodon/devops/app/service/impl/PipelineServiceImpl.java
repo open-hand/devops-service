@@ -63,9 +63,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -138,8 +136,10 @@ public class PipelineServiceImpl implements PipelineService {
     public PipelineReqDTO create(Long projectId, PipelineReqDTO pipelineReqDTO) {
         //pipeline
         PipelineE pipelineE = ConvertHelper.convert(pipelineReqDTO, PipelineE.class);
+        pipelineE.setProjectId(projectId);
+        checkName(projectId, pipelineReqDTO.getName());
         pipelineE = pipelineRepository.create(projectId, pipelineE);
-        createUserRel(pipelineReqDTO.getPipelineUserRelDTOS(), null, pipelineE.getId(), null);
+        createUserRel(pipelineReqDTO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
 
         //stage
         List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
@@ -435,7 +435,7 @@ public class PipelineServiceImpl implements PipelineService {
     public DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId) {
         //workflow数据
         DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
-        devopsPipelineDTO.setBussinessId(pipelineRecordId);
+        devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
         //stage
         stageRepository.queryByPipelineId(pipelineId).forEach(t -> {
@@ -445,10 +445,10 @@ public class PipelineServiceImpl implements PipelineService {
             recordE.setStageId(t.getId());
             recordE.setPipelineRecordId(pipelineRecordId);
             recordE = stageRecordRepository.createOrUpdate(recordE);
-            Long stageRecordId = recordE.getId();
 
             //stage
             DevopsPipelineStageDTO devopsPipelineStageDTO = new DevopsPipelineStageDTO();
+            devopsPipelineStageDTO.setStageRecordId(recordE.getId());
             devopsPipelineStageDTO.setParallel(t.getIsParallel() == 1);
             devopsPipelineStageDTO.setNextStageTriggerType(t.getTriggerType());
             List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, t.getId(), null);
@@ -464,10 +464,7 @@ public class PipelineServiceImpl implements PipelineService {
                 devopsPipelineTaskDTO.setTaskType(task.getType());
                 devopsPipelineTaskDTO.setMultiAssign(taskUserRels.size() > 1);
                 devopsPipelineTaskDTO.setUsernames(taskUserRels.stream().map(relE -> iamRepository.queryUserByUserId(relE.getId()).getLoginName()).collect(Collectors.toList()));
-                Map<String, Object> params = new HashMap<>();
-                params.put("taskId", task.getId());
-                params.put("stageRecordId", stageRecordId);
-                devopsPipelineTaskDTO.setParams(params);
+                devopsPipelineTaskDTO.setTaskId(task.getId());
                 devopsPipelineTaskDTOS.add(devopsPipelineTaskDTO);
             });
             devopsPipelineStageDTO.setTasks(devopsPipelineTaskDTOS);
@@ -547,6 +544,16 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public List<PipelineRecordDTO> queryByPipelineId(Long pipelineId) {
         return ConvertHelper.convertList(pipelineRecordRepository.queryByPipelineId(pipelineId), PipelineRecordDTO.class);
+    }
+
+    @Override
+    public void checkName(Long projectId, String name) {
+        pipelineRepository.checkName(projectId, name);
+    }
+
+    @Override
+    public List<PipelineDTO> listPipelineDTO(Long projectId) {
+        return ConvertHelper.convertList(pipelineRepository.queryByProjectId(projectId), PipelineDTO.class);
     }
 
     private UserE getTriggerUser(Long pipelineRecordId, Long stageRecordId) {
