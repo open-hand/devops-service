@@ -25,6 +25,7 @@ import io.choerodon.devops.api.dto.PipelineUserRelDTO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployValueE;
 import io.choerodon.devops.domain.application.entity.PipelineE;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
 import io.choerodon.devops.domain.application.entity.PipelineStageE;
@@ -76,6 +77,9 @@ import java.util.stream.Collectors;
 public class PipelineServiceImpl implements PipelineService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
     private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
+    private static final String MANUAL = "manual";
+    private static final String AUTO = "auto";
+
 
     private static final Gson gson = new Gson();
     @Autowired
@@ -142,17 +146,34 @@ public class PipelineServiceImpl implements PipelineService {
         createUserRel(pipelineReqDTO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
 
         //stage
+        Long pipelineId = pipelineE.getId();
         List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
-                .stream().map(t -> stageRepository.create(t)).collect(Collectors.toList());
+                .stream().map(t -> {
+                    t.setPipelineId(pipelineId);
+                    t.setProjectId(projectId);
+                    return stageRepository.create(t);
+                }).collect(Collectors.toList());
         for (int i = 0; i < pipelineStageES.size(); i++) {
-            createUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, pipelineStageES.get(i).getId(), null);
+            Long stageId = pipelineStageES.get(i).getId();
+            createUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, stageId, null);
             //task
             pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS().forEach(t -> {
-                if ("auto".equals(t.getType())) {
-                    t.setAppDeployId(appDeployRepository.create(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
+                t.setProjectId(projectId);
+                t.setStageId(stageId);
+                if (AUTO.equals(t.getType())) {
+                    //appDeployValue
+                    PipelineAppDeployValueE appDeployValueE = new PipelineAppDeployValueE();
+                    appDeployValueE.setValue(t.getAppDeployDTOS().getValue());
+                    appDeployValueE.setValueId(t.getAppDeployDTOS().getValueId());
+                    appDeployValueE = valueRepository.create(appDeployValueE);
+                    //appDeploy
+                    PipelineAppDeployE appDeployE = ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class);
+                    appDeployE.setValueId(appDeployValueE.getId());
+                    appDeployE.setProjectId(projectId);
+                    t.setAppDeployId(appDeployRepository.create(appDeployE).getId());
                 }
                 Long taskId = pipelineTaskRepository.create(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
-                if ("maual".equals(t.getType())) {
+                if (MANUAL.equals(t.getType())) {
                     createUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
                 }
             });

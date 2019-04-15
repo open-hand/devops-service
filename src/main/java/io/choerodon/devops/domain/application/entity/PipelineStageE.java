@@ -9,7 +9,7 @@ import java.util.Date;
  */
 public class PipelineStageE {
     private Long id;
-    private String name;
+    private String stageName;
     private String triggerType;
     private Integer isParallel;
     private Long pipelineId;
@@ -25,12 +25,12 @@ public class PipelineStageE {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getStageName() {
+        return stageName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
     }
 
     public String getTriggerType() {

@@ -2,6 +2,7 @@ package io.choerodon.devops.domain.application.convertor;
 
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
+import io.choerodon.devops.api.dto.PipelineTaskDTO;
 import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.infra.dataobject.PipelineTaskDO;
 import org.springframework.beans.BeanUtils;
@@ -15,11 +16,11 @@ import java.util.stream.Collectors;
  * Description:
  */
 @Component
-public class PipelineTaskConvertor implements ConvertorI<PipelineTaskE, PipelineTaskDO, PipelineAppDeployDTO> {
+public class PipelineTaskConvertor implements ConvertorI<PipelineTaskE, PipelineTaskDO, PipelineTaskDTO> {
     @Override
-    public PipelineTaskE dtoToEntity(PipelineAppDeployDTO pipelineAppDeployDTO) {
+    public PipelineTaskE dtoToEntity(PipelineTaskDTO pipelineTaskDTO) {
         PipelineTaskE pipelineTaskE = new PipelineTaskE();
-        BeanUtils.copyProperties(pipelineAppDeployDTO, pipelineTaskE);
+        BeanUtils.copyProperties(pipelineTaskDTO, pipelineTaskE);
         return pipelineTaskE;
     }
 

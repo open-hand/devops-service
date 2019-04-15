@@ -74,7 +74,7 @@ public class PipelineValueRepositoryImpl implements PipelineValueRepository {
         PipelineValueDO pipelineValueDO = new PipelineValueDO();
         pipelineValueDO.setProjectId(projectId);
         pipelineValueDO.setName(name);
-        if (valueMapper.selectOne(pipelineValueDO) != null) {
+        if (valueMapper.select(pipelineValueDO).size() > 0) {
             throw new CommonException("error.devops.pipeline.value.name.exit");
         }
     }

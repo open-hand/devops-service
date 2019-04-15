@@ -251,7 +251,7 @@
         LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha
         WHERE
         dgp.pipeline_id = #{pipelineId}
-        and dav.version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
+        and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})
     </select>
 
     <select id="queryValueById" resultType="java.lang.String">

@@ -60,7 +60,7 @@
 
     <select id="queryByCode" resultType="io.choerodon.devops.infra.dataobject.ApplicationTemplateDO">
     select
-   dat.id,
+        dat.id,
         dat.name,
         dat.code,
         dat.organization_id,
@@ -74,7 +74,14 @@
         dat.gitlab_project_id,
         dat.object_version_number
         FROM devops_app_template dat
-        where (dat.organization_id is null and code = #{code})
-        or (dat.organization_id = #{organizationId} and code = #{code})
+        where code = #{code}
+        <choose>
+            <when test="organizationId !=null and organizationId != ''">
+                and dat.organization_id = #{organizationId}
+            </when>
+            <otherwise>
+                and dat.organization_id is null
+            </otherwise>
+        </choose>
     </select>
 </mapper>

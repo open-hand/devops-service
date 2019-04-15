@@ -89,7 +89,7 @@ public class PipelineRepositoryImpl implements PipelineRepository {
         PipelineDO pipelineDO = new PipelineDO();
         pipelineDO.setProjectId(projectId);
         pipelineDO.setName(name);
-        if (pipelineMapper.select(pipelineDO) != null) {
+        if (pipelineMapper.select(pipelineDO).size() > 0) {
             throw new CommonException("error.pipeline.name.exit");
         }
     }
