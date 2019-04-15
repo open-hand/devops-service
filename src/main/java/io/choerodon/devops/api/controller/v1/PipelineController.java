@@ -216,51 +216,6 @@ public class PipelineController {
     }
 
     /**
-     * 触发自动部署
-     *
-     * @param stageRecordId 阶段记录Id
-     * @param taskId        任务Id
-     * @return
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "触发自动部署")
-    @GetMapping("/auto_deploy")
-    public ResponseEntity autoDeploy(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "stage_record_id", required = true)
-            @RequestParam Long stageRecordId,
-            @ApiParam(value = "taskId", required = true)
-            @RequestParam Long taskId) {
-        pipelineService.autoDeploy(stageRecordId, taskId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
-    }
-
-    /**
-     * 接收任务状态
-     *
-     * @param pipelineRecordId 流水线记录Id
-     * @param stageRecordId    阶段记录Id
-     * @param taskId           任务Id
-     * @return
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "接收任务状态")
-    @GetMapping("/status")
-    public ResponseEntity setAppDeployStatus(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "pipeline_record_id", required = true)
-            @RequestParam Long pipelineRecordId,
-            @ApiParam(value = "stage_record_id", required = true)
-            @RequestParam Long stageRecordId,
-            @ApiParam(value = "task_id", required = true)
-            @RequestParam Long taskId) {
-        pipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, taskId);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
-    }
-
-    /**
      * 人工审核
      *
      * @param projectId
@@ -277,7 +232,6 @@ public class PipelineController {
         pipelineService.audit(projectId, userRecordRelDTO);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
-
 
     /**
      * 条件校验
@@ -296,27 +250,6 @@ public class PipelineController {
         return Optional.ofNullable(pipelineService.checkDeploy(pipelineId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.check.deploy"));
-    }
-
-    /**
-     * 检测部署任务生成实例状态
-     *
-     * @param taskId
-     * @param stageRecordId
-     * @return
-     */
-    @ApiOperation(value = "检测部署任务生成实例状态")
-    @GetMapping("/app_deploy/status")
-    public ResponseEntity<String> getAppDeployStatus(
-            @ApiParam(value = "项目Id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "stage_record_id", required = true)
-            @RequestParam Long stageRecordId,
-            @ApiParam(value = "taskId", required = true)
-            @RequestParam Long taskId) {
-        return Optional.ofNullable(pipelineService.getAppDeployStatus(stageRecordId, taskId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.get.deploy.status"));
     }
 
     /**
