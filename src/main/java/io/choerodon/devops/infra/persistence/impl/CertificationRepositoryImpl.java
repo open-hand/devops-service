@@ -43,9 +43,6 @@ public class CertificationRepositoryImpl implements CertificationRepository {
 
     private Gson gson = new Gson();
 
-    @Autowired
-    private EnvUtil envUtil;
-
     @Override
     public CertificationE queryByEnvAndName(Long envId, String name) {
         CertificationDO certificationDO = new CertificationDO();
