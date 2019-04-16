@@ -68,8 +68,6 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private CertificationRepository certificationRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;

@@ -78,8 +78,6 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;

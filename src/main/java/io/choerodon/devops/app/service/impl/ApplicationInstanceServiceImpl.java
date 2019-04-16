@@ -172,8 +172,6 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private CheckOptionsHandler checkOptionsHandler;

@@ -55,8 +55,6 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     @Autowired
     private UserAttrRepository userAttrRepository;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
     @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
@@ -309,7 +307,4 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
         devopsSecretRepository.checkName(name, envId);
     }
 
-    public void initMockServer(DevopsEnvironmentService devopsEnvironmentService) {
-        this.devopsEnvironmentService = devopsEnvironmentService;
-    }
 }

@@ -55,8 +55,6 @@ public class CertificationServiceImpl implements CertificationService {
     @Autowired
     private GitlabGroupMemberService gitlabGroupMemberService;
     @Autowired
-    private DevopsEnvironmentService devopsEnvironmentService;
-    @Autowired
     private EnvUtil envUtil;
     @Autowired
     private DevopsEnvFileResourceRepository devopsEnvFileResourceRepository;
