@@ -21,7 +21,6 @@ public class PipelineAppDeployDTO {
     private String appName;
     private String envName;
     private Long objectVersionNumber;
-    private Boolean status;
     private Long appDeployId;
 
     public Long getId() {
@@ -118,14 +117,6 @@ public class PipelineAppDeployDTO {
 
     public void setObjectVersionNumber(Long objectVersionNumber) {
         this.objectVersionNumber = objectVersionNumber;
-    }
-
-    public Boolean getStatus() {
-        return status;
-    }
-
-    public void setStatus(Boolean status) {
-        this.status = status;
     }
 
     public Long getStageId() {

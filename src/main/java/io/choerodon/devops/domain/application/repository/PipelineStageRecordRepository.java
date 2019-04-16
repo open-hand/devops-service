@@ -10,7 +10,7 @@ import java.util.List;
  * Description:
  */
 public interface PipelineStageRecordRepository {
-    List<PipelineStageRecordE> list(Long projectId, Long pipelineId);
+    List<PipelineStageRecordE> list(Long projectId, Long pipelineRecordId);
 
     PipelineStageRecordE createOrUpdate(PipelineStageRecordE stageRecordE);
 

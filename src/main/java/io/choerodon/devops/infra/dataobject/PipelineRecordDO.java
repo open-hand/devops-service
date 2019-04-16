@@ -7,6 +7,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.sql.Date;
 
 /**
@@ -27,6 +28,26 @@ public class PipelineRecordDO extends AuditDomain {
     private Date executionTime;
     private String bpmDefinition;
     private String processInstanceId;
+    private Long projectId;
+
+    @Transient
+    private String name;
+
+    public Long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(Long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public String getProcessInstanceId() {
         return processInstanceId;

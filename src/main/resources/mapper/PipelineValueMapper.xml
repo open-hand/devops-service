@@ -38,14 +38,14 @@
             </if>
             <if test='searchParam.description != null and searchParam.description.size > 0'>
                 AND
-                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                <foreach collection="searchParam.description" item="description" open="(" separator=" OR " close=")">
                     dpv.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
                 </foreach>
             </if>
         </if>
         <if test='param != null and param != ""'>
             AND (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
-            OR dpv.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%'))
+            OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
         </if>
     </sql>
 </mapper>

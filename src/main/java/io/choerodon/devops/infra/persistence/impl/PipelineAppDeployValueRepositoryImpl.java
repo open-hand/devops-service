@@ -33,6 +33,7 @@ public class PipelineAppDeployValueRepositoryImpl implements PipelineAppDeployVa
     @Override
     public PipelineAppDeployValueE update(PipelineAppDeployValueE appDeployValueE) {
         PipelineAppDeployValueDO appDeployValueDO = ConvertHelper.convert(appDeployValueE, PipelineAppDeployValueDO.class);
+        appDeployValueDO.setObjectVersionNumber(deployValueMapper.selectByPrimaryKey(appDeployValueDO).getObjectVersionNumber());
         if (deployValueMapper.updateByPrimaryKeySelective(appDeployValueDO) != 1) {
             throw new CommonException("error.update.pipeline.app.deploy.value");
         }

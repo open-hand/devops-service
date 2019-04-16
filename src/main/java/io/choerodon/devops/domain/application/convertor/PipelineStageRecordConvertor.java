@@ -5,12 +5,14 @@ import io.choerodon.devops.api.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
 import io.choerodon.devops.infra.dataobject.PipelineStageRecordDO;
 import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:49 2019/4/14
  * Description:
  */
+@Component
 public class PipelineStageRecordConvertor implements ConvertorI<PipelineStageRecordE, PipelineStageRecordDO, PipelineStageRecordDTO> {
     @Override
     public PipelineStageRecordE dtoToEntity(PipelineStageRecordDTO stageRecordDTO) {
@@ -24,5 +26,12 @@ public class PipelineStageRecordConvertor implements ConvertorI<PipelineStageRec
         PipelineStageRecordE stageRecordE = new PipelineStageRecordE();
         BeanUtils.copyProperties(stageRecordDO, stageRecordE);
         return stageRecordE;
+    }
+
+    @Override
+    public PipelineStageRecordDTO entityToDto(PipelineStageRecordE stageRecordE) {
+        PipelineStageRecordDTO stageRecordDTO = new PipelineStageRecordDTO();
+        BeanUtils.copyProperties(stageRecordE, stageRecordDTO);
+        return stageRecordDTO;
     }
 }

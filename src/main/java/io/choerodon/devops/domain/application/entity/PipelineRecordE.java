@@ -1,5 +1,7 @@
 package io.choerodon.devops.domain.application.entity;
 
+import java.util.Date;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  16:28 2019/4/4
@@ -14,11 +16,24 @@ public class PipelineRecordE {
     private String status;
     private String processInstanceId;
     private String bpmDefinition;
+    private Date lastUpdateDate;
 
     public PipelineRecordE(Long pipelineId, String triggerType, Long projectId) {
         this.pipelineId = pipelineId;
         this.triggerType = triggerType;
         this.projectId = projectId;
+    }
+
+    public PipelineRecordE() {
+
+    }
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     public String getBpmDefinition() {
@@ -35,10 +50,6 @@ public class PipelineRecordE {
 
     public void setProcessInstanceId(String processInstanceId) {
         this.processInstanceId = processInstanceId;
-    }
-
-    public PipelineRecordE() {
-
     }
 
     public Long getId() {

@@ -14,13 +14,17 @@
             dpad.instance_id,
             dpad.instance_name,
             dadv.VALUE,
-            dpad.value_id
+            dpad.value_id,
+            dpad.object_version_number,
+            dpad.env_id,
+            dpad.project_id,
+            dpad.id
         FROM
             devops_pipeline_app_deploy dpad
         JOIN devops_application da ON dpad.application_id = da.id
         JOIN devops_env de ON dpad.env_id = de.id
         JOIN devops_pipeline_task dpt ON dpt.app_deploy_id = dpad.id
-        JOIN devops_auto_deploy_value dadv ON dadv.id = dpad.value_id
+        JOIN devops_pipeline_app_deploy_value dadv ON dadv.id = dpad.value_id
         WHERE
             dpad.id = #{appDeployId}
     </select>

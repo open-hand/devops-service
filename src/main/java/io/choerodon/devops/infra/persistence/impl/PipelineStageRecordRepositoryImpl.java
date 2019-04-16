@@ -22,9 +22,8 @@ public class PipelineStageRecordRepositoryImpl implements PipelineStageRecordRep
     private PipelineStageRecordMapper stageRecordMapper;
 
     @Override
-    public List<PipelineStageRecordE> list(Long projectId, Long pipelineId) {
-        PipelineStageRecordDO stageRecordDO = new PipelineStageRecordDO(projectId, pipelineId);
-        return ConvertHelper.convertList(stageRecordMapper.select(stageRecordDO), PipelineStageRecordE.class);
+    public List<PipelineStageRecordE> list(Long projectId, Long pipelineRecordId) {
+        return ConvertHelper.convertList(stageRecordMapper.listByOptions(projectId, pipelineRecordId), PipelineStageRecordE.class);
     }
 
     @Override

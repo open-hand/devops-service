@@ -12,7 +12,7 @@ public class PipelineTaskDTO {
     private Long id;
     private String name;
     private String type;
-    private List<PipelineUserRelDTO> taskUserRelDTOS;
+    private List<Long> taskUserRelDTOS;
     private Integer isCountersigned;
     private Long appDeployId;
     private PipelineAppDeployDTO appDeployDTOS;
@@ -45,11 +45,11 @@ public class PipelineTaskDTO {
         this.type = type;
     }
 
-    public List<PipelineUserRelDTO> getTaskUserRelDTOS() {
+    public List<Long> getTaskUserRelDTOS() {
         return taskUserRelDTOS;
     }
 
-    public void setTaskUserRelDTOS(List<PipelineUserRelDTO> taskUserRelDTOS) {
+    public void setTaskUserRelDTOS(List<Long> taskUserRelDTOS) {
         this.taskUserRelDTOS = taskUserRelDTOS;
     }
 

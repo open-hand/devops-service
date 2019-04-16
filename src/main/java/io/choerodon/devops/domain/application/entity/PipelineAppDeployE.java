@@ -27,6 +27,15 @@ public class PipelineAppDeployE {
     private Long objectVersionNumber;
     private Boolean status;
     private Date creationDate;
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public Date getCreationDate() {
         return creationDate;

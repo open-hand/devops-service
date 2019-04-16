@@ -13,6 +13,15 @@ public class PipelineTaskE {
     private Long appDeployId;
     private Integer isCountersigned;
     private Long projectId;
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public Long getId() {
         return id;

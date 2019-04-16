@@ -2,13 +2,16 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineMapper">
-    <select id="list" resultType="io.choerodon.devops.infra.dataobject.PipelineDO">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineDO">
         SELECT
         dp.is_enabled,
         dp. NAME,
         dp.trigger_type,
         dp.created_by,
-        dp.last_update_date
+        dp.last_update_date,
+        dp.object_version_number,
+        dp.created_by,
+        dp.id
         FROM
         devops_pipeline dp
         where dp.project_id=#{projectId}

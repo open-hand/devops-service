@@ -14,9 +14,27 @@ public class PipelineRecordDTO {
     private String status;
     private String triggerType;
     private Long projectId;
+    private Long pipelineId;
     private Date lastUpdateDate;
     private List<PipelineStageRecordDTO> stageDTOList;
     private String processInstanceId;
+    private String index;
+
+    public String getIndex() {
+        return index;
+    }
+
+    public void setIndex(String index) {
+        this.index = index;
+    }
+
+    public Long getPipelineId() {
+        return pipelineId;
+    }
+
+    public void setPipelineId(Long pipelineId) {
+        this.pipelineId = pipelineId;
+    }
 
     public String getName() {
         return name;

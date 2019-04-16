@@ -12,6 +12,16 @@ public class PipelineUserRelE {
     private Long stageId;
     private Long taskId;
 
+    public PipelineUserRelE() {
+    }
+
+    public PipelineUserRelE(Long userId, Long pipelineId, Long stageId, Long taskId) {
+        this.userId = userId;
+        this.pipelineId = pipelineId;
+        this.stageId = stageId;
+        this.taskId = taskId;
+    }
+
     public Long getId() {
         return id;
     }

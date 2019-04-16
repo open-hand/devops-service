@@ -7,6 +7,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -26,6 +27,17 @@ public class PipelineTaskDO extends AuditDomain {
     private Long appDeployId;
     private Integer isCountersigned;
     private Long projectId;
+
+    @Transient
+    private String value;
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
 
     public Long getId() {
         return id;

@@ -25,6 +25,13 @@ public class PipelineTaskConvertor implements ConvertorI<PipelineTaskE, Pipeline
     }
 
     @Override
+    public PipelineTaskDTO entityToDto(PipelineTaskE pipelineTaskE) {
+        PipelineTaskDTO pipelineTaskDTO = new PipelineTaskDTO();
+        BeanUtils.copyProperties(pipelineTaskE, pipelineTaskDTO);
+        return pipelineTaskDTO;
+    }
+
+    @Override
     public PipelineTaskDO entityToDo(PipelineTaskE pipelineTaskE) {
         PipelineTaskDO pipelineTaskDO = new PipelineTaskDO();
         BeanUtils.copyProperties(pipelineTaskE, pipelineTaskDO);

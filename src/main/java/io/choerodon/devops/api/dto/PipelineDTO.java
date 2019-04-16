@@ -18,14 +18,14 @@ public class PipelineDTO {
     private String createUserUrl;
     private String createUserName;
     private String createUserRealName;
-    private Long createBy;
+    private Long createdBy;
 
-    public Long getCreateBy() {
-        return createBy;
+    public Long getCreatedBy() {
+        return createdBy;
     }
 
-    public void setCreateBy(Long createBy) {
-        this.createBy = createBy;
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
     }
 
     public Long getId() {

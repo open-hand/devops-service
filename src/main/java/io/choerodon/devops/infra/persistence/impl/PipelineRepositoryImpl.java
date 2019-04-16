@@ -64,7 +64,7 @@ public class PipelineRepositoryImpl implements PipelineRepository {
         pipelineDO.setId(pipelineId);
         pipelineDO.setIsEnabled(isEnabled);
         pipelineDO.setObjectVersionNumber(pipelineMapper.selectByPrimaryKey(pipelineDO).getObjectVersionNumber());
-        if (pipelineMapper.updateByPrimaryKey(pipelineDO) != 1) {
+        if (pipelineMapper.updateByPrimaryKeySelective(pipelineDO) != 1) {
             throw new CommonException("error.update.pipeline.is.enabled");
         }
         return ConvertHelper.convert(pipelineDO, PipelineE.class);

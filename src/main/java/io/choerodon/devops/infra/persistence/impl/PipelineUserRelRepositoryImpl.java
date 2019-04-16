@@ -36,9 +36,8 @@ public class PipelineUserRelRepositoryImpl implements PipelineUserRelRepository 
     }
 
     @Override
-    public void delete(Long userRelId) {
-        PipelineUserRelDO pipelineUserRelDO = new PipelineUserRelDO();
-        pipelineUserRelDO.setId(userRelId);
-        userRelMapper.deleteByPrimaryKey(pipelineUserRelDO);
+    public void delete(PipelineUserRelE pipelineUserRelE) {
+        PipelineUserRelDO pipelineUserRelDO = ConvertHelper.convert(pipelineUserRelE, PipelineUserRelDO.class);
+        userRelMapper.delete(pipelineUserRelDO);
     }
 }

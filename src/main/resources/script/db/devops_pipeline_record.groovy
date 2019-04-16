@@ -8,7 +8,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
             }
             column(name: 'pipeline_id', type: 'BIGINT UNSIGNED', remarks: '流水线Id')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目Id')
-            column(name: 'status', type: 'VARCHAR(10)', remarks: '状态')
+            column(name: 'status', type: 'VARCHAR(20)', remarks: '状态')
             column(name: 'trigger_type', type: 'VARCHAR(10)', remarks: '触发方式')
             column(name: 'execution_time', type: 'DATETIME', remarks: '执行时间')
             column(name: 'bpm_definition', type: 'TEXT', remarks: 'bpm定义')

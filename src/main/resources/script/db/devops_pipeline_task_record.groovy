@@ -8,7 +8,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             }
             column(name: 'stage_record_id', type: 'BIGINT UNSIGNED', remarks: '阶段记录Id')
             column(name: 'task_id', type: 'BIGINT UNSIGNED', remarks: '任务Id')
-            column(name: 'task_type', type: 'VARCHAR(10)', remarks: '任务类型')
+            column(name: 'task_type', type: 'VARCHAR(20)', remarks: '任务类型')
             column(name: 'status', type: 'VARCHAR(10)', remarks: '状态')
             column(name: 'trigger_version', type: 'VARCHAR(255)', remarks: '触发版本')
             column(name: 'application_id', type: 'BIGINT UNSIGNED', remarks: '应用Id')

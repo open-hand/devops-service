@@ -14,5 +14,5 @@ public interface PipelineUserRelRepository {
 
     List<PipelineUserRelE> listByOptions(Long pipelineId, Long stageId, Long taskId);
 
-    void delete(Long userRelId);
+    void delete(PipelineUserRelE pipelineUserRelE);
 }

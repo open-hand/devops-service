@@ -22,6 +22,13 @@ public class PipelineStageConvertor implements ConvertorI<PipelineStageE, Pipeli
     }
 
     @Override
+    public PipelineStageDTO entityToDto(PipelineStageE pipelineStageE) {
+        PipelineStageDTO pipelineStageDTO = new PipelineStageDTO();
+        BeanUtils.copyProperties(pipelineStageE, pipelineStageDTO);
+        return pipelineStageDTO;
+    }
+
+    @Override
     public PipelineStageDO entityToDo(PipelineStageE pipelineStageE) {
         PipelineStageDO pipelineStageDO = new PipelineStageDO();
         BeanUtils.copyProperties(pipelineStageE, pipelineStageDO);

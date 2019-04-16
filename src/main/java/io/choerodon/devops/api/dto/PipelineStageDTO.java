@@ -10,15 +10,23 @@ import java.util.List;
  */
 public class PipelineStageDTO {
     private Long id;
-    private String name;
+    private String stageName;
     private String triggerType;
-    private List<PipelineUserRelDTO> stageUserRelDTOS;
+    private List<Long> stageUserRelDTOS;
     private Integer isParallel;
     private List<PipelineTaskDTO> pipelineTaskDTOS;
     private Long pipelineId;
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
+
+    public List<Long> getStageUserRelDTOS() {
+        return stageUserRelDTOS;
+    }
+
+    public void setStageUserRelDTOS(List<Long> stageUserRelDTOS) {
+        this.stageUserRelDTOS = stageUserRelDTOS;
+    }
 
     public Long getId() {
         return id;
@@ -28,12 +36,12 @@ public class PipelineStageDTO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getStageName() {
+        return stageName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
     }
 
     public String getTriggerType() {
@@ -42,14 +50,6 @@ public class PipelineStageDTO {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public List<PipelineUserRelDTO> getStageUserRelDTOS() {
-        return stageUserRelDTOS;
-    }
-
-    public void setStageUserRelDTOS(List<PipelineUserRelDTO> stageUserRelDTOS) {
-        this.stageUserRelDTOS = stageUserRelDTOS;
     }
 
     public Integer getIsParallel() {

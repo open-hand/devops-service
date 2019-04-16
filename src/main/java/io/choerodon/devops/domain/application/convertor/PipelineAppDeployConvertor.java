@@ -7,6 +7,8 @@ import io.choerodon.devops.infra.dataobject.PipelineAppDeployDO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.stream.Collectors;
 
 /**
@@ -22,9 +24,21 @@ public class PipelineAppDeployConvertor implements ConvertorI<PipelineAppDeployE
         PipelineAppDeployE pipelineAppDeployE = new PipelineAppDeployE();
         BeanUtils.copyProperties(pipelineAppDeployDTO, pipelineAppDeployE);
         pipelineAppDeployE.setTriggerVersion(pipelineAppDeployDTO.getTriggerVersion().stream().collect(Collectors.joining(",")));
-        pipelineAppDeployE.setId(pipelineAppDeployDTO.getAppDeployId());
         return pipelineAppDeployE;
     }
+
+    @Override
+    public PipelineAppDeployDTO entityToDto(PipelineAppDeployE pipelineAppDeployE) {
+        PipelineAppDeployDTO pipelineAppDeployDTO = new PipelineAppDeployDTO();
+        BeanUtils.copyProperties(pipelineAppDeployE, pipelineAppDeployDTO);
+        if (pipelineAppDeployE.getTriggerVersion() != null && !pipelineAppDeployE.getTriggerVersion().isEmpty()) {
+            pipelineAppDeployDTO.setTriggerVersion(Arrays.asList(pipelineAppDeployE.getTriggerVersion().split(",")));
+        } else {
+            pipelineAppDeployDTO.setTriggerVersion(new ArrayList<>());
+        }
+        return pipelineAppDeployDTO;
+    }
+
 
     @Override
     public PipelineAppDeployDO entityToDo(PipelineAppDeployE pipelineAppDeployE) {
