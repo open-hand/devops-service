@@ -226,7 +226,7 @@ public class PipelineController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "人工审核")
-    @GetMapping("/audit")
+    @PostMapping("/audit")
     public ResponseEntity audit(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
