@@ -9,6 +9,7 @@ import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
 import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -318,7 +319,7 @@ public class PipelineController {
      * @return
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "流水线所有记录")
+    @ApiOperation(value = "名称校验")
     @GetMapping(value = "/check_name")
     public ResponseEntity checkName(
             @ApiParam(value = "项目id", required = true)
@@ -345,4 +346,23 @@ public class PipelineController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.all.list"));
     }
+
+
+    /**
+     * 获取所有项目成员和项目所有者
+     *
+     * @param projectId 项目id
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "获取所有项目成员和项目所有者")
+    @GetMapping(value = "/all_users")
+    public ResponseEntity<List<UserDTO>> getAllUsers(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(pipelineService.getAllUsers(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.users.all.list"));
+    }
+
 }

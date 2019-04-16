@@ -21,6 +21,7 @@ import io.choerodon.devops.api.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.api.dto.PipelineTaskDTO;
 import io.choerodon.devops.api.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
@@ -593,6 +594,11 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public List<PipelineDTO> listPipelineDTO(Long projectId) {
         return ConvertHelper.convertList(pipelineRepository.queryByProjectId(projectId), PipelineDTO.class);
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers(Long projectId) {
+        return iamRepository.getAllMember(projectId);
     }
 
     private UserE getTriggerUser(Long pipelineRecordId, Long stageRecordId) {

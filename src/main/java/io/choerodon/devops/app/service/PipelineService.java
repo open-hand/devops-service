@@ -6,6 +6,7 @@ import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
 import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
@@ -54,4 +55,6 @@ public interface PipelineService {
     void checkName(Long projectId, String name);
 
     List<PipelineDTO> listPipelineDTO(Long projectId);
+
+    List<UserDTO> getAllUsers(Long projectId);
 }
