@@ -4,22 +4,39 @@
 <mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
     <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
         SELECT
-            dpr.id,
-            dpr. STATUS,
-            dpr.trigger_type,
-            dp. NAME,
-            dpr.last_update_date,
-            dpr.project_id,
-            dpr.pipeline_id
+        dpr.id,
+        dpr. STATUS,
+        dpr.trigger_type,
+        dp. NAME,
+        dpr.last_update_date,
+        dpr.project_id,
+        dpr.pipeline_id
         FROM
-            devops_pipeline_record dpr
+        devops_pipeline_record dpr
         JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id
         WHERE
-            dpr.project_id = #{projectId}
+        dpr.project_id = #{projectId}
         <if test="pipelineId != null">
             AND dpr.pipeline_id = #{pipelineId}
         </if>
         <include refid="sqlparam"/>
+    </select>
+
+    <select id="queryById" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
+        SELECT
+        dpr.id,
+        dpr. STATUS,
+        dpr.trigger_type,
+        dp. NAME,
+        dpr.last_update_date,
+        dpr.project_id,
+        dpr.pipeline_id,
+        dpr.`status`,
+        dpr.creation_date
+        FROM
+        devops_pipeline_record dpr
+        JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id
+        WHERE dpr.id = #{pipelineRecordId}
     </select>
 
     <sql id="sqlparam">
@@ -38,8 +55,8 @@
             </if>
         </if>
         <if test='param != null and param != ""'>
-            AND ( dpr.status = #{status, jdbcType=VARCHAR}
-            OR dpr.trigger_type = #{triggerType, jdbcType=VARCHAR})
+            AND ( dpr.status = #{param, jdbcType=VARCHAR}
+            OR dpr.trigger_type = #{param, jdbcType=VARCHAR})
         </if>
     </sql>
 

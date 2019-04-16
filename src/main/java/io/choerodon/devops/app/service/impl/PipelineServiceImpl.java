@@ -79,6 +79,10 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
     private static final String MANUAL = "manual";
     private static final String AUTO = "auto";
+    private static final String PIPELINE = "pipeline";
+    private static final String STAGE = "stage";
+    private static final String TASK = "task";
+
 
 
     private static final Gson gson = new Gson();
@@ -132,10 +136,26 @@ public class PipelineServiceImpl implements PipelineService {
         List<PipelineRecordDTO> pipelineRecordDTOS = pageRecordDTOS.getContent().stream().map(t -> {
             t.setStageDTOList(ConvertHelper.convertList(stageRecordRepository.list(projectId, t.getId()), PipelineStageRecordDTO.class));
             if (t.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-                t.setIndex("task");
-                for (PipelineStageRecordDTO stageRecordDTO : t.getStageDTOList()) {
-                    if (stageRecordDTO.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
-                        t.setIndex("stage");
+                for (int i = 0; i < t.getStageDTOList().size(); i++) {
+                    if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                        t.setType(STAGE);
+                        t.setStageName(t.getStageDTOList().get(i - 1).getStageName());
+                        t.setRecordId(t.getStageDTOList().get(i).getId());
+                        break;
+                    } else if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
+                        Optional<PipelineTaskRecordE> taskRecordE = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null)
+                                .stream().filter(task -> task.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())).findFirst();
+                        t.setType(TASK);
+                        t.setStageName(t.getStageDTOList().get(i).getStageName());
+                        t.setRecordId(taskRecordE.get().getId());
+                        break;
+                    }
+                }
+            } else if (t.getStatus().equals(WorkFlowStatus.STOP.toValue())) {
+                t.setType(TASK);
+                for (int i = 0; i < t.getStageDTOList().size(); i++) {
+                    if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
+                        t.setType(STAGE);
                         break;
                     }
                 }
@@ -369,7 +389,7 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
         userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
         switch (recordRelDTO.getType()) {
-            case "task": {
+            case TASK: {
                 PipelineTaskRecordE recordE = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId());
                 recordE.setStatus(status);
                 taskRecordRepository.createOrUpdate(recordE);
@@ -377,7 +397,7 @@ public class PipelineServiceImpl implements PipelineService {
                 conNextTaskRecord(recordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                 break;
             }
-            case "stage": {
+            case STAGE: {
                 PipelineStageRecordE recordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
                 recordE.setStatus(status);
                 stageRecordRepository.createOrUpdate(recordE);
@@ -395,7 +415,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
                 break;
             }
-            case "pipeline": {
+            case PIPELINE: {
                 PipelineRecordE recordE = pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId());
                 recordE.setStatus(status);
                 pipelineRecordRepository.update(recordE);
@@ -558,9 +578,9 @@ public class PipelineServiceImpl implements PipelineService {
             List<PipelineTaskRecordDTO> taskRecordDTOS = new ArrayList<>();
             //查询task
             taskRecordRepository.queryByStageRecordId(t.getId(), null).forEach(r -> {
-                        PipelineTaskRecordDTO taskRecordDTO = ConvertHelper.convert(t, PipelineTaskRecordDTO.class);
+                        PipelineTaskRecordDTO taskRecordDTO = ConvertHelper.convert(r, PipelineTaskRecordDTO.class);
                         //获取task触发人员
-                        taskRecordDTO.setAuditUsers(StringUtils.join(pipelineUserRelRecordRepository.queryByRecordId(null, null, t.getId())
+                        taskRecordDTO.setAuditUsers(StringUtils.join(pipelineUserRelRecordRepository.queryByRecordId(null, null, r.getId())
                                 .stream()
                                 .map(u -> iamRepository.queryUserByUserId(u.getUserId()).getRealName())
                                 .toArray(), ","));

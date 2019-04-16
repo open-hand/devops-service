@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class PipelineStageRecordDTO {
     private Long id;
-    private Long stageName;
+    private String stageName;
     private String status;
     private String triggerType;
     private String triggerUserName;
@@ -38,11 +38,11 @@ public class PipelineStageRecordDTO {
         this.id = id;
     }
 
-    public Long getStageName() {
+    public String getStageName() {
         return stageName;
     }
 
-    public void setStageName(Long stageName) {
+    public void setStageName(String stageName) {
         this.stageName = stageName;
     }
 

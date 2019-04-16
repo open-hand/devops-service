@@ -224,6 +224,7 @@ public class PipelineController {
      * @param userRecordRelDTO
      * @return
      */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "人工审核")
     @GetMapping("/audit")
     public ResponseEntity audit(
@@ -242,6 +243,7 @@ public class PipelineController {
      * @param pipelineId
      * @return
      */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "条件校验")
     @GetMapping("/check_deploy")
     public ResponseEntity<Boolean> checkDeploy(

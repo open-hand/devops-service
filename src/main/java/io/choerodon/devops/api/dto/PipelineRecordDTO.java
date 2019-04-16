@@ -18,14 +18,32 @@ public class PipelineRecordDTO {
     private Date lastUpdateDate;
     private List<PipelineStageRecordDTO> stageDTOList;
     private String processInstanceId;
-    private String index;
+    private String type;
+    private String stageName;
+    private Long recordId;
 
-    public String getIndex() {
-        return index;
+    public String getStageName() {
+        return stageName;
     }
 
-    public void setIndex(String index) {
-        this.index = index;
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
+    }
+
+    public Long getRecordId() {
+        return recordId;
+    }
+
+    public void setRecordId(Long recordId) {
+        this.recordId = recordId;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
     }
 
     public Long getPipelineId() {

@@ -16,7 +16,7 @@ public class PipelineRecordReqDTO {
     private Date creationDate;
     private String triggerUserName;
     private Long triggerUserId;
-    private String stauts;
+    private String status;
     private List<PipelineStageRecordDTO> stageRecordDTOS;
 
     public Long getId() {
@@ -75,12 +75,12 @@ public class PipelineRecordReqDTO {
         this.triggerUserId = triggerUserId;
     }
 
-    public String getStauts() {
-        return stauts;
+    public String getStatus() {
+        return status;
     }
 
-    public void setStauts(String stauts) {
-        this.stauts = stauts;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public List<PipelineStageRecordDTO> getStageRecordDTOS() {

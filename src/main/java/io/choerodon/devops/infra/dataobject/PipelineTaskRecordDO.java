@@ -35,6 +35,15 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private Integer isCountersigned;
     private String value;
     private Long taskId;
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Long getTaskId() {
         return taskId;

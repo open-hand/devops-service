@@ -17,7 +17,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             column(name: 'version_id', type: 'BIGINT UNSIGNED', remarks: '版本Id')
             column(name: 'project_id', type: 'BIGINT UNSIGNED', remarks: '项目ID')
             column(name: 'app_deploy_id', type: 'BIGINT UNSIGNED', remarks: '应用部署Id')
-            column(name: 'execution_time', type: "DATETIME",remarks: '执行时间')
+            column(name: 'execution_time', type: "DATETIME", remarks: '执行时间')
             column(name: 'is_countersigned', type: 'TINYINT UNSIGNED', remarks: '是否会签')
             column(name: 'value', type: 'TEXT', remarks: '配置信息')
 
@@ -26,6 +26,11 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             column(name: "creation_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
             column(name: "last_updated_by", type: "BIGINT UNSIGNED", defaultValue: "0")
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
+        }
+    }
+    changeSet(author: 'scp', id: '2019-04-16-devops_pipeline_task-add-column') {
+        addColumn(tableName: 'devops_pipeline_task_record') {
+            column(name: 'name', type: 'VARCHAR(50)', remarks: '任务名称')
         }
     }
 }

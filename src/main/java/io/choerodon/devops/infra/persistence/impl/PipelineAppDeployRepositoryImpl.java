@@ -55,4 +55,13 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
         appDeployDO.setApplicationId(appId);
         return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
     }
+
+    @Override
+    public void checkName(String name) {
+        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+        appDeployDO.setInstanceName(name);
+        if (appDeployMapper.select(appDeployDO).size() > 0) {
+            throw new CommonException("error.app.instance.name.already.exist");
+        }
+    }
 }

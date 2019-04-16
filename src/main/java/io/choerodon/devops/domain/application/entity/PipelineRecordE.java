@@ -17,6 +17,7 @@ public class PipelineRecordE {
     private String processInstanceId;
     private String bpmDefinition;
     private Date lastUpdateDate;
+    private Date creationDate;
 
     public PipelineRecordE(Long pipelineId, String triggerType, Long projectId) {
         this.pipelineId = pipelineId;
@@ -26,6 +27,14 @@ public class PipelineRecordE {
 
     public PipelineRecordE() {
 
+    }
+
+    public Date getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Date creationDate) {
+        this.creationDate = creationDate;
     }
 
     public Date getLastUpdateDate() {

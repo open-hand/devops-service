@@ -29,8 +29,6 @@ public class PipelineStageRecordDO extends AuditDomain {
     private Date executionTime;
     private Long projectId;
     private Long stageId;
-
-    @Transient
     private String stageName;
 
     public PipelineStageRecordDO(Long projectId, Long pipelineRecordId) {

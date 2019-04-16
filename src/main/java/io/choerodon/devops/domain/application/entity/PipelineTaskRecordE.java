@@ -9,6 +9,7 @@ import java.sql.Date;
  */
 public class PipelineTaskRecordE {
     private Long id;
+    private String name;
     private Long stageRecordId;
     private String taskType;
     private String status;
@@ -23,6 +24,14 @@ public class PipelineTaskRecordE {
     private Integer isCountersigned;
     private String value;
     private Long taskId;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Long getTaskId() {
         return taskId;
