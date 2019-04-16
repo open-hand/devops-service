@@ -135,7 +135,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private DevopsClusterProPermissionRepository devopsClusterProPermissionRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private GitUtil gitUtil;
     @Autowired
     private SagaClient sagaClient;
     @Autowired
@@ -1478,7 +1478,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         devopsClusterE.setInit(true);
         devopsClusterRepository.update(devopsClusterE);
-        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(devopsClusterE.getId());
+        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(devopsClusterE.getId());
         Msg initClusterEnv = new Msg();
         try {
             initClusterEnv.setPayload(mapper.writeValueAsString(gitConfigDTO));

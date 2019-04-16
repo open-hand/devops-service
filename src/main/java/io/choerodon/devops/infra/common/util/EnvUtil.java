@@ -136,28 +136,6 @@ public class EnvUtil {
     }
 
 
-    public GitConfigDTO getGitConfig(Long clusterId) {
-        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.listByClusterId(clusterId);
-        GitConfigDTO gitConfigDTO = new GitConfigDTO();
-        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
-        devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-
-            GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
-            gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
-            gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
-            gitEnvConfigDTO.setGitUrl(repoUrl);
-            gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
-            gitEnvConfigDTOS.add(gitEnvConfigDTO);
-        });
-        gitConfigDTO.setEnvs(gitEnvConfigDTOS);
-        gitConfigDTO.setGitHost(gitlabSshUrl);
-        return gitConfigDTO;
-    }
-
-
     public String handDevopsEnvGitRepository(DevopsEnvironmentE devopsEnvironmentE) {
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());

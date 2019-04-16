@@ -48,6 +48,8 @@ public class DeployServiceImpl implements DeployService {
     private IamRepository iamRepository;
     @Autowired
     private EnvUtil envUtil;
+    @Autowired
+    private GitUtil gitUtil;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -190,7 +192,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void initCluster(Long clusterId) {
-        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(clusterId);
+        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
         Msg msg = new Msg();
         try {
             msg.setPayload(mapper.writeValueAsString(gitConfigDTO));
@@ -206,7 +208,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId) {
-        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(clusterId);
+        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
         List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
