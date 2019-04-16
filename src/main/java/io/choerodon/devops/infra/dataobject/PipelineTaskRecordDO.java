@@ -7,6 +7,7 @@ import io.choerodon.mybatis.domain.AuditDomain;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.sql.Date;
 
 /**
@@ -36,6 +37,37 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private String value;
     private Long taskId;
     private String name;
+
+    @Transient
+    private String envName;
+    @Transient
+    private String appName;
+    @Transient
+    private String version;
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
 
     public String getName() {
         return name;

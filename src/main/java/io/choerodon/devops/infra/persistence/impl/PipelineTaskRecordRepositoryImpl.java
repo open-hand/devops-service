@@ -46,9 +46,6 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
 
     @Override
     public List<PipelineTaskRecordE> queryByStageRecordId(Long stageRecordId, Long taskId) {
-        PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
-        recordDO.setStageRecordId(stageRecordId);
-        recordDO.setTaskId(taskId);
-        return ConvertHelper.convertList(taskRecordMapper.select(recordDO), PipelineTaskRecordE.class);
+        return ConvertHelper.convertList(taskRecordMapper.queryByStageRecordId(stageRecordId, taskId), PipelineTaskRecordE.class);
     }
 }

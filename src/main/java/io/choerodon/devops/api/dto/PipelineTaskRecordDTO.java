@@ -7,9 +7,9 @@ package io.choerodon.devops.api.dto;
  */
 public class PipelineTaskRecordDTO {
     private Long id;
-    private Long name;
+    private String name;
     private String status;
-    private String type;
+    private String taskType;
     private Integer isCountersigned;
     private String auditUsers;
     private String appName;
@@ -25,11 +25,11 @@ public class PipelineTaskRecordDTO {
         this.id = id;
     }
 
-    public Long getName() {
+    public String getName() {
         return name;
     }
 
-    public void setName(Long name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -41,12 +41,12 @@ public class PipelineTaskRecordDTO {
         this.status = status;
     }
 
-    public String getType() {
-        return type;
+    public String getTaskType() {
+        return taskType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTaskType(String taskType) {
+        this.taskType = taskType;
     }
 
     public Integer getIsCountersigned() {

@@ -24,6 +24,42 @@ public class PipelineTaskRecordE {
     private Integer isCountersigned;
     private String value;
     private Long taskId;
+    private String appName;
+    private String envName;
+    private String version;
+    private String instanceName;
+
+    public String getAppName() {
+        return appName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public String getEnvName() {
+        return envName;
+    }
+
+    public void setEnvName(String envName) {
+        this.envName = envName;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
 
     public String getName() {
         return name;
