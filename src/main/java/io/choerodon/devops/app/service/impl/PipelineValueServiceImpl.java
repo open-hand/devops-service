@@ -94,4 +94,9 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     public void checkName(Long projectId, String name) {
         valueRepository.checkName(projectId, name);
     }
+
+    @Override
+    public List<PipelineValueDTO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        return ConvertHelper.convertList(valueRepository.queryByAppIdAndEnvId(projectId, appId, envId), PipelineValueDTO.class);
+    }
 }

@@ -15,6 +15,7 @@ import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,5 +78,14 @@ public class PipelineValueRepositoryImpl implements PipelineValueRepository {
         if (valueMapper.select(pipelineValueDO).size() > 0) {
             throw new CommonException("error.devops.pipeline.value.name.exit");
         }
+    }
+
+    @Override
+    public List<PipelineValueE> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
+        PipelineValueDO valueDO = new PipelineValueDO();
+        valueDO.setProjectId(projectId);
+        valueDO.setAppId(appId);
+        valueDO.setEnvId(envId);
+        return ConvertHelper.convertList(valueMapper.select(valueDO), PipelineValueE.class);
     }
 }

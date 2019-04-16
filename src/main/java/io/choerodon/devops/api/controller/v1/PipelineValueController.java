@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -143,5 +144,28 @@ public class PipelineValueController {
             @RequestParam(value = "name") String name) {
         pipelineValueService.checkName(projectId, name);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 根据应用Id和环境Id获取配置
+     *
+     * @param projectId
+     * @param appId
+     * @param envId
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "根据应用Id和环境Id获取配置")
+    @GetMapping("/list")
+    public ResponseEntity<List<PipelineValueDTO>> queryByAppIdAndEnvId(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用Id", required = true)
+            @RequestParam(value = "app_id") Long appId,
+            @ApiParam(value = "环境Id", required = true)
+            @RequestParam(value = "env_id") Long envId) {
+        return Optional.ofNullable(pipelineValueService.queryByAppIdAndEnvId(projectId, appId, envId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.value.queryByIds"));
     }
 }

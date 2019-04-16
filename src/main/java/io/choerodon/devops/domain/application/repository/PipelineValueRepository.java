@@ -4,6 +4,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  10:02 2019/4/10
@@ -19,4 +21,6 @@ public interface PipelineValueRepository {
     PipelineValueE queryById(Long valueId);
 
     void checkName(Long projectId, String name);
+
+    List<PipelineValueE> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId);
 }
