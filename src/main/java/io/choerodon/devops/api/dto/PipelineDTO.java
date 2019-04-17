@@ -19,6 +19,15 @@ public class PipelineDTO {
     private String createUserName;
     private String createUserRealName;
     private Long createdBy;
+    private Boolean isExecute;
+
+    public Boolean getExecute() {
+        return isExecute;
+    }
+
+    public void setExecute(Boolean execute) {
+        isExecute = execute;
+    }
 
     public Long getCreatedBy() {
         return createdBy;

@@ -126,6 +126,11 @@ public class PipelineServiceImpl implements PipelineService {
             t.setCreateUserName(userE.getLoginName());
             t.setCreateUserUrl(userE.getImageUrl());
             t.setCreateUserRealName(userE.getRealName());
+            t.setExecute(pipelineUserRelRepository.listByOptions(t.getId(), null, null)
+                    .stream()
+                    .map(PipelineUserRelE::getUserId)
+                    .collect(Collectors.toList())
+                    .contains(DetailsHelper.getUserDetails().getUserId()));
         }).collect(Collectors.toList()));
         return page;
     }
@@ -661,7 +666,7 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordRepository.createOrUpdate(taskRecordE);
 
         //更新整个流水线状态
-        updateStatus(pipelineRecordId,null,WorkFlowStatus.PENDINGCHECK.toValue());
+        updateStatus(pipelineRecordId, null, WorkFlowStatus.PENDINGCHECK.toValue());
     }
 
     @Override
@@ -725,7 +730,7 @@ public class PipelineServiceImpl implements PipelineService {
                 nextTaskRecordE.setTaskType(nextTask.getType());
                 nextTaskRecordE.setTaskId(nextTask.getId());
                 taskRecordRepository.createOrUpdate(nextTaskRecordE);
-                updateStatus(pipelineRecordId,null,WorkFlowStatus.PENDINGCHECK.toValue());
+                updateStatus(pipelineRecordId, null, WorkFlowStatus.PENDINGCHECK.toValue());
             }
         }
     }
