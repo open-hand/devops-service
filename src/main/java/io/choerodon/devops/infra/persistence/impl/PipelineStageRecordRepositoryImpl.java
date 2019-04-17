@@ -40,7 +40,7 @@ public class PipelineStageRecordRepositoryImpl implements PipelineStageRecordRep
             }
             stageRecordDO.setObjectVersionNumber(null);
         }
-        return ConvertHelper.convert(stageRecordMapper.selectOne(stageRecordDO), PipelineStageRecordE.class);
+        return ConvertHelper.convert(stageRecordMapper.selectByPrimaryKey(stageRecordDO), PipelineStageRecordE.class);
     }
 
     @Override

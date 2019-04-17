@@ -18,6 +18,15 @@ public class PipelineStageRecordE {
     private String status;
     private Long stageId;
     private Long objectVersionNumber;
+    private Date lastUpdateDate;
+
+    public Date getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Date lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
+    }
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;

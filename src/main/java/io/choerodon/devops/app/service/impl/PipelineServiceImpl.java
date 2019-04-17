@@ -65,6 +65,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -325,13 +326,14 @@ public class PipelineServiceImpl implements PipelineService {
         //发送请求给workflow，创建流程实例
         try {
             pipelineRecordE.setProcessInstanceId(workFlowRepository.create(projectId, devopsPipelineDTO));
+            updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+        } finally {
+            pipelineRecordRepository.update(pipelineRecordE);
         }
-        pipelineRecordRepository.update(pipelineRecordE);
 
-        updateFirstStage(pipelineRecordE.getId(), pipelineId);
     }
 
     @Override
@@ -517,7 +519,9 @@ public class PipelineServiceImpl implements PipelineService {
             devopsPipelineStageDTO.setNextStageTriggerType(t.getTriggerType());
             List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, t.getId(), null);
             devopsPipelineStageDTO.setMultiAssign(relEList.size() > 1);
-            devopsPipelineStageDTO.setUsernames(relEList.stream().map(relE -> iamRepository.queryUserByUserId(relE.getId()).getLoginName()).collect(Collectors.toList()));
+            devopsPipelineStageDTO.setUsernames(relEList.stream()
+                    .map(relE -> iamRepository.queryUserByUserId(relE.getUserId()).getLoginName())
+                    .collect(Collectors.toList()));
 
             List<DevopsPipelineTaskDTO> devopsPipelineTaskDTOS = new ArrayList<>();
             pipelineTaskRepository.queryByStageId(t.getId()).forEach(task -> {
@@ -527,7 +531,7 @@ public class PipelineServiceImpl implements PipelineService {
                 devopsPipelineTaskDTO.setTaskName(task.getName());
                 devopsPipelineTaskDTO.setTaskType(task.getType());
                 devopsPipelineTaskDTO.setMultiAssign(taskUserRels.size() > 1);
-                devopsPipelineTaskDTO.setUsernames(taskUserRels.stream().map(relE -> iamRepository.queryUserByUserId(relE.getId()).getLoginName()).collect(Collectors.toList()));
+                devopsPipelineTaskDTO.setUsernames(taskUserRels.stream().map(relE -> iamRepository.queryUserByUserId(relE.getUserId()).getLoginName()).collect(Collectors.toList()));
                 devopsPipelineTaskDTO.setTaskId(task.getId());
                 devopsPipelineTaskDTO.setIsSign(task.getIsCountersigned().longValue());
                 devopsPipelineTaskDTOS.add(devopsPipelineTaskDTO);
@@ -703,6 +707,10 @@ public class PipelineServiceImpl implements PipelineService {
             PipelineStageRecordE stageRecordE = new PipelineStageRecordE();
             stageRecordE.setId(taskRecordRepository.queryById(taskRecordId).getStageRecordId());
             stageRecordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
+            Long time = System.currentTimeMillis() - stageRecordE.getLastUpdateDate().getTime();
+            Date executionTime = new Date();
+            executionTime.setTime(time);
+            stageRecordE.setExecutionTime(executionTime);
             stageRecordRepository.createOrUpdate(stageRecordE);
 
             //属于pipeline最后一个任务
@@ -715,7 +723,12 @@ public class PipelineServiceImpl implements PipelineService {
                 //更新下一个阶段状态
                 PipelineStageE nextStage = getNextStage(stageId);
                 PipelineStageRecordE pipelineStageRecordE = stageRecordRepository.queryByPipeRecordId(recordE.getId(), nextStage.getId()).get(0);
-                pipelineStageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+
+                if (stageRepository.queryById(stageRecordId).getTriggerType().equals(AUTO)) {
+                    pipelineStageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+                } else {
+                    pipelineStageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+                }
                 stageRecordRepository.createOrUpdate(pipelineStageRecordE);
             }
         } else {
