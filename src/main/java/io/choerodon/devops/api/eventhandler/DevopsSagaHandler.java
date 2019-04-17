@@ -14,6 +14,7 @@ import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsGitService;
 import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
+import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
@@ -31,6 +32,7 @@ import io.choerodon.devops.domain.application.repository.DevopsAutoDeployReposit
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
@@ -74,6 +76,8 @@ public class DevopsSagaHandler {
     private final GitlabRepository gitlabRepository;
     private final PipelineTaskRecordRepository taskRecordRepository;
     private final PipelineAppDeployRepository appDeployRepository;
+    private final PipelineStageRecordRepository stageRecordRepository;
+    private final PipelineService pipelineService;
 
     @Autowired
     public DevopsSagaHandler(DevopsEnvironmentService devopsEnvironmentService,
@@ -88,7 +92,9 @@ public class DevopsSagaHandler {
                              DevopsAutoDeployRepository devopsAutoDeployRepository,
                              PipelineTaskRecordRepository taskRecordRepository,
                              PipelineAppDeployRepository appDeployRepository,
+                             PipelineStageRecordRepository stageRecordRepository,
                              GitlabRepository gitlabRepository,
+                             PipelineService pipelineService,
                              ApplicationInstanceService applicationInstanceService) {
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsGitService = devopsGitService;
@@ -103,6 +109,8 @@ public class DevopsSagaHandler {
         this.taskRecordRepository = taskRecordRepository;
         this.appDeployRepository = appDeployRepository;
         this.gitlabRepository = gitlabRepository;
+        this.pipelineService = pipelineService;
+        this.stageRecordRepository = stageRecordRepository;
         this.applicationInstanceService = applicationInstanceService;
     }
 
@@ -374,10 +382,13 @@ public class DevopsSagaHandler {
             LOGGER.error("error create pipeline auto deploy instance success");
         } catch (Exception e) {
             //实例创建失败,回写记录表
+            Long stageRecordId = taskRecordRepository.queryById(applicationDeployDTO.getRecordId()).getStageRecordId();
+            Long pipelineRecordId = stageRecordRepository.queryById(applicationDeployDTO.getRecordId()).getPipelineRecordId();
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+            pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue());
             LOGGER.error("error create pipeline auto deploy instance {}", e.getMessage());
         }
     }

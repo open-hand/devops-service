@@ -59,4 +59,6 @@ public interface PipelineService {
     List<UserDTO> getAllUsers(Long projectId);
 
     void test(Long versionId);
+
+    void updateStatus(Long pipelineRecordId, Long stageRecordId, String status);
 }

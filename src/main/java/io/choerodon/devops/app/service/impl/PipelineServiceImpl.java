@@ -659,9 +659,13 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
         taskRecordE.setTaskType(taskE.getType());
         taskRecordRepository.createOrUpdate(taskRecordE);
+
+        //更新整个流水线状态
+        updateStatus(pipelineRecordId,null,WorkFlowStatus.PENDINGCHECK.toValue());
     }
 
-    private void updateStatus(Long pipelineRecordId, Long stageRecordId, String status) {
+    @Override
+    public void updateStatus(Long pipelineRecordId, Long stageRecordId, String status) {
         if (pipelineRecordId != null) {
             PipelineRecordE pipelineRecordE = new PipelineRecordE();
             pipelineRecordE.setId(pipelineRecordId);
@@ -721,6 +725,7 @@ public class PipelineServiceImpl implements PipelineService {
                 nextTaskRecordE.setTaskType(nextTask.getType());
                 nextTaskRecordE.setTaskId(nextTask.getId());
                 taskRecordRepository.createOrUpdate(nextTaskRecordE);
+                updateStatus(pipelineRecordId,null,WorkFlowStatus.PENDINGCHECK.toValue());
             }
         }
     }
