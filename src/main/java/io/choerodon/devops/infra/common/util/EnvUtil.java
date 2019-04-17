@@ -41,7 +41,7 @@ public class EnvUtil {
     private IamRepository iamRepository;
     @Autowired
     private GitUtil gitUtil;
-    @Autowired
+    @Autowired(required = false)
     private EnvListener envListener;
 
 
