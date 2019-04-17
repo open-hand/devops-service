@@ -25,7 +25,7 @@ public interface WorkFlowServiceClient {
 
 
     @PutMapping(value = "/v1/projects/{project_id}/process_instances")
-    ResponseEntity<String> approveUserTask(
+    ResponseEntity<Boolean> approveUserTask(
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam("processInstanceId") String processInstanceId,
             @RequestParam("isApprove") Boolean isApprove);

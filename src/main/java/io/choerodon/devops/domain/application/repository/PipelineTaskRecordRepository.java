@@ -15,4 +15,6 @@ public interface PipelineTaskRecordRepository {
     PipelineTaskRecordE queryById(Long taskRecordId);
 
     List<PipelineTaskRecordE> queryByStageRecordId(Long stageRecordId, Long taskId);
+
+    void delete(Long recordId);
 }

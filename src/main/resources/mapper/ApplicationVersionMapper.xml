@@ -105,7 +105,8 @@
     <select id="selectByAppId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
         SELECT
         dav.id,
-        dav.version
+        dav.version,
+        dav.creation_date
         FROM
         devops_app_version dav
         WHERE

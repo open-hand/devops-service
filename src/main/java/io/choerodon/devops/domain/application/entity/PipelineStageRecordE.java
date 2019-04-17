@@ -17,6 +17,15 @@ public class PipelineStageRecordE {
     private Date executionTime;
     private String status;
     private Long stageId;
+    private Long objectVersionNumber;
+
+    public Long getObjectVersionNumber() {
+        return objectVersionNumber;
+    }
+
+    public void setObjectVersionNumber(Long objectVersionNumber) {
+        this.objectVersionNumber = objectVersionNumber;
+    }
 
     public Date getExecutionTime() {
         return executionTime;

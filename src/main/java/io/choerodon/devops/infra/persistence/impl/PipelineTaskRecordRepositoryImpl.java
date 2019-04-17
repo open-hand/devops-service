@@ -29,6 +29,7 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
                 throw new CommonException("error.insert.pipeline.task.record");
             }
         } else {
+            recordDO.setObjectVersionNumber(taskRecordMapper.selectByPrimaryKey(recordDO).getObjectVersionNumber());
             if (taskRecordMapper.updateByPrimaryKeySelective(recordDO) != 1) {
                 throw new CommonException("error.update.pipeline.task.record");
             }
@@ -47,5 +48,12 @@ public class PipelineTaskRecordRepositoryImpl implements PipelineTaskRecordRepos
     @Override
     public List<PipelineTaskRecordE> queryByStageRecordId(Long stageRecordId, Long taskId) {
         return ConvertHelper.convertList(taskRecordMapper.queryByStageRecordId(stageRecordId, taskId), PipelineTaskRecordE.class);
+    }
+
+    @Override
+    public void delete(Long recordId) {
+        PipelineTaskRecordDO recordDO = new PipelineTaskRecordDO();
+        recordDO.setId(recordId);
+        taskRecordMapper.deleteByPrimaryKey(recordDO);
     }
 }

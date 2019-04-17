@@ -17,4 +17,6 @@ public interface PipelineStageRecordRepository {
     List<PipelineStageRecordE> queryByPipeRecordId(Long pipelineRecordId, Long stageId);
 
     PipelineStageRecordE queryById(Long recordId);
+
+    PipelineStageRecordE update(PipelineStageRecordE stageRecordE);
 }

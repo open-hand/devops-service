@@ -27,4 +27,11 @@ public class PipelineTaskRecordConvertor implements ConvertorI<PipelineTaskRecor
         BeanUtils.copyProperties(taskRecordDO, taskRecordE);
         return taskRecordE;
     }
+
+    @Override
+    public PipelineTaskRecordDO entityToDo(PipelineTaskRecordE taskRecordE) {
+        PipelineTaskRecordDO taskRecordDO = new PipelineTaskRecordDO();
+        BeanUtils.copyProperties(taskRecordE, taskRecordDO);
+        return taskRecordDO;
+    }
 }

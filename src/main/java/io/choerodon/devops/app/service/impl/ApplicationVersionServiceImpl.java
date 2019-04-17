@@ -215,7 +215,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * 检测能够触发自动部署
      * @param versionE
      */
-    private void checkAutoDeploy(ApplicationVersionE versionE) {
+    @Override
+    public void checkAutoDeploy(ApplicationVersionE versionE) {
         Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
         String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
         if (version != null) {
@@ -245,11 +246,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private void executeAppDeploy(Long pipelineId) {
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
         //保存pipeline
-        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId()));
+        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(),WorkFlowStatus.RUNNING.toValue()));
         //准备workFlow数据
         DevopsPipelineDTO devopsPipelineDTO = pipelineService.setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
-        pipelineRecordE.setTriggerType(gson.toJson(devopsPipelineDTO));
-        pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+        pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
         pipelineRecordRepository.update(pipelineRecordE);
         //发送请求给workflow，创建流程实例
         try {

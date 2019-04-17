@@ -10,5 +10,5 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 public interface WorkFlowRepository {
     String create(Long projectId, DevopsPipelineDTO devopsPipelineDTO);
 
-    String approveUserTask(Long projectId, String instanceId, Boolean isApprove);
+    Boolean approveUserTask(Long projectId, String instanceId, Boolean isApprove);
 }

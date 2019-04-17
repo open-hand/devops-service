@@ -57,4 +57,13 @@ public class PipelineStageRecordRepositoryImpl implements PipelineStageRecordRep
         stageRecordDO.setId(recordId);
         return ConvertHelper.convert(stageRecordMapper.selectByPrimaryKey(stageRecordDO), PipelineStageRecordE.class);
     }
+
+    @Override
+    public PipelineStageRecordE update(PipelineStageRecordE stageRecordE) {
+        PipelineStageRecordDO stageRecordDO = ConvertHelper.convert(stageRecordE, PipelineStageRecordDO.class);
+        if (stageRecordMapper.updateByPrimaryKey(stageRecordDO) != 1) {
+            throw new CommonException("error.update.pipeline.stage.record");
+        }
+        return ConvertHelper.convert(stageRecordMapper.selectByPrimaryKey(stageRecordDO), PipelineStageRecordE.class);
+    }
 }

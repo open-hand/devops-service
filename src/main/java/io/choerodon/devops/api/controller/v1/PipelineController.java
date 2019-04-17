@@ -207,7 +207,7 @@ public class PipelineController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "执行流水线")
-    @PutMapping(value = "/{pipeline_id}/execute")
+    @GetMapping(value = "/{pipeline_id}/execute")
     public ResponseEntity execute(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,
@@ -366,5 +366,22 @@ public class PipelineController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
     }
+
+//    /**
+//     * 获取所有项目成员和项目所有者
+//     *
+//     * @param projectId 项目id
+//     * @return
+//     */
+//    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "获取所有项目成员和项目所有者")
+//    @GetMapping(value = "/test")
+//    public void test(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "项目id", required = true)
+//            @RequestParam(value = "version_id") Long versionId) {
+//        pipelineService.test(versionId);
+//    }
 
 }

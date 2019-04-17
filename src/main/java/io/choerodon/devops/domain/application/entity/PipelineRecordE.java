@@ -19,10 +19,11 @@ public class PipelineRecordE {
     private Date lastUpdateDate;
     private Date creationDate;
 
-    public PipelineRecordE(Long pipelineId, String triggerType, Long projectId) {
+    public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status) {
         this.pipelineId = pipelineId;
         this.triggerType = triggerType;
         this.projectId = projectId;
+        this.status = status;
     }
 
     public PipelineRecordE() {

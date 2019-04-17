@@ -18,25 +18,10 @@ public class PipelineRecordDTO {
     private Date lastUpdateDate;
     private List<PipelineStageRecordDTO> stageDTOList;
     private String processInstanceId;
-    private String type;
     private String stageName;
-    private Long recordId;
-
-    public String getStageName() {
-        return stageName;
-    }
-
-    public void setStageName(String stageName) {
-        this.stageName = stageName;
-    }
-
-    public Long getRecordId() {
-        return recordId;
-    }
-
-    public void setRecordId(Long recordId) {
-        this.recordId = recordId;
-    }
+    private Long taskRecordId;
+    private Long stageRecordId;
+    private String type;
 
     public String getType() {
         return type;
@@ -44,6 +29,30 @@ public class PipelineRecordDTO {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public Long getTaskRecordId() {
+        return taskRecordId;
+    }
+
+    public void setTaskRecordId(Long taskRecordId) {
+        this.taskRecordId = taskRecordId;
+    }
+
+    public Long getStageRecordId() {
+        return stageRecordId;
+    }
+
+    public void setStageRecordId(Long stageRecordId) {
+        this.stageRecordId = stageRecordId;
+    }
+
+    public String getStageName() {
+        return stageName;
+    }
+
+    public void setStageName(String stageName) {
+        this.stageName = stageName;
     }
 
     public Long getPipelineId() {

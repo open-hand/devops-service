@@ -1,10 +1,7 @@
 package io.choerodon.devops.api.controller.v1;
 
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,14 +33,13 @@ public class WorkFlowController {
      * @param taskId        任务Id
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "触发自动部署")
     @GetMapping("/auto_deploy")
     public ResponseEntity autoDeploy(
-            @ApiParam(value = "stage_record_id", required = true)
-            @RequestParam Long stageRecordId,
-            @ApiParam(value = "taskId", required = true)
-            @RequestParam Long taskId) {
+            @ApiParam(value = "阶段记录Id", required = true)
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务Id", required = true)
+            @RequestParam(value = "task_id") Long taskId) {
         pipelineService.autoDeploy(stageRecordId, taskId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
@@ -56,16 +52,15 @@ public class WorkFlowController {
      * @param taskId           任务Id
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "接收任务状态")
     @PutMapping("/status")
     public ResponseEntity setAppDeployStatusTask(
-            @ApiParam(value = "pipeline_record_id", required = true)
-            @RequestParam Long pipelineRecordId,
-            @ApiParam(value = "stage_record_id", required = true)
-            @RequestParam Long stageRecordId,
-            @ApiParam(value = "task_id", required = true)
-            @RequestParam Long taskId) {
+            @ApiParam(value = "流水线记录Id", required = true)
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
+            @ApiParam(value = "阶段记录Id", required = true)
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务Id", required = true)
+            @RequestParam(value = "task_id") Long taskId) {
         pipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, taskId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
@@ -79,11 +74,11 @@ public class WorkFlowController {
      */
     @ApiOperation(value = "检测部署任务生成实例状态")
     @GetMapping("/status")
-    public ResponseEntity<String> getAppDeployStatusTask(
-            @ApiParam(value = "stage_record_id", required = true)
-            @RequestParam Long stageRecordId,
-            @ApiParam(value = "taskId", required = true)
-            @RequestParam Long taskId) {
+    public ResponseEntity<Boolean> getAppDeployStatusTask(
+            @ApiParam(value = "阶段记录Id", required = true)
+            @RequestParam(value = "stage_record_id") Long stageRecordId,
+            @ApiParam(value = "任务Id", required = true)
+            @RequestParam(value = "task_id") Long taskId) {
         return Optional.ofNullable(pipelineService.getAppDeployStatus(stageRecordId, taskId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.get.deploy.status"));

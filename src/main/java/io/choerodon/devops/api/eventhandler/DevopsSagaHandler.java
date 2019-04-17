@@ -363,15 +363,15 @@ public class DevopsSagaHandler {
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             //更新记录表中的实例
-            PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.RUNNING.toString());
+            PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
-            if (appDeployRepository.queryById(applicationDeployDTO.getAutoDeployId()).getInstanceId() == null) {
-                PipelineAppDeployE appDeployE = new PipelineAppDeployE();
-                appDeployE.setId(applicationDeployDTO.getAutoDeployId());
+            PipelineAppDeployE appDeployE = appDeployRepository.queryById(applicationDeployDTO.getAutoDeployId());
+            if (appDeployE.getInstanceId() == null) {
                 appDeployE.setInstanceId(applicationInstanceDTO.getId());
                 appDeployRepository.update(appDeployE);
             }
+            LOGGER.error("error create pipeline auto deploy instance success");
         } catch (Exception e) {
             //实例创建失败,回写记录表
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();

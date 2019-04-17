@@ -36,8 +36,8 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
     }
 
     @Override
-    public String approveUserTask(Long projectId, String instanceId, Boolean isApprove) {
-        ResponseEntity<String> responseEntity = workFlowServiceClient.approveUserTask(projectId, instanceId, isApprove);
+    public Boolean approveUserTask(Long projectId, String instanceId, Boolean isApprove) {
+        ResponseEntity<Boolean> responseEntity = workFlowServiceClient.approveUserTask(projectId, instanceId, isApprove);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.approve");
         }

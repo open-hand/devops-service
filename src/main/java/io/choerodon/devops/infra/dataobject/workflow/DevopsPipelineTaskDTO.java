@@ -13,7 +13,7 @@ public class DevopsPipelineTaskDTO {
     private List<String> usernames;
     private String taskType;
     private Boolean isMultiAssign;
-    private Long isCountersigned;
+    private Long isSign;
 
     public Long getTaskId() {
         return taskId;
@@ -23,12 +23,12 @@ public class DevopsPipelineTaskDTO {
         this.taskId = taskId;
     }
 
-    public Long getIsCountersigned() {
-        return isCountersigned;
+    public Long getIsSign() {
+        return isSign;
     }
 
-    public void setIsCountersigned(Long isCountersigned) {
-        this.isCountersigned = isCountersigned;
+    public void setIsSign(Long isSign) {
+        this.isSign = isSign;
     }
 
     public String getTaskName() {

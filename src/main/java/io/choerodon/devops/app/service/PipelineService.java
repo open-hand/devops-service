@@ -42,7 +42,7 @@ public interface PipelineService {
 
     DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId);
 
-    String getAppDeployStatus(Long stageRecordId, Long taskId);
+    Boolean getAppDeployStatus(Long stageRecordId, Long taskId);
 
     void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId);
 
@@ -57,4 +57,6 @@ public interface PipelineService {
     List<PipelineDTO> listPipelineDTO(Long projectId);
 
     List<UserDTO> getAllUsers(Long projectId);
+
+    void test(Long versionId);
 }

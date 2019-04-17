@@ -34,4 +34,11 @@ public class PipelineStageRecordConvertor implements ConvertorI<PipelineStageRec
         BeanUtils.copyProperties(stageRecordE, stageRecordDTO);
         return stageRecordDTO;
     }
+
+    @Override
+    public PipelineStageRecordDO entityToDo(PipelineStageRecordE stageRecordE) {
+        PipelineStageRecordDO stageRecordDO = new PipelineStageRecordDO();
+        BeanUtils.copyProperties(stageRecordE, stageRecordDO);
+        return stageRecordDO;
+    }
 }
