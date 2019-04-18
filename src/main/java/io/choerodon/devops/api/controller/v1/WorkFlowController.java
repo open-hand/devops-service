@@ -60,8 +60,10 @@ public class WorkFlowController {
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @ApiParam(value = "任务Id", required = true)
-            @RequestParam(value = "task_id") Long taskId) {
-        pipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, taskId);
+            @RequestParam(value = "task_id") Long taskId,
+            @ApiParam(value = "状态", required = true)
+            @RequestParam(value = "status") Boolean status) {
+        pipelineService.setAppDeployStatus(pipelineRecordId, stageRecordId, taskId, status);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 

@@ -11,4 +11,6 @@ public interface WorkFlowRepository {
     String create(Long projectId, DevopsPipelineDTO devopsPipelineDTO);
 
     Boolean approveUserTask(Long projectId, String instanceId, Boolean isApprove);
+
+    void stop(Long projectId, String processInstanceId);
 }

@@ -44,7 +44,7 @@ public interface PipelineService {
 
     Boolean getAppDeployStatus(Long stageRecordId, Long taskId);
 
-    void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId);
+    void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId, Boolean status);
 
     PipelineRecordReqDTO getRecordById(Long projectId, Long pipelineRecordId);
 

@@ -589,10 +589,14 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId) {
-        List<PipelineTaskRecordE> list = taskRecordRepository.queryByStageRecordId(stageRecordId, taskId);
-        if (list != null && list.size() > 0) {
-            conNextTaskRecord(list.get(0).getId(), pipelineRecordId, stageRecordId);
+    public void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId, Boolean status) {
+        if (status) {
+            List<PipelineTaskRecordE> list = taskRecordRepository.queryByStageRecordId(stageRecordId, taskId);
+            if (list != null && list.size() > 0) {
+                conNextTaskRecord(list.get(0).getId(), pipelineRecordId, stageRecordId);
+            }
+        } else {
+            //todo
         }
     }
 

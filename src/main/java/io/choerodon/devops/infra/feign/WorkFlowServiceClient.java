@@ -4,6 +4,7 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.feign.fallback.WorkFlowServiceClientFallback;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,4 +30,9 @@ public interface WorkFlowServiceClient {
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam("processInstanceId") String processInstanceId,
             @RequestParam("isApprove") Boolean isApprove);
+
+    @GetMapping(value = "/v1/projects/{project_id}/process_instances")
+    ResponseEntity stop(
+            @PathVariable(value = "project_id") Long projectId,
+            @RequestParam("processInstanceId") String processInstanceId);
 }
