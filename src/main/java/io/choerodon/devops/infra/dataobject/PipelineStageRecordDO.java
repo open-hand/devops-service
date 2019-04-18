@@ -26,7 +26,7 @@ public class PipelineStageRecordDO extends AuditDomain {
     private String status;
     private String triggerType;
     private Integer isParallel;
-    private Date executionTime;
+    private String executionTime;
     private Long projectId;
     private Long stageId;
     private String stageName;
@@ -63,11 +63,11 @@ public class PipelineStageRecordDO extends AuditDomain {
         this.projectId = projectId;
     }
 
-    public Date getExecutionTime() {
+    public String getExecutionTime() {
         return executionTime;
     }
 
-    public void setExecutionTime(Date executionTime) {
+    public void setExecutionTime(String executionTime) {
         this.executionTime = executionTime;
     }
 

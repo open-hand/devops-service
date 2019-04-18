@@ -19,14 +19,14 @@ public class PipelineStageRecordDTO {
     private Long triggerUserId;
     private Long pipelineId;
     private Integer isParallel;
-    private Date executionTime;
+    private String executionTime;
     private List<PipelineTaskRecordDTO> taskRecordDTOS;
 
-    public Date getExecutionTime() {
+    public String getExecutionTime() {
         return executionTime;
     }
 
-    public void setExecutionTime(Date executionTime) {
+    public void setExecutionTime(String executionTime) {
         this.executionTime = executionTime;
     }
 

@@ -14,11 +14,21 @@ public class PipelineStageRecordE {
     private Integer isParallel;
     private Long projectId;
     private Long pipelineRecordId;
-    private Date executionTime;
+    private String executionTime;
     private String status;
     private Long stageId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
+
+    public PipelineStageRecordE() {
+    }
+
+    public PipelineStageRecordE(String triggerType, Integer isParallel, Long projectId, Long pipelineRecordId) {
+        this.triggerType = triggerType;
+        this.isParallel = isParallel;
+        this.projectId = projectId;
+        this.pipelineRecordId = pipelineRecordId;
+    }
 
     public Date getLastUpdateDate() {
         return lastUpdateDate;
@@ -36,11 +46,11 @@ public class PipelineStageRecordE {
         this.objectVersionNumber = objectVersionNumber;
     }
 
-    public Date getExecutionTime() {
+    public String getExecutionTime() {
         return executionTime;
     }
 
-    public void setExecutionTime(Date executionTime) {
+    public void setExecutionTime(String executionTime) {
         this.executionTime = executionTime;
     }
 
@@ -50,16 +60,6 @@ public class PipelineStageRecordE {
 
     public void setStageId(Long stageId) {
         this.stageId = stageId;
-    }
-
-    public PipelineStageRecordE() {
-    }
-
-    public PipelineStageRecordE(String triggerType, Integer isParallel, Long projectId, Long pipelineRecordId) {
-        this.triggerType = triggerType;
-        this.isParallel = isParallel;
-        this.projectId = projectId;
-        this.pipelineRecordId = pipelineRecordId;
     }
 
     public Long getPipelineRecordId() {

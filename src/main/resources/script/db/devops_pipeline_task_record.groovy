@@ -33,4 +33,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
             column(name: 'name', type: 'VARCHAR(50)', remarks: '任务名称')
         }
     }
+    changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_task-drop-column') {
+        dropColumn(columnName: "execution_time", tableName: "devops_pipeline_task_record")
+    }
 }

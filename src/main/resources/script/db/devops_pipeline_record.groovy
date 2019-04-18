@@ -21,4 +21,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_record-drop-column') {
+        dropColumn(columnName: "execution_time", tableName: "devops_pipeline_record")
+    }
 }

@@ -25,7 +25,6 @@ public class PipelineRecordDO extends AuditDomain {
     private Long pipelineId;
     private String status;
     private String triggerType;
-    private Date executionTime;
     private String bpmDefinition;
     private String processInstanceId;
     private Long projectId;
@@ -87,14 +86,6 @@ public class PipelineRecordDO extends AuditDomain {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public Date getExecutionTime() {
-        return executionTime;
-    }
-
-    public void setExecutionTime(Date executionTime) {
-        this.executionTime = executionTime;
     }
 
     public String getBpmDefinition() {

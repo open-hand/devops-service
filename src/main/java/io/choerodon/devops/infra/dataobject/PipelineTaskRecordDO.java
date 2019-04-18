@@ -32,7 +32,6 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private Long versionId;
     private Long projectId;
     private Long appDeployId;
-    private Date executionTime;
     private Integer isCountersigned;
     private String value;
     private Long taskId;
@@ -171,14 +170,6 @@ public class PipelineTaskRecordDO extends AuditDomain {
 
     public void setAppDeployId(Long appDeployId) {
         this.appDeployId = appDeployId;
-    }
-
-    public Date getExecutionTime() {
-        return executionTime;
-    }
-
-    public void setExecutionTime(Date executionTime) {
-        this.executionTime = executionTime;
     }
 
     public Integer getIsCountersigned() {

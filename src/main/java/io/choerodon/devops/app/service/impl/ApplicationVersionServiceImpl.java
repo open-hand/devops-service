@@ -213,30 +213,33 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
 
     /**
      * 检测能够触发自动部署
+     *
      * @param versionE
      */
     @Override
     public void checkAutoDeploy(ApplicationVersionE versionE) {
+        List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
+                .stream().filter(deployE -> deployE.getTriggerVersion() == null || deployE.getTriggerVersion().isEmpty()).collect(Collectors.toList());
+
         Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
         String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
         if (version != null) {
-            List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
-                    .stream().filter(deployE -> deployE.getTriggerVersion().contains(version)).collect(Collectors.toList());
+            appDeployEList.addAll(appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
+                    .stream().filter(deployE -> deployE.getTriggerVersion().contains(version)).collect(Collectors.toList()));
+        }
+        if (appDeployEList != null && appDeployEList.size() > 0) {
+            List<Long> stageList = appDeployEList.stream()
+                    .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()).getStageId())
+                    .distinct().collect(Collectors.toList());
 
-            if (appDeployEList != null && appDeployEList.size() > 0) {
-                List<Long> stageList = appDeployEList.stream()
-                        .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()).getStageId())
-                        .distinct().collect(Collectors.toList());
-
-                List<Long> pipelineList = stageList.stream()
-                        .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
-                        .distinct().collect(Collectors.toList());
-                pipelineList.forEach(pipelineId -> {
-                    if (pipelineService.checkDeploy(pipelineId)) {
-                        executeAppDeploy(pipelineId);
-                    }
-                });
-            }
+            List<Long> pipelineList = stageList.stream()
+                    .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
+                    .distinct().collect(Collectors.toList());
+            pipelineList.forEach(pipelineId -> {
+                if (pipelineService.checkDeploy(pipelineId)) {
+                    executeAppDeploy(pipelineId);
+                }
+            });
         }
     }
 
@@ -246,7 +249,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private void executeAppDeploy(Long pipelineId) {
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
         //保存pipeline
-        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(),WorkFlowStatus.RUNNING.toValue()));
+        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(), WorkFlowStatus.RUNNING.toValue()));
         //准备workFlow数据
         DevopsPipelineDTO devopsPipelineDTO = pipelineService.setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
         pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
