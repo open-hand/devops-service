@@ -213,28 +213,34 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineE = pipelineRepository.update(projectId, pipelineE);
         updateUserRel(pipelineReqDTO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
 
-        //新增和修改stage
         Long pipelineId = pipelineE.getId();
-        List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
-                .stream().peek(t -> {
-                    if (t.getId() != null) {
-                        stageRepository.update(t);
-                    } else {
-                        t.setPipelineId(pipelineId);
-                        stageRepository.create(t);
-                    }
-                }).collect(Collectors.toList());
-
         //删除stage
-        List<Long> newStageIds = pipelineStageES.stream().filter(t -> t.getId() != null).map(PipelineStageE::getId).collect(Collectors.toList());
+        List<Long> newStageIds = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
+                .stream().filter(t -> t.getId() != null)
+                .map(PipelineStageE::getId).collect(Collectors.toList());
         stageRepository.queryByPipelineId(pipelineId).forEach(t -> {
             if (!newStageIds.contains(t.getId())) {
                 stageRepository.delete(t.getId());
                 updateUserRel(null, null, t.getId(), null);
+                pipelineTaskRepository.queryByStageId(t.getId()).forEach(taskE -> {
+                    taskRecordRepository.delete(taskE.getId());
+                    updateUserRel(null, null, null, taskE.getId());
+                });
             }
         });
-        for (int i = 0; i < pipelineStageES.size(); i++) {
-            Long stageId = pipelineStageES.get(i).getId();
+
+        for (int i = 0; i < pipelineReqDTO.getPipelineStageDTOS().size(); i++) {
+            //新增和修改stage
+            PipelineStageE stageE = ConvertHelper.convert(pipelineReqDTO.getPipelineStageDTOS().get(i), PipelineStageE.class);
+            if (stageE.getId() != null) {
+                stageRepository.update(stageE);
+            } else {
+                stageE.setPipelineId(pipelineId);
+                stageE = stageRepository.create(stageE);
+                createUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, stageE.getId(), null);
+            }
+
+            Long stageId = stageE.getId();
             updateUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, stageId, null);
             //task删除
             List<Long> newTaskIds = pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS()
@@ -861,10 +867,12 @@ public class PipelineServiceImpl implements PipelineService {
                 pipelineUserRelRepository.create(addUserRelE);
             });
         } else {
-            relEList.forEach(delUserId -> {
-                PipelineUserRelE addUserRelE = new PipelineUserRelE(delUserId, pipelineId, stageId, taskId);
-                pipelineUserRelRepository.delete(addUserRelE);
-            });
+            if (relEList != null) {
+                relEList.forEach(delUserId -> {
+                    PipelineUserRelE addUserRelE = new PipelineUserRelE(delUserId, pipelineId, stageId, taskId);
+                    pipelineUserRelRepository.delete(addUserRelE);
+                });
+            }
         }
     }
 
