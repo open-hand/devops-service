@@ -26,7 +26,7 @@ public class PipelineStageRepositoryImpl implements PipelineStageRepository {
 
         PipelineStageDO pipelineStageDO = ConvertHelper.convert(pipelineStageE, PipelineStageDO.class);
         if (stageMapper.insert(pipelineStageDO) != 1) {
-            throw new CommonException("error.insert.pipeline.user");
+            throw new CommonException("error.insert.pipeline.stage");
         }
         return ConvertHelper.convert(pipelineStageDO, PipelineStageE.class);
     }
@@ -35,7 +35,7 @@ public class PipelineStageRepositoryImpl implements PipelineStageRepository {
     public PipelineStageE update(PipelineStageE pipelineStageE) {
         PipelineStageDO pipelineStageDO = ConvertHelper.convert(pipelineStageE, PipelineStageDO.class);
         if (stageMapper.updateByPrimaryKey(pipelineStageDO) != 1) {
-            throw new CommonException("error.update.pipeline.user");
+            throw new CommonException("error.update.pipeline.stage");
         }
         return ConvertHelper.convert(pipelineStageDO, PipelineStageE.class);
     }

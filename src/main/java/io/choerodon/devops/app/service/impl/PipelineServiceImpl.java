@@ -199,24 +199,7 @@ public class PipelineServiceImpl implements PipelineService {
             createUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, stageId, null);
             //task
             pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS().forEach(t -> {
-                t.setProjectId(projectId);
-                t.setStageId(stageId);
-                if (AUTO.equals(t.getType())) {
-                    //appDeployValue
-                    PipelineAppDeployValueE appDeployValueE = new PipelineAppDeployValueE();
-                    appDeployValueE.setValue(t.getAppDeployDTOS().getValue());
-                    appDeployValueE.setValueId(t.getAppDeployDTOS().getValueId());
-                    appDeployValueE = valueRepository.create(appDeployValueE);
-                    //appDeploy
-                    PipelineAppDeployE appDeployE = ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class);
-                    appDeployE.setValueId(appDeployValueE.getId());
-                    appDeployE.setProjectId(projectId);
-                    t.setAppDeployId(appDeployRepository.create(appDeployE).getId());
-                }
-                Long taskId = pipelineTaskRepository.create(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
-                if (MANUAL.equals(t.getType())) {
-                    createUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
-                }
+                AddPipelineTask(t, projectId, stageId);
             });
         }
         return pipelineReqDTO;
@@ -230,23 +213,59 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineE = pipelineRepository.update(projectId, pipelineE);
         updateUserRel(pipelineReqDTO.getPipelineUserRelDTOS(), pipelineE.getId(), null, null);
 
-        //stage
+        //新增和修改stage
+        Long pipelineId = pipelineE.getId();
         List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
-                .stream().map(t -> stageRepository.update(t)).collect(Collectors.toList());
+                .stream().peek(t -> {
+                    if (t.getId() != null) {
+                        stageRepository.update(t);
+                    } else {
+                        t.setPipelineId(pipelineId);
+                        stageRepository.create(t);
+                    }
+                }).collect(Collectors.toList());
+
+        //删除stage
+        List<Long> newStageIds = pipelineStageES.stream().filter(t -> t.getId() != null).map(PipelineStageE::getId).collect(Collectors.toList());
+        stageRepository.queryByPipelineId(pipelineId).forEach(t -> {
+            if (!newStageIds.contains(t.getId())) {
+                stageRepository.delete(t.getId());
+                updateUserRel(null, null, t.getId(), null);
+            }
+        });
         for (int i = 0; i < pipelineStageES.size(); i++) {
-            updateUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, pipelineStageES.get(i).getId(), null);
+            Long stageId = pipelineStageES.get(i).getId();
+            updateUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, stageId, null);
+            //task删除
+            List<Long> newTaskIds = pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS()
+                    .stream()
+                    .filter(t -> t.getId() != null)
+                    .map(PipelineTaskDTO::getId)
+                    .collect(Collectors.toList());
+            pipelineTaskRepository.queryByStageId(stageId).forEach(t -> {
+                if (!newTaskIds.contains(t.getId())) {
+                    pipelineTaskRepository.deleteById(t.getId());
+                    if (t.getType().equals(MANUAL)) {
+                        updateUserRel(null, null, null, t.getId());
+                    }
+                }
+            });
             //task
             pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS().forEach(t -> {
-                if (AUTO.equals(t.getType())) {
-                    t.setAppDeployId(appDeployRepository.update(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
-                    PipelineAppDeployValueE appDeployValueE = new PipelineAppDeployValueE();
-                    appDeployValueE.setId(t.getAppDeployDTOS().getValueId());
-                    appDeployValueE.setValue(t.getAppDeployDTOS().getValue());
-                    valueRepository.update(appDeployValueE);
-                }
-                Long taskId = pipelineTaskRepository.update(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
-                if (MANUAL.equals(t.getType())) {
-                    updateUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
+                if (t.getId() != null) {
+                    if (AUTO.equals(t.getType())) {
+                        t.setAppDeployId(appDeployRepository.update(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
+                        PipelineAppDeployValueE appDeployValueE = new PipelineAppDeployValueE();
+                        appDeployValueE.setId(t.getAppDeployDTOS().getValueId());
+                        appDeployValueE.setValue(t.getAppDeployDTOS().getValue());
+                        valueRepository.update(appDeployValueE);
+                    }
+                    Long taskId = pipelineTaskRepository.update(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
+                    if (MANUAL.equals(t.getType())) {
+                        updateUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
+                    }
+                } else {
+                    AddPipelineTask(t, projectId, stageId);
                 }
             });
         }
@@ -699,6 +718,27 @@ public class PipelineServiceImpl implements PipelineService {
             stageRecordE.setId(stageRecordId);
             stageRecordE.setStatus(status);
             stageRecordRepository.createOrUpdate(stageRecordE);
+        }
+    }
+
+    private void AddPipelineTask(PipelineTaskDTO t, Long projectId, Long stageId) {
+        t.setProjectId(projectId);
+        t.setStageId(stageId);
+        if (AUTO.equals(t.getType())) {
+            //appDeployValue
+            PipelineAppDeployValueE appDeployValueE = new PipelineAppDeployValueE();
+            appDeployValueE.setValue(t.getAppDeployDTOS().getValue());
+            appDeployValueE.setValueId(t.getAppDeployDTOS().getValueId());
+            appDeployValueE = valueRepository.create(appDeployValueE);
+            //appDeploy
+            PipelineAppDeployE appDeployE = ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class);
+            appDeployE.setValueId(appDeployValueE.getId());
+            appDeployE.setProjectId(projectId);
+            t.setAppDeployId(appDeployRepository.create(appDeployE).getId());
+        }
+        Long taskId = pipelineTaskRepository.create(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
+        if (MANUAL.equals(t.getType())) {
+            createUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
         }
     }
 
