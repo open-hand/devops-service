@@ -10,7 +10,6 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.DevopsIngressDTO;
 import io.choerodon.devops.api.dto.DevopsIngressPathDTO;
 import io.choerodon.devops.api.validator.DevopsIngressValidator;
-import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.DevopsIngressService;
 import io.choerodon.devops.app.service.GitlabGroupMemberService;
 import io.choerodon.devops.domain.application.entity.*;
@@ -115,7 +114,7 @@ public class DevopsIngressServiceImpl implements DevopsIngressService {
 
     private String getCertName(Long certId) {
         String certName = null;
-        if (certId != null) {
+        if (certId != null && certId != 0) {
             CertificationE certificationE = certificationRepository.queryById(certId);
             if (!CertificationStatus.ACTIVE.getStatus().equals(certificationE.getStatus())) {
                 throw new CommonException(CERT_NOT_ACTIVE);
