@@ -516,7 +516,9 @@ public class PipelineServiceImpl implements PipelineService {
             DevopsPipelineStageDTO devopsPipelineStageDTO = new DevopsPipelineStageDTO();
             devopsPipelineStageDTO.setStageRecordId(recordE.getId());
             devopsPipelineStageDTO.setParallel(t.getIsParallel() != null && t.getIsParallel() == 1);
-            devopsPipelineStageDTO.setNextStageTriggerType(t.getTriggerType());
+            if (t.getTriggerType() != null && !t.getTriggerType().isEmpty()) {
+                devopsPipelineStageDTO.setNextStageTriggerType(t.getTriggerType());
+            }
             List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, t.getId(), null);
             devopsPipelineStageDTO.setMultiAssign(relEList.size() > 1);
             devopsPipelineStageDTO.setUsernames(relEList.stream()
@@ -533,7 +535,9 @@ public class PipelineServiceImpl implements PipelineService {
                 devopsPipelineTaskDTO.setMultiAssign(taskUserRels.size() > 1);
                 devopsPipelineTaskDTO.setUsernames(taskUserRels.stream().map(relE -> iamRepository.queryUserByUserId(relE.getUserId()).getLoginName()).collect(Collectors.toList()));
                 devopsPipelineTaskDTO.setTaskId(task.getId());
-                devopsPipelineTaskDTO.setIsSign(task.getIsCountersigned().longValue());
+                if (task.getIsCountersigned() != null) {
+                    devopsPipelineTaskDTO.setIsSign(task.getIsCountersigned().longValue());
+                }
                 devopsPipelineTaskDTOS.add(devopsPipelineTaskDTO);
             });
             devopsPipelineStageDTO.setTasks(devopsPipelineTaskDTOS);
