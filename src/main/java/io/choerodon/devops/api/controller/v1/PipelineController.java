@@ -136,7 +136,7 @@ public class PipelineController {
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "查询流水线详情")
-    @PutMapping(value = "/{pipeline_id}/detail")
+    @GetMapping(value = "/{pipeline_id}/detail")
     public ResponseEntity<PipelineReqDTO> queryById(
             @ApiParam(value = "项目id", required = true)
             @PathVariable(value = "project_id") Long projectId,

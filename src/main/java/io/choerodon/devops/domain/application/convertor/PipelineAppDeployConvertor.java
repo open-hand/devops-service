@@ -23,7 +23,9 @@ public class PipelineAppDeployConvertor implements ConvertorI<PipelineAppDeployE
     public PipelineAppDeployE dtoToEntity(PipelineAppDeployDTO pipelineAppDeployDTO) {
         PipelineAppDeployE pipelineAppDeployE = new PipelineAppDeployE();
         BeanUtils.copyProperties(pipelineAppDeployDTO, pipelineAppDeployE);
-        pipelineAppDeployE.setTriggerVersion(pipelineAppDeployDTO.getTriggerVersion().stream().collect(Collectors.joining(",")));
+        if (pipelineAppDeployDTO.getTriggerVersion() != null) {
+            pipelineAppDeployE.setTriggerVersion(pipelineAppDeployDTO.getTriggerVersion().stream().collect(Collectors.joining(",")));
+        }
         return pipelineAppDeployE;
     }
 
