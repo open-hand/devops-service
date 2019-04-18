@@ -328,6 +328,7 @@ public class PipelineServiceImpl implements PipelineService {
         //发送请求给workflow，创建流程实例
         try {
             pipelineRecordE.setProcessInstanceId(workFlowRepository.create(projectId, devopsPipelineDTO));
+            pipelineRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
             updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
@@ -685,9 +686,6 @@ public class PipelineServiceImpl implements PipelineService {
         taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
         taskRecordE.setTaskType(taskE.getType());
         taskRecordRepository.createOrUpdate(taskRecordE);
-
-        //更新整个流水线状态
-        updateStatus(pipelineRecordId, null, WorkFlowStatus.PENDINGCHECK.toValue());
     }
 
     @Override
