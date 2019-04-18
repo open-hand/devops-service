@@ -397,7 +397,6 @@ public class PipelineServiceImpl implements PipelineService {
         String status;
         if (recordRelDTO.getIsApprove()) {
             Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
-//            Boolean result = true;
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
                 status = result ? WorkFlowStatus.RUNNING.toValue() : WorkFlowStatus.FAILED.toValue();
@@ -428,7 +427,6 @@ public class PipelineServiceImpl implements PipelineService {
                 stageRecordRepository.createOrUpdate(recordE);
                 userRelE.setStageRecordId(recordE.getId());
                 if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
-                    updateStatus(recordRelDTO.getPipelineRecordId(), null, status);
                     //阶段中的第一个任务为人工任务时
                     PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryByStageId(stageRecordRepository.queryById(recordRelDTO.getStageRecordId()).getStageId()).get(0);
                     if (MANUAL.equals(pipelineTaskE.getType())) {
@@ -441,9 +439,8 @@ public class PipelineServiceImpl implements PipelineService {
                         taskRecordE.setTaskType(pipelineTaskE.getType());
                         taskRecordRepository.createOrUpdate(taskRecordE);
                     }
-                } else {
-                    updateStatus(recordRelDTO.getPipelineRecordId(), null, status);
                 }
+                updateStatus(recordRelDTO.getPipelineRecordId(), null, status);
                 break;
             }
             default: {
