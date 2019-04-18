@@ -74,14 +74,7 @@
         dat.gitlab_project_id,
         dat.object_version_number
         FROM devops_app_template dat
-        where code = #{code}
-        <choose>
-            <when test="organizationId !=null and organizationId != ''">
-                and dat.organization_id = #{organizationId}
-            </when>
-            <otherwise>
-                and dat.organization_id is null
-            </otherwise>
-        </choose>
+       where (dat.organization_id is null and code = #{code})
+        or (dat.organization_id = #{organizationId} and code = #{code})
     </select>
 </mapper>
