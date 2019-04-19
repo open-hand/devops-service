@@ -3,6 +3,7 @@ package io.choerodon.devops.app.service;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
+import io.choerodon.devops.api.dto.PipelineRecordListDTO;
 import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
 import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
@@ -50,7 +51,7 @@ public interface PipelineService {
 
     void retry(Long projectId, Long pipelineRecordId);
 
-    List<PipelineRecordDTO> queryByPipelineId(Long pipelineId);
+    List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId);
 
     void checkName(Long projectId, String name);
 

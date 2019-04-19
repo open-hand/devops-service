@@ -14,6 +14,7 @@ import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
+import io.choerodon.devops.api.dto.PipelineRecordListDTO;
 import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
 import io.choerodon.devops.api.dto.PipelineReqDTO;
 import io.choerodon.devops.api.dto.PipelineStageDTO;
@@ -673,8 +674,9 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     @Override
-    public List<PipelineRecordDTO> queryByPipelineId(Long pipelineId) {
-        return ConvertHelper.convertList(pipelineRecordRepository.queryByPipelineId(pipelineId), PipelineRecordDTO.class);
+    public List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId) {
+        return pipelineRecordRepository.queryByPipelineId(pipelineId).stream().map(t ->
+                new PipelineRecordListDTO(t.getId(), t.getCreationDate())).collect(Collectors.toList());
     }
 
     @Override
