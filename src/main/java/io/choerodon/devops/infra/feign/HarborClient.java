@@ -19,9 +19,9 @@ public interface HarborClient {
 
     @Headers({"Content-Type:application/json;charset=UTF-8", "Accept:application/json"})
     @POST("api/projects")
-    Call<Object> insertProject(@Body Project harborProject);
+    Call<Void> insertProject(@Body Project harborProject);
 
     @Headers({"Content-Type:application/json;charset=UTF-8", "Accept:application/json"})
     @POST("api/projects")
-    Call<Object> insertProject(@QueryMap Map<String,String> entityName, @Body Project harborProject);
+    Call<Void> insertProject(@QueryMap Map<String,String> entityName, @Body Project harborProject);
 }
