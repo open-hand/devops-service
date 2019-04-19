@@ -66,6 +66,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -257,7 +258,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             });
             //task
-            pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS().forEach(t -> {
+            pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS().stream().filter(Objects::nonNull).forEach(t -> {
                 if (t.getId() != null) {
                     if (AUTO.equals(t.getType())) {
                         t.setAppDeployId(appDeployRepository.update(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
