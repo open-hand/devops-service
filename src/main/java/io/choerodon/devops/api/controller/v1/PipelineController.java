@@ -194,7 +194,7 @@ public class PipelineController {
             @RequestBody(required = false) String params) {
         return Optional.ofNullable(pipelineService.listRecords(projectId, pipelineId, pageRequest, params))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.list"));
+                .orElseThrow(() -> new CommonException("error.pipeline.list.record"));
     }
 
 
