@@ -45,8 +45,8 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
     }
 
     @Override
-    public void stop(Long projectId, String processInstanceId) {
-        ResponseEntity<Boolean> responseEntity = workFlowServiceClient.stop(projectId, processInstanceId);
+    public void stopInstance(Long projectId, String processInstanceId) {
+        ResponseEntity<Boolean> responseEntity = workFlowServiceClient.stopInstance(projectId, processInstanceId);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.stop");
         }

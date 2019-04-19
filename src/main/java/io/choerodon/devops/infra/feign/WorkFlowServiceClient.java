@@ -32,7 +32,7 @@ public interface WorkFlowServiceClient {
             @RequestParam("isApprove") Boolean isApprove);
 
     @GetMapping(value = "/v1/projects/{project_id}/process_instances")
-    ResponseEntity stop(
+    ResponseEntity stopInstance(
             @PathVariable(value = "project_id") Long projectId,
             @RequestParam("processInstanceId") String processInstanceId);
 }
