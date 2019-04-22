@@ -439,7 +439,6 @@ public class PipelineServiceImpl implements PipelineService {
         }
     }
 
-
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void audit(Long projectId, PipelineUserRecordRelDTO recordRelDTO) {
@@ -487,6 +486,7 @@ public class PipelineServiceImpl implements PipelineService {
                         taskRecordE.setTaskId(pipelineTaskE.getId());
                         taskRecordE.setTaskType(pipelineTaskE.getType());
                         taskRecordRepository.createOrUpdate(taskRecordE);
+                        status = WorkFlowStatus.PENDINGCHECK.toValue();
                     }
                 }
                 updateStatus(recordRelDTO.getPipelineRecordId(), null, status);
@@ -800,6 +800,7 @@ public class PipelineServiceImpl implements PipelineService {
             Long time = System.currentTimeMillis() - stageRecordE.getLastUpdateDate().getTime();
             stageRecordE.setExecutionTime(time.toString());
             stageRecordRepository.createOrUpdate(stageRecordE);
+            PipelineStageE stageE = stageRepository.queryById(stageRecordE.getStageId());
 
             //属于pipeline最后一个任务
             Long pipelineId = isPipelineLastTask(stageId);
@@ -822,29 +823,21 @@ public class PipelineServiceImpl implements PipelineService {
                             taskRecordE.setId(null);
                             taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
                             taskRecordRepository.createOrUpdate(taskRecordE);
+                            recordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+                            pipelineRecordRepository.update(recordE);
                         }
                     }
                 } else {
                     pipelineStageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+                    pipelineRecordRepository.update(recordE);
+                    recordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+                    pipelineRecordRepository.update(recordE);
                 }
                 stageRecordRepository.createOrUpdate(pipelineStageRecordE);
             }
-        } else {
-            //更新下一个任务记录
-            //部署任务不处理.创建人工任务记录
-            PipelineTaskE nextTask = getNextTask(taskRecordRepository.queryById(taskRecordId).getTaskId());
-            if (MANUAL.equals(nextTask.getType())) {
-                PipelineTaskRecordE nextTaskRecordE = new PipelineTaskRecordE();
-                nextTaskRecordE.setStageRecordId(stageRecordId);
-                nextTaskRecordE.setIsCountersigned(nextTask.getIsCountersigned());
-                nextTaskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
-                nextTaskRecordE.setTaskType(nextTask.getType());
-                nextTaskRecordE.setTaskId(nextTask.getId());
-                taskRecordRepository.createOrUpdate(nextTaskRecordE);
-                updateStatus(pipelineRecordId, null, WorkFlowStatus.PENDINGCHECK.toValue());
-            }
         }
     }
+
 
     private PipelineStageE getNextStage(Long stageId) {
         List<PipelineStageE> list = stageRepository.queryByPipelineId(stageRepository.queryById(stageId).getPipelineId());
