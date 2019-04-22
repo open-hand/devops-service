@@ -157,16 +157,18 @@ public class PipelineServiceImpl implements PipelineService {
                         }
                         break;
                     } else if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
-                        Optional<PipelineTaskRecordE> taskRecordE = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null)
-                                .stream().filter(task -> task.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())).findFirst();
-                        t.setStageName(t.getStageDTOList().get(i).getStageName());
-                        t.setTaskRecordId(taskRecordE.get().getId());
-                        t.setStageRecordId(t.getStageDTOList().get(i).getId());
-                        t.setType(TASK);
-                        if (checkTriggerPermission(null, pipelineId, null, null)) {
-                            t.setIndex(true);
+                        List<PipelineTaskRecordE> list = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null);
+                        if (list != null && list.size() > 0) {
+                            Optional<PipelineTaskRecordE> taskRecordE = list.stream().filter(task -> task.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())).findFirst();
+                            t.setStageName(t.getStageDTOList().get(i).getStageName());
+                            t.setTaskRecordId(taskRecordE.get().getId());
+                            t.setStageRecordId(t.getStageDTOList().get(i).getId());
+                            t.setType(TASK);
+                            if (checkTriggerPermission(null, pipelineId, null, null)) {
+                                t.setIndex(true);
+                            }
+                            break;
                         }
-                        break;
                     }
                 }
 

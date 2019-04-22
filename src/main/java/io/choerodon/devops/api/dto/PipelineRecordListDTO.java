@@ -1,6 +1,6 @@
 package io.choerodon.devops.api.dto;
 
-        import java.util.Date;
+import java.util.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -13,6 +13,22 @@ public class PipelineRecordListDTO {
 
     public PipelineRecordListDTO(Long id, Date creationTime) {
         this.id = id;
+        this.creationTime = creationTime;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Date getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(Date creationTime) {
         this.creationTime = creationTime;
     }
 }
