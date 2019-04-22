@@ -178,7 +178,7 @@ public class PipelineServiceImpl implements PipelineService {
                     if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
                         List<PipelineTaskRecordE> recordEList = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null);
                         Optional<PipelineTaskRecordE> optional = recordEList.stream().filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.STOP.toValue())).findFirst();
-                        if(optional.isPresent()&&optional.get()!=null){
+                        if (optional.isPresent() && optional.get() != null) {
                             t.setType(TASK);
                         }
                         break;
@@ -811,9 +811,19 @@ public class PipelineServiceImpl implements PipelineService {
                 //更新下一个阶段状态
                 PipelineStageE nextStage = getNextStage(stageId);
                 PipelineStageRecordE pipelineStageRecordE = stageRecordRepository.queryByPipeRecordId(recordE.getId(), nextStage.getId()).get(0);
-
                 if (stageRecordRepository.queryById(stageRecordId).getTriggerType().equals(AUTO)) {
                     pipelineStageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+                    List<PipelineTaskE> list = pipelineTaskRepository.queryByStageId(nextStage.getId());
+                    if (list != null && list.size() > 0) {
+                        if (list.get(0).getType().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                            PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
+                            BeanUtils.copyProperties(pipelineTaskRepository.queryById(list.get(0).getId()), taskRecordE);
+                            taskRecordE.setTaskId(list.get(0).getId());
+                            taskRecordE.setId(null);
+                            taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+                            taskRecordRepository.createOrUpdate(taskRecordE);
+                        }
+                    }
                 } else {
                     pipelineStageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
                 }
