@@ -79,7 +79,6 @@ import java.util.stream.Collectors;
 @Service
 public class PipelineServiceImpl implements PipelineService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
-    private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
     private static final String MANUAL = "manual";
     private static final String AUTO = "auto";
     private static final String STAGE = "stage";
