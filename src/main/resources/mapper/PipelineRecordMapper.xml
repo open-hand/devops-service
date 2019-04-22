@@ -33,7 +33,8 @@
         dpr.pipeline_id,
         dpr.`status`,
         dpr.creation_date,
-        dpr.process_instance_id
+        dpr.process_instance_id,
+        dpr.bpm_definition
         FROM
         devops_pipeline_record dpr
         JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id

@@ -190,7 +190,11 @@ public class PipelineServiceImpl implements PipelineService {
 
         //stage
         Long pipelineId = pipelineE.getId();
-        List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
+        List<PipelineStageDTO> stageDTOList = pipelineReqDTO.getPipelineStageDTOS();
+        PipelineStageDTO pipelineStageDTO = stageDTOList.get(pipelineReqDTO.getPipelineStageDTOS().size() - 1);
+        pipelineStageDTO.setTriggerType(null);
+        stageDTOList.set(stageDTOList.size() - 1, pipelineStageDTO);
+        List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(stageDTOList, PipelineStageE.class)
                 .stream().map(t -> {
                     t.setPipelineId(pipelineId);
                     t.setProjectId(projectId);
