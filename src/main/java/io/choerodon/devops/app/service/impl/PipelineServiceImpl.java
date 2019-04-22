@@ -145,6 +145,7 @@ public class PipelineServiceImpl implements PipelineService {
         Page<PipelineRecordDTO> pageRecordDTOS = ConvertPageHelper.convertPage(
                 pipelineRecordRepository.listByOptions(projectId, pipelineId, pageRequest, params), PipelineRecordDTO.class);
         List<PipelineRecordDTO> pipelineRecordDTOS = pageRecordDTOS.getContent().stream().map(t -> {
+            t.setIndex(false);
             t.setStageDTOList(ConvertHelper.convertList(stageRecordRepository.list(projectId, t.getId()), PipelineStageRecordDTO.class));
             if (t.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                 t.setType(STAGE);
@@ -152,6 +153,9 @@ public class PipelineServiceImpl implements PipelineService {
                     if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                         t.setStageName(t.getStageDTOList().get(i - 1).getStageName());
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
+                        if (checkTriggerPermission(null, null, t.getStageDTOList().get(i).getId(), null)) {
+                            t.setIndex(true);
+                        }
                         break;
                     } else if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.RUNNING.toValue())) {
                         Optional<PipelineTaskRecordE> taskRecordE = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null)
@@ -160,9 +164,13 @@ public class PipelineServiceImpl implements PipelineService {
                         t.setTaskRecordId(taskRecordE.get().getId());
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
                         t.setType(TASK);
+                        if (checkTriggerPermission(null, pipelineId, null, null)) {
+                            t.setIndex(true);
+                        }
                         break;
                     }
                 }
+
             } else if (t.getStatus().equals(WorkFlowStatus.STOP.toValue())) {
                 t.setType(TASK);
                 for (int i = 0; i < t.getStageDTOList().size(); i++) {
@@ -170,6 +178,9 @@ public class PipelineServiceImpl implements PipelineService {
                         t.setType(STAGE);
                         break;
                     }
+                }
+                if (checkTriggerPermission(null, pipelineId, null, null)) {
+                    t.setIndex(true);
                 }
             }
             return t;
@@ -343,7 +354,9 @@ public class PipelineServiceImpl implements PipelineService {
     public void execute(Long projectId, Long pipelineId) {
         //校验当前触发人员是否有权限触发
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-        checkTriggerPermission(pipelineE, pipelineId);
+        if (!checkTriggerPermission(pipelineE, pipelineId, null, null)) {
+            throw new CommonException("error.permission.trigger.pipeline");
+        }
         //保存pipeline 和 pipelineUserRel
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue()));
         PipelineUserRecordRelE pipelineUserRecordRelE = new PipelineUserRecordRelE();
@@ -386,9 +399,9 @@ public class PipelineServiceImpl implements PipelineService {
                 index = i;
                 break;
             } else {
-                Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
-                String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
-                if (version != null && appDeployE.getTriggerVersion().contains(version)) {
+                List<String> list = Arrays.asList(appDeployE.getTriggerVersion().split(","));
+                Optional<String> branch = list.stream().filter(t -> versionE.getVersion().contains(t)).findFirst();
+                if (branch.isPresent() && !branch.get().isEmpty()) {
                     index = i;
                     break;
                 }
@@ -508,26 +521,26 @@ public class PipelineServiceImpl implements PipelineService {
             if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
                 return false;
             } else {
-                //是否有对应版本
-                List<ApplicationVersionE> list = versionRepository.listByAppId(appDeployE.getApplicationId(), null)
-                        .stream()
-                        .filter(versionE -> versionE.getCreationDate().getTime() > appDeployE.getCreationDate().getTime())
-                        .collect(Collectors.toList());
-                Boolean index = false;
-                for (ApplicationVersionE versionE : list) {
-                    Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
-                    String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
-                    if (version != null && appDeployE.getTriggerVersion().contains(version)) {
-                        index = true;
-                        break;
+                if (appDeployE.getTriggerVersion() == null || appDeployE.getTriggerVersion().isEmpty()) {
+                    return true;
+                } else {
+                    List<String> list = Arrays.asList(appDeployE.getTriggerVersion().split(","));
+                    //是否有对应版本
+                    List<ApplicationVersionE> versionES = versionRepository.listByAppId(appDeployE.getApplicationId(), null)
+                            .stream()
+                            .filter(versionE -> versionE.getCreationDate().getTime() > appDeployE.getCreationDate().getTime())
+                            .collect(Collectors.toList());
+
+                    for (ApplicationVersionE versionE : versionES) {
+                        Optional<String> branch = list.stream().filter(t -> versionE.getVersion().contains(t)).findFirst();
+                        if (branch.isPresent() && !branch.get().isEmpty()) {
+                            return true;
+                        }
                     }
-                }
-                if (!index) {
-                    return false;
                 }
             }
         }
-        return true;
+        return false;
     }
 
     private PipelineTaskE getFirsetTask(Long pipelineId) {
@@ -836,17 +849,18 @@ public class PipelineServiceImpl implements PipelineService {
         return pipelineStageES.get(pipelineStageES.size() - 1).getId().equals(pipelineStageE.getId()) ? pipelineStageE.getPipelineId() : null;
     }
 
-    private void checkTriggerPermission(PipelineE pipelineE, Long pipelineId) {
-        if ("auto".equals(pipelineE.getTriggerType())) {
-            throw new CommonException("error.permission.trigger.pipeline");
+    private Boolean checkTriggerPermission(PipelineE pipelineE, Long pipelineId, Long stageId, Long taskId) {
+        if (AUTO.equals(pipelineE.getTriggerType())) {
+            return false;
         }
-        List<Long> userIds = pipelineUserRelRepository.listByOptions(pipelineId, null, null)
+        List<Long> userIds = pipelineUserRelRepository.listByOptions(pipelineId, stageId, taskId)
                 .stream()
                 .map(PipelineUserRelE::getUserId)
                 .collect(Collectors.toList());
         if (!userIds.contains(DetailsHelper.getUserDetails().getUserId())) {
-            throw new CommonException("error.permission.trigger.pipeline");
+            return false;
         }
+        return true;
     }
 
     private void createUserRel(List<Long> pipelineUserRelDTOS, Long pipelineId, Long stageId, Long taskId) {

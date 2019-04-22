@@ -219,14 +219,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Override
     public void checkAutoDeploy(ApplicationVersionE versionE) {
         List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
-                .stream().filter(deployE -> deployE.getTriggerVersion() == null || deployE.getTriggerVersion().isEmpty()).collect(Collectors.toList());
-
-        Optional<String> branch = Arrays.stream(TYPE).filter(t -> versionE.getVersion().contains(t)).findFirst();
-        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
-        if (version != null) {
-            appDeployEList.addAll(appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
-                    .stream().filter(deployE -> deployE.getTriggerVersion().contains(version)).collect(Collectors.toList()));
-        }
+                .stream().map(deployE ->
+                        filterAppDeploy(deployE, versionE.getVersion())
+                ).collect(Collectors.toList());
         if (appDeployEList != null && appDeployEList.size() > 0) {
             List<Long> stageList = appDeployEList.stream()
                     .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()).getStageId())
@@ -240,6 +235,19 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     executeAppDeploy(pipelineId);
                 }
             });
+        }
+    }
+
+    private PipelineAppDeployE filterAppDeploy(PipelineAppDeployE deployE, String version) {
+        if (deployE.getTriggerVersion() == null || deployE.getTriggerVersion().isEmpty()) {
+            return deployE;
+        } else {
+            List<String> list = Arrays.asList(deployE.getTriggerVersion().split(","));
+            Optional<String> branch = list.stream().filter(version::contains).findFirst();
+            if (branch.isPresent() && !branch.get().isEmpty()) {
+                return deployE;
+            }
+            return null;
         }
     }
 
@@ -270,9 +278,18 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * @param applicationVersionE
      */
     public void triggerAutoDelpoy(ApplicationVersionE applicationVersionE) {
-        Optional<String> branch = Arrays.stream(TYPE).filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
-        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
-        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), version);
+        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.getAll().stream().filter(t -> {
+            if (t.getTriggerVersion() == null || t.getTriggerVersion().isEmpty()) {
+                return true;
+            } else {
+                List<String> list = Arrays.asList(t.getTriggerVersion().split(","));
+                Optional<String> branch = list.stream().filter(m -> applicationVersionE.getVersion().contains(m)).findFirst();
+                if (branch.isPresent() && !branch.get().isEmpty()) {
+                    return true;
+                }
+            }
+            return false;
+        }).collect(Collectors.toList());
         autoDeployES.forEach(t -> createAutoDeployInstance(t, applicationVersionE));
     }
 

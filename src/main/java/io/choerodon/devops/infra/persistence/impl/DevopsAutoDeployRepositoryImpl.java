@@ -113,4 +113,8 @@ public class DevopsAutoDeployRepositoryImpl implements DevopsAutoDeployRepositor
         devopsAutoDeployMapper.updateByPrimaryKeySelective(devopsAutoDeployDO);
     }
 
+    @Override
+    public List<DevopsAutoDeployE> getAll() {
+        return ConvertHelper.convertList(devopsAutoDeployMapper.selectAll(), DevopsAutoDeployE.class);
+    }
 }

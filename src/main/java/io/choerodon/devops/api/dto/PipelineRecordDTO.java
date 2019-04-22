@@ -22,6 +22,15 @@ public class PipelineRecordDTO {
     private Long taskRecordId;
     private Long stageRecordId;
     private String type;
+    private Boolean index;
+
+    public Boolean getIndex() {
+        return index;
+    }
+
+    public void setIndex(Boolean index) {
+        this.index = index;
+    }
 
     public String getType() {
         return type;
