@@ -1,5 +1,7 @@
 import sys
 from ruamel.yaml import YAML
+from ruamel.yaml.comments import CommentedMap
+
 
 
 def set_map_item(follow_list, delta_map, value):
@@ -90,7 +92,7 @@ def main():
         else:
             code_new = doc
         i = i + 1
-    delta_map = dict()
+    delta_map = CommentedMap()
     follow_keys = list()
 
     add = list()
