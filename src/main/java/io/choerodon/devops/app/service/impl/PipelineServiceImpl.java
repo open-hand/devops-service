@@ -855,7 +855,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private Boolean checkTriggerPermission(PipelineE pipelineE, Long pipelineId, Long stageId, Long taskId) {
-        if (AUTO.equals(pipelineE.getTriggerType())) {
+        if (pipelineE != null && AUTO.equals(pipelineE.getTriggerType())) {
             return false;
         }
         List<Long> userIds = pipelineUserRelRepository.listByOptions(pipelineId, stageId, taskId)
