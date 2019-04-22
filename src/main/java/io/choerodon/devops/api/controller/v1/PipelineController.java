@@ -125,7 +125,7 @@ public class PipelineController {
             @RequestParam Integer isEnabled) {
         return Optional.ofNullable(pipelineService.updateIsEnabled(projectId, pipelineId, isEnabled))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.update.enable"));
+                .orElseThrow(() -> new CommonException("error.pipeline.update.enable "));
     }
 
     /**
