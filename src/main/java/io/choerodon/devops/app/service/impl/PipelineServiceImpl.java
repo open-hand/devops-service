@@ -173,10 +173,14 @@ public class PipelineServiceImpl implements PipelineService {
                 }
 
             } else if (t.getStatus().equals(WorkFlowStatus.STOP.toValue())) {
-                t.setType(TASK);
+                t.setType(STAGE);
                 for (int i = 0; i < t.getStageDTOList().size(); i++) {
                     if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
-                        t.setType(STAGE);
+                        List<PipelineTaskRecordE> recordEList = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null);
+                        Optional<PipelineTaskRecordE> optional = recordEList.stream().filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.STOP.toValue())).findFirst();
+                        if(optional.isPresent()&&optional.get()!=null){
+                            t.setType(TASK);
+                        }
                         break;
                     }
                 }
