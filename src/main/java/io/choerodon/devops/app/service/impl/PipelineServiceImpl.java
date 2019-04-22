@@ -517,6 +517,10 @@ public class PipelineServiceImpl implements PipelineService {
                 }
             });
         });
+        //如果全部为人工任务
+        if (appDeployEList.isEmpty()) {
+            return true;
+        }
         //检测是否满足条件
         for (PipelineAppDeployE appDeployE : appDeployEList) {
             if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
