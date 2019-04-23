@@ -107,6 +107,7 @@ function chart_build(){
         echo $response_upload_to_devops
         echo "upload to devops error"
         exit 1
+    fi
 }
 function docker_build(){
     cp ${HOME}/.m2/${GROUP_NAME}/${CI_COMMIT_SHA}/app.jar ${1:-"src/main/docker"}/app.jar || true
