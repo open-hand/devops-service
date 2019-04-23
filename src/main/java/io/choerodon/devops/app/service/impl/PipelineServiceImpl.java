@@ -443,6 +443,7 @@ public class PipelineServiceImpl implements PipelineService {
         String status;
         if (recordRelDTO.getIsApprove()) {
             Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
+//            Boolean result =true;
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
                 status = result ? WorkFlowStatus.RUNNING.toValue() : WorkFlowStatus.FAILED.toValue();
@@ -484,7 +485,7 @@ public class PipelineServiceImpl implements PipelineService {
                 updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status);
                 if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
                     PipelineStageE stageE = stageRepository.queryById(stageRecordRepository.queryById(recordRelDTO.getStageRecordId()).getStageId());
-                    if (isEmptyStage(stageE.getId())) {
+                    if (!isEmptyStage(stageE.getId())) {
                         //阶段中的第一个任务为人工任务时
                         List<PipelineTaskE> pipelineTaskES = pipelineTaskRepository.queryByStageId(stageRecordRepository.queryById(recordRelDTO.getStageRecordId()).getStageId());
                         if (pipelineTaskES != null && pipelineTaskES.size() > 0) {
@@ -750,15 +751,9 @@ public class PipelineServiceImpl implements PipelineService {
         stageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
         stageRecordRepository.createOrUpdate(stageRecordE);
         //更新第一个任务状态
-        PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
         PipelineTaskE taskE = getFirsetTask(pipelineId);
-        BeanUtils.copyProperties(taskE, taskRecordE);
-        taskRecordE.setId(null);
-        taskRecordE.setTaskId(taskE.getId());
-        taskRecordE.setStageRecordId(stageRecordE.getId());
-        taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
-        taskRecordE.setTaskType(taskE.getType());
-        taskRecordRepository.createOrUpdate(taskRecordE);
+        stageManualTask(taskE,pipelineRecordId,stageRecordE.getId());
+
     }
 
     @Override
