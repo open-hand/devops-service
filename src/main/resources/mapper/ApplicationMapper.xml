@@ -251,4 +251,9 @@
             #{gitlabProjectId}
         </foreach>
     </select>
+
+
+    <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        UPDATE devops_application da set da.is_failed = null  where da.id = #{appId}
+    </update>
 </mapper>
