@@ -152,7 +152,7 @@ public class PipelineServiceImpl implements PipelineService {
                     if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                         t.setStageName(t.getStageDTOList().get(i - 1).getStageName());
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
-                        if (checkTriggerPermission(null, null, t.getStageDTOList().get(i).getId(), null)) {
+                        if (checkTriggerPermission(null, null, t.getStageDTOList().get(i).getId())) {
                             t.setIndex(true);
                         }
                         break;
@@ -164,9 +164,7 @@ public class PipelineServiceImpl implements PipelineService {
                             t.setTaskRecordId(taskRecordE.get().getId());
                             t.setStageRecordId(t.getStageDTOList().get(i).getId());
                             t.setType(TASK);
-                            if (checkTriggerPermission(null, pipelineId, null, null)) {
-                                t.setIndex(true);
-                            }
+                            t.setIndex(checkTaskTriggerPermission(taskRecordE.get().getTaskId(), taskRecordE.get().getId()));
                             break;
                         }
                     }
@@ -184,9 +182,7 @@ public class PipelineServiceImpl implements PipelineService {
                         break;
                     }
                 }
-                if (checkTriggerPermission(null, pipelineId, null, null)) {
-                    t.setIndex(true);
-                }
+                t.setIndex(checkTriggerPermission(null, pipelineId, null));
             }
             return t;
         }).collect(Collectors.toList());
@@ -206,11 +202,11 @@ public class PipelineServiceImpl implements PipelineService {
 
         //stage
         Long pipelineId = pipelineE.getId();
-        List<PipelineStageDTO> stageDTOList = pipelineReqDTO.getPipelineStageDTOS();
-        PipelineStageDTO pipelineStageDTO = stageDTOList.get(pipelineReqDTO.getPipelineStageDTOS().size() - 1);
-        pipelineStageDTO.setTriggerType(null);
-        stageDTOList.set(stageDTOList.size() - 1, pipelineStageDTO);
-        List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(stageDTOList, PipelineStageE.class)
+//        List<PipelineStageDTO> stageDTOList = pipelineReqDTO.getPipelineStageDTOS();
+//        PipelineStageDTO pipelineStageDTO = stageDTOList.get(pipelineReqDTO.getPipelineStageDTOS().size() - 1);
+//        pipelineStageDTO.setTriggerType(null);
+//        stageDTOList.set(stageDTOList.size() - 1, pipelineStageDTO);
+        List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
                 .stream().map(t -> {
                     t.setPipelineId(pipelineId);
                     t.setProjectId(projectId);
@@ -230,6 +226,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public PipelineReqDTO update(Long projectId, PipelineReqDTO pipelineReqDTO) {
+        pipelineReqDTO.setProjectId(projectId);
         //pipeline
         PipelineE pipelineE = ConvertHelper.convert(pipelineReqDTO, PipelineE.class);
         pipelineE = pipelineRepository.update(projectId, pipelineE);
@@ -359,7 +356,7 @@ public class PipelineServiceImpl implements PipelineService {
     public void execute(Long projectId, Long pipelineId) {
         //校验当前触发人员是否有权限触发
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-        if (!checkTriggerPermission(pipelineE, pipelineId, null, null)) {
+        if (!checkTriggerPermission(pipelineE, pipelineId, null)) {
             throw new CommonException("error.permission.trigger.pipeline");
         }
         //保存pipeline 和 pipelineUserRel
@@ -456,24 +453,34 @@ public class PipelineServiceImpl implements PipelineService {
         userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
         switch (recordRelDTO.getType()) {
             case TASK: {
-                PipelineTaskRecordE recordE = new PipelineTaskRecordE();
-                recordE.setId(recordRelDTO.getTaskRecordId());
-                recordE.setStatus(status);
-                taskRecordRepository.createOrUpdate(recordE);
-                userRelE.setTaskRecordId(recordE.getId());
+                userRelE.setTaskRecordId(recordRelDTO.getTaskRecordId());
+                pipelineUserRelRecordRepository.create(userRelE);
+                PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId());
+                PipelineTaskE taskE = pipelineTaskRepository.queryById(taskRecordE.getTaskId());
+                //判断是否成功
                 if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
+                    //判断是否是会签
+                    if (taskE.getIsCountersigned() == 1) {
+                        List<PipelineUserRelE> userList = pipelineUserRelRepository.listByOptions(null, null, taskE.getId());
+                        List<PipelineUserRecordRelE> userRecordList = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskE.getId());
+                        //是否全部同意
+                        if (userList.size() != userRecordList.size()) {
+                            break;
+                        }
+                    }
                     updateStatus(recordRelDTO.getPipelineRecordId(), null, WorkFlowStatus.RUNNING.toValue());
-                    conNextTaskRecord(recordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
+                    conNextTaskRecord(taskRecordE.getId(), recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                 } else {
                     updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status);
                 }
+                taskRecordE.setStatus(status);
+                taskRecordRepository.createOrUpdate(taskRecordE);
                 break;
             }
             case STAGE: {
-                PipelineStageRecordE recordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
-                recordE.setStatus(status);
-                stageRecordRepository.createOrUpdate(recordE);
-                userRelE.setStageRecordId(recordE.getId());
+                userRelE.setStageRecordId(recordRelDTO.getStageRecordId());
+                pipelineUserRelRecordRepository.create(userRelE);
+                updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status);
                 if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
                     //阶段中的第一个任务为人工任务时
                     PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryByStageId(stageRecordRepository.queryById(recordRelDTO.getStageRecordId()).getStageId()).get(0);
@@ -487,16 +494,15 @@ public class PipelineServiceImpl implements PipelineService {
                         taskRecordE.setTaskType(pipelineTaskE.getType());
                         taskRecordRepository.createOrUpdate(taskRecordE);
                         status = WorkFlowStatus.PENDINGCHECK.toValue();
+                        updateStatus(recordRelDTO.getPipelineRecordId(), null, status);
                     }
                 }
-                updateStatus(recordRelDTO.getPipelineRecordId(), null, status);
                 break;
             }
             default: {
                 break;
             }
         }
-        pipelineUserRelRecordRepository.create(userRelE);
     }
 
     /**
@@ -567,11 +573,13 @@ public class PipelineServiceImpl implements PipelineService {
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
         //stage
-        stageRepository.queryByPipelineId(pipelineId).forEach(t -> {
+        List<PipelineStageE> stageES = stageRepository.queryByPipelineId(pipelineId);
+        for (int i = 0; i < stageES.size(); i++) {
+            PipelineStageE stageE = stageES.get(i);
             //创建所有stageRecord
             PipelineStageRecordE recordE = new PipelineStageRecordE();
-            BeanUtils.copyProperties(t, recordE);
-            recordE.setStageId(t.getId());
+            BeanUtils.copyProperties(stageE, recordE);
+            recordE.setStageId(stageE.getId());
             recordE.setPipelineRecordId(pipelineRecordId);
             recordE.setId(null);
             recordE = stageRecordRepository.createOrUpdate(recordE);
@@ -579,18 +587,18 @@ public class PipelineServiceImpl implements PipelineService {
             //stage
             DevopsPipelineStageDTO devopsPipelineStageDTO = new DevopsPipelineStageDTO();
             devopsPipelineStageDTO.setStageRecordId(recordE.getId());
-            devopsPipelineStageDTO.setParallel(t.getIsParallel() != null && t.getIsParallel() == 1);
-            if (t.getTriggerType() != null && !t.getTriggerType().isEmpty()) {
-                devopsPipelineStageDTO.setNextStageTriggerType(t.getTriggerType());
+            devopsPipelineStageDTO.setParallel(stageE.getIsParallel() != null && stageE.getIsParallel() == 1);
+            if (i == stageES.size() - 1) {
+                devopsPipelineStageDTO.setNextStageTriggerType(stageE.getTriggerType());
             }
-            List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, t.getId(), null);
+            List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, stageE.getId(), null);
             devopsPipelineStageDTO.setMultiAssign(relEList.size() > 1);
             devopsPipelineStageDTO.setUsernames(relEList.stream()
                     .map(relE -> iamRepository.queryUserByUserId(relE.getUserId()).getLoginName())
                     .collect(Collectors.toList()));
 
             List<DevopsPipelineTaskDTO> devopsPipelineTaskDTOS = new ArrayList<>();
-            pipelineTaskRepository.queryByStageId(t.getId()).forEach(task -> {
+            pipelineTaskRepository.queryByStageId(stageE.getId()).forEach(task -> {
                 //task
                 List<PipelineUserRelE> taskUserRels = pipelineUserRelRepository.listByOptions(null, null, task.getId());
                 DevopsPipelineTaskDTO devopsPipelineTaskDTO = new DevopsPipelineTaskDTO();
@@ -606,6 +614,8 @@ public class PipelineServiceImpl implements PipelineService {
             });
             devopsPipelineStageDTO.setTasks(devopsPipelineTaskDTOS);
             devopsPipelineStageDTOS.add(devopsPipelineStageDTO);
+        }
+        stageRepository.queryByPipelineId(pipelineId).forEach(t -> {
 
 
         });
@@ -861,11 +871,11 @@ public class PipelineServiceImpl implements PipelineService {
         return pipelineStageES.get(pipelineStageES.size() - 1).getId().equals(pipelineStageE.getId()) ? pipelineStageE.getPipelineId() : null;
     }
 
-    private Boolean checkTriggerPermission(PipelineE pipelineE, Long pipelineId, Long stageId, Long taskId) {
+    private Boolean checkTriggerPermission(PipelineE pipelineE, Long pipelineId, Long stageId) {
         if (pipelineE != null && AUTO.equals(pipelineE.getTriggerType())) {
             return false;
         }
-        List<Long> userIds = pipelineUserRelRepository.listByOptions(pipelineId, stageId, taskId)
+        List<Long> userIds = pipelineUserRelRepository.listByOptions(pipelineId, stageId, null)
                 .stream()
                 .map(PipelineUserRelE::getUserId)
                 .collect(Collectors.toList());
@@ -873,6 +883,27 @@ public class PipelineServiceImpl implements PipelineService {
             return false;
         }
         return true;
+    }
+
+    private Boolean checkTaskTriggerPermission(Long taskId, Long taskRecordId) {
+        PipelineTaskE taskE = pipelineTaskRepository.queryById(taskId);
+        List<Long> userIds = pipelineUserRelRepository.listByOptions(null, null, null)
+                .stream()
+                .map(PipelineUserRelE::getUserId)
+                .collect(Collectors.toList());
+        if (taskE.getIsCountersigned() == 1) {
+            List<Long> userIdRecords = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskRecordId)
+                    .stream()
+                    .map(PipelineUserRecordRelE::getUserId)
+                    .collect(Collectors.toList());
+            //移除已经执行
+            userIds.forEach(t -> {
+                if (userIdRecords.contains(t)) {
+                    userIds.remove(t);
+                }
+            });
+        }
+        return userIds.contains(DetailsHelper.getUserDetails().getUserId());
     }
 
     private void createUserRel(List<Long> pipelineUserRelDTOS, Long pipelineId, Long stageId, Long taskId) {
