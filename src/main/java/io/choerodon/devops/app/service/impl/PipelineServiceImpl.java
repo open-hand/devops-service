@@ -930,26 +930,21 @@ public class PipelineServiceImpl implements PipelineService {
     private void updateUserRel(List<Long> relDTOList, Long pipelineId, Long stageId, Long taskId) {
         List<Long> addUserRelEList = new ArrayList<>();
         List<Long> relEList = pipelineUserRelRepository.listByOptions(pipelineId, stageId, taskId).stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList());
-        if (relDTOList != null) {
-            relDTOList.forEach(relE -> {
-                if (!relEList.contains(relE)) {
-                    addUserRelEList.add(relE);
-                } else {
-                    relEList.remove(relE);
-                }
-            });
-            addUserRelEList.forEach(addUserId -> {
-                PipelineUserRelE addUserRelE = new PipelineUserRelE(addUserId, pipelineId, stageId, taskId);
-                pipelineUserRelRepository.create(addUserRelE);
-            });
-        } else {
-            if (relEList != null) {
-                relEList.forEach(delUserId -> {
-                    PipelineUserRelE addUserRelE = new PipelineUserRelE(delUserId, pipelineId, stageId, taskId);
-                    pipelineUserRelRepository.delete(addUserRelE);
-                });
+        relDTOList.forEach(relE -> {
+            if (!relEList.contains(relE)) {
+                addUserRelEList.add(relE);
+            } else {
+                relEList.remove(relE);
             }
-        }
+        });
+        addUserRelEList.forEach(addUserId -> {
+            PipelineUserRelE addUserRelE = new PipelineUserRelE(addUserId, pipelineId, stageId, taskId);
+            pipelineUserRelRepository.create(addUserRelE);
+        });
+        relEList.forEach(delUserId -> {
+            PipelineUserRelE addUserRelE = new PipelineUserRelE(delUserId, pipelineId, stageId, taskId);
+            pipelineUserRelRepository.delete(addUserRelE);
+        });
     }
 
 }
