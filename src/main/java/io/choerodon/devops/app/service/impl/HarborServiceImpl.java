@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.google.gson.Gson;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.domain.application.event.HarborPayload;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
@@ -43,7 +44,7 @@ public class HarborServiceImpl implements HarborService {
             configurationProperties.setType("harbor");
             Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
             HarborClient harborClient = retrofit.create(HarborClient.class);
-            Response<Object> result = null;
+            Response<Void> result = null;
             LOGGER.info(harborConfigurationProperties.getParams());
             if (harborConfigurationProperties.getParams() == null || harborConfigurationProperties.getParams().equals("")) {
                 result = harborClient.insertProject(new Project(harborPayload.getProjectCode(), 1)).execute();
@@ -52,12 +53,11 @@ public class HarborServiceImpl implements HarborService {
                 params = gson.fromJson(harborConfigurationProperties.getParams(), params.getClass());
                 result = harborClient.insertProject(params, new Project(harborPayload.getProjectCode(), 1)).execute();
             }
-            if (result.raw().code() != 201 || result.raw().code() != 409) {
-                LOGGER.error("The request url is ", result.raw().request().url().toString());
-                LOGGER.error("create harbor project error {}", result.errorBody());
+            if (result.raw().code() != 201) {
+                throw new CommonException(result.errorBody().string());
             }
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+            throw new CommonException(e);
         }
 
     }

@@ -19,7 +19,6 @@ import io.choerodon.devops.infra.common.util.GitUtil;
 import io.choerodon.devops.infra.common.util.enums.HelmType;
 import io.choerodon.websocket.Msg;
 import io.choerodon.websocket.helper.CommandSender;
-import io.choerodon.websocket.helper.EnvListener;
 import io.codearte.props2yaml.Props2YAML;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +49,7 @@ public class DeployServiceImpl implements DeployService {
     @Autowired
     private EnvUtil envUtil;
     @Autowired
-    private EnvListener envListener;
+    private GitUtil gitUtil;
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -193,7 +192,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void initCluster(Long clusterId) {
-        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(clusterId);
+        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
         Msg msg = new Msg();
         try {
             msg.setPayload(mapper.writeValueAsString(gitConfigDTO));
@@ -209,7 +208,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void initEnv(DevopsEnvironmentE devopsEnvironmentE, Long clusterId) {
-        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(clusterId);
+        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(clusterId);
         List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
         ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
@@ -258,7 +257,7 @@ public class DeployServiceImpl implements DeployService {
 
     @Override
     public void getTestAppStatus(Map<Long, List<String>> testReleases) {
-        List<Long> connected = envUtil.getConnectedEnvList(envListener);
+        List<Long> connected = envUtil.getConnectedEnvList();
         testReleases.forEach((key, value) -> {
             if (connected.contains(key)) {
                 Msg msg = new Msg();

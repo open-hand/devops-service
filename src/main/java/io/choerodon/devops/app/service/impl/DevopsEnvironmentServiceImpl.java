@@ -7,12 +7,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -41,7 +35,11 @@ import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.InstanceStatus;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.helper.EnvListener;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by younger on 2018/4/9.
@@ -83,8 +81,6 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     @Autowired
     private DevopsEnvUserPermissionRepository devopsEnvUserPermissionRepository;
-    @Autowired
-    private EnvListener envListener;
     @Autowired
     private DevopsServiceRepository devopsServiceRepository;
     @Autowired
@@ -179,8 +175,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     @Override
     public List<DevopsEnvGroupEnvsDTO> listDevopsEnvGroupEnvs(Long projectId, Boolean active) {
         List<DevopsEnvGroupEnvsDTO> devopsEnvGroupEnvsDTOS = new ArrayList<>();
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream().peek(t ->
                         setEnvStatus(connectedClusterList, upgradeClusterList, t)
@@ -242,8 +238,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
         Boolean isProjectOwner = iamRepository
                 .isProjectOwner(TypeUtil.objToLong(GitUserNameUtil.getUserId()), projectE);
 
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
         List<DevopsEnvironmentE> devopsEnvironmentES = devopsEnviromentRepository
                 .queryByprojectAndActive(projectId, active).stream()
                 .filter(devopsEnvironmentE -> !devopsEnvironmentE.getFailed()).peek(t -> {
@@ -267,8 +263,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public Boolean activeEnvironment(Long projectId, Long environmentId, Boolean active) {
         DevopsEnvironmentE devopsEnvironmentE = devopsEnviromentRepository.queryById(environmentId);
 
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
         setEnvStatus(connectedClusterList, upgradeClusterList, devopsEnvironmentE);
         if (!active && devopsEnvironmentE.getConnect()) {
             devopsEnvironmentValidator.checkEnvCanDisabled(environmentId);
@@ -396,8 +392,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
             devopsEnviromentRepository.update(devopsEnvironmentE);
             sequence = sequence + 1;
         }
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
 
         devopsEnvironmentES.forEach(t ->
                 setEnvStatus(connectedEnvList, upgradeClusterList, t)
@@ -704,8 +700,8 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
     public List<DevopsClusterRepDTO> listDevopsCluster(Long projectId) {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         List<DevopsClusterRepDTO> devopsClusterRepDTOS = ConvertHelper.convertList(devopsClusterRepository.listByProjectId(projectId, projectE.getOrganization().getId()), DevopsClusterRepDTO.class);
-        List<Long> connectedClusterList = envUtil.getConnectedEnvList(envListener);
-        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedClusterList = envUtil.getConnectedEnvList();
+        List<Long> upgradeClusterList = envUtil.getUpdatedEnvList();
         devopsClusterRepDTOS.forEach(t -> {
             if (connectedClusterList.contains(t.getId()) && upgradeClusterList.contains(t.getId())) {
                 t.setConnect(true);
@@ -725,7 +721,7 @@ public class DevopsEnvironmentServiceImpl implements DevopsEnvironmentService {
 
     @Override
     public DevopsEnviromentRepDTO queryByCode(Long clusterId, String code) {
-        return ConvertHelper.convert(devopsEnviromentRepository.queryByClusterIdAndCode(clusterId, code), DevopsEnviromentRepDTO.class);
+        return ConvertHelper.convert(devopsEnviromentRepository.queryByProjectIdAndCode(clusterId, code), DevopsEnviromentRepDTO.class);
     }
 
     @Override

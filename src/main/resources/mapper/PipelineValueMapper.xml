@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineValueMapper">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineValueDO">
+        SELECT
+        dpv.id,
+        dpv. NAME,
+        dpv.description,
+        dpv.created_by,
+        dpv.last_update_date,
+        de.`name` AS envName,
+        da.`name` AS appName,
+        dpv.env_id,
+        dpv.app_id
+        FROM
+        devops_pipeline_value dpv
+        JOIN devops_env de ON de.id = dpv.env_id
+        JOIN devops_application da ON da.id = dpv.app_id
+        WHERE
+        dpv.project_id = #{projectId}
+        <if test='appId != null and appId !=""'>
+            AND dpv.app_id = #{appId}
+        </if>
+        <if test='envId != null and envId !=""'>
+            AND dpv.env_id = #{envId}
+        </if>
+        <include refid="sqlparam"/>
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.name != null and searchParam.name.size > 0'>
+                AND
+                <foreach collection="searchParam.name" item="name" open="(" separator=" OR " close=")">
+                    dpv.name LIKE CONCAT(CONCAT('%', #{name, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+            <if test='searchParam.description != null and searchParam.description.size > 0'>
+                AND
+                <foreach collection="searchParam.description" item="description" open="(" separator=" OR " close=")">
+                    dpv.description LIKE CONCAT(CONCAT('%', #{description, jdbcType=VARCHAR}),'%')
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND (dpv.name LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%')
+            OR dpv.description LIKE CONCAT(CONCAT('%', #{param, jdbcType=VARCHAR}),'%'))
+        </if>
+    </sql>
+</mapper>

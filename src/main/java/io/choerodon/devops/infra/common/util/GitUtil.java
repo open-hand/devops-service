@@ -2,6 +2,7 @@ package io.choerodon.devops.infra.common.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -10,7 +11,14 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import io.choerodon.core.exception.CommonException;
+import io.choerodon.devops.api.dto.GitConfigDTO;
+import io.choerodon.devops.api.dto.GitEnvConfigDTO;
 import io.choerodon.devops.app.service.impl.DevopsGitServiceImpl;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.valueobject.Organization;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.*;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -22,6 +30,7 @@ import org.eclipse.jgit.transport.*;
 import org.eclipse.jgit.util.FS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.core.io.ResourceLoader;
@@ -42,14 +51,23 @@ public class GitUtil {
     private static final String ERROR_GIT_CLONE = "error.git.clone";
     private static final String REPO_NAME = "devops-service-repo";
     private static final Logger LOGGER = LoggerFactory.getLogger(DevopsGitServiceImpl.class);
+    Pattern pattern = Pattern.compile("^[-\\+]?[\\d]*$");
 
     private String classPath;
     private String sshKey;
+
+
+    @Autowired
+    DevopsEnvironmentRepository devopsEnvironmentRepository;
+    @Autowired
+    IamRepository iamRepository;
 
     @Value("${template.url}")
     private String repoUrl;
     @Value("${template.version}")
     private String version;
+    @Value("${services.gitlab.sshUrl}")
+    private String gitlabSshUrl;
 
     /**
      * 构造方法
@@ -465,6 +483,30 @@ public class GitUtil {
         if (!gitProvided) {
             git.close();
         }
+    }
+
+
+
+
+    public GitConfigDTO getGitConfig(Long clusterId) {
+        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.listByClusterId(clusterId);
+        GitConfigDTO gitConfigDTO = new GitConfigDTO();
+        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
+        devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
+            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
+            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
+            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
+
+            GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
+            gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
+            gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
+            gitEnvConfigDTO.setGitUrl(repoUrl);
+            gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
+            gitEnvConfigDTOS.add(gitEnvConfigDTO);
+        });
+        gitConfigDTO.setEnvs(gitEnvConfigDTOS);
+        gitConfigDTO.setGitHost(gitlabSshUrl);
+        return gitConfigDTO;
     }
 
     private void addFile(Git git, String relativePath) throws GitAPIException {

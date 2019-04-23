@@ -11,7 +11,6 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CertificationDTO;
 import io.choerodon.devops.domain.application.entity.CertificationE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.CertificationRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
@@ -23,7 +22,6 @@ import io.choerodon.devops.infra.mapper.DevopsCertificationFileMapper;
 import io.choerodon.devops.infra.mapper.DevopsCertificationMapper;
 import io.choerodon.mybatis.pagehelper.PageHelper;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.helper.EnvListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,11 +42,6 @@ public class CertificationRepositoryImpl implements CertificationRepository {
     private DevopsEnvironmentRepository devopsEnvironmentRepository;
 
     private Gson gson = new Gson();
-
-    @Autowired
-    private EnvListener envListener;
-    @Autowired
-    private EnvUtil envUtil;
 
     @Override
     public CertificationE queryByEnvAndName(Long envId, String name) {
@@ -103,16 +96,6 @@ public class CertificationRepositoryImpl implements CertificationRepository {
                 }
             }
         });
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
-        certificationDTOPage.getContent().stream()
-                .filter(certificationDTO -> certificationDTO.getOrganizationId() == null)
-                .forEach(certificationDTO -> {
-                    DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(certificationDTO.getEnvId());
-                    certificationDTO.setEnvConnected(
-                            connectedEnvList.contains(devopsEnvironmentE.getClusterE().getId())
-                                    && updatedEnvList.contains(devopsEnvironmentE.getClusterE().getId()));
-                });
 
         return certificationDTOPage;
     }

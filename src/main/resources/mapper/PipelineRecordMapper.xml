@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineRecordMapper">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
+        SELECT
+        dpr.id,
+        dpr. STATUS,
+        dpr.trigger_type,
+        dp. NAME,
+        dpr.last_update_date,
+        dpr.project_id,
+        dpr.pipeline_id
+        FROM
+        devops_pipeline_record dpr
+        JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id
+        WHERE
+        dpr.project_id = #{projectId}
+        <if test="pipelineId != null">
+            AND dpr.pipeline_id = #{pipelineId}
+        </if>
+        <include refid="sqlparam"/>
+    </select>
+
+    <select id="queryById" resultType="io.choerodon.devops.infra.dataobject.PipelineRecordDO">
+        SELECT
+        dpr.id,
+        dpr. STATUS,
+        dpr.trigger_type,
+        dp. NAME,
+        dpr.last_update_date,
+        dpr.project_id,
+        dpr.pipeline_id,
+        dpr.`status`,
+        dpr.creation_date,
+        dpr.process_instance_id,
+        dpr.bpm_definition
+        FROM
+        devops_pipeline_record dpr
+        JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id
+        WHERE dpr.id = #{pipelineRecordId}
+    </select>
+
+    <sql id="sqlparam">
+        <if test='searchParam != null'>
+            <if test='searchParam.status != null and searchParam.status.size > 0'>
+                AND
+                <foreach collection="searchParam.status" item="status" open="(" separator=" OR " close=")">
+                    dpr.status = #{status, jdbcType=VARCHAR}
+                </foreach>
+            </if>
+            <if test='searchParam.triggerType != null and searchParam.triggerType.size > 0'>
+                AND
+                <foreach collection="searchParam.triggerType" item="triggerType">
+                    dpr.trigger_type = #{triggerType, jdbcType=VARCHAR}
+                </foreach>
+            </if>
+        </if>
+        <if test='param != null and param != ""'>
+            AND ( dpr.status = #{param, jdbcType=VARCHAR}
+            OR dpr.trigger_type = #{param, jdbcType=VARCHAR})
+        </if>
+    </sql>
+
+</mapper>

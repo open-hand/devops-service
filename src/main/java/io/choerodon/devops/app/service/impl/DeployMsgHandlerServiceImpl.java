@@ -20,6 +20,7 @@ import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
+import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.*;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -62,6 +64,10 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private static final String RESOURCE_VERSION = "resourceVersion";
     private static final String INIT_AGENT = "init_agent";
     private static final String ENV_NOT_EXIST = "env not exists: {}";
+    public static final String CONFIG_MAP_PREFIX = "configMap-";
+    public static final String CONFIGMAP = "ConfigMap";
+    public static final String CREATE_TYPE = "create";
+    public static final Long ADMIN = 1L;
 
     private static JSON json = new JSON();
     private static ObjectMapper objectMapper = new ObjectMapper();
@@ -99,18 +105,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
     @Autowired
-    private ApplicationVersionValueRepository applicationVersionValueRepository;
-    @Autowired
     private IamRepository iamRepository;
-    @Autowired
-    private HarborConfigurationProperties harborConfigurationProperties;
     @Autowired
     private DevopsEnvPodContainerRepository containerRepository;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
     @Autowired
-    private DevopsEnvCommandValueRepository devopsEnvCommandValueRepository;
-    @Autowired
+    @Lazy
     private SocketMsgDispatcher socketMsgDispatcher;
     @Autowired
     private ApplicationMarketMapper applicationMarketMapper;
@@ -135,15 +136,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     @Autowired
     private DevopsClusterProPermissionRepository devopsClusterProPermissionRepository;
     @Autowired
-    private EnvUtil envUtil;
+    private GitUtil gitUtil;
     @Autowired
     private SagaClient sagaClient;
     @Autowired
     private DevopsConfigMapRepository devopsConfigMapRepository;
     @Autowired
     private ClusterNodeInfoService clusterNodeInfoService;
-    @Autowired
-    private DevopsConfigMapService devopsConfigMapService;
     @Autowired
     private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
 
@@ -1478,7 +1477,7 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         }
         devopsClusterE.setInit(true);
         devopsClusterRepository.update(devopsClusterE);
-        GitConfigDTO gitConfigDTO = envUtil.getGitConfig(devopsClusterE.getId());
+        GitConfigDTO gitConfigDTO = gitUtil.getGitConfig(devopsClusterE.getId());
         Msg initClusterEnv = new Msg();
         try {
             initClusterEnv.setPayload(mapper.writeValueAsString(gitConfigDTO));
@@ -1714,13 +1713,17 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         V1ConfigMap v1ConfigMap = json.deserialize(msg, V1ConfigMap.class);
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(envId, v1ConfigMap.getMetadata().getName());
         if (devopsConfigMapE == null) {
-            DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
-            devopsConfigMapDTO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
-            devopsConfigMapDTO.setEnvId(envId);
-            devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
-            devopsConfigMapDTO.setType("create");
-            devopsConfigMapDTO.setValue(v1ConfigMap.getData());
-            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
+//            DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+//            devopsConfigMapDTO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
+//            devopsConfigMapDTO.setEnvId(envId);
+//            devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
+//            devopsConfigMapDTO.setType("create");
+//            devopsConfigMapDTO.setValue(v1ConfigMap.getData());
+
+            ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
+            objectOperation.setType(v1ConfigMap);
+            objectOperation.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), devopsEnvironmentE.getGitlabEnvProjectId().intValue(), CREATE_TYPE,
+                    ADMIN, null, CONFIGMAP, null, null, null);
         }
     }
 

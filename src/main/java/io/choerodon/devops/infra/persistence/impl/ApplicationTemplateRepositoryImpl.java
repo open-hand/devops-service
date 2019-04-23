@@ -35,7 +35,7 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
 
     private static ObjectMapper mapper = new ObjectMapper();
     private static JSON json = new JSON();
-    private String[] models = new String[]{"MicroService", "MicroServiceUI", "JavaLib"};
+    private String[] models = new String[]{"microservice", "microserviceui", "javalib"};
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
 
@@ -132,7 +132,7 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
         ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO();
         applicationTemplateDO.setOrganizationId(applicationTemplateE.getOrganization().getId());
         applicationTemplateDO.setName(applicationTemplateE.getName());
-        if (Arrays.asList(models).contains(applicationTemplateE.getName())) {
+        if (Arrays.asList(models).contains(applicationTemplateE.getName().toLowerCase())) {
             throw new CommonException("error.name.exist");
         }
         if (applicationTemplateMapper.selectOne(applicationTemplateDO) != null) {
@@ -145,7 +145,7 @@ public class ApplicationTemplateRepositoryImpl implements ApplicationTemplateRep
         ApplicationTemplateDO applicationTemplateDO = new ApplicationTemplateDO();
         applicationTemplateDO.setOrganizationId(applicationTemplateE.getOrganization().getId());
         applicationTemplateDO.setCode(applicationTemplateE.getCode());
-        if (Arrays.asList(models).contains(applicationTemplateE.getCode())) {
+        if (Arrays.asList(models).contains(applicationTemplateE.getCode().toLowerCase())) {
             throw new CommonException("error.code.exist");
         }
         if (!applicationTemplateMapper.select(applicationTemplateDO).isEmpty()) {

@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -108,12 +109,12 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         if (doPage != null && !doPage) {
                 applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
                         (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
-                        mapParams.get(TypeUtil.PARAM).toString(), checkSortIsEmpty(pageRequest)));
+                        mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationES = PageHelper
                     .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
                             (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
-                            (String)mapParams.get(TypeUtil.PARAM), checkSortIsEmpty(pageRequest)));
+                            (String)mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
@@ -200,15 +201,6 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public List<ApplicationE> listByCode(String code) {
         return ConvertHelper.convertList(applicationMapper.listByCode(code), ApplicationE.class);
-    }
-
-    @Override
-    public String checkSortIsEmpty(PageRequest pageRequest) {
-        String index = "";
-        if (pageRequest.getSort() == null) {
-            index = "true";
-        }
-        return index;
     }
 
     @Override

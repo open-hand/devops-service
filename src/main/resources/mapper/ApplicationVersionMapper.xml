@@ -105,7 +105,8 @@
     <select id="selectByAppId" resultType="io.choerodon.devops.infra.dataobject.ApplicationVersionDO">
         SELECT
         dav.id,
-        dav.version
+        dav.version,
+        dav.creation_date
         FROM
         devops_app_version dav
         WHERE
@@ -251,7 +252,7 @@
         LEFT JOIN devops_app_version dav ON dav.`commit` = dgc.commit_sha
         WHERE
         dgp.pipeline_id = #{pipelineId}
-        and dav.version LIKE CONCAT(CONCAT('%', #{branch, jdbcType=VARCHAR}),'%')
+        and dav.version LIKE CONCAT('%', #{branch, jdbcType=VARCHAR})
     </select>
 
     <select id="queryValueById" resultType="java.lang.String">

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineStageRecordMapper">
+    <select id="listByOptions" resultType="io.choerodon.devops.infra.dataobject.PipelineStageRecordDO">
+        SELECT
+            dpsr.id,
+            dpsr. STATUS,
+            dpsr.trigger_type,
+            dps.stage_name,
+            dpsr.last_update_date,
+            dpsr.stage_id
+        FROM
+            devops_pipeline_stage_record dpsr
+        JOIN devops_pipeline_stage dps ON dps.id = dpsr.stage_id
+        WHERE
+        dpsr.project_id = #{projectId}
+        <if test="pipelineRecordId != null">
+            AND dpsr.pipeline_record_id = #{pipelineRecordId}
+        </if>
+    </select>
+
+</mapper>

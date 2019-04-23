@@ -19,6 +19,7 @@ import io.choerodon.websocket.helper.EnvListener;
 import io.choerodon.websocket.helper.EnvSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 /**
@@ -36,12 +37,15 @@ public class EnvUtil {
     private String agentExpectVersion;
     @Value("${services.gitlab.sshUrl}")
     private String gitlabSshUrl;
+
     @Autowired
     private IamRepository iamRepository;
     @Autowired
-    private DevopsEnvironmentRepository devopsEnvironmentRepository;
-    @Autowired
     private GitUtil gitUtil;
+    @Autowired(required = false)
+    @Lazy
+    private EnvListener envListener;
+
 
     public static int compareVersion(String a, String b) {
         if (!a.contains("-") && !b.contains("-")) {
@@ -92,10 +96,9 @@ public class EnvUtil {
     /**
      * 检查环境是否链接
      *
-     * @param clusterId   环境ID
-     * @param envListener EnvListener
+     * @param clusterId 环境ID
      */
-    public void checkEnvConnection(Long clusterId, EnvListener envListener) {
+    public void checkEnvConnection(Long clusterId) {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         boolean envConnected = connectedEnv.entrySet().stream()
                 .anyMatch(t -> clusterId.equals(t.getValue().getClusterId())
@@ -108,10 +111,9 @@ public class EnvUtil {
     /**
      * 环境链接列表
      *
-     * @param envListener EnvListener
      * @return 环境链接列表
      */
-    public List<Long> getConnectedEnvList(EnvListener envListener) {
+    public List<Long> getConnectedEnvList() {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().stream()
                 .map(t -> t.getValue().getClusterId())
@@ -121,37 +123,14 @@ public class EnvUtil {
     /**
      * 环境更新列表
      *
-     * @param envListener EnvListener
      * @return 环境更新列表
      */
-    public List<Long> getUpdatedEnvList(EnvListener envListener) {
+    public List<Long> getUpdatedEnvList() {
         Map<String, EnvSession> connectedEnv = envListener.connectedEnv();
         return connectedEnv.entrySet().stream()
                 .filter(t -> compareVersion(t.getValue().getVersion() == null ? "0" : t.getValue().getVersion(), agentExpectVersion) != 1)
                 .map(t -> t.getValue().getClusterId())
                 .collect(Collectors.toCollection(ArrayList::new));
-    }
-
-
-    public GitConfigDTO getGitConfig(Long clusterId) {
-        List<DevopsEnvironmentE> devopsEnvironments = devopsEnvironmentRepository.listByClusterId(clusterId);
-        GitConfigDTO gitConfigDTO = new GitConfigDTO();
-        List<GitEnvConfigDTO> gitEnvConfigDTOS = new ArrayList<>();
-        devopsEnvironments.stream().filter(devopsEnvironmentE -> devopsEnvironmentE.getGitlabEnvProjectId() != null).forEach(devopsEnvironmentE -> {
-            ProjectE projectE = iamRepository.queryIamProject(devopsEnvironmentE.getProjectE().getId());
-            Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
-            String repoUrl = GitUtil.getGitlabSshUrl(pattern, gitlabSshUrl, organization.getCode(), projectE.getCode(), devopsEnvironmentE.getCode());
-
-            GitEnvConfigDTO gitEnvConfigDTO = new GitEnvConfigDTO();
-            gitEnvConfigDTO.setEnvId(devopsEnvironmentE.getId());
-            gitEnvConfigDTO.setGitRsaKey(devopsEnvironmentE.getEnvIdRsa());
-            gitEnvConfigDTO.setGitUrl(repoUrl);
-            gitEnvConfigDTO.setNamespace(devopsEnvironmentE.getCode());
-            gitEnvConfigDTOS.add(gitEnvConfigDTO);
-        });
-        gitConfigDTO.setEnvs(gitEnvConfigDTOS);
-        gitConfigDTO.setGitHost(gitlabSshUrl);
-        return gitConfigDTO;
     }
 
 

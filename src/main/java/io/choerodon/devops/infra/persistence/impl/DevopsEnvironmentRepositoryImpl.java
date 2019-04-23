@@ -100,6 +100,14 @@ public class DevopsEnvironmentRepositoryImpl implements DevopsEnvironmentReposit
     }
 
     @Override
+    public DevopsEnvironmentE queryByProjectIdAndCode(Long projectId, String code) {
+        DevopsEnvironmentDO devopsEnvironmentDO = new DevopsEnvironmentDO();
+        devopsEnvironmentDO.setProjectId(projectId);
+        devopsEnvironmentDO.setCode(code);
+        return ConvertHelper.convert(devopsEnvironmentMapper.selectOne(devopsEnvironmentDO), DevopsEnvironmentE.class);
+    }
+
+    @Override
     public DevopsEnvironmentE queryByToken(String token) {
         return ConvertHelper.convert(devopsEnvironmentMapper.queryByToken(token), DevopsEnvironmentE.class);
     }
