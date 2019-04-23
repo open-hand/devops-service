@@ -212,9 +212,12 @@ public class PipelineServiceImpl implements PipelineService {
             Long stageId = pipelineStageES.get(i).getId();
             createUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, stageId, null);
             //task
-            pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS().forEach(t -> {
-                AddPipelineTask(t, projectId, stageId);
-            });
+            List<PipelineTaskDTO> taskDTOList = pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS();
+            if (taskDTOList != null && taskDTOList.size() > 0) {
+                taskDTOList.forEach(t -> {
+                    AddPipelineTask(t, projectId, stageId);
+                });
+            }
         }
         return pipelineReqDTO;
     }
