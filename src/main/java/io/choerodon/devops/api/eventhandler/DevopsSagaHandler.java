@@ -382,8 +382,9 @@ public class DevopsSagaHandler {
             LOGGER.error("error create pipeline auto deploy instance success");
         } catch (Exception e) {
             //实例创建失败,回写记录表
-            Long stageRecordId = taskRecordRepository.queryById(applicationDeployDTO.getRecordId()).getStageRecordId();
-            Long pipelineRecordId = stageRecordRepository.queryById(applicationDeployDTO.getRecordId()).getPipelineRecordId();
+            Long taskRecordId = applicationDeployDTO.getRecordId();
+            Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
+            Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
