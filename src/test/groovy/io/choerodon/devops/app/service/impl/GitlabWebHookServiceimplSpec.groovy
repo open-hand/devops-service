@@ -239,7 +239,7 @@ class GitlabWebHookServiceimplSpec extends Specification {
                 "    AGENT_SERVICEURL: ws://devops-service-front.staging.saas.hand-china.com/agent/\n" +
                 "    SERVICES_SONARQUBE_URL: http://sonarqube.staging.saas.hand-china.com\n" +
                 "    AGENT_REPOURL: http://chart.choerodon.com.cn/choerodon/c7ncd/\n" +
-                "    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**\n" +
+                "    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**,/workflow/**\n" +
                 "    SPRING_CLOUD_CONFIG_URI: http://config-server.choerodon-framework-staging:8010\n" +
                 "    SERVICES_HARBOR_PASSWORD: Handhand123\n" +
                 "    SERVICES_HELM_URL: http://helm-charts.staging.saas.hand-china.com\n" +

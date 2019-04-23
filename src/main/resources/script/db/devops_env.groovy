@@ -118,6 +118,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_env.groovy') {
 
     changeSet(author: 'younger', id: '2019-04-08-drop-constraint')
             {
+                preConditions (onFail: 'MARK_RAN') {
+                    indexExists(tableName: "devops_env",indexName: "devops_envs_uk_cluster_id_code")
+                }
                 dropUniqueConstraint(constraintName: "devops_envs_uk_cluster_id_code", tableName: "devops_env")
                 addUniqueConstraint(tableName: 'devops_env',
                         constraintName: 'devops_envs_uk_cluster_and_project_code', columnNames: 'cluster_id,project_id,code')

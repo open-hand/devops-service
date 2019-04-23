@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.google.gson.Gson;
+import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ProjectConfigDTO;
 import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
@@ -43,21 +44,18 @@ public class ProjectConfigHarborServiceImpl implements ProjectConfigHarborServic
             configurationProperties.setType("harbor");
             Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
             HarborClient harborClient = retrofit.create(HarborClient.class);
-            Response<Object> result = null;
+            Response<Void> result = null;
 
             ProjectE projectE = iamRepository.queryIamProject(projectId);
 
             result = harborClient.insertProject(new Project(
                     projectE.getOrganization().getCode() + "-" + projectE.getCode(), 1)).execute();
 
-            okhttp3.Response raw = result.raw();
-
-            if (raw.code() != 201 || raw.code() != 409) {
-                LOGGER.error("The request url is {}", raw.request().url());
-                LOGGER.error("create harbor project error {}", result.errorBody());
+            if (result.raw().code() != 201) {
+                throw new CommonException(result.errorBody().string());
             }
         } catch (IOException e) {
-            LOGGER.error(e.getMessage());
+            throw new CommonException(e);
         }
     }
 }

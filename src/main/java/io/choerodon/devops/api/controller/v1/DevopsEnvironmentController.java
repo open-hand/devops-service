@@ -381,11 +381,9 @@ public class DevopsEnvironmentController {
     public ResponseEntity<DevopsEnviromentRepDTO> queryByCode(
             @ApiParam(value = "项目ID", required = true)
             @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "集群Id", required = true)
-            @RequestParam(value = "cluster_id") Long clusterId,
             @ApiParam(value = "环境编码", required = true)
             @RequestParam(value = "code") String code) {
-        return Optional.ofNullable(devopsEnvironmentService.queryByCode(clusterId,code))
+        return Optional.ofNullable(devopsEnvironmentService.queryByCode(projectId,code))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.environment.query"));
     }

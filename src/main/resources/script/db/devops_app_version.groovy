@@ -43,4 +43,10 @@ databaseChangeLog(logicalFilePath: 'dba/devops_app_versionion.groovy') {
         }
     }
 
+    changeSet(author: 'scp', id: '2019-04-16-app-version-add--index') {
+        createIndex(indexName: "idx_commit_version", tableName: "devops_app_version") {
+            column(name: "commit")
+            column(name: 'version')
+        }
+    }
 }
