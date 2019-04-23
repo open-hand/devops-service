@@ -54,7 +54,7 @@ public class PipelineValueRepositoryImpl implements PipelineValueRepository {
             }
             pipelineValueDO.setObjectVersionNumber(null);
         }
-        return ConvertHelper.convert(valueMapper.selectOne(pipelineValueDO), PipelineValueE.class);
+        return ConvertHelper.convert(valueMapper.selectByPrimaryKey(pipelineValueDO), PipelineValueE.class);
     }
 
     @Override
