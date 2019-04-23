@@ -163,7 +163,7 @@ public class PipelineServiceImpl implements PipelineService {
                         t.setType(STAGE);
                         t.setStageName(t.getStageDTOList().get(i - 1).getStageName());
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
-                        t.setIndex(checkTriggerPermission(null, null, t.getStageDTOList().get(i-1).getStageId()));
+                        t.setIndex(checkTriggerPermission(null, null, t.getStageDTOList().get(i - 1).getStageId()));
                         break;
                     }
                 }
@@ -750,7 +750,7 @@ public class PipelineServiceImpl implements PipelineService {
         stageRecordRepository.createOrUpdate(stageRecordE);
         //更新第一个任务状态
         PipelineTaskE taskE = getFirsetTask(pipelineId);
-        stageManualTask(taskE,pipelineRecordId,stageRecordE.getId());
+        stageManualTask(taskE, pipelineRecordId, stageRecordE.getId());
 
     }
 
@@ -913,10 +913,12 @@ public class PipelineServiceImpl implements PipelineService {
 
     private Boolean checkTaskTriggerPermission(Long taskId, Long taskRecordId) {
         PipelineTaskE taskE = pipelineTaskRepository.queryById(taskId);
-        List<Long> userIds = pipelineUserRelRepository.listByOptions(null, null, null)
+        List<Long> userIds = pipelineUserRelRepository.listByOptions(null, null, taskId)
                 .stream()
                 .map(PipelineUserRelE::getUserId)
                 .collect(Collectors.toList());
+        //未执行
+        List<Long> userIdsUnExe = new ArrayList<>(userIds);
         if (taskE.getIsCountersigned() == 1) {
             List<Long> userIdRecords = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskRecordId)
                     .stream()
@@ -925,11 +927,11 @@ public class PipelineServiceImpl implements PipelineService {
             //移除已经执行
             userIds.forEach(t -> {
                 if (userIdRecords.contains(t)) {
-                    userIds.remove(t);
+                    userIdsUnExe.remove(t);
                 }
             });
         }
-        return userIds.contains(DetailsHelper.getUserDetails().getUserId());
+        return userIdsUnExe.contains(DetailsHelper.getUserDetails().getUserId());
     }
 
     private void createUserRel(List<Long> pipelineUserRelDTOS, Long pipelineId, Long stageId, Long taskId) {
