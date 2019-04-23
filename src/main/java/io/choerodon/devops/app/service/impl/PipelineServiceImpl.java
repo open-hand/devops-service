@@ -27,7 +27,6 @@ import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployValueE;
 import io.choerodon.devops.domain.application.entity.PipelineE;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
 import io.choerodon.devops.domain.application.entity.PipelineStageE;
@@ -36,11 +35,11 @@ import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
 import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
+import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployValueRepository;
 import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineRepository;
 import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
@@ -49,6 +48,7 @@ import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepos
 import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
+import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
@@ -104,7 +104,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private PipelineAppDeployRepository appDeployRepository;
     @Autowired
-    private PipelineAppDeployValueRepository valueRepository;
+    private PipelineValueRepository valueRepository;
     @Autowired
     private PipelineTaskRecordRepository taskRecordRepository;
     @Autowired
@@ -202,10 +202,6 @@ public class PipelineServiceImpl implements PipelineService {
 
         //stage
         Long pipelineId = pipelineE.getId();
-//        List<PipelineStageDTO> stageDTOList = pipelineReqDTO.getPipelineStageDTOS();
-//        PipelineStageDTO pipelineStageDTO = stageDTOList.get(pipelineReqDTO.getPipelineStageDTOS().size() - 1);
-//        pipelineStageDTO.setTriggerType(null);
-//        stageDTOList.set(stageDTOList.size() - 1, pipelineStageDTO);
         List<PipelineStageE> pipelineStageES = ConvertHelper.convertList(pipelineReqDTO.getPipelineStageDTOS(), PipelineStageE.class)
                 .stream().map(t -> {
                     t.setPipelineId(pipelineId);
@@ -280,10 +276,10 @@ public class PipelineServiceImpl implements PipelineService {
                 if (t.getId() != null) {
                     if (AUTO.equals(t.getType())) {
                         t.setAppDeployId(appDeployRepository.update(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
-                        PipelineAppDeployValueE appDeployValueE = new PipelineAppDeployValueE();
-                        appDeployValueE.setId(t.getAppDeployDTOS().getValueId());
-                        appDeployValueE.setValue(t.getAppDeployDTOS().getValue());
-                        valueRepository.update(appDeployValueE);
+                        PipelineValueE pipelineValueE = new PipelineValueE();
+                        pipelineValueE.setId(t.getAppDeployDTOS().getValueId());
+                        pipelineValueE.setValue(t.getAppDeployDTOS().getValue());
+                        valueRepository.createOrUpdate(pipelineValueE);
                     }
                     Long taskId = pipelineTaskRepository.update(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
                     if (MANUAL.equals(t.getType())) {
@@ -774,14 +770,12 @@ public class PipelineServiceImpl implements PipelineService {
         t.setProjectId(projectId);
         t.setStageId(stageId);
         if (AUTO.equals(t.getType())) {
-            //appDeployValue
-            PipelineAppDeployValueE appDeployValueE = new PipelineAppDeployValueE();
-            appDeployValueE.setValue(t.getAppDeployDTOS().getValue());
-            appDeployValueE.setValueId(t.getAppDeployDTOS().getValueId());
-            appDeployValueE = valueRepository.create(appDeployValueE);
+            //PipelineValue
+            PipelineValueE pipelineValueE = valueRepository.queryById(t.getAppDeployDTOS().getValueId());
+            pipelineValueE.setValue(t.getAppDeployDTOS().getValue());
+            valueRepository.createOrUpdate(pipelineValueE);
             //appDeploy
             PipelineAppDeployE appDeployE = ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class);
-            appDeployE.setValueId(appDeployValueE.getId());
             appDeployE.setProjectId(projectId);
             t.setAppDeployId(appDeployRepository.create(appDeployE).getId());
         }
