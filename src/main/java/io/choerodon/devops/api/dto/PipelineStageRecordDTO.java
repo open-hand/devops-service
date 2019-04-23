@@ -20,7 +20,16 @@ public class PipelineStageRecordDTO {
     private Long pipelineId;
     private Integer isParallel;
     private String executionTime;
+    private Long stageId;
     private List<PipelineTaskRecordDTO> taskRecordDTOS;
+
+    public Long getStageId() {
+        return stageId;
+    }
+
+    public void setStageId(Long stageId) {
+        this.stageId = stageId;
+    }
 
     public String getExecutionTime() {
         return executionTime;

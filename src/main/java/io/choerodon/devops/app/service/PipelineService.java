@@ -43,7 +43,7 @@ public interface PipelineService {
 
     DevopsPipelineDTO setWorkFlowDTO(Long pipelineRecordId, Long pipelineId);
 
-    Boolean getAppDeployStatus(Long stageRecordId, Long taskId);
+    String getAppDeployStatus(Long stageRecordId, Long taskId);
 
     void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId, Boolean status);
 

@@ -76,7 +76,7 @@ public class WorkFlowController {
      */
     @ApiOperation(value = "检测部署任务生成实例状态")
     @GetMapping("/status")
-    public ResponseEntity<Boolean> getAppDeployStatusTask(
+    public ResponseEntity<String> getAppDeployStatusTask(
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @ApiParam(value = "任务Id", required = true)
