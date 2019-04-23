@@ -585,7 +585,7 @@ public class PipelineServiceImpl implements PipelineService {
             DevopsPipelineStageDTO devopsPipelineStageDTO = new DevopsPipelineStageDTO();
             devopsPipelineStageDTO.setStageRecordId(recordE.getId());
             devopsPipelineStageDTO.setParallel(stageE.getIsParallel() != null && stageE.getIsParallel() == 1);
-            if (i == stageES.size() - 1) {
+            if (i != stageES.size() - 1) {
                 devopsPipelineStageDTO.setNextStageTriggerType(stageE.getTriggerType());
             }
             List<PipelineUserRelE> relEList = pipelineUserRelRepository.listByOptions(null, stageE.getId(), null);
