@@ -163,7 +163,7 @@ public class PipelineServiceImpl implements PipelineService {
                         t.setType(STAGE);
                         t.setStageName(t.getStageDTOList().get(i - 1).getStageName());
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
-                        if (checkTriggerPermission(null, null, t.getStageDTOList().get(i).getId())) {
+                        if (checkTriggerPermission(null, null, t.getStageDTOList().get(i).getStageId())) {
                             t.setIndex(true);
                         }
                         break;
