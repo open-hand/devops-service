@@ -14,6 +14,8 @@ preJob:
   preConfig:
     enable: true
     configFile: application.yml
+    configType: k8s
+    registerHost: http://register-server:8000
     datasource:
       url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
       username: username
