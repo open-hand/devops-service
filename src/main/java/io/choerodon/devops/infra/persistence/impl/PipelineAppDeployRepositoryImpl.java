@@ -64,4 +64,11 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
             throw new CommonException("error.app.instance.name.already.exist");
         }
     }
+
+    @Override
+    public List<PipelineAppDeployE> queryByValueId(Long valueId) {
+        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+        appDeployDO.setValueId(valueId);
+        return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
+    }
 }
