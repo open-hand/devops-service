@@ -258,37 +258,39 @@ public class PipelineServiceImpl implements PipelineService {
             Long stageId = stageE.getId();
             updateUserRel(pipelineReqDTO.getPipelineStageDTOS().get(i).getStageUserRelDTOS(), null, stageId, null);
             //task删除
-            List<Long> newTaskIds = pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS()
-                    .stream()
-                    .filter(t -> t.getId() != null)
-                    .map(PipelineTaskDTO::getId)
-                    .collect(Collectors.toList());
-            pipelineTaskRepository.queryByStageId(stageId).forEach(t -> {
-                if (!newTaskIds.contains(t.getId())) {
-                    pipelineTaskRepository.deleteById(t.getId());
-                    if (t.getType().equals(MANUAL)) {
-                        updateUserRel(null, null, null, t.getId());
+            List<PipelineTaskDTO> taskDTOList = pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS();
+            if (taskDTOList != null) {
+                List<Long> newTaskIds = taskDTOList.stream()
+                        .filter(t -> t.getId() != null)
+                        .map(PipelineTaskDTO::getId)
+                        .collect(Collectors.toList());
+                pipelineTaskRepository.queryByStageId(stageId).forEach(t -> {
+                    if (!newTaskIds.contains(t.getId())) {
+                        pipelineTaskRepository.deleteById(t.getId());
+                        if (t.getType().equals(MANUAL)) {
+                            updateUserRel(null, null, null, t.getId());
+                        }
                     }
-                }
-            });
-            //task
-            pipelineReqDTO.getPipelineStageDTOS().get(i).getPipelineTaskDTOS().stream().filter(Objects::nonNull).forEach(t -> {
-                if (t.getId() != null) {
-                    if (AUTO.equals(t.getType())) {
-                        t.setAppDeployId(appDeployRepository.update(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
-                        PipelineValueE pipelineValueE = new PipelineValueE();
-                        pipelineValueE.setId(t.getAppDeployDTOS().getValueId());
-                        pipelineValueE.setValue(t.getAppDeployDTOS().getValue());
-                        valueRepository.createOrUpdate(pipelineValueE);
+                });
+                //task
+                taskDTOList.stream().filter(Objects::nonNull).forEach(t -> {
+                    if (t.getId() != null) {
+                        if (AUTO.equals(t.getType())) {
+                            t.setAppDeployId(appDeployRepository.update(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
+                            PipelineValueE pipelineValueE = new PipelineValueE();
+                            pipelineValueE.setId(t.getAppDeployDTOS().getValueId());
+                            pipelineValueE.setValue(t.getAppDeployDTOS().getValue());
+                            valueRepository.createOrUpdate(pipelineValueE);
+                        }
+                        Long taskId = pipelineTaskRepository.update(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
+                        if (MANUAL.equals(t.getType())) {
+                            updateUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
+                        }
+                    } else {
+                        AddPipelineTask(t, projectId, stageId);
                     }
-                    Long taskId = pipelineTaskRepository.update(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
-                    if (MANUAL.equals(t.getType())) {
-                        updateUserRel(t.getTaskUserRelDTOS(), null, null, taskId);
-                    }
-                } else {
-                    AddPipelineTask(t, projectId, stageId);
-                }
-            });
+                });
+            }
         }
         return pipelineReqDTO;
     }
@@ -930,17 +932,19 @@ public class PipelineServiceImpl implements PipelineService {
     private void updateUserRel(List<Long> relDTOList, Long pipelineId, Long stageId, Long taskId) {
         List<Long> addUserRelEList = new ArrayList<>();
         List<Long> relEList = pipelineUserRelRepository.listByOptions(pipelineId, stageId, taskId).stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList());
-        relDTOList.forEach(relE -> {
-            if (!relEList.contains(relE)) {
-                addUserRelEList.add(relE);
-            } else {
-                relEList.remove(relE);
-            }
-        });
-        addUserRelEList.forEach(addUserId -> {
-            PipelineUserRelE addUserRelE = new PipelineUserRelE(addUserId, pipelineId, stageId, taskId);
-            pipelineUserRelRepository.create(addUserRelE);
-        });
+        if (relDTOList != null) {
+            relDTOList.forEach(relE -> {
+                if (!relEList.contains(relE)) {
+                    addUserRelEList.add(relE);
+                } else {
+                    relEList.remove(relE);
+                }
+            });
+            addUserRelEList.forEach(addUserId -> {
+                PipelineUserRelE addUserRelE = new PipelineUserRelE(addUserId, pipelineId, stageId, taskId);
+                pipelineUserRelRepository.create(addUserRelE);
+            });
+        }
         relEList.forEach(delUserId -> {
             PipelineUserRelE addUserRelE = new PipelineUserRelE(delUserId, pipelineId, stageId, taskId);
             pipelineUserRelRepository.delete(addUserRelE);
