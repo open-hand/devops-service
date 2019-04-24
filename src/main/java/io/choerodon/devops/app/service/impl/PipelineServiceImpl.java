@@ -372,11 +372,11 @@ public class PipelineServiceImpl implements PipelineService {
         //发送请求给workflow，创建流程实例
         try {
             pipelineRecordE.setProcessInstanceId(workFlowRepository.create(projectId, devopsPipelineDTO));
+            pipelineRecordRepository.update(pipelineRecordE);
             updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-        } finally {
             pipelineRecordRepository.update(pipelineRecordE);
         }
 
