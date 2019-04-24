@@ -451,7 +451,7 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineUserRecordRelE userRelE = new PipelineUserRecordRelE();
         userRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
         switch (recordRelDTO.getType()) {
-            case TASK: {
+            case TASK:
                 userRelE.setTaskRecordId(recordRelDTO.getTaskRecordId());
                 pipelineUserRelRecordRepository.create(userRelE);
                 PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId());
@@ -490,7 +490,6 @@ public class PipelineServiceImpl implements PipelineService {
                 taskRecordE.setStatus(status);
                 taskRecordRepository.createOrUpdate(taskRecordE);
                 break;
-            }
             case STAGE: {
                 userRelE.setStageRecordId(recordRelDTO.getStageRecordId());
                 pipelineUserRelRecordRepository.create(userRelE);
