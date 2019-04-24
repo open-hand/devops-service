@@ -60,12 +60,6 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
         return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
     }
 
-    @Override
-    public PipelineRecordE queryByProInstanceId(String proInstanceId) {
-        PipelineRecordDO pipelineRecordDO = new PipelineRecordDO();
-        pipelineRecordDO.setProcessInstanceId(proInstanceId);
-        return ConvertHelper.convert(pipelineRecordMapper.selectOne(pipelineRecordDO), PipelineRecordE.class);
-    }
 
     @Override
     public PipelineRecordE queryById(Long recordId) {

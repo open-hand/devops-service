@@ -719,6 +719,7 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     public void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId, Boolean status) {
+        LOGGER.info("pipelineRecordId: {} stageRecordId: {} taskId: {}", pipelineRecordId, stageRecordId, taskId);
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
         PipelineStageE stageE = stageRepository.queryById(stageRecordE.getStageId());
