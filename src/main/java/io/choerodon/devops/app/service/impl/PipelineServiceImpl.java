@@ -553,7 +553,7 @@ public class PipelineServiceImpl implements PipelineService {
             default:
                 break;
         }
-        return auditDTO.getIsCountersigned() == null ? null : auditDTO;
+        return auditDTO;
     }
 
 
