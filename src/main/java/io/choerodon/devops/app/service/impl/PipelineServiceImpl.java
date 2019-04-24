@@ -376,6 +376,7 @@ public class PipelineServiceImpl implements PipelineService {
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+        } finally {
             pipelineRecordRepository.update(pipelineRecordE);
         }
 
@@ -883,21 +884,21 @@ public class PipelineServiceImpl implements PipelineService {
      */
     private void startNextStageRecord(Long stageId, PipelineRecordE recordE, Long stageRecordId) {
         PipelineStageE nextStage = getNextStage(stageId);
-        PipelineStageRecordE pipelineStageRecordE = stageRecordRepository.queryByPipeRecordId(recordE.getId(), nextStage.getId()).get(0);
+        PipelineStageRecordE nextStageRecordE = stageRecordRepository.queryByPipeRecordId(recordE.getId(), nextStage.getId()).get(0);
         if (stageRecordRepository.queryById(stageRecordId).getTriggerType().equals(AUTO)) {
             if (!isEmptyStage(nextStage.getId())) {
-                pipelineStageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+                nextStageRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
                 List<PipelineTaskE> list = pipelineTaskRepository.queryByStageId(nextStage.getId());
                 if (list != null && list.size() > 0) {
                     if (list.get(0).getType().equals(MANUAL)) {
-                        startManualTask(list.get(0), recordE.getId(), stageRecordId);
+                        startManualTask(list.get(0), recordE.getId(), nextStageRecordE.getId());
                     }
                 }
             } else {
                 startEmptyStage(recordE.getId(), stageRecordRepository.queryByPipeRecordId(recordE.getId(), nextStage.getId()).get(0).getId());
             }
         } else {
-            updateStatus(recordE.getId(),stageRecordId,WorkFlowStatus.PENDINGCHECK.toValue());
+            updateStatus(recordE.getId(), stageRecordId, WorkFlowStatus.PENDINGCHECK.toValue());
         }
     }
 
@@ -916,7 +917,7 @@ public class PipelineServiceImpl implements PipelineService {
         if (stageE != null) {
             startNextStageRecord(stageRecordE.getStageId(), pipelineRecordE, stageRecordE.getId());
         } else {
-            updateStatus(pipelineRecordId,null,WorkFlowStatus.SUCCESS.toValue());
+            updateStatus(pipelineRecordId, null, WorkFlowStatus.SUCCESS.toValue());
         }
     }
 
