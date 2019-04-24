@@ -439,8 +439,8 @@ public class PipelineServiceImpl implements PipelineService {
         List<String> stringList = new ArrayList<>();
         String status;
         if (recordRelDTO.getIsApprove()) {
-//            Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
-            Boolean result =true;
+            Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
+//            Boolean result =true;
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
                 status = result ? WorkFlowStatus.RUNNING.toValue() : WorkFlowStatus.FAILED.toValue();
@@ -462,7 +462,7 @@ public class PipelineServiceImpl implements PipelineService {
                     if (taskE.getIsCountersigned() == 1) {
                         List<Long> userList = pipelineUserRelRepository.listByOptions(null, null, taskE.getId())
                                 .stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList());
-                        List<Long> userRecordList = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskE.getId())
+                        List<Long> userRecordList = pipelineUserRelRecordRepository.queryByRecordId(null, null, recordRelDTO.getTaskRecordId())
                                 .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
                         //是否全部同意
                         if (userList.size() != userRecordList.size()) {
