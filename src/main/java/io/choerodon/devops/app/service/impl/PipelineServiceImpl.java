@@ -406,7 +406,7 @@ public class PipelineServiceImpl implements PipelineService {
             description = "创建流水线自动部署实例", inputSchema = "{}")
     public void autoDeploy(Long stageRecordId, Long taskId, String processInstanceId) {
         PipelineRecordE recordE = pipelineRecordRepository.queryById(stageRecordRepository.queryById(stageRecordId).getPipelineRecordId());
-        if (recordE.getProcessInstanceId() != null && !recordE.getProcessInstanceId().isEmpty()) {
+        if (recordE.getProcessInstanceId() == null || recordE.getProcessInstanceId().isEmpty()) {
             recordE.setProcessInstanceId(processInstanceId);
             pipelineRecordRepository.update(recordE);
         }
