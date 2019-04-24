@@ -173,13 +173,15 @@ public class PipelineServiceImpl implements PipelineService {
                     if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.STOP.toValue())) {
                         List<PipelineTaskRecordE> recordEList = taskRecordRepository.queryByStageRecordId(t.getStageDTOList().get(i).getId(), null);
                         Optional<PipelineTaskRecordE> optional = recordEList.stream().filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.STOP.toValue())).findFirst();
-                        if (optional.isPresent() && optional.get() != null) {
-                            t.setType(TASK);
-                        }
+                        t.setType(TASK);
+                        t.setTaskRecordId(optional.get().getId());
+                        break;
+                    } else if (t.getStageDTOList().get(i).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
                         break;
                     }
                 }
+            } else if (t.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
                 t.setIndex(checkTriggerPermission(null, pipelineId, null));
             }
             return t;
@@ -529,7 +531,7 @@ public class PipelineServiceImpl implements PipelineService {
                 if (!taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                     if (taskE.getIsCountersigned() == 1) {
                         auditDTO.setIsCountersigned(1);
-                    }else{
+                    } else {
                         auditDTO.setIsCountersigned(0);
                     }
                     auditDTO.setUserName(iamRepository.queryUserByUserId(
@@ -538,7 +540,7 @@ public class PipelineServiceImpl implements PipelineService {
                 }
                 break;
             }
-            case STAGE:{
+            case STAGE: {
                 PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
                 if (!stageRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
                     auditDTO.setIsCountersigned(0);
@@ -551,7 +553,7 @@ public class PipelineServiceImpl implements PipelineService {
             default:
                 break;
         }
-        return auditDTO;
+        return auditDTO.getIsCountersigned() == null ? null : auditDTO;
     }
 
 
