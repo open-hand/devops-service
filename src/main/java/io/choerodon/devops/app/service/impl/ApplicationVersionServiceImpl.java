@@ -167,7 +167,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
         //自动部署
-        triggerAutoDelpoy(applicationVersionE);
+//        triggerAutoDelpoy(applicationVersionE);
         //流水线
         checkAutoDeploy(applicationVersionE);
     }
@@ -217,6 +217,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      */
     private void executeAppDeploy(Long pipelineId) {
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+        CutomerContextUtil.setUserId(pipelineE.getCreatedBy());
         //保存pipeline
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(), WorkFlowStatus.RUNNING.toValue()));
         //准备workFlow数据
