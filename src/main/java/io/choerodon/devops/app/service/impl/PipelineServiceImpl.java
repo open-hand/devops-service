@@ -11,6 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.CheckAuditDTO;
 import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
@@ -35,7 +36,6 @@ import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
 import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
 import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
-import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
@@ -278,10 +278,6 @@ public class PipelineServiceImpl implements PipelineService {
                     if (t.getId() != null) {
                         if (AUTO.equals(t.getType())) {
                             t.setAppDeployId(appDeployRepository.update(ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class)).getId());
-                            PipelineValueE pipelineValueE = new PipelineValueE();
-                            pipelineValueE.setId(t.getAppDeployDTOS().getValueId());
-                            pipelineValueE.setValue(t.getAppDeployDTOS().getValue());
-                            valueRepository.createOrUpdate(pipelineValueE);
                         }
                         Long taskId = pipelineTaskRepository.update(ConvertHelper.convert(t, PipelineTaskE.class)).getId();
                         if (MANUAL.equals(t.getType())) {
@@ -437,7 +433,8 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void audit(Long projectId, PipelineUserRecordRelDTO recordRelDTO) {
+    public List<String> audit(Long projectId, PipelineUserRecordRelDTO recordRelDTO) {
+        List<String> stringList = new ArrayList<>();
         String status;
         if (recordRelDTO.getIsApprove()) {
             Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
@@ -461,10 +458,25 @@ public class PipelineServiceImpl implements PipelineService {
                 if (status.equals(WorkFlowStatus.SUCCESS.toValue())) {
                     //判断是否是会签
                     if (taskE.getIsCountersigned() == 1) {
-                        List<PipelineUserRelE> userList = pipelineUserRelRepository.listByOptions(null, null, taskE.getId());
-                        List<PipelineUserRecordRelE> userRecordList = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskE.getId());
+                        List<Long> userList = pipelineUserRelRepository.listByOptions(null, null, taskE.getId())
+                                .stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList());
+                        List<Long> userRecordList = pipelineUserRelRecordRepository.queryByRecordId(null, null, taskE.getId())
+                                .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
                         //是否全部同意
                         if (userList.size() != userRecordList.size()) {
+                            List<Long> userListUnExe = new ArrayList<>(userList);
+                            userList.forEach(u -> {
+                                if (userRecordList.contains(u)) {
+                                    userListUnExe.remove(u);
+                                }
+                            });
+                            stringList.add(String.join(",", userRecordList.stream().map(u ->
+                                    iamRepository.queryUserByUserId(u).getRealName()
+                            ).collect(Collectors.toList())));
+
+                            stringList.add(String.join(",", userListUnExe.stream().map(u ->
+                                    iamRepository.queryUserByUserId(u).getRealName()
+                            ).collect(Collectors.toList())));
                             break;
                         }
                     }
@@ -480,8 +492,8 @@ public class PipelineServiceImpl implements PipelineService {
             case STAGE: {
                 userRelE.setStageRecordId(recordRelDTO.getStageRecordId());
                 pipelineUserRelRecordRepository.create(userRelE);
-                updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status);
                 if (status.equals(WorkFlowStatus.RUNNING.toValue())) {
+                    updateStatus(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId(), status);
                     PipelineStageE stageE = stageRepository.queryById(stageRecordRepository.queryById(recordRelDTO.getStageRecordId()).getStageId());
                     if (!isEmptyStage(stageE.getId())) {
                         //阶段中的第一个任务为人工任务时
@@ -495,6 +507,8 @@ public class PipelineServiceImpl implements PipelineService {
                     } else {
                         startEmptyStage(recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                     }
+                } else {
+                    updateStatus(recordRelDTO.getPipelineRecordId(), null, status);
                 }
                 break;
             }
@@ -502,7 +516,44 @@ public class PipelineServiceImpl implements PipelineService {
                 break;
             }
         }
+        return stringList;
     }
+
+    @Override
+    public CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO recordRelDTO) {
+        CheckAuditDTO auditDTO = new CheckAuditDTO();
+        switch (recordRelDTO.getType()) {
+            case TASK: {
+                PipelineTaskRecordE taskRecordE = taskRecordRepository.queryById(recordRelDTO.getTaskRecordId());
+                PipelineTaskE taskE = pipelineTaskRepository.queryById(taskRecordE.getTaskId());
+                if (!taskRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                    if (taskE.getIsCountersigned() == 1) {
+                        auditDTO.setIsCountersigned(1);
+                    }else{
+                        auditDTO.setIsCountersigned(0);
+                    }
+                    auditDTO.setUserName(iamRepository.queryUserByUserId(
+                            pipelineUserRelRecordRepository.queryByRecordId(null, null, taskRecordE.getId()).get(0).getUserId())
+                            .getRealName());
+                }
+                break;
+            }
+            case STAGE:{
+                PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
+                if (!stageRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                    auditDTO.setIsCountersigned(0);
+                    auditDTO.setUserName(iamRepository.queryUserByUserId(
+                            pipelineUserRelRecordRepository.queryByRecordId(null, stageRecordE.getId(), null).get(0).getUserId())
+                            .getRealName());
+                }
+                break;
+            }
+            default:
+                break;
+        }
+        return auditDTO;
+    }
+
 
     /**
      * 检测是否满足部署条件
@@ -608,7 +659,7 @@ public class PipelineServiceImpl implements PipelineService {
                 devopsPipelineTaskDTO.setUsernames(taskUserRels.stream().map(relE -> iamRepository.queryUserByUserId(relE.getUserId()).getLoginName()).collect(Collectors.toList()));
                 devopsPipelineTaskDTO.setTaskId(task.getId());
                 if (task.getIsCountersigned() != null) {
-                    devopsPipelineTaskDTO.setIsSign(task.getIsCountersigned().longValue());
+                    devopsPipelineTaskDTO.setSign(task.getIsCountersigned().longValue());
                 }
                 devopsPipelineTaskDTOS.add(devopsPipelineTaskDTO);
             });
@@ -775,10 +826,6 @@ public class PipelineServiceImpl implements PipelineService {
         t.setProjectId(projectId);
         t.setStageId(stageId);
         if (AUTO.equals(t.getType())) {
-            //PipelineValue
-            PipelineValueE pipelineValueE = valueRepository.queryById(t.getAppDeployDTOS().getValueId());
-            pipelineValueE.setValue(t.getAppDeployDTOS().getValue());
-            valueRepository.createOrUpdate(pipelineValueE);
             //appDeploy
             PipelineAppDeployE appDeployE = ConvertHelper.convert(t.getAppDeployDTOS(), PipelineAppDeployE.class);
             appDeployE.setProjectId(projectId);

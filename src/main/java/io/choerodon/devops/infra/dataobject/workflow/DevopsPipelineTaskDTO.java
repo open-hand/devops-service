@@ -1,7 +1,6 @@
 package io.choerodon.devops.infra.dataobject.workflow;
 
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -12,8 +11,8 @@ public class DevopsPipelineTaskDTO {
     private String taskName;
     private List<String> usernames;
     private String taskType;
-    private Boolean isMultiAssign;
-    private Long isSign;
+    private Boolean multiAssign;
+    private Long sign;
 
     public Long getTaskId() {
         return taskId;
@@ -23,12 +22,12 @@ public class DevopsPipelineTaskDTO {
         this.taskId = taskId;
     }
 
-    public Long getIsSign() {
-        return isSign;
+    public Long getSign() {
+        return sign;
     }
 
-    public void setIsSign(Long isSign) {
-        this.isSign = isSign;
+    public void setSign(Long sign) {
+        this.sign = sign;
     }
 
     public String getTaskName() {
@@ -56,10 +55,10 @@ public class DevopsPipelineTaskDTO {
     }
 
     public Boolean getMultiAssign() {
-        return isMultiAssign;
+        return multiAssign;
     }
 
     public void setMultiAssign(Boolean multiAssign) {
-        isMultiAssign = multiAssign;
+        this.multiAssign = multiAssign;
     }
 }

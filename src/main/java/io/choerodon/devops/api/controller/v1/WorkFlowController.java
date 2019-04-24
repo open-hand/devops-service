@@ -53,7 +53,7 @@ public class WorkFlowController {
      * @return
      */
     @ApiOperation(value = "接收任务状态")
-    @PutMapping("/status")
+    @PutMapping("/auto_deploy/status")
     public ResponseEntity setAppDeployStatusTask(
             @ApiParam(value = "流水线记录Id", required = true)
             @RequestParam(value = "pipeline_record_id") Long pipelineRecordId,
@@ -75,7 +75,7 @@ public class WorkFlowController {
      * @return
      */
     @ApiOperation(value = "检测部署任务生成实例状态")
-    @GetMapping("/status")
+    @GetMapping("/auto_deploy/status")
     public ResponseEntity<String> getAppDeployStatusTask(
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
