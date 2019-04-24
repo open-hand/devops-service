@@ -389,7 +389,8 @@ public class PipelineServiceImpl implements PipelineService {
 
         //发送请求给workflow，创建流程实例
         try {
-            pipelineRecordE.setProcessInstanceId(workFlowRepository.create(projectId, devopsPipelineDTO));
+            String processInstanceId = workFlowRepository.create(projectId, devopsPipelineDTO);
+            pipelineRecordE.setProcessInstanceId(processInstanceId);
             pipelineRecordRepository.update(pipelineRecordE);
             updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
@@ -405,7 +406,7 @@ public class PipelineServiceImpl implements PipelineService {
             description = "创建流水线自动部署实例", inputSchema = "{}")
     public void autoDeploy(Long stageRecordId, Long taskId, String processInstanceId) {
         PipelineRecordE recordE = pipelineRecordRepository.queryById(stageRecordRepository.queryById(stageRecordId).getPipelineRecordId());
-        if (recordE.getProcessInstanceId().isEmpty()) {
+        if (recordE.getProcessInstanceId() != null && !recordE.getProcessInstanceId().isEmpty()) {
             recordE.setProcessInstanceId(processInstanceId);
             pipelineRecordRepository.update(recordE);
         }
