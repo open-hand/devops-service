@@ -36,7 +36,7 @@ public interface PipelineService {
 
     void execute(Long projectId, Long pipelineId);
 
-    void autoDeploy(Long stageRecordId, Long taskId);
+    void autoDeploy(Long stageRecordId, Long taskId, String processInstanceId);
 
     List<String> audit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
