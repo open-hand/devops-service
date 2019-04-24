@@ -36,7 +36,7 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
     }
 
     @Override
-    public Boolean approveUserTask(Long projectId, String instanceId, Boolean isApprove) {
+    public Boolean approveUserTask(Long projectId, Long instanceId) {
         ResponseEntity<Boolean> responseEntity = workFlowServiceClient.approveUserTask(projectId, instanceId);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.approve");
@@ -45,8 +45,8 @@ public class WorkFlowRepositoryImpl implements WorkFlowRepository {
     }
 
     @Override
-    public void stopInstance(Long projectId, String processInstanceId) {
-        ResponseEntity responseEntity = workFlowServiceClient.stopInstance(projectId, processInstanceId);
+    public void stopInstance(Long projectId, Long pipelineRecordId) {
+        ResponseEntity responseEntity = workFlowServiceClient.stopInstance(projectId, pipelineRecordId);
         if (!responseEntity.getStatusCode().is2xxSuccessful()) {
             throw new CommonException("error.workflow.stop");
         }

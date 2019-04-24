@@ -267,12 +267,12 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         pipelineRecordRepository.update(pipelineRecordE);
         //发送请求给workflow，创建流程实例
         try {
-            pipelineRecordE.setProcessInstanceId(workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO));
+            workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+            pipelineRecordRepository.update(pipelineRecordE);
         }
-        pipelineRecordRepository.update(pipelineRecordE);
     }
 
     /**

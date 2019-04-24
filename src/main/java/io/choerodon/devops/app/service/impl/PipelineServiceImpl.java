@@ -389,8 +389,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         //发送请求给workflow，创建流程实例
         try {
-            String processInstanceId = workFlowRepository.create(projectId, devopsPipelineDTO);
-            pipelineRecordE.setProcessInstanceId(processInstanceId);
+            workFlowRepository.create(projectId, devopsPipelineDTO);
             pipelineRecordRepository.update(pipelineRecordE);
             updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
@@ -404,12 +403,8 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     @Saga(code = "devops-pipeline-auto-deploy-instance",
             description = "创建流水线自动部署实例", inputSchema = "{}")
-    public void autoDeploy(Long stageRecordId, Long taskId, String processInstanceId) {
+    public void autoDeploy(Long stageRecordId, Long taskId) {
         PipelineRecordE recordE = pipelineRecordRepository.queryById(stageRecordRepository.queryById(stageRecordId).getPipelineRecordId());
-        if (recordE.getProcessInstanceId() == null || recordE.getProcessInstanceId().isEmpty()) {
-            recordE.setProcessInstanceId(processInstanceId);
-            pipelineRecordRepository.update(recordE);
-        }
         //获取数据
         PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryById(taskId);
         CutomerContextUtil.setUserId(pipelineTaskE.getCreatedBy());
@@ -475,7 +470,7 @@ public class PipelineServiceImpl implements PipelineService {
         List<String> stringList = new ArrayList<>();
         String status;
         if (recordRelDTO.getIsApprove()) {
-            Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
+            Boolean result = workFlowRepository.approveUserTask(projectId, recordRelDTO.getPipelineRecordId());
 //            Boolean result =true;
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
@@ -740,7 +735,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
         } else {
             //停止实例
-            workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getProcessInstanceId());
+            workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getId());
         }
     }
 
@@ -790,11 +785,10 @@ public class PipelineServiceImpl implements PipelineService {
     public void retry(Long projectId, Long pipelineRecordId) {
         String bpmDefinition = pipelineRecordRepository.queryById(pipelineRecordId).getBpmDefinition();
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
-        String instanceId = workFlowRepository.create(projectId, pipelineDTO);
+        workFlowRepository.create(projectId, pipelineDTO);
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
-        pipelineRecordE.setProcessInstanceId(instanceId);
         pipelineRecordRepository.update(pipelineRecordE);
         stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).forEach(t -> {
             t.setStatus(null);

@@ -39,10 +39,8 @@ public class WorkFlowController {
             @ApiParam(value = "阶段记录Id", required = true)
             @RequestParam(value = "stage_record_id") Long stageRecordId,
             @ApiParam(value = "任务Id", required = true)
-            @RequestParam(value = "task_id") Long taskId,
-            @ApiParam(value = "流水线实例", required = true)
-            @RequestParam(value = "process_instance_id") String processInstanceId) {
-        pipelineService.autoDeploy(stageRecordId, taskId, processInstanceId);
+            @RequestParam(value = "task_id") Long taskId) {
+        pipelineService.autoDeploy(stageRecordId, taskId);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 

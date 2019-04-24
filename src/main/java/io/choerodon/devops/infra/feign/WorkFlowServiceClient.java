@@ -28,10 +28,10 @@ public interface WorkFlowServiceClient {
     @PutMapping(value = "/v1/projects/{project_id}/process_instances")
     ResponseEntity<Boolean> approveUserTask(
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "process_instance_id") String processInstanceId);
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId);
 
     @GetMapping(value = "/v1/projects/{project_id}/process_instances")
     ResponseEntity stopInstance(
             @PathVariable(value = "project_id") Long projectId,
-            @RequestParam(value = "process_instance_id") String processInstanceId);
+            @RequestParam(value = "pipeline_record_id") Long pipelineRecordId);
 }
