@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -10,46 +13,13 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.ApplicationDeployDTO;
-import io.choerodon.devops.api.dto.CheckAuditDTO;
-import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
-import io.choerodon.devops.api.dto.PipelineDTO;
-import io.choerodon.devops.api.dto.PipelineRecordDTO;
-import io.choerodon.devops.api.dto.PipelineRecordListDTO;
-import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
-import io.choerodon.devops.api.dto.PipelineReqDTO;
-import io.choerodon.devops.api.dto.PipelineStageDTO;
-import io.choerodon.devops.api.dto.PipelineStageRecordDTO;
-import io.choerodon.devops.api.dto.PipelineTaskDTO;
-import io.choerodon.devops.api.dto.PipelineTaskRecordDTO;
-import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineE;
-import io.choerodon.devops.domain.application.entity.PipelineRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineStageE;
-import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
-import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
-import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
-import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
-import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
@@ -63,13 +33,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -305,11 +268,8 @@ public class PipelineServiceImpl implements PipelineService {
     public void delete(Long projectId, Long pipelineId) {
         //回写记录状态
         pipelineRecordRepository.queryByPipelineId(pipelineId).forEach(t -> {
-            PipelineRecordE recordE = new PipelineRecordE();
-            recordE.setId(t.getId());
-            recordE.setPipelineId(pipelineId);
-            recordE.setStatus(WorkFlowStatus.DELETED.toValue());
-            pipelineRecordRepository.update(recordE);
+            t.setStatus(WorkFlowStatus.DELETED.toValue());
+            pipelineRecordRepository.update(t);
         });
         pipelineUserRelRepository.listByOptions(pipelineId, null, null).forEach(t -> pipelineUserRelRepository.delete(t));
         //删除stage和task
@@ -541,7 +501,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
             case STAGE: {
                 PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(recordRelDTO.getStageRecordId());
-                if (!stageRecordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue())) {
+                if (!stageRecordE.getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                     auditDTO.setIsCountersigned(0);
                     auditDTO.setUserName(iamRepository.queryUserByUserId(
                             pipelineUserRelRecordRepository.queryByRecordId(null, stageRecordE.getId(), null).get(0).getUserId())

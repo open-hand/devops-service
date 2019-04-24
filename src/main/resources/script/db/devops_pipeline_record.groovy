@@ -24,4 +24,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
     changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_record-drop-column') {
         dropColumn(columnName: "execution_time", tableName: "devops_pipeline_record")
     }
+    changeSet(author: 'sheep', id: '2019-04-24-devops_pipeline_record-add-column') {
+        dropColumn(columnName: "pipeline_name", tableName: "devops_pipeline_record")
+    }
 }
