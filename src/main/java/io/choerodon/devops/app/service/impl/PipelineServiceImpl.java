@@ -1,5 +1,8 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.util.*;
+import java.util.stream.Collectors;
+
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
@@ -24,34 +27,14 @@ import io.choerodon.devops.api.dto.PipelineStageRecordDTO;
 import io.choerodon.devops.api.dto.PipelineTaskDTO;
 import io.choerodon.devops.api.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineE;
-import io.choerodon.devops.domain.application.entity.PipelineRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineStageE;
-import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
-import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
-import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
-import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
-import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
@@ -66,13 +49,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -118,6 +94,10 @@ public class PipelineServiceImpl implements PipelineService {
     private ApplicationVersionRepository versionRepository;
     @Autowired
     private SagaClient sagaClient;
+    @Autowired
+    private ApplicationInstanceRepository applicationInstanceRepository;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
 
     @Autowired
     private ApplicationVersionService versionService;
@@ -436,6 +416,17 @@ public class PipelineServiceImpl implements PipelineService {
             ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(versionES.get(index).getId(), appDeployE.getEnvId(),
                     valueRepository.queryById(appDeployE.getValueId()).getValue(), appDeployE.getApplicationId(), type, appDeployE.getInstanceId(),
                     appDeployE.getInstanceName(), pipelineTaskRecordE.getId(), appDeployE.getId());
+            if (type.equals(CommandType.UPDATE.getType())) {
+                ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
+                if (oldapplicationInstanceE.getApplicationVersionE().getId().equals(applicationDeployDTO.getAppVersionId())) {
+                    String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
+                            applicationDeployDTO.getAppInstanceId());
+                    String newDeployValue = applicationDeployDTO.getValues();
+                    if (oldDeployValue.equals(newDeployValue)) {
+                        applicationDeployDTO.setIsNotChange(true);
+                    }
+                }
+            }
             String input = gson.toJson(applicationDeployDTO);
             sagaClient.startSaga("devops-pipeline-auto-deploy-instance", new StartInstanceDTO(input, "env", appDeployE.getEnvId().toString(), ResourceLevel.PROJECT.value(), appDeployE.getProjectId()));
         } catch (Exception e) {
