@@ -369,7 +369,7 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("error.permission.trigger.pipeline");
         }
         //保存pipeline 和 pipelineUserRel
-        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue()));
+        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineE.getName()));
         PipelineUserRecordRelE pipelineUserRecordRelE = new PipelineUserRecordRelE();
         pipelineUserRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
         pipelineUserRecordRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
