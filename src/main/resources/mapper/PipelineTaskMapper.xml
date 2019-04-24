@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="io.choerodon.devops.infra.mapper.PipelineTaskMapper">
+    <select id="queryByAppDeployId" resultType="io.choerodon.devops.infra.dataobject.PipelineTaskDO">
+    SELECT
+    *
+    FROM
+    devops_pipeline_task dpt
+    WHERE
+    dpt.app_deploy_id = #{appDeployId}
+</select>
+</mapper>

@@ -60,8 +60,6 @@ public class PipelineTaskRepositoryImpl implements PipelineTaskRepository {
 
     @Override
     public PipelineTaskE queryByAppDeployId(Long appDeployId) {
-        PipelineTaskDO pipelineTaskDO = new PipelineTaskDO();
-        pipelineTaskDO.setAppDeployId(appDeployId);
-        return ConvertHelper.convert(pipelineTaskMapper.selectOne(pipelineTaskDO), PipelineTaskE.class);
+        return ConvertHelper.convert(pipelineTaskMapper.queryByAppDeployId(appDeployId), PipelineTaskE.class);
     }
 }

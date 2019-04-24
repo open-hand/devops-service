@@ -71,12 +71,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -228,7 +223,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                 .stream().map(deployE ->
                         filterAppDeploy(deployE, versionE.getVersion())
                 ).collect(Collectors.toList());
-        if (appDeployEList != null && appDeployEList.size() > 0) {
+        appDeployEList.removeAll(Collections.singleton(null));
+        if (!appDeployEList.isEmpty()) {
             List<Long> stageList = appDeployEList.stream()
                     .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()).getStageId())
                     .distinct().collect(Collectors.toList());
