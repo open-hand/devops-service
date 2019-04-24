@@ -71,4 +71,11 @@ public class PipelineAppDeployRepositoryImpl implements PipelineAppDeployReposit
         appDeployDO.setValueId(valueId);
         return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
     }
+
+    @Override
+    public List<PipelineAppDeployE> queryByEnvId(Long envId) {
+        PipelineAppDeployDO appDeployDO = new PipelineAppDeployDO();
+        appDeployDO.setEnvId(envId);
+        return ConvertHelper.convertList(appDeployMapper.select(appDeployDO), PipelineAppDeployE.class);
+    }
 }

@@ -23,4 +23,6 @@ public interface PipelineAppDeployRepository {
     void checkName(String name);
 
     List<PipelineAppDeployE> queryByValueId(Long valueId);
+
+    List<PipelineAppDeployE> queryByEnvId(Long envId);
 }

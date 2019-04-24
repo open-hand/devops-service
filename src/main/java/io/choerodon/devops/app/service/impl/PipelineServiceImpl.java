@@ -12,6 +12,7 @@ import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
+import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
 import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
@@ -25,6 +26,7 @@ import io.choerodon.devops.api.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
+import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
@@ -88,6 +90,8 @@ public class PipelineServiceImpl implements PipelineService {
     private static final Gson gson = new Gson();
     @Autowired
     private PipelineRepository pipelineRepository;
+    @Autowired
+    private DevopsEnvironmentService environmentService;
     @Autowired
     private PipelineUserRelRepository pipelineUserRelRepository;
     @Autowired
@@ -345,6 +349,15 @@ public class PipelineServiceImpl implements PipelineService {
                     stage.setStageUserRelDTOS(pipelineUserRelRepository.listByOptions(null, stage.getId(), null).stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList()));
                 }).collect(Collectors.toList());
         pipelineReqDTO.setPipelineStageDTOS(pipelineStageES);
+        List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(pipelineId);
+        List<Long> envIds = environmentService.listByProjectIdAndActive(projectId, true).stream().map(DevopsEnviromentRepDTO::getId).collect(Collectors.toList());
+        pipelineReqDTO.setEdit(true);
+        for (PipelineAppDeployE appDeployE : appDeployEList) {
+            if (!envIds.contains(appDeployE.getEnvId())) {
+                pipelineReqDTO.setEdit(false);
+                break;
+            }
+        }
         return pipelineReqDTO;
     }
 
@@ -567,16 +580,8 @@ public class PipelineServiceImpl implements PipelineService {
         if (pipelineRepository.queryById(pipelineId).getIsEnabled() == 0) {
             return false;
         }
-        List<PipelineAppDeployE> appDeployEList = new ArrayList<>();
         //获取所有appDeploy
-        stageRepository.queryByPipelineId(pipelineId).forEach(stageE -> {
-            pipelineTaskRepository.queryByStageId(stageE.getId()).forEach(taskE -> {
-                if (taskE.getAppDeployId() != null) {
-                    PipelineAppDeployE appDeployE = appDeployRepository.queryById(taskE.getAppDeployId());
-                    appDeployEList.add(appDeployE);
-                }
-            });
-        });
+        List<PipelineAppDeployE> appDeployEList = getAllAppDeploy(pipelineId);
         //如果全部为人工任务
         if (appDeployEList.isEmpty()) {
             return true;
@@ -610,6 +615,19 @@ public class PipelineServiceImpl implements PipelineService {
 
     private PipelineTaskE getFirsetTask(Long pipelineId) {
         return pipelineTaskRepository.queryByStageId(stageRepository.queryByPipelineId(pipelineId).get(0).getId()).get(0);
+    }
+
+    private List<PipelineAppDeployE> getAllAppDeploy(Long pipelineId) {
+        List<PipelineAppDeployE> appDeployEList = new ArrayList<>();
+        stageRepository.queryByPipelineId(pipelineId).forEach(stageE -> {
+            pipelineTaskRepository.queryByStageId(stageE.getId()).forEach(taskE -> {
+                if (taskE.getAppDeployId() != null) {
+                    PipelineAppDeployE appDeployE = appDeployRepository.queryById(taskE.getAppDeployId());
+                    appDeployEList.add(appDeployE);
+                }
+            });
+        });
+        return appDeployEList;
     }
 
     /**
