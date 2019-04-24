@@ -503,7 +503,7 @@ public class PipelineServiceImpl implements PipelineService {
                         if (pipelineTaskES != null && pipelineTaskES.size() > 0) {
                             PipelineTaskE pipelineTaskE = pipelineTaskES.get(0);
                             if (MANUAL.equals(pipelineTaskE.getType())) {
-                                stageManualTask(pipelineTaskE, recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
+                                startManualTask(pipelineTaskE, recordRelDTO.getPipelineRecordId(), recordRelDTO.getStageRecordId());
                             }
                         }
                     } else {
@@ -796,15 +796,17 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
     private void updateFirstStage(Long pipelineRecordId, Long pipelineId) {
-        //更新第一个阶段状态
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryByPipeRecordId(pipelineRecordId,
                 stageRepository.queryByPipelineId(pipelineId).get(0).getId()).get(0);
-        stageRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
-        stageRecordRepository.createOrUpdate(stageRecordE);
-        //更新第一个任务状态
-        PipelineTaskE taskE = getFirsetTask(pipelineId);
-        stageManualTask(taskE, pipelineRecordId, stageRecordE.getId());
-
+        //更新第一个阶段状态
+        if (isEmptyStage(stageRecordE.getStageId())) {
+            startEmptyStage(pipelineRecordId, stageRecordE.getId());
+        } else {
+            PipelineTaskE taskE = getFirsetTask(pipelineId);
+            if (taskE.getType().equals(MANUAL)) {
+                startManualTask(taskE, pipelineRecordId, stageRecordE.getId());
+            }
+        }
     }
 
     @Override
@@ -869,10 +871,17 @@ public class PipelineServiceImpl implements PipelineService {
                 startNextStageRecord(stageId, recordE, stageRecordId);
             }
         } else {
-            stageManualTask(getNextTask(taskRecordE.getTaskId()), pipelineRecordId, stageRecordId);
+            startManualTask(getNextTask(taskRecordE.getTaskId()), pipelineRecordId, stageRecordId);
         }
     }
 
+    /**
+     * 开始下一个阶段
+     *
+     * @param stageId       已完成的阶段Id
+     * @param recordE
+     * @param stageRecordId 已完成的阶段记录
+     */
     private void startNextStageRecord(Long stageId, PipelineRecordE recordE, Long stageRecordId) {
         PipelineStageE nextStage = getNextStage(stageId);
         PipelineStageRecordE pipelineStageRecordE = stageRecordRepository.queryByPipeRecordId(recordE.getId(), nextStage.getId()).get(0);
@@ -882,7 +891,7 @@ public class PipelineServiceImpl implements PipelineService {
                 List<PipelineTaskE> list = pipelineTaskRepository.queryByStageId(nextStage.getId());
                 if (list != null && list.size() > 0) {
                     if (list.get(0).getType().equals(MANUAL)) {
-                        stageManualTask(list.get(0), recordE.getId(), stageRecordId);
+                        startManualTask(list.get(0), recordE.getId(), stageRecordId);
                     }
                 }
             } else {
@@ -904,15 +913,15 @@ public class PipelineServiceImpl implements PipelineService {
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
         stageRecordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
         stageRecordRepository.createOrUpdate(stageRecordE);
-        PipelineStageE stageE = getNextStage(stageRecordE.getId());
+        PipelineStageE stageE = getNextStage(stageRecordE.getStageId());
         if (stageE != null) {
-            startNextStageRecord(stageE.getId(), pipelineRecordE, stageRecordRepository.queryByPipeRecordId(pipelineRecordId, stageE.getId()).get(0).getId());
+            startNextStageRecord(stageRecordE.getStageId(), pipelineRecordE, stageRecordE.getId());
         } else {
             pipelineRecordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
         }
     }
 
-    private void stageManualTask(PipelineTaskE taskE, Long pipelineRecordId, Long stageRecordId) {
+    private void startManualTask(PipelineTaskE taskE, Long pipelineRecordId, Long stageRecordId) {
         PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
         BeanUtils.copyProperties(taskE, taskRecordE);
         taskRecordE.setId(null);
