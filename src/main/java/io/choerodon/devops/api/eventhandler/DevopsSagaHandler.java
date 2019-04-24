@@ -390,7 +390,7 @@ public class DevopsSagaHandler {
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue());
-            LOGGER.error("error create pipeline auto deploy instance {}", e.getMessage());
+            LOGGER.error("error create pipeline auto deploy instance {}", e.toString());
         }
     }
 
