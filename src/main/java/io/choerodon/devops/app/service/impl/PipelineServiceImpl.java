@@ -439,8 +439,8 @@ public class PipelineServiceImpl implements PipelineService {
         List<String> stringList = new ArrayList<>();
         String status;
         if (recordRelDTO.getIsApprove()) {
-            Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
-//            Boolean result =true;
+//            Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getProcessInstanceId(), recordRelDTO.getIsApprove());
+            Boolean result =true;
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
                 status = result ? WorkFlowStatus.RUNNING.toValue() : WorkFlowStatus.FAILED.toValue();
@@ -898,7 +898,7 @@ public class PipelineServiceImpl implements PipelineService {
                 startEmptyStage(recordE.getId(), stageRecordRepository.queryByPipeRecordId(recordE.getId(), nextStage.getId()).get(0).getId());
             }
         } else {
-            updateStatus(recordE.getId(), stageRecordId, WorkFlowStatus.PENDINGCHECK.toValue());
+            updateStatus(recordE.getId(), null, WorkFlowStatus.PENDINGCHECK.toValue());
         }
     }
 
