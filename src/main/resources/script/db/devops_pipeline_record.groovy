@@ -1,6 +1,7 @@
 package script.db
 
 databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
+
     changeSet(author: 'scp', id: '2019-04-03-create-table') {
         createTable(tableName: "devops_pipeline_record", remarks: '流水线记录') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
@@ -25,6 +26,6 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
         dropColumn(columnName: "execution_time", tableName: "devops_pipeline_record")
     }
     changeSet(author: 'sheep', id: '2019-04-24-devops_pipeline_record-add-column') {
-        dropColumn(columnName: "pipeline_name", tableName: "devops_pipeline_record")
+        addColumn(columnName: "pipeline_name", tableName: "devops_pipeline_record", remarks: "pipeline name", afterColumn: "pipeline_id")
     }
 }
