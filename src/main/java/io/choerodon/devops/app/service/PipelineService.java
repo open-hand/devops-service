@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
+import io.choerodon.devops.api.dto.IamUserDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineRecordListDTO;
@@ -38,7 +39,7 @@ public interface PipelineService {
 
     void autoDeploy(Long stageRecordId, Long taskId);
 
-    List<String> audit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
+    List<IamUserDTO> audit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
 
     Boolean checkDeploy(Long pipelineId);
 

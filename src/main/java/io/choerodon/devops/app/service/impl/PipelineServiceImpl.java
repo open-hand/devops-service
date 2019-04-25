@@ -483,8 +483,8 @@ public class PipelineServiceImpl implements PipelineService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<String> audit(Long projectId, PipelineUserRecordRelDTO recordRelDTO) {
-        List<String> stringList = new ArrayList<>();
+    public List<IamUserDTO> audit(Long projectId, PipelineUserRecordRelDTO recordRelDTO) {
+        List<IamUserDTO> userDTOS = new ArrayList<>();
         String status;
         if (recordRelDTO.getIsApprove()) {
             Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getBusinessKey());
@@ -520,13 +520,16 @@ public class PipelineServiceImpl implements PipelineService {
                                     userListUnExe.remove(u);
                                 }
                             });
-                            stringList.add(String.join(",", userRecordList.stream().map(u ->
-                                    iamRepository.queryUserByUserId(u).getRealName()
-                            ).collect(Collectors.toList())));
-
-                            stringList.add(String.join(",", userListUnExe.stream().map(u ->
-                                    iamRepository.queryUserByUserId(u).getRealName()
-                            ).collect(Collectors.toList())));
+                            userRecordList.forEach(u -> {
+                                IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class);
+                                userDTO.setAudit(true);
+                                userDTOS.add(userDTO);
+                            });
+                            userListUnExe.forEach(u -> {
+                                IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class);
+                                userDTO.setAudit(false);
+                                userDTOS.add(userDTO);
+                            });
                             break;
                         }
                     }
@@ -565,7 +568,7 @@ public class PipelineServiceImpl implements PipelineService {
                 break;
             }
         }
-        return stringList;
+        return userDTOS;
     }
 
     @Override
