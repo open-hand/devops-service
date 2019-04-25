@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import com.google.gson.Gson;
+import com.zaxxer.hikari.util.UtilityElf;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -25,6 +26,7 @@ import io.choerodon.devops.api.dto.PipelineTaskDTO;
 import io.choerodon.devops.api.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
@@ -42,7 +44,6 @@ import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
 import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
 import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
@@ -55,6 +56,7 @@ import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRe
 import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
 import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
+import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
@@ -63,6 +65,7 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang3.StringUtils;
+import org.nutz.aop.interceptor.async.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -75,6 +78,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -124,10 +131,17 @@ public class PipelineServiceImpl implements PipelineService {
     @Autowired
     private ApplicationInstanceRepository applicationInstanceRepository;
     @Autowired
-    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+    private ApplicationInstanceService applicationInstanceService;
+    @Autowired
+    private ApplicationVersionRepository applicationVersionRepository;
 
     @Autowired
     private ApplicationVersionService versionService;
+    private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-workflow", false));
+
+
 
     @Override
     public Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
@@ -447,10 +461,9 @@ public class PipelineServiceImpl implements PipelineService {
             if (type.equals(CommandType.UPDATE.getType())) {
                 ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
                 if (oldapplicationInstanceE.getApplicationVersionE().getId().equals(applicationDeployDTO.getAppVersionId())) {
-                    String oldDeployValue = applicationInstanceRepository.queryValueByInstanceId(
-                            applicationDeployDTO.getAppInstanceId());
-                    String newDeployValue = applicationDeployDTO.getValues();
-                    if (oldDeployValue.equals(newDeployValue)) {
+                    String oldValue = applicationInstanceRepository.queryValueByInstanceId(applicationDeployDTO.getAppInstanceId());
+                    ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),applicationDeployDTO.getValues());
+                    if (replaceResult.getDeltaYaml().trim().equals(oldValue.trim())) {
                         applicationDeployDTO.setIsNotChange(true);
                     }
                 }
@@ -786,7 +799,7 @@ public class PipelineServiceImpl implements PipelineService {
     public void retry(Long projectId, Long pipelineRecordId) {
         String bpmDefinition = pipelineRecordRepository.queryById(pipelineRecordId).getBpmDefinition();
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
-        workFlowRepository.create(projectId, pipelineDTO);
+        executorService.submit(new CreateWorkFlow(projectId,pipelineDTO));
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -803,6 +816,8 @@ public class PipelineServiceImpl implements PipelineService {
             updateFirstStage(pipelineRecordId, pipelineRecordE.getPipelineId());
         }
     }
+
+
 
     @Override
     public List<PipelineRecordListDTO> queryByPipelineId(Long pipelineId) {
@@ -1057,6 +1072,25 @@ public class PipelineServiceImpl implements PipelineService {
             pipelineUserRelRepository.delete(addUserRelE);
         });
     }
+
+
+    class CreateWorkFlow implements Runnable {
+
+        private Long projectId;
+        private DevopsPipelineDTO devopsPipelineDTO;
+
+        public CreateWorkFlow(Long projectId,DevopsPipelineDTO devopsPipelineDTO) {
+            this.projectId = projectId;
+            this.devopsPipelineDTO = devopsPipelineDTO;
+        }
+
+
+        @Override
+        public void run() {
+            workFlowRepository.create(projectId, devopsPipelineDTO);
+        }
+    }
+
 
 }
 
