@@ -56,6 +56,7 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
@@ -240,8 +241,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                     .distinct().collect(Collectors.toList());
             pipelineList = pipelineList.stream()
                     .filter(pipelineId -> {
-                        PipelineE pipelineE=pipelineRepository.queryById(pipelineId);
-                        return pipelineE.getIsEnabled()==1&& "auto".equals(pipelineE.getTriggerType());
+                        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+                        return pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType());
                     }).collect(Collectors.toList());
             pipelineList.forEach(pipelineId -> {
                 if (pipelineService.checkDeploy(pipelineId)) {
@@ -271,7 +272,10 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
         CutomerContextUtil.setUserId(pipelineE.getCreatedBy());
         //保存pipeline
-        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineE.getName()));
+        PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
+        String uuid = GenerateUUID.generateUUID();
+        pipelineRecordE.setBusinessKey(uuid);
+        pipelineRecordRepository.create(pipelineRecordE);
         //准备workFlow数据
         DevopsPipelineDTO devopsPipelineDTO = pipelineService.setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
         pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
