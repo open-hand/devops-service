@@ -30,6 +30,7 @@ import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.PipelineE;
 import io.choerodon.devops.domain.application.entity.PipelineRecordE;
+import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -233,7 +234,9 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         appDeployEList.removeAll(Collections.singleton(null));
         if (!appDeployEList.isEmpty()) {
             List<Long> stageList = appDeployEList.stream()
-                    .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()).getStageId())
+                    .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()))
+                    .filter(Objects::nonNull)
+                    .map(PipelineTaskE::getStageId)
                     .distinct().collect(Collectors.toList());
 
             List<Long> pipelineList = stageList.stream()
