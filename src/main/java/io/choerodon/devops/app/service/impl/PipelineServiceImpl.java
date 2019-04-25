@@ -939,6 +939,7 @@ public class PipelineServiceImpl implements PipelineService {
             Long pipelineId = isPipelineLastTask(stageId);
             PipelineRecordE recordE = pipelineRecordRepository.queryById(pipelineRecordId);
             if (pipelineId != null) {
+                LOGGER.info("任务成功了");
                 recordE.setStatus(WorkFlowStatus.SUCCESS.toValue());
                 pipelineRecordRepository.update(recordE);
             } else {
