@@ -823,7 +823,7 @@ public class PipelineServiceImpl implements PipelineService {
                     BeanUtils.copyProperties(taskE, taskRecordDTO);
                     taskRecordDTO.setId(null);
                     taskRecordDTO.setStatus(WorkFlowStatus.UNEXECUTED.toValue());
-                    List<IamUserDTO> userDTOS = pipelineUserRelRepository.listByOptions(null, null, taskRecordDTO.getTaskId())
+                    List<IamUserDTO> userDTOS = pipelineUserRelRepository.listByOptions(null, null, taskE.getId())
                             .stream().map(PipelineUserRelE::getUserId)
                             .map(userId -> {
                                 IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(userId), IamUserDTO.class);
