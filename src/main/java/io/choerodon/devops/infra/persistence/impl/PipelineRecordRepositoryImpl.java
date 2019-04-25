@@ -51,6 +51,7 @@ public class PipelineRecordRepositoryImpl implements PipelineRecordRepository {
 
     @Override
     public PipelineRecordE update(PipelineRecordE pipelineRecordE) {
+        System.out.println(pipelineRecordE.getStatus());
         PipelineRecordDO pipelineRecordDO = ConvertHelper.convert(pipelineRecordE, PipelineRecordDO.class);
         pipelineRecordDO.setObjectVersionNumber(pipelineRecordMapper.selectByPrimaryKey(pipelineRecordDO).getObjectVersionNumber());
         if (pipelineRecordMapper.updateByPrimaryKeySelective(pipelineRecordDO) != 1) {

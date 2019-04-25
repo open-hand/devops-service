@@ -406,9 +406,9 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
         pipelineRecordRepository.update(pipelineRecordE);
 
+        try{
         //发送请求给workflow，创建流程实例
-        try {
-            workFlowRepository.create(projectId, devopsPipelineDTO);
+            createWorkFlow(projectId,devopsPipelineDTO);
             pipelineRecordRepository.update(pipelineRecordE);
             updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
@@ -807,24 +807,7 @@ public class PipelineServiceImpl implements PipelineService {
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
         String uuid = GenerateUUID.generateUUID();
         pipelineDTO.setBussinessKey(uuid);
-        Observable.create((ObservableOnSubscribe<String>) dtoObservableEmitter -> {
-            dtoObservableEmitter.onComplete();
-        })      .subscribeOn(Schedulers.io())
-                .subscribe(new Observer<String>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-                    @Override
-                    public void onNext(String s) {
-                    }
-                    @Override
-                    public void onError(Throwable e) {
-                    }
-                    @Override
-                    public void onComplete() {
-                        workFlowRepository.create(projectId,pipelineDTO);
-                    }
-                });
+        createWorkFlow(projectId,pipelineDTO);
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -1100,23 +1083,26 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
 
-    class CreateWorkFlow implements Runnable {
-
-        private Long projectId;
-        private DevopsPipelineDTO devopsPipelineDTO;
-
-        public CreateWorkFlow(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
-            this.projectId = projectId;
-            this.devopsPipelineDTO = devopsPipelineDTO;
-        }
-
-
-        @Override
-        public void run() {
-            System.out.println("执行以下啊");
-            workFlowRepository.create(projectId, devopsPipelineDTO);
-        }
-    }
+  private void createWorkFlow(Long projectId, DevopsPipelineDTO pipelineDTO) {
+      Observable.create((ObservableOnSubscribe<String>) dtoObservableEmitter -> {
+          dtoObservableEmitter.onComplete();
+      })      .subscribeOn(Schedulers.io())
+              .subscribe(new Observer<String>() {
+                  @Override
+                  public void onSubscribe(Disposable d) {
+                  }
+                  @Override
+                  public void onNext(String s) {
+                  }
+                  @Override
+                  public void onError(Throwable e) {
+                  }
+                  @Override
+                  public void onComplete() {
+                      workFlowRepository.create(projectId,pipelineDTO);
+                  }
+              });
+  }
 
 
 }
