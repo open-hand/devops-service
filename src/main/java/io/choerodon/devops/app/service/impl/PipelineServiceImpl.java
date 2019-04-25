@@ -675,7 +675,7 @@ public class PipelineServiceImpl implements PipelineService {
         //workflow数据
         DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
-        devopsPipelineDTO.setBussinesKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
+        devopsPipelineDTO.setBusinessKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
         //stage
         List<PipelineStageE> stageES = stageRepository.queryByPipelineId(pipelineId);
@@ -852,7 +852,7 @@ public class PipelineServiceImpl implements PipelineService {
         String bpmDefinition = pipelineRecordRepository.queryById(pipelineRecordId).getBpmDefinition();
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
         String uuid = GenerateUUID.generateUUID();
-        pipelineDTO.setBussinesKey(uuid);
+        pipelineDTO.setBusinessKey(uuid);
         createWorkFlow(projectId, pipelineDTO);
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
