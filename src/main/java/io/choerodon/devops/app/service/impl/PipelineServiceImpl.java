@@ -395,7 +395,7 @@ public class PipelineServiceImpl implements PipelineService {
         //保存pipeline 和 pipelineUserRel
         PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
         pipelineRecordE.setBusinessKey(GenerateUUID.generateUUID());
-        pipelineRecordRepository.create(pipelineRecordE);
+        pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
         PipelineUserRecordRelE pipelineUserRecordRelE = new PipelineUserRecordRelE();
         pipelineUserRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
         pipelineUserRecordRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
