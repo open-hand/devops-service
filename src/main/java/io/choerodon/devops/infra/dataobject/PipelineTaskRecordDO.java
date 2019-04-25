@@ -36,6 +36,7 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private String value;
     private Long taskId;
     private String name;
+    private String instanceName;
 
     @Transient
     private String envName;
@@ -43,8 +44,6 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private String appName;
     @Transient
     private String version;
-    @Transient
-    private String instanceName;
     @Transient
     private String instanceStatus;
 

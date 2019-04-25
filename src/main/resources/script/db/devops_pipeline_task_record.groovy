@@ -36,4 +36,9 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
     changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_task-drop-column') {
         dropColumn(columnName: "execution_time", tableName: "devops_pipeline_task_record")
     }
+    changeSet(author: 'scp', id: '2019-04-25-devops_pipeline_task-add-column') {
+        addColumn(tableName: 'devops_pipeline_task_record') {
+            column(name: 'instanceName', type: 'VARCHAR(100)', remarks: '实例名称')
+        }
+    }
 }

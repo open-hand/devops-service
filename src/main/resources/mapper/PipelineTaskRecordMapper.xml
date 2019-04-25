@@ -17,7 +17,7 @@
         dptr.instance_id,
         dptr.status,
         dptr.task_id,
-        dai.`code` AS instanceName,
+        dptr.instance_name,
         dptr.task_type,
         (
         CASE
