@@ -32,7 +32,7 @@
         dpr.pipeline_id,
         dpr.`status`,
         dpr.creation_date,
-        dpr.process_instance_id,
+        dpr.business_key,
         dpr.bpm_definition
         FROM
         devops_pipeline_record dpr

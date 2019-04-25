@@ -58,6 +58,7 @@ import io.choerodon.devops.domain.application.repository.PipelineValueRepository
 import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
+import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.enums.CommandType;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
@@ -65,7 +66,6 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.nutz.aop.interceptor.async.Async;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -98,6 +98,9 @@ public class PipelineServiceImpl implements PipelineService {
     private static final String TASK = "task";
 
     private static final Gson gson = new Gson();
+    private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
+            0L, TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-workflow", false));
     @Autowired
     private PipelineRepository pipelineRepository;
     @Autowired
@@ -134,14 +137,8 @@ public class PipelineServiceImpl implements PipelineService {
     private ApplicationInstanceService applicationInstanceService;
     @Autowired
     private ApplicationVersionRepository applicationVersionRepository;
-
     @Autowired
     private ApplicationVersionService versionService;
-    private static final ExecutorService executorService = new ThreadPoolExecutor(0, 1,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<>(), new UtilityElf.DefaultThreadFactory("devops-workflow", false));
-
-
 
     @Override
     public Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
@@ -390,7 +387,9 @@ public class PipelineServiceImpl implements PipelineService {
             throw new CommonException("error.permission.trigger.pipeline");
         }
         //保存pipeline 和 pipelineUserRel
-        PipelineRecordE pipelineRecordE = pipelineRecordRepository.create(new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineE.getName()));
+        PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), projectId, WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
+        pipelineRecordE.setBusinessKey(GenerateUUID.generateUUID());
+        pipelineRecordRepository.create(pipelineRecordE);
         PipelineUserRecordRelE pipelineUserRecordRelE = new PipelineUserRecordRelE();
         pipelineUserRecordRelE.setPipelineRecordId(pipelineRecordE.getId());
         pipelineUserRecordRelE.setUserId(DetailsHelper.getUserDetails().getUserId());
@@ -462,7 +461,7 @@ public class PipelineServiceImpl implements PipelineService {
                 ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
                 if (oldapplicationInstanceE.getApplicationVersionE().getId().equals(applicationDeployDTO.getAppVersionId())) {
                     String oldValue = applicationInstanceRepository.queryValueByInstanceId(applicationDeployDTO.getAppInstanceId());
-                    ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()),applicationDeployDTO.getValues());
+                    ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()), applicationDeployDTO.getValues());
                     if (replaceResult.getDeltaYaml().trim().equals(oldValue.trim())) {
                         applicationDeployDTO.setIsNotChange(true);
                     }
@@ -483,7 +482,7 @@ public class PipelineServiceImpl implements PipelineService {
         List<String> stringList = new ArrayList<>();
         String status;
         if (recordRelDTO.getIsApprove()) {
-            Boolean result = workFlowRepository.approveUserTask(projectId, recordRelDTO.getPipelineRecordId());
+            Boolean result = workFlowRepository.approveUserTask(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getBusinessKey());
 //            Boolean result =true;
             status = result ? WorkFlowStatus.SUCCESS.toValue() : WorkFlowStatus.FAILED.toValue();
             if (STAGE.equals(recordRelDTO.getType())) {
@@ -671,6 +670,7 @@ public class PipelineServiceImpl implements PipelineService {
         //workflow数据
         DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
+        devopsPipelineDTO.setBussinessKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
         //stage
         List<PipelineStageE> stageES = stageRepository.queryByPipelineId(pipelineId);
@@ -749,7 +749,7 @@ public class PipelineServiceImpl implements PipelineService {
             }
         } else {
             //停止实例
-            workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getId());
+            workFlowRepository.stopInstance(pipelineRecordE.getProjectId(), pipelineRecordE.getBusinessKey());
         }
     }
 
@@ -799,10 +799,14 @@ public class PipelineServiceImpl implements PipelineService {
     public void retry(Long projectId, Long pipelineRecordId) {
         String bpmDefinition = pipelineRecordRepository.queryById(pipelineRecordId).getBpmDefinition();
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
-        executorService.submit(new CreateWorkFlow(projectId,pipelineDTO));
+        String uuid = GenerateUUID.generateUUID();
+        pipelineDTO.setBussinessKey(uuid);
+        executorService.submit(new CreateWorkFlow(projectId, pipelineDTO));
+
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
+        pipelineRecordE.setBusinessKey(uuid);
         pipelineRecordRepository.update(pipelineRecordE);
         stageRecordRepository.queryByPipeRecordId(pipelineRecordId, null).forEach(t -> {
             t.setStatus(null);
@@ -816,7 +820,6 @@ public class PipelineServiceImpl implements PipelineService {
             updateFirstStage(pipelineRecordId, pipelineRecordE.getPipelineId());
         }
     }
-
 
 
     @Override
@@ -1079,7 +1082,7 @@ public class PipelineServiceImpl implements PipelineService {
         private Long projectId;
         private DevopsPipelineDTO devopsPipelineDTO;
 
-        public CreateWorkFlow(Long projectId,DevopsPipelineDTO devopsPipelineDTO) {
+        public CreateWorkFlow(Long projectId, DevopsPipelineDTO devopsPipelineDTO) {
             this.projectId = projectId;
             this.devopsPipelineDTO = devopsPipelineDTO;
         }

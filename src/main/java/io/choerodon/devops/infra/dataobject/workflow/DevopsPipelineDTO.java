@@ -9,7 +9,16 @@ import java.util.List;
 public class DevopsPipelineDTO {
 
     private Long pipelineRecordId;
+    private String bussinessKey;
     private List<DevopsPipelineStageDTO> stages;
+
+    public String getBussinessKey() {
+        return bussinessKey;
+    }
+
+    public void setBussinessKey(String bussinessKey) {
+        this.bussinessKey = bussinessKey;
+    }
 
     public Long getPipelineRecordId() {
         return pipelineRecordId;

@@ -17,8 +17,9 @@ public class PipelineRecordE {
     private String bpmDefinition;
     private Date lastUpdateDate;
     private Date creationDate;
+    private String businessKey;
 
-    public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status,String pipelineName) {
+    public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
         this.pipelineId = pipelineId;
         this.triggerType = triggerType;
         this.projectId = projectId;
@@ -28,6 +29,14 @@ public class PipelineRecordE {
 
     public PipelineRecordE() {
 
+    }
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
     }
 
     public Date getCreationDate() {

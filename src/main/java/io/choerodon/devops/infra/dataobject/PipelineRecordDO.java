@@ -26,6 +26,15 @@ public class PipelineRecordDO extends AuditDomain {
     private String bpmDefinition;
     private Long projectId;
     private String pipelineName;
+    private String businessKey;
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
+    }
 
     public String getPipelineName() {
         return pipelineName;
