@@ -241,6 +241,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
             c7nSecret.getData().forEach((key,value)-> {
                 try {
                     map.put(key,new String(value,"utf-8"));
+                    secretReqDTO.setValue(map);
                 } catch (UnsupportedEncodingException e) {
                     logger.info(e.getMessage());
                 }

@@ -113,7 +113,9 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
             devopsSecretRepository.checkName(secretReqDTO.getName(), secretReqDTO.getEnvId());
         }
         // 校验key-name
-        DevopsSecretValidator.checkKeyName(secretReqDTO.getValue().keySet());
+        if(!secretReqDTO.getType().equals("kubernetes.io/dockerconfigjson")) {
+            DevopsSecretValidator.checkKeyName(secretReqDTO.getValue().keySet());
+        }
 
         DevopsSecretE devopsSecretE = ConvertHelper.convert(secretReqDTO, DevopsSecretE.class);
         devopsSecretE.setStatus(SecretStatus.OPERATING.getStatus());
