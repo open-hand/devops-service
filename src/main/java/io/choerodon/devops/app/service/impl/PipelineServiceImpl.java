@@ -65,6 +65,12 @@ import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineStageDTO;
 import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineTaskDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -801,8 +807,24 @@ public class PipelineServiceImpl implements PipelineService {
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
         String uuid = GenerateUUID.generateUUID();
         pipelineDTO.setBussinessKey(uuid);
-        executorService.submit(new CreateWorkFlow(projectId, pipelineDTO));
-
+        Observable.create((ObservableOnSubscribe<String>) dtoObservableEmitter -> {
+            dtoObservableEmitter.onComplete();
+        })      .subscribeOn(Schedulers.io())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                    }
+                    @Override
+                    public void onNext(String s) {
+                    }
+                    @Override
+                    public void onError(Throwable e) {
+                    }
+                    @Override
+                    public void onComplete() {
+                        workFlowRepository.create(projectId,pipelineDTO);
+                    }
+                });
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -1090,6 +1112,7 @@ public class PipelineServiceImpl implements PipelineService {
 
         @Override
         public void run() {
+            System.out.println("执行以下啊");
             workFlowRepository.create(projectId, devopsPipelineDTO);
         }
     }
