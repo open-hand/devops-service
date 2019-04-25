@@ -275,7 +275,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
         String uuid = GenerateUUID.generateUUID();
         pipelineRecordE.setBusinessKey(uuid);
-        pipelineRecordRepository.create(pipelineRecordE);
+        pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
         //准备workFlow数据
         DevopsPipelineDTO devopsPipelineDTO = pipelineService.setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
         pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
