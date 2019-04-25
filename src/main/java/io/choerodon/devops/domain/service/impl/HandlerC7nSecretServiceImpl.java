@@ -1,12 +1,17 @@
 package io.choerodon.devops.domain.service.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.service.impl.DeployMsgHandlerServiceImpl;
 import io.kubernetes.client.models.V1Endpoints;
 import io.kubernetes.client.models.V1Secret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -41,6 +46,10 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
 
 @Service
 public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsService<V1Secret> {
+
+    private static final Logger logger = LoggerFactory.getLogger(HandlerC7nSecretServiceImpl.class);
+
+
     private static final String CREATE = "create";
 
     private static final String SECRET = "Secret";
@@ -226,7 +235,19 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         secretReqDTO.setDescription("");
         secretReqDTO.setType(type);
         secretReqDTO.setEnvId(envId);
-        secretReqDTO.setValue(c7nSecret.getStringData());
+        //等待界面支持secret类型之后在区分开
+        if(c7nSecret.getType().equals("kubernetes.io/dockerconfigjson")) {
+            Map<String,String> map =  new HashMap<>();
+            c7nSecret.getData().forEach((key,value)-> {
+                try {
+                    map.put(key,new String(value,"utf-8"));
+                } catch (UnsupportedEncodingException e) {
+                    logger.info(e.getMessage());
+                }
+            });
+        }else {
+            secretReqDTO.setValue(c7nSecret.getStringData());
+        }
         return secretReqDTO;
     }
 
