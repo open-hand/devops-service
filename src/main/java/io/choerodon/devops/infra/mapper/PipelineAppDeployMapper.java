@@ -12,5 +12,5 @@ import org.apache.ibatis.annotations.Param;
 public interface PipelineAppDeployMapper extends BaseMapper<PipelineAppDeployDO> {
     PipelineAppDeployDO queryById(@Param("appDeployId") Long appDeployId);
 
-    void updateInstanceId(@Param("updateInstanceId") Long updateInstanceId);
+    void updateInstanceId(@Param("instanceId") Long instanceId);
 }
