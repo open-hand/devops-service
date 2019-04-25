@@ -1,8 +1,5 @@
 package io.choerodon.devops.api.dto;
 
-import oracle.jdbc.driver.DatabaseError;
-
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,13 +12,20 @@ public class PipelineStageRecordDTO {
     private String stageName;
     private String status;
     private String triggerType;
-    private String triggerUserName;
-    private Long triggerUserId;
     private Long pipelineId;
     private Integer isParallel;
     private String executionTime;
     private Long stageId;
     private List<PipelineTaskRecordDTO> taskRecordDTOS;
+    private List<IamUserDTO> userDTOS;
+
+    public List<IamUserDTO> getUserDTOS() {
+        return userDTOS;
+    }
+
+    public void setUserDTOS(List<IamUserDTO> userDTOS) {
+        this.userDTOS = userDTOS;
+    }
 
     public Long getStageId() {
         return stageId;
@@ -69,22 +73,6 @@ public class PipelineStageRecordDTO {
 
     public void setTriggerType(String triggerType) {
         this.triggerType = triggerType;
-    }
-
-    public String getTriggerUserName() {
-        return triggerUserName;
-    }
-
-    public void setTriggerUserName(String triggerUserName) {
-        this.triggerUserName = triggerUserName;
-    }
-
-    public Long getTriggerUserId() {
-        return triggerUserId;
-    }
-
-    public void setTriggerUserId(Long triggerUserId) {
-        this.triggerUserId = triggerUserId;
     }
 
     public Long getPipelineId() {

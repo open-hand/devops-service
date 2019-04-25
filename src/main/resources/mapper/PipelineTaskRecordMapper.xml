@@ -18,7 +18,8 @@
         dptr.status,
         dptr.task_id,
         dai.`code` AS instanceName,
-        dptr.task_type
+        dptr.task_type,
+        dptr.is_countersigned
         FROM
         devops_pipeline_task_record dptr
         LEFT JOIN devops_application da ON da.id = dptr.application_id

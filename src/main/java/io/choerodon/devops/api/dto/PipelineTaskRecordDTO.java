@@ -1,5 +1,7 @@
 package io.choerodon.devops.api.dto;
 
+import java.util.List;
+
 /**
  * Creator: ChangpingShi0213@gmail.com
  * Date:  11:34 2019/4/14
@@ -11,12 +13,20 @@ public class PipelineTaskRecordDTO {
     private String status;
     private String taskType;
     private Integer isCountersigned;
-    private String auditUsers;
     private String appName;
     private String envName;
     private String version;
     private String instanceName;
     private Long taskId;
+    private List<IamUserDTO> userDTOList;
+
+    public List<IamUserDTO> getUserDTOList() {
+        return userDTOList;
+    }
+
+    public void setUserDTOList(List<IamUserDTO> userDTOList) {
+        this.userDTOList = userDTOList;
+    }
 
     public Long getTaskId() {
         return taskId;
@@ -64,14 +74,6 @@ public class PipelineTaskRecordDTO {
 
     public void setIsCountersigned(Integer isCountersigned) {
         this.isCountersigned = isCountersigned;
-    }
-
-    public String getAuditUsers() {
-        return auditUsers;
-    }
-
-    public void setAuditUsers(String auditUsers) {
-        this.auditUsers = auditUsers;
     }
 
     public String getAppName() {

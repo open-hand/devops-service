@@ -10,14 +10,21 @@ import java.util.List;
  */
 public class PipelineRecordReqDTO {
     private Long id;
-    private String name;
+    private String pipelineName;
     private String triggerType;
     private Long projectId;
     private Date creationDate;
-    private String triggerUserName;
-    private Long triggerUserId;
+    private IamUserDTO userDTO;
     private String status;
     private List<PipelineStageRecordDTO> stageRecordDTOS;
+
+    public IamUserDTO getUserDTO() {
+        return userDTO;
+    }
+
+    public void setUserDTO(IamUserDTO userDTO) {
+        this.userDTO = userDTO;
+    }
 
     public Long getId() {
         return id;
@@ -27,12 +34,12 @@ public class PipelineRecordReqDTO {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getPipelineName() {
+        return pipelineName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
     }
 
     public String getTriggerType() {
@@ -57,22 +64,6 @@ public class PipelineRecordReqDTO {
 
     public void setCreationDate(Date creationDate) {
         this.creationDate = creationDate;
-    }
-
-    public String getTriggerUserName() {
-        return triggerUserName;
-    }
-
-    public void setTriggerUserName(String triggerUserName) {
-        this.triggerUserName = triggerUserName;
-    }
-
-    public Long getTriggerUserId() {
-        return triggerUserId;
-    }
-
-    public void setTriggerUserId(Long triggerUserId) {
-        this.triggerUserId = triggerUserId;
     }
 
     public String getStatus() {
