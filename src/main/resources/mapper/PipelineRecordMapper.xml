@@ -26,17 +26,16 @@
         dpr.id,
         dpr. STATUS,
         dpr.trigger_type,
-        dp. NAME,
         dpr.last_update_date,
         dpr.project_id,
         dpr.pipeline_id,
         dpr.`status`,
         dpr.creation_date,
         dpr.business_key,
-        dpr.bpm_definition
+        dpr.bpm_definition,
+        dpr.pipeline_name
         FROM
         devops_pipeline_record dpr
-        JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id
         WHERE dpr.id = #{pipelineRecordId}
     </select>
 
