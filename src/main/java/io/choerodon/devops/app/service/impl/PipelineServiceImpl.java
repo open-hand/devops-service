@@ -422,7 +422,6 @@ public class PipelineServiceImpl implements PipelineService {
     @Saga(code = "devops-pipeline-auto-deploy-instance",
             description = "创建流水线自动部署实例", inputSchema = "{}")
     public void autoDeploy(Long stageRecordId, Long taskId) {
-        PipelineRecordE recordE = pipelineRecordRepository.queryById(stageRecordRepository.queryById(stageRecordId).getPipelineRecordId());
         //获取数据
         PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryById(taskId);
         CutomerContextUtil.setUserId(pipelineTaskE.getCreatedBy());
@@ -456,6 +455,7 @@ public class PipelineServiceImpl implements PipelineService {
         pipelineTaskRecordE.setProjectId(pipelineTaskE.getProjectId());
         pipelineTaskRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
         pipelineTaskRecordE.setName(pipelineTaskE.getName());
+        pipelineTaskRecordE.setVersionId(versionES.get(index).getId());
         pipelineTaskRecordE = taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
         try {
             String type = appDeployE.getInstanceId() == null ? CommandType.CREATE.getType() : CommandType.UPDATE.getType();
@@ -675,7 +675,7 @@ public class PipelineServiceImpl implements PipelineService {
         //workflow数据
         DevopsPipelineDTO devopsPipelineDTO = new DevopsPipelineDTO();
         devopsPipelineDTO.setPipelineRecordId(pipelineRecordId);
-        devopsPipelineDTO.setBussinessKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
+        devopsPipelineDTO.setBussinesKey(pipelineRecordRepository.queryById(pipelineRecordId).getBusinessKey());
         List<DevopsPipelineStageDTO> devopsPipelineStageDTOS = new ArrayList<>();
         //stage
         List<PipelineStageE> stageES = stageRepository.queryByPipelineId(pipelineId);
@@ -852,7 +852,7 @@ public class PipelineServiceImpl implements PipelineService {
         String bpmDefinition = pipelineRecordRepository.queryById(pipelineRecordId).getBpmDefinition();
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
         String uuid = GenerateUUID.generateUUID();
-        pipelineDTO.setBussinessKey(uuid);
+        pipelineDTO.setBussinesKey(uuid);
         createWorkFlow(projectId, pipelineDTO);
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
