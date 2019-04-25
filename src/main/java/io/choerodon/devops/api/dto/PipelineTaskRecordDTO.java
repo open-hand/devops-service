@@ -18,6 +18,7 @@ public class PipelineTaskRecordDTO {
     private String version;
     private String instanceName;
     private Long taskId;
+    private String instanceStatus;
     private List<IamUserDTO> userDTOList;
 
     public List<IamUserDTO> getUserDTOList() {
@@ -26,6 +27,14 @@ public class PipelineTaskRecordDTO {
 
     public void setUserDTOList(List<IamUserDTO> userDTOList) {
         this.userDTOList = userDTOList;
+    }
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
     }
 
     public Long getTaskId() {

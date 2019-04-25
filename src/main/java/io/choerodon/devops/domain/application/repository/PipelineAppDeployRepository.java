@@ -25,4 +25,7 @@ public interface PipelineAppDeployRepository {
     List<PipelineAppDeployE> queryByValueId(Long valueId);
 
     List<PipelineAppDeployE> queryByEnvId(Long envId);
+
+    void updateInstanceId(Long instanceId);
+
 }

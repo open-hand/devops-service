@@ -29,4 +29,10 @@
         WHERE
             dpad.id = #{appDeployId}
     </select>
+
+    <update id="updateInstanceId"  parameterType="java.lang.Long">
+         UPDATE devops_pipeline_app_deploy
+         SET instance_id = NULL, instance_name = NULL
+         WHERE instance_id = #{instanceId}
+    </update>
 </mapper>

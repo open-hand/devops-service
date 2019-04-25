@@ -45,6 +45,16 @@ public class PipelineTaskRecordDO extends AuditDomain {
     private String version;
     @Transient
     private String instanceName;
+    @Transient
+    private String instanceStatus;
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
+    }
 
     public String getInstanceName() {
         return instanceName;
