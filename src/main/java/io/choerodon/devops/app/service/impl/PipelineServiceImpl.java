@@ -792,11 +792,20 @@ public class PipelineServiceImpl implements PipelineService {
                     if (recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
                         userIds = pipelineUserRelRepository.listByOptions(null, recordDTOList.get(i).getStageId(), null)
                                 .stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList());
+                        userIds.forEach(u -> {
+                            IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class);
+                            userDTO.setAudit(false);
+                            userDTOS.add(userDTO);
+                        });
                     } else {
                         userIds = pipelineUserRelRecordRepository.queryByRecordId(null, recordDTOList.get(i + 1).getId(), null)
                                 .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
+                        userIds.forEach(u -> {
+                            IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class);
+                            userDTO.setAudit(true);
+                            userDTOS.add(userDTO);
+                        });
                     }
-                    userIds.forEach(u -> userDTOS.add(ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class)));
                     stageRecordDTO.setUserDTOS(userDTOS);
                 }
             }
