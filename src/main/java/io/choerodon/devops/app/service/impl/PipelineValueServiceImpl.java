@@ -52,13 +52,8 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public Boolean delete(Long projectId, Long valueId) {
-        List<PipelineAppDeployE> list = appDeployRepository.queryByValueId(valueId);
-        if (list == null) {
-            return false;
-        }
+    public void delete(Long projectId, Long valueId) {
         valueRepository.delete(valueId);
-        return true;
     }
 
     @Override
@@ -84,9 +79,9 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public PipelineValueDTO queryById(Long valueId) {
+    public PipelineValueDTO queryById(Long projectId, Long valueId) {
         PipelineValueDTO valueDTO = ConvertHelper.convert(valueRepository.queryById(valueId), PipelineValueDTO.class);
-        valueDTO.setIndex(appDeployRepository.queryByValueId(valueId) == null);
+        valueDTO.setIndex(checkDelete(projectId, valueId));
         return valueDTO;
     }
 
@@ -98,5 +93,11 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     @Override
     public List<PipelineValueDTO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
         return ConvertHelper.convertList(valueRepository.queryByAppIdAndEnvId(projectId, appId, envId), PipelineValueDTO.class);
+    }
+
+    @Override
+    public Boolean checkDelete(Long projectId, Long valueId) {
+        List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByValueId(valueId);
+        return appDeployEList == null || appDeployEList.isEmpty();
     }
 }
