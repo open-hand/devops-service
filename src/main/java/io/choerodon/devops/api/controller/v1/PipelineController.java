@@ -391,21 +391,21 @@ public class PipelineController {
                 .orElseThrow(() -> new CommonException("error.users.all.list"));
     }
 
-    /**
-     * 获取所有项目成员和项目所有者
-     *
-     * @param projectId 项目id
-     * @return
-     */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
-    @ApiOperation(value = "获取所有项目成员和项目所有者")
-    @GetMapping(value = "/test")
-    public void test(
-            @ApiParam(value = "项目id", required = true)
-            @PathVariable(value = "project_id") Long projectId,
-            @ApiParam(value = "项目id", required = true)
-            @RequestParam(value = "version_id") Long versionId) {
-        pipelineService.test(versionId);
-    }
+//    /**
+//     * 获取所有项目成员和项目所有者
+//     *
+//     * @param projectId 项目id
+//     * @return
+//     */
+//    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+//    @ApiOperation(value = "获取所有项目成员和项目所有者")
+//    @GetMapping(value = "/test")
+//    public void test(
+//            @ApiParam(value = "项目id", required = true)
+//            @PathVariable(value = "project_id") Long projectId,
+//            @ApiParam(value = "项目id", required = true)
+//            @RequestParam(value = "version_id") Long versionId) {
+//        pipelineService.test(versionId);
+//    }
 
 }
