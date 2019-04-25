@@ -10,6 +10,7 @@ import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
 import io.choerodon.devops.api.dto.ApplicationDeployDTO;
 import io.choerodon.devops.api.dto.CheckAuditDTO;
@@ -27,6 +28,7 @@ import io.choerodon.devops.api.dto.PipelineTaskDTO;
 import io.choerodon.devops.api.dto.PipelineTaskRecordDTO;
 import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
@@ -407,7 +409,8 @@ public class PipelineServiceImpl implements PipelineService {
 
         try {
             //发送请求给workflow，创建流程实例
-            createWorkFlow(projectId, devopsPipelineDTO);
+            CustomUserDetails details = DetailsHelper.getUserDetails();
+            createWorkFlow(projectId, devopsPipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
             pipelineRecordRepository.update(pipelineRecordE);
             updateFirstStage(pipelineRecordE.getId(), pipelineId);
         } catch (Exception e) {
@@ -489,7 +492,8 @@ public class PipelineServiceImpl implements PipelineService {
         Boolean result = true;
         if (recordRelDTO.getIsApprove()) {
             try {
-                approveWorkFlow(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getBusinessKey());
+                CustomUserDetails details = DetailsHelper.getUserDetails();
+                approveWorkFlow(projectId, pipelineRecordRepository.queryById(recordRelDTO.getPipelineRecordId()).getBusinessKey(), details.getUsername(), details.getUserId(), details.getOrganizationId());
             } catch (Exception e) {
                 result = false;
             }
@@ -866,7 +870,8 @@ public class PipelineServiceImpl implements PipelineService {
         DevopsPipelineDTO pipelineDTO = gson.fromJson(bpmDefinition, DevopsPipelineDTO.class);
         String uuid = GenerateUUID.generateUUID();
         pipelineDTO.setBusinessKey(uuid);
-        createWorkFlow(projectId, pipelineDTO);
+        CustomUserDetails details = DetailsHelper.getUserDetails();
+        createWorkFlow(projectId, pipelineDTO, details.getUsername(), details.getUserId(), details.getOrganizationId());
         //清空之前数据
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         pipelineRecordE.setStatus(WorkFlowStatus.RUNNING.toValue());
@@ -1142,7 +1147,8 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
 
-    private void createWorkFlow(Long projectId, DevopsPipelineDTO pipelineDTO) {
+    private void createWorkFlow(Long projectId, DevopsPipelineDTO pipelineDTO, String loginName, Long userId, Long orgId) {
+
         Observable.create((ObservableOnSubscribe<String>) dtoObservableEmitter -> {
             dtoObservableEmitter.onComplete();
         }).subscribeOn(Schedulers.io())
@@ -1161,6 +1167,7 @@ public class PipelineServiceImpl implements PipelineService {
 
                     @Override
                     public void onComplete() {
+                        DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
                         workFlowRepository.create(projectId, pipelineDTO);
                     }
                 });
@@ -1168,7 +1175,7 @@ public class PipelineServiceImpl implements PipelineService {
     }
 
 
-    private void approveWorkFlow(Long projectId, String businessKey) {
+    private void approveWorkFlow(Long projectId, String businessKey, String loginName, Long userId, Long orgId) {
         Observable.create((ObservableOnSubscribe<String>) dtoObservableEmitter -> {
             dtoObservableEmitter.onComplete();
         }).subscribeOn(Schedulers.io())
@@ -1187,6 +1194,7 @@ public class PipelineServiceImpl implements PipelineService {
 
                     @Override
                     public void onComplete() {
+                        DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
                         workFlowRepository.approveUserTask(projectId, businessKey);
                     }
                 });
