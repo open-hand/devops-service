@@ -784,13 +784,13 @@ public class PipelineServiceImpl implements PipelineService {
         for (int i = 0; i < recordDTOList.size(); i++) {
             PipelineStageRecordDTO stageRecordDTO = recordDTOList.get(i);
             //获取触发人员
-            if (stageRecordDTO.getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && stageRecordDTO.getTriggerType().equals(MANUAL)) {
+            if (stageRecordDTO.getTriggerType().equals(MANUAL)) {
                 //不是最后一个阶段
                 if (isLastStage(stageRecordDTO.getStageId()) == null) {
                     List<IamUserDTO> userDTOS = new ArrayList<>();
                     List<Long> userIds;
                     if (recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
-                        userIds = pipelineUserRelRepository.listByOptions(null, recordDTOList.get(i + 1).getStageId(), null)
+                        userIds = pipelineUserRelRepository.listByOptions(null, recordDTOList.get(i).getStageId(), null)
                                 .stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList());
                     } else {
                         userIds = pipelineUserRelRecordRepository.queryByRecordId(null, recordDTOList.get(i + 1).getId(), null)
