@@ -370,6 +370,8 @@ public class DevopsSagaHandler {
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
         try {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
+//            ApplicationInstanceDTO applicationInstanceDTO = new ApplicationInstanceDTO();
+//            applicationInstanceDTO.setId(793L);
             //更新记录表中的实例
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
@@ -379,7 +381,7 @@ public class DevopsSagaHandler {
                 appDeployE.setInstanceId(applicationInstanceDTO.getId());
                 appDeployRepository.update(appDeployE);
             }
-            LOGGER.error("error create pipeline auto deploy instance success");
+            LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
             //实例创建失败,回写记录表
             Long taskRecordId = applicationDeployDTO.getRecordId();

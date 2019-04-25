@@ -71,7 +71,13 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -232,6 +238,11 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             List<Long> pipelineList = stageList.stream()
                     .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
                     .distinct().collect(Collectors.toList());
+            pipelineList = pipelineList.stream()
+                    .filter(pipelineId -> {
+                        PipelineE pipelineE=pipelineRepository.queryById(pipelineId);
+                        return pipelineE.getIsEnabled()==1&& "auto".equals(pipelineE.getTriggerType());
+                    }).collect(Collectors.toList());
             pipelineList.forEach(pipelineId -> {
                 if (pipelineService.checkDeploy(pipelineId)) {
                     executeAppDeploy(pipelineId);
