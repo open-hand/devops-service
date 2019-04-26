@@ -20,6 +20,15 @@ public class PipelineDTO {
     private String createUserRealName;
     private Long createdBy;
     private Boolean isExecute;
+    private Boolean edit;
+
+    public Boolean getEdit() {
+        return edit;
+    }
+
+    public void setEdit(Boolean edit) {
+        this.edit = edit;
+    }
 
     public Boolean getExecute() {
         return isExecute;

@@ -1,12 +1,5 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import com.zaxxer.hikari.util.UtilityElf;
 import io.choerodon.asgard.saga.annotation.Saga;
@@ -19,16 +12,55 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.core.oauth.CustomUserDetails;
 import io.choerodon.core.oauth.DetailsHelper;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.ApplicationDeployDTO;
+import io.choerodon.devops.api.dto.CheckAuditDTO;
+import io.choerodon.devops.api.dto.DevopsEnviromentRepDTO;
+import io.choerodon.devops.api.dto.IamUserDTO;
+import io.choerodon.devops.api.dto.PipelineAppDeployDTO;
+import io.choerodon.devops.api.dto.PipelineDTO;
+import io.choerodon.devops.api.dto.PipelineRecordDTO;
+import io.choerodon.devops.api.dto.PipelineRecordListDTO;
+import io.choerodon.devops.api.dto.PipelineRecordReqDTO;
+import io.choerodon.devops.api.dto.PipelineReqDTO;
+import io.choerodon.devops.api.dto.PipelineStageDTO;
+import io.choerodon.devops.api.dto.PipelineStageRecordDTO;
+import io.choerodon.devops.api.dto.PipelineTaskDTO;
+import io.choerodon.devops.api.dto.PipelineTaskRecordDTO;
+import io.choerodon.devops.api.dto.PipelineUserRecordRelDTO;
 import io.choerodon.devops.api.dto.iam.UserDTO;
 import io.choerodon.devops.api.eventhandler.DemoEnvSetupSagaHandler;
 import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
+import io.choerodon.devops.domain.application.entity.PipelineE;
+import io.choerodon.devops.domain.application.entity.PipelineRecordE;
+import io.choerodon.devops.domain.application.entity.PipelineStageE;
+import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
+import io.choerodon.devops.domain.application.entity.PipelineTaskE;
+import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
+import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
+import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
+import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
+import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
+import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
@@ -50,6 +82,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -128,6 +171,13 @@ public class PipelineServiceImpl implements PipelineService {
                     .map(PipelineUserRelE::getUserId)
                     .collect(Collectors.toList())
                     .contains(DetailsHelper.getUserDetails().getUserId()));
+            List<PipelineRecordE> list = pipelineRecordRepository.queryByPipelineId(t.getId()).stream()
+                    .filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) && recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()))
+                    .collect(Collectors.toList());
+            t.setEdit(true);
+            if (list != null && list.size() > 0) {
+                t.setEdit(false);
+            }
         }).collect(Collectors.toList()));
         return page;
     }
@@ -1149,7 +1199,7 @@ public class PipelineServiceImpl implements PipelineService {
                         DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
                         try {
                             workFlowRepository.create(projectId, pipelineDTO);
-                        }catch (Exception e) {
+                        } catch (Exception e) {
                             LOGGER.info("cd workflow failed!");
                         }
                     }
@@ -1180,7 +1230,7 @@ public class PipelineServiceImpl implements PipelineService {
                         DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
                         try {
                             workFlowRepository.approveUserTask(projectId, businessKey);
-                        }catch (Exception e) {
+                        } catch (Exception e) {
                             LOGGER.info("cd workflow failed!");
                         }
                     }
