@@ -121,6 +121,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private PipelineRepository pipelineRepository;
     @Autowired
     private ChartUtil chartUtil;
+    @Autowired
+    private PipelineService pipelineService;
 
 
     @Value("${services.helm.url}")
@@ -229,12 +231,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         return pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType());
                     }).collect(Collectors.toList());
             pipelineList.forEach(pipelineId -> {
-                String input = gson.toJson(pipelineId);
-                try {
-                    sagaClient.startSaga("devops-pipeline-execute-app-deploy", new StartInstanceDTO(input));
-                } catch (Exception e) {
-                    LOGGER.error(e.getMessage());
-                    throw new CommonException("error.pipeline.execute.app.deploy");
+                if (pipelineService.checkDeploy(pipelineId)) {
+                    pipelineService.executeAppDeploy(pipelineId);
                 }
             });
         }

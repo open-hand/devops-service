@@ -339,20 +339,6 @@ public class DevopsSagaHandler {
         return data;
     }
 
-    @SagaTask(code = "devops-pipeline-auto-deploy-execute",
-            description = "devops pipeline execute auto deploy",
-            sagaCode = "devops-pipeline-execute-app-deploy",
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 3,
-            seq = 1)
-    public void createPipelineInstance(String data) {
-        //创建或更新实例
-        Long pipelineId = gson.fromJson(data, Long.class);
-        if (pipelineService.checkDeploy(pipelineId)) {
-            pipelineService.executeAppDeploy(pipelineId);
-        }
-    }
-
     @SagaTask(code = "devops-pipeline-create-instance",
             description = "devops pipeline instance",
             sagaCode = "devops-pipeline-auto-deploy-instance",
