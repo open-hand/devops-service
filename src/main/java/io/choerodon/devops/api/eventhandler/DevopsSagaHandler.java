@@ -363,9 +363,7 @@ public class DevopsSagaHandler {
         //创建或更新实例
         ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
         try {
-//            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
-            ApplicationInstanceDTO applicationInstanceDTO=new ApplicationInstanceDTO();
-
+            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             //更新记录表中的实例
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
             pipelineTaskRecordE.setInstanceName(applicationDeployDTO.getInstanceName());
