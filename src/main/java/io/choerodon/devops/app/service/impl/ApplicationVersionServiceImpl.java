@@ -29,7 +29,6 @@ import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.PipelineE;
-import io.choerodon.devops.domain.application.entity.PipelineRecordE;
 import io.choerodon.devops.domain.application.entity.PipelineTaskE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
@@ -57,11 +56,8 @@ import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.devops.infra.common.util.GenerateUUID;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
-import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
-import io.choerodon.devops.infra.dataobject.workflow.DevopsPipelineDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,8 +210,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         applicationVersionE = applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
-        //自动部署
-//        triggerAutoDelpoy(applicationVersionE);
         //流水线
         checkAutoDeploy(applicationVersionE);
     }
@@ -226,6 +220,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * @param versionE
      */
     @Override
+    @Saga(code = "devops-pipeline-execute-app-deploy",
+            description = "执行自动部署", inputSchema = "{}")
     public void checkAutoDeploy(ApplicationVersionE versionE) {
         List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
                 .stream().map(deployE ->
@@ -248,8 +244,12 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         return pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType());
                     }).collect(Collectors.toList());
             pipelineList.forEach(pipelineId -> {
-                if (pipelineService.checkDeploy(pipelineId)) {
-                    executeAppDeploy(pipelineId);
+                String input = gson.toJson(pipelineId);
+                try {
+                    sagaClient.startSaga("devops-pipeline-execute-app-deploy", new StartInstanceDTO(input));
+                } catch (Exception e) {
+                    LOGGER.error(e.getMessage());
+                    throw new CommonException("error.pipeline.execute.app.deploy");
                 }
             });
         }
@@ -266,74 +266,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             }
             return null;
         }
-    }
-
-    /**
-     * 执行自动部署流水线
-     */
-    private void executeAppDeploy(Long pipelineId) {
-        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-        CutomerContextUtil.setUserId(pipelineE.getCreatedBy());
-        //保存pipeline
-        PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
-        String uuid = GenerateUUID.generateUUID();
-        pipelineRecordE.setBusinessKey(uuid);
-        pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
-        //准备workFlow数据
-        DevopsPipelineDTO devopsPipelineDTO = pipelineService.setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
-        pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
-        pipelineRecordRepository.update(pipelineRecordE);
-        //发送请求给workflow，创建流程实例
-        try {
-            workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
-            pipelineRecordRepository.update(pipelineRecordE);
-        }
-    }
-
-    /**
-     * 根据appId触发自动部署
-     *
-     * @param applicationVersionE
-     */
-    public void triggerAutoDelpoy(ApplicationVersionE applicationVersionE) {
-        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.getAll().stream().filter(t -> {
-            if (t.getTriggerVersion() == null || t.getTriggerVersion().isEmpty()) {
-                return true;
-            } else {
-                List<String> list = Arrays.asList(t.getTriggerVersion().split(","));
-                Optional<String> branch = list.stream().filter(m -> applicationVersionE.getVersion().contains(m)).findFirst();
-                if (branch.isPresent() && !branch.get().isEmpty()) {
-                    return true;
-                }
-            }
-            return false;
-        }).collect(Collectors.toList());
-        autoDeployES.forEach(t -> createAutoDeployInstance(t, applicationVersionE));
-    }
-
-    @Saga(code = "devops-create-auto-deploy-instance",
-            description = "创建自动部署实例", inputSchema = "{}")
-    private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, ApplicationVersionE applicationVersionE) {
-        CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
-        DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(devopsAutoDeployE.getId(), devopsAutoDeployE.getTaskName(), STATUS_RUN,
-                devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), applicationVersionE.getId(), null, devopsAutoDeployE.getProjectId());
-        devopsAutoDeployRecordE = devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-        try {
-            String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
-            ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
-                    devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(),
-                    devopsAutoDeployE.getInstanceName(), devopsAutoDeployRecordE.getId(), devopsAutoDeployE.getId());
-            String input = gson.toJson(applicationDeployDTO);
-            sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "env", devopsAutoDeployE.getEnvId().toString(), ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
-        } catch (Exception e) {
-            devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
-            devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            throw new CommonException("create.auto.deploy.instance.error", e);
-        }
-
     }
 
     @Override

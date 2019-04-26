@@ -66,4 +66,6 @@ public interface PipelineService {
     void updateStatus(Long pipelineRecordId, Long stageRecordId, String status);
 
     CheckAuditDTO checkAudit(Long projectId, PipelineUserRecordRelDTO userRecordRelDTO);
+
+    void executeAppDeploy(Long pipelineId);
 }

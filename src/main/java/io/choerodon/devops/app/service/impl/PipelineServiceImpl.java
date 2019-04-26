@@ -33,9 +33,34 @@ import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
+import io.choerodon.devops.domain.application.entity.PipelineE;
+import io.choerodon.devops.domain.application.entity.PipelineRecordE;
+import io.choerodon.devops.domain.application.entity.PipelineStageE;
+import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
+import io.choerodon.devops.domain.application.entity.PipelineTaskE;
+import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
+import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
+import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
+import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
+import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
+import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
+import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
@@ -125,7 +150,6 @@ public class PipelineServiceImpl implements PipelineService {
     private ApplicationVersionService versionService;
     @Autowired
     private DevopsEnvCommandRepository devopsEnvCommandRepository;
-
 
 
     @Override
@@ -1186,6 +1210,32 @@ public class PipelineServiceImpl implements PipelineService {
                         workFlowRepository.approveUserTask(projectId, businessKey);
                     }
                 });
+    }
+
+    /**
+     * 执行自动部署流水线
+     */
+    @Override
+    public void executeAppDeploy(Long pipelineId) {
+        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+        CutomerContextUtil.setUserId(pipelineE.getCreatedBy());
+        //保存pipeline
+        PipelineRecordE pipelineRecordE = new PipelineRecordE(pipelineId, pipelineE.getTriggerType(), pipelineE.getProjectId(), WorkFlowStatus.RUNNING.toValue(), pipelineE.getName());
+        String uuid = GenerateUUID.generateUUID();
+        pipelineRecordE.setBusinessKey(uuid);
+        pipelineRecordE = pipelineRecordRepository.create(pipelineRecordE);
+        //准备workFlow数据
+        DevopsPipelineDTO devopsPipelineDTO = setWorkFlowDTO(pipelineRecordE.getId(), pipelineId);
+        pipelineRecordE.setBpmDefinition(gson.toJson(devopsPipelineDTO));
+        pipelineRecordRepository.update(pipelineRecordE);
+        //发送请求给workflow，创建流程实例
+        try {
+            workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
+        } catch (Exception e) {
+            LOGGER.error("error.create.pipeline.instance", e.getMessage());
+            pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
+            pipelineRecordRepository.update(pipelineRecordE);
+        }
     }
 
 }
