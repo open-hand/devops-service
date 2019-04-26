@@ -770,25 +770,22 @@ public class PipelineServiceImpl implements PipelineService {
                 //不是最后一个阶段
                 if (isLastStage(stageRecordDTO.getStageId()) == null) {
                     List<IamUserDTO> userDTOS = new ArrayList<>();
-                    List<Long> userIds;
-                    if (recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+                    List<Long> userIds = pipelineUserRelRecordRepository.queryByRecordId(null, recordDTOList.get(i + 1).getId(), null)
+                            .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
+                    Boolean audit = !userIds.isEmpty();
+                    if (userIds.isEmpty()) {
                         userIds = pipelineUserRelRepository.listByOptions(null, recordDTOList.get(i).getStageId(), null)
                                 .stream().map(PipelineUserRelE::getUserId).collect(Collectors.toList());
-                        userIds.forEach(u -> {
-                            IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class);
-                            userDTO.setAudit(false);
-                            userDTOS.add(userDTO);
-                        });
-                    } else {
-                        userIds = pipelineUserRelRecordRepository.queryByRecordId(null, recordDTOList.get(i + 1).getId(), null)
-                                .stream().map(PipelineUserRecordRelE::getUserId).collect(Collectors.toList());
-                        userIds.forEach(u -> {
-                            IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class);
-                            userDTO.setAudit(true);
-                            userDTOS.add(userDTO);
-                        });
                     }
+                    userIds.forEach(u -> {
+                        IamUserDTO userDTO = ConvertHelper.convert(iamRepository.queryUserByUserId(u), IamUserDTO.class);
+                        userDTO.setAudit(audit);
+                        userDTOS.add(userDTO);
+                    });
                     stageRecordDTO.setUserDTOS(userDTOS);
+                    if (recordDTOList.get(i).getStatus().equals(WorkFlowStatus.SUCCESS.toValue()) && recordDTOList.get(i + 1).getStatus().equals(WorkFlowStatus.UNEXECUTED.toValue())) {
+                        stageRecordDTO.setIndex(true);
+                    }
                 }
             }
 

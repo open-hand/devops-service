@@ -18,6 +18,15 @@ public class PipelineStageRecordDTO {
     private Long stageId;
     private List<PipelineTaskRecordDTO> taskRecordDTOS;
     private List<IamUserDTO> userDTOS;
+    private Boolean index;
+
+    public Boolean getIndex() {
+        return index;
+    }
+
+    public void setIndex(Boolean index) {
+        this.index = index;
+    }
 
     public List<IamUserDTO> getUserDTOS() {
         return userDTOS;
