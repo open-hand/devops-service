@@ -1146,7 +1146,11 @@ public class PipelineServiceImpl implements PipelineService {
                     @Override
                     public void onComplete() {
                         DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
-                        workFlowRepository.create(projectId, pipelineDTO);
+                        try {
+                            workFlowRepository.create(projectId, pipelineDTO);
+                        }catch (Exception e) {
+                            LOGGER.info("cd workflow failed!");
+                        }
                     }
                 });
 
@@ -1173,7 +1177,11 @@ public class PipelineServiceImpl implements PipelineService {
                     @Override
                     public void onComplete() {
                         DemoEnvSetupSagaHandler.beforeInvoke(loginName, userId, orgId);
-                        workFlowRepository.approveUserTask(projectId, businessKey);
+                        try {
+                            workFlowRepository.approveUserTask(projectId, businessKey);
+                        }catch (Exception e) {
+                            LOGGER.info("cd workflow failed!");
+                        }
                     }
                 });
     }
