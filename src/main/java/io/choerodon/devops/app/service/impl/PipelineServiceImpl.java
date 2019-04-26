@@ -1022,14 +1022,16 @@ public class PipelineServiceImpl implements PipelineService {
 
     private void startManualTask(PipelineTaskE taskE, Long pipelineRecordId, Long stageRecordId) {
         PipelineTaskRecordE taskRecordE = new PipelineTaskRecordE();
-        BeanUtils.copyProperties(taskE, taskRecordE);
-        taskRecordE.setId(null);
-        taskRecordE.setStageRecordId(stageRecordId);
-        taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
-        taskRecordE.setTaskId(taskE.getId());
-        taskRecordE.setTaskType(taskE.getType());
-        taskRecordRepository.createOrUpdate(taskRecordE);
-        updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.PENDINGCHECK.toValue());
+        if (!taskE.getType().equals("auto")) {
+            BeanUtils.copyProperties(taskE, taskRecordE);
+            taskRecordE.setId(null);
+            taskRecordE.setStageRecordId(stageRecordId);
+            taskRecordE.setStatus(WorkFlowStatus.PENDINGCHECK.toValue());
+            taskRecordE.setTaskId(taskE.getId());
+            taskRecordE.setTaskType(taskE.getType());
+            taskRecordRepository.createOrUpdate(taskRecordE);
+            updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.PENDINGCHECK.toValue());
+        }
     }
 
     private PipelineStageE getNextStage(Long stageId) {
