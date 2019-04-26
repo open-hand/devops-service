@@ -85,13 +85,8 @@ import java.util.stream.Collectors;
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
 
-    private static final String CREATE = "create";
-    private static final String UPDATE = "update";
-    private static final String STATUS_RUN = "running";
-    private static final String STATUS_FAILED = "failed";
     private static final String DESTPATH = "devops";
     private static final String STOREPATH = "stores";
-    private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Autowired
@@ -113,10 +108,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Autowired
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
     @Autowired
-    private DevopsAutoDeployRepository devopsAutoDeployRepository;
-    @Autowired
-    private DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
-    @Autowired
     private SagaClient sagaClient;
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
@@ -126,12 +117,6 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     private PipelineTaskRepository taskRepository;
     @Autowired
     private PipelineStageRepository stageRepository;
-    @Autowired
-    private PipelineService pipelineService;
-    @Autowired
-    private PipelineRecordRepository pipelineRecordRepository;
-    @Autowired
-    private WorkFlowRepository workFlowRepository;
     @Autowired
     private PipelineRepository pipelineRepository;
     @Autowired
