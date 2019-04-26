@@ -30,7 +30,7 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO
         DevopsSecretE devopsSecretE = new DevopsSecretE();
         Map<String, String> encodedSecretMaps = new HashMap<>();
         BeanUtils.copyProperties(secretReqDTO, devopsSecretE);
-        if (!secretReqDTO.getValue().isEmpty()) {
+        if (!secretReqDTO.getValue().isEmpty()&&!secretReqDTO.getType().equals("kubernetes.io/dockerconfigjson")) {
             for (Map.Entry<String, String> e : secretReqDTO.getValue().entrySet()) {
                 encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
             }
