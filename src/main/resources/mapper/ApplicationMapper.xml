@@ -139,11 +139,11 @@
                     <if test="active == 1">
                         da.is_active = 1
                         AND da.is_synchro = 1
-                        AND da.is_failed IS NULL
+                        AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
                     <if test="active == 2">
                         da.is_synchro = 0
-                        AND da.is_failed IS NULL
+                        AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
                 </foreach>
             </if>
