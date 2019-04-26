@@ -671,7 +671,7 @@ public class PipelineServiceImpl implements PipelineService {
                                 continue;
                             }
                         } else {
-                            return true;
+                            break;
                         }
                     }
                 }
