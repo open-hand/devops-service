@@ -172,7 +172,7 @@ public class PipelineServiceImpl implements PipelineService {
                     .collect(Collectors.toList())
                     .contains(DetailsHelper.getUserDetails().getUserId()));
             List<PipelineRecordE> list = pipelineRecordRepository.queryByPipelineId(t.getId()).stream()
-                    .filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) && recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()))
+                    .filter(recordE -> recordE.getStatus().equals(WorkFlowStatus.PENDINGCHECK.toValue()) || recordE.getStatus().equals(WorkFlowStatus.RUNNING.toValue()))
                     .collect(Collectors.toList());
             t.setEdit(true);
             if (list != null && list.size() > 0) {
