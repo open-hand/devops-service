@@ -33,32 +33,9 @@ import io.choerodon.devops.app.service.ApplicationInstanceService;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.DevopsEnvironmentService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
-import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
-import io.choerodon.devops.domain.application.entity.PipelineE;
-import io.choerodon.devops.domain.application.entity.PipelineRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineStageE;
-import io.choerodon.devops.domain.application.entity.PipelineStageRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskE;
-import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
-import io.choerodon.devops.domain.application.entity.PipelineUserRecordRelE;
-import io.choerodon.devops.domain.application.entity.PipelineUserRelE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
-import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
-import io.choerodon.devops.domain.application.repository.PipelineUserRelRecordRepository;
-import io.choerodon.devops.domain.application.repository.PipelineUserRelRepository;
-import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
-import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.ReplaceResult;
 import io.choerodon.devops.infra.common.util.CutomerContextUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
@@ -146,6 +123,10 @@ public class PipelineServiceImpl implements PipelineService {
     private ApplicationVersionRepository applicationVersionRepository;
     @Autowired
     private ApplicationVersionService versionService;
+    @Autowired
+    private DevopsEnvCommandRepository devopsEnvCommandRepository;
+
+
 
     @Override
     public Page<PipelineDTO> listByOptions(Long projectId, PageRequest pageRequest, String params) {
@@ -467,7 +448,8 @@ public class PipelineServiceImpl implements PipelineService {
                     appDeployE.getInstanceName(), pipelineTaskRecordE.getId(), appDeployE.getId());
             if (type.equals(CommandType.UPDATE.getType())) {
                 ApplicationInstanceE oldapplicationInstanceE = applicationInstanceRepository.selectById(applicationDeployDTO.getAppInstanceId());
-                if (oldapplicationInstanceE.getApplicationVersionE().getId().equals(applicationDeployDTO.getAppVersionId())) {
+                DevopsEnvCommandE olddevopsEnvCommandE = devopsEnvCommandRepository.query(oldapplicationInstanceE.getCommandId());
+                if (olddevopsEnvCommandE.getObjectVersionId().equals(applicationDeployDTO.getAppVersionId())) {
                     String oldValue = applicationInstanceRepository.queryValueByInstanceId(applicationDeployDTO.getAppInstanceId());
                     ReplaceResult replaceResult = applicationInstanceService.getReplaceResult(applicationVersionRepository.queryValue(applicationDeployDTO.getAppVersionId()), applicationDeployDTO.getValues());
                     if (replaceResult.getDeltaYaml().trim().equals(oldValue.trim())) {
