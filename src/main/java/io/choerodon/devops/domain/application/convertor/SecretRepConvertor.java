@@ -48,6 +48,8 @@ public class SecretRepConvertor implements ConvertorI<DevopsSecretE, Object, Sec
         for (Map.Entry<String, String> e : secretRepDTO.getValue().entrySet()) {
             if (!e.getKey().equals(".dockerconfigjson")) {
                 secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
+            }else {
+                secretMaps.put(e.getKey(),e.getValue());
             }
         }
         List<String> key = new ArrayList<>();

@@ -5,14 +5,13 @@ import java.util.Map;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.SecretReqDTO;
 import io.choerodon.devops.domain.application.entity.DevopsSecretE;
 import io.choerodon.devops.infra.common.util.Base64Util;
 import io.choerodon.devops.infra.dataobject.DevopsSecretDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by n!Ck
@@ -30,9 +29,13 @@ public class SecretConvertor implements ConvertorI<DevopsSecretE, DevopsSecretDO
         DevopsSecretE devopsSecretE = new DevopsSecretE();
         Map<String, String> encodedSecretMaps = new HashMap<>();
         BeanUtils.copyProperties(secretReqDTO, devopsSecretE);
-        if (!secretReqDTO.getValue().isEmpty()&&!secretReqDTO.getType().equals("kubernetes.io/dockerconfigjson")) {
+        if (!secretReqDTO.getValue().isEmpty()){
             for (Map.Entry<String, String> e : secretReqDTO.getValue().entrySet()) {
-                encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
+                if (!e.getKey().equals(".dockerconfigjson")) {
+                    encodedSecretMaps.put(e.getKey(), Base64Util.getBase64EncodedString(e.getValue()));
+                } else {
+                    encodedSecretMaps.put(e.getKey(), e.getValue());
+                }
             }
             devopsSecretE.setValue(encodedSecretMaps);
         }
