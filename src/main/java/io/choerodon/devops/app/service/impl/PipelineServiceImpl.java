@@ -644,9 +644,7 @@ public class PipelineServiceImpl implements PipelineService {
             if (appDeployE.getCreationDate().getTime() > versionRepository.getLatestVersion(appDeployE.getApplicationId()).getCreationDate().getTime()) {
                 return false;
             } else {
-                if (appDeployE.getTriggerVersion() == null || appDeployE.getTriggerVersion().isEmpty()) {
-                    return true;
-                } else {
+                if ((appDeployE.getTriggerVersion() != null) && !appDeployE.getTriggerVersion().isEmpty()) {
                     List<String> list = Arrays.asList(appDeployE.getTriggerVersion().split(","));
                     //是否有对应版本
                     List<ApplicationVersionE> versionES = versionRepository.listByAppId(appDeployE.getApplicationId(), null)
@@ -656,14 +654,14 @@ public class PipelineServiceImpl implements PipelineService {
 
                     for (ApplicationVersionE versionE : versionES) {
                         Optional<String> branch = list.stream().filter(t -> versionE.getVersion().contains(t)).findFirst();
-                        if (branch.isPresent() && !branch.get().isEmpty()) {
-                            return true;
+                        if (!branch.isPresent()) {
+                            return false;
                         }
                     }
                 }
             }
         }
-        return false;
+        return true;
     }
 
     private PipelineTaskE getFirsetTask(Long pipelineId) {
