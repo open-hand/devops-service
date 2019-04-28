@@ -141,7 +141,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             throw new CommonException("error.version.insert", e);
         }
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
-        applicationVersionE = applicationVersionRepository.create(applicationVersionE);
+        applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
         triggerAutoDelpoy(applicationVersionE);
@@ -153,10 +153,14 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * @param applicationVersionE
      */
     public void triggerAutoDelpoy(ApplicationVersionE applicationVersionE) {
-        Optional<String> branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
-        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
-        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), version);
-        autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
+        ApplicationVersionE insertApplicationVersionE = applicationVersionRepository
+                .queryByAppAndVersion(applicationVersionE.getApplicationE().getId(), applicationVersionE.getVersion());
+        if (insertApplicationVersionE != null && insertApplicationVersionE.getVersion() != null) {
+            Optional<String> branch = Arrays.asList(TYPE).stream().filter(t -> insertApplicationVersionE.getVersion().contains(t)).findFirst();
+            String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
+            List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(insertApplicationVersionE.getApplicationE().getId(), version);
+            autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, insertApplicationVersionE));
+        }
     }
 
     @Saga(code = "devops-create-auto-deploy-instance",
