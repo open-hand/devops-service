@@ -40,6 +40,15 @@ public class ConvertC7nSecretServiceImpl extends ConvertK8sObjectService<V1Secre
             if (v1Secret.getMetadata().getName() == null) {
                 throw new GitOpsExplainException(GitOpsObjectError.SECRET_NAME_NOT_FOUND.getError(), filePath);
             }
+            if (v1Secret.getType().equals("Opaque")) {
+                if (v1Secret.getStringData() == null || v1Secret.getStringData().size() == 0) {
+                    throw new GitOpsExplainException(GitOpsObjectError.SECRET_STRING_DATA_NOT_FOUND.getError(), filePath);
+                }
+            } else {
+                if (v1Secret.getData() == null || v1Secret.getData().size() == 0) {
+                    throw new GitOpsExplainException(GitOpsObjectError.SECRET_DATA_NOT_FOUND.getError(), filePath);
+                }
+            }
         }
     }
 
