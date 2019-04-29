@@ -1199,7 +1199,8 @@ public class PipelineServiceImpl implements PipelineService {
                         try {
                             workFlowRepository.create(projectId, pipelineDTO);
                         } catch (Exception e) {
-                            LOGGER.info("cd workflow failed {}", e);
+                            LOGGER.info("========================================cd workflow failed {}", e);
+                            throw new CommonException("cannot.connect.workflow.service");
                         }
                     }
                 });
@@ -1230,7 +1231,8 @@ public class PipelineServiceImpl implements PipelineService {
                         try {
                             workFlowRepository.approveUserTask(projectId, businessKey);
                         } catch (Exception e) {
-                            LOGGER.info("cd workflow failed!");
+                            LOGGER.info("=========================cd workflow failed!");
+                            throw new CommonException("cannot.connect.workflow.service");
                         }
                     }
                 });
@@ -1256,9 +1258,10 @@ public class PipelineServiceImpl implements PipelineService {
         try {
             workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
         } catch (Exception e) {
-            LOGGER.error("error.create.pipeline.instance1 {}", e);
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordRepository.update(pipelineRecordE);
+            LOGGER.error("=========================error.create.pipeline.instance1=============================== {}", e);
+            throw new CommonException("cannot.connect.workflow.service");
         }
     }
 
