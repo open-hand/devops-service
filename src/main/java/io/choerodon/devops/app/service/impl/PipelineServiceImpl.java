@@ -80,7 +80,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
@@ -206,7 +205,7 @@ public class PipelineServiceImpl implements PipelineService {
                         t.setType(STAGE);
                         t.setStageName(t.getStageDTOList().get(i - 1).getStageName());
                         t.setStageRecordId(t.getStageDTOList().get(i).getId());
-                        t.setIndex(checkTriggerPermission(null, null, t.getStageDTOList().get(i - 1).getStageId()));
+                        t.setIndex(checkTriggerPermission(null, t.getStageDTOList().get(i - 1).getStageId()));
                         break;
                     }
                 }
@@ -225,7 +224,11 @@ public class PipelineServiceImpl implements PipelineService {
                     }
                 }
             } else if (t.getStatus().equals(WorkFlowStatus.FAILED.toValue())) {
-                t.setIndex(checkTriggerPermission(null, pipelineId, null));
+                if (t.getTriggerType().equals(AUTO)) {
+                    t.setIndex(true);
+                } else {
+                    t.setIndex(checkTriggerPermission(t.getPipelineId(), null));
+                }
             }
             return t;
         }).collect(Collectors.toList());
@@ -405,7 +408,7 @@ public class PipelineServiceImpl implements PipelineService {
     public void execute(Long projectId, Long pipelineId) {
         //校验当前触发人员是否有权限触发
         PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-        if (!checkTriggerPermission(pipelineE, pipelineId, null)) {
+        if (AUTO.equals(pipelineE.getTriggerType()) || !checkTriggerPermission(pipelineId, null)) {
             throw new CommonException("error.permission.trigger.pipeline");
         }
         //保存pipeline 和 pipelineUserRel
@@ -496,6 +499,8 @@ public class PipelineServiceImpl implements PipelineService {
         } catch (Exception e) {
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
+            Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
+            updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue());
             throw new CommonException("error.create.pipeline.auto.deploy.instance", e);
         }
     }
@@ -1107,18 +1112,12 @@ public class PipelineServiceImpl implements PipelineService {
         return pipelineStageES.get(pipelineStageES.size() - 1).getId().equals(pipelineStageE.getId()) ? pipelineStageE.getPipelineId() : null;
     }
 
-    private Boolean checkTriggerPermission(PipelineE pipelineE, Long pipelineId, Long stageId) {
-        if (pipelineE != null && AUTO.equals(pipelineE.getTriggerType())) {
-            return false;
-        }
+    private Boolean checkTriggerPermission(Long pipelineId, Long stageId) {
         List<Long> userIds = pipelineUserRelRepository.listByOptions(pipelineId, stageId, null)
                 .stream()
                 .map(PipelineUserRelE::getUserId)
                 .collect(Collectors.toList());
-        if (!userIds.contains(DetailsHelper.getUserDetails().getUserId())) {
-            return false;
-        }
-        return true;
+        return userIds.contains(DetailsHelper.getUserDetails().getUserId());
     }
 
     private Boolean checkTaskTriggerPermission(Long taskId, Long taskRecordId) {
