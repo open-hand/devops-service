@@ -148,7 +148,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             throw new CommonException("error.version.insert", e);
         }
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
-        applicationVersionE = applicationVersionRepository.create(applicationVersionE);
+        applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
         //流水线
@@ -161,31 +161,34 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
      * @param versionE
      */
     public void checkAutoDeploy(ApplicationVersionE versionE) {
-        List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(versionE.getApplicationE().getId())
-                .stream().map(deployE ->
-                        filterAppDeploy(deployE, versionE.getVersion())
-                ).collect(Collectors.toList());
-        appDeployEList.removeAll(Collections.singleton(null));
-        if (!appDeployEList.isEmpty()) {
-            List<Long> stageList = appDeployEList.stream()
-                    .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()))
-                    .filter(Objects::nonNull)
-                    .map(PipelineTaskE::getStageId)
-                    .distinct().collect(Collectors.toList());
+        ApplicationVersionE insertApplicationVersionE = applicationVersionRepository.queryByAppAndVersion(versionE.getApplicationE().getId(), versionE.getVersion());
+        if (insertApplicationVersionE != null && insertApplicationVersionE.getVersion() != null) {
+            List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(insertApplicationVersionE.getApplicationE().getId())
+                    .stream().map(deployE ->
+                            filterAppDeploy(deployE, insertApplicationVersionE.getVersion())
+                    ).collect(Collectors.toList());
+            appDeployEList.removeAll(Collections.singleton(null));
+            if (!appDeployEList.isEmpty()) {
+                List<Long> stageList = appDeployEList.stream()
+                        .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()))
+                        .filter(Objects::nonNull)
+                        .map(PipelineTaskE::getStageId)
+                        .distinct().collect(Collectors.toList());
 
-            List<Long> pipelineList = stageList.stream()
-                    .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
-                    .distinct().collect(Collectors.toList());
-            pipelineList = pipelineList.stream()
-                    .filter(pipelineId -> {
-                        PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
-                        return pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType());
-                    }).collect(Collectors.toList());
-            pipelineList.forEach(pipelineId -> {
-                if (pipelineService.checkDeploy(pipelineId)) {
-                    pipelineService.executeAppDeploy(pipelineId);
-                }
-            });
+                List<Long> pipelineList = stageList.stream()
+                        .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
+                        .distinct().collect(Collectors.toList());
+                pipelineList = pipelineList.stream()
+                        .filter(pipelineId -> {
+                            PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+                            return pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType());
+                        }).collect(Collectors.toList());
+                pipelineList.forEach(pipelineId -> {
+                    if (pipelineService.checkDeploy(pipelineId)) {
+                        pipelineService.executeAppDeploy(pipelineId);
+                    }
+                });
+            }
         }
     }
 
