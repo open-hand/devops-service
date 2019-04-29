@@ -1,6 +1,7 @@
 package script.db
 
 databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
+
     changeSet(author: 'scp', id: '2019-04-03-create-table') {
         createTable(tableName: "devops_pipeline_record", remarks: '流水线记录') {
             column(name: 'id', type: 'BIGINT UNSIGNED', remarks: '主键，ID', autoIncrement: true) {
@@ -23,5 +24,14 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_record.groovy') {
     }
     changeSet(author: 'scp', id: '2019-04-18-devops_pipeline_record-drop-column') {
         dropColumn(columnName: "execution_time", tableName: "devops_pipeline_record")
+    }
+    changeSet(author: 'sheep', id: '2019-04-24-devops_pipeline_record-add-column') {
+        addColumn(tableName: 'devops_pipeline_record') {
+            column(name: "pipeline_name", type: 'VARCHAR(64)', remarks: "pipeline name", afterColumn: "pipeline_id")
+        }
+    }
+    changeSet(author: 'scp', id: '2019-04-25-devops_pipeline_record-rename-column') {
+        renameColumn(tableName: 'devops_pipeline_record', columnDataType: 'VARCHAR(255)',
+                oldColumnName: 'process_instance_id', newColumnName: 'business_key', remarks: '流程实例')
     }
 }

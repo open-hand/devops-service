@@ -17,6 +17,15 @@ public class PipelineReqDTO {
     private Long projectId;
     private Long objectVersionNumber;
     private Date lastUpdateDate;
+    private Boolean edit;
+
+    public Boolean getEdit() {
+        return edit;
+    }
+
+    public void setEdit(Boolean edit) {
+        this.edit = edit;
+    }
 
     public List<Long> getPipelineUserRelDTOS() {
         return pipelineUserRelDTOS;

@@ -20,12 +20,10 @@ import io.choerodon.devops.app.service.DeployMsgHandlerService;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.DevopsInstanceResourceFactory;
-import io.choerodon.devops.domain.application.handler.ObjectOperation;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.*;
 import io.choerodon.devops.infra.common.util.*;
 import io.choerodon.devops.infra.common.util.enums.*;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.dataobject.DevopsEnvPodContainerDO;
 import io.choerodon.devops.infra.dataobject.DevopsIngressDO;
 import io.choerodon.devops.infra.mapper.ApplicationMarketMapper;
@@ -145,6 +143,8 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
     private ClusterNodeInfoService clusterNodeInfoService;
     @Autowired
     private DevopsRegistrySecretRepository devopsRegistrySecretRepository;
+    @Autowired
+    private DevopsConfigMapService devopsConfigMapService;
 
 
     public void handlerUpdatePodMessage(String key, String msg, Long envId) {
@@ -447,7 +447,6 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         if (v1Service.getMetadata().getAnnotations() != null) {
             DevopsServiceE devopsServiceE = devopsServiceRepository.selectByNameAndEnvId(v1Service.getMetadata().getName(), envId);
             if (devopsServiceE.getType().equals("LoadBalancer") &&
-                    v1Service.getSpec().getLoadBalancerIP() != null &&
                     v1Service.getStatus() != null &&
                     v1Service.getStatus().getLoadBalancer() != null &&
                     !v1Service.getStatus().getLoadBalancer().getIngress().isEmpty()) {
@@ -1713,17 +1712,13 @@ public class DeployMsgHandlerServiceImpl implements DeployMsgHandlerService {
         V1ConfigMap v1ConfigMap = json.deserialize(msg, V1ConfigMap.class);
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryByEnvIdAndName(envId, v1ConfigMap.getMetadata().getName());
         if (devopsConfigMapE == null) {
-//            DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
-//            devopsConfigMapDTO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
-//            devopsConfigMapDTO.setEnvId(envId);
-//            devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
-//            devopsConfigMapDTO.setType("create");
-//            devopsConfigMapDTO.setValue(v1ConfigMap.getData());
-
-            ObjectOperation<V1ConfigMap> objectOperation = new ObjectOperation<>();
-            objectOperation.setType(v1ConfigMap);
-            objectOperation.operationEnvGitlabFile(CONFIG_MAP_PREFIX + devopsConfigMapE.getName(), devopsEnvironmentE.getGitlabEnvProjectId().intValue(), CREATE_TYPE,
-                    ADMIN, null, CONFIGMAP, null, null, null);
+            DevopsConfigMapDTO devopsConfigMapDTO = new DevopsConfigMapDTO();
+            devopsConfigMapDTO.setDescription(v1ConfigMap.getMetadata().getName() + " config");
+            devopsConfigMapDTO.setEnvId(envId);
+            devopsConfigMapDTO.setName(v1ConfigMap.getMetadata().getName());
+            devopsConfigMapDTO.setType("create");
+            devopsConfigMapDTO.setValue(v1ConfigMap.getData());
+            devopsConfigMapService.createOrUpdate(devopsEnvironmentE.getProjectE().getId(), true, devopsConfigMapDTO);
         }
     }
 

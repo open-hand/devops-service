@@ -273,3 +273,25 @@ All notable changes to devops-service will be documented in this file.
 - Inconsistent status after devops-service and env-agent restart.
 - Orgnization admin not in Gitlab template group.
 - Some other bugs.
+
+
+[0.16.0] - 2019-04-19
+Added
+- The deployment pipeline module added the feature of pipelines to allow multiple phases in the pipeline, with multiple tasks added to each phase. Including automatic deployment tasks and manual card point tasks.
+- Added a new pipeline execution overview page in the Deployment Pipeline to support viewing pipeline execution, process details, and approval history
+- The Deployment Pipeline Module adds a new deployment configuration page that allows you to create a deployment configuration here for the automatic deployment task in the pipeline.
+- CLI tools were added to support page operations in the command line execution platform
+Fixed
+- Fixed an issue with an error when deleting a network with a deployment error
+- Fixed display issue with yaml editor error prompt
+- Fixed an issue where automatic deployment of the same version of the deployment failed to replace multiple instances
+- Fixed an issue where query tag failures occurred when creating tasks in agile management
+- Fixed an issue where creating a harbor repository failed in component setup
+- Fixed an issue where the external ip of the loadbalance type network was not returned.
+- Fixed an issue where there were two underscores in the middle of the code when creating the app.
+- Fixed an issue caused by committing without modifying the application when deploying the app
+- Fixed a problem where each service configuration configMap did not have a successful retrace
+
+
+Removed
+- Removed the auto-deployment page from version 0.15.0 and built it into the pipeline to add the task section

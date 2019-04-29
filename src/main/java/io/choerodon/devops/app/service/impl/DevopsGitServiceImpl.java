@@ -1,5 +1,12 @@
 package io.choerodon.devops.app.service.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,21 +16,9 @@ import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.BranchDTO;
-import io.choerodon.devops.api.dto.CommitDTO;
-import io.choerodon.devops.api.dto.DevopsBranchDTO;
-import io.choerodon.devops.api.dto.PushWebHookDTO;
-import io.choerodon.devops.api.dto.TagDTO;
+import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.DevopsGitService;
-import io.choerodon.devops.domain.application.entity.ApplicationE;
-import io.choerodon.devops.domain.application.entity.DevopsBranchE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvCommitE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileErrorE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvFileResourceE;
-import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.entity.UserAttrE;
+import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.BranchE;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
 import io.choerodon.devops.domain.application.entity.gitlab.CompareResultsE;
@@ -31,34 +26,15 @@ import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.GitOpsExplainException;
 import io.choerodon.devops.domain.application.handler.ResourceBundleHandler;
-import io.choerodon.devops.domain.application.repository.AgileRepository;
-import io.choerodon.devops.domain.application.repository.ApplicationRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvCommitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileErrorRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvFileResourceRepository;
-import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
-import io.choerodon.devops.domain.application.repository.DevopsGitRepository;
-import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
-import io.choerodon.devops.domain.application.repository.GitlabGroupMemberRepository;
-import io.choerodon.devops.domain.application.repository.GitlabProjectRepository;
-import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.UserAttrRepository;
+import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.C7nCertification;
 import io.choerodon.devops.domain.application.valueobject.C7nHelmRelease;
-import io.choerodon.devops.domain.application.valueobject.C7nSecret;
 import io.choerodon.devops.domain.application.valueobject.Issue;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.domain.service.ConvertK8sObjectService;
 import io.choerodon.devops.domain.service.DeployService;
 import io.choerodon.devops.domain.service.HandlerObjectFileRelationsService;
-import io.choerodon.devops.domain.service.impl.ConvertC7nCertificationServiceImpl;
-import io.choerodon.devops.domain.service.impl.ConvertC7nHelmReleaseServiceImpl;
-import io.choerodon.devops.domain.service.impl.ConvertC7nSecretServiceImpl;
-import io.choerodon.devops.domain.service.impl.ConvertV1ConfigMapServiceImpl;
-import io.choerodon.devops.domain.service.impl.ConvertV1EndPointsServiceImpl;
-import io.choerodon.devops.domain.service.impl.ConvertV1ServiceServiceImpl;
-import io.choerodon.devops.domain.service.impl.ConvertV1beta1IngressServiceImpl;
+import io.choerodon.devops.domain.service.impl.*;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.GitUtil;
@@ -66,10 +42,7 @@ import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.TagDO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.kubernetes.client.models.V1ConfigMap;
-import io.kubernetes.client.models.V1Endpoints;
-import io.kubernetes.client.models.V1Service;
-import io.kubernetes.client.models.V1beta1Ingress;
+import io.kubernetes.client.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -81,20 +54,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.yaml.snakeyaml.Yaml;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Creator: Runge
@@ -459,12 +418,12 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             List<V1beta1Ingress> v1beta1Ingresses = new ArrayList<>();
             List<C7nCertification> c7nCertifications = new ArrayList<>();
             List<V1ConfigMap> v1ConfigMaps = new ArrayList<>();
-            List<C7nSecret> c7nSecrets = new ArrayList<>();
+            List<V1Secret> v1Secrets = new ArrayList<>();
             List<V1Endpoints> v1Endpoints = new ArrayList<>();
 
             //从文件中读出对象,序列化为K8S对象
             objectPath = convertFileToK8sObjects(operationFiles, path, c7nHelmReleases, v1Services, v1beta1Ingresses,
-                    v1ConfigMaps, c7nSecrets, v1Endpoints, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
+                    v1ConfigMaps, v1Secrets, v1Endpoints, devopsEnvironmentE.getId(), new ArrayList<>(beforeSyncDelete),
                     c7nCertifications);
             LOGGER.info("序列化k8s对象成功！");
             List<DevopsEnvFileResourceE> beforeSyncFileResource = new ArrayList<>(beforeSync);
@@ -483,7 +442,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
             handlerConfigMapRelationsService
                     .handlerRelations(objectPath, beforeSyncFileResource, v1ConfigMaps, null, envId, projectId, path, userId);
             handlerC7nSecretRelationsService
-                    .handlerRelations(objectPath, beforeSyncFileResource, c7nSecrets, null, envId, projectId, path, userId);
+                    .handlerRelations(objectPath, beforeSyncFileResource, v1Secrets, null, envId, projectId, path, userId);
             LOGGER.info("k8s对象转换平台对象成功！");
             //处理文件
             handleFiles(operationFiles, deletedFiles, devopsEnvironmentE, devopsEnvCommitE, path);
@@ -632,7 +591,7 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                                                         List<V1Service> v1Services,
                                                         List<V1beta1Ingress> v1beta1Ingresses,
                                                         List<V1ConfigMap> configMaps,
-                                                        List<C7nSecret> c7nSecrets,
+                                                        List<V1Secret> secrets,
                                                         List<V1Endpoints> v1Endpoints,
                                                         Long envId,
                                                         List<DevopsEnvFileResourceE> beforeSyncDelete,
@@ -708,14 +667,14 @@ public class DevopsGitServiceImpl implements DevopsGitService {
                             break;
                         case SECRET:
                             // 反序列文件为C7nSecret对象
-                            ConvertK8sObjectService<C7nSecret> convertC7nSecret = new ConvertC7nSecretServiceImpl();
-                            convertC7nSecret.setT(new C7nSecret());
-                            C7nSecret c7nSecret = convertC7nSecret
+                            ConvertK8sObjectService<V1Secret> convertSecret = new ConvertC7nSecretServiceImpl();
+                            convertSecret.setT(new V1Secret());
+                            V1Secret v1Secret = convertSecret
                                     .serializableObject(jsonObject.toJSONString(), filePath, objectPath);
                             // 校验参数校验参数是否合法
-                            convertC7nSecret.checkParameters(c7nSecret, objectPath);
+                            convertSecret.checkParameters(v1Secret, objectPath);
                             // 校验对象是否在其它文件中已经定义
-                            convertC7nSecret.checkIfExist(c7nSecrets, envId, beforeSyncDelete, objectPath, c7nSecret);
+                            convertSecret.checkIfExist(secrets, envId, beforeSyncDelete, objectPath, v1Secret);
                             break;
                         case ENDPOINTS:
                             // 反序列文件为V1EndPoints对象

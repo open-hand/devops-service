@@ -9,25 +9,34 @@ import java.util.Date;
  */
 public class PipelineRecordE {
     private Long id;
-    private String name;
+    private String pipelineName;
     private String triggerType;
     private Long projectId;
     private Long pipelineId;
     private String status;
-    private String processInstanceId;
     private String bpmDefinition;
     private Date lastUpdateDate;
     private Date creationDate;
+    private String businessKey;
 
-    public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status) {
+    public PipelineRecordE(Long pipelineId, String triggerType, Long projectId, String status, String pipelineName) {
         this.pipelineId = pipelineId;
         this.triggerType = triggerType;
         this.projectId = projectId;
         this.status = status;
+        this.pipelineName = pipelineName;
     }
 
     public PipelineRecordE() {
 
+    }
+
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
     }
 
     public Date getCreationDate() {
@@ -54,14 +63,6 @@ public class PipelineRecordE {
         this.bpmDefinition = bpmDefinition;
     }
 
-    public String getProcessInstanceId() {
-        return processInstanceId;
-    }
-
-    public void setProcessInstanceId(String processInstanceId) {
-        this.processInstanceId = processInstanceId;
-    }
-
     public Long getId() {
         return id;
     }
@@ -70,12 +71,12 @@ public class PipelineRecordE {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getPipelineName() {
+        return pipelineName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
     }
 
     public String getTriggerType() {

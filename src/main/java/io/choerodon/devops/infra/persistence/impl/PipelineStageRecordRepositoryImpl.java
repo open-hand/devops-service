@@ -38,7 +38,6 @@ public class PipelineStageRecordRepositoryImpl implements PipelineStageRecordRep
             if (stageRecordMapper.updateByPrimaryKeySelective(stageRecordDO) != 1) {
                 throw new CommonException("error.update.pipeline.stage.record");
             }
-            stageRecordDO.setObjectVersionNumber(null);
         }
         return ConvertHelper.convert(stageRecordMapper.selectByPrimaryKey(stageRecordDO), PipelineStageRecordE.class);
     }

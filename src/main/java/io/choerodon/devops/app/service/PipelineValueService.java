@@ -14,13 +14,15 @@ import java.util.List;
 public interface PipelineValueService {
     PipelineValueDTO createOrUpdate(Long projectId, PipelineValueDTO pipelineValueDTO);
 
-    Boolean delete(Long projectId, Long valueId);
+    void delete(Long projectId, Long valueId);
 
     Page<PipelineValueDTO> listByOptions(Long projectId, Long appId, Long envId, PageRequest pageRequest, String params);
 
-    PipelineValueDTO queryById(Long valueId);
+    PipelineValueDTO queryById(Long pipelineId, Long valueId);
 
     void checkName(Long projectId, String name);
 
     List<PipelineValueDTO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId);
+
+    Boolean checkDelete(Long projectId, Long valueId);
 }

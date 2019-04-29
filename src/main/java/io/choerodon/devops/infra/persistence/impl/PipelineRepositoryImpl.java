@@ -53,6 +53,7 @@ public class PipelineRepositoryImpl implements PipelineRepository {
     @Override
     public PipelineE update(Long projectId, PipelineE pipelineE) {
         PipelineDO pipelineDO = ConvertHelper.convert(pipelineE, PipelineDO.class);
+        pipelineDO.setIsEnabled(1);
         if (pipelineMapper.updateByPrimaryKey(pipelineDO) != 1) {
             throw new CommonException("error.update.pipeline");
         }

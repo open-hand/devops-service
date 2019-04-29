@@ -19,12 +19,12 @@ public class WorkFlowServiceClientFallback implements WorkFlowServiceClient {
     }
 
     @Override
-    public ResponseEntity<Boolean> approveUserTask(Long projectId, String processInstanceId, Boolean isApprove) {
+    public ResponseEntity<Boolean> approveUserTask(Long projectId, String business_key) {
         return new ResponseEntity("error.workflow.approve", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
-    public ResponseEntity stopInstance(Long projectId, String processInstanceId) {
+    public ResponseEntity stopInstance(Long projectId, String business_key) {
         return new ResponseEntity("error.workflow.stop", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

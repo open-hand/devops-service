@@ -16,7 +16,8 @@ public enum WorkFlowStatus {
     SUCCESS,
     FAILED,
     STOP,
-    DELETED;
+    DELETED,
+    UNEXECUTED;
 
     private static HashMap<String, WorkFlowStatus> valuesMap = new HashMap<>(6);
 

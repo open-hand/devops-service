@@ -4,6 +4,8 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.CheckAuditDTO;
+import io.choerodon.devops.api.dto.IamUserDTO;
 import io.choerodon.devops.api.dto.PipelineDTO;
 import io.choerodon.devops.api.dto.PipelineRecordDTO;
 import io.choerodon.devops.api.dto.PipelineRecordListDTO;
@@ -228,14 +230,36 @@ public class PipelineController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "人工审核")
     @PostMapping("/audit")
-    public ResponseEntity audit(
+    public ResponseEntity<List<IamUserDTO>> audit(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "PipelineUserRelDTO", required = true)
             @RequestBody PipelineUserRecordRelDTO userRecordRelDTO) {
-        pipelineService.audit(projectId, userRecordRelDTO);
-        return new ResponseEntity(HttpStatus.NO_CONTENT);
+        return Optional.ofNullable(pipelineService.audit(projectId, userRecordRelDTO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.audit.check"));
     }
+
+    /**
+     * 人工审核预检
+     *
+     * @param projectId
+     * @param userRecordRelDTO
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "人工审核")
+    @PostMapping("/check_audit")
+    public ResponseEntity<CheckAuditDTO> checkAudit(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "PipelineUserRelDTO", required = true)
+            @RequestBody PipelineUserRecordRelDTO userRecordRelDTO) {
+        return Optional.ofNullable(pipelineService.checkAudit(projectId, userRecordRelDTO))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.audit.check"));
+    }
+
 
     /**
      * 条件校验

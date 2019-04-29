@@ -101,7 +101,7 @@ public class PipelineValueController {
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
-        return Optional.ofNullable(pipelineValueService.queryById(valueId))
+        return Optional.ofNullable(pipelineValueService.queryById(projectId, valueId))
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.pipeline.value.queryById"));
     }
@@ -116,14 +116,13 @@ public class PipelineValueController {
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping
-    public ResponseEntity<Boolean> delete(
+    public ResponseEntity delete(
             @ApiParam(value = "项目Id", required = true)
             @PathVariable(value = "project_id") Long projectId,
             @ApiParam(value = "valueId", required = true)
             @RequestParam(value = "value_id") Long valueId) {
-        return Optional.ofNullable(pipelineValueService.delete(projectId, valueId))
-                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
-                .orElseThrow(() -> new CommonException("error.pipeline.value.delete"));
+        pipelineValueService.delete(projectId, valueId);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
 
@@ -144,6 +143,26 @@ public class PipelineValueController {
             @RequestParam(value = "name") String name) {
         pipelineValueService.checkName(projectId, name);
         return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 检测能否删除
+     *
+     * @param projectId
+     * @param valueId
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation(value = "能否删除")
+    @GetMapping("/check_delete")
+    public ResponseEntity<Boolean> checkDelete(
+            @ApiParam(value = "项目Id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "valueId", required = true)
+            @RequestParam(value = "value_id") Long valueId) {
+        return Optional.ofNullable(pipelineValueService.checkDelete(projectId, valueId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.pipeline.value.check.delete"));
     }
 
     /**

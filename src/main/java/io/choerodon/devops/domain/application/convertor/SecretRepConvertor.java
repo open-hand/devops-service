@@ -5,16 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
-import org.springframework.beans.BeanUtils;
-import org.springframework.stereotype.Component;
-
 import io.choerodon.core.convertor.ConvertorI;
 import io.choerodon.devops.api.dto.SecretRepDTO;
 import io.choerodon.devops.domain.application.entity.DevopsSecretE;
 import io.choerodon.devops.infra.common.util.Base64Util;
-import io.choerodon.devops.infra.dataobject.DevopsSecretDO;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by n!Ck
@@ -49,7 +46,11 @@ public class SecretRepConvertor implements ConvertorI<DevopsSecretE, Object, Sec
         BeanUtils.copyProperties(entity, secretRepDTO);
         Map<String, String> secretMaps = new HashMap<>();
         for (Map.Entry<String, String> e : secretRepDTO.getValue().entrySet()) {
-            secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
+            if (!e.getKey().equals(".dockerconfigjson")) {
+                secretMaps.put(e.getKey(), Base64Util.getBase64DecodedString(e.getValue()));
+            }else {
+                secretMaps.put(e.getKey(),e.getValue());
+            }
         }
         List<String> key = new ArrayList<>();
         secretMaps.forEach((key1, value) -> key.add(key1));
