@@ -1199,7 +1199,7 @@ public class PipelineServiceImpl implements PipelineService {
                         try {
                             workFlowRepository.create(projectId, pipelineDTO);
                         } catch (Exception e) {
-                            LOGGER.info("cd workflow failed!");
+                            LOGGER.info("cd workflow failed {}", e);
                         }
                     }
                 });
@@ -1256,7 +1256,7 @@ public class PipelineServiceImpl implements PipelineService {
         try {
             workFlowRepository.create(pipelineE.getProjectId(), devopsPipelineDTO);
         } catch (Exception e) {
-            LOGGER.error("error.create.pipeline.instance", e.getMessage());
+            LOGGER.error("error.create.pipeline.instance1 {}", e);
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordRepository.update(pipelineRecordE);
         }
