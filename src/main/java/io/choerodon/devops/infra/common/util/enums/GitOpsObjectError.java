@@ -51,6 +51,7 @@ public enum GitOpsObjectError {
     CERT_CHANGED("cert.changed"),
     SECRET_API_VERSION_NOT_FOUND("secret.api.version.not.found"),
     SECRET_NAME_NOT_FOUND("secret.name.not.found"),
+    SECRET_STRING_DATA_NOT_FOUND("secret.stringData.not.found"),
     SECRET_DATA_NOT_FOUND("secret.data.not.found"),
     INSTANCE_APP_ID_NOT_SAME("instance.app.id.not.same"),
     INSTANCE_RELATED_SERVICE_NOT_FOUND("instance.related.service.not.found"),

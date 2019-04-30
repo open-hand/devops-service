@@ -5,28 +5,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.choerodon.devops.api.dto.ContainerDTO;
-import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
-import io.choerodon.devops.infra.common.util.ArrayUtil;
-import io.choerodon.devops.infra.common.util.K8sUtil;
-import io.choerodon.devops.infra.common.util.enums.ResourceType;
-import io.kubernetes.client.models.V1Pod;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
+import io.choerodon.devops.api.dto.ContainerDTO;
 import io.choerodon.devops.api.dto.DevopsEnvPodDTO;
 import io.choerodon.devops.app.service.DevopsEnvPodService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvPodE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvPodRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvResourceRepository;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.infra.common.util.ArrayUtil;
 import io.choerodon.devops.infra.common.util.EnvUtil;
+import io.choerodon.devops.infra.common.util.K8sUtil;
+import io.choerodon.devops.infra.common.util.enums.ResourceType;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.websocket.helper.EnvListener;
+import io.kubernetes.client.models.V1Pod;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 /**
@@ -36,15 +34,13 @@ import org.springframework.util.StringUtils;
 public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
     private final Logger logger = LoggerFactory.getLogger(DevopsEnvPodServiceImpl.class);
 
-    private final EnvListener envListener;
     private final EnvUtil envUtil;
     private final DevopsEnvPodRepository devopsEnvPodRepository;
     private final DevopsEnvironmentRepository devopsEnvironmentRepository;
     private final DevopsEnvResourceRepository devopsEnvResourceRepository;
 
     @Autowired
-    public DevopsEnvPodServiceImpl(EnvListener envListener, EnvUtil envUtil, DevopsEnvPodRepository devopsEnvPodRepository, DevopsEnvironmentRepository devopsEnvironmentRepository, DevopsEnvResourceRepository devopsEnvResourceRepository) {
-        this.envListener = envListener;
+    public DevopsEnvPodServiceImpl(EnvUtil envUtil, DevopsEnvPodRepository devopsEnvPodRepository, DevopsEnvironmentRepository devopsEnvironmentRepository, DevopsEnvResourceRepository devopsEnvResourceRepository) {
         this.envUtil = envUtil;
         this.devopsEnvPodRepository = devopsEnvPodRepository;
         this.devopsEnvironmentRepository = devopsEnvironmentRepository;
@@ -54,8 +50,8 @@ public class DevopsEnvPodServiceImpl implements DevopsEnvPodService {
 
     @Override
     public Page<DevopsEnvPodDTO> listAppPod(Long projectId, Long envId, Long appId, PageRequest pageRequest, String searchParam) {
-        List<Long> connectedEnvList = envUtil.getConnectedEnvList(envListener);
-        List<Long> updatedEnvList = envUtil.getUpdatedEnvList(envListener);
+        List<Long> connectedEnvList = envUtil.getConnectedEnvList();
+        List<Long> updatedEnvList = envUtil.getUpdatedEnvList();
         Page<DevopsEnvPodE> devopsEnvPodEPage = devopsEnvPodRepository.listAppPod(projectId, envId, appId, pageRequest, searchParam);
         devopsEnvPodEPage.forEach(devopsEnvPodE -> {
             DevopsEnvironmentE devopsEnvironmentE = devopsEnvironmentRepository.queryById(devopsEnvPodE.getEnvId());

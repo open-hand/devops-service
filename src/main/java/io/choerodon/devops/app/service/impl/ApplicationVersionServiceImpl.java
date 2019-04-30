@@ -7,26 +7,26 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import io.choerodon.asgard.saga.annotation.Saga;
-import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.*;
 import io.choerodon.devops.app.service.ApplicationVersionService;
+import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
-import io.choerodon.devops.infra.common.util.CutomerContextUtil;
+import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GitUserNameUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -37,14 +37,10 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Service
 public class ApplicationVersionServiceImpl implements ApplicationVersionService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(PipelineServiceImpl.class);
 
-    private static final String CREATE = "create";
-    private static final String UPDATE = "update";
-    private static final String STATUS_RUN = "running";
-    private static final String STATUS_FAILED = "failed";
     private static final String DESTPATH = "devops";
     private static final String STOREPATH = "stores";
-    private static final String[] TYPE = {"feature", "bugfix", "release", "hotfix", "custom", "master"};
     @Value("${services.gitlab.url}")
     private String gitlabUrl;
     @Autowired
@@ -66,13 +62,22 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
     @Autowired
     private DevopsGitlabCommitRepository devopsGitlabCommitRepository;
     @Autowired
-    private DevopsAutoDeployRepository devopsAutoDeployRepository;
-    @Autowired
-    private DevopsAutoDeployRecordRepository devopsAutoDeployRecordRepository;
-    @Autowired
     private SagaClient sagaClient;
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
+    @Autowired
+    private PipelineAppDeployRepository appDeployRepository;
+    @Autowired
+    private PipelineTaskRepository taskRepository;
+    @Autowired
+    private PipelineStageRepository stageRepository;
+    @Autowired
+    private PipelineRepository pipelineRepository;
+    @Autowired
+    private ChartUtil chartUtil;
+    @Autowired
+    private PipelineService pipelineService;
+
 
     @Value("${services.helm.url}")
     private String helmUrl;
@@ -119,6 +124,8 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
         }
         String destFilePath = DESTPATH + version;
         String path = FileUtil.multipartFileToFile(storeFilePath, files);
+        //上传chart包到chartmusume
+        chartUtil.uploadChart(organization.getCode(), projectE.getCode(), new File(path));
         FileUtil.unTarGZ(path, destFilePath);
         String values;
         try (FileInputStream fis = new FileInputStream(new File(Objects.requireNonNull(FileUtil.queryFileFromFiles(
@@ -141,44 +148,61 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
             throw new CommonException("error.version.insert", e);
         }
         applicationVersionE.initApplicationVersionReadmeV(FileUtil.getReadme(destFilePath));
-        applicationVersionE = applicationVersionRepository.create(applicationVersionE);
+        applicationVersionRepository.create(applicationVersionE);
         FileUtil.deleteDirectory(new File(destFilePath));
         FileUtil.deleteDirectory(new File(storeFilePath));
-        triggerAutoDelpoy(applicationVersionE);
+        //流水线
+        checkAutoDeploy(applicationVersionE);
     }
 
     /**
-     * 根据appId触发自动部署
+     * 检测能够触发自动部署
      *
-     * @param applicationVersionE
+     * @param versionE
      */
-    public void triggerAutoDelpoy(ApplicationVersionE applicationVersionE) {
-        Optional<String> branch = Arrays.asList(TYPE).stream().filter(t -> applicationVersionE.getVersion().contains(t)).findFirst();
-        String version = branch.isPresent() && !branch.get().isEmpty() ? branch.get() : null;
-        List<DevopsAutoDeployE> autoDeployES = devopsAutoDeployRepository.queryByVersion(applicationVersionE.getApplicationE().getId(), version);
-        autoDeployES.stream().forEach(t -> createAutoDeployInstance(t, applicationVersionE));
+    public void checkAutoDeploy(ApplicationVersionE versionE) {
+        ApplicationVersionE insertApplicationVersionE = applicationVersionRepository.queryByAppAndVersion(versionE.getApplicationE().getId(), versionE.getVersion());
+        if (insertApplicationVersionE != null && insertApplicationVersionE.getVersion() != null) {
+            List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByAppId(insertApplicationVersionE.getApplicationE().getId())
+                    .stream().map(deployE ->
+                            filterAppDeploy(deployE, insertApplicationVersionE.getVersion())
+                    ).collect(Collectors.toList());
+            appDeployEList.removeAll(Collections.singleton(null));
+            if (!appDeployEList.isEmpty()) {
+                List<Long> stageList = appDeployEList.stream()
+                        .map(appDeploy -> taskRepository.queryByAppDeployId(appDeploy.getId()))
+                        .filter(Objects::nonNull)
+                        .map(PipelineTaskE::getStageId)
+                        .distinct().collect(Collectors.toList());
+
+                List<Long> pipelineList = stageList.stream()
+                        .map(stageId -> stageRepository.queryById(stageId).getPipelineId())
+                        .distinct().collect(Collectors.toList());
+                pipelineList = pipelineList.stream()
+                        .filter(pipelineId -> {
+                            PipelineE pipelineE = pipelineRepository.queryById(pipelineId);
+                            return pipelineE.getIsEnabled() == 1 && "auto".equals(pipelineE.getTriggerType());
+                        }).collect(Collectors.toList());
+                pipelineList.forEach(pipelineId -> {
+                    if (pipelineService.checkDeploy(pipelineId)) {
+                        pipelineService.executeAppDeploy(pipelineId);
+                    }
+                });
+            }
+        }
     }
 
-    @Saga(code = "devops-create-auto-deploy-instance",
-            description = "创建自动部署实例", inputSchema = "{}")
-    private void createAutoDeployInstance(DevopsAutoDeployE devopsAutoDeployE, ApplicationVersionE applicationVersionE) {
-        CutomerContextUtil.setUserId(devopsAutoDeployE.getCreatedBy());
-        DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(devopsAutoDeployE.getId(), devopsAutoDeployE.getTaskName(), STATUS_RUN,
-                devopsAutoDeployE.getEnvId(), devopsAutoDeployE.getAppId(), applicationVersionE.getId(), null, devopsAutoDeployE.getProjectId());
-        devopsAutoDeployRecordE = devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-        try {
-            String type = devopsAutoDeployE.getInstanceId() == null ? CREATE : UPDATE;
-            ApplicationDeployDTO applicationDeployDTO = new ApplicationDeployDTO(applicationVersionE.getId(), devopsAutoDeployE.getEnvId(),
-                    devopsAutoDeployE.getValue(), devopsAutoDeployE.getAppId(), type, devopsAutoDeployE.getInstanceId(),
-                    devopsAutoDeployE.getInstanceName(), devopsAutoDeployRecordE.getId(), devopsAutoDeployE.getId());
-            String input = gson.toJson(applicationDeployDTO);
-            sagaClient.startSaga("devops-create-auto-deploy-instance", new StartInstanceDTO(input, "env", devopsAutoDeployE.getEnvId().toString(), ResourceLevel.PROJECT.value(), devopsAutoDeployE.getProjectId()));
-        } catch (Exception e) {
-            devopsAutoDeployRecordE.setStatus(STATUS_FAILED);
-            devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            throw new CommonException("create.auto.deploy.instance.error", e);
+    private PipelineAppDeployE filterAppDeploy(PipelineAppDeployE deployE, String version) {
+        if (deployE.getTriggerVersion() == null || deployE.getTriggerVersion().isEmpty()) {
+            return deployE;
+        } else {
+            List<String> list = Arrays.asList(deployE.getTriggerVersion().split(","));
+            Optional<String> branch = list.stream().filter(version::contains).findFirst();
+            if (branch.isPresent() && !branch.get().isEmpty()) {
+                return deployE;
+            }
+            return null;
         }
-
     }
 
     @Override

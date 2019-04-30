@@ -6,14 +6,16 @@ replicaCount: 1
 
 image:
   repository: registry.cn-hangzhou.aliyuncs.com/choerodon-devops/devops-service
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
 
 preJob:
   timeout: 1200
-  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.1
+  image: registry.cn-hangzhou.aliyuncs.com/choerodon-tools/dbtool:0.6.2
   preConfig:
     enable: true
     configFile: application.yml
+    configType: k8s
+    registerHost: http://register-server:8000
     datasource:
       url: jdbc:mysql://localhost:3306/manager_service?useUnicode=true&characterEncoding=utf-8&useSSL=false
       username: username
@@ -46,12 +48,12 @@ env:
     SERVICES_HARBOR_USERNAME:  admin
     SERVICES_HARBOR_PASSWORD:
     # harbor insecure skip tls verify, the default is false
-    SERVICES_HARBOR_INSECURESKIPTLSVERIFY: false
+    SERVICES_HARBOR_INSECURESKIPTLSVERIFY: true
     SERVICES_SONARQUBE_URL:
     SERVICES_GATEWAY_URL: http://api.example.com
     AGENT_VERSION: 0.5.0.RELEASE
     SECURITY_BASIC_ENABLE: false
-    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**
+    SECURITY_IGNORED: /ci,/webhook,/v2/api-docs,/agent/**,/ws/**,/webhook/**,/workflow/**
     AGENT_SERVICEURL: ws://devops-service.choerodon.com.cn/agent/
     AGENT_REPOURL: https://openchart.choerodon.com.cn/choerodon/c7n/
     AGENT_CERTMANAGERURL: https://openchart.choerodon.com.cn/choerodon/infra/

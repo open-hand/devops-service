@@ -74,7 +74,6 @@ public class FileUtil {
                     }
                 }
                 stringBuilder.append(content);
-                stringBuilder.append(System.getProperty("line.separator"));
             }
             return stringBuilder.toString();
         } catch (IOException e) {

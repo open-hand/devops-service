@@ -51,8 +51,6 @@ public interface ApplicationRepository {
 
     List<ApplicationE> listByCode(String code);
 
-    String checkSortIsEmpty(PageRequest pageRequest);
-
     List<ApplicationE> listByGitLabProjectIds(List<Long> gitLabProjectIds);
 
     void delete(Long appId);

@@ -18,29 +18,20 @@ import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.factory.ApplicationMarketFactory;
 import io.choerodon.devops.domain.application.repository.*;
 import io.choerodon.devops.domain.application.valueobject.Organization;
+import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
 import io.choerodon.devops.infra.common.util.GenerateUUID;
-import io.choerodon.devops.infra.config.ConfigurationProperties;
 import io.choerodon.devops.infra.config.HarborConfigurationProperties;
-import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketDO;
 import io.choerodon.devops.infra.dataobject.DevopsAppMarketVersionDO;
-import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
-import okhttp3.MediaType;
-import okhttp3.MultipartBody;
-import okhttp3.RequestBody;
-import okhttp3.ResponseBody;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * Created by ernst on 2018/5/12.
@@ -79,6 +70,8 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
     private ApplicationVersionValueRepository applicationVersionValueRepository;
     @Autowired
     private DevopsProjectConfigRepository devopsProjectConfigRepository;
+    @Autowired
+    private ChartUtil chartUtil;
 
     @Override
     public Long release(Long projectId, ApplicationReleasingDTO applicationReleasingDTO) {
@@ -508,33 +501,7 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
 
             ApplicationVersionE applicationVersionE = applicationVersionRepository.query(appVersionId);
             images.add(applicationVersionE.getImage());
-
-            ConfigurationProperties configurationProperties = new ConfigurationProperties();
-            configurationProperties.setType(CHART);
-            configurationProperties.setBaseUrl(applicationVersionE.getRepository().split(organization.getCode())[0]);
-            Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-            ChartClient chartClient = retrofit.create(ChartClient.class);
-            Call<ResponseBody> getTaz = chartClient.downloadTaz(organization.getCode(), projectE.getCode(), applicationE.getCode(), applicationVersionE.getVersion());
-            try {
-                Response<ResponseBody> response = getTaz.execute();
-                try (FileOutputStream fos = new FileOutputStream(String.format("%s%s%s-%s.tgz",
-                        destpath,
-                        FILE_SEPARATOR,
-                        applicationE.getCode(),
-                        applicationVersionE.getVersion()))) {
-                    if(response.body()!=null) {
-                        InputStream is = response.body().byteStream();
-                        byte[] buffer = new byte[4096];
-                        int r = 0;
-                        while ((r = is.read(buffer)) > 0) {
-                            fos.write(buffer, 0, r);
-                        }
-                        is.close();
-                    }
-                }
-            } catch (IOException e) {
-                throw new CommonException(e.getMessage(), e);
-            }
+            chartUtil.downloadChart(applicationVersionE, organization, projectE, applicationE, destpath);
         });
     }
 
@@ -630,27 +597,11 @@ public class ApplicationMarketServiceImpl implements ApplicationMarketService {
                     projectCode);
             FileUtil.copyFile(tgzVersions.get(0).getAbsolutePath(), classPath);
             //上传tgz包到chart仓库
-            uploadChart(organizationCode, projectCode, tgzVersions);
+            chartUtil.uploadChart(organizationCode, projectCode, tgzVersions.get(0));
             FileUtil.deleteDirectory(new File(appCode));
         }
     }
 
-    private void uploadChart(String organizationCode, String projectCode, List<File> tgzVersions) {
-        ConfigurationProperties configurationProperties = new ConfigurationProperties();
-        configurationProperties.setType(CHART);
-        configurationProperties.setBaseUrl(helmUrl);
-        Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
-        File file = new File(tgzVersions.get(0).getAbsolutePath());
-        RequestBody requestFile = RequestBody.create(MediaType.parse("multipart/form-data"), file);
-        MultipartBody.Part body = MultipartBody.Part.createFormData(CHART, file.getName(), requestFile);
-        ChartClient chartClient = retrofit.create(ChartClient.class);
-        Call<Object> uploadTaz = chartClient.uploadTaz(organizationCode, projectCode, body);
-        try {
-            uploadTaz.execute();
-        } catch (IOException e) {
-            throw new CommonException(e);
-        }
-    }
 
     private Long createOrUpdateApp(ApplicationE applicationE, String appCode, Long projectId) {
         applicationE.setCode(appCode);

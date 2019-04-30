@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import java.util.List;
 
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
 import org.springframework.web.multipart.MultipartFile;
 
 import io.choerodon.core.domain.Page;
@@ -119,4 +120,6 @@ public interface ApplicationVersionService {
      * @return ApplicationVersionRepDTO
      */
     ApplicationVersionRepDTO queryByAppAndVersion(Long appId, String version);
+
+    void checkAutoDeploy(ApplicationVersionE versionE);
 }

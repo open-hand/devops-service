@@ -1,18 +1,15 @@
 package io.choerodon.devops.infra.persistence.impl;
 
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
-import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.exception.FeignException;
 import io.choerodon.devops.api.dto.RoleAssignmentSearchDTO;
-import io.choerodon.devops.api.dto.iam.*;
+import io.choerodon.devops.api.dto.iam.ProjectWithRoleDTO;
+import io.choerodon.devops.api.dto.iam.RoleDTO;
+import io.choerodon.devops.api.dto.iam.RoleSearchDTO;
+import io.choerodon.devops.api.dto.iam.UserDTO;
+import io.choerodon.devops.api.dto.iam.UserWithRoleDTO;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.event.IamAppPayLoad;
@@ -27,6 +24,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_MEMBER;
+import static io.choerodon.core.iam.InitRoleCode.PROJECT_OWNER;
 
 /**
  * Created by younger on 2018/3/29.
@@ -246,6 +250,21 @@ public class IamRepositoryImpl implements IamRepository {
                 this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
                         projectId, false).getContent().stream().map(UserDTO::getId).collect(Collectors.toList());
         return memberIds.stream().filter(e -> !ownerIds.contains(e)).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserDTO> getAllMember(Long projectId) {
+        // 获取项目成员id
+        Long memberId = this.queryRoleIdByCode(PROJECT_MEMBER);
+        // 获取项目所有者id
+        Long ownerId = this.queryRoleIdByCode(PROJECT_OWNER);
+        // 项目下所有项目成员
+        List<UserDTO> list = this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), memberId,
+                projectId, false).getContent();
+        // 项目下所有项目所有者
+        list.addAll(this.pagingQueryUsersByRoleIdOnProjectLevel(new PageRequest(), new RoleAssignmentSearchDTO(), ownerId,
+                projectId, false).getContent());
+        return list;
     }
 
     @Override

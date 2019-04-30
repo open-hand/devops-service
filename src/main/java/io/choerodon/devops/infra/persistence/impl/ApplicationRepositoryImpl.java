@@ -1,5 +1,8 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import java.util.List;
+import java.util.Map;
+
 import com.google.gson.Gson;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
@@ -8,6 +11,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.repository.ApplicationRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.infra.common.util.PageRequestUtil;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.ApplicationDO;
 import io.choerodon.devops.infra.mapper.ApplicationMapper;
@@ -17,9 +21,6 @@ import io.kubernetes.client.JSON;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by younger on 2018/3/28.
@@ -71,7 +72,7 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         ApplicationDO applicationDO = new ApplicationDO();
         applicationDO.setProjectId(projectId);
         applicationDO.setCode(code);
-        if (applicationMapper.selectOne(applicationDO) != null){
+        if (applicationMapper.selectOne(applicationDO) != null) {
             throw new CommonException("error.code.exist");
         }
     }
@@ -88,6 +89,9 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     public int update(ApplicationE applicationE) {
         ApplicationDO applicationDO = applicationMapper.selectByPrimaryKey(applicationE.getId());
         ApplicationDO newApplicationDO = ConvertHelper.convert(applicationE, ApplicationDO.class);
+        if (applicationE.getFailed() != null && !applicationE.getFailed()) {
+            applicationMapper.updateAppToSuccess(applicationDO.getId());
+        }
         newApplicationDO.setObjectVersionNumber(applicationDO.getObjectVersionNumber());
         return applicationMapper.updateByPrimaryKeySelective(newApplicationDO);
     }
@@ -106,14 +110,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         Map<String, Object> mapParams = TypeUtil.castMapParams(params);
         //是否需要分页
         if (doPage != null && !doPage) {
-                applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
-                        (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
-                        mapParams.get(TypeUtil.PARAM).toString(), checkSortIsEmpty(pageRequest)));
+            applicationES.setContent(applicationMapper.list(projectId, isActive, hasVersion, type,
+                    (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
+                    mapParams.get(TypeUtil.PARAM).toString(), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         } else {
             applicationES = PageHelper
                     .doPageAndSort(pageRequest, () -> applicationMapper.list(projectId, isActive, hasVersion, type,
-                            (Map<String,Object>)mapParams.get(TypeUtil.SEARCH_PARAM),
-                            (String)mapParams.get(TypeUtil.PARAM), checkSortIsEmpty(pageRequest)));
+                            (Map<String, Object>) mapParams.get(TypeUtil.SEARCH_PARAM),
+                            (String) mapParams.get(TypeUtil.PARAM), PageRequestUtil.checkSortIsEmpty(pageRequest)));
         }
         return ConvertPageHelper.convertPage(applicationES, ApplicationE.class);
     }
@@ -146,14 +150,14 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
 
     @Override
     public List<ApplicationE> listByEnvId(Long projectId, Long envId, String status) {
-        return ConvertHelper.convertList(applicationMapper.listByEnvId(projectId, envId, null,status), ApplicationE.class);
+        return ConvertHelper.convertList(applicationMapper.listByEnvId(projectId, envId, null, status), ApplicationE.class);
     }
 
     @Override
     public Page<ApplicationE> pageByEnvId(Long projectId, Long envId, Long appId, PageRequest pageRequest) {
         return ConvertPageHelper.convertPage(
                 PageHelper.doPageAndSort(
-                        pageRequest, () -> applicationMapper.listByEnvId(projectId, envId, appId,"nodeleted")),
+                        pageRequest, () -> applicationMapper.listByEnvId(projectId, envId, appId, "nodeleted")),
                 ApplicationE.class
         );
     }
@@ -200,15 +204,6 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
     @Override
     public List<ApplicationE> listByCode(String code) {
         return ConvertHelper.convertList(applicationMapper.listByCode(code), ApplicationE.class);
-    }
-
-    @Override
-    public String checkSortIsEmpty(PageRequest pageRequest) {
-        String index = "";
-        if (pageRequest.getSort() == null) {
-            index = "true";
-        }
-        return index;
     }
 
     @Override

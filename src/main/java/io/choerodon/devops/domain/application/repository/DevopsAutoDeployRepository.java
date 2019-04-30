@@ -38,4 +38,6 @@ public interface DevopsAutoDeployRepository {
     void deleteInstanceId(Long instanceId);
 
     void updateInstanceId(Long autoDeployId, Long instanceId);
+
+    List<DevopsAutoDeployE> getAll();
 }
