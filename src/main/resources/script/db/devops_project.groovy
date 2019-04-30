@@ -41,7 +41,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
     }
 
 
-    changeSet(author: 'younger', id: '2018-07-25-add-column') {
+    changeSet(author: 'younger', id: '2019-04-30-add-column') {
         addColumn(tableName: 'devops_project') {
             column(name: 'harbor_project_user_name', type: 'VARCHAR(50)', remarks: 'harbor项目默认用户')
             column(name: 'harbor_project_user_password', type: 'VARCHAR(50)', remarks: 'harbor项目默认用户密码')
