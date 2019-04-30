@@ -443,6 +443,7 @@ public class PipelineServiceImpl implements PipelineService {
     @Saga(code = "devops-pipeline-auto-deploy-instance",
             description = "创建流水线自动部署实例", inputSchema = "{}")
     public void autoDeploy(Long stageRecordId, Long taskId) {
+        LOGGER.info("autoDeploy:stageRecordId: {} taskId: {}", stageRecordId, taskId);
         //获取数据
         PipelineTaskE pipelineTaskE = pipelineTaskRepository.queryById(taskId);
         CutomerContextUtil.setUserId(pipelineTaskE.getCreatedBy());
@@ -768,12 +769,15 @@ public class PipelineServiceImpl implements PipelineService {
     @Override
     public String getAppDeployStatus(Long stageRecordId, Long taskId) {
         List<PipelineTaskRecordE> list = taskRecordRepository.queryByStageRecordId(stageRecordId, taskId);
-        return list.get(0).getStatus();
+        if (list != null && list.size() > 0) {
+            return list.get(0).getStatus();
+        }
+        return WorkFlowStatus.FAILED.toValue();
     }
 
     @Override
     public void setAppDeployStatus(Long pipelineRecordId, Long stageRecordId, Long taskId, Boolean status) {
-        LOGGER.info("pipelineRecordId: {} stageRecordId: {} taskId: {}", pipelineRecordId, stageRecordId, taskId);
+        LOGGER.info("setAppDeployStatus:pipelineRecordId: {} stageRecordId: {} taskId: {}", pipelineRecordId, stageRecordId, taskId);
         PipelineRecordE pipelineRecordE = pipelineRecordRepository.queryById(pipelineRecordId);
         PipelineStageRecordE stageRecordE = stageRecordRepository.queryById(stageRecordId);
         PipelineStageE stageE = stageRepository.queryById(stageRecordE.getStageId());
@@ -1199,8 +1203,7 @@ public class PipelineServiceImpl implements PipelineService {
                         try {
                             workFlowRepository.create(projectId, pipelineDTO);
                         } catch (Exception e) {
-                            LOGGER.info("========================================cd workflow failed {}", e);
-                            throw new CommonException("cannot.connect.workflow.service");
+                            throw new CommonException(e);
                         }
                     }
                 });
@@ -1231,8 +1234,7 @@ public class PipelineServiceImpl implements PipelineService {
                         try {
                             workFlowRepository.approveUserTask(projectId, businessKey);
                         } catch (Exception e) {
-                            LOGGER.info("=========================cd workflow failed!");
-                            throw new CommonException("cannot.connect.workflow.service");
+                            throw new CommonException(e);
                         }
                     }
                 });
@@ -1260,8 +1262,7 @@ public class PipelineServiceImpl implements PipelineService {
         } catch (Exception e) {
             pipelineRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             pipelineRecordRepository.update(pipelineRecordE);
-            LOGGER.error("=========================error.create.pipeline.instance1=============================== {}", e);
-            throw new CommonException("cannot.connect.workflow.service");
+            throw new CommonException(e);
         }
     }
 
