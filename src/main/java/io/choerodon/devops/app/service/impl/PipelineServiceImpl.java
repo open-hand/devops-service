@@ -671,7 +671,7 @@ public class PipelineServiceImpl implements PipelineService {
                         Optional<String> branch = list.stream().filter(t -> versionE.getVersion().contains(t)).findFirst();
                         if (!branch.isPresent()) {
                             i++;
-                            if (i == versionES.size() - 1) {
+                            if (i == versionES.size()) {
                                 return false;
                             } else {
                                 continue;
