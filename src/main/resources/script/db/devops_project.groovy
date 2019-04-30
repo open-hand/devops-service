@@ -39,4 +39,15 @@ databaseChangeLog(logicalFilePath: 'dba/devops_project.groovy') {
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'devops_app_group_id', oldColumnName: 'gitlab_group_id', remarks: 'gitlab app group id', tableName: 'devops_project')
         renameColumn(columnDataType: 'BIGINT UNSIGNED', newColumnName: 'devops_env_group_id', oldColumnName: 'env_group_id', remarks: 'gitlab env group id', tableName: 'devops_project')
     }
+
+
+    changeSet(author: 'younger', id: '2018-07-25-add-column') {
+        addColumn(tableName: 'devops_project') {
+            column(name: 'harbor_public', type: 'TINYINT UNSIGNED', defaultValue: "1", remarks: 'harbor项目是否公有。1公有，0私有')
+            column(name: 'harbor_project_user_name', type: 'VARCHAR(50)', remarks: 'harbor项目默认用户')
+            column(name: 'harbor_project_user_password', type: 'VARCHAR(50)', remarks: 'harbor项目默认用户密码')
+            column(name: 'harbor_project_user_email', type: 'VARCHAR(50)', remarks: 'harbor项目默认用户邮箱')
+        }
+    }
+
 }

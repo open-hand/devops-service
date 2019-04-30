@@ -19,9 +19,12 @@ public class DevopsProjectDO extends AuditDomain {
     private Long iamProjectId;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
+    private String harborProjectUserName;
+    private String harborProjectUserPassword;
+    private String harborProjectUserEmail;
+
 
     public DevopsProjectDO() {
-
     }
 
     public DevopsProjectDO(Long iamProjectId) {
@@ -50,5 +53,29 @@ public class DevopsProjectDO extends AuditDomain {
 
     public void setDevopsEnvGroupId(Long devopsEnvGroupId) {
         this.devopsEnvGroupId = devopsEnvGroupId;
+    }
+
+    public String getHarborProjectUserName() {
+        return harborProjectUserName;
+    }
+
+    public void setHarborProjectUserName(String harborProjectUserName) {
+        this.harborProjectUserName = harborProjectUserName;
+    }
+
+    public String getHarborProjectUserPassword() {
+        return harborProjectUserPassword;
+    }
+
+    public void setHarborProjectUserPassword(String harborProjectUserPassword) {
+        this.harborProjectUserPassword = harborProjectUserPassword;
+    }
+
+    public String getHarborProjectUserEmail() {
+        return harborProjectUserEmail;
+    }
+
+    public void setHarborProjectUserEmail(String harborProjectUserEmail) {
+        this.harborProjectUserEmail = harborProjectUserEmail;
     }
 }

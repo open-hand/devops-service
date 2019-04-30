@@ -58,4 +58,6 @@ public interface ApplicationRepository {
     List<ApplicationE> listByProjectIdAndSkipCheck(Long projectId);
 
     List<ApplicationE> listByProjectId(Long projectId);
+
+    void updateAppHarborConfig(Long projectId, Long newConfigId, Long oldConfigId, boolean harborPrivate);
 }

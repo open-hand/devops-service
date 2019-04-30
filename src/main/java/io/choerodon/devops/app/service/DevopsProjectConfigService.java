@@ -32,4 +32,22 @@ public interface DevopsProjectConfigService {
     void checkName(Long projectId, String name);
 
     Boolean checkIsUsed(Long configId);
+
+
+    /**
+     * 设置项目对应harbor仓库为私有或者公有
+     *
+     * @param projectId 项目id
+     * @param harborPrivate  是否私有
+     */
+    void setHarborProjectIsPrivate(Long projectId, boolean harborPrivate);
+
+
+    /**
+     * 设置项目对应harbor仓库为私有或者公有
+     *
+     * @param projectId 项目id
+     * @return String[]
+     */
+    String[] getProjectDefaultConfig(Long projectId);
 }

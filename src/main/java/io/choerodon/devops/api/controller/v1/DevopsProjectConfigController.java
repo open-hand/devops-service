@@ -196,4 +196,42 @@ public class DevopsProjectConfigController {
                 .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
                 .orElseThrow(() -> new CommonException("error.devops.project.config.check.is.used"));
     }
+
+
+
+    /**
+     * 设置项目对应harbor仓库为私有或者公有
+     *
+     * @param projectId 项目id
+     * @param harborPrivate  是否私有
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "设置项目对应harbor仓库为私有或者公有")
+    @GetMapping("/enableProject")
+    public ResponseEntity enableProject(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "环境 ID", required = true)
+            @RequestParam boolean  harborPrivate) {
+        devopsProjectConfigService.setHarborProjectIsPrivate(projectId,harborPrivate);
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
+    }
+
+    /**
+     * 设置项目对应harbor仓库为私有或者公有
+     *
+     * @param projectId 项目id
+     * @return String[]
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @ApiOperation(value = "设置项目对应harbor仓库为私有或者公有")
+    @GetMapping("/defaultConfig")
+    public ResponseEntity<String[]> getProjectDefaultConfig(
+            @ApiParam(value = "项目 ID", required = true)
+            @PathVariable(value = "project_id") Long projectId) {
+        return Optional.ofNullable(
+                devopsProjectConfigService.getProjectDefaultConfig(projectId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.devops.project.config.get"));
+    }
 }

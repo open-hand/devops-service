@@ -40,7 +40,7 @@ public class DevopsProjectConfigRepositoryImpl implements DevopsProjectConfigRep
         if (configMapper.insert(paramDO) != 1) {
             throw new CommonException("error.devops.project.config.create");
         }
-        return ConvertHelper.convert(configMapper.selectOne(paramDO), DevopsProjectConfigE.class);
+        return ConvertHelper.convert(paramDO, DevopsProjectConfigE.class);
     }
 
     /**

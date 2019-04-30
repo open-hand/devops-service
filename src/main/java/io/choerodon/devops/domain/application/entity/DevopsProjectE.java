@@ -1,4 +1,4 @@
-package io.choerodon.devops.domain.application.entity.gitlab;
+package io.choerodon.devops.domain.application.entity;
 
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.infra.common.util.enums.Visibility;
@@ -6,7 +6,7 @@ import io.choerodon.devops.infra.common.util.enums.Visibility;
 /**
  * Created by younger on 2018/3/29.
  */
-public class GitlabGroupE {
+public class DevopsProjectE {
     private Integer id;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
@@ -14,6 +14,9 @@ public class GitlabGroupE {
     private String name;
     private Visibility visibility;
     private ProjectE projectE;
+    private String harborProjectUserName;
+    private String harborProjectUserPassword;
+    private String harborProjectUserEmail;
 
 
     public Long getDevopsAppGroupId() {
@@ -86,5 +89,30 @@ public class GitlabGroupE {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+
+    public String getHarborProjectUserName() {
+        return harborProjectUserName;
+    }
+
+    public void setHarborProjectUserName(String harborProjectUserName) {
+        this.harborProjectUserName = harborProjectUserName;
+    }
+
+    public String getHarborProjectUserPassword() {
+        return harborProjectUserPassword;
+    }
+
+    public void setHarborProjectUserPassword(String harborProjectUserPassword) {
+        this.harborProjectUserPassword = harborProjectUserPassword;
+    }
+
+    public String getHarborProjectUserEmail() {
+        return harborProjectUserEmail;
+    }
+
+    public void setHarborProjectUserEmail(String harborProjectUserEmail) {
+        this.harborProjectUserEmail = harborProjectUserEmail;
     }
 }
