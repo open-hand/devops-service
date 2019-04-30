@@ -45,4 +45,8 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_record.groovy') {
         renameColumn(tableName: 'devops_pipeline_task_record', columnDataType: 'VARCHAR(100)',
                 oldColumnName: 'instanceName', newColumnName: 'instance_name', remarks: '实例名称')
     }
+    changeSet(author: 'scp', id: '2019-04-30-devops_pipeline_task-modify-column') {
+        modifyDataType(tableName: 'devops_pipeline_task_record', columnName: 'status', newDataType: 'VARCHAR(50)')
+    }
+
 }
