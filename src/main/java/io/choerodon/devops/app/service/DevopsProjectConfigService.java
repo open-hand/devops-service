@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.dto.ProjectDefaultConfigDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
@@ -49,5 +50,5 @@ public interface DevopsProjectConfigService {
      * @param projectId 项目id
      * @return String[]
      */
-    String[] getProjectDefaultConfig(Long projectId);
+    ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId);
 }

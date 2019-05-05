@@ -8,6 +8,7 @@ import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
 import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.dto.ProjectDefaultConfigDTO;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
@@ -221,12 +222,12 @@ public class DevopsProjectConfigController {
      * 设置项目对应harbor仓库为私有或者公有
      *
      * @param projectId 项目id
-     * @return String[]
+     * @return ProjectDefaultConfigDTO
      */
     @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "设置项目对应harbor仓库为私有或者公有")
     @GetMapping("/defaultConfig")
-    public ResponseEntity<String[]> getProjectDefaultConfig(
+    public ResponseEntity<ProjectDefaultConfigDTO> getProjectDefaultConfig(
             @ApiParam(value = "项目 ID", required = true)
             @PathVariable(value = "project_id") Long projectId) {
         return Optional.ofNullable(

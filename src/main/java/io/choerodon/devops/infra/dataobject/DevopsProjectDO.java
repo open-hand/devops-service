@@ -19,6 +19,7 @@ public class DevopsProjectDO extends AuditDomain {
     private Long iamProjectId;
     private Long devopsAppGroupId;
     private Long devopsEnvGroupId;
+    private boolean harborProjectIsPrivate;
     private String harborProjectUserName;
     private String harborProjectUserPassword;
     private String harborProjectUserEmail;
@@ -77,5 +78,13 @@ public class DevopsProjectDO extends AuditDomain {
 
     public void setHarborProjectUserEmail(String harborProjectUserEmail) {
         this.harborProjectUserEmail = harborProjectUserEmail;
+    }
+
+    public boolean isHarborProjectIsPrivate() {
+        return harborProjectIsPrivate;
+    }
+
+    public void setHarborProjectIsPrivate(boolean harborProjectIsPrivate) {
+        this.harborProjectIsPrivate = harborProjectIsPrivate;
     }
 }

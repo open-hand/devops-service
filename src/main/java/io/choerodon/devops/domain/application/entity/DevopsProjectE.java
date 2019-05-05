@@ -14,6 +14,7 @@ public class DevopsProjectE {
     private String name;
     private Visibility visibility;
     private ProjectE projectE;
+    private boolean harborProjectIsPrivate;
     private String harborProjectUserName;
     private String harborProjectUserPassword;
     private String harborProjectUserEmail;
@@ -114,5 +115,13 @@ public class DevopsProjectE {
 
     public void setHarborProjectUserEmail(String harborProjectUserEmail) {
         this.harborProjectUserEmail = harborProjectUserEmail;
+    }
+
+    public boolean isHarborProjectIsPrivate() {
+        return harborProjectIsPrivate;
+    }
+
+    public void setHarborProjectIsPrivate(boolean harborProjectIsPrivate) {
+        this.harborProjectIsPrivate = harborProjectIsPrivate;
     }
 }
