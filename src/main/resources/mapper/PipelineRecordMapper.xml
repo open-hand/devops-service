@@ -7,13 +7,12 @@
         dpr.id,
         dpr. STATUS,
         dpr.trigger_type,
-        dp. NAME,
+        dpr.pipeline_name,
         dpr.last_update_date,
         dpr.project_id,
         dpr.pipeline_id
         FROM
         devops_pipeline_record dpr
-        JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id
         WHERE
         dpr.project_id = #{projectId}
         <if test="pipelineId != null">
@@ -27,17 +26,16 @@
         dpr.id,
         dpr. STATUS,
         dpr.trigger_type,
-        dp. NAME,
         dpr.last_update_date,
         dpr.project_id,
         dpr.pipeline_id,
         dpr.`status`,
         dpr.creation_date,
-        dpr.process_instance_id,
-        dpr.bpm_definition
+        dpr.business_key,
+        dpr.bpm_definition,
+        dpr.pipeline_name
         FROM
         devops_pipeline_record dpr
-        JOIN devops_pipeline dp ON dp.id = dpr.pipeline_id
         WHERE dpr.id = #{pipelineRecordId}
     </select>
 

@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class PipelineRecordDTO {
     private Long id;
-    private String name;
+    private String pipelineName;
     private String status;
     private String triggerType;
     private Long projectId;
@@ -23,6 +23,14 @@ public class PipelineRecordDTO {
     private Long stageRecordId;
     private String type;
     private Boolean index;
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
     public Boolean getIndex() {
         return index;
@@ -70,14 +78,6 @@ public class PipelineRecordDTO {
 
     public void setPipelineId(Long pipelineId) {
         this.pipelineId = pipelineId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getProcessInstanceId() {

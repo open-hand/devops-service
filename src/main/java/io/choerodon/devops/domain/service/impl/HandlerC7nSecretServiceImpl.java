@@ -1,11 +1,17 @@
 package io.choerodon.devops.domain.service.impl;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.choerodon.devops.app.service.impl.DeployMsgHandlerServiceImpl;
 import io.kubernetes.client.models.V1Endpoints;
+import io.kubernetes.client.models.V1Secret;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +45,11 @@ import io.choerodon.devops.infra.common.util.enums.ObjectType;
  */
 
 @Service
-public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsService<C7nSecret> {
+public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsService<V1Secret> {
+
+    private static final Logger logger = LoggerFactory.getLogger(HandlerC7nSecretServiceImpl.class);
+
+
     private static final String CREATE = "create";
 
     private static final String SECRET = "Secret";
@@ -66,7 +76,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
 
     @Override
     public void handlerRelations(Map<String, String> objectPath, List<DevopsEnvFileResourceE> beforeSync,
-                                 List<C7nSecret> c7nSecrets, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
+                                 List<V1Secret> v1Secrets, List<V1Endpoints> v1Endpoints, Long envId, Long projectId, String path, Long userId) {
         List<String> beforSecret = beforeSync.stream()
                 .filter(devopsEnvFileResourceE -> devopsEnvFileResourceE.getResourceType().equals(SECRET))
                 .map(devopsEnvFileResourceE -> {
@@ -80,9 +90,9 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
                     return devopsSecretE.getName();
                 }).collect(Collectors.toList());
         // 比较已存在的秘钥和新增要处理的秘钥,获取新增秘钥，更新秘钥，删除秘钥
-        List<C7nSecret> addC7nSecret = new ArrayList<>();
-        List<C7nSecret> updateC7nSecret = new ArrayList<>();
-        c7nSecrets.forEach(v1Secret -> {
+        List<V1Secret> addC7nSecret = new ArrayList<>();
+        List<V1Secret> updateC7nSecret = new ArrayList<>();
+        v1Secrets.forEach(v1Secret -> {
             if (beforSecret.contains(v1Secret.getMetadata().getName())) {
                 updateC7nSecret.add(v1Secret);
                 beforSecret.remove(v1Secret.getMetadata().getName());
@@ -118,8 +128,8 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
     }
 
     private void addSecret(Map<String, String> objectPath, Long envId,
-                           List<C7nSecret> addC7nSecret, String path, Long userId) {
-        addC7nSecret.forEach(c7nSecret -> {
+                           List<V1Secret> addSecret, String path, Long userId) {
+        addSecret.forEach(c7nSecret -> {
             String filePath = "";
             try {
                 filePath = objectPath.get(TypeUtil.objToString(c7nSecret.hashCode()));
@@ -163,8 +173,8 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
     }
 
     private void updateSecret(Map<String, String> objectPath, Long envId, Long projectId,
-                              List<C7nSecret> updateC7nSecret, String path, Long userId) {
-        updateC7nSecret.forEach(c7nSecret -> {
+                              List<V1Secret> updateSecret, String path, Long userId) {
+        updateSecret.forEach(c7nSecret -> {
             String filePath = "";
             try {
                 boolean isNotChange = false;
@@ -211,7 +221,7 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         });
     }
 
-    private void checkSecretName(C7nSecret v1Secret) {
+    private void checkSecretName(V1Secret v1Secret) {
         try {
             DevopsSecretValidator.checkName(v1Secret.getMetadata().getName());
         } catch (Exception e) {
@@ -219,13 +229,26 @@ public class HandlerC7nSecretServiceImpl implements HandlerObjectFileRelationsSe
         }
     }
 
-    private SecretReqDTO getSecretReqDTO(C7nSecret c7nSecret, Long envId, String type) {
+    private SecretReqDTO getSecretReqDTO(V1Secret c7nSecret, Long envId, String type) {
         SecretReqDTO secretReqDTO = new SecretReqDTO();
         secretReqDTO.setName(c7nSecret.getMetadata().getName());
         secretReqDTO.setDescription("");
         secretReqDTO.setType(type);
         secretReqDTO.setEnvId(envId);
-        secretReqDTO.setValue(c7nSecret.getStringData());
+        //等待界面支持secret类型之后在区分开
+        if(c7nSecret.getType().equals("kubernetes.io/dockerconfigjson")) {
+            Map<String,String> map =  new HashMap<>();
+            c7nSecret.getData().forEach((key,value)-> {
+                try {
+                    map.put(key,new String(value,"utf-8"));
+                    secretReqDTO.setValue(map);
+                } catch (UnsupportedEncodingException e) {
+                    logger.info(e.getMessage());
+                }
+            });
+        }else {
+            secretReqDTO.setValue(c7nSecret.getStringData());
+        }
         return secretReqDTO;
     }
 

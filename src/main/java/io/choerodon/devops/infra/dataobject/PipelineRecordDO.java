@@ -7,8 +7,6 @@ import io.choerodon.mybatis.domain.AuditDomain;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-import java.sql.Date;
 
 /**
  * Creator: ChangpingShi0213@gmail.com
@@ -26,11 +24,25 @@ public class PipelineRecordDO extends AuditDomain {
     private String status;
     private String triggerType;
     private String bpmDefinition;
-    private String processInstanceId;
     private Long projectId;
+    private String pipelineName;
+    private String businessKey;
 
-    @Transient
-    private String name;
+    public String getBusinessKey() {
+        return businessKey;
+    }
+
+    public void setBusinessKey(String businessKey) {
+        this.businessKey = businessKey;
+    }
+
+    public String getPipelineName() {
+        return pipelineName;
+    }
+
+    public void setPipelineName(String pipelineName) {
+        this.pipelineName = pipelineName;
+    }
 
     public Long getProjectId() {
         return projectId;
@@ -38,22 +50,6 @@ public class PipelineRecordDO extends AuditDomain {
 
     public void setProjectId(Long projectId) {
         this.projectId = projectId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getProcessInstanceId() {
-        return processInstanceId;
-    }
-
-    public void setProcessInstanceId(String processInstanceId) {
-        this.processInstanceId = processInstanceId;
     }
 
     public Long getId() {

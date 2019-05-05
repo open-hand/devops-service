@@ -17,4 +17,7 @@ databaseChangeLog(logicalFilePath: 'dba/devops_pipeline_task_parameters.groovy')
             column(name: "last_update_date", type: "DATETIME", defaultValueComputed: "CURRENT_TIMESTAMP")
         }
     }
+    changeSet(author: 'scp', id: '2019-04-29-delete-table') {
+        dropTable(tableName: "devops_pipeline_task_parameters")
+    }
 }

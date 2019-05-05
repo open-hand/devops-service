@@ -51,7 +51,7 @@ public class ClusterNodeInfoServiceImpl implements ClusterNodeInfoService {
         if (devopsClusterE != null) {
             return getRedisClusterKey(clusterId, devopsClusterE.getOrganizationId());
         } else {
-            throw new CommonException("error.get.organization.id");
+            throw new CommonException("error.cluster.get");
         }
     }
 

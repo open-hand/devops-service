@@ -25,8 +25,14 @@
         JOIN devops_application da ON dpad.application_id = da.id
         JOIN devops_env de ON dpad.env_id = de.id
         JOIN devops_pipeline_task dpt ON dpt.app_deploy_id = dpad.id
-        JOIN devops_pipeline_app_deploy_value dadv ON dadv.id = dpad.value_id
+        JOIN devops_pipeline_value dadv ON dadv.id = dpad.value_id
         WHERE
             dpad.id = #{appDeployId}
     </select>
+
+    <update id="updateInstanceId"  parameterType="java.lang.Long">
+         UPDATE devops_pipeline_app_deploy
+         SET instance_id = NULL
+         WHERE instance_id = #{instanceId}
+    </update>
 </mapper>

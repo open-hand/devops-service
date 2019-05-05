@@ -42,6 +42,7 @@ import io.choerodon.devops.domain.application.entity.DevopsEnvUserPermissionE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
 import io.choerodon.devops.domain.application.entity.DevopsRegistrySecretE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.ProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -1136,6 +1137,7 @@ public class ApplicationInstanceServiceImpl implements ApplicationInstanceServic
                     userAttrE.getGitlabUserId(),
                     instanceE.getId(), C7NHELM_RELEASE, null, devopsEnvironmentE.getId(), path);
         }
+        appDeployRepository.updateInstanceId(instanceId);
         devopsAutoDeployRepository.deleteInstanceId(instanceId);
     }
 

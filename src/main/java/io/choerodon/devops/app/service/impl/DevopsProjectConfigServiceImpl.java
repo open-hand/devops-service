@@ -51,13 +51,9 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
         DevopsProjectConfigE devopsProjectConfigE = ConvertHelper.convert(devopsProjectConfigDTO, DevopsProjectConfigE.class);
         devopsProjectConfigE.setProjectId(projectId);
         configValidator.checkConfigType(devopsProjectConfigDTO);
-        ProjectConfigType type = ProjectConfigType.valueOf(devopsProjectConfigE.getType().toUpperCase());
 
         devopsProjectConfigRepository.checkName(projectId, devopsProjectConfigE.getName());
         DevopsProjectConfigE res = devopsProjectConfigRepository.create(devopsProjectConfigE);
-        if (type.equals(ProjectConfigType.HARBOR)) {
-            harborService.createHarbor(devopsProjectConfigE.getConfig(), devopsProjectConfigE.getProjectId());
-        }
         return ConvertHelper.convert(res, DevopsProjectConfigDTO.class);
     }
 
@@ -121,6 +117,6 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
 
     @Override
     public Boolean checkIsUsed(Long configId) {
-        return  devopsProjectConfigRepository.checkIsUsed(configId);
+        return devopsProjectConfigRepository.checkIsUsed(configId);
     }
 }

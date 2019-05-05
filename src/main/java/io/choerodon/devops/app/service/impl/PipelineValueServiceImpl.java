@@ -6,12 +6,12 @@ import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.PipelineValueDTO;
 import io.choerodon.devops.app.service.PipelineValueService;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
-import io.choerodon.devops.domain.application.entity.PipelineAppDeployValueE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.PipelineValueE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.IamRepository;
-import io.choerodon.devops.domain.application.repository.PipelineAppDeployValueRepository;
+import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
 import io.choerodon.devops.domain.application.repository.PipelineValueRepository;
 import io.choerodon.devops.infra.common.util.EnvUtil;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -38,7 +38,7 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     @Autowired
     private DevopsEnvironmentRepository devopsEnviromentRepository;
     @Autowired
-    private PipelineAppDeployValueRepository appDeployValueRepository;
+    private PipelineAppDeployRepository appDeployRepository;
 
     @Override
     public PipelineValueDTO createOrUpdate(Long projectId, PipelineValueDTO pipelineValueDTO) {
@@ -52,13 +52,8 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public Boolean delete(Long projectId, Long valueId) {
-        List<PipelineAppDeployValueE> list = appDeployValueRepository.queryByValueId(valueId);
-        if (list == null) {
-            return false;
-        }
+    public void delete(Long projectId, Long valueId) {
         valueRepository.delete(valueId);
-        return true;
     }
 
     @Override
@@ -84,9 +79,9 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     }
 
     @Override
-    public PipelineValueDTO queryById(Long valueId) {
+    public PipelineValueDTO queryById(Long projectId, Long valueId) {
         PipelineValueDTO valueDTO = ConvertHelper.convert(valueRepository.queryById(valueId), PipelineValueDTO.class);
-        valueDTO.setIndex(appDeployValueRepository.queryByValueId(valueId) == null);
+        valueDTO.setIndex(checkDelete(projectId, valueId));
         return valueDTO;
     }
 
@@ -98,5 +93,11 @@ public class PipelineValueServiceImpl implements PipelineValueService {
     @Override
     public List<PipelineValueDTO> queryByAppIdAndEnvId(Long projectId, Long appId, Long envId) {
         return ConvertHelper.convertList(valueRepository.queryByAppIdAndEnvId(projectId, appId, envId), PipelineValueDTO.class);
+    }
+
+    @Override
+    public Boolean checkDelete(Long projectId, Long valueId) {
+        List<PipelineAppDeployE> appDeployEList = appDeployRepository.queryByValueId(valueId);
+        return appDeployEList == null || appDeployEList.isEmpty();
     }
 }

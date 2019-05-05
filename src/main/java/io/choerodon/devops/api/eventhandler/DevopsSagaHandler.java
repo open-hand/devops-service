@@ -17,7 +17,6 @@ import io.choerodon.devops.app.service.DevopsGitlabPipelineService;
 import io.choerodon.devops.app.service.PipelineService;
 import io.choerodon.devops.domain.application.entity.ApplicationE;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
-import io.choerodon.devops.domain.application.entity.DevopsAutoDeployRecordE;
 import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
 import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
 import io.choerodon.devops.domain.application.entity.PipelineTaskRecordE;
@@ -32,8 +31,10 @@ import io.choerodon.devops.domain.application.repository.DevopsAutoDeployReposit
 import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineStageRecordRepository;
 import io.choerodon.devops.domain.application.repository.PipelineTaskRecordRepository;
+import io.choerodon.devops.domain.application.repository.WorkFlowRepository;
 import io.choerodon.devops.domain.service.UpdateUserPermissionService;
 import io.choerodon.devops.domain.service.impl.UpdateAppUserPermissionServiceImpl;
 import io.choerodon.devops.infra.common.util.enums.WorkFlowStatus;
@@ -78,6 +79,8 @@ public class DevopsSagaHandler {
     private final PipelineAppDeployRepository appDeployRepository;
     private final PipelineStageRecordRepository stageRecordRepository;
     private final PipelineService pipelineService;
+    private PipelineRecordRepository pipelineRecordRepository;
+    private WorkFlowRepository workFlowRepository;
 
     @Autowired
     public DevopsSagaHandler(DevopsEnvironmentService devopsEnvironmentService,
@@ -95,6 +98,8 @@ public class DevopsSagaHandler {
                              PipelineStageRecordRepository stageRecordRepository,
                              GitlabRepository gitlabRepository,
                              PipelineService pipelineService,
+                             PipelineRecordRepository pipelineRecordRepository,
+                             WorkFlowRepository workFlowRepository,
                              ApplicationInstanceService applicationInstanceService) {
         this.devopsEnvironmentService = devopsEnvironmentService;
         this.devopsGitService = devopsGitService;
@@ -112,6 +117,8 @@ public class DevopsSagaHandler {
         this.pipelineService = pipelineService;
         this.stageRecordRepository = stageRecordRepository;
         this.applicationInstanceService = applicationInstanceService;
+        this.pipelineRecordRepository = pipelineRecordRepository;
+        this.workFlowRepository = workFlowRepository;
     }
 
     /**
@@ -332,33 +339,6 @@ public class DevopsSagaHandler {
         return data;
     }
 
-    @SagaTask(code = "devops-auto-deploy-create-instance",
-            description = "devops create auto deploy instance",
-            sagaCode = "devops-create-auto-deploy-instance",
-            concurrentLimitPolicy = SagaDefinition.ConcurrentLimitPolicy.TYPE_AND_ID,
-            maxRetryCount = 3,
-            seq = 1)
-    public void createAutoDeployInstance(String data) {
-        //创建或更新实例
-        ApplicationDeployDTO applicationDeployDTO = gson.fromJson(data, ApplicationDeployDTO.class);
-        try {
-            ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
-            //更新记录表中的实例
-            DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FIN,
-                    applicationDeployDTO.getInstanceName(), applicationInstanceDTO.getId());
-            devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            if (devopsAutoDeployRepository.queryById(applicationDeployDTO.getAutoDeployId()).getInstanceId() == null) {
-                devopsAutoDeployRepository.updateInstanceId(applicationDeployDTO.getAutoDeployId(), applicationInstanceDTO.getId());
-            }
-        } catch (Exception e) {
-            //实例创建失败,回写记录表
-            DevopsAutoDeployRecordE devopsAutoDeployRecordE = new DevopsAutoDeployRecordE(applicationDeployDTO.getRecordId(), STATUS_FAILED,
-                    null, null);
-            devopsAutoDeployRecordRepository.createOrUpdate(devopsAutoDeployRecordE);
-            LOGGER.error("error create auto deploy instance {}", e.getMessage());
-        }
-    }
-
     @SagaTask(code = "devops-pipeline-create-instance",
             description = "devops pipeline instance",
             sagaCode = "devops-pipeline-auto-deploy-instance",
@@ -372,6 +352,7 @@ public class DevopsSagaHandler {
             ApplicationInstanceDTO applicationInstanceDTO = applicationInstanceService.createOrUpdate(applicationDeployDTO);
             //更新记录表中的实例
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE(applicationInstanceDTO.getId(), WorkFlowStatus.SUCCESS.toString());
+            pipelineTaskRecordE.setInstanceName(applicationDeployDTO.getInstanceName());
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
             PipelineAppDeployE appDeployE = appDeployRepository.queryById(applicationDeployDTO.getAutoDeployId());
@@ -379,17 +360,18 @@ public class DevopsSagaHandler {
                 appDeployE.setInstanceId(applicationInstanceDTO.getId());
                 appDeployRepository.update(appDeployE);
             }
-            LOGGER.error("error create pipeline auto deploy instance success");
+            LOGGER.info("create pipeline auto deploy instance success");
         } catch (Exception e) {
             //实例创建失败,回写记录表
-            Long stageRecordId = taskRecordRepository.queryById(applicationDeployDTO.getRecordId()).getStageRecordId();
-            Long pipelineRecordId = stageRecordRepository.queryById(applicationDeployDTO.getRecordId()).getPipelineRecordId();
+            Long taskRecordId = applicationDeployDTO.getRecordId();
+            Long stageRecordId = taskRecordRepository.queryById(taskRecordId).getStageRecordId();
+            Long pipelineRecordId = stageRecordRepository.queryById(stageRecordId).getPipelineRecordId();
             PipelineTaskRecordE pipelineTaskRecordE = new PipelineTaskRecordE();
             pipelineTaskRecordE.setId(applicationDeployDTO.getRecordId());
             pipelineTaskRecordE.setStatus(WorkFlowStatus.FAILED.toValue());
             taskRecordRepository.createOrUpdate(pipelineTaskRecordE);
             pipelineService.updateStatus(pipelineRecordId, stageRecordId, WorkFlowStatus.FAILED.toValue());
-            LOGGER.error("error create pipeline auto deploy instance {}", e.getMessage());
+            LOGGER.error("error create pipeline auto deploy instance {}", e);
         }
     }
 

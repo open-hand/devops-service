@@ -10,22 +10,6 @@ import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
 import com.google.gson.internal.LinkedTreeMap;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
-import org.eclipse.jgit.api.Git;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import retrofit2.Call;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -68,6 +52,21 @@ import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.websocket.tool.UUIDTool;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.eclipse.jgit.api.Git;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import retrofit2.Call;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 /**
  * Created by younger on 2018/3/28.
@@ -258,9 +257,9 @@ public class ApplicationServiceImpl implements ApplicationService {
 
         Long appId = applicationUpdateDTO.getId();
         ApplicationE oldApplicationE = applicationRepository.query(appId);
-//        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
-//        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
-//                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
+        UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
+        gitlabRepository.batchAddVariable(oldApplicationE.getGitlabProjectE().getId(), TypeUtil.objToInteger(userAttrE.getGitlabUserId()),
+                setVariableDTO(applicationUpdateDTO.getHarborConfigId(), applicationUpdateDTO.getChartConfigId()));
         if (!oldApplicationE.getName().equals(applicationUpdateDTO.getName())) {
             applicationRepository.checkName(applicationE.getProjectE().getId(), applicationE.getName());
         }
@@ -531,7 +530,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             applicationE.setToken(applicationToken);
             applicationE.initGitlabProjectE(TypeUtil.objToInteger(gitlabProjectPayload.getGitlabProjectId()));
             applicationE.initSynchro(true);
-
+            applicationE.setFailed(false);
             // set project hook id for application
             setProjectHook(applicationE, gitlabProjectDO.getId(), applicationToken, gitlabProjectPayload.getUserId());
 //            gitlabRepository.batchAddVariable(gitlabProjectDO.getId(), gitlabProjectPayload.getUserId(),

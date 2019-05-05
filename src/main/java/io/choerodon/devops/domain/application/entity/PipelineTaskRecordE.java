@@ -28,6 +28,15 @@ public class PipelineTaskRecordE {
     private String envName;
     private String version;
     private String instanceName;
+    private String instanceStatus;
+
+    public String getInstanceStatus() {
+        return instanceStatus;
+    }
+
+    public void setInstanceStatus(String instanceStatus) {
+        this.instanceStatus = instanceStatus;
+    }
 
     public String getAppName() {
         return appName;

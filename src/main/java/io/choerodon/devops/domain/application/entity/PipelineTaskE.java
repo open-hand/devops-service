@@ -14,6 +14,15 @@ public class PipelineTaskE {
     private Integer isCountersigned;
     private Long projectId;
     private Long objectVersionNumber;
+    private Long createdBy;
+
+    public Long getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Long createdBy) {
+        this.createdBy = createdBy;
+    }
 
     public Long getObjectVersionNumber() {
         return objectVersionNumber;

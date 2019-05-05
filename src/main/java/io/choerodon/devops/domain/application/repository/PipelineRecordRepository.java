@@ -18,8 +18,6 @@ public interface PipelineRecordRepository {
 
     PipelineRecordE update(PipelineRecordE pipelineRecordE);
 
-    PipelineRecordE queryByProInstanceId(String proInstanceId);
-
     PipelineRecordE queryById(Long recordId);
 
     List<PipelineRecordE> queryByPipelineId(Long pipelineId);

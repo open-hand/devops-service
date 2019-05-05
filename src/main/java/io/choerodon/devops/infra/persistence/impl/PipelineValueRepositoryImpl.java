@@ -48,12 +48,13 @@ public class PipelineValueRepositoryImpl implements PipelineValueRepository {
                 throw new CommonException("error.insert.pipeline.value");
             }
         } else {
+            pipelineValueDO.setObjectVersionNumber(valueMapper.selectByPrimaryKey(pipelineValueDO).getObjectVersionNumber());
             if (valueMapper.updateByPrimaryKeySelective(pipelineValueDO) != 1) {
                 throw new CommonException("error.update.pipeline.value");
             }
             pipelineValueDO.setObjectVersionNumber(null);
         }
-        return ConvertHelper.convert(valueMapper.selectOne(pipelineValueDO), PipelineValueE.class);
+        return ConvertHelper.convert(valueMapper.selectByPrimaryKey(pipelineValueDO), PipelineValueE.class);
     }
 
     @Override

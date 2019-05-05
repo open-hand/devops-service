@@ -21,7 +21,7 @@ spec:
         - -c
         - cp -rf /var/choerodon/* /tools
         image: {{ .Values.preJob.image }}
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         name: tools
         volumeMounts:
         - mountPath: /tools

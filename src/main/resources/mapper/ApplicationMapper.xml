@@ -139,11 +139,11 @@
                     <if test="active == 1">
                         da.is_active = 1
                         AND da.is_synchro = 1
-                        AND da.is_failed IS NULL
+                        AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
                     <if test="active == 2">
                         da.is_synchro = 0
-                        AND da.is_failed IS NULL
+                        AND (da.is_failed IS NULL OR is_failed=0)
                     </if>
                 </foreach>
             </if>
@@ -251,4 +251,9 @@
             #{gitlabProjectId}
         </foreach>
     </select>
+
+
+    <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        UPDATE devops_application da set da.is_failed = null  where da.id = #{appId}
+    </update>
 </mapper>

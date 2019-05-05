@@ -16,7 +16,17 @@
         dptr.env_id,
         dptr.instance_id,
         dptr.status,
-        dai.`code` AS instanceName
+        dptr.task_id,
+        dptr.instance_name,
+        dptr.task_type,
+        (
+        CASE
+        WHEN dptr.instance_id IS NOT NULL
+        AND dai. STATUS IS NULL THEN 'deleted'
+        ELSE
+        dai. STATUS
+        END
+        ) instanceStatus
         FROM
         devops_pipeline_task_record dptr
         LEFT JOIN devops_application da ON da.id = dptr.application_id
