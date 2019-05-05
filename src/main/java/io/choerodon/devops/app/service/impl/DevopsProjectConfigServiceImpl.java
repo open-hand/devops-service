@@ -219,12 +219,13 @@ public class DevopsProjectConfigServiceImpl implements DevopsProjectConfigServic
             //更新项目表
             if (devopsProjectE.getHarborProjectUserPassword() == null) {
                 devopsProjectE.setHarborProjectUserName(user.getUsername());
-                devopsProjectE.setHarborProjectIsPrivate(true);
                 devopsProjectE.setHarborProjectUserPassword(user.getPassword());
                 devopsProjectE.setHarborProjectUserEmail(user.getEmail());
-                devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
             }
+            devopsProjectE.setHarborProjectIsPrivate(true);
+            devopsProjectRepository.updateProjectAttr(ConvertHelper.convert(devopsProjectE, DevopsProjectDO.class));
 
+            
             //新增项目harbor配置
             DevopsProjectConfigDTO devopsProjectConfigDTO = new DevopsProjectConfigDTO();
             devopsProjectConfigDTO.setName("project_harbor_default");
