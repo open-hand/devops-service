@@ -3,10 +3,10 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsConfigMapDTO;
 import io.choerodon.devops.api.dto.DevopsConfigMapRepDTO;
 import io.choerodon.devops.app.service.DevopsConfigMapService;
@@ -14,7 +14,6 @@ import io.choerodon.mybatis.pagehelper.annotation.SortDefault;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.mybatis.pagehelper.domain.Sort;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,7 +37,7 @@ public class DevopsConfigMapController {
      * @param devopsConfigMapDTO 配置映射信息
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建配置映射")
     @PostMapping
@@ -58,7 +57,7 @@ public class DevopsConfigMapController {
      * @param configMapId 实例id
      * @return responseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "配置映射删除")
     @DeleteMapping(value = "/{configMap_id}/delete")
@@ -77,7 +76,7 @@ public class DevopsConfigMapController {
      * @param projectId     项目id
      * @param configMapName 配置映射名
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "校验配置映射名唯一性")
     @GetMapping(value = "/check_name")
@@ -99,7 +98,7 @@ public class DevopsConfigMapController {
      * @param configMapId 配置映射Id
      * @return DevopsConfigMapRepDTO
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER,
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER,
             InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "项目下创建配置映射")
     @GetMapping("/{configMap_id}")
@@ -123,7 +122,7 @@ public class DevopsConfigMapController {
      * @param searchParam 查询参数
      * @return Page of DevopsServiceDTO
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @ApiOperation(value = "环境配置映射查询")

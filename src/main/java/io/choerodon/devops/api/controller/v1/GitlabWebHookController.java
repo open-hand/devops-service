@@ -4,18 +4,19 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.app.service.ApplicationInstanceService;
+import io.choerodon.devops.app.service.GitlabWebHookService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.app.service.ApplicationInstanceService;
-import io.choerodon.devops.app.service.GitlabWebHookService;
-import io.choerodon.swagger.annotation.Permission;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/webhook")
@@ -47,7 +48,7 @@ public class GitlabWebHookController {
      * @param testReleases
      */
     @ApiOperation(value = "查询自动化测试应用实例状态")
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             roles = {InitRoleCode.PROJECT_OWNER,
                     InitRoleCode.PROJECT_MEMBER})
     @PostMapping("/get_test_status")

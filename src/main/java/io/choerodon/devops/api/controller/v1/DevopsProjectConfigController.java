@@ -3,16 +3,15 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
 import io.choerodon.devops.api.dto.ProjectDefaultConfigDTO;
 import io.choerodon.devops.app.service.DevopsProjectConfigService;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +38,7 @@ public class DevopsProjectConfigController {
      * @param devopsProjectConfigDTO 配置信息
      * @return ResponseEntity<DevopsProjectConfigDTO>
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下创建配置映射")
     @PostMapping
     public ResponseEntity<DevopsProjectConfigDTO> create(
@@ -58,7 +57,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @param name      配置name
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "创建配置校验名称是否存在")
     @GetMapping(value = "/check_name")
     public ResponseEntity checkName(
@@ -77,7 +76,7 @@ public class DevopsProjectConfigController {
      * @param devopsProjectConfigDTO 配置信息
      * @return ResponseEntity<DevopsProjectConfigDTO>
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下更新配置信息")
     @PutMapping
     public ResponseEntity<DevopsProjectConfigDTO> update(
@@ -97,7 +96,7 @@ public class DevopsProjectConfigController {
      * @param projectConfigId 配置id
      * @return ResponseEntity
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下删除配置")
     @DeleteMapping("/{project_config_id}")
     public ResponseEntity deleteByProjectConfigId(
@@ -117,7 +116,7 @@ public class DevopsProjectConfigController {
      * @param param       param过滤参数
      * @return Page
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下分页查询配置")
     @CustomPageRequest
     @PostMapping("/list_by_options")
@@ -141,7 +140,7 @@ public class DevopsProjectConfigController {
      * @param projectConfigId 配置id
      * @return ResponseEntity<DevopsProjectConfigDTO>
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下根据配置Id查询配置")
     @GetMapping("/{project_config_id}")
     public ResponseEntity<DevopsProjectConfigDTO> queryByPrimaryKey(
@@ -162,7 +161,7 @@ public class DevopsProjectConfigController {
      * @param type      配置类型
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "项目下根据类型查询配置")
     @CustomPageRequest
     @GetMapping("/type")
@@ -183,7 +182,7 @@ public class DevopsProjectConfigController {
      * @param projectId 项目id
      * @return
      */
-    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER})
+    @Permission(roles = {InitRoleCode.PROJECT_OWNER})
     @ApiOperation(value = "根据配置Id检测该配置是否被使用")
     @CustomPageRequest
     @GetMapping("/{project_config_id}/check")

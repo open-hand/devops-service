@@ -3,6 +3,15 @@ package io.choerodon.devops.api.controller.v1;
 import java.util.List;
 import java.util.Optional;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.devops.api.dto.OrgCertificationDTO;
+import io.choerodon.devops.api.dto.ProjectDTO;
+import io.choerodon.devops.app.service.DevopsOrgCertificationService;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,17 +19,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import springfox.documentation.annotations.ApiIgnore;
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.api.dto.OrgCertificationDTO;
-import io.choerodon.devops.api.dto.ProjectDTO;
-import io.choerodon.devops.app.service.DevopsOrgCertificationService;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 @RestController
 @RequestMapping(value = "/v1/organizations/{organization_id}/certs")
@@ -35,7 +33,7 @@ public class OrgCertificationController {
      * @param organizationId      组织Id
      * @param orgCertificationDTO 证书信息
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织下创建证书")
     @PostMapping
     public ResponseEntity create(
@@ -53,7 +51,7 @@ public class OrgCertificationController {
      * @param organizationId      组织Id
      * @param orgCertificationDTO 集群对象
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "更新证书下的项目")
     @PutMapping("/{certId}")
     public ResponseEntity update(
@@ -73,7 +71,7 @@ public class OrgCertificationController {
      * @param organizationId 组织Id
      * @param certId         集群Id
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询单个证书信息")
     @GetMapping("/{certId}")
     public ResponseEntity<OrgCertificationDTO> query(
@@ -92,7 +90,7 @@ public class OrgCertificationController {
      * @param organizationId 项目id
      * @param name           集群name
      */
-    @Permission(level = ResourceLevel.ORGANIZATION, roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
+    @Permission(roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "校验证书名唯一性")
     @GetMapping(value = "/check_name")
     public void checkName(
@@ -109,7 +107,7 @@ public class OrgCertificationController {
      * @param organizationId 项目id
      * @return Page
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
+    @Permission(
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "分页查询项目列表")
     @CustomPageRequest
@@ -134,7 +132,7 @@ public class OrgCertificationController {
      * @param organizationId 项目id
      * @return List
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
+    @Permission(
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "查询已有权限的项目列表")
     @GetMapping("/list_cert_projects/{certId}")
@@ -155,7 +153,7 @@ public class OrgCertificationController {
      * @param organizationId 组织ID
      * @return Page
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
+    @Permission(
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "组织证书列表查询")
     @CustomPageRequest
@@ -179,7 +177,7 @@ public class OrgCertificationController {
      * @param certId         证书Id
      * @return String
      */
-    @Permission(level = ResourceLevel.ORGANIZATION,
+    @Permission(
             roles = {InitRoleCode.ORGANIZATION_ADMINISTRATOR})
     @ApiOperation(value = "删除证书")
     @CustomPageRequest

@@ -2,17 +2,15 @@ package io.choerodon.devops.api.controller.v1;
 
 import java.util.Optional;
 
+import io.choerodon.base.annotation.Permission;
+import io.choerodon.devops.app.service.ApplicationService;
+import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.app.service.ApplicationService;
-import io.choerodon.devops.app.service.ApplicationVersionService;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by younger on 2018/4/13.
@@ -37,7 +35,7 @@ public class CiController {
      * @param type  类型
      * @return File
      */
-    @Permission(level = ResourceLevel.PROJECT,
+    @Permission(
             permissionPublic = true)
     @ApiOperation(value = "应用查询ci脚本文件")
     @GetMapping
@@ -60,8 +58,7 @@ public class CiController {
      * @param file    tgz包
      * @return File
      */
-    @Permission(level = ResourceLevel.PROJECT,
-            permissionPublic = true)
+    @Permission(permissionPublic = true)
     @ApiOperation(value = "获取应用版本信息")
     @PostMapping
     public ResponseEntity create(

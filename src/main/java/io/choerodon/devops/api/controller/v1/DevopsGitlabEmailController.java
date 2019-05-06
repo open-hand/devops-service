@@ -1,9 +1,10 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Optional;
+
+import io.choerodon.base.annotation.Permission;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.ResourceLevel;
 import io.choerodon.devops.app.service.GitlabUserService;
-import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +14,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Optional;
 
 /**
  * @author zongw.lee@gmail.com
@@ -33,7 +32,7 @@ public class DevopsGitlabEmailController {
      * @param email 用户邮箱
      * @return Boolean
      */
-    @Permission(level = ResourceLevel.SITE,
+    @Permission(
             permissionPublic = true)
     @ApiOperation(value = "校验用户邮箱是否在gitlab已存在")
     @GetMapping(value = "/check")
