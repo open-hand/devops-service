@@ -48,4 +48,6 @@ public interface ApplicationMapper extends BaseMapper<ApplicationDO> {
     List<ApplicationDO> listByGitLabProjectIds(@Param("gitlabProjectIds") List<Long> gitlabProjectIds);
 
     void updateAppToSuccess(@Param("appId") Long appId);
+
+    void updateAppHarborConfig(@Param("projectId") Long projectId,@Param("newConfigId") Long newConfigId, @Param("oldConfigId") Long oldConfigId,@Param("harborPrivate") boolean harborPrivate);
 }

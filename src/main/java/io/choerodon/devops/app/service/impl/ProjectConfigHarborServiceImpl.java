@@ -1,17 +1,14 @@
 package io.choerodon.devops.app.service.impl;
 
-import com.google.gson.Gson;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.ProjectConfigDTO;
-import io.choerodon.devops.app.service.HarborService;
 import io.choerodon.devops.app.service.ProjectConfigHarborService;
 import io.choerodon.devops.domain.application.entity.ProjectE;
-import io.choerodon.devops.domain.application.event.HarborPayload;
 import io.choerodon.devops.domain.application.repository.IamRepository;
 import io.choerodon.devops.infra.config.ConfigurationProperties;
-import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.harbor.Project;
+import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
 import io.choerodon.devops.infra.feign.HarborClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +18,6 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author zongw.lee@gmail.com
@@ -47,7 +42,6 @@ public class ProjectConfigHarborServiceImpl implements ProjectConfigHarborServic
             Response<Void> result = null;
 
             ProjectE projectE = iamRepository.queryIamProject(projectId);
-
             result = harborClient.insertProject(new Project(
                     projectE.getOrganization().getCode() + "-" + projectE.getCode(), 1)).execute();
 

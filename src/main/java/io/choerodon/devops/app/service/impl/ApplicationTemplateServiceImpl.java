@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.google.gson.Gson;
 import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import org.eclipse.jgit.api.Git;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,6 @@ import io.choerodon.devops.api.validator.ApplicationTemplateValidator;
 import io.choerodon.devops.app.service.ApplicationTemplateService;
 import io.choerodon.devops.domain.application.entity.ApplicationTemplateE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.event.GitlabProjectPayload;
 import io.choerodon.devops.domain.application.factory.ApplicationTemplateFactory;
@@ -100,17 +100,17 @@ public class ApplicationTemplateServiceImpl implements ApplicationTemplateServic
         applicationTemplateE.initOrganization(organization.getId());
         applicationTemplateE.setSynchro(false);
         applicationTemplateE.setFailed(false);
-        GitlabGroupE gitlabGroupE = gitlabRepository.queryGroupByName(
+        DevopsProjectE devopsProjectE = gitlabRepository.queryGroupByName(
                 organization.getCode() + "_" + TEMPLATE, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        if (gitlabGroupE == null) {
-            GitlabGroupE gitlabGroupENew = new GitlabGroupE();
-            gitlabGroupENew.initName(organization.getCode() + "_" + TEMPLATE);
-            gitlabGroupENew.initPath(organization.getCode() + "_" + TEMPLATE);
-            gitlabGroupENew.initVisibility(Visibility.PUBLIC);
+        if (devopsProjectE == null) {
+            DevopsProjectE devopsProjectENew = new DevopsProjectE();
+            devopsProjectENew.initName(organization.getCode() + "_" + TEMPLATE);
+            devopsProjectENew.initPath(organization.getCode() + "_" + TEMPLATE);
+            devopsProjectENew.initVisibility(Visibility.PUBLIC);
             gitlabGroupId = TypeUtil.objToInteger(gitlabRepository.createGroup(
-                    gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getDevopsAppGroupId());
+                    devopsProjectENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId())).getDevopsAppGroupId());
         } else {
-            gitlabGroupId = TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId());
+            gitlabGroupId = TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId());
         }
         GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
         gitlabProjectPayload.setGroupId(gitlabGroupId);

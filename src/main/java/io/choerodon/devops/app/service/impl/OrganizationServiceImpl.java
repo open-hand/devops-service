@@ -3,9 +3,10 @@ package io.choerodon.devops.app.service.impl;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.app.service.GitlabUserService;
 import io.choerodon.devops.app.service.OrganizationService;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.entity.UserAttrE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.event.OrganizationEventPayload;
+import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
@@ -31,10 +32,10 @@ public class OrganizationServiceImpl implements OrganizationService {
         if (userAttrE == null) {
             throw new CommonException("gitlab user not related to iam user");
         }
-        GitlabGroupE gitlabGroupENew = new GitlabGroupE();
-        gitlabGroupENew.initName(organizationEventPayload.getCode() + "_" + TEMPLATE);
-        gitlabGroupENew.initPath(organizationEventPayload.getCode() + "_" + TEMPLATE);
-        gitlabGroupENew.initVisibility(Visibility.PUBLIC);
-        gitlabRepository.createGroup(gitlabGroupENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
+        DevopsProjectE devopsProjectENew = new DevopsProjectE();
+        devopsProjectENew.initName(organizationEventPayload.getCode() + "_" + TEMPLATE);
+        devopsProjectENew.initPath(organizationEventPayload.getCode() + "_" + TEMPLATE);
+        devopsProjectENew.initVisibility(Visibility.PUBLIC);
+        gitlabRepository.createGroup(devopsProjectENew, TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
     }
 }

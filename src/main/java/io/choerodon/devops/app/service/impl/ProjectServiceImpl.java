@@ -1,11 +1,11 @@
 package io.choerodon.devops.app.service.impl;
 
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.devops.app.service.ProjectService;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.event.ProjectEvent;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
@@ -39,7 +39,7 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public boolean queryProjectGitlabGroupReady(Long projectId) {
-        GitlabGroupE gitlabGroupE =  devopsProjectRepository.queryDevopsProject(projectId);
-        return gitlabGroupE.getDevopsAppGroupId() != null ;
+        DevopsProjectE devopsProjectE =  devopsProjectRepository.queryDevopsProject(projectId);
+        return devopsProjectE.getDevopsAppGroupId() != null ;
     }
 }

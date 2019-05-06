@@ -135,20 +135,4 @@ public class RetrofitHandler {
             return new OkHttpClient.Builder().build();
         }
     }
-
-    public static Response<Object> execute(Call<Object> call) {
-        Response<Object> response = null;
-        try {
-            response = call.execute();
-            if (response.code() != 200) {
-                if (response.code() == 401) {
-                    throw new CommonException("error.harbor.user.password");
-                }
-                throw new CommonException("code:" + response.code() + ",message:" + response.message() + ",body:" + response.errorBody().toString());
-            }
-        } catch (IOException e) {
-            throw new CommonException("error.retrofit.handler.url");
-        }
-        return response;
-    }
 }

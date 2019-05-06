@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
 import io.choerodon.devops.domain.application.valueobject.Variable;
@@ -25,9 +25,9 @@ public interface GitlabRepository {
 
     String createToken(Integer gitlabProjectId, String name, Integer userId);
 
-    GitlabGroupE queryGroupByName(String groupName, Integer userId);
+    DevopsProjectE queryGroupByName(String groupName, Integer userId);
 
-    GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId);
+    DevopsProjectE createGroup(DevopsProjectE gitlabGroupE, Integer userId);
 
     void createFile(Integer projectId, String path, String content, String commitMessage, Integer userId);
 

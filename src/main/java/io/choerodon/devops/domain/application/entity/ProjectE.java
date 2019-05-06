@@ -3,7 +3,6 @@ package io.choerodon.devops.domain.application.entity;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 
 /**
@@ -16,7 +15,7 @@ public class ProjectE {
     private Organization organization;
     private String name;
     private String code;
-    private GitlabGroupE gitlabGroupE;
+    private DevopsProjectE devopsProjectE;
 
     public ProjectE() {
     }
@@ -57,12 +56,12 @@ public class ProjectE {
         this.code = code;
     }
 
-    public GitlabGroupE getGitlabGroupE() {
-        return gitlabGroupE;
+    public DevopsProjectE getDevopsProjectE() {
+        return devopsProjectE;
     }
 
-    public void setGitlabGroupE(GitlabGroupE gitlabGroupE) {
-        this.gitlabGroupE = gitlabGroupE;
+    public void setDevopsProjectE(DevopsProjectE devopsProjectE) {
+        this.devopsProjectE = devopsProjectE;
     }
 
     public void initOrganization(Long id) {

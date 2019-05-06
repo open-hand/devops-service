@@ -411,20 +411,20 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             UserAttrE userAttrE = userAttrRepository.queryById(userWithRoleDTO.getId());
                             if (userAttrE != null) {
                                 Integer gitlabUserId = TypeUtil.objToInteger(userAttrE.getGitlabUserId());
-                                GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
+                                DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
                                 GitlabMemberE envgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                        TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
+                                        TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()), gitlabUserId);
                                 GitlabMemberE appgroupMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                                        TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
+                                        TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()), gitlabUserId);
                                 if (version.equals(TWELVE_VERSION)) {
                                     if (appgroupMemberE != null && appgroupMemberE.getId() != null) {
                                         gitlabGroupMemberRepository.deleteMember(
-                                                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()), gitlabUserId);
+                                                TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()), gitlabUserId);
                                     }
                                 } else {
                                     if (envgroupMemberE != null && envgroupMemberE.getId() != null) {
                                         gitlabGroupMemberRepository.deleteMember(
-                                                TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()), gitlabUserId);
+                                                TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()), gitlabUserId);
                                     }
                                 }
                             }
@@ -639,8 +639,8 @@ public class DevopsCheckLogServiceImpl implements DevopsCheckLogService {
                             devopsEnvironmentE.setEnvIdRsaPub(sshKeys.get(1));
                             devopsEnvironmentRepository.update(devopsEnvironmentE);
                             GitlabProjectPayload gitlabProjectPayload = new GitlabProjectPayload();
-                            GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectE.getId());
-                            gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsEnvGroupId()));
+                            DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectE.getId());
+                            gitlabProjectPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsEnvGroupId()));
                             gitlabProjectPayload.setUserId(ADMIN);
                             gitlabProjectPayload.setPath(devopsEnvironmentE.getCode());
                             gitlabProjectPayload.setOrganizationId(null);
