@@ -38,6 +38,14 @@ export default class Elements extends Component {
   };
 
   componentDidMount() {
+    const {
+      ElementsStore,
+      AppState: {
+        currentMenuType: { id: projectId },
+      },
+    } = this.props;
+
+    ElementsStore.loadDefaultRepo(projectId);
     this.loadData();
   }
 
@@ -94,7 +102,6 @@ export default class Elements extends Component {
       },
     } = this.props;
     ElementsStore.loadListData(projectId, page, size, sort, filter);
-    ElementsStore.loadDefaultRepo(projectId);
   };
 
   /**
@@ -218,8 +225,31 @@ export default class Elements extends Component {
     if (result) {
       this.closeTypeChange();
       ElementsStore.loadDefaultRepo(projectId);
+      this.handleRefresh();
     }
     this.setState({ changeLoading: false });
+  };
+
+  /**
+   * 私有 harbor
+   * @param type 仓库类型
+   * @param name 仓库名称作为唯一参照
+   * @returns {boolean|Elements.props.ElementsStore.getDefault.harborIsPrivate}
+   */
+  isPrivateHarbor(type, name) {
+    const {
+      ElementsStore: {
+        getDefault: { harborConfigName, harborIsPrivate },
+      },
+    } = this.props;
+
+    return type === 'harbor' && harborConfigName === name && harborIsPrivate;
+  }
+
+  renderOriginColumn = ({ type, name, origin }) => {
+    const isPrivateHarbor = this.isPrivateHarbor(type, name);
+
+    return <FormattedMessage id={`elements.origin.${isPrivateHarbor ? 'default' : origin}`} />;
   };
 
   get getColumns() {
@@ -227,20 +257,23 @@ export default class Elements extends Component {
       intl: { formatMessage },
       AppState: {
         currentMenuType: {
-          type,
+          type: menuType,
           id: projectId,
           organizationId,
         },
       },
     } = this.props;
     const { filters, sorter: { columnKey, order } } = this.state;
-    const _renderAction = (record) => {
-      return record.origin === 'project' ? (<Permission
+    const _renderAction = ({ type, id, origin, name }) => {
+      const isPrivateHarbor = this.isPrivateHarbor(type, name);
+      const canModify = !isPrivateHarbor && origin === 'project';
+
+      return canModify ? (<Permission
         service={[
           'devops-service.devops-project-config.update',
           'devops-service.devops-project-config.deleteByProjectConfigId',
         ]}
-        type={type}
+        type={menuType}
         projectId={projectId}
         organizationId={organizationId}
       >
@@ -254,7 +287,7 @@ export default class Elements extends Component {
             size="small"
             funcType="flat"
             icon="mode_edit"
-            onClick={e => this.handleCreateClick(e, EDIT_MODE, record.id)}
+            onClick={e => this.handleCreateClick(e, EDIT_MODE, id)}
           />
         </Tooltip>
         <Tooltip
@@ -267,7 +300,7 @@ export default class Elements extends Component {
             size="small"
             funcType="flat"
             icon="delete_forever"
-            onClick={() => this.openRemove(record.id, record.name)}
+            onClick={() => this.openRemove(id, name)}
           />
         </Tooltip>
       </Permission>) : null;
@@ -297,7 +330,7 @@ export default class Elements extends Component {
       key: 'origin',
       sorter: true,
       sortOrder: columnKey === 'origin' && order,
-      render: _renderOrigin,
+      render: this.renderOriginColumn,
     }, {
       key: 'action',
       align: 'right',
@@ -484,8 +517,4 @@ export default class Elements extends Component {
 
 function _renderName(record) {
   return <FormattedMessage id={`elements.type.${record.type}`} />;
-}
-
-function _renderOrigin(record) {
-  return <FormattedMessage id={`elements.origin.${record.origin}`} />;
 }

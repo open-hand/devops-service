@@ -1576,6 +1576,7 @@ const zhCN = {
   "elements.origin": "来源",
   "elements.origin.project": "自定义",
   "elements.origin.system": "系统预置",
+  "elements.origin.default": "项目预置",
   "elements.user": "登录名",
   "elements.password": "密码",
   "elements.email": "邮箱",
