@@ -1,0 +1,65 @@
+.c7ncd-pod-wrap {
+  display: flex;
+  width: 100px;
+
+  .c7ncd-pod-content {
+    flex: 1;
+    height: 70px;
+
+    .c7n-pod-circle {
+      fill: none;
+      stroke: #0bc2a8;
+      stroke-width: 5px;
+      transform: rotate(-90deg);
+      transform-origin: center;
+    }
+
+    .c7n-pod-circle-error {
+      fill: none;
+    }
+
+    .c7n-pod-circle-num {
+      text-anchor: middle;
+      font-size: 16px;
+      stroke: #000;
+    }
+
+    .c7n-pod-circle-text {
+      text-anchor: middle;
+      font-size: 12px;
+      color: rgba(0, 0, 0, .65);
+    }
+
+    &.c7ncd-pod-btn-wrap {
+      padding: 11px 0;
+
+      .c7ncd-pod-btn {
+        display: block;
+        padding: 0 !important;
+        margin-left: 6px;
+
+        .icon {
+          font-size: 24px;
+          margin-right: 0;
+        }
+      }
+    }
+  }
+}
+
+.c7ncd-pod-count {
+  font-size: 12px;
+  color: rgba(0, 0, 0, .54);
+
+  .c7ncd-pod-count-value {
+    margin-left: 4px;
+    font-size: 16px;
+    color: #000;
+  }
+}
+
+.c7ncd-pod-modal {
+  .ant-modal-body {
+    margin-top: 8px;
+  }
+}

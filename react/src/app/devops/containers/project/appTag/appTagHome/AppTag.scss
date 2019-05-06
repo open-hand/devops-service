@@ -1,0 +1,122 @@
+.c7n-tag-wrapper {
+  .c7n-tag-table {
+    font-weight: 500;
+    font-size: 16px;
+    padding-bottom: 8px;
+    max-width: 100%;
+    margin-top: 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, .12);
+  }
+
+  .c7n-tag-panel {
+    display: inline-flex;
+    width: calc(100% - 24px);
+    padding-left: 16px;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    .c7n-tag-panel-info {
+      flex: 1;
+      .c7n-tag-panel-name {
+        margin-bottom: 6px;
+        span {
+          margin-left: 8px;
+          vertical-align: middle;
+        }
+      }
+      .c7n-tag-panel-detail {
+        line-height: 1;
+        margin-bottom: 0;
+        .c7n-tag-icon-point {
+          margin-right: 8px;
+          font-size: 18px;
+          color: rgba(0, 0, 0, .54);
+        }
+        a {
+          vertical-align: middle;
+        }
+        span {
+          vertical-align: middle;
+        }
+        .c7n-tag-msg {
+          word-break: break-all;
+          max-width: 570px;
+          display: inline-block;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+        .c7n-tag-panel-person {
+          vertical-align: top;
+          .c7n-tag-commit {
+            display: inline-block;
+            vertical-align: middle;
+            &.c7n-tag-commit-avatar {
+              margin-right: 8px;
+              width: 18px;
+              height: 18px;
+              line-height: 18px;
+              border-radius: 50%;
+              font-size: 14px;
+              text-align: center;
+              background-color: rgba(63, 81, 181, .44);
+              color: rgba(63, 81, 181, 1);
+            }
+          }
+          .c7n-tag-commit-img {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+          }
+        }
+        .c7n-tag-time {
+          display: inline-block;
+          vertical-align: middle;
+        }
+      }
+    }
+    .c7n-tag-panel-opera {
+      display: flex;
+      justify-content: flex-end;
+      flex: 0 0 84px;
+      padding: 12px;
+      width: 84px;
+      line-height: 1;
+      button {
+        font-size: 18px;
+        &:last-child {
+          margin-left: 10px;
+        }
+      }
+    }
+  }
+  .c7n-tag-release {
+    padding-left: 60px;
+    color: rgba(0, 0, 0, 0.65);
+  }
+  .c7n-tag-pagin {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 8px;
+  }
+  .c7n-tag-empty {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .12), inset 4px 0 0 0 #d3d3d3;
+    .c7n-tag-empty-text {
+      color: rgba(0, 0, 0, 0.65);
+      display: inline-block;
+      vertical-align: middle;
+    }
+    .c7n-tag-empty-icon {
+      margin-right: 12px;
+      line-height: 32px;
+      color: #a9a9a9;
+      font-size: 20px;
+    }
+  }
+  .ant-collapse-content-box {
+    padding-top: 0 !important;
+    padding-bottom: 12px;
+  }
+}

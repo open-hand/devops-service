@@ -1,0 +1,548 @@
+# 组织层Devops管理
+"devops-management":
+  icon: devops
+  sort: 3
+  organization:
+    - "application-template":
+        icon: application_model
+        Routes: /devops/template
+        sort: 1
+        permission:
+          - "devops-service.application-template.listByOrgId"
+          - "devops-service.application-template.queryByAppTemplateId"
+          - "devops-service.application-template.delete"
+    - "cluster":
+        icon: cluster
+        Routes: /devops/cluster
+        sort: 2
+        permission:
+          - "devops-service.devops-cluster.listCluster"
+    - "certificate-manage":
+        icon: class
+        Routes: /devops/certificate-manage
+        sort: 3
+        permission:
+          - "devops-service.org-certification.listOrgCert"
+
+# 项目层应用管理
+"app-management":
+  icon: apps
+  sort: 1
+  project:
+    - "application":
+        icon: widgets
+        Routes: /devops/app
+        sort: 1
+        permission:
+          - "devops-service.application.create"
+    - "application-version":
+        icon: version
+        Routes: /devops/app-version
+        sort: 2
+        permission:
+          - "devops-service.application.listByActive"
+          - "devops-service.application-version.pageByOptions"
+    - "application-release":
+        icon: publish2
+        Routes: /devops/app-release
+        sort: 4
+        permission:
+          - "devops-service.application-market.create"
+          - "devops-service.application-market.update"
+          - "devops-service.application-market.updateVersions"
+    - "application-market":
+        icon: appmarket
+        Routes: /devops/app-market
+        sort: 5
+        permission:
+          - "devops-service.application-market.queryApp"
+          - "devops-service.application-market.listAllApp"
+          - "devops-service.application-market.uploadApps"
+          - "devops-service.application-market.importApps"
+          - "devops-service.application-market.deleteZip"
+          - "devops-service.application-market.queryAppVersionReadme"
+
+# 开发流水线
+"development-pipeline":
+  icon: wrench
+  sort: 2
+  project:
+    - "development-console":
+        icon: develop_console
+        Routes: /devops/dev-console
+        sort: 1
+        permission:
+          - "devops-service.application.listCodeRepository"
+          - "devops-service.devops-git.queryByAppId"
+          - "devops-service.devops-git.listByAppId"
+          - "devops-service.devops-git.getTagByPage"
+          - "devops-service.devops-git.getMergeRequestList"
+          - "devops-service.devops-gitlab-pipeline.pagePipeline"
+    - "repository":
+        icon: account_balance
+        Routes: /devops/repository
+        sort: 2
+        permission:
+          - "devops-service.application.listCodeRepository"
+    - "branch":
+        icon: branch
+        Routes: /devops/branch
+        sort: 3
+        permission:
+          - "devops-service.devops-git.createBranch"
+          - "devops-service.devops-git.queryByAppId"
+          - "devops-service.devops-git.delete"
+          - "devops-service.devops-git.listByAppId"
+          - "devops-service.devops-git.update"
+    - "tag":
+        icon: local_offer
+        Routes: /devops/tag
+        sort: 4
+        permission:
+          - "devops-service.devops-git.getTagByPage"
+          - "devops-service.devops-git.listByAppId"
+          - "devops-service.devops-git.createTag"
+          - "devops-service.devops-git.checkTag"
+          - "devops-service.devops-git.deleteTag"
+    - "merge-request":
+        icon: merge_request
+        Routes: /devops/merge-request
+        sort: 5
+        permission:
+          - "devops-service.devops-git.getMergeRequestList"
+          - "devops-service.devops-git.getUrl"
+    - "continuous-integration":
+        icon: CI
+        Routes: /devops/ci-pipeline
+        sort: 6
+        permission:
+          - "devops-service.devops-gitlab-pipeline.pagePipeline"
+          - "devops-service.project-pipeline.cancel"
+          - "devops-service.project-pipeline.retry"
+    - "application":
+        delete: true
+        icon: widgets
+        Routes: /devops/app
+        sort: 5
+        permission:
+          - "devops-service.application.pageByOptions"
+          - "devops-service.application.update"
+          - "devops-service.application.queryByAppId"
+          - "devops-service.application.queryByAppIdAndActive"
+    - "application-version":
+        delete: true
+        icon: version
+        Routes: /devops/app-version
+        sort: 6
+        permission:
+          - "devops-service.application-version.pageByOptions"
+
+# 部署流水线
+"deployment-pipeline":
+  icon: cloud_upload
+  sort: 3
+  project:
+    - "environment-overview":
+        icon: public
+        Routes: /devops/env-overview
+        sort: 1
+        permission:
+          - "devops-service.application-instance.listByAppId"
+          - "devops-service.application-instance.listByAppInstanceId"
+          - "devops-service.application-instance.queryValue"
+          - "devops-service.application-instance.deploy"
+          - "devops-service.application-instance.pageInstances"
+          - "devops-service.application-instance.pageByOptions"
+          - "devops-service.application-instance.listByAppVersionId"
+          - "devops-service.application-instance.queryValues"
+          - "devops-service.application-instance.listResources"
+          - "devops-service.application-instance.listStages"
+          - "devops-service.application-instance.delete"
+          - "devops-service.application-instance.start"
+          - "devops-service.application-instance.stop"
+          - "devops-service.application-instance.listByEnv"
+          - "devops-service.devops-env-file-error.page"
+          - "devops-service.devops-environment.listByProjectIdAndActive"
+          - "devops-service.application.listByEnvIdAndStatus"
+          - "devops-service.devops-service.create"
+          - "devops-service.devops-service.checkName"
+          - "devops-service.devops-service.query"
+          - "devops-service.devops-service.update"
+          - "devops-service.devops-service.delete"
+          - "devops-service.devops-service.listByEnv"
+          - "devops-service.devops-ingress.queryDomainId"
+          - "devops-service.devops-ingress.delete"
+          - "devops-service.devops-ingress.listByEnv"
+    - "environment-pipeline":
+        icon: data_usage
+        Routes: /devops/env-pipeline
+        sort: 3
+        permission:
+          - "devops-service.devops-environment.create"
+    - "deployment-overview":
+        icon: Operation-monitoring
+        Routes: /devops/deploy-overview
+        sort: 4
+        permission:
+          - "devops-service.application.listAll"
+          - "devops-service.application-instance.deploy"
+    - "application-deployment":
+        icon: jsfiddle
+        Routes: /devops/deployment-app
+        sort: 5
+        permission:
+          - "devops-service.application-instance.deploy"
+    - "instance":
+        icon: instance_outline
+        Routes: /devops/instance
+        sort: 6
+        permission:
+          - "devops-service.application-instance.listByAppId"
+          - "devops-service.application-instance.listByAppInstanceId"
+          - "devops-service.application-instance.queryValue"
+          - "devops-service.application-instance.deploy"
+          - "devops-service.application-instance.pageInstances"
+          - "devops-service.application-instance.pageByOptions"
+          - "devops-service.application-instance.listByAppVersionId"
+          - "devops-service.application-instance.queryValues"
+          - "devops-service.application-instance.listResources"
+          - "devops-service.application-instance.listStages"
+          - "devops-service.application-instance.delete"
+          - "devops-service.application-instance.start"
+          - "devops-service.application-instance.stop"
+          - "devops-service.devops-environment.listByProjectIdAndActive"
+          - "devops-service.application.listByEnvIdAndStatus"
+    - "service":
+        icon: router
+        Routes: /devops/service
+        sort: 7
+        permission:
+          - "devops-service.devops-service.create"
+          - "devops-service.devops-service.checkName"
+          - "devops-service.devops-service.listByEnv"
+          - "devops-service.devops-service.query"
+          - "devops-service.devops-service.update"
+          - "devops-service.devops-service.delete"
+    - "ingress":
+        icon: language
+        Routes: /devops/ingress
+        sort: 8
+        permission:
+          - "devops-service.devops-ingress.listByEnv"
+          - "devops-service.devops-ingress.queryDomainId"
+          - "devops-service.devops-ingress.delete"
+          - "devops-service.certification.getActiveByDomain"
+    - "container":
+        icon: kubernetes
+        Routes: /devops/container
+        sort: 9
+        permission:
+          - "devops-service.devops-env-pod-container.queryLogByPod"
+          - "devops-service.devops-env-pod-container.handleShellByPod"
+          - "devops-service.devops-env-pod.pageByOptions"
+    - "certificate":
+        icon: class
+        Routes: /devops/certificate
+        sort: 10
+        permission:
+          - "devops-service.devops-environment.listByProjectIdAndActive"
+          - "devops-service.certification.listByOptions"
+          - "devops-service.certification.create"
+          - "devops-service.certification.delete"
+    - "config-map":
+        icon: compare_arrows
+        Routes: /devops/config-map
+        sort: 11
+        permission:
+          - "devops-service.devops-config-map.create"
+          - "devops-service.devops-config-map.query"
+          - "devops-service.devops-config-map.delete"
+          - "devops-service.devops-config-map.listByEnv"
+    - "secret":
+        icon: secret
+        Routes: /devops/secret
+        sort: 12
+        permission:
+          - "devops-service.devops-secret.createOrUpdate"
+          - "devops-service.devops-secret.querySecret"
+          - "devops-service.devops-secret.deleteSecret"
+          - "devops-service.devops-secret.listByOption"
+    - "pipeline-management":
+        icon: line_manage
+        Routes: /devops/pipeline
+        sort: 15
+        permission:
+          - "devops-service.pipeline.create"
+          - "devops-service.pipeline.update"
+          - "devops-service.pipeline.listByOptions"
+          - "devops-service.pipeline.updateIsEnabled"
+          - "devops-service.pipeline.delete"
+          - "devops-service.pipeline.execute"
+          - "devops-service.pipeline.listRecords"
+          - "devops-service.pipeline.checkDeploy"
+    - "pipeline-record":
+        icon: format_list_bulleted
+        Routes: /devops/pipeline-record
+        sort: 16
+        permission:
+          - "devops-service.pipeline.listRecords"
+          - "devops-service.pipeline.listPipelineDTO"
+          - "devops-service.pipeline.getRecordById"
+          - "devops-service.pipeline.retry"
+          - "devops-service.pipeline.audit"
+    - "deployment-config":
+        icon: cloud_done
+        Routes: /devops/deployment-config
+        sort: 17
+        permission:
+          - "devops-service.pipeline-value.listByOptions"
+          - "devops-service.pipeline-value.queryById"
+          - "devops-service.pipeline-value.createOrUpdate"
+          - "devops-service.pipeline-value.delete"
+    - "auto-deploy":
+        icon: auto_deploy
+        Routes: /devops/auto-deploy
+        sort: 101
+        delete: true
+        permission:
+          - "devops-service.devops-auto-deploy.pageByOptions"
+
+# 项目设置
+"prosetting":
+  icon: IAM
+  sort: 6
+  project:
+    - "element-settings":
+        icon: games
+        Routes: /devops/elements
+        sort: 4
+        permission:
+          - "devops-service.devops-project-config.pageByOptions"
+          - 'devops-service.devops-project-config.update'
+          - 'devops-service.devops-project-config.create'
+          - 'devops-service.devops-project-config.checkName'
+          - 'devops-service.application.checkHarbor'
+          - 'devops-service.application.checkChart'
+          - 'devops-service.devops-project-config.queryByPrimaryKey'
+          - 'devops-service.devops-project-config.deleteByProjectConfigId'
+          - 'devops-service.devops-project-config.checkIsUsed'
+
+# 项目层报表
+"platform-reports":
+  icon: bar_chart
+  sort: 99
+  project:
+    - "reports":
+        icon: devops_chart
+        Routes: /devops/reports
+        sort: 2
+        permission:
+          - "devops-service.application.listByActive"
+          - "devops-service.devops-gitlab-commit.getCommits"
+          - "devops-service.devops-gitlab-commit.getRecordCommits"
+          - "devops-service.application-instance.listDeployTime"
+          - "devops-service.application-instance.pageDeployTimeDetail"
+          - "devops-service.devops-environment.listByProjectIdAndActive"
+          - "devops-service.devops-gitlab-pipeline.listPipelineTime"
+          - "devops-service.devops-gitlab-pipeline.pagePipeline"
+          - "devops-service.application-instance.listDeployFrequency"
+          - "devops-service.application-instance.pageDeployFrequencyDetail"
+          - "devops-service.devops-gitlab-pipeline.listPipelineFrequency"
+          - "devops-service.devops-gitlab-pipeline.pagePipeline"
+
+# 要删除的菜单
+"application-market":
+  icon: apps
+  sort: 30
+  delete: true
+  project:
+    - "application-release":
+        icon: near_me
+        Routes: /devops/app-release
+        sort: 4
+        delete: true
+        permission:
+          - "devops-service.application-market.create"
+          - "devops-service.application-market.update"
+          - "devops-service.application-market.updateVersions"
+    - "application-market":
+        icon: apps
+        Routes: /devops/app-market
+        sort: 5
+        delete: true
+        permission:
+          - "devops-service.application-market.queryApp"
+          - "devops-service.application-market.listAllApp"
+          - "devops-service.application-market.uploadApps"
+          - "devops-service.application-market.importApps"
+          - "devops-service.application-market.deleteZip"
+          - "devops-service.application-market.queryAppVersionReadme"
+
+"cluster-management":
+  icon: cluster
+  sort: 4
+  delete: true
+  organization:
+    - "cluster":
+        icon: kubernetes_cluster
+        Routes: /devops/cluster
+        sort: 1
+        delete: true
+        permission:
+          - "devops-service.devops-cluster.listCluster"
+
+"devops":
+  icon: devops
+  sort: 31
+  delete: true
+  organization:
+    - "template":
+        icon: application_model
+        Routes: /devops/template
+        sort: 1
+        delete: true
+        permission:
+          - "devops-service.application-template.listByOrgId"
+  project:
+    - "app":
+        icon: widgets
+        Routes: /devops/app
+        sort: 1
+        delete: true
+        permission:
+          - "devops-service.application.pageByOptions"
+    - "version":
+        icon: version
+        Routes: /devops/app-version
+        sort: 2
+        delete: true
+        permission:
+          - "devops-service.application-version.pageByOptions"
+    - "ci":
+        icon: CI
+        Routes: /devops/ci-pipeline
+        sort: 3
+        delete: true
+        permission:
+          - "devops-service.project-pipeline.list"
+    - "environment":
+        icon: linear_scale
+        Routes: /devops/env-pipeline
+        sort: 5
+        delete: true
+        permission:
+          - "devops-service.devops-environment.listByProjectIdAndActive"
+    - "app-release":
+        icon: near_me
+        Routes: /devops/app-release
+        sort: 4
+        delete: true
+        permission:
+          - "devops-service.application-market.create"
+    - "appstore":
+        icon: apps
+        Routes: /devops/appstore
+        sort: 6
+        delete: true
+        permission:
+          - "devops-service.application-market.queryApp"
+    - "deploy":
+        icon: jsfiddle
+        Routes: /devops/deployment-app
+        sort: 7
+        delete: true
+        permission:
+          - "devops-service.application-instance.deploy"
+    - "instance":
+        icon: instance_outline
+        Routes: /devops/instance
+        sort: 8
+        delete: true
+        permission:
+          - "devops-service.application-instance.listByAppId"
+    - "service":
+        icon: router
+        Routes: /devops/service
+        sort: 9
+        delete: true
+        permission:
+          - "devops-service.devops-service.create"
+    - "domain":
+        icon: language
+        Routes: /devops/domain
+        sort: 10
+        delete: true
+        permission:
+          - "devops-service.devops-ingress.pageByOptions"
+    - "container":
+        icon: kubernetes
+        Routes: /devops/container
+        sort: 11
+        delete: true
+        permission:
+          - "devops-service.devops-env-pod-container.queryLogByPod"
+
+"platform_reports":
+  icon: bar_chart
+  sort: 99
+  delete: true
+  project:
+    - "reports":
+        icon: devops_chart
+        Routes: /devops/reports
+        sort: 2
+        delete: true
+        permission:
+          - "devops-service.application.listByActive"
+
+"application-management":
+  icon: apps
+  sort: 1
+  delete: true
+  organization:
+    - "application-template":
+        icon: application_model
+        Routes: /devops/template
+        sort: 1
+        delete: true
+        permission:
+          - "devops-service.application-template.listByOrgId"
+          - "devops-service.application-template.queryByAppTemplateId"
+          - "devops-service.application-template.delete"
+  project:
+    - "application":
+        icon: widgets
+        Routes: /devops/app
+        sort: 1
+        delete: true
+        permission:
+          - "devops-service.application.create"
+    - "application-version":
+        icon: version
+        Routes: /devops/app-version
+        sort: 2
+        delete: true
+        permission:
+          - "devops-service.application.listByActive"
+          - "devops-service.application-version.pageByOptions"
+    - "application-release":
+        icon: publish2
+        Routes: /devops/app-release
+        sort: 4
+        delete: true
+        permission:
+          - "devops-service.application-market.create"
+          - "devops-service.application-market.update"
+          - "devops-service.application-market.updateVersions"
+    - "application-market":
+        icon: appmarket
+        Routes: /devops/app-market
+        sort: 5
+        delete: true
+        permission:
+          - "devops-service.application-market.queryApp"
+          - "devops-service.application-market.listAllApp"
+          - "devops-service.application-market.uploadApps"
+          - "devops-service.application-market.importApps"
+          - "devops-service.application-market.deleteZip"
+          - "devops-service.application-market.queryAppVersionReadme"

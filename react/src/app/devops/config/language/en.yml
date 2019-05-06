@@ -1,0 +1,82 @@
+# 应用管理
+"app-management": "Application Management"
+"app-management.application": "Application"
+"app-management.application-version": "Application Version"
+"app-management.application-release": "Application Release"
+"app-management.application-market": "Application Market"
+
+# 开发流水线
+"development-pipeline": "Development Pipeline"
+"development-pipeline.development-console": "Development Console"
+"development-pipeline.branch": "Branch"
+"development-pipeline.tag": "Tag"
+"development-pipeline.repository": "Repository"
+"development-pipeline.merge-request": "Merge Request"
+"development-pipeline.continuous-integration": "Continuous Integration"
+"development-pipeline.application": "Application"
+"development-pipeline.application-version": "Application Version"
+
+# 部署流水线
+"deployment-pipeline": "Deployment Pipeline"
+"deployment-pipeline.environment-pipeline": "Environment Management"
+"deployment-pipeline.deployment-overview": "Deployment Overview"
+"deployment-pipeline.application-deployment": "Application Deployment"
+"deployment-pipeline.instance": "Instance"
+"deployment-pipeline.environment-overview": "Environment Overview"
+"deployment-pipeline.service": "Service"
+"deployment-pipeline.ingress": "Ingress"
+"deployment-pipeline.container": "Container"
+"deployment-pipeline.certificate": "Certificate"
+"deployment-pipeline.config-map": "Config Map"
+"deployment-pipeline.secret": "Secret"
+"deployment-pipeline.pipeline-management": "Pipeline Management"
+"deployment-pipeline.pipeline-record": "Pipeline Record"
+"deployment-pipeline.deployment-config": "Deployment Config"
+
+
+# 报表
+"platform-reports": "Reports"
+"platform-reports.reports": "DevOps Report"
+
+# Devops管理
+"devops-management": "DevOps Management"
+"devops-management.cluster": "Cluster Management"
+"devops-management.application-template": "Application Template"
+"devops-management.certificate-manage": "Certificate Management"
+
+# 项目设置
+"prosetting": "Project Manage"
+"prosetting.element-settings": "Element Setting"
+
+# 0.8废弃
+"application-market": "Application Market"
+"application-market.application-market": "Application Market"
+"application-market.application-release": "Application Release"
+"devops": "Devops"
+"devops.template": "Application template"
+"devops.app": "App"
+"devops.ci": "CI"
+"devops.version": "App Version"
+"devops.environment": "Environment"
+"devops.deploy": "Deploy"
+"devops.instance": "Instance"
+"devops.service": "Service"
+"devops.domain": "Domain"
+"devops.container": "Container"
+"devops.app-release": "App Release"
+"devops.appstore": "App Store"
+"platform_reports": "Reports"
+"platform_reports.reports": "DevOps Report"
+
+#0.11废弃
+"cluster-management": "Cluster Management"
+"cluster-management.cluster": "Cluster"
+"application-management": "Application Management"
+"application-management.application": "Application"
+"application-management.application-version": "Application Version"
+"application-management.application-release": "Application Release"
+"application-management.application-market": "Application Market"
+"application-management.application-template": "Application Template"
+
+#0.16废弃
+"deployment-pipeline.auto-deploy": "Auto Deploy"

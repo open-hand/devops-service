@@ -1,0 +1,62 @@
+.c7n-createBranch {
+  .c7n-title {
+    font-size: 9px;
+    color: rgba(0, 0, 0, 0.54);
+    line-height: 14px;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .branch-formItem-icon {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.54);
+    margin-right: 10px;
+    display: inline-block;
+    margin-top: 14px;
+  }
+
+  .branch-formItem {
+    // display: inline-block;
+    width: 512px;
+  }
+
+  .c7n-formItem_281 {
+    width: 312px;
+    display: inline-block;
+
+    .ant-input-has-label {
+      .ant-input-content {
+        padding-top: 18px;
+      }
+    }
+  }
+
+  .ant-input-group-addon {
+    padding: 0 !important;
+    border: none !important;
+    background: #fff !important;
+    color: rgba(0, 0, 0, 0.65) !important;
+  }
+}
+
+.c7n-branch-formItem-icon {
+  vertical-align: middle;
+  padding-right: 5px;
+}
+
+.createBranch-dropdown .ant-select-dropdown-menu-item {
+  padding: 6px 12px !important;
+}
+
+.c7n-option-popover {
+  width: 205px;
+  display: inline-flex;
+}
+
+.c7n-dom-more {
+  margin: -8px -20px;
+  height: 28px;
+  line-height: 28px;
+  color: #3f51b5;
+  padding-left: 20px;
+}

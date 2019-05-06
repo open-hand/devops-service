@@ -1,0 +1,99 @@
+.c7n-pipeline-task-create {
+
+  .c7n-pipeline-config {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.87);
+    line-height: 24px;
+    font-weight: 500;
+    margin-bottom: 16px;
+
+    .c7n-table-title-tip i {
+      font-size: 16px;
+      margin-left: 9px;
+    }
+  }
+
+  .pipeline-type-tips {
+    width: 512px;
+
+    .ant-select-tags.ant-select-allow-clear .ant-select-selection__rendered .ant-select-clear {
+      right: 20px;
+      top: -3px;
+    }
+  }
+  .c7n-pipeline-radio {
+
+    .c7n-pipeline-replace-tip-icon {
+      color: #f44336;
+      margin: 0 5px 0 10px;
+    }
+
+    .c7n-pipeline-replace-tip-text {
+      color: rgba(0, 0, 0, 0.54);
+    }
+
+    .ant-radio-wrapper {
+      display: block;
+      margin-bottom: 10px;
+
+      &:last-child {
+        margin-bottom: 16px;
+      }
+    }
+  }
+
+  .c7n-pipeline-config-value {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+
+    .c7n-config-tip-icon {
+      color: #f44336;
+      margin-right: 6px;
+    }
+
+    .c7n-config-tip-text {
+      color: rgba(0, 0, 0, 0.54);
+    }
+
+    .ant-btn > .icon {
+      margin-right: -2px;
+    }
+  }
+
+  .c7ncd-sidebar-select {
+    width: 512px;
+  }
+}
+
+.c7n-pipeline-sidebar-cancel {
+  color: #3f51b5;
+}
+
+.c7n-config-value-modal {
+  width: 1200px !important;
+  top: 70px;
+
+  .c7n-config-value-modal-content {
+    height: 440px;
+    overflow-y: scroll;
+    margin-top: 8px;
+  }
+}
+
+.c7n-pipeline-task-parallel-disabled {
+  display: flex;
+  flex-direction: column;
+}
+
+.c7n-pipeline-config-select {
+
+  .ant-select-dropdown-footer {
+    padding: 8px;
+  }
+
+  .ant-select-dropdown-menu-item,
+  .ant-select-dropdown-filter {
+    padding-left: 23px;
+  }
+}

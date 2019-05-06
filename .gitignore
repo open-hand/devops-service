@@ -15,6 +15,8 @@ target/
 *.iws
 *.iml
 *.ipr
+.project
+.vscode
 
 ### NetBeans ###
 nbproject/private/
@@ -40,3 +42,20 @@ choerodon_temp/*
 deployfile
 gitops
 tmp
+
+### front ###
+
+# npm
+node_modules
+npm-debug.log
+yarn-error.log
+yarn-lock.json
+package-lock.json
+
+# folder
+dist
+# 自动更新目录，不要修改此目录里面的内容
+src/app
+
+# 菜单配置
+config.yml

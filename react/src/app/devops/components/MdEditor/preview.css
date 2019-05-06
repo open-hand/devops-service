@@ -1,0 +1,355 @@
+/* stylelint-disable */
+/**
+ * 将c7n-md-parse容器里的所有元素设为默认值用于react-markdown
+ */
+.c7n-md-parse html,
+.c7n-md-parse address,
+.c7n-md-parse blockquote,
+.c7n-md-parse body,
+.c7n-md-parse dd,
+.c7n-md-parse div,
+.c7n-md-parse dl,
+.c7n-md-parse dt,
+.c7n-md-parse fieldset,
+.c7n-md-parse form,
+.c7n-md-parse frame,
+.c7n-md-parse frameset,
+.c7n-md-parse h1,
+.c7n-md-parse h2,
+.c7n-md-parse h3,
+.c7n-md-parse h4,
+.c7n-md-parse h5,
+.c7n-md-parse h6,
+.c7n-md-parse noframes,
+.c7n-md-parse ol,
+.c7n-md-parse p,
+.c7n-md-parse ul,
+.c7n-md-parse center,
+.c7n-md-parse dir,
+.c7n-md-parse hr,
+.c7n-md-parse menu,
+.c7n-md-parse pre {
+  display: block;
+}
+
+.c7n-md-parse li {
+  display: list-item !important;
+  margin-bottom: 5px;
+}
+
+.c7n-md-parse head {
+  display: none;
+}
+
+.c7n-md-parse table {
+  display: table;
+}
+
+.c7n-md-parse tr {
+  display: table-row;
+}
+
+.c7n-md-parse thead {
+  display: table-header-group;
+}
+
+.c7n-md-parse tbody {
+  display: table-row-group;
+}
+
+.c7n-md-parse tfoot {
+  display: table-footer-group;
+}
+
+.c7n-md-parse col {
+  display: table-column;
+}
+
+.c7n-md-parse colgroup {
+  display: table-column-group;
+}
+
+.c7n-md-parse td,
+.c7n-md-parse th {
+  display: table-cell;
+}
+
+.c7n-md-parse caption {
+  display: table-caption;
+}
+
+.c7n-md-parse th {
+  font-weight: bolder;
+  text-align: center;
+}
+
+.c7n-md-parse caption {
+  text-align: center;
+}
+
+.c7n-md-parse body {
+  margin: 8px;
+  line-height: 1.12;
+}
+
+.c7n-md-parse h1 {
+  font-size: 2em;
+  line-height: 1.5em !important;
+}
+
+.c7n-md-parse h2 {
+  font-size: 1.5em !important;
+  line-height: 1.5em !important;
+}
+
+.c7n-md-parse h3 {
+  font-size: 1.17em;
+  line-height: 1.5em !important;
+}
+
+.c7n-md-parse h4 {
+  font-size: 1.09em;
+  line-height: 1.5em !important;
+}
+
+.c7n-md-parse blockquote,
+.c7n-md-parse fieldset,
+.c7n-md-parse form,
+.c7n-md-parse dl,
+.c7n-md-parse dir,
+.c7n-md-parse menu {
+  margin: 1.12em 0;
+}
+
+.c7n-md-parse h5 {
+  font-size: 0.83em;
+  line-height: 1.5em !important;
+}
+
+.c7n-md-parse h6 {
+  font-size: 0.75em;
+  line-height: 1.5em !important;
+}
+
+.c7n-md-parse h1,
+.c7n-md-parse h2,
+.c7n-md-parse h3,
+.c7n-md-parse h4,
+.c7n-md-parse h5,
+.c7n-md-parse h6,
+.c7n-md-parse b,
+.c7n-md-parse strong {
+  font-weight: bolder;
+}
+
+.c7n-md-parse blockquote {
+  margin-left: 40px;
+  margin-right: 40px;
+}
+
+.c7n-md-parse i,
+.c7n-md-parse cite,
+.c7n-md-parse em,
+.c7n-md-parse var,
+.c7n-md-parse address {
+  font-style: italic;
+}
+
+.c7n-md-parse pre,
+.c7n-md-parse tt,
+.c7n-md-parse code,
+.c7n-md-parse kbd,
+.c7n-md-parse samp {
+  font-family: monospace;
+}
+
+.c7n-md-parse button,
+.c7n-md-parse textarea,
+.c7n-md-parse input,
+.c7n-md-parse object,
+.c7n-md-parse select {
+  display: inline-block;
+}
+
+.c7n-md-parse big {
+  font-size: 1.17em;
+}
+
+.c7n-md-parse small,
+.c7n-md-parse sub,
+.c7n-md-parse sup {
+  font-size: 0.83em;
+}
+
+.c7n-md-parse sub {
+  vertical-align: sub;
+}
+
+.c7n-md-parse sup {
+  vertical-align: super;
+}
+
+.c7n-md-parse table {
+  border-spacing: 2px;
+}
+
+.c7n-md-parse thead,
+.c7n-md-parse tbody,
+.c7n-md-parse tfoot {
+  vertical-align: middle;
+}
+
+.c7n-md-parse td,
+.c7n-md-parse th {
+  vertical-align: inherit;
+}
+
+.c7n-md-parse s,
+.c7n-md-parse strike,
+.c7n-md-parse del {
+  text-decoration: line-through;
+}
+
+.c7n-md-parse hr {
+  border: 1px inset;
+}
+
+.c7n-md-parse ol,
+.c7n-md-parse ul,
+.c7n-md-parse dir,
+.c7n-md-parse menu,
+.c7n-md-parse dd {
+  margin-left: 16px;
+}
+
+.c7n-md-parse ul,
+.c7n-md-parse ol,
+.c7n-md-parse dl {
+  padding-left: 20px !important;
+}
+
+.c7n-md-parse ol {
+  list-style-type: decimal;
+}
+
+.c7n-md-parse ol ul,
+.c7n-md-parse ul ol,
+.c7n-md-parse ul ul,
+.c7n-md-parse ol ol {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.c7n-md-parse u,
+.c7n-md-parse ins {
+  text-decoration: underline;
+}
+
+.c7n-md-parse br:before {
+  content: "A";
+}
+
+.c7n-md-parse :before,
+.c7n-md-parse :after {
+  white-space: pre-line;
+}
+
+.c7n-md-parse center {
+  text-align: center;
+}
+
+.c7n-md-parse abbr,
+.c7n-md-parse acronym {
+  font-variant: small-caps;
+  letter-spacing: 0.1em;
+}
+
+.c7n-md-parse :link,
+.c7n-md-parse :visited {
+  text-decoration: underline;
+}
+
+.c7n-md-parse :focus {
+  outline: thin dotted invert;
+}
+
+.c7n-md-parse bdo[DIR="ltr"] {
+  direction: ltr;
+  unicode-bidi: bidi-override;
+}
+
+.c7n-md-parse bdo[DIR="rtl"] {
+  direction: rtl;
+  unicode-bidi: bidi-override;
+}
+
+.c7n-md-parse *[DIR="ltr"] {
+  direction: ltr;
+  unicode-bidi: embed;
+}
+
+.c7n-md-parse *[DIR="rtl"] {
+  direction: rtl;
+  unicode-bidi: embed;
+}
+
+@media print {
+  .c7n-md-parse h1 {
+    page-break-before: always;
+  }
+
+  .c7n-md-parse h1,
+  .c7n-md-parse h2,
+  .c7n-md-parse h3,
+  .c7n-md-parse h4,
+  .c7n-md-parse h5,
+  .c7n-md-parse h6 {
+    page-break-after: avoid;
+  }
+
+  .c7n-md-parse ul,
+  .c7n-md-parse ol,
+  .c7n-md-parse dl {
+    padding-left: 20px !important;
+    page-break-before: avoid;
+  }
+}
+
+.c7n-md-parse pre {
+  border: 1px solid #ccc;
+  white-space: pre-wrap;
+}
+
+.c7n-md-parse blockquote {
+  color: #666;
+  margin: 0;
+  padding-left: 0.5em !important;
+  border-left: 0.5em #eee solid;
+}
+
+.c7n-md-parse tr {
+  border-top: 1px solid #c6cbd1;
+  background: #fff;
+}
+
+.c7n-md-parse th,
+.c7n-md-parse td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+.c7n-md-parse table tr:nth-child(2n) {
+  background: #f6f8fa;
+}
+
+.c7n-md-parse ul {
+  list-style: disc;
+}
+
+.c7n-md-parse ul ul {
+  list-style: circle;
+}
+
+.c7n-md-parse ul ul ul {
+  list-style: square;
+}

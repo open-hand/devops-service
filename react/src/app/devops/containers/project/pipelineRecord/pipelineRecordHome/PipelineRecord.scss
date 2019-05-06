@@ -1,0 +1,73 @@
+.c7n-pipelineRecord-wrapper {
+
+  .c7n-pipelineRecord-select {
+    width: 512px;
+    margin-bottom: 24px;
+  }
+
+  .c7n-pipelineRecord-process {
+    display: flex;
+    align-items: center;
+
+    .c7n-process-content {
+      display: flex;
+      align-items: center;
+
+      .c7n-process-status {
+        width: 8px;
+        height: 8px;
+        border-radius: 8px;
+        background-color: #d3d3d3;
+
+        &-success {
+          background-color: #00bfa5;
+        }
+
+        &-failed {
+          background-color: #f44336;
+        }
+
+        &-running {
+          background-color: #4d90fe;
+        }
+
+        &-stop {
+          background-color: #ff7043;
+        }
+
+        &-pendingcheck {
+          background-color: #ffb100;
+        }
+      }
+
+      .c7n-process-line {
+        margin: 0 4px;
+        width: 8px;
+        border-bottom: 1px solid #d3d3d3;
+
+        &-stop {
+          width: 13px;
+          border-bottom: 3px dotted #ff7043;
+        }
+
+        &-pendingcheck {
+          width: 13px;
+          border-bottom: 3px dotted #ffb100;
+        }
+      }
+
+      .c7n-process-svg {
+        width: 8px;
+        height: 8px;
+        border-radius: 8px;
+      }
+
+      &:first-child {
+
+        .c7n-process-line {
+          display: none;
+        }
+      }
+    }
+  }
+}

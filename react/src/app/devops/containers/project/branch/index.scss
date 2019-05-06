@@ -1,0 +1,75 @@
+.icon-master {
+  color: #4d90fe;
+  background: rgba(77, 144, 254, 0.2);
+}
+
+.icon-feature {
+  color: #f953ba;
+  background: rgba(249, 83, 186, 0.2);
+}
+
+.icon-hotfix {
+  color: #f44336;
+  background: rgba(244, 67, 54, 0.2);
+}
+
+.icon-develop {
+  color: #ffb100;
+  background: rgba(255, 177, 0, 0.2);
+}
+
+.icon-release {
+  color: #00bf96;
+  background: rgba(27, 193, 35, 0.2);
+}
+
+.icon-custom {
+  color: #af4cff;
+  background: rgba(175, 76, 255, 0.2);
+}
+
+.icon-bugfix {
+  color: #ffb100;
+  background: rgba(255, 177, 0, 0.2);
+}
+
+.c7n-branch-icon {
+  text-align: center;
+  font-size: 13px;
+  border-radius: 50%;
+  height: 18px;
+  width: 18px;
+  display: inline-block;
+  margin-right: 6px;
+  line-height: 18px;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.c7n-branch-text {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.branch-issue {
+  display: inline-block;
+  text-align: center;
+  padding-right: 6px;
+
+  i {
+    font-size: 24px !important;
+    padding-bottom: 3px;
+  }
+}
+
+.branch-issue-content {
+  line-height: 16px;
+  span {
+    padding-right: 6px;
+  }
+}
+
+.branch-column-icon {
+  vertical-align: middle;
+  padding-right: 8px;
+}

@@ -1,0 +1,59 @@
+.c7n-app-wrapper {
+  .error-text {
+    height: 28px;
+    color: #da4336;
+    font-size: 12px;
+    display: block;
+  }
+
+  .display-none {
+    display: none;
+  }
+
+  .table-pagination {
+    margin-top: 10px;
+    float: right;
+    display: block;
+  }
+
+  .template-icon {
+    color: initial;
+    font-size: 18px;
+    padding-right: 18px;
+  }
+
+  .c7n-app-table {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 250px;
+    overflow: hidden;
+    display: block;
+  }
+
+  .c7n-app-icon-disabled {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.36);
+    width: 24px;
+    height: 24px;
+    line-height: 24px;
+    text-align: center;
+    display: inline-block;
+  }
+}
+
+.c7n-app-authority-radio {
+  margin: 20px 0 10px 0;
+
+  .ant-radio-group {
+    padding-top: 21px !important;
+  }
+}
+
+.c7n-app-select-dropdown {
+  .ant-select-dropdown-menu-item {
+    span {
+      width: 100%;
+      display: inline-block;
+    }
+  }
+}

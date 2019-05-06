@@ -1,0 +1,47 @@
+.c7n-appDep-wrap {
+  padding: 0 32px 18px 32px;
+
+  .c7n-appDep-title {
+    font-size: 13px;
+    color: #000;
+    line-height: 20px;
+    font-weight: 500;
+    margin-bottom: 5px;
+  }
+
+  .c7n-appDep-ver {
+    font-size: 12px;
+    color: rgba(0, 0, 0, .65);
+    margin-bottom: 18px;
+  }
+}
+
+.c7n-multi-ist {
+  background-color: rgba(0, 0, 0, 0.08);
+  display: inline-block;
+  font-size: 13px;
+  line-height: 16px;
+  width: 16px;
+  height: 16px;
+  align-items: center;
+  margin-right: 4px;
+
+  div {
+    transform: scale(0.8);
+  }
+}
+
+.c7n-appDep-ist-wrap {
+  display: flex;
+}
+
+.c7n-ist-status_update_top {
+  margin-top: 5px;
+  margin-left: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 8px;
+  display: inline-block;
+  background: #ffb100;
+  flex-shrink: 0;
+}

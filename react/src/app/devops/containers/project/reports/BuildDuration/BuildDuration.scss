@@ -1,0 +1,18 @@
+.c7n-buildDuration-content {
+  .c7n-buildDuration-select {
+    display: flex;
+
+    .c7n-app-select_247 {
+      width: 20.8%;
+      margin-bottom: 20px;
+      margin-right: 60px;
+    }
+    .c7n-app-select-tooltip {
+      width: 100%;
+      display: inline-block;
+    }
+  }
+  .c7n-buildDuration-echarts {
+    height: 400px !important;
+  }
+}
