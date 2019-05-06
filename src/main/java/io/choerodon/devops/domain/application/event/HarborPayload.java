@@ -9,6 +9,7 @@ package io.choerodon.devops.domain.application.event;
  * Description:
  */
 public class HarborPayload {
+
     private Long projectId;
     private String projectCode;
 

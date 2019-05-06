@@ -12,8 +12,8 @@ import io.choerodon.devops.api.dto.ApplicationTemplateRepDTO
 import io.choerodon.devops.api.dto.ApplicationTemplateUpdateDTO
 import io.choerodon.devops.app.service.ApplicationTemplateService
 import io.choerodon.devops.app.service.DevopsGitService
+import io.choerodon.devops.domain.application.entity.DevopsProjectE
 import io.choerodon.devops.domain.application.entity.UserAttrE
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE
 import io.choerodon.devops.domain.application.repository.GitlabRepository
 import io.choerodon.devops.domain.application.repository.IamRepository
 import io.choerodon.devops.domain.application.valueobject.Organization
@@ -80,7 +80,7 @@ class ApplicationTemplateControllerSpec extends Specification {
     @Shared
     UserAttrE userAttrE = new UserAttrE()
     @Shared
-    GitlabGroupE gitlabGroupE = new GitlabGroupE()
+    DevopsProjectE devopsProjectE = new DevopsProjectE()
     @Shared
     Map<String, Object> searchParam = new HashMap<>();
     @Shared

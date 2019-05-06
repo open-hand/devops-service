@@ -2,6 +2,7 @@ package io.choerodon.devops.app.service;
 
 import io.choerodon.core.domain.Page;
 import io.choerodon.devops.api.dto.DevopsProjectConfigDTO;
+import io.choerodon.devops.api.dto.ProjectDefaultConfigDTO;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
 
 import java.util.List;
@@ -32,4 +33,22 @@ public interface DevopsProjectConfigService {
     void checkName(Long projectId, String name);
 
     Boolean checkIsUsed(Long configId);
+
+
+    /**
+     * 设置项目对应harbor仓库为私有或者公有
+     *
+     * @param projectId 项目id
+     * @param harborPrivate  是否私有
+     */
+    void setHarborProjectIsPrivate(Long projectId, boolean harborPrivate);
+
+
+    /**
+     * 设置项目对应harbor仓库为私有或者公有
+     *
+     * @param projectId 项目id
+     * @return String[]
+     */
+    ProjectDefaultConfigDTO getProjectDefaultConfig(Long projectId);
 }

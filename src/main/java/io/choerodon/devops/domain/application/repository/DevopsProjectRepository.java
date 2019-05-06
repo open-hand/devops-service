@@ -1,6 +1,6 @@
 package io.choerodon.devops.domain.application.repository;
 
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
 
 /**
@@ -11,10 +11,10 @@ public interface DevopsProjectRepository {
 
     void updateProjectAttr(DevopsProjectDO devopsProjectDO);
 
-    GitlabGroupE queryDevopsProject(Long projectId);
+    DevopsProjectE queryDevopsProject(Long projectId);
 
-    GitlabGroupE queryByGitlabGroupId(Integer gitlabGroupId);
+    DevopsProjectE queryByGitlabGroupId(Integer gitlabGroupId);
 
-    GitlabGroupE queryByEnvGroupId(Integer envGroupId);
+    DevopsProjectE queryByEnvGroupId(Integer envGroupId);
 
 }

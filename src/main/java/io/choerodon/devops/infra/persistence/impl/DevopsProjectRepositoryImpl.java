@@ -1,10 +1,10 @@
 package io.choerodon.devops.infra.persistence.impl;
 
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import org.springframework.stereotype.Component;
 
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.repository.DevopsProjectRepository;
 import io.choerodon.devops.infra.common.util.TypeUtil;
 import io.choerodon.devops.infra.dataobject.DevopsProjectDO;
@@ -22,7 +22,7 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
     }
 
     @Override
-    public GitlabGroupE queryDevopsProject(Long projectId) {
+    public DevopsProjectE queryDevopsProject(Long projectId) {
         DevopsProjectDO devopsProjectDO = devopsProjectMapper.selectByPrimaryKey(projectId);
         if (devopsProjectDO == null) {
             throw new CommonException("error.group.not.sync");
@@ -30,19 +30,19 @@ public class DevopsProjectRepositoryImpl implements DevopsProjectRepository {
         if (devopsProjectDO.getDevopsAppGroupId() == null || devopsProjectDO.getDevopsEnvGroupId() == null) {
             throw new CommonException("error.gitlab.groupId.select");
         }
-        return ConvertHelper.convert(devopsProjectDO, GitlabGroupE.class);
+        return ConvertHelper.convert(devopsProjectDO, DevopsProjectE.class);
     }
 
     @Override
-    public GitlabGroupE queryByGitlabGroupId(Integer gitlabGroupId) {
-        return ConvertHelper.convert(devopsProjectMapper.queryByGitlabGroupId(gitlabGroupId), GitlabGroupE.class);
+    public DevopsProjectE queryByGitlabGroupId(Integer gitlabGroupId) {
+        return ConvertHelper.convert(devopsProjectMapper.queryByGitlabGroupId(gitlabGroupId), DevopsProjectE.class);
     }
 
     @Override
-    public GitlabGroupE queryByEnvGroupId(Integer envGroupId) {
+    public DevopsProjectE queryByEnvGroupId(Integer envGroupId) {
         DevopsProjectDO devopsProjectDO = new DevopsProjectDO();
         devopsProjectDO.setDevopsEnvGroupId(TypeUtil.objToLong(envGroupId));
-        return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), GitlabGroupE.class);
+        return ConvertHelper.convert(devopsProjectMapper.selectOne(devopsProjectDO), DevopsProjectE.class);
     }
 
     @Override

@@ -231,4 +231,9 @@ public class ApplicationRepositoryImpl implements ApplicationRepository {
         applicationDO.setProjectId(projectId);
         return ConvertHelper.convertList(applicationMapper.select(applicationDO), ApplicationE.class);
     }
+
+    @Override
+    public void updateAppHarborConfig(Long projectId, Long newConfigId,Long oldConfigId, boolean harborPrivate) {
+        applicationMapper.updateAppHarborConfig(projectId,newConfigId,oldConfigId, harborPrivate);
+    }
 }
