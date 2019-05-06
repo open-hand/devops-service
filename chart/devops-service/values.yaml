@@ -60,6 +60,15 @@ env:
     CERT_TESTCERT: false
     TEMPLATE_VERSION: 0.13.0
     TEMPLATE_URL: https://github.com/choerodon/choerodon-devops-templates.git
+    PRO_API_HOST: gateway.choerodon.com.cn
+    PRO_DEVOPS_HOST: localhost:8060
+    PRO_CLIENT_ID: devops
+    PRO_LOCAL: true
+    PRO_TITLE_NAME: Choerodon
+    PRO_HEADER_TITLE_NAME: Choerodon
+    PRO_COOKIE_SERVER: choerodon.com.cn
+    PRO_HTTP: http
+    PRO_FILE_SERVER: http://minio.choerodon.com.cn
 #    SKYWALKING_OPTS: >-
 #          -javaagent:/agent/skywalking-agent.jar
 #          -Dskywalking.agent.application_code=devops-service

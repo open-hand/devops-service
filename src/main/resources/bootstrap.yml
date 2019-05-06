@@ -12,6 +12,10 @@ spring:
         maxInterval: 2000
       uri: localhost:8010
       enabled: false
+  mvc:
+    static-path-pattern: /**
+  resources:
+    static-locations: classpath:/static,classpath:/public,classpath:/resources,classpath:/META-INF/resources,file:/dist
 management:
   server:
     port: 8061
@@ -19,3 +23,4 @@ management:
     web:
       exposure:
         include: '*'
+
