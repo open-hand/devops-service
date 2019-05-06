@@ -1,0 +1,28 @@
+.c7ncd-rating-wrap {
+  $A: #00bfa5;
+  $B: #4d90fe;
+  $C: #ffb100;
+  $D: #f44336;
+
+  border-radius: 50%;
+  color: #fff;
+  text-align: center;
+  font-weight: 500;
+  background-color: #5266d4;
+
+  &-A {
+    background-color: $A;
+  }
+
+  &-B {
+    background-color: $B;
+  }
+
+  &-C {
+    background-color: $C;
+  }
+
+  &-D {
+    background-color: $D;
+  }
+}

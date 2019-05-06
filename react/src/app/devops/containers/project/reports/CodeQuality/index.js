@@ -1,3 +1,3 @@
-import CodeQuality from './CodeQuality';
+import CodeQuality from "./CodeQuality";
 
 export default CodeQuality;

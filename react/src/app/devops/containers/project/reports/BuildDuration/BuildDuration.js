@@ -68,7 +68,7 @@ class BuildDuration extends Component {
     const { ReportsStore } = this.props;
     const { id } = AppState.currentMenuType;
     const { pageInfo } = ReportsStore;
-    ReportsStore.loadApps(id);
+    ReportsStore.loadAllApps(id);
     this.loadCharts(pageInfo);
   };
 

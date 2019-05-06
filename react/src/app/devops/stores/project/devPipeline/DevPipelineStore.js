@@ -11,6 +11,7 @@ import DevConsoleStore from '../devConsole';
 import ReportsStore from '../reports';
 import DeploymentPipelineStore from '../deploymentPipeline';
 import AppVersionStore from '../applicationVersion';
+import CodeQualityStore from'../codeQuality';
 
 const { AppState } = stores;
 const START = moment().subtract(6, 'days').format().split('T')[0].replace(/-/g, '/');
@@ -160,6 +161,9 @@ class DevPipelineStore {
               case 'ci':
                 CiPipelineStore.loadPipelines(true, this.selectedApp);
                 break;
+              case 'quality':
+                // CodeQualityStore.loadData(this.selectedApp);
+                break;
               case 'all':
                 DevConsoleStore.loadBranchList(projectId, this.selectedApp);
                 AppTagStore.queryTagData(projectId, 0, 10);
@@ -180,6 +184,7 @@ class DevPipelineStore {
             CiPipelineStore.setLoading(false);
             MergeRequestStore.setLoading(false);
             DevConsoleStore.setBranchLoading(false);
+            CodeQualityStore.changeLoading(false);
             DeploymentPipelineStore.judgeRole('app');
           }
         }

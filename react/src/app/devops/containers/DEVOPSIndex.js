@@ -43,6 +43,7 @@ const Elements = asyncRouter(() => import('./project/elements'));
 const PipelineIndex = asyncRouter(() => import('./project/pipeline'));
 const DeploymentConfig = asyncRouter(() => import('./project/deploymentConfig'));
 const PipelineRecord = asyncRouter(() => import('./project/pipelineRecord'));
+const CodeQuality = asyncRouter(() => import('./project/codeQuality'));
 
 @inject('AppState')
 class DEVOPSIndex extends React.Component {
@@ -97,9 +98,10 @@ class DEVOPSIndex extends React.Component {
           <Route path={`${match.url}/secret`} component={Secret} />
           <Route path={`${match.url}/elements`} component={Elements} />
           <Route path={`${match.url}/certificate-manage`} component={CertificateManage} />
-          <Route path={`${match.url}/pipeline`} component={PipelineIndex} />
-          <Route path={`${match.url}/pipeline-record`} component={PipelineRecord} />
+          <Route path={`${match.url}/pipeline`} component={PipelineIndex}/>
+          <Route path={`${match.url}/pipeline-record`} component={PipelineRecord}/>
           <Route path={`${match.url}/deployment-config`} component={DeploymentConfig} />
+          <Route path={`${match.url}/code-quality`} component={CodeQuality} />
           <Route path="*" component={nomatch} />
         </Switch>
       </IntlProviderAsync>

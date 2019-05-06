@@ -10,12 +10,12 @@ const DeploymentConfig = asyncRouter(
   () => import('../../../stores/project/deploymentConfig')
 );
 
-const SecretIndex = ({ match }) => (
+const DeploymentConfigIndex = ({ match }) => (
   <Switch>
     <Route exact path={match.url} component={DeploymentConfig} />
     <Route path="*" component={nomatch} />
   </Switch>
 );
 
-export default SecretIndex;
+export default DeploymentConfigIndex;
 

@@ -295,6 +295,7 @@ const pageDetail = {
   "report.deploy-times.title": '项目"{name}"的部署次数',
   "report.build-number.title": '项目"{name}"的构建次数',
   "report.build-duration.title": '项目"{name}"的构建时长',
+  "report.code-quality.title": '项目"{name}"的代码质量图',
   "report.description":
     "DevOps报表将从多个维度直观清晰地展示您当前项目中的代码提交、代码质量、应用构建和应用部署等情况。点击相应报表便能查看对应的内容。",
   "report.submission.description":
@@ -307,11 +308,14 @@ const pageDetail = {
     "构建次数图将从应用的维度为您展示任意时间段某个应用的构建次数，构建成功次数以及构建成功率。这将帮助您快速地定位构建出现的问题，同时直观地了解到项目中某个应用的构建情况。",
   "report.build-duration.description":
     "构建时长图将从应用的维度为您展示所选时间段某个应用每一次构建的时长，这将帮助您更为直观地了解应用构建的效率。",
+  "report.code-quality.description":
+    "代码质量图能展示出项目下所有应用的代码质量详情。能从项目、应用的维度帮助我们查看某个项目或是该项目下某个应用的代码提交情况。",
   "report.submission.link": `${docServer}/user-guide/report/devops-report/code-commits`,
   "report.build-number.link": `${docServer}/user-guide/report/devops-report/build-frequency`,
   "report.deploy-duration.link": `${docServer}/user-guide/report/devops-report/deploy-duration`,
   "report.deploy-times.link": `${docServer}/user-guide/report/devops-report/deploy-frequency`,
   "report.build-duration.link": `${docServer}/user-guide/report/devops-report/build-duration`,
+  "report.code-quality.link": `${docServer}/user-guide/report/devops-report/code-quality`,
   "report.link": `${docServer}/user-guide/report/devops-report/`,
 
   // 开发控制台
@@ -441,6 +445,11 @@ const pageDetail = {
   "pipeline.task.edit.title": '修改"{name}"中的任务',
   "pipeline.task.edit.description": "您可以在此选择对应的任务类型，填选对应的内容，以此来添加任务。",
   "pipeline.task.edit.link": `${docServer}/user-guide/deployment-pipeline/pipeline/pipeline-management/`,
+
+  // 代码质量
+  "codeQuality.title": "应用“{name}”的代码质量",
+  "codeQuality.description": "代码质量页面主要用于展示对应应用的代码质量详情。",
+  "codeQuality.link": `${docServer}/user-guide/system-configuration/project/pipeline`,
 };
 
 const zhCN = {
@@ -1373,7 +1382,7 @@ const zhCN = {
   "report.devops.total": "总次数",
   "dashboard.devops.more": "...",
   "report.submission.head": "代码提交图",
-  "report.code-quality.head": "代码质量报表",
+  "report.code-quality.head": "代码质量图",
   "report.deploy-duration.head": "部署时长图",
   "report.build-number.head": "构建次数图",
   "report.build-duration.head": "构建时长图",
@@ -1426,6 +1435,19 @@ const zhCN = {
   "report.unknown.user": "非平台用户",
   "empty.member.no-env":
     "您当前暂无任何环境的权限，若需查看某个环境的相关内容，请联系项目所有者添加权限。",
+  "report.code-quality.type": "对象类型",
+  "report.code-quality.type.question": "问题",
+  "report.code-quality.type.coverage": "覆盖率",
+  "report.code-quality.type.duplications": "重复度",
+  "report.code-quality.number": "个数",
+  "report.code-quality.rows": "行数",
+  "report.code-quality.bugs": "Bugs",
+  "report.code-quality.vulnerabilities": "安全漏洞",
+  "report.code-quality.codeSmells": "代码异味",
+  "report.code-quality.coverageCodeRows": "代码行",
+  "report.code-quality.coverageRows": "覆盖行",
+  "report.code-quality.duplicationsCodeRows": "代码行",
+  "report.code-quality.duplicationsRows": "重复行",
 
   // 部署总览
   "dpOverview.head": "部署总览",
@@ -1523,7 +1545,7 @@ const zhCN = {
   "configMap.del": "删除配置映射",
   "configMap.del.tooltip": "确认删除配置映射吗？",
 
-  // 配置映射
+  // 密文
   "secret.head": "密文",
   "secret.create": "创建密文",
   "secret.edit": "修改密文",
@@ -1722,6 +1744,31 @@ const zhCN = {
   "pipeline.before.leave": "离开当前页面？__@.@__离开后，系统将不会保存您所做的修改。",
   "pipeline.create.error-1": "请检查任务类型是否正确！",
   "pipeline.create.error-2": "自动触发类型的流水线需要以部署任务作为触发器！",
+
+  // 代码质量
+  "codeQuality.head": "代码质量",
+  "codeQuality.empty": "暂无代码质量详情",
+  "codeQuality.content.title": "质量门",
+  "codeQuality.status.success": "正常",
+  "codeQuality.status.failed": "失败",
+  "codeQuality.analysis": "最后一次分析：",
+  "codeQuality.detail.reliability": "可靠性",
+  "codeQuality.detail.maintainability": "可维护性",
+  "codeQuality.detail.coverage": "覆盖率",
+  "codeQuality.detail.duplications": "重复度",
+  "codeQuality.bugs.new": "新增Bugs",
+  "codeQuality.vulnerabilities": "安全漏洞",
+  "codeQuality.vulnerabilities.new": "新增安全漏洞",
+  "codeQuality.debt": "技术债务",
+  "codeQuality.debt.new": "新增技术债务",
+  "codeQuality.code.smells": "代码异味",
+  "codeQuality.code.smells.new": "新增代码异味",
+  "codeQuality.coverage": "覆盖率",
+  "codeQuality.unit.tests": "单元测试",
+  "codeQuality.coverage.new": "新增代码部分覆盖率",
+  "codeQuality.duplications": "重复率",
+  "codeQuality.duplications.blocks": "重复部分",
+  "codeQuality.duplications.new": "新增代码部分重复率",
 
   ...pageDetail,
 };

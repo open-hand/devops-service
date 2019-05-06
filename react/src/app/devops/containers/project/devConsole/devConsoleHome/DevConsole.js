@@ -32,6 +32,8 @@ import AppVersionStore from '../../../../stores/project/applicationVersion/AppVe
 import DepPipelineEmpty from '../../../../components/DepPipelineEmpty/DepPipelineEmpty';
 import CiPipelineTable from '../../ciPipelineManage/ciPipelineTable';
 import AppVersionTable from '../../appVersion/appVersionTable';
+import Percentage from "../../../../components/percentage/Percentage";
+import Rating from "../../../../components/rating/Rating";
 
 const { AppState } = stores;
 const { Option, OptGroup } = Select;
@@ -1010,6 +1012,45 @@ class DevConsole extends Component {
     const empty = appData && appData.length ? 'tag' : 'app';
     const noRepoUrl = formatMessage({ id: 'repository.noUrl' });
 
+    const qualityData = [
+      {
+        icon: "fiber_smart_record",
+        title: formatMessage({ id: "codeQuality.coverage" }),
+        number: 70,
+        rating: null,
+      },
+      {
+        icon: "bug_report",
+        title: "Bugs",
+        number: 12,
+        rating: "A",
+      },
+      {
+        icon: "unlock",
+        title: formatMessage({ id: "codeQuality.vulnerabilities" }),
+        number: 4,
+        rating: "B",
+      },
+      {
+        icon: "opacity",
+        title: formatMessage({ id: "codeQuality.debt" }),
+        number: "10天",
+        rating: "C",
+      },
+      {
+        icon: "group_work",
+        title: formatMessage({ id: "codeQuality.code.smells" }),
+        number: 125,
+        rating: "D",
+      },
+      {
+        icon: null,
+        title: "Java,XML",
+        number: 552,
+        rating: "S",
+      },
+    ];
+
     return (
       <Page
         className="c7n-tag-wrapper"
@@ -1164,6 +1205,34 @@ class DevConsole extends Component {
           </div>
           {/*dev-pipeline*/}
           {this.getDevPipeline()}
+          {/*codeQuality card*/}
+          <div className="c7n-dc-card-wrap c7n-dc-card-codeQuality">
+            <div className="c7n-dc-card-title">
+              <Icon type="quality" />
+              <FormattedMessage id="codeQuality.content.title" />
+            </div>
+            <div className="c7n-card-codeQuality-content">
+              <div className="codeQuality-content-block">
+                <span className={`codeQuality-head-status codeQuality-head-status-success`}>
+                  {formatMessage({ id: "success" })}
+                </span>
+                <FormattedMessage id="codeQuality.content.title" />
+              </div>
+              {_.map(qualityData, ({ title, number, icon, rating}) => (
+                <div className="codeQuality-content-block" key={title}>
+                  <div className="codeQuality-content-block-detail mg-bottom-12">
+                    {!rating && <Percentage data={number} size={30} />}
+                    <span className="codeQuality-content-number">{number}</span>
+                    {rating && <Rating rating={rating} size="30px" fontSize="20px" />}
+                  </div>
+                  <div className="codeQuality-content-block-detail">
+                    <Icon type={icon} />
+                    <span className="mg-left-8">{title}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
           {/*tag card*/}
           <div className="c7n-dc-card-wrap">
             <div className="c7n-dc-card-title">

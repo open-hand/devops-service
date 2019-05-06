@@ -5,19 +5,19 @@ import {
 } from 'react-router-dom';
 import { asyncRouter, nomatch } from '@choerodon/boot';
 
-const DeploymentConfig = asyncRouter(
+const pipelineRecord = asyncRouter(
   () => import('./pipelineRecordHome'),
   () => import('../../../stores/project/pipelineRecord'),
 );
 const PipelineDetail = asyncRouter(() => import('./pipelineDetail'), () => import('../../../stores/project/pipeline'));
 
-const SecretIndex = ({ match }) => (
+const pipelineRecordIndex = ({ match }) => (
   <Switch>
-    <Route exact path={match.url} component={DeploymentConfig} />
+    <Route exact path={match.url} component={pipelineRecord} />
     <Route path={`${match.url}/detail/:pId/:rId`} component={PipelineDetail} />
     <Route path="*" component={nomatch} />
   </Switch>
 );
 
-export default SecretIndex;
+export default pipelineRecordIndex;
 

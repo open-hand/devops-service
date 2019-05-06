@@ -216,7 +216,7 @@ class CreateNetwork extends Component {
           type: config,
           endPoints: !_.isEmpty(endPoints) ? endPoints : null,
         };
-        
+
         store
           .createNetwork(id, network)
           .then(res => {

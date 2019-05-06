@@ -11,6 +11,7 @@ const DeployDuration = asyncRouter(() => import('./DeployDuration'), () => impor
 const DeployTimes = asyncRouter(() => import('./DeployTimes'), () => import('../../../stores/project/reports'));
 const BUILDNUMBER = asyncRouter(() => import('./BuildNumber'), () => import('../../../stores/project/reports'));
 const BUILDDURATION = asyncRouter(() => import('./BuildDuration'), () => import('../../../stores/project/reports'));
+const CodeQuality = asyncRouter(() => import('./CodeQuality'), () => import('../../../stores/project/reports'));
 
 const ReportsIndex = ({ match }) => (
   <Switch>
@@ -20,6 +21,7 @@ const ReportsIndex = ({ match }) => (
     <Route exact path={`${match.url}/deploy-times`} component={DeployTimes} />
     <Route exact path={`${match.url}/build-number`} component={BUILDNUMBER} />
     <Route exact path={`${match.url}/build-duration`} component={BUILDDURATION} />
+    <Route exact path={`${match.url}/code-quality`} component={CodeQuality} />
     <Route path="*" component={nomatch} />
   </Switch>
 );

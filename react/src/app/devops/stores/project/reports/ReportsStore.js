@@ -3,11 +3,8 @@ import { axios, store, stores } from "@choerodon/boot";
 import moment from "moment";
 import _ from "lodash";
 import { handleProptError } from "../../../utils";
+import {HEIGHT} from "../../../common/Constants";
 
-const HEIGHT =
-  window.innerHeight ||
-  document.documentElement.clientHeight ||
-  document.body.clientHeight;
 const { AppState } = stores;
 
 @store("ReportsStore")
@@ -65,6 +62,8 @@ class ReportsStore {
   @observable allApps = [];
 
   @observable proRole = "";
+
+  @observable codeQuality = {};
 
   @action setProRole(data) {
     this.proRole = data;
@@ -250,6 +249,14 @@ class ReportsStore {
 
   @action setEchartsLoading(data) {
     this.echartsLoading = data;
+  }
+
+  @computed get getCodeQuality() {
+    return this.codeQuality;
+  }
+
+  @action setCodeQuality(data) {
+    this.codeQuality = data;
   }
 
   /**
@@ -516,6 +523,24 @@ class ReportsStore {
       .catch(err => {
         this.setHistoryLoad(false);
         Choerodon.handleResponseError(err);
+      });
+  };
+
+  /**
+   * 加载代码质量
+   */
+  loadCodeQuality = (projectId, appId, type, startTime, endTime) => {
+    this.setEchartsLoading(true);
+    return axios
+      .get(
+        `?appId=${appId}&startTime=${startTime}&endTime=${endTime}`
+      )
+      .then(data => {
+        const res = handleProptError(data);
+        if (res) {
+          this.setCodeQuality(data);
+        }
+        this.setEchartsLoading(false);
       });
   };
 
