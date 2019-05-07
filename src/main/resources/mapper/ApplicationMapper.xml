@@ -256,4 +256,21 @@
     <update id="updateAppToSuccess" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
         UPDATE devops_application da set da.is_failed = null  where da.id = #{appId}
     </update>
+
+
+
+    <update id="updateAppHarborConfig" parameterType="io.choerodon.devops.infra.dataobject.ApplicationDO">
+        UPDATE devops_application da
+        <if test='harborPrivate != null'>
+            <if test='harborPrivate == true'>
+                set da.harbor_config_id = #{newConfigId}
+                where (da.harbor_config_id = #{oldConfigId} or da.harbor_config_id is null)
+            </if>
+            <if test='harborPrivate == false'>
+                set da.harbor_config_id = null
+                where da.harbor_config_id = #{oldConfigId}
+            </if>
+        </if>
+        AND da.project_id = #{projectId}
+    </update>
 </mapper>

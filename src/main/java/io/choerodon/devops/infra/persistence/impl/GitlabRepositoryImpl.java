@@ -8,7 +8,7 @@ import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.exception.CommonException;
 import io.choerodon.devops.api.dto.gitlab.MemberDTO;
 import io.choerodon.devops.api.dto.gitlab.VariableDTO;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectE;
 import io.choerodon.devops.domain.application.repository.GitlabRepository;
 import io.choerodon.devops.domain.application.valueobject.DeployKey;
 import io.choerodon.devops.domain.application.valueobject.ProjectHook;
@@ -79,7 +79,7 @@ public class GitlabRepositoryImpl implements GitlabRepository {
     }
 
     @Override
-    public GitlabGroupE queryGroupByName(String groupName, Integer userId) {
+    public DevopsProjectE queryGroupByName(String groupName, Integer userId) {
         ResponseEntity<GroupDO> groupDO;
         try {
             groupDO = gitlabServiceClient.queryGroupByName(groupName, userId);
@@ -87,22 +87,22 @@ public class GitlabRepositoryImpl implements GitlabRepository {
             throw new CommonException(e);
         }
         if (groupDO != null) {
-            return ConvertHelper.convert(groupDO.getBody(), GitlabGroupE.class);
+            return ConvertHelper.convert(groupDO.getBody(), DevopsProjectE.class);
         } else {
             return null;
         }
     }
 
     @Override
-    public GitlabGroupE createGroup(GitlabGroupE gitlabGroupE, Integer userId) {
+    public DevopsProjectE createGroup(DevopsProjectE devopsProjectE, Integer userId) {
         ResponseEntity<GroupDO> groupDOResponseEntity;
-        GroupDO groupDO = ConvertHelper.convert(gitlabGroupE, GroupDO.class);
+        GroupDO groupDO = ConvertHelper.convert(devopsProjectE, GroupDO.class);
         try {
             groupDOResponseEntity = gitlabServiceClient.createGroup(groupDO, userId);
         } catch (FeignException e) {
             throw new CommonException(e);
         }
-        return ConvertHelper.convert(groupDOResponseEntity.getBody(), GitlabGroupE.class);
+        return ConvertHelper.convert(groupDOResponseEntity.getBody(), DevopsProjectE.class);
     }
 
     @Override

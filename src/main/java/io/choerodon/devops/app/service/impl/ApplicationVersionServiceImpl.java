@@ -1,24 +1,47 @@
 package io.choerodon.devops.app.service.impl;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.gson.Gson;
 import io.choerodon.asgard.saga.feign.SagaClient;
 import io.choerodon.core.convertor.ConvertHelper;
 import io.choerodon.core.convertor.ConvertPageHelper;
 import io.choerodon.core.domain.Page;
 import io.choerodon.core.exception.CommonException;
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.devops.api.dto.ApplicationVersionAndCommitDTO;
+import io.choerodon.devops.api.dto.ApplicationVersionRepDTO;
+import io.choerodon.devops.api.dto.DeployEnvVersionDTO;
+import io.choerodon.devops.api.dto.DeployInstanceVersionDTO;
+import io.choerodon.devops.api.dto.DeployVersionDTO;
 import io.choerodon.devops.app.service.ApplicationVersionService;
 import io.choerodon.devops.app.service.PipelineService;
-import io.choerodon.devops.domain.application.entity.*;
+import io.choerodon.devops.domain.application.entity.ApplicationE;
+import io.choerodon.devops.domain.application.entity.ApplicationInstanceE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionE;
+import io.choerodon.devops.domain.application.entity.ApplicationVersionValueE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvCommandE;
+import io.choerodon.devops.domain.application.entity.DevopsEnvironmentE;
+import io.choerodon.devops.domain.application.entity.DevopsGitlabCommitE;
+import io.choerodon.devops.domain.application.entity.DevopsProjectConfigE;
+import io.choerodon.devops.domain.application.entity.PipelineAppDeployE;
+import io.choerodon.devops.domain.application.entity.PipelineE;
+import io.choerodon.devops.domain.application.entity.PipelineTaskE;
+import io.choerodon.devops.domain.application.entity.ProjectE;
+import io.choerodon.devops.domain.application.entity.UserAttrE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
 import io.choerodon.devops.domain.application.handler.DevopsCiInvalidException;
-import io.choerodon.devops.domain.application.repository.*;
+import io.choerodon.devops.domain.application.repository.ApplicationInstanceRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionRepository;
+import io.choerodon.devops.domain.application.repository.ApplicationVersionValueRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvCommandRepository;
+import io.choerodon.devops.domain.application.repository.DevopsEnvironmentRepository;
+import io.choerodon.devops.domain.application.repository.DevopsGitlabCommitRepository;
+import io.choerodon.devops.domain.application.repository.DevopsProjectConfigRepository;
+import io.choerodon.devops.domain.application.repository.IamRepository;
+import io.choerodon.devops.domain.application.repository.PipelineAppDeployRepository;
+import io.choerodon.devops.domain.application.repository.PipelineRepository;
+import io.choerodon.devops.domain.application.repository.PipelineStageRepository;
+import io.choerodon.devops.domain.application.repository.PipelineTaskRepository;
+import io.choerodon.devops.domain.application.repository.UserAttrRepository;
 import io.choerodon.devops.domain.application.valueobject.Organization;
 import io.choerodon.devops.infra.common.util.ChartUtil;
 import io.choerodon.devops.infra.common.util.FileUtil;
@@ -31,6 +54,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Created by Zenger on 2018/4/3.
@@ -185,6 +220,7 @@ public class ApplicationVersionServiceImpl implements ApplicationVersionService 
                         }).collect(Collectors.toList());
                 pipelineList.forEach(pipelineId -> {
                     if (pipelineService.checkDeploy(pipelineId)) {
+                        LOGGER.info("autoDeploy: versionId:{}, version:{} pipelineId:{}", insertApplicationVersionE.getId(), insertApplicationVersionE.getVersion(), pipelineId);
                         pipelineService.executeAppDeploy(pipelineId);
                     }
                 });

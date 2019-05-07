@@ -1,6 +1,7 @@
 package io.choerodon.devops.app.service.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -9,7 +10,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import io.choerodon.asgard.saga.annotation.Saga;
 import io.choerodon.asgard.saga.dto.StartInstanceDTO;
 import io.choerodon.asgard.saga.feign.SagaClient;
@@ -26,7 +26,6 @@ import io.choerodon.devops.api.validator.ApplicationValidator;
 import io.choerodon.devops.app.service.ApplicationService;
 import io.choerodon.devops.domain.application.entity.*;
 import io.choerodon.devops.domain.application.entity.gitlab.CommitE;
-import io.choerodon.devops.domain.application.entity.gitlab.GitlabGroupE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabMemberE;
 import io.choerodon.devops.domain.application.entity.gitlab.GitlabUserE;
 import io.choerodon.devops.domain.application.entity.iam.UserE;
@@ -48,6 +47,8 @@ import io.choerodon.devops.infra.config.HarborConfigurationProperties;
 import io.choerodon.devops.infra.config.RetrofitHandler;
 import io.choerodon.devops.infra.dataobject.gitlab.BranchDO;
 import io.choerodon.devops.infra.dataobject.gitlab.GitlabProjectDO;
+import io.choerodon.devops.infra.dataobject.harbor.ProjectDetail;
+import io.choerodon.devops.infra.dataobject.harbor.User;
 import io.choerodon.devops.infra.feign.ChartClient;
 import io.choerodon.devops.infra.feign.HarborClient;
 import io.choerodon.mybatis.pagehelper.domain.PageRequest;
@@ -154,9 +155,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         ProjectE projectE = iamRepository.queryIamProject(projectId);
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         // 查询创建应用所在的gitlab应用组
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(projectId);
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(projectId);
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
+                TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
         if (gitlabMemberE == null || gitlabMemberE.getAccessLevel() != AccessLevel.OWNER.toValue()) {
             throw new CommonException("error.user.not.owner");
@@ -459,11 +460,11 @@ public class ApplicationServiceImpl implements ApplicationService {
 
     @Override
     public void operationApplication(DevOpsAppPayload gitlabProjectPayload) {
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryByGitlabGroupId(
                 TypeUtil.objToInteger(gitlabProjectPayload.getGroupId()));
         ApplicationE applicationE = applicationRepository.queryByCode(gitlabProjectPayload.getPath(),
-                gitlabGroupE.getProjectE().getId());
-        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
+                devopsProjectE.getProjectE().getId());
+        ProjectE projectE = iamRepository.queryIamProject(devopsProjectE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         GitlabProjectDO gitlabProjectDO = gitlabRepository
                 .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(),
@@ -648,11 +649,11 @@ public class ApplicationServiceImpl implements ApplicationService {
     @Override
     public void operationApplicationImport(DevOpsAppImportPayload devOpsAppImportPayload) {
         // 准备相关的数据
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryByGitlabGroupId(
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryByGitlabGroupId(
                 TypeUtil.objToInteger(devOpsAppImportPayload.getGroupId()));
         ApplicationE applicationE = applicationRepository.queryByCode(devOpsAppImportPayload.getPath(),
-                gitlabGroupE.getProjectE().getId());
-        ProjectE projectE = iamRepository.queryIamProject(gitlabGroupE.getProjectE().getId());
+                devopsProjectE.getProjectE().getId());
+        ProjectE projectE = iamRepository.queryIamProject(devopsProjectE.getProjectE().getId());
         Organization organization = iamRepository.queryOrganizationById(projectE.getOrganization().getId());
         GitlabProjectDO gitlabProjectDO = gitlabRepository
                 .getProjectByName(organization.getCode() + "-" + projectE.getCode(), applicationE.getCode(),
@@ -1013,9 +1014,9 @@ public class ApplicationServiceImpl implements ApplicationService {
         applicationE.initChartConfig(applicationImportDTO.getChartConfigId());
 
         // 查询创建应用所在的gitlab应用组
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(applicationE.getProjectE().getId());
         GitlabMemberE gitlabMemberE = gitlabGroupMemberRepository.getUserMemberByUserId(
-                TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()),
+                TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()),
                 TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
 
         // 校验用户的gitlab权限
@@ -1038,7 +1039,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppImportPayload.setPath(applicationImportDTO.getCode());
         devOpsAppImportPayload.setOrganizationId(organization.getId());
         devOpsAppImportPayload.setUserId(TypeUtil.objToInteger(userAttrE.getGitlabUserId()));
-        devOpsAppImportPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
+        devOpsAppImportPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()));
         devOpsAppImportPayload.setUserIds(applicationImportDTO.getUserIds());
         devOpsAppImportPayload.setSkipCheckPermission(applicationImportDTO.getIsSkipCheckPermission());
         devOpsAppImportPayload.setAppId(appId);
@@ -1100,7 +1101,7 @@ public class ApplicationServiceImpl implements ApplicationService {
             gitlabUserId = userAttrE.getGitlabUserId();
         }
 
-        GitlabGroupE gitlabGroupE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
+        DevopsProjectE devopsProjectE = devopsProjectRepository.queryDevopsProject(iamAppPayLoad.getProjectId());
 
         //创建saga payload
         DevOpsAppPayload devOpsAppPayload = new DevOpsAppPayload();
@@ -1108,7 +1109,7 @@ public class ApplicationServiceImpl implements ApplicationService {
         devOpsAppPayload.setPath(iamAppPayLoad.getCode());
         devOpsAppPayload.setOrganizationId(iamAppPayLoad.getOrganizationId());
         devOpsAppPayload.setUserId(TypeUtil.objToInteger(gitlabUserId));
-        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(gitlabGroupE.getDevopsAppGroupId()));
+        devOpsAppPayload.setGroupId(TypeUtil.objToInteger(devopsProjectE.getDevopsAppGroupId()));
         devOpsAppPayload.setUserIds(userIds);
         devOpsAppPayload.setSkipCheckPermission(applicationE.getIsSkipCheckPermission());
         devOpsAppPayload.setAppId(applicationE.getId());
@@ -1138,31 +1139,42 @@ public class ApplicationServiceImpl implements ApplicationService {
         configurationProperties.setType("harbor");
         Retrofit retrofit = RetrofitHandler.initRetrofit(configurationProperties);
         HarborClient harborClient = retrofit.create(HarborClient.class);
-        Call<Object> getUser = harborClient.getCurrentUser();
-        Response<Object> userResponse = RetrofitHandler.execute(getUser);
+        Call<User> getUser = harborClient.getCurrentUser();
+        Response<User> userResponse = null;
+        try {
+            userResponse = getUser.execute();
+            if (userResponse.raw().code() != 200) {
+                if (userResponse.raw().code() == 401) {
+                    throw new CommonException("error.harbor.user.password");
+                } else {
+                    throw new CommonException(userResponse.errorBody().string());
+                }
+            }
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
         //校验用户的邮箱是否匹配
-        if (!email.equals(((LinkedTreeMap) userResponse.body()).get("email").toString())) {
+        if (!email.equals(userResponse.body().getEmail())) {
             throw new CommonException("error.user.email.not.equal");
         }
 
-        //如果没有传入project的时候，校验填写的用户是不是管理员
-        if (project == null && "0.0".equals(((LinkedTreeMap) userResponse.body()).get("has_admin_role").toString())) {
-            throw new CommonException("error.user.is.not.admin");
-
-        }
-
         //如果传入了project,校验用户是否有project的权限
-        Call<Object> listProject = harborClient.listProject(project);
-        Response<Object> projectResponse = RetrofitHandler.execute(listProject);
-        if (projectResponse.body() == null) {
-            throw new CommonException("error.harbor.project.permission");
-        } else {
-            if (project != null) {
-                List<LinkedTreeMap> projects = (List<LinkedTreeMap>) ((ArrayList) projectResponse.body()).stream().filter(a -> ((LinkedTreeMap) a).get("name").equals(configurationProperties.getProject())).collect(Collectors.toList());
-                if (projects.isEmpty()) {
-                    throw new CommonException("error.harbor.project.permission");
+        Call<List<ProjectDetail>> listProject = harborClient.listProject(project);
+        Response<List<ProjectDetail>> projectResponse = null;
+        try {
+            projectResponse = listProject.execute();
+            if (projectResponse.body() == null) {
+                throw new CommonException("error.harbor.project.permission");
+            } else {
+                if (project != null) {
+                    List<ProjectDetail> projects = (projectResponse.body()).stream().filter(a -> (a.getName().equals(configurationProperties.getProject()))).collect(Collectors.toList());
+                    if (projects.isEmpty()) {
+                        throw new CommonException("error.harbor.project.permission");
+                    }
                 }
             }
+        } catch (IOException e) {
+            throw new CommonException(e);
         }
         return true;
     }
@@ -1177,7 +1189,11 @@ public class ApplicationServiceImpl implements ApplicationService {
         ChartClient chartClient = retrofit.create(ChartClient.class);
         chartClient.getHealth();
         Call<Object> getHealth = chartClient.getHealth();
-        RetrofitHandler.execute(getHealth);
+        try {
+            getHealth.execute();
+        } catch (IOException e) {
+            throw new CommonException(e);
+        }
         return true;
     }
 
