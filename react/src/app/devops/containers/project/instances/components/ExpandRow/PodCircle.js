@@ -3,7 +3,7 @@ import { FormattedMessage, injectIntl } from "react-intl";
 import { withRouter, Link } from "react-router-dom";
 import { stores } from "@choerodon/boot";
 import _ from "lodash";
-import { Tooltip, Button, Modal } from "choerodon-ui";
+import { Tooltip, Button } from "choerodon-ui";
 import "./PodCircle.scss";
 
 const { AppState } = stores;
@@ -36,7 +36,7 @@ export default class PodCircle extends PureComponent {
    * 环形图下的文字显示
    * @memberof PodCircle
    */
-  changeTextDisplay = count => {
+  changeTextDisplay = () => {
     let { textDisplay } = this.state;
     if (!textDisplay) {
       textDisplay = true;
@@ -150,7 +150,6 @@ export default class PodCircle extends PureComponent {
       connect,
       name,
       count: { sum },
-      intl: { formatMessage },
       targetCount,
     } = this.props;
     const { btnDisable, textDisplay } = this.state;

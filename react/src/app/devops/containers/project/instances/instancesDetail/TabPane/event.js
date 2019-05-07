@@ -99,9 +99,7 @@ class Event extends Component {
       });
     } else if (sideType === 'deployInfo') {
       this.setState({
-        sidebarName: state
-          ? state.code
-          : `${name.split('-')[0]}-${name.split('-')[1]}`,
+        sidebarName: state || `${name.split('-')[0]}-${name.split('-')[1]}`,
       });
     }
     this.setState({ sideType, visible: true });

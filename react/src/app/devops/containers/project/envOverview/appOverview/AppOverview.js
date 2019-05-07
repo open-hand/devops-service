@@ -165,11 +165,10 @@ class AppOverview extends Component {
       organizationId,
     } = AppState.currentMenuType;
     history.push({
-      pathname: `/devops/instance/${id}/${status}/detail`,
+      pathname: `/devops/instance/${id}/${status}/${code}/detail`,
       search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(
         projectName,
       )}&organizationId=${organizationId}&overview`,
-      state: { code },
     });
   };
 

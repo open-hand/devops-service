@@ -24,6 +24,16 @@ export default class DetailCard extends PureComponent {
       isParallel,
       tasks,
       intl: { formatMessage },
+      location: {
+        search,
+        state: recordRouteState,
+      },
+      match: {
+        params: {
+          pId,
+          rId,
+        },
+      },
     } = this.props;
     const executeType = ['serial', 'parallel'];
     const mode = ['orSign', 'sign'];
@@ -35,11 +45,14 @@ export default class DetailCard extends PureComponent {
          status,
          taskType,
          isCountersigned,
-         instanceStatus,
          userDTOList,
          appName,
          envName,
          version,
+         instanceStatus,
+         applicationId,
+         envId,
+         instanceId,
          instanceName,
        }) => {
         const panelHead = (<div className="c7ncd-pipeline-panel-title">
@@ -64,6 +77,35 @@ export default class DetailCard extends PureComponent {
           }
           allAuditUsers.push(realName);
         });
+
+        let instanceNode = null;
+
+        if (instanceName) {
+          if (instanceStatus && instanceStatus === INSTANCE_DELETE_STATUS) {
+            instanceNode = <Fragment>
+              <span className="c7ncd-pipeline-tag_delete">{formatMessage({ id: 'deleted' })}</span>
+              {instanceName}
+            </Fragment>;
+          } else {
+            instanceNode = <Link
+              to={{
+                pathname: '/devops/instance',
+                search,
+                state: {
+                  ...recordRouteState,
+                  instanceId,
+                  recordId: rId,
+                  applicationId,
+                  envId,
+                },
+              }}
+            >
+              {instanceName}
+            </Link>;
+          }
+        } else {
+          instanceNode = formatMessage({ id: 'null' });
+        }
 
         const expandRow = {
           manual: () => (<Fragment>
@@ -99,10 +141,7 @@ export default class DetailCard extends PureComponent {
             </div>
             <div className="c7ncd-pipeline-task">
               <span className="c7ncd-pipeline-task-label">{formatMessage({ id: 'pipeline.detail.instance' })}</span>
-              {instanceStatus && instanceStatus === INSTANCE_DELETE_STATUS
-                ? <span className="c7ncd-pipeline-tag_delete">{formatMessage({ id: 'deleted' })}</span>
-                : null}
-              {instanceName || formatMessage({ id: 'null' })}
+              {instanceNode}
             </div>
           </Fragment>),
         };

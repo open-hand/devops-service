@@ -27,24 +27,29 @@ const { AppState } = stores;
 
 @observer
 class Instances extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      upgradeVisible: false,
-      changeVisible: false,
-      deleteLoading: false,
-      confirmType: '',
-      confirmLoading: false,
-      idArr: {},
-    };
-    this.columnAction = this.columnAction.bind(this);
-  }
+  state = {
+    upgradeVisible: false,
+    changeVisible: false,
+    deleteLoading: false,
+    confirmType: '',
+    confirmLoading: false,
+    idArr: {},
+  };
 
   componentDidMount() {
-    const { InstancesStore } = this.props;
+    const {
+      InstancesStore,
+      location: {
+        state,
+      },
+    } = this.props;
     if (!InstancesStore.getIsCache) {
       const { id: projectId } = AppState.currentMenuType;
       EnvOverviewStore.loadActiveEnv(projectId, 'instance');
+      if (state) {
+        InstancesStore.setAppId(state.applicationId);
+        EnvOverviewStore.setTpEnvId(state.envId);
+      }
     } else {
       InstancesStore.setIsCache(false);
     }
@@ -94,23 +99,29 @@ class Instances extends Component {
   /**
    * 查看部署详情
    */
-  linkDeployDetail = record => {
-    const { id, status, code } = record;
-    const { InstancesStore } = this.props;
+  linkDeployDetail = ({ id, status, code }) => {
+    const {
+      InstancesStore,
+      history,
+      location: {
+        state,
+      },
+    } = this.props;
     InstancesStore.setIsCache(true);
-    const { history } = this.props;
+
     const {
       id: projectId,
       name: projectName,
       type,
       organizationId,
     } = AppState.currentMenuType;
+
     history.push({
-      pathname: `/devops/instance/${id}/${status}/detail`,
+      pathname: `/devops/instance/${id}/${status}/${code}/detail`,
       search: `?type=${type}&id=${projectId}&name=${encodeURIComponent(
         projectName,
       )}&organizationId=${organizationId}`,
-      state: { code },
+      state,
     });
   };
 
@@ -429,7 +440,7 @@ class Instances extends Component {
    * @param record 行数据
    * @returns {*}
    */
-  columnAction(record) {
+  columnAction = (record) => {
     const { id: projectId, type, organizationId } = AppState.currentMenuType;
     const {
       intl: { formatMessage },
@@ -509,7 +520,7 @@ class Instances extends Component {
       ...actionType[item],
     }));
     return <Action data={actionData} />;
-  }
+  };
 
   renderStatus(record) {
     const { code, status, error } = record;
@@ -544,6 +555,10 @@ class Instances extends Component {
     const {
       InstancesStore,
       intl: { formatMessage },
+      location: {
+        search,
+        state: pipelineDetailState,
+      },
     } = this.props;
     const {
       getIstAll,
@@ -592,7 +607,7 @@ class Instances extends Component {
     ) : (
       <div className="c7n-deploy-single_card">
         <div className="c7n-deploy-square">
-          <div>App</div>
+          <div>Application</div>
         </div>
         <FormattedMessage id="ist.noApp" />
       </div>
@@ -671,6 +686,12 @@ class Instances extends Component {
       </Fragment>
     );
 
+    const backPath = _.isEmpty(pipelineDetailState) ? '' : {
+      pathname: `/devops/pipeline-record/detail/${pipelineDetailState.pipelineId}/${pipelineDetailState.recordId}`,
+      search,
+      state: pipelineDetailState,
+    };
+
     return (
       <Page
         className="c7n-region"
@@ -692,7 +713,10 @@ class Instances extends Component {
       >
         {envData && envData.length && envId ? (
           <Fragment>
-            <Header title={<FormattedMessage id="ist.head" />}>
+            <Header
+              title={<FormattedMessage id="ist.head" />}
+              backPath={backPath}
+            >
               <Select
                 className={`${
                   envId

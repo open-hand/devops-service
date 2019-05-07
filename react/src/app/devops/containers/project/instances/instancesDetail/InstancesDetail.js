@@ -1,20 +1,20 @@
-import React, { Component } from "react";
-import { withRouter } from "react-router-dom";
-import { observer, inject } from "mobx-react";
+import React, { Component } from 'react';
+import { withRouter } from 'react-router-dom';
+import { observer } from 'mobx-react';
 import {
   Button,
   Tabs,
-} from "choerodon-ui";
-import { Content, Header, Page, stores } from "@choerodon/boot";
-import { injectIntl, FormattedMessage } from "react-intl";
-import _ from "lodash";
-import LoadingBar from "../../../../components/loadingBar";
-import "../../../main.scss";
-import "./index.scss";
-import "../../container/containerHome/ContainerHome.scss";
-import Event from "./TabPane/event";
-import RunDetail from "./TabPane/runDetail";
-import OperationLog from "./TabPane/OperationLog";
+} from 'choerodon-ui';
+import { Content, Header, Page, stores } from '@choerodon/boot';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import _ from 'lodash';
+import LoadingBar from '../../../../components/loadingBar';
+import '../../../main.scss';
+import './index.scss';
+import '../../container/containerHome/ContainerHome.scss';
+import Event from './TabPane/event';
+import RunDetail from './TabPane/runDetail';
+import OperationLog from './TabPane/OperationLog';
 
 const TabPane = Tabs.TabPane;
 
@@ -27,8 +27,8 @@ class InstancesDetail extends Component {
     this.state = {
       id: props.match.params.id,
       status: props.match.params.status,
-      overview: props.location.search.indexOf("overview") > 0,
-      current: "1",
+      overview: props.location.search.indexOf('overview') > 0,
+      current: '1',
     };
   }
 
@@ -41,14 +41,14 @@ class InstancesDetail extends Component {
     const { id, current } = this.state;
     const projectId = AppState.currentMenuType.id;
     switch (current) {
-      case "1":
+      case '1':
         InstanceDetailStore.loadIstEvent(projectId, id);
         InstanceDetailStore.getInstanceValue(projectId, id);
         break;
-      case "2":
+      case '2':
         InstanceDetailStore.getResourceData(projectId, id);
         break;
-      case "3":
+      case '3':
         InstanceDetailStore.changeLoading(true);
         InstanceDetailStore.loadIstLog(projectId, id)
           .then(() => {
@@ -66,16 +66,16 @@ class InstancesDetail extends Component {
 
   render() {
     const {
-      name: projectName,
-      organizationId,
-      id: projectId,
-      type,
-    } = AppState.currentMenuType;
-    const {
       InstanceDetailStore,
       intl: { formatMessage },
-      history: {
-        location: { state },
+      match: {
+        params: {
+          instanceName,
+        },
+      },
+      location: {
+        search,
+        state,
       },
     } = this.props;
     const {
@@ -87,43 +87,41 @@ class InstancesDetail extends Component {
 
     const tabPane = [
       {
-        key: "1",
-        title: formatMessage({ id: "deploy.ist.event" }),
-        content: <Event store={InstanceDetailStore} state={state} />,
+        key: '1',
+        title: formatMessage({ id: 'deploy.ist.event' }),
+        content: <Event store={InstanceDetailStore} state={instanceName} />,
       },
       {
-        key: "2",
-        title: formatMessage({ id: "ist.runDetial" }),
+        key: '2',
+        title: formatMessage({ id: 'ist.runDetial' }),
         content: <RunDetail store={InstanceDetailStore} />,
       },
       {
-        key: "3",
-        title: formatMessage({ id: "ist.operation.log" }),
+        key: '3',
+        title: formatMessage({ id: 'ist.operation.log' }),
         content: <OperationLog store={InstanceDetailStore} id={id} />,
       },
     ];
+
+    const backPath = {
+      pathname: `/devops/${overview ? 'env-overview' : 'instance'}`,
+      search,
+      state,
+    };
 
     return (
       <Page
         className="c7n-region c7n-deployDetail-wrapper"
         service={[
-          "devops-service.application-instance.listEvents",
-          "devops-service.application-instance.queryValues",
-          "devops-service.application-instance.listResources",
-          "devops-service.application-instance.listCommandLogs",
+          'devops-service.application-instance.listEvents',
+          'devops-service.application-instance.queryValues',
+          'devops-service.application-instance.listResources',
+          'devops-service.application-instance.listCommandLogs',
         ]}
       >
         <Header
           title={<FormattedMessage id="ist.detail" />}
-          backPath={
-            overview
-              ? `/devops/env-overview?type=${type}&id=${projectId}&name=${encodeURIComponent(
-                  projectName
-                )}&organizationId=${organizationId}`
-              : `/devops/instance?type=${type}&id=${projectId}&name=${encodeURIComponent(
-                  projectName
-                )}&organizationId=${organizationId}`
-          }
+          backPath={backPath}
         >
           <Button icon="refresh" onClick={this.loadAllData} funcType="flat">
             <FormattedMessage id="refresh" />
@@ -131,7 +129,7 @@ class InstancesDetail extends Component {
         </Header>
         <Content
           code="ist.detail"
-          values={{ name: state ? state.code : projectName }}
+          values={{ name: instanceName }}
           className="page-content"
         >
           <Tabs
@@ -141,7 +139,7 @@ class InstancesDetail extends Component {
           >
             {
               _.map(tabPane, item => {
-                if (item.key !== "2" || status === "running") {
+                if (item.key !== '2' || status === 'running') {
                   return (
                     <TabPane
                       tab={item.title}
@@ -153,7 +151,7 @@ class InstancesDetail extends Component {
                         current === item.key ? item.content : null)
                       }
                     </TabPane>
-                  )
+                  );
                 }
               })
             }
