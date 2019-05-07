@@ -15,12 +15,30 @@ public class PipelineTaskRecordDTO {
     private Integer isCountersigned;
     private String appName;
     private String envName;
+    private Long applicationId;
+    private Long envId;
     private String version;
     private String instanceName;
     private Long taskId;
     private String instanceStatus;
     private Long instanceId;
     private List<IamUserDTO> userDTOList;
+
+    public Long getApplicationId() {
+        return applicationId;
+    }
+
+    public void setApplicationId(Long applicationId) {
+        this.applicationId = applicationId;
+    }
+
+    public Long getEnvId() {
+        return envId;
+    }
+
+    public void setEnvId(Long envId) {
+        this.envId = envId;
+    }
 
     public Long getInstanceId() {
         return instanceId;
