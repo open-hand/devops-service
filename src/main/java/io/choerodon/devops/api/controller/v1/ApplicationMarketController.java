@@ -1,13 +1,25 @@
 package io.choerodon.devops.api.controller.v1;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
-import javax.servlet.http.HttpServletResponse;
 
-import io.choerodon.devops.api.dto.*;
+import io.choerodon.core.domain.Page;
+import io.choerodon.core.exception.CommonException;
+import io.choerodon.core.iam.InitRoleCode;
+import io.choerodon.core.iam.ResourceLevel;
+import io.choerodon.devops.api.dto.AppMarketDownloadDTO;
+import io.choerodon.devops.api.dto.AppMarketTgzDTO;
+import io.choerodon.devops.api.dto.AppMarketVersionDTO;
+import io.choerodon.devops.api.dto.ApplicationReleasingDTO;
+import io.choerodon.devops.app.service.ApplicationMarketService;
+import io.choerodon.devops.infra.common.util.FileUtil;
+import io.choerodon.mybatis.pagehelper.domain.PageRequest;
+import io.choerodon.swagger.annotation.CustomPageRequest;
+import io.choerodon.swagger.annotation.Permission;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.http.HttpStatus;
@@ -15,16 +27,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
-
-import io.choerodon.core.domain.Page;
-import io.choerodon.core.exception.CommonException;
-import io.choerodon.core.iam.InitRoleCode;
-import io.choerodon.core.iam.ResourceLevel;
-import io.choerodon.devops.app.service.ApplicationMarketService;
-import io.choerodon.devops.infra.common.util.FileUtil;
-import io.choerodon.mybatis.pagehelper.domain.PageRequest;
-import io.choerodon.swagger.annotation.CustomPageRequest;
-import io.choerodon.swagger.annotation.Permission;
 
 /**
  * Created by ernst on 2018/5/12.

@@ -1,5 +1,6 @@
 package io.choerodon.devops.api.controller.v1;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -493,4 +494,51 @@ public class ApplicationController {
         Boolean result = applicationService.validateRepositoryUrlAndToken(GitPlatformType.from(platformType), url, accessToken);
         return new ResponseEntity<>(result == null ? "null" : result, HttpStatus.OK);
     }
+
+    /**
+     * 查看sonarqube相关信息
+     *
+     * @param projectId 项目Id
+     * @param appId     应用id
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation("查看sonarqube相关信息")
+    @GetMapping("/{app_id}/sonarqube")
+    public ResponseEntity<SonarContentsDTO> getSonarQube(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "app_id") Long appId) {
+        return Optional.ofNullable(applicationService.getSonarContent(projectId, appId))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.sonarqube.content.get"));
+    }
+
+    /**
+     * 查看sonarqube相关报表
+     *
+     * @param projectId 项目Id
+     * @param appId     应用id
+     * @return
+     */
+    @Permission(level = ResourceLevel.PROJECT, roles = {InitRoleCode.PROJECT_OWNER, InitRoleCode.PROJECT_MEMBER})
+    @ApiOperation("查看sonarqube相关信息")
+    @GetMapping("/{app_id}/sonarQubeTable")
+    public ResponseEntity<SonarTableDTO> getSonarQubeTable(
+            @ApiParam(value = "项目id", required = true)
+            @PathVariable(value = "project_id") Long projectId,
+            @ApiParam(value = "应用id", required = true)
+            @PathVariable(value = "app_id") Long appId,
+            @ApiParam(value = "类型", required = true)
+            @RequestParam String type,
+            @ApiParam(value = "startTime")
+            @RequestParam(required = true) Date startTime,
+            @ApiParam(value = "endTime")
+            @RequestParam(required = true) Date endTime) {
+        return Optional.ofNullable(applicationService.getSonarTable(projectId, appId, type, startTime, endTime))
+                .map(target -> new ResponseEntity<>(target, HttpStatus.OK))
+                .orElseThrow(() -> new CommonException("error.app.sonarqube.content.get"));
+    }
+
 }
