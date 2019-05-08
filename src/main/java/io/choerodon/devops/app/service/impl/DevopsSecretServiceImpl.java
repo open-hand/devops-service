@@ -69,6 +69,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     private DeployMsgHandlerService deployMsgHandlerService;
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public SecretRepDTO createOrUpdate(SecretReqDTO secretReqDTO) {
 
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
@@ -169,6 +170,7 @@ public class DevopsSecretServiceImpl implements DevopsSecretService {
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public Boolean deleteSecret(Long envId, Long secretId) {
         UserAttrE userAttrE = userAttrRepository.queryById(TypeUtil.objToLong(GitUserNameUtil.getUserId()));
 

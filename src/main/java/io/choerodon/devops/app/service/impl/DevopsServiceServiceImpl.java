@@ -39,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
  * Created by Zenger on 2018/4/13.
  */
 @Service
-@Transactional(rollbackFor = RuntimeException.class)
 public class DevopsServiceServiceImpl implements DevopsServiceService {
 
     public static final String ENDPOINTS = "Endpoints";
@@ -138,6 +137,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public Boolean insertDevopsService(Long projectId, DevopsServiceReqDTO devopsServiceReqDTO) {
 
         //校验用户是否有环境的权限
@@ -313,6 +313,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
 
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public Boolean updateDevopsService(Long projectId, Long id,
                                        DevopsServiceReqDTO devopsServiceReqDTO) {
 
@@ -396,6 +397,7 @@ public class DevopsServiceServiceImpl implements DevopsServiceService {
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void deleteDevopsService(Long id) {
         DevopsServiceE devopsServiceE = getDevopsServiceE(id);
 

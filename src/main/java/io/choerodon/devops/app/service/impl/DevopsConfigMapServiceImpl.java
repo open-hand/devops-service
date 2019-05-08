@@ -28,6 +28,7 @@ import io.kubernetes.client.models.V1ConfigMap;
 import io.kubernetes.client.models.V1ObjectMeta;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
@@ -62,6 +63,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     private CheckOptionsHandler checkOptionsHandler;
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void createOrUpdate(Long projectId, Boolean sync, DevopsConfigMapDTO devopsConfigMapDTO) {
         //校验用户是否有环境的权限
         if(!sync) {
@@ -172,6 +174,7 @@ public class DevopsConfigMapServiceImpl implements DevopsConfigMapService {
     }
 
     @Override
+    @Transactional(rollbackFor=Exception.class)
     public void delete(Long configMapId) {
         DevopsConfigMapE devopsConfigMapE = devopsConfigMapRepository.queryById(configMapId);
 
